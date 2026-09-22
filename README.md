@@ -16,15 +16,15 @@ reminders are always user-initiated.
 Requirements: Node.js 18+ and npm.
 
 ```bash
-git clone <your-repo-url>
-cd kivo
+git clone https://github.com/workingbasit-design/Kivo.git
+cd Kivo
 npm install
 npx prisma generate
 npx prisma db push
 npm run dev
 ```
 
-Open **http://localhost:3100** in your browser.
+Open **http://localhost:3000** in your browser.
 
 Register a new business account on the sign-up page and explore:
 dashboard, customers, jobs, quotes → invoices → payments, schedule,
