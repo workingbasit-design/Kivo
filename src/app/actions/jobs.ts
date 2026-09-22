@@ -10,7 +10,7 @@ import { isValidTransition } from '@/lib/job-status';
 import { validatePhone, INVALID_PHONE_MESSAGE } from '@/lib/phone';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 
-export type JobActionResult = { error?: string; ok?: boolean };
+export type JobActionResult = { error?: string; ok?: boolean; queued?: boolean };
 
 async function checkLimit(userId: string, prefix: string): Promise<JobActionResult | null> {
   const rl = rateLimit(`${prefix}:${userId}`, ACTION_LIMIT);

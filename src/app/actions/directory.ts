@@ -13,8 +13,20 @@ import {
 
 export type DirectoryActionResult = {
   ok?: boolean;
+  /** True when the request was saved but matched no providers (open demand). */
+  unmatched?: boolean;
+  city?: string;
   error?: string;
   businessNames?: string[];
+  /** Echoed form values so the UI can preserve them after a validation error. */
+  values?: {
+    serviceNeed: string;
+    city: string;
+    area: string;
+    name: string;
+    phone: string;
+    details: string;
+  };
 };
 
 /* ------------------------------------------------------------------ */
@@ -112,20 +124,41 @@ export async function submitQuoteRequest(
     phone: formData.get('phone'),
     details: formData.get('details'),
   });
+  // Echo the raw values so the form never clears on a validation error.
+  const values = {
+    serviceNeed: String(formData.get('serviceNeed') ?? ''),
+    city: String(formData.get('city') ?? ''),
+    area: String(formData.get('area') ?? ''),
+    name: String(formData.get('name') ?? ''),
+    phone: String(formData.get('phone') ?? ''),
+    details: String(formData.get('details') ?? ''),
+  };
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? 'Please check the form.' };
+    return { error: parsed.error.issues[0]?.message ?? 'Please check the form.', values };
   }
   const { serviceNeed, city, area, name, phone, details } = parsed.data;
 
   const phoneCheck = validateCustomerPhone(phone);
-  if (!phoneCheck.ok) return { error: INVALID_PHONE_MESSAGE };
+  if (!phoneCheck.ok) return { error: INVALID_PHONE_MESSAGE, values };
 
   const matches = await findDirectoryMatches(serviceNeed, city, 5);
   if (matches.length === 0) {
-    return {
-      error:
-        'No matching pros found in your city yet. Try a nearby city, or check back soon — new businesses join every day.',
-    };
+    // No providers matched — save the request as an OPEN lead draft instead
+    // of dropping it. It becomes visible in the admin demand queue, and the
+    // requester gets a clear "saved" confirmation (never an ambiguous error).
+    await prisma.directoryRequest.create({
+      data: {
+        serviceNeed,
+        city,
+        area: area || null,
+        name,
+        phone,
+        phoneNorm: phoneCheck.digits,
+        details: details || null,
+        status: 'OPEN',
+      },
+    });
+    return { ok: true, unmatched: true, city };
   }
 
   const leadDetails = [
@@ -213,6 +246,7 @@ export async function reportBusiness(
 /* Admin (KIVO_ADMIN_EMAILS)                                            */
 /* ------------------------------------------------------------------ */
 
+/** Update a directory report's review status. */
 export async function updateReportStatus(
   reportId: string,
   status: 'REVIEWED' | 'DISMISSED'
@@ -234,5 +268,30 @@ export async function updateReportStatus(
   });
   const { revalidatePath } = await import('next/cache');
   revalidatePath('/directory-reports');
+  return { ok: true };
+}
+
+/**
+ * Admin triage for unmatched directory demand. Gated by KIVO_ADMIN_EMAILS.
+ * FULFILLED = a provider picked it up; DISMISSED = spam/duplicate.
+ */
+export async function updateDirectoryRequestStatus(
+  requestId: string,
+  status: 'FULFILLED' | 'DISMISSED'
+): Promise<DirectoryActionResult> {
+  const { getSession } = await import('@/lib/auth');
+  const session = await getSession();
+  const email = session?.user?.email;
+  if (!isDirectoryAdminEmail(email)) return { error: 'Not authorized.' };
+
+  const req = await prisma.directoryRequest.findUnique({
+    where: { id: requestId },
+    select: { id: true },
+  });
+  if (!req) return { error: 'Request not found.' };
+
+  await prisma.directoryRequest.update({ where: { id: requestId }, data: { status } });
+  const { revalidatePath } = await import('next/cache');
+  revalidatePath('/directory-requests');
   return { ok: true };
 }

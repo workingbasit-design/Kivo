@@ -1,9 +1,12 @@
 import Link from 'next/link';
-import { Download, Users } from 'lucide-react';
+import { Download, Languages, Users } from 'lucide-react';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { PageHeader, Card, secondaryBtnClass } from '@/components/ui';
 import SettingsForm from '@/components/SettingsForm';
+import { LanguageToggle } from '@/components/LanguageToggle';
+import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
 import { EXPORT_TYPES } from '@/lib/export';
 
 export const metadata = { title: 'Settings | Kivo' };
@@ -33,6 +36,8 @@ export default async function SettingsPage() {
     throw new Error('Business not found.');
   }
 
+  const locale = await getLocale();
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -44,6 +49,13 @@ export default async function SettingsPage() {
           </Link>
         }
       />
+      <Card className="p-5 md:p-6">
+        <h2 className="text-sm font-bold text-zinc-900 mb-1 flex items-center gap-2">
+          <Languages size={14} /> {t(locale, 'settings.language')}
+        </h2>
+        <p className="text-xs text-zinc-500 mb-4">{t(locale, 'settings.languageHint')}</p>
+        <LanguageToggle current={locale} />
+      </Card>
       <SettingsForm
         business={{
           name: business.name,

@@ -24,13 +24,22 @@ export function currencyLabel(currency: string | null | undefined): string {
 
 export function formatMoney(
   amount: number | null | undefined,
-  currency: string | null | undefined
+  currency: string | null | undefined,
+  locale: 'en' | 'fr' = 'en'
 ): string {
   const n =
     amount === null || amount === undefined || Number.isNaN(Number(amount))
       ? 0
       : Number(amount);
   if (normalizeCurrency(currency) === 'CAD') {
+    // fr-CA: "1 234,56 $" (narrow no-break space, comma decimals) — the
+    // standard Quebec price format.
+    if (locale === 'fr') {
+      return new Intl.NumberFormat('fr-CA', {
+        style: 'currency',
+        currency: 'CAD',
+      }).format(n);
+    }
     return (
       '$' +
       n.toLocaleString('en-CA', {

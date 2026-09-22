@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card } from '@/components/ui';
 import JobForm from '@/components/JobForm';
-import { createJob } from '@/app/actions/jobs';
+import { createJobWithOfflineFallback } from '@/lib/offline/job-action';
 
 export default async function NewJobPage() {
   const { businessId } = await requireAuth();
@@ -37,10 +37,10 @@ export default async function NewJobPage() {
               You don't have any customers yet. Add the customer inline below —
               they'll be saved automatically.
             </div>
-            <JobForm customers={[]} action={createJob} submitLabel="Create job" />
+            <JobForm customers={[]} action={createJobWithOfflineFallback} submitLabel="Create job" />
           </div>
         ) : (
-          <JobForm customers={customers} action={createJob} submitLabel="Create job" />
+          <JobForm customers={customers} action={createJobWithOfflineFallback} submitLabel="Create job" />
         )}
       </Card>
 

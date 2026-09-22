@@ -357,3 +357,24 @@ model DirectoryReport {
   @@index([businessId])
   @@index([status])
 }
+
+// Unmatched directory demand: a public quote request that matched no
+// providers. Saved as a visible lead draft (status OPEN) so the request is
+// never silently dropped — admins see the demand queue, and the requester
+// gets a clear "saved, we'll notify you" confirmation.
+model DirectoryRequest {
+  id          String   @id @default(cuid())
+  serviceNeed String
+  city        String
+  area        String?
+  name        String
+  phone       String
+  phoneNorm   String?
+  details     String?
+  status      String   @default("OPEN") // OPEN, FULFILLED, DISMISSED
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status])
+  @@index([city])
+}

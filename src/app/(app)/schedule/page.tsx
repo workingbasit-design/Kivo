@@ -71,11 +71,14 @@ export default async function SchedulePage({
     prisma.job.count({ where: { businessId } }),
     prisma.business.findUnique({
       where: { id: businessId },
-      select: { regionCode: true, address: true },
+      select: { regionCode: true, taxRegion: true, address: true },
     }),
   ]);
 
   const countryCode: 'IN' | 'CA' = business?.regionCode === 'CA' ? 'CA' : 'IN';
+  // Province code (e.g. "ON") lets the scheduler badge provincial statutory
+  // holidays like Family Day / St-Jean-Baptiste.
+  const provinceCode = countryCode === 'CA' ? business?.taxRegion ?? null : null;
 
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
@@ -96,7 +99,9 @@ export default async function SchedulePage({
 
   // Public holidays for the displayed week (Nager.Date, cached, silent on failure).
   const years = [...new Set(days.map((d) => d.getFullYear()))];
-  const holidayLists = await Promise.all(years.map((y) => getHolidays(y, countryCode)));
+  const holidayLists = await Promise.all(
+    years.map((y) => getHolidays(y, countryCode, provinceCode))
+  );
   const holidayByDate = new Map<string, string>();
   for (const list of holidayLists) for (const h of list) holidayByDate.set(h.date, h.name);
 

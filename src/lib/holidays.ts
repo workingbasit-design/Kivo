@@ -17,6 +17,8 @@ const TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days — holidays barely change
 
 const UA = 'KivoApp/1.0 (schedule holidays)';
 
+import { getCaHolidays } from './holidays/ca';
+
 /** India's fixed-date national holidays (no API coverage for IN). */
 function indiaFixedHolidays(year: number): Holiday[] {
   return [
@@ -26,8 +28,12 @@ function indiaFixedHolidays(year: number): Holiday[] {
   ];
 }
 
-export async function getHolidays(year: number, countryCode: 'IN' | 'CA'): Promise<Holiday[]> {
-  const key = `${countryCode}:${year}`;
+export async function getHolidays(
+  year: number,
+  countryCode: 'IN' | 'CA',
+  provinceCode?: string | null
+): Promise<Holiday[]> {
+  const key = `${countryCode}:${provinceCode ?? ''}:${year}`;
   const hit = cache.get(key);
   if (hit && Date.now() - hit.at < TTL_MS) return hit.value;
 
@@ -57,9 +63,14 @@ export async function getHolidays(year: number, countryCode: 'IN' | 'CA'): Promi
     value = [];
   }
 
-  // Nager.Date has no India data — use the fixed national holidays instead.
-  if (countryCode === 'IN' && value.length === 0) {
-    value = indiaFixedHolidays(year);
+  // Offline / API-failure fallbacks: computed statutory lists, no network needed.
+  if (value.length === 0) {
+    if (countryCode === 'CA') {
+      value = getCaHolidays(year, provinceCode);
+    } else {
+      // Nager.Date has no India data — use the fixed national holidays instead.
+      value = indiaFixedHolidays(year);
+    }
   }
 
   cache.set(key, { at: Date.now(), value });

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useActionState, useState } from 'react';
-import { AlertCircle, Save } from 'lucide-react';
+import { AlertCircle, CloudOff, Save } from 'lucide-react';
 import { Field, inputClass, primaryBtnClass } from '@/components/ui';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 import { toISODateLocal } from '@/lib/utils';
@@ -164,6 +164,16 @@ export default function JobForm({
           />
         </Field>
       </div>
+
+      {state?.queued && (
+        <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium rounded-xl px-3 py-2.5">
+          <CloudOff size={14} className="mt-0.5 shrink-0" />
+          <span>
+            You&apos;re offline — this job is saved on your device and will sync
+            automatically when you&apos;re back online.
+          </span>
+        </div>
+      )}
 
       {state?.error && (
         <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">

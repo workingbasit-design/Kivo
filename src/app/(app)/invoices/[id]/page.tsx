@@ -8,6 +8,8 @@ import { formatDateShort } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import { splitStoredTax } from '@/lib/tax';
 import { displayNotes } from '@/lib/invoice-notes';
+import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
 import {
   getInvoiceShareState,
   regenerateInvoiceShareLink,
@@ -49,6 +51,11 @@ export default async function InvoiceDetailPage({
   const remaining = Math.round((invoice.total - paid) * 100) / 100;
   const userNotes = displayNotes(invoice.notes, invoice.lineItems.length > 0);
   const currency = invoice.business.currency ?? 'INR';
+  // French (fr) locale renders invoice labels in French and formats CAD
+  // amounts in fr-CA style (e.g. "1 234,56 $").
+  const locale = await getLocale();
+  const moneyLocale = locale === 'fr' ? 'fr' : 'en';
+  const L = (path: string) => t(locale, path);
 
   // Per-line tax breakdown from the stored tax type + rate. Lines are
   // rounded individually and the last line absorbs any rounding difference
@@ -71,7 +78,7 @@ export default async function InvoiceDetailPage({
           href="/invoices"
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-800"
         >
-          <ArrowLeft size={14} /> Back to invoices
+          <ArrowLeft size={14} /> {L('invoices.backToInvoices')}
         </Link>
         <div className="flex items-center gap-2 print:hidden">
           {/* wa.me chat with the customer — user taps to send from their own
@@ -87,8 +94,8 @@ export default async function InvoiceDetailPage({
       </div>
 
       <PageHeader
-        title={`Invoice ${invoice.number}`}
-        subtitle={`Dated ${formatDateShort(invoice.date)}`}
+        title={`${L('invoices.invoice')} ${invoice.number}`}
+        subtitle={`${L('invoices.dated')} ${formatDateShort(invoice.date)}`}
         actions={<StatusBadge status={invoice.status} />}
       />
 
@@ -104,11 +111,11 @@ export default async function InvoiceDetailPage({
               <p className="text-xs text-zinc-500">{invoice.business.phone}</p>
             )}
             {invoice.business.gstin && (
-              <p className="text-xs text-zinc-500">GSTIN: {invoice.business.gstin}</p>
+              <p className="text-xs text-zinc-500">{L('invoices.taxIdLabel')}: {invoice.business.gstin}</p>
             )}
           </div>
           <div className="md:text-right">
-            <p className="text-xs font-bold uppercase tracking-wider text-zinc-400">Bill to</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-zinc-400">{L('invoices.billTo')}</p>
             <p className="text-sm font-bold text-zinc-900 mt-1 flex items-center gap-1.5 md:justify-end">
               <User size={14} className="text-zinc-400" /> {invoice.customer.name}
             </p>
@@ -125,9 +132,9 @@ export default async function InvoiceDetailPage({
           <table className="w-full text-sm mt-6">
             <thead>
               <tr className="text-left text-[11px] uppercase tracking-wider text-zinc-400 border-b border-zinc-200">
-                <th className="py-2 pr-2 font-bold">Item</th>
-                <th className="py-2 px-2 text-right font-bold">Qty</th>
-                <th className="py-2 text-right font-bold">Amount</th>
+                <th className="py-2 pr-2 font-bold">{L('invoices.item')}</th>
+                <th className="py-2 px-2 text-right font-bold">{L('invoices.qty')}</th>
+                <th className="py-2 text-right font-bold">{L('invoices.amount')}</th>
               </tr>
             </thead>
             <tbody>
@@ -135,10 +142,10 @@ export default async function InvoiceDetailPage({
                 <tr key={item.id} className="border-b border-zinc-100">
                   <td className="py-2.5 pr-2 text-zinc-800">{item.description}</td>
                   <td className="py-2.5 px-2 text-right text-zinc-500 whitespace-nowrap">
-                    {item.qty} × {formatMoney(item.unitPrice, currency)}
+                    {item.qty} × {formatMoney(item.unitPrice, currency, moneyLocale)}
                   </td>
                   <td className="py-2.5 text-right font-semibold text-zinc-900 whitespace-nowrap">
-                    {formatMoney(round2(item.qty * item.unitPrice), currency)}
+                    {formatMoney(round2(item.qty * item.unitPrice), currency, moneyLocale)}
                   </td>
                 </tr>
               ))}
@@ -148,45 +155,45 @@ export default async function InvoiceDetailPage({
 
         <dl className="mt-6 space-y-1.5 text-sm max-w-xs ml-auto">
           <div className="flex justify-between text-zinc-600">
-            <dt>Subtotal</dt>
-            <dd className="font-semibold">{formatMoney(invoice.subtotal, currency)}</dd>
+            <dt>{L('invoices.subtotal')}</dt>
+            <dd className="font-semibold">{formatMoney(invoice.subtotal, currency, moneyLocale)}</dd>
           </div>
           {taxLines.map((l) => (
             <div key={l.name} className="flex justify-between text-zinc-600">
               <dt>
                 {l.name} {l.rate}%
               </dt>
-              <dd className="font-semibold">{formatMoney(l.amount, currency)}</dd>
+              <dd className="font-semibold">{formatMoney(l.amount, currency, moneyLocale)}</dd>
             </div>
           ))}
           <div className="flex justify-between text-base border-t border-zinc-200 pt-2 mt-2">
-            <dt className="font-bold text-zinc-900">Total</dt>
-            <dd className="font-bold text-zinc-900">{formatMoney(invoice.total, currency)}</dd>
+            <dt className="font-bold text-zinc-900">{L('invoices.total')}</dt>
+            <dd className="font-bold text-zinc-900">{formatMoney(invoice.total, currency, moneyLocale)}</dd>
           </div>
           <div className="flex justify-between text-emerald-700">
-            <dt>Paid</dt>
-            <dd className="font-semibold">{formatMoney(paid, currency)}</dd>
+            <dt>{L('invoices.paid')}</dt>
+            <dd className="font-semibold">{formatMoney(paid, currency, moneyLocale)}</dd>
           </div>
           <div className="flex justify-between text-amber-700">
-            <dt>Balance due</dt>
-            <dd className="font-bold">{formatMoney(remaining, currency)}</dd>
+            <dt>{L('invoices.balanceDue')}</dt>
+            <dd className="font-bold">{formatMoney(remaining, currency, moneyLocale)}</dd>
           </div>
         </dl>
 
         {invoice.business.upiId && remaining > 0 && (
           <div className="mt-6 bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3">
             <p className="text-xs text-zinc-600">
-              Pay via UPI to <span className="font-bold text-zinc-900">{invoice.business.upiId}</span>
+              {L('invoices.payViaUpi')} <span className="font-bold text-zinc-900">{invoice.business.upiId}</span>
             </p>
             <p className="text-[11px] text-zinc-400 mt-0.5">
-              Pay from your own UPI app — Kivo never processes payments.
+              {L('invoices.upiDisclaimer')}
             </p>
           </div>
         )}
 
         {userNotes && (
           <div className="mt-6">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-1">Notes</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-1">{L('invoices.notes')}</p>
             <p className="text-sm text-zinc-600 whitespace-pre-wrap">{userNotes}</p>
           </div>
         )}
@@ -195,7 +202,7 @@ export default async function InvoiceDetailPage({
       {/* Payments */}
       {invoice.payments.length > 0 && (
         <Card className="p-6">
-          <h2 className="text-sm font-bold text-zinc-900 mb-3">Payments</h2>
+          <h2 className="text-sm font-bold text-zinc-900 mb-3">{L('invoices.payments')}</h2>
           <ul className="divide-y divide-zinc-100">
             {invoice.payments.map((p) => (
               <li key={p.id} className="flex items-center justify-between py-2.5 text-sm">

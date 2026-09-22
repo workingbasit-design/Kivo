@@ -13,11 +13,12 @@ import {
 } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { waLink } from '@/lib/whatsapp';
-import { currencySymbol } from '@/lib/money';
+import { formatMoney } from '@/lib/money';
 import { formatWorkingHoursSummary } from '@/lib/working-hours';
 import {
   localityFromAddress,
   isPhoneVerified,
+  matchesCity,
   ratingSummary,
 } from '@/lib/directory';
 import ReportBusinessForm from '@/components/ReportBusinessForm';
@@ -114,8 +115,43 @@ export default async function PublicProfilePage({
     `Hi ${b.name}! I found you on the Kivo directory and I'd like a quote.`,
     b.regionCode
   );
-  const sym = currencySymbol(b.currency);
   const showAddress = b.directoryHideAddress ? locality : b.address;
+
+  // Similar pros nearby: other directory businesses in the same city with
+  // overlapping services. Real discovery cross-linking, no fake data.
+  const myServiceWords = services.map((s) => s.name.toLowerCase());
+  let similarPros: { name: string; slug: string; avg: number | null; service: string | null }[] = [];
+  if (locality) {
+    const others = await prisma.business.findMany({
+      where: { directoryOptIn: true, bookingPage: { isNot: null }, id: { not: b.id } },
+      select: {
+        name: true,
+        address: true,
+        bookingPage: { select: { slug: true } },
+        services: { select: { name: true }, take: 6 },
+        reviews: { select: { rating: true } },
+      },
+      take: 100,
+    });
+    similarPros = others
+      .filter(
+        (o) =>
+          matchesCity(locality, o.address) &&
+          o.services.some((s) =>
+            myServiceWords.some(
+              (w) => s.name.toLowerCase().includes(w) || w.includes(s.name.toLowerCase())
+            )
+          )
+      )
+      .map((o) => ({
+        name: o.name,
+        slug: o.bookingPage!.slug,
+        avg: ratingSummary(o.reviews).avg,
+        service: o.services[0]?.name ?? null,
+      }))
+      .sort((a, z) => (z.avg ?? -1) - (a.avg ?? -1))
+      .slice(0, 3);
+  }
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -217,8 +253,7 @@ export default async function PublicProfilePage({
                 <li key={s.name} className="flex items-center justify-between py-2.5">
                   <span className="text-sm text-zinc-700 font-medium">{s.name}</span>
                   <span className="text-sm font-bold text-zinc-900">
-                    {sym}
-                    {s.price.toLocaleString('en-IN')}
+                    {formatMoney(s.price, b.currency)}
                   </span>
                 </li>
               ))}
@@ -276,6 +311,32 @@ export default async function PublicProfilePage({
           </p>
           <ReportBusinessForm slug={slug} />
         </section>
+
+        {similarPros.length > 0 && (
+          <section className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-5">
+            <h2 className="text-sm font-bold text-zinc-900 mb-3">Similar pros nearby</h2>
+            <ul className="space-y-2">
+              {similarPros.map((p) => (
+                <li key={p.slug}>
+                  <Link
+                    href={`/p/${p.slug}`}
+                    className="flex items-center justify-between gap-2 rounded-xl border border-zinc-100 hover:border-[#8b5cf6] px-3.5 py-2.5 transition-colors"
+                  >
+                    <span>
+                      <span className="block text-sm font-semibold text-zinc-800">{p.name}</span>
+                      {p.service && <span className="block text-[11px] text-zinc-400">{p.service}</span>}
+                    </span>
+                    {p.avg !== null && (
+                      <span className="inline-flex items-center gap-1 text-xs font-bold text-zinc-700 shrink-0">
+                        <Star size={12} className="fill-amber-400 text-amber-400" /> {p.avg}
+                      </span>
+                    )}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <p className="text-center text-[11px] text-zinc-400 pb-8 flex items-center justify-center gap-1.5">
           <Sparkles size={11} /> Listed on the Kivo Directory — free for businesses, no commission.

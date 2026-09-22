@@ -2,7 +2,7 @@
 
 import { useActionState } from 'react';
 import Link from 'next/link';
-import { AlertCircle, CheckCircle2, MessageSquareQuote, Send } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Clock, MessageSquareQuote, Send } from 'lucide-react';
 import { submitQuoteRequest, type DirectoryActionResult } from '@/app/actions/directory';
 
 const inputClass =
@@ -13,8 +13,10 @@ export default function QuoteRequestForm() {
     submitQuoteRequest,
     {}
   );
+  const v = state?.values;
 
-  if (state?.ok) {
+  // Matched: request landed in provider inboxes.
+  if (state?.ok && !state.unmatched) {
     return (
       <div className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-6 md:p-8 text-center">
         <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center mx-auto mb-4">
@@ -41,8 +43,43 @@ export default function QuoteRequestForm() {
     );
   }
 
+  // Unmatched: request saved as an open lead draft — nothing was dropped.
+  if (state?.ok && state.unmatched) {
+    return (
+      <div className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-6 md:p-8 text-center">
+        <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center mx-auto mb-4">
+          <Clock className="w-6 h-6 text-amber-600" />
+        </div>
+        <h2 className="text-lg font-bold text-zinc-900">Request saved!</h2>
+        <p className="text-sm text-zinc-600 mt-2 max-w-md mx-auto leading-relaxed">
+          There are no matching pros in <span className="font-bold text-zinc-900">{state.city}</span> yet —
+          but your request is <span className="font-bold text-zinc-900">saved as an open lead</span>.
+          Pros who join {state.city} will see it and can contact you directly.
+        </p>
+        <div className="mt-4 bg-[#f8f6ff] border border-[#e5d8fd] rounded-xl px-4 py-3 text-xs text-zinc-600">
+          Tip: also try a nearby city — you can submit another request anytime, it&apos;s free.
+        </div>
+        <div className="mt-5 flex items-center justify-center gap-4">
+          <Link href="/directory" className="text-sm font-bold text-[#6329d4] hover:underline">
+            ← Back to directory
+          </Link>
+          <Link
+            href="/directory/request"
+            className="text-sm font-bold text-zinc-600 hover:text-zinc-900 hover:underline"
+          >
+            Make another request
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <form action={formAction} className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-6 md:p-8 space-y-4">
+    <form
+      key={state?.values ? 'retry' : 'fresh'}
+      action={formAction}
+      className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-6 md:p-8 space-y-4"
+    >
       <div className="flex items-center gap-2.5 mb-1">
         <div className="w-10 h-10 rounded-xl bg-[#f1ecfd] flex items-center justify-center">
           <MessageSquareQuote className="w-5 h-5 text-[#6329d4]" />
@@ -63,6 +100,7 @@ export default function QuoteRequestForm() {
           required
           minLength={3}
           maxLength={200}
+          defaultValue={v?.serviceNeed ?? ''}
           placeholder="e.g. AC deep cleaning, leaky tap repair"
           className={inputClass}
         />
@@ -79,6 +117,7 @@ export default function QuoteRequestForm() {
             required
             minLength={2}
             maxLength={100}
+            defaultValue={v?.city ?? ''}
             placeholder="e.g. Mumbai"
             className={inputClass}
           />
@@ -91,6 +130,7 @@ export default function QuoteRequestForm() {
             id="qr-area"
             name="area"
             maxLength={100}
+            defaultValue={v?.area ?? ''}
             placeholder="e.g. Andheri West"
             className={inputClass}
           />
@@ -106,6 +146,7 @@ export default function QuoteRequestForm() {
           name="details"
           rows={3}
           maxLength={1000}
+          defaultValue={v?.details ?? ''}
           placeholder="e.g. 2 split ACs, Sunday morning works best"
           className={inputClass}
         />
@@ -122,6 +163,7 @@ export default function QuoteRequestForm() {
             required
             minLength={2}
             maxLength={100}
+            defaultValue={v?.name ?? ''}
             placeholder="Your name"
             className={inputClass}
           />
@@ -136,6 +178,7 @@ export default function QuoteRequestForm() {
             type="tel"
             required
             maxLength={25}
+            defaultValue={v?.phone ?? ''}
             placeholder="+91 98765 43210"
             className={inputClass}
           />
@@ -144,7 +187,7 @@ export default function QuoteRequestForm() {
       </div>
 
       {state?.error && (
-        <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5" role="alert">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{state.error}</span>
         </div>
