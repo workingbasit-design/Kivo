@@ -13,6 +13,7 @@ import { formatMoney } from '@/lib/money';
 import { entryMinutes, formatDuration } from '@/lib/timesheets';
 import JobStatusButtons from '@/components/JobStatusButtons';
 import { JobNoteForm, JobNoteItem } from '@/components/JobNoteForm';
+import WhatsAppButton from '@/components/WhatsAppButton';
 
 export default async function JobDetailPage({
   params,
@@ -21,7 +22,7 @@ export default async function JobDetailPage({
 }) {
   const { id } = await params;
   const { businessId } = await requireAuth();
-  const business = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } });
+  const business = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true, name: true, regionCode: true } });
   const currency = business?.currency;
 
   const job = await prisma.job.findFirst({
@@ -111,12 +112,22 @@ export default async function JobDetailPage({
       <PageHeader
         title={job.title}
         actions={
-          <Link
-            href={`/jobs/${job.id}/edit`}
-            className="bg-white hover:bg-zinc-50 text-zinc-700 px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 border border-zinc-200 shadow-sm"
-          >
-            <Pencil size={14} /> Edit
-          </Link>
+          <div className="flex items-center gap-2">
+            {/* wa.me chat with the customer — user taps to send from their own
+                WhatsApp; Kivo never sends anything automatically. */}
+            <WhatsAppButton
+              phone={job.customer.phone}
+              regionCode={business?.regionCode}
+              message={`Namaste ${job.customer.name}! ${business?.name ?? 'Hum'}: aapki "${job.title}" booking ${formatDateLabel(job.date)}${job.time ? `, ${job.time}` : ''} ke liye scheduled hai.`}
+              label="WhatsApp"
+            />
+            <Link
+              href={`/jobs/${job.id}/edit`}
+              className="bg-white hover:bg-zinc-50 text-zinc-700 px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 border border-zinc-200 shadow-sm"
+            >
+              <Pencil size={14} /> Edit
+            </Link>
+          </div>
         }
       />
 

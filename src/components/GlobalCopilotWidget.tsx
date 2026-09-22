@@ -170,6 +170,15 @@ export default function GlobalCopilotWidget({ currency }: { currency?: string })
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
+  // Synchronous "a send is in flight" flag. `isTyping` state updates
+  // asynchronously, so two submits in the same tick (double-Enter,
+  // double-tap on a quick prompt) would both see `isTyping === false`
+  // and fire duplicate requests. This ref is set synchronously and
+  // guarantees one user message yields exactly one assistant response.
+  const sendBusyRef = useRef(false);
+  // Latest sendMessage for the once-registered `open-copilot` listener,
+  // which must not close over the first render's stale `isTyping`.
+  const sendMessageRef = useRef<(text: string) => Promise<void>>(async () => {});
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -180,12 +189,16 @@ export default function GlobalCopilotWidget({ currency }: { currency?: string })
   }, [messages, isTyping, isOpen]);
 
   // Allow other parts of the app to open the copilot (e.g. CopilotTriggerButton)
+  // NOTE: registered exactly once. It calls through sendMessageRef so the
+  // handler always uses the latest sendMessage (with the live duplicate
+  // guard) instead of the first render's stale closure, whose `isTyping`
+  // was forever false and would bypass the guard on repeated events.
   useEffect(() => {
     const handleOpenCopilot = (e: Event) => {
       const customEvent = e as CustomEvent;
       setIsOpen(true);
       if (customEvent.detail?.message) {
-        sendMessage(customEvent.detail.message);
+        void sendMessageRef.current(customEvent.detail.message);
       }
     };
     window.addEventListener('open-copilot', handleOpenCopilot);
@@ -197,7 +210,10 @@ export default function GlobalCopilotWidget({ currency }: { currency?: string })
 
   const sendMessage = async (text: string) => {
     const clean = text.trim();
-    if (!clean || isTyping) return;
+    // Synchronous guard (not the async `isTyping` state): prevents the same
+    // message being sent twice when submits land before a re-render.
+    if (!clean || sendBusyRef.current) return;
+    sendBusyRef.current = true;
 
     pushMessage({ role: 'user', content: clean });
     setIsTyping(true);
@@ -225,11 +241,22 @@ export default function GlobalCopilotWidget({ currency }: { currency?: string })
         content: 'Kuch gadbad ho gayi — dobara try karein.',
       });
     } finally {
+      sendBusyRef.current = false;
       setIsTyping(false);
     }
   };
+  // Keep the ref pointed at the latest sendMessage for the event listener.
+  sendMessageRef.current = sendMessage;
+
+  // Synchronous per-message confirm guard: `confirmingId` state updates
+  // asynchronously, so a double-tap before re-render would fire two confirm
+  // POSTs. The server would still create one job (idempotency key), but the
+  // client would push two success messages. The ref stops the second tap.
+  const confirmingRef = useRef<string | null>(null);
 
   const handleConfirm = async (msgId: string, preview: JobDraft) => {
+    if (confirmingRef.current === msgId) return;
+    confirmingRef.current = msgId;
     setConfirmingId(msgId);
     const msg = messagesRef.current.find((m) => m.id === msgId);
     try {
@@ -252,11 +279,16 @@ export default function GlobalCopilotWidget({ currency }: { currency?: string })
     } catch {
       pushMessage({ role: 'assistant', content: 'Job book nahi ho payi — dobara try karein.' });
     } finally {
+      confirmingRef.current = null;
       setConfirmingId(null);
     }
   };
 
   const handleDiscard = (msgId: string) => {
+    // Only act if the preview is still pending — a double-click before
+    // re-render must not push the reply twice.
+    const msg = messagesRef.current.find((m) => m.id === msgId);
+    if (!msg?.preview) return;
     setMessages((prev) => prev.map((m) => (m.id === msgId ? { ...m, preview: null } : m)));
     pushMessage({ role: 'assistant', content: 'Theek hai, job book nahi ki. Kuch aur chahiye to batao!' });
   };
@@ -403,7 +435,7 @@ export default function GlobalCopilotWidget({ currency }: { currency?: string })
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Jaise: Ramesh ka AC repair kal 3 baje…"
-                  className="w-full pl-4 pr-12 py-3 rounded-xl border border-zinc-200 bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-[#6329d4]/40 focus:border-transparent text-sm placeholder:text-zinc-400 transition-shadow"
+                  className="w-full pl-4 pr-12 py-3 rounded-xl border border-zinc-200 bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-[#6329d4]/40 focus:border-transparent text-sm text-zinc-900 placeholder:text-zinc-400 transition-shadow"
                 />
                 <button
                   type="submit"

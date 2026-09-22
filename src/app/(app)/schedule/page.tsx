@@ -27,9 +27,12 @@ function addDays(d: Date, n: number): Date {
   return copy;
 }
 
-/** UTC day key, matching ScheduleClient's date comparison logic. */
-function utcDayKey(date: Date): string {
-  return new Date(date).toISOString().split('T')[0];
+/** Calendar-day key of a job in the business (server-local) timezone.
+ *  Stored job timestamps are server-local midnight / 9 AM, so the local
+ *  calendar date is the date the user picked — never derive it from
+ *  toISOString() (UTC), which shifts the day for timezones ahead of UTC. */
+function dayKey(date: Date): string {
+  return toISODateLocal(new Date(date));
 }
 
 const MONTHS = [
@@ -102,6 +105,9 @@ export default async function SchedulePage({
     id: j.id,
     title: j.title,
     date: j.date.toISOString(),
+    /** Server-local calendar date — the day the user booked. Used for all
+     *  day filtering/counting so UTC conversion can never shift the day. */
+    dateKey: dayKey(j.date),
     time: j.time,
     address: j.address,
     price: j.price,
@@ -113,7 +119,7 @@ export default async function SchedulePage({
 
   const counts = new Map<string, number>();
   for (const j of jobs) {
-    const key = utcDayKey(j.date);
+    const key = dayKey(j.date);
     counts.set(key, (counts.get(key) ?? 0) + 1);
   }
 
@@ -175,7 +181,7 @@ export default async function SchedulePage({
         <div className="grid grid-cols-7 gap-1.5 md:gap-2">
           {days.map((d, i) => {
             const key = toISODateLocal(d);
-            const count = counts.get(utcDayKey(d)) ?? counts.get(key) ?? 0;
+            const count = counts.get(key) ?? 0;
             const isToday = key === todayKey;
             const isActive = activeDay === key;
             const holiday = holidayByDate.get(key);
@@ -256,6 +262,7 @@ export default async function SchedulePage({
         initialDateFilter={activeDay ?? 'ALL'}
         allowSeed={totalCount === 0}
         currency={currency}
+        todayKey={todayKey}
       />
     </div>
   );

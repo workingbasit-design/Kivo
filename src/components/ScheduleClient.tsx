@@ -9,11 +9,16 @@ import {
 import { updateJobStatus, deleteJob, seedSampleJobs, updateJobSchedule } from '@/app/actions/jobs';
 import { validNextStatuses } from '@/lib/job-status';
 import { formatMoney } from '@/lib/money';
+import { toISODateLocal } from '@/lib/utils';
 
 type Job = {
   id: string;
   title: string;
   date: Date | string;
+  /** Server-local calendar date (YYYY-MM-DD) — the day the user booked.
+   *  All day filtering/counting uses this; never derive it from
+   *  toISOString() (UTC), which shifts the day for timezones ahead of UTC. */
+  dateKey: string;
   time: string | null;
   address: string | null;
   price: number;
@@ -36,6 +41,7 @@ export default function ScheduleClient({
   initialDateFilter,
   allowSeed,
   currency,
+  todayKey,
 }: {
   initialJobs: Job[];
   /** Override the default date filter ('TODAY'). Use 'ALL' to show everything passed in. */
@@ -43,6 +49,9 @@ export default function ScheduleClient({
   /** Show the sample-data seed button. Defaults to true when no jobs are passed in. */
   allowSeed?: boolean;
   currency?: string;
+  /** Server-local "today" (YYYY-MM-DD) so the Today filter matches the
+   *  server-rendered day tiles even if the browser timezone differs. */
+  todayKey?: string;
 }) {
   const [selectedDate, setSelectedDate] = useState<string>(initialDateFilter ?? 'TODAY'); // 'TODAY', 'ALL', or YYYY-MM-DD
   const canSeed = allowSeed ?? initialJobs.length === 0;
@@ -56,7 +65,11 @@ export default function ScheduleClient({
   /** Last failed status/date change — shown as a banner so rejections are never silent. */
   const [actionError, setActionError] = useState<string | null>(null);
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  // Local calendar-day key (YYYY-MM-DD). The server passes its own today so
+  // the filter always agrees with the day tiles above.
+  const todayStr = todayKey && /^\d{4}-\d{2}-\d{2}$/.test(todayKey)
+    ? todayKey
+    : toISODateLocal(new Date());
 
   // Helper to format date cleanly
   const formatDateLabel = (dateInput: Date | string) => {
@@ -64,10 +77,10 @@ export default function ScheduleClient({
     return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
   };
 
-  // Filter jobs logic
+  // Filter jobs logic — compare calendar-day keys, never UTC date strings.
   const filteredJobs = initialJobs.filter((job) => {
-    const jobDateStr = new Date(job.date).toISOString().split('T')[0];
-    
+    const jobDateStr = job.dateKey;
+
     // Date filter
     if (selectedDate === 'TODAY' && jobDateStr !== todayStr) return false;
     if (selectedDate !== 'TODAY' && selectedDate !== 'ALL' && jobDateStr !== selectedDate) return false;
@@ -88,17 +101,19 @@ export default function ScheduleClient({
     return true;
   });
 
-  const handleNextDay = () => {
-    const current = selectedDate === 'TODAY' ? new Date() : selectedDate === 'ALL' ? new Date() : new Date(selectedDate);
-    current.setDate(current.getDate() + 1);
-    setSelectedDate(current.toISOString().split('T')[0]);
+  /** Shift the selected calendar day by `delta` days using local date math
+   *  (parsing 'YYYY-MM-DD' with `new Date(str)` would anchor at UTC midnight
+   *  and shift the day for timezones ahead of UTC). */
+  const shiftSelectedDay = (delta: number) => {
+    const base =
+      selectedDate === 'TODAY' || selectedDate === 'ALL' ? todayStr : selectedDate;
+    const [y, m, d] = base.split('-').map(Number);
+    setSelectedDate(toISODateLocal(new Date(y, m - 1, d + delta)));
   };
 
-  const handlePrevDay = () => {
-    const current = selectedDate === 'TODAY' ? new Date() : selectedDate === 'ALL' ? new Date() : new Date(selectedDate);
-    current.setDate(current.getDate() - 1);
-    setSelectedDate(current.toISOString().split('T')[0]);
-  };
+  const handleNextDay = () => shiftSelectedDay(1);
+
+  const handlePrevDay = () => shiftSelectedDay(-1);
 
   const handleStatusChange = (jobId: string, newStatus: string) => {
     setActionError(null);
@@ -124,7 +139,9 @@ export default function ScheduleClient({
 
   const startEdit = (job: Job) => {
     setEditingJobId(job.id);
-    setEditDate(new Date(job.date).toISOString().split('T')[0]);
+    // Prefill with the booked calendar day (not a UTC-derived date, which
+    // would show the previous day for timezones ahead of UTC).
+    setEditDate(job.dateKey);
     setEditTime(job.time || '10:00 AM');
     setEditStatus(job.status);
   };

@@ -9,6 +9,7 @@ import { formatMoney } from '@/lib/money';
 import { PageHeader, Card, StatusBadge } from '@/components/ui';
 import { secondaryBtnClass } from '@/components/ui';
 import { EditCustomerForm, DeleteCustomerButton } from './customer-forms';
+import WhatsAppButton from '@/components/WhatsAppButton';
 
 export default async function CustomerDetailPage({
   params,
@@ -19,7 +20,7 @@ export default async function CustomerDetailPage({
   if (!session?.user?.businessId) redirect('/login');
   const businessId = session.user.businessId;
 
-  const business = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } });
+  const business = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true, name: true, regionCode: true } });
   const currency = business?.currency;
   const { id } = await params;
   const customer = await prisma.customer.findFirst({
@@ -95,6 +96,14 @@ export default async function CustomerDetailPage({
         </div>
 
         <div className="flex flex-wrap gap-2 pt-4 border-t border-zinc-100">
+          {/* Opens a wa.me chat with the customer — user taps to send from
+              their own WhatsApp; Kivo never sends anything automatically. */}
+          <WhatsAppButton
+            phone={customer.phone}
+            regionCode={business?.regionCode}
+            message={`Namaste ${customer.name}! ${business?.name ?? 'Hum'} se bol rahe hain.`}
+            label="WhatsApp"
+          />
           <EditCustomerForm
             customer={{
               id: customer.id,

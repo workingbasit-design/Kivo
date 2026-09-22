@@ -66,7 +66,7 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-[#1a1525] w-full max-w-lg rounded-3xl shadow-2xl border border-zinc-200 dark:border-white/10 overflow-hidden flex flex-col">
+      <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-zinc-200 overflow-hidden flex flex-col">
         
         {/* Modal Header */}
         <div className="p-6 bg-gradient-to-r from-[#1a1525] to-[#2b243b] text-white flex justify-between items-center relative overflow-hidden">
@@ -97,7 +97,7 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
               <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center shadow-inner">
                 <CheckCircle2 size={36} />
               </div>
-              <h3 className="text-2xl font-bold text-zinc-900 dark:text-white">Workspace 100% Ready!</h3>
+              <h3 className="text-2xl font-bold text-zinc-900">Workspace 100% Ready!</h3>
               <p className="text-sm text-zinc-500 max-w-sm mx-auto">
                 WhatsApp auto-reply is turned on and team availability schedules are configured. You are ready to receive and process service jobs.
               </p>
@@ -111,14 +111,14 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
           ) : (
             <>
               {/* Item 1: WhatsApp Auto-Reply */}
-              <div className="bg-zinc-50 dark:bg-white/5 p-4 rounded-2xl border border-zinc-200/80 dark:border-white/10 space-y-3">
+              <div className="bg-zinc-50 p-4 rounded-2xl border border-zinc-200/80 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
                       <MessageSquare size={16} />
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold text-zinc-900 dark:text-white">1. WhatsApp Auto-Reply</h4>
+                      <h4 className="text-sm font-bold text-zinc-900">1. WhatsApp Auto-Reply</h4>
                       <p className="text-[11px] text-zinc-500">Instantly respond to inbound leads within 60s</p>
                     </div>
                   </div>
@@ -135,7 +135,7 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
                 </div>
 
                 {whatsappEnabled && (
-                  <div className="text-xs bg-white dark:bg-black/30 p-3 rounded-xl border border-zinc-200/60 dark:border-white/10 text-zinc-600 dark:text-zinc-300 space-y-2">
+                  <div className="text-xs bg-white p-3 rounded-xl border border-zinc-200/60 text-zinc-600 space-y-2">
                     <p>
                       "Hi! Thanks for reaching out to FieldFlow. We received your request and will confirm your service slot shortly."
                     </p>
@@ -149,7 +149,7 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
                         onChange={(e) => setWhatsappNumber(e.target.value)}
                         placeholder="+91 98765 43210"
                         maxLength={25}
-                        className="w-full text-xs bg-white dark:bg-black/40 border border-zinc-200 dark:border-white/10 rounded-xl p-2.5 font-medium"
+                        className="w-full text-xs text-zinc-900 bg-white border border-zinc-200 rounded-xl p-2.5 font-medium placeholder:text-zinc-400"
                       />
                       <p className="text-[10px] text-zinc-400 mt-1">
                         Saved on your business — used for WhatsApp chat links on invoices and quotes.
@@ -160,13 +160,13 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
               </div>
 
               {/* Item 2: Team Availability */}
-              <div className="bg-zinc-50 dark:bg-white/5 p-4 rounded-2xl border border-zinc-200/80 dark:border-white/10 space-y-3">
+              <div className="bg-zinc-50 p-4 rounded-2xl border border-zinc-200/80 space-y-3">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-900/40 text-[#6329d4] flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-xl bg-purple-100 text-[#6329d4] flex items-center justify-center">
                     <Clock size={16} />
                   </div>
                   <div>
-                    <h4 className="text-sm font-bold text-zinc-900 dark:text-white">2. Team Availability & Shift Hours</h4>
+                    <h4 className="text-sm font-bold text-zinc-900">2. Team Availability & Shift Hours</h4>
                     <p className="text-[11px] text-zinc-500">Set working window for field dispatch</p>
                   </div>
                 </div>
@@ -177,7 +177,7 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
                     <select
                       value={workingHours}
                       onChange={(e) => setWorkingHours(e.target.value)}
-                      className="w-full text-xs bg-white dark:bg-black/40 border border-zinc-200 dark:border-white/10 rounded-xl p-2.5 font-medium"
+                      className="w-full text-xs text-zinc-900 bg-white border border-zinc-200 rounded-xl p-2.5 font-medium placeholder:text-zinc-400"
                     >
                       <option value="08:00 AM - 06:00 PM">08:00 AM - 06:00 PM (Standard)</option>
                       <option value="09:00 AM - 07:00 PM">09:00 AM - 07:00 PM</option>
@@ -225,7 +225,7 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
                       detail: { message: "Please summarize my completed workspace setup and send a test WhatsApp ping." } 
                     }));
                   }}
-                  className="w-full bg-zinc-100 dark:bg-white/10 text-zinc-800 dark:text-white hover:bg-zinc-200 font-semibold py-3 rounded-2xl transition-colors text-xs flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full bg-zinc-100 text-zinc-800 hover:bg-zinc-200 font-semibold py-3 rounded-2xl transition-colors text-xs flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Sparkles size={14} className="text-[#ff7a59]" />
                   Auto-Finish with KivoBrain AI

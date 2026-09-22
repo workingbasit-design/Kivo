@@ -15,6 +15,7 @@ import {
 } from '@/app/actions/quotes';
 import QuoteActions from './QuoteActions';
 import ShareTokenManager from '@/components/ShareTokenManager';
+import WhatsAppButton from '@/components/WhatsAppButton';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -32,7 +33,7 @@ export default async function QuoteDetailPage({
     where: { id, businessId },
     include: {
       customer: true,
-      business: { select: { regionCode: true, taxRegion: true, currency: true } },
+      business: { select: { regionCode: true, taxRegion: true, currency: true, name: true } },
     },
   });
   if (!quote) notFound();
@@ -91,6 +92,16 @@ export default async function QuoteDetailPage({
               <p className="text-xs text-zinc-500">
                 {[quote.customer.phone, quote.customer.address].filter(Boolean).join(' · ') || 'No contact details'}
               </p>
+              {/* wa.me chat with the customer — user taps to send from their
+                  own WhatsApp; Kivo never sends anything automatically. */}
+              <div className="mt-2">
+                <WhatsAppButton
+                  phone={quote.customer.phone}
+                  regionCode={quote.business.regionCode}
+                  message={`Namaste ${quote.customer.name}! ${quote.business.name ?? 'Hum'} ne aapke liye quote ${quote.number} (${quote.title}) banaya hai — kul ${formatMoney(quote.total, currency)}. Koi sawal ho to bas reply karein.`}
+                  label="WhatsApp"
+                />
+              </div>
             </div>
           </div>
           <p className="text-2xl font-bold text-zinc-900">{formatMoney(quote.total, currency)}</p>

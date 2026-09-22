@@ -18,6 +18,7 @@ import InvoiceActions from './InvoiceActions';
 import ShareTokenManager from '@/components/ShareTokenManager';
 import PrintButton from './PrintButton';
 import ReminderDraft from '@/components/ReminderDraft';
+import WhatsAppButton from '@/components/WhatsAppButton';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -72,7 +73,17 @@ export default async function InvoiceDetailPage({
         >
           <ArrowLeft size={14} /> Back to invoices
         </Link>
-        <PrintButton />
+        <div className="flex items-center gap-2 print:hidden">
+          {/* wa.me chat with the customer — user taps to send from their own
+              WhatsApp; Kivo never sends anything automatically. */}
+          <WhatsAppButton
+            phone={invoice.customer.phone}
+            regionCode={invoice.business.regionCode}
+            message={`Namaste ${invoice.customer.name}! ${invoice.business.name} se invoice ${invoice.number} (${formatMoney(invoice.total, currency)}) bheja gaya hai.`}
+            label="WhatsApp"
+          />
+          <PrintButton />
+        </div>
       </div>
 
       <PageHeader
