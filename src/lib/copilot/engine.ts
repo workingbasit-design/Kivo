@@ -212,8 +212,21 @@ export async function runCopilot(
       // today without telling the user was a real mis-parse ("25 ko" once
       // silently became "today"). When unsure, say so in the reply.
       const explicitDate = extractDate(message);
+      // Pronoun follow-ups ("usko kal kar do") name no service — carry the
+      // service forward from the most recent booking preview in history so
+      // the follow-up doesn't silently reset to "General Service".
+      let serviceTitle = extractServiceTitle(message);
+      if (!serviceTitle) {
+        for (let i = history.length - 1; i >= 0; i--) {
+          const m = history[i].content.match(/^Service:\s*(.+)$/m);
+          if (m && m[1].trim() && !/^general service$/i.test(m[1].trim())) {
+            serviceTitle = m[1].trim();
+            break;
+          }
+        }
+      }
       const draft: JobDraft = {
-        title: extractServiceTitle(message) ?? 'General Service',
+        title: serviceTitle ?? 'General Service',
         date: explicitDate ?? todayStr,
         time: extractTime(message),
         customerName: extractCustomerName(message) ?? followUpName ?? '',

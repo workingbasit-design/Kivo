@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "postinstall": "prisma skills sync || exit 0",
-    "test": "node --test 'src/lib/__tests__/*.test.mts'"
+    "test": "node --test --import ./src/lib/__tests__/register-loader.mjs 'src/lib/__tests__/*.test.mts'"
   },
   "dependencies": {
     "@ai-sdk/openai": "^0.0.34",

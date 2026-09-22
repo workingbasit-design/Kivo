@@ -141,52 +141,61 @@ export async function submitQuoteRequest(
   const phoneCheck = validateCustomerPhone(phone);
   if (!phoneCheck.ok) return { error: INVALID_PHONE_MESSAGE, values };
 
-  const matches = await findDirectoryMatches(serviceNeed, city, 5);
-  if (matches.length === 0) {
-    // No providers matched — save the request as an OPEN lead draft instead
-    // of dropping it. It becomes visible in the admin demand queue, and the
-    // requester gets a clear "saved" confirmation (never an ambiguous error).
-    await prisma.directoryRequest.create({
-      data: {
-        serviceNeed,
-        city,
-        area: area || null,
-        name,
-        phone,
-        phoneNorm: phoneCheck.digits,
-        details: details || null,
-        status: 'OPEN',
-      },
-    });
-    return { ok: true, unmatched: true, city };
-  }
-
-  const leadDetails = [
-    `Directory quote request — ${serviceNeed}`,
-    `City: ${city}${area ? ` (${area})` : ''}`,
-    details ? `Details: ${details}` : '',
-    'The customer asked via the Kivo directory. Reply only if you want the work — nothing was sent automatically.',
-  ]
-    .filter(Boolean)
-    .join('\n');
-
-  await prisma.$transaction(
-    matches.map((m) =>
-      prisma.lead.create({
+  // The public form must never crash the page: any unexpected failure
+  // (database hiccup, deploy cutover) becomes a friendly retry message.
+  try {
+    const matches = await findDirectoryMatches(serviceNeed, city, 5);
+    if (matches.length === 0) {
+      // No providers matched — save the request as an OPEN lead draft instead
+      // of dropping it. It becomes visible in the admin demand queue, and the
+      // requester gets a clear "saved" confirmation (never an ambiguous error).
+      await prisma.directoryRequest.create({
         data: {
+          serviceNeed,
+          city,
+          area: area || null,
           name,
           phone,
           phoneNorm: phoneCheck.digits,
-          details: leadDetails,
-          status: 'NEW',
-          source: 'Directory',
-          businessId: m.id,
+          details: details || null,
+          status: 'OPEN',
         },
-      })
-    )
-  );
+      });
+      return { ok: true, unmatched: true, city };
+    }
 
-  return { ok: true, businessNames: matches.map((m) => m.name) };
+    const leadDetails = [
+      `Directory quote request — ${serviceNeed}`,
+      `City: ${city}${area ? ` (${area})` : ''}`,
+      details ? `Details: ${details}` : '',
+      'The customer asked via the Kivo directory. Reply only if you want the work — nothing was sent automatically.',
+    ]
+      .filter(Boolean)
+      .join('\n');
+
+    await prisma.$transaction(
+      matches.map((m) =>
+        prisma.lead.create({
+          data: {
+            name,
+            phone,
+            phoneNorm: phoneCheck.digits,
+            details: leadDetails,
+            status: 'NEW',
+            source: 'Directory',
+            businessId: m.id,
+          },
+        })
+      )
+    );
+
+    return { ok: true, businessNames: matches.map((m) => m.name) };
+  } catch {
+    return {
+      error: 'Kuch gadbad ho gayi — your request could not be saved. Please try again in a minute.',
+      values,
+    };
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -229,15 +238,19 @@ export async function reportBusiness(
     return { error: 'Business not found.' };
   }
 
-  await prisma.directoryReport.create({
-    data: {
-      businessId: page.businessId,
-      reason: parsed.data.reason,
-      details: parsed.data.details || null,
-      reporterContact: parsed.data.reporterContact || null,
-      status: 'OPEN',
-    },
-  });
+  try {
+    await prisma.directoryReport.create({
+      data: {
+        businessId: page.businessId,
+        reason: parsed.data.reason,
+        details: parsed.data.details || null,
+        reporterContact: parsed.data.reporterContact || null,
+        status: 'OPEN',
+      },
+    });
+  } catch {
+    return { error: 'Report could not be saved — please try again in a minute.' };
+  }
 
   return { ok: true };
 }

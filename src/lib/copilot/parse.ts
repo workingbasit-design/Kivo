@@ -306,10 +306,13 @@ export function extractCustomerName(raw: string): string | null {
     return capitalizeWord(m1[1]);
   }
 
-  // English "for Priya" / "for Ramesh Kumar" — every token must look like a
-  // name part ("for the guy" is rejected via stopwords; a trailing time word
-  // as in "for Priya tomorrow" is dropped, keeping "Priya").
-  const mFor = text.match(/\bfor\s+([A-Za-z]{2,25}(?:\s+[A-Za-z]{2,25})?)(?=[\s,]|$)/i);
+  // English "for Priya" / "for Ramesh Kumar Singh" — up to three name words;
+  // every token must look like a name part ("for the guy" is rejected via
+  // stopwords; trailing time words as in "for Priya tomorrow morning" are
+  // dropped, keeping "Priya"). A name containing a filler word mid-phrase
+  // (e.g. "Nonexistent Person XYZ") is rejected rather than truncated —
+  // booking under a half-guessed name is worse than asking.
+  const mFor = text.match(/\bfor\s+([A-Za-z]{2,25}(?:\s+[A-Za-z]{2,25}){0,2})(?=[\s,]|$)/i);
   if (mFor) {
     const toks = mFor[1].trim().split(/\s+/);
     while (toks.length > 1 && NAME_STOPWORDS.has(toks[toks.length - 1].toLowerCase())) {
@@ -465,11 +468,15 @@ export function detectIntent(raw: string, followUpName: string | null = null): C
     ]);
   if (
     !isCancellation(text) &&
-    (hasStrongBookingVerb ||
+    ((hasStrongBookingVerb && !isQuestion) ||
       followUpBooking ||
       (hasKarDo && (hasService || hasWhen)) ||
       (hasEnglishBookingVerb && (hasService || hasWho || hasWhen) && !isQuestion) ||
-      (hasService && hasWho && !isQuestion))
+      (hasService && hasWho && !isQuestion) ||
+      // "25 ko bijli ka kaam 2000 me" — a service + a date (+ price) with no
+      // question is a booking, not a schedule query. Confirmation is always
+      // required, so a wrong guess here is cheap and correctable.
+      (hasService && hasWhen && !isQuestion))
   ) {
     return 'create_job';
   }
