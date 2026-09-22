@@ -23,4 +23,28 @@ body {
   button {
     @apply transition-transform duration-100 ease-out active:scale-[0.98];
   }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  ::selection {
+    background: #6329d4;
+    color: #fff;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}
+
+@layer components {
+  /* Visible keyboard focus for landing-page links/buttons (scoped so it never
+     doubles up with the app's own Tailwind focus rings). */
+  .landing-focus :is(a, button):focus-visible {
+    outline: 2px solid #6329d4;
+    outline-offset: 3px;
+  }
 }

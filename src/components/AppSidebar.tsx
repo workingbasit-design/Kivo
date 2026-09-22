@@ -84,7 +84,8 @@ export default function AppSidebar({
             <Link
               key={item.name}
               href={item.href}
-              className={`flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group ${
+              aria-current={isActive ? 'page' : undefined}
+              className={`flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70 ${
                 isActive
                   ? 'bg-[#6329d4] text-white shadow-sm'
                   : 'text-[#938b9f] hover:bg-[#2b243b] hover:text-white'
@@ -114,7 +115,7 @@ export default function AppSidebar({
       {/* User profile / Logout */}
       <div className="p-4 border-t border-[#2b243b] mt-auto">
         <form action={logout}>
-          <button className="flex items-center gap-3 px-3 py-2 text-[#938b9f] hover:bg-[#2b243b] hover:text-white transition-colors rounded-xl w-full text-left">
+          <button className="flex items-center gap-3 px-3 py-2 text-[#938b9f] hover:bg-[#2b243b] hover:text-white transition-colors rounded-xl w-full text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70">
             <div className="w-8 h-8 rounded-full bg-[#6329d4] text-white flex items-center justify-center text-sm font-bold shadow-inner shrink-0">
               {(user.name || user.email).charAt(0).toUpperCase()}
             </div>

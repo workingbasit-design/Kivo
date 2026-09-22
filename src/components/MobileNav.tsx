@@ -44,8 +44,9 @@ export default function MobileNav({ user }: { user: { name?: string | null; emai
         </Link>
         <button
           onClick={() => setOpen(!open)}
-          className="p-2 rounded-lg hover:bg-[#2b243b] transition-colors"
+          className="p-2 rounded-lg hover:bg-[#2b243b] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70"
           aria-label={open ? 'Close menu' : 'Open menu'}
+          aria-expanded={open}
         >
           {open ? <X size={20} /> : <Menu size={20} />}
         </button>
@@ -61,7 +62,8 @@ export default function MobileNav({ user }: { user: { name?: string | null; emai
                 key={item.name}
                 href={item.href}
                 onClick={() => setOpen(false)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                aria-current={isActive ? 'page' : undefined}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70 ${
                   isActive ? 'bg-[#6329d4] text-white' : 'text-[#b8b0c9] hover:bg-[#2b243b]'
                 }`}
               >
@@ -73,7 +75,7 @@ export default function MobileNav({ user }: { user: { name?: string | null; emai
           <form action={logout} className="pt-2 border-t border-[#2b243b] mt-2">
             <button
               type="submit"
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-[#b8b0c9] hover:bg-[#2b243b] w-full"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-[#b8b0c9] hover:bg-[#2b243b] w-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70"
             >
               <LogOut size={18} />
               Log out ({user.name || user.email})
