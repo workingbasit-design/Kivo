@@ -9,27 +9,28 @@ import {
   UserPlus, Menu, X, LogOut, Timer, Megaphone, Repeat, Route, CalendarCheck
 } from 'lucide-react';
 import { logout } from '@/app/actions/auth';
+import { t, type Locale } from '@/lib/i18n';
 
 const navItems = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Schedule', href: '/schedule', icon: Calendar },
-  { name: 'Leads', href: '/leads', icon: UserPlus },
-  { name: 'Jobs', href: '/jobs', icon: Briefcase },
-  { name: 'Recurring', href: '/recurring', icon: Repeat },
-  { name: 'Routes', href: '/routes', icon: Route },
-  { name: 'Timesheets', href: '/timesheets', icon: Timer },
-  { name: 'Quotes', href: '/quotes', icon: ClipboardList },
-  { name: 'Invoices', href: '/invoices', icon: FileText },
-  { name: 'Customers', href: '/customers', icon: Users },
-  { name: 'Price book', href: '/pricebook', icon: Tag },
-  { name: 'Reviews', href: '/reviews', icon: Star },
-  { name: 'Marketing', href: '/marketing', icon: Megaphone },
-  { name: 'Online booking', href: '/settings/booking', icon: CalendarCheck },
-  { name: 'Reports', href: '/reports', icon: PieChart },
-  { name: 'Settings', href: '/settings', icon: Settings },
+  { nameKey: 'nav.dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { nameKey: 'nav.schedule', href: '/schedule', icon: Calendar },
+  { nameKey: 'nav.leads', href: '/leads', icon: UserPlus },
+  { nameKey: 'nav.jobs', href: '/jobs', icon: Briefcase },
+  { nameKey: 'nav.recurring', href: '/recurring', icon: Repeat },
+  { nameKey: 'nav.routes', href: '/routes', icon: Route },
+  { nameKey: 'nav.timesheets', href: '/timesheets', icon: Timer },
+  { nameKey: 'nav.quotes', href: '/quotes', icon: ClipboardList },
+  { nameKey: 'nav.invoices', href: '/invoices', icon: FileText },
+  { nameKey: 'nav.customers', href: '/customers', icon: Users },
+  { nameKey: 'nav.pricebook', href: '/pricebook', icon: Tag },
+  { nameKey: 'nav.reviews', href: '/reviews', icon: Star },
+  { nameKey: 'nav.marketing', href: '/marketing', icon: Megaphone },
+  { nameKey: 'nav.onlineBooking', href: '/settings/booking', icon: CalendarCheck },
+  { nameKey: 'nav.reports', href: '/reports', icon: PieChart },
+  { nameKey: 'nav.settings', href: '/settings', icon: Settings },
 ];
 
-export default function MobileNav({ user }: { user: { name?: string | null; email: string } }) {
+export default function MobileNav({ user, locale = 'en' }: { user: { name?: string | null; email: string }; locale?: Locale }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -59,7 +60,7 @@ export default function MobileNav({ user }: { user: { name?: string | null; emai
               pathname === item.href || pathname.startsWith(item.href + '/');
             return (
               <Link
-                key={item.name}
+                key={item.nameKey}
                 href={item.href}
                 onClick={() => setOpen(false)}
                 aria-current={isActive ? 'page' : undefined}
@@ -68,7 +69,7 @@ export default function MobileNav({ user }: { user: { name?: string | null; emai
                 }`}
               >
                 <item.icon size={18} />
-                {item.name}
+                {t(locale, item.nameKey)}
               </Link>
             );
           })}
@@ -78,7 +79,7 @@ export default function MobileNav({ user }: { user: { name?: string | null; emai
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-[#b8b0c9] hover:bg-[#2b243b] w-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70"
             >
               <LogOut size={18} />
-              Log out ({user.name || user.email})
+              {t(locale, 'nav.logout')} ({user.name || user.email})
             </button>
           </form>
         </nav>

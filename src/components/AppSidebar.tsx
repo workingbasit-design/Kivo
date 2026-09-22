@@ -10,25 +10,26 @@ import {
 } from 'lucide-react';
 import { logout } from '@/app/actions/auth';
 import { formatMoney } from '@/lib/money';
+import { t, type Locale } from '@/lib/i18n';
 
 const navItems = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Schedule', href: '/schedule', icon: Calendar },
-  { name: 'Leads', href: '/leads', icon: UserPlus, badgeKey: 'leads' },
-  { name: 'Jobs', href: '/jobs', icon: Briefcase },
-  { name: 'Recurring', href: '/recurring', icon: Repeat },
-  { name: 'Routes', href: '/routes', icon: Route },
-  { name: 'Timesheets', href: '/timesheets', icon: Timer },
-  { name: 'Quotes', href: '/quotes', icon: ClipboardList },
-  { name: 'Invoices', href: '/invoices', icon: FileText },
-  { name: 'Customers', href: '/customers', icon: Users },
-  { name: 'Team', href: '/settings/team', icon: Users },
-  { name: 'Price book', href: '/pricebook', icon: Tag },
-  { name: 'Reviews', href: '/reviews', icon: Star },
-  { name: 'Marketing', href: '/marketing', icon: Megaphone },
-  { name: 'Online booking', href: '/settings/booking', icon: CalendarCheck },
-  { name: 'Reports', href: '/reports', icon: PieChart },
-  { name: 'Settings', href: '/settings', icon: Settings },
+  { nameKey: 'nav.dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { nameKey: 'nav.schedule', href: '/schedule', icon: Calendar },
+  { nameKey: 'nav.leads', href: '/leads', icon: UserPlus, badgeKey: 'leads' },
+  { nameKey: 'nav.jobs', href: '/jobs', icon: Briefcase },
+  { nameKey: 'nav.recurring', href: '/recurring', icon: Repeat },
+  { nameKey: 'nav.routes', href: '/routes', icon: Route },
+  { nameKey: 'nav.timesheets', href: '/timesheets', icon: Timer },
+  { nameKey: 'nav.quotes', href: '/quotes', icon: ClipboardList },
+  { nameKey: 'nav.invoices', href: '/invoices', icon: FileText },
+  { nameKey: 'nav.customers', href: '/customers', icon: Users },
+  { nameKey: 'nav.team', href: '/settings/team', icon: Users },
+  { nameKey: 'nav.pricebook', href: '/pricebook', icon: Tag },
+  { nameKey: 'nav.reviews', href: '/reviews', icon: Star },
+  { nameKey: 'nav.marketing', href: '/marketing', icon: Megaphone },
+  { nameKey: 'nav.onlineBooking', href: '/settings/booking', icon: CalendarCheck },
+  { nameKey: 'nav.reports', href: '/reports', icon: PieChart },
+  { nameKey: 'nav.settings', href: '/settings', icon: Settings },
 ];
 
 export interface SidebarStats {
@@ -41,9 +42,11 @@ export interface SidebarStats {
 export default function AppSidebar({
   user,
   stats,
+  locale = 'en',
 }: {
   user: { name?: string | null; email: string };
   stats: SidebarStats;
+  locale?: Locale;
 }) {
   const pathname = usePathname();
 
@@ -80,9 +83,10 @@ export default function AppSidebar({
             (pathname === '/' && item.href === '/dashboard');
           const badge =
             item.badgeKey === 'leads' && stats.newLeads > 0 ? stats.newLeads : null;
+          const label = t(locale, item.nameKey);
           return (
             <Link
-              key={item.name}
+              key={item.nameKey}
               href={item.href}
               aria-current={isActive ? 'page' : undefined}
               className={`flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70 ${
@@ -98,7 +102,7 @@ export default function AppSidebar({
                   className={isActive ? 'text-white' : 'text-[#938b9f] group-hover:text-white'}
                 />
                 <span className={`text-[13px] font-medium ${isActive ? 'font-semibold' : ''}`}>
-                  {item.name}
+                  {label}
                 </span>
               </div>
 
@@ -122,7 +126,7 @@ export default function AppSidebar({
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold text-white truncate">{user.name || user.email}</p>
               <p className="text-[10px] text-[#938b9f] truncate flex items-center gap-1">
-                <LogOut size={10} /> Log out
+                <LogOut size={10} /> {t(locale, 'nav.logout')}
               </p>
             </div>
           </button>

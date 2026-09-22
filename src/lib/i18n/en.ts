@@ -41,6 +41,10 @@ const en: Dict = {
     reviews: 'Reviews',
     settings: 'Settings',
     directory: 'Directory',
+    recurring: 'Recurring',
+    routes: 'Routes',
+    onlineBooking: 'Online booking',
+    logout: 'Log out',
   },
   jobs: {
     title: 'Jobs',

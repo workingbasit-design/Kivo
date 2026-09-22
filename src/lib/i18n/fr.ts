@@ -40,6 +40,10 @@ const fr: Dictionary = {
     reviews: 'Avis',
     settings: 'Paramètres',
     directory: 'Répertoire',
+    recurring: 'Récurrents',
+    routes: 'Itinéraires',
+    onlineBooking: 'Réservation en ligne',
+    logout: 'Déconnexion',
   },
   jobs: {
     title: 'Travaux',
