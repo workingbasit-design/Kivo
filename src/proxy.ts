@@ -16,9 +16,7 @@ export function proxy(request: NextRequest) {
   const sessionCookie = request.cookies.get('kivo_session');
 
   const isPublic =
-    PUBLIC_PATHS.some(
-      (p) => pathname === p || pathname.startsWith('/api/copilot')
-    ) ||
+    PUBLIC_PATHS.some((p) => pathname === p) ||
     PUBLIC_EXACT_EXTRA.some((p) => pathname === p) ||
     PUBLIC_PREFIXES.some((p) => pathname.startsWith(p));
 
