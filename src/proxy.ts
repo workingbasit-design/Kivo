@@ -47,7 +47,8 @@ export const config = {
      * Match all request paths except:
      * - _next/static, _next/image (static files)
      * - favicon.ico, sitemap.xml, robots.txt (metadata)
+     * - manifest.webmanifest, sw.js (PWA: browsers fetch these without a session)
      */
-    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)',
+    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|manifest.webmanifest|sw.js).*)',
   ],
 };
