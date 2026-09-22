@@ -1,0 +1,33 @@
+# dependencies
+node_modules/
+node_modules.bak/
+.pnp
+.pnp.*
+
+# next.js
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# prisma / database (dev sqlite db, never commit)
+prisma/dev.db
+prisma/dev.db-journal
+*.db
+*.db-journal
+
+# env / secrets (never commit)
+.env
+.env*.local
+.env.production
+
+# logs
+*.log
+npm-debug.log*
+
+# os
+.DS_Store
+Thumbs.db
+
+# test evidence (large screenshots live outside the repo)
+/kivo-shots/

@@ -1,0 +1,132 @@
+"use client";
+
+import React from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import {
+  LayoutDashboard, Calendar, Users, Briefcase, FileText,
+  Settings, Sparkles, ClipboardList,
+  Tag, Star, PieChart, UserPlus, LogOut, Timer, Megaphone, Repeat, Route, CalendarCheck
+} from 'lucide-react';
+import { logout } from '@/app/actions/auth';
+import { formatMoney } from '@/lib/money';
+
+const navItems = [
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Schedule', href: '/schedule', icon: Calendar },
+  { name: 'Leads', href: '/leads', icon: UserPlus, badgeKey: 'leads' },
+  { name: 'Jobs', href: '/jobs', icon: Briefcase },
+  { name: 'Recurring', href: '/recurring', icon: Repeat },
+  { name: 'Routes', href: '/routes', icon: Route },
+  { name: 'Timesheets', href: '/timesheets', icon: Timer },
+  { name: 'Quotes', href: '/quotes', icon: ClipboardList },
+  { name: 'Invoices', href: '/invoices', icon: FileText },
+  { name: 'Customers', href: '/customers', icon: Users },
+  { name: 'Team', href: '/settings/team', icon: Users },
+  { name: 'Price book', href: '/pricebook', icon: Tag },
+  { name: 'Reviews', href: '/reviews', icon: Star },
+  { name: 'Marketing', href: '/marketing', icon: Megaphone },
+  { name: 'Online booking', href: '/settings/booking', icon: CalendarCheck },
+  { name: 'Reports', href: '/reports', icon: PieChart },
+  { name: 'Settings', href: '/settings', icon: Settings },
+];
+
+export interface SidebarStats {
+  bookedToday: number;
+  jobsLeftToday: number;
+  newLeads: number;
+  currency?: string;
+}
+
+export default function AppSidebar({
+  user,
+  stats,
+}: {
+  user: { name?: string | null; email: string };
+  stats: SidebarStats;
+}) {
+  const pathname = usePathname();
+
+  return (
+    <aside className="hidden md:flex flex-col w-64 bg-[#17122b] text-white min-h-screen sticky top-0 font-sans shrink-0">
+      {/* Header / Logo */}
+      <div className="p-6 pb-2">
+        <Link href="/dashboard" className="flex items-center gap-3 mb-8">
+          <div className="w-8 h-8 rounded-lg bg-[#6329d4] flex items-center justify-center">
+            <Sparkles className="w-5 h-5 text-white" />
+          </div>
+          <span className="text-xl font-bold tracking-tight text-white">Kivo</span>
+        </Link>
+
+        <div className="mb-4">
+          <p className="text-[10px] uppercase tracking-wider text-[#938b9f] font-semibold mb-1">
+            Today, in one view
+          </p>
+          <div className="text-2xl font-bold text-white tracking-tight">
+            {formatMoney(stats.bookedToday, stats.currency)}
+          </div>
+          <p className="text-xs text-[#938b9f] mt-1">
+            booked today · {stats.jobsLeftToday} job{stats.jobsLeftToday === 1 ? '' : 's'} left
+          </p>
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 px-3 space-y-1 overflow-y-auto pb-6">
+        {navItems.map((item) => {
+          const isActive =
+            pathname === item.href ||
+            pathname.startsWith(item.href + '/') ||
+            (pathname === '/' && item.href === '/dashboard');
+          const badge =
+            item.badgeKey === 'leads' && stats.newLeads > 0 ? stats.newLeads : null;
+          return (
+            <Link
+              key={item.name}
+              href={item.href}
+              className={`flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group ${
+                isActive
+                  ? 'bg-[#6329d4] text-white shadow-sm'
+                  : 'text-[#938b9f] hover:bg-[#2b243b] hover:text-white'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <item.icon
+                  size={18}
+                  strokeWidth={2}
+                  className={isActive ? 'text-white' : 'text-[#938b9f] group-hover:text-white'}
+                />
+                <span className={`text-[13px] font-medium ${isActive ? 'font-semibold' : ''}`}>
+                  {item.name}
+                </span>
+              </div>
+
+              {badge !== null && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-400 text-zinc-900">
+                  {badge}
+                </span>
+              )}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* User profile / Logout */}
+      <div className="p-4 border-t border-[#2b243b] mt-auto">
+        <form action={logout}>
+          <button className="flex items-center gap-3 px-3 py-2 text-[#938b9f] hover:bg-[#2b243b] hover:text-white transition-colors rounded-xl w-full text-left">
+            <div className="w-8 h-8 rounded-full bg-[#6329d4] text-white flex items-center justify-center text-sm font-bold shadow-inner shrink-0">
+              {(user.name || user.email).charAt(0).toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold text-white truncate">{user.name || user.email}</p>
+              <p className="text-[10px] text-[#938b9f] truncate flex items-center gap-1">
+                <LogOut size={10} /> Log out
+              </p>
+            </div>
+          </button>
+        </form>
+      </div>
+    </aside>
+  );
+}

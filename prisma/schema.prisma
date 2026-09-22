@@ -1,0 +1,359 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+
+model User {
+  id             String     @id @default(cuid())
+  email          String     @unique
+  passwordHash   String
+  name           String?
+  role           String     @default("ADMIN")
+  business       Business?  @relation(fields: [businessId], references: [id])
+  businessId     String?
+  sessions       Session[]
+  assignedJobs   Job[]      @relation("JobAssignedTo")
+  jobNotes       JobNote[]  @relation("JobNoteAuthor")
+  jobPhotos      JobPhoto[] @relation("JobPhotoUploadedBy")
+  timeEntries    TimeEntry[]
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Business {
+  id         String       @id @default(cuid())
+  name       String
+  regionCode String       @default("IN")
+  currency   String       @default("INR")
+  taxRegion  String?
+  phone      String?
+  whatsappNumber String?  // Preferred number for WhatsApp wa.me links; falls back to phone
+  workingHours   String?  // JSON string: {"mon":["09:00","18:00"],"tue":[...],...}; null = not configured
+  address    String?
+  gstin      String?
+  upiId      String?
+  logoUrl    String?
+  users      User[]
+  customers  Customer[]
+  jobs       Job[]
+  services   Service[]
+  invoices   Invoice[]
+  shareTokens ShareToken[]
+  messageLogs MessageLog[]
+  communications Communication[]
+  leads      Lead[]
+  quotes     Quote[]
+  reviews    Review[]
+  recurringJobs RecurringJob[]
+  timeEntries TimeEntry[]
+  bookingPage BookingPage?
+  directoryOptIn       Boolean @default(true)  // show business in the public Kivo directory
+  directoryHideAddress Boolean @default(true)  // show area/city only, not the exact address
+  directoryReports     DirectoryReport[]
+  campaigns  Campaign[]
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+}
+
+model Customer {
+  id         String   @id @default(cuid())
+  name       String
+  phone      String?
+  phoneNorm  String?  // E.164 digits (no "+") for matching + WhatsApp links; `phone` keeps the user's formatting
+  email      String?
+  address    String?
+  notes      String?
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  jobs       Job[]
+  invoices   Invoice[]
+  quotes     Quote[]
+  reviews    Review[]
+  recurringJobs RecurringJob[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Service {
+  id         String   @id @default(cuid())
+  name       String
+  price      Float
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Job {
+  id           String     @id @default(cuid())
+  title        String
+  date         DateTime
+  time         String?
+  address      String?
+  price        Float
+  status       String     // NEW, SCHEDULED, IN PROGRESS, COMPLETED, PAID, CANCELLED
+  notes        String?
+  technician   String?
+  assignedToId String?
+  assignedTo   User?      @relation("JobAssignedTo", fields: [assignedToId], references: [id])
+  customerId   String
+  customer     Customer   @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  businessId   String
+  business     Business   @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  recurringJobId String?
+  recurringJob RecurringJob? @relation(fields: [recurringJobId], references: [id], onDelete: SetNull)
+  timeEntries  TimeEntry[]
+  jobNotes     JobNote[]
+  jobPhotos    JobPhoto[]
+  idempotencyKey String? @unique // booking-confirm dedupe key (UUID); null for jobs not created via booking
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  // Backstop for recurring auto-generation idempotency: one job per plan per day.
+  // NULL recurringJobId values never conflict, so manual jobs are unaffected.
+  @@unique([recurringJobId, date])
+}
+
+model Invoice {
+  id           String    @id @default(cuid())
+  number       String
+  date         DateTime
+  subtotal     Float     @default(0)
+  taxRate      Float     @default(0)
+  taxType      String?   // "GST", "HST", "PST", "CGST", "SGST", "IGST"
+  taxAmount    Float     @default(0)
+  total        Float
+  status       String    // UNPAID, PARTIALLY PAID, PAID
+  notes        String?
+  customerId   String
+  customer     Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  businessId   String
+  business     Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  payments     Payment[]
+  lineItems    InvoiceLineItem[]
+  shareTokens  ShareToken[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+// Structured line items for an invoice. Items were previously stored as
+// structured text in `notes`; this table is the canonical source now.
+// The original notes text is preserved on the invoice (data migration).
+model InvoiceLineItem {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  description String
+  qty         Float
+  unitPrice   Float
+  position    Int      // display order
+  createdAt   DateTime @default(now())
+}
+
+// Revocable, expirable capability tokens for public quote/invoice portals.
+// The public pages (/q/[token], /i/[token]) resolve through this table only —
+// raw cuid ids never work as public URLs. A token is usable only when
+// revokedAt is null and (expiresAt is null or in the future).
+model ShareToken {
+  id         String    @id @default(cuid())
+  token      String    @unique
+  type       String    // "QUOTE" | "INVOICE"
+  quoteId    String?
+  quote      Quote?    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  invoiceId  String?
+  invoice    Invoice?  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  businessId String
+  business   Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  expiresAt  DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+}
+
+model Payment {
+  id            String    @id @default(cuid())
+  amount        Float
+  provider      String    // "STRIPE", "RAZORPAY", "CASH", "CHEQUE"
+  transactionId String?
+  status        String    // "PENDING", "COMPLETED", "FAILED"
+  invoiceId     String
+  invoice       Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model MessageLog {
+  id         String   @id @default(cuid())
+  type       String   // "SMS", "WHATSAPP", "EMAIL"
+  recipient  String
+  content    String
+  status     String   // "SENT", "FAILED", "DELIVERED"
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+}
+
+model Communication {
+  id           String   @id @default(cuid())
+  type         String   // "CALL", "WHATSAPP", "SMS"
+  contactName  String
+  contactPhone String
+  status       String   // "WAITING", "REPLIED", "RESOLVED"
+  waitingSince DateTime @default(now())
+  content      String?  // Message body or call summary
+  jobCategory  String?  // e.g. "AC repair"
+  estValue     Float?   // Estimated value
+  businessId   String
+  business     Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model JobNote {
+  id        String   @id @default(cuid())
+  content   String
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation("JobNoteAuthor", fields: [authorId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model JobPhoto {
+  id           String   @id @default(cuid())
+  url          String
+  caption      String?
+  jobId        String
+  job          Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  uploadedById String
+  uploadedBy   User     @relation("JobPhotoUploadedBy", fields: [uploadedById], references: [id])
+  createdAt    DateTime @default(now())
+}
+
+model Lead {
+  id         String   @id @default(cuid())
+  name       String
+  phone      String?
+  phoneNorm  String?  // E.164 digits (no "+") for matching + WhatsApp links; `phone` keeps the user's formatting
+  email      String?
+  details    String?
+  status     String   // "NEW", "CONTACTED", "CONVERTED"
+  source     String?  // e.g., "WhatsApp", "Phone", "Website"
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Quote {
+  id         String   @id @default(cuid())
+  number     String
+  title      String
+  total      Float
+  status     String   // "DRAFT", "SENT", "APPROVED", "DECLINED"
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  shareTokens ShareToken[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  rating     Int      // 1-5
+  comment    String?
+  source     String?  // e.g., "Google", "WhatsApp", "Direct"
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model RecurringJob {
+  id          String   @id @default(cuid())
+  title       String
+  frequency   String   // WEEKLY, BIWEEKLY, MONTHLY
+  nextRun     DateTime
+  time        String?
+  address     String?
+  price       Float
+  notes       String?
+  active      Boolean  @default(true)
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  businessId  String
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  jobs        Job[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model TimeEntry {
+  id         String    @id @default(cuid())
+  clockIn    DateTime
+  clockOut   DateTime?
+  notes      String?
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobId      String?
+  job        Job?      @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  businessId String
+  business   Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model BookingPage {
+  id         String   @id @default(cuid())
+  slug       String   @unique
+  enabled    Boolean  @default(true)
+  headline   String?
+  intro      String?
+  businessId String   @unique
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Campaign {
+  id         String   @id @default(cuid())
+  name       String
+  subject    String
+  body       String
+  audience   String   // ALL_CUSTOMERS, WITH_UNPAID, RECENT_JOBS
+  status     String   // DRAFT, QUEUED, SENT
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model DirectoryReport {
+  id              String   @id @default(cuid())
+  businessId      String
+  business        Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  reason          String   // e.g. "spam", "fake", "wrong-info", "other"
+  details         String?
+  reporterContact String?
+  status          String   @default("OPEN") // OPEN, REVIEWED, DISMISSED
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([businessId])
+  @@index([status])
+}

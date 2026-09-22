@@ -1,0 +1,461 @@
+'use server';
+
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
+import { z } from 'zod';
+import { prisma } from '@/lib/prisma';
+import { requireAuth } from '@/lib/auth';
+import { quoteSchema, QUOTE_STATUSES } from '@/lib/validations';
+import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { getTaxConfig, calcTax } from '@/lib/tax';
+import {
+  getActiveShareToken,
+  issueShareToken,
+  revokeShareTokens,
+  setShareTokenExpiry,
+  resolveShareToken,
+} from '@/lib/share';
+
+export type ActionResult = { error?: string; ok?: boolean; id?: string };
+
+const lineItemSchema = z.object({
+  desc: z.string().trim().min(1, 'Item description is required').max(200),
+  qty: z.coerce.number().min(0.01, 'Qty must be positive').max(100000),
+  rate: z.coerce.number().min(0, "Rate can't be negative").max(10_000_000),
+});
+
+type LineItem = z.infer<typeof lineItemSchema>;
+
+async function clientKey(prefix: string): Promise<string> {
+  const h = await headers();
+  const ip =
+    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    h.get('x-real-ip') ||
+    'unknown';
+  return `${prefix}:${ip}`;
+}
+
+function checkLimit(key: string): ActionResult | null {
+  const rl = rateLimit(key, ACTION_LIMIT);
+  if (!rl.ok) {
+    const secs = Math.max(1, Math.ceil(rl.retryAfterMs / 1000));
+    return { error: `Too many requests. Try again in ${secs}s.` };
+  }
+  return null;
+}
+
+/** Next Q-0001 style number, scoped per business, retry-safe. */
+async function nextQuoteNumber(businessId: string): Promise<string> {
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const existing = await prisma.quote.findMany({
+      where: { businessId },
+      select: { number: true },
+    });
+    let max = 0;
+    for (const r of existing) {
+      const m = /^Q-(\d+)$/.exec(r.number);
+      if (m) max = Math.max(max, parseInt(m[1], 10));
+    }
+    const number = `Q-${String(max + 1 + attempt).padStart(4, '0')}`;
+    const clash = await prisma.quote.findFirst({
+      where: { businessId, number },
+      select: { id: true },
+    });
+    if (!clash) return number;
+  }
+  // Fallback: timestamp-based, guaranteed unique.
+  return `Q-${Date.now().toString().slice(-6)}`;
+}
+
+function parseLineItems(raw: string | null): { items?: LineItem[]; error?: string } {
+  if (!raw) return { items: [] };
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return { error: 'Invalid line items.' };
+  }
+  if (!Array.isArray(parsed) || parsed.length === 0) {
+    return { error: 'Add at least one line item.' };
+  }
+  if (parsed.length > 100) return { error: 'Too many line items (max 100).' };
+  const items: LineItem[] = [];
+  for (const row of parsed) {
+    const r = lineItemSchema.safeParse(row);
+    if (!r.success) return { error: r.error.issues[0]?.message ?? 'Invalid line item.' };
+    items.push(r.data);
+  }
+  return { items };
+}
+
+async function ownedQuote(businessId: string, id: string) {
+  return prisma.quote.findFirst({
+    where: { id, businessId },
+    include: { customer: true },
+  });
+}
+
+/**
+ * Create a quote. Line items come in as JSON; the server recomputes the
+ * subtotal and adds tax from the business's region settings (never trusts
+ * client math), so the stored total is tax-inclusive.
+ */
+export async function createQuote(
+  _prev: ActionResult,
+  formData: FormData
+): Promise<ActionResult> {
+  const limited = checkLimit(await clientKey('quote:create'));
+  if (limited) return limited;
+
+  let businessId: string;
+  try {
+    ({ businessId } = await requireAuth());
+  } catch {
+    return { error: 'Please log in again.' };
+  }
+
+  const { items, error: itemsError } = parseLineItems(
+    formData.get('itemsJson') as string | null
+  );
+  if (itemsError || !items) return { error: itemsError ?? 'Invalid line items.' };
+
+  // Server-side money math — the single source of truth. Tax comes from the
+  // business's region settings, so the quote total is tax-inclusive.
+  const round2 = (n: number) => Math.round(n * 100) / 100;
+  const business = await prisma.business.findUnique({
+    where: { id: businessId },
+    select: { regionCode: true, taxRegion: true },
+  });
+  const taxConfig = getTaxConfig(business?.regionCode, business?.taxRegion);
+  const subtotal = round2(items.reduce((s, i) => s + i.qty * i.rate, 0));
+  const { taxAmount } = calcTax(subtotal, taxConfig);
+  const total = round2(subtotal + taxAmount);
+
+  const parsed = quoteSchema.safeParse({
+    title: formData.get('title'),
+    customerId: formData.get('customerId'),
+    total,
+    status: 'DRAFT',
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? 'Invalid quote details.' };
+  }
+
+  // Verify the customer belongs to this business.
+  const customer = await prisma.customer.findFirst({
+    where: { id: parsed.data.customerId, businessId },
+    select: { id: true },
+  });
+  if (!customer) return { error: 'Customer not found.' };
+
+  const number = await nextQuoteNumber(businessId);
+
+  const quote = await prisma.quote.create({
+    data: {
+      number,
+      title: parsed.data.title,
+      total,
+      status: 'DRAFT',
+      customerId: customer.id,
+      businessId,
+    },
+  });
+
+  revalidatePath('/quotes');
+  redirect(`/quotes/${quote.id}`);
+}
+
+const QUOTE_TRANSITIONS: Record<string, string[]> = {
+  DRAFT: ['SENT', 'DECLINED'],
+  SENT: ['DRAFT', 'APPROVED', 'DECLINED'],
+  APPROVED: [],
+  DECLINED: ['DRAFT'],
+};
+
+/** Move a quote through DRAFT → SENT → APPROVED / DECLINED. */
+export async function updateQuoteStatus(
+  _prev: ActionResult,
+  formData: FormData
+): Promise<ActionResult> {
+  const limited = checkLimit(await clientKey('quote:status'));
+  if (limited) return limited;
+
+  let businessId: string;
+  try {
+    ({ businessId } = await requireAuth());
+  } catch {
+    return { error: 'Please log in again.' };
+  }
+
+  const id = String(formData.get('id') ?? '');
+  const status = String(formData.get('status') ?? '');
+  if (!QUOTE_STATUSES.includes(status as (typeof QUOTE_STATUSES)[number])) {
+    return { error: 'Invalid status.' };
+  }
+
+  const quote = await ownedQuote(businessId, id);
+  if (!quote) return { error: 'Quote not found.' };
+
+  const allowed = QUOTE_TRANSITIONS[quote.status] ?? [];
+  if (!allowed.includes(status)) {
+    return { error: `Can't move quote from ${quote.status} to ${status}.` };
+  }
+
+  await prisma.quote.update({ where: { id }, data: { status } });
+  revalidatePath('/quotes');
+  revalidatePath(`/quotes/${id}`);
+  return { ok: true };
+}
+
+/** Convert an APPROVED quote into a scheduled job. */
+export async function convertQuoteToJob(
+  _prev: ActionResult,
+  formData: FormData
+): Promise<ActionResult> {
+  const limited = checkLimit(await clientKey('quote:convert'));
+  if (limited) return limited;
+
+  let businessId: string;
+  try {
+    ({ businessId } = await requireAuth());
+  } catch {
+    return { error: 'Please log in again.' };
+  }
+
+  const id = String(formData.get('id') ?? '');
+  const quote = await ownedQuote(businessId, id);
+  if (!quote) return { error: 'Quote not found.' };
+  if (quote.status !== 'APPROVED') {
+    return { error: 'Only approved quotes can be converted to jobs.' };
+  }
+
+  const job = await prisma.job.create({
+    data: {
+      title: quote.title,
+      date: new Date(),
+      price: quote.total,
+      status: 'SCHEDULED',
+      notes: `Converted from quote ${quote.number}.`,
+      customerId: quote.customerId,
+      businessId,
+    },
+  });
+
+  revalidatePath('/jobs');
+  revalidatePath('/schedule');
+  redirect(`/jobs/${job.id}`);
+}
+
+/** Delete a quote (drafts/sent/declined only — approved quotes stay as records). */
+export async function deleteQuote(
+  _prev: ActionResult,
+  formData: FormData
+): Promise<ActionResult> {
+  const limited = checkLimit(await clientKey('quote:delete'));
+  if (limited) return limited;
+
+  let businessId: string;
+  try {
+    ({ businessId } = await requireAuth());
+  } catch {
+    return { error: 'Please log in again.' };
+  }
+
+  const id = String(formData.get('id') ?? '');
+  const quote = await ownedQuote(businessId, id);
+  if (!quote) return { error: 'Quote not found.' };
+  if (quote.status === 'APPROVED') {
+    return { error: 'Approved quotes are kept as records and can\'t be deleted.' };
+  }
+
+  await prisma.quote.delete({ where: { id } });
+  revalidatePath('/quotes');
+  redirect('/quotes');
+}
+
+/* ------------------------------------------------------------------ */
+/* Public share links (revocable, expirable tokens)                    */
+/* ------------------------------------------------------------------ */
+
+export type ShareLinkState = {
+  id: string;
+  token: string;
+  expiresAt: string | null; // YYYY-MM-DD or null
+} | null;
+
+/** Parse an optional YYYY-MM-DD expiry. 'invalid' when in the past. */
+function parseExpiryInput(
+  raw: FormDataEntryValue | null
+): Date | null | 'invalid' {
+  const s = String(raw ?? '').trim();
+  if (!s) return null;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return 'invalid';
+  const d = new Date(`${s}T23:59:59`);
+  if (Number.isNaN(d.getTime()) || d.getTime() <= Date.now()) return 'invalid';
+  return d;
+}
+
+/** Current usable share token for a quote, for the detail-page UI. */
+export async function getQuoteShareState(
+  quoteId: string
+): Promise<ShareLinkState> {
+  const { businessId } = await requireAuth();
+  const rec = await getActiveShareToken(businessId, 'QUOTE', { quoteId });
+  if (!rec) return null;
+  return {
+    id: rec.id,
+    token: rec.token,
+    expiresAt: rec.expiresAt ? rec.expiresAt.toISOString().slice(0, 10) : null,
+  };
+}
+
+/**
+ * Create (or regenerate) the public share link for a quote.
+ * Regenerating revokes the previous token immediately.
+ */
+export async function regenerateQuoteShareLink(
+  _prev: ActionResult,
+  formData: FormData
+): Promise<ActionResult & { token?: string; tokenId?: string }> {
+  const limited = checkLimit(await clientKey('quote:share'));
+  if (limited) return limited;
+
+  let businessId: string;
+  try {
+    ({ businessId } = await requireAuth());
+  } catch {
+    return { error: 'Please log in again.' };
+  }
+
+  const quoteId = String(formData.get('quoteId') ?? '');
+  const quote = await prisma.quote.findFirst({
+    where: { id: quoteId, businessId },
+    select: { id: true },
+  });
+  if (!quote) return { error: 'Quote not found.' };
+
+  const expiresAt = parseExpiryInput(formData.get('expiresAt'));
+  if (expiresAt === 'invalid') {
+    return { error: 'Expiry date must be a valid future date.' };
+  }
+
+  const rec = await issueShareToken(businessId, 'QUOTE', { quoteId }, expiresAt);
+  revalidatePath(`/quotes/${quoteId}`);
+  return { ok: true, token: rec.token, tokenId: rec.id };
+}
+
+/** Revoke the quote's share link(s). The public URL stops working at once. */
+export async function revokeQuoteShareLink(
+  _prev: ActionResult,
+  formData: FormData
+): Promise<ActionResult> {
+  const limited = checkLimit(await clientKey('quote:share'));
+  if (limited) return limited;
+
+  let businessId: string;
+  try {
+    ({ businessId } = await requireAuth());
+  } catch {
+    return { error: 'Please log in again.' };
+  }
+
+  const quoteId = String(formData.get('quoteId') ?? '');
+  const quote = await prisma.quote.findFirst({
+    where: { id: quoteId, businessId },
+    select: { id: true },
+  });
+  if (!quote) return { error: 'Quote not found.' };
+
+  await revokeShareTokens(businessId, 'QUOTE', { quoteId });
+  revalidatePath(`/quotes/${quoteId}`);
+  return { ok: true };
+}
+
+/** Set or clear the expiry date of the quote's current share token. */
+export async function setQuoteShareLinkExpiry(
+  _prev: ActionResult,
+  formData: FormData
+): Promise<ActionResult> {
+  const limited = checkLimit(await clientKey('quote:share'));
+  if (limited) return limited;
+
+  let businessId: string;
+  try {
+    ({ businessId } = await requireAuth());
+  } catch {
+    return { error: 'Please log in again.' };
+  }
+
+  const tokenId = String(formData.get('tokenId') ?? '');
+  const expiresAt = parseExpiryInput(formData.get('expiresAt'));
+  if (expiresAt === 'invalid') {
+    return { error: 'Expiry date must be a valid future date.' };
+  }
+
+  const rec = await setShareTokenExpiry(businessId, tokenId, expiresAt);
+  if (!rec) return { error: 'Share link not found.' };
+  revalidatePath('/quotes');
+  return { ok: true };
+}
+
+/* ------------------------------------------------------------------ */
+/* Public portal decision via token (no auth; token is the capability) */
+/* ------------------------------------------------------------------ */
+
+export type PortalDecisionResult = {
+  error?: string;
+  ok?: boolean;
+  status?: string;
+};
+
+const PORTAL_LIMIT = { limit: 30, windowMs: 60 * 1000 };
+
+function checkPortalLimit(key: string): PortalDecisionResult | null {
+  const rl = rateLimit(key, PORTAL_LIMIT);
+  if (!rl.ok) {
+    const secs = Math.max(1, Math.ceil(rl.retryAfterMs / 1000));
+    return { error: `Too many requests. Try again in ${secs}s.` };
+  }
+  return null;
+}
+
+/**
+ * Approve/decline a quote from the public portal using its share token.
+ * Same transition rules as the in-app action; the token stands in for auth.
+ */
+export async function portalQuoteDecisionByToken(
+  token: string,
+  decision: 'APPROVED' | 'DECLINED'
+): Promise<PortalDecisionResult> {
+  const hit = checkPortalLimit(await clientKey('portal-quote-token'));
+  if (hit) return hit;
+
+  const resolved = await resolveShareToken(token, 'QUOTE');
+  if (!resolved.ok) {
+    return { error: 'This link is invalid or has expired.' };
+  }
+  const quoteId = resolved.rec.quoteId;
+  if (!quoteId) return { error: 'This link is invalid or has expired.' };
+
+  const quote = await prisma.quote.findFirst({
+    where: { id: quoteId, businessId: resolved.rec.businessId },
+    select: { id: true, status: true },
+  });
+  if (!quote) return { error: 'This link is invalid or has expired.' };
+  if (quote.status === 'APPROVED' || quote.status === 'DECLINED') {
+    return { error: 'This quote has already been responded to.', status: quote.status };
+  }
+  if (quote.status !== 'SENT') {
+    return { error: 'This quote is not ready for approval yet.' };
+  }
+
+  const updated = await prisma.quote.update({
+    where: { id: quoteId },
+    data: { status: decision },
+    select: { status: true },
+  });
+
+  revalidatePath(`/q/${token}`);
+  return { ok: true, status: updated.status };
+}
