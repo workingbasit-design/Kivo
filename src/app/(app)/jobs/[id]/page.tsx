@@ -8,7 +8,7 @@ import {
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card, StatusBadge } from '@/components/ui';
-import { formatDateLabel } from '@/lib/utils';
+import { formatDateLabel, toISODateLocal } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import { entryMinutes, formatDuration } from '@/lib/timesheets';
 import JobStatusButtons from '@/components/JobStatusButtons';
@@ -47,11 +47,16 @@ export default async function JobDetailPage({
     0
   );
 
+  // job.date is a date-only DB value (midnight): format its calendar-day
+  // key, never the Date instant, so the label can't shift a day when the
+  // runtime timezone differs from the one that wrote the row.
+  const jobDateKey = toISODateLocal(job.date);
+
   const infoRows: Array<{ icon: React.ReactNode; label: string; value: React.ReactNode }> = [
     {
       icon: <Calendar size={14} className="text-zinc-400" />,
       label: 'Date',
-      value: formatDateLabel(job.date),
+      value: formatDateLabel(jobDateKey),
     },
     {
       icon: <Clock size={14} className="text-zinc-400" />,
@@ -118,7 +123,7 @@ export default async function JobDetailPage({
             <WhatsAppButton
               phone={job.customer.phone}
               regionCode={business?.regionCode}
-              message={`Namaste ${job.customer.name}! ${business?.name ?? 'Hum'}: aapki "${job.title}" booking ${formatDateLabel(job.date)}${job.time ? `, ${job.time}` : ''} ke liye scheduled hai.`}
+              message={`Namaste ${job.customer.name}! ${business?.name ?? 'Hum'}: aapki "${job.title}" booking ${formatDateLabel(jobDateKey)}${job.time ? `, ${job.time}` : ''} ke liye scheduled hai.`}
               label="WhatsApp"
             />
             <Link

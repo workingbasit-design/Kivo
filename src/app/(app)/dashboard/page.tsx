@@ -18,7 +18,6 @@ import { generateDueJobs } from "@/lib/recurring";
 import { formatDateLabel } from "@/lib/utils";
 import { formatMoney } from "@/lib/money";
 import { PageHeader, Card, StatCard, StatusBadge, EmptyState } from "@/components/ui";
-import DatabaseInspectorClient from "@/components/DatabaseInspectorClient";
 
 const QUICK_ACTIONS = [
   { label: "New job", href: "/jobs/new", icon: Plus },
@@ -60,20 +59,6 @@ export default async function DashboardPage() {
       />
 
       {/* Stat cards */}
-      {stats.totalCustomers === 0 && (
-        <DatabaseInspectorClient
-          summary={{
-            jobsCount: 0,
-            customersCount: 0,
-            invoicesCount: 0,
-            quotesCount: 0,
-            servicesCount: 0,
-            usersCount: 1,
-            communicationsCount: 0,
-            leadsCount: 0,
-          }}
-        />
-      )}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           label="Booked today"

@@ -1,8 +1,9 @@
 /**
  * Kivo copilot — rule-based engine (offline fallback).
  *
- * Deterministic, no-network intent detection + Hinglish entity extraction +
- * real business-data fetchers (always scoped by businessId).
+ * Deterministic, no-network intent detection + Hinglish entity extraction
+ * (see ./parse.ts — DB-free and unit-testable) + real business-data fetchers
+ * (always scoped by businessId).
  *
  * NEVER invents numbers: every figure comes from a Prisma query.
  * NEVER sends messages: reminders are returned as draft text only.
@@ -13,323 +14,41 @@
 import { prisma } from '@/lib/prisma';
 import { formatDateShort, toISODateLocal, dayRange } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
+import {
+  detectIntent,
+  extractAddress,
+  extractCustomerName,
+  extractDate,
+  extractMoney,
+  extractPhone,
+  extractServiceTitle,
+  extractTime,
+  hasAny,
+  norm,
+  resolveFollowUpName,
+  type CopilotHistoryItem,
+  type CopilotIntent,
+  type CopilotResult,
+  type JobDraft,
+} from './parse';
 
-export type CopilotIntent =
-  | 'create_job'
-  | 'ask_revenue'
-  | 'ask_schedule'
-  | 'ask_unpaid'
-  | 'ask_customers'
-  | 'find_customer'
-  | 'draft_reminder'
-  | 'help'
-  | 'unknown';
-
-export interface JobDraft {
-  title: string;
-  date: string; // YYYY-MM-DD (local)
-  time: string | null;
-  customerName: string;
-  phone: string | null;
-  address: string | null;
-  price: number | null;
-}
-
-export interface CopilotResult {
-  intent: CopilotIntent;
-  reply: string;
-  preview?: JobDraft;
-  data?: Record<string, unknown>;
-}
-
-// ---------------------------------------------------------------------------
-// Text helpers
-// ---------------------------------------------------------------------------
-
-function norm(s: string): string {
-  return s.toLowerCase().replace(/[।!?.,;:'"()\[\]{}]/g, ' ').replace(/\s+/g, ' ').trim();
-}
-
-function hasAny(text: string, words: string[]): boolean {
-  return words.some((w) => text.includes(w));
-}
-
-// ---------------------------------------------------------------------------
-// Entity extraction (Hinglish)
-// ---------------------------------------------------------------------------
-
-const WEEKDAYS: Record<string, number> = {
-  sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6,
-  ravivaar: 0, somvaar: 1, mangalvaar: 2, budhvaar: 3, gurvaar: 4, shukravaar: 5, shanivaar: 6,
-  // common transliterations
-  itvaar: 0, somvar: 1, mangalvar: 2, budhvar: 3, guruvar: 4, shukravar: 5, shanivar: 6,
+// Re-export the pure parsing API (and shared types) for route handlers,
+// widgets and tests.
+export {
+  detectIntent,
+  extractAddress,
+  extractCustomerName,
+  extractDate,
+  extractMoney,
+  extractPhone,
+  extractServiceTitle,
+  extractTime,
+  resolveFollowUpName,
+  type CopilotHistoryItem,
+  type CopilotIntent,
+  type CopilotResult,
+  type JobDraft,
 };
-
-const MONTHS: Record<string, number> = {
-  jan: 0, january: 0, feb: 1, february: 1, mar: 2, march: 2, apr: 3, april: 3,
-  may: 4, jun: 5, june: 5, jul: 6, july: 6, aug: 7, august: 7,
-  sep: 8, sept: 8, september: 8, oct: 9, october: 9, nov: 10, november: 10,
-  dec: 11, december: 11,
-};
-
-/** Resolve relative Hinglish/English date words to YYYY-MM-DD (local). */
-export function extractDate(raw: string): string | null {
-  const text = norm(raw);
-  const today = new Date();
-
-  const addDays = (n: number) => {
-    const d = new Date(today);
-    d.setDate(d.getDate() + n);
-    return toISODateLocal(d);
-  };
-
-  if (/\b(aaj|ajj|aj|today)\b/.test(text)) return addDays(0);
-  if (/\bkal\b/.test(text)) {
-    // "kal" is ambiguous (yesterday/tomorrow); in a booking context it means tomorrow
-    return addDays(1);
-  }
-  if (/\bparso\b/.test(text)) return addDays(2);
-  if (/\b(day after tomorrow)\b/.test(text)) return addDays(2);
-
-  // weekday name -> next occurrence (if today, assume next week)
-  for (const [name, dayIdx] of Object.entries(WEEKDAYS)) {
-    if (new RegExp(`\\b${name}\\b`).test(text)) {
-      let delta = (dayIdx - today.getDay() + 7) % 7;
-      if (delta === 0) delta = 7;
-      return addDays(delta);
-    }
-  }
-
-  // "12 oct", "12 october", "5 jan"
-  const md = text.match(/\b(\d{1,2})\s*(jan|january|feb|february|mar|march|apr|april|may|jun|june|jul|july|aug|august|sep|sept|september|oct|october|nov|november|dec|december)\b/);
-  if (md) {
-    const day = Number(md[1]);
-    const month = MONTHS[md[2]];
-    let year = today.getFullYear();
-    const candidate = new Date(year, month, day);
-    if (candidate < new Date(toISODateLocal(today))) year += 1; // roll to next year if passed
-    return toISODateLocal(new Date(year, month, day));
-  }
-
-  // ISO YYYY-MM-DD
-  const iso = text.match(/\b(20\d{2})-(\d{2})-(\d{2})\b/);
-  if (iso) return `${iso[1]}-${iso[2]}-${iso[3]}`;
-
-  return null;
-}
-
-/** Extract an INR amount: "₹1,500", "1500 rs", "500 rupees", "rs 500". */
-export function extractMoney(raw: string): number | null {
-  const text = raw.replace(/,/g, '');
-  const patterns = [
-    /₹\s*(\d+(?:\.\d+)?)/,
-    /(\d+(?:\.\d+)?)\s*(?:rs|rupees|rupaye|inr)\b/i,
-    /\brs\.?\s*(\d+(?:\.\d+)?)/i,
-  ];
-  for (const p of patterns) {
-    const m = text.match(p);
-    if (m) {
-      const v = Number(m[1]);
-      if (v > 0 && v < 10000000) return Math.round(v);
-    }
-  }
-  return null;
-}
-
-/** Extract a 10-digit Indian mobile number (optionally +91 / spaces). */
-export function extractPhone(raw: string): string | null {
-  const digits = raw.replace(/\D/g, '');
-  // +91XXXXXXXXXX
-  const m91 = digits.match(/(?:91)?([6-9]\d{9})/);
-  if (m91) return m91[1];
-  return null;
-}
-
-/** Extract a time hint: "3 baje", "3:30", "3pm", "subah 10 baje", "shaam 5 baje". */
-export function extractTime(raw: string): string | null {
-  // Colon times are matched on the RAW text because norm() strips colons.
-  let m = raw.match(/\b(\d{1,2}):(\d{2})\s*(am|pm)?\b/i);
-  if (m) {
-    let h = Number(m[1]);
-    const min = m[2];
-    const ap = (m[3] ?? '').toLowerCase();
-    if (ap === 'pm' && h < 12) h += 12;
-    if (ap === 'am' && h === 12) h = 0;
-    if (h > 23) return null;
-    return `${String(h).padStart(2, '0')}:${min}`;
-  }
-
-  const text = norm(raw);
-
-  // "3 baje", "3pm", "subah 10 baje", "shaam ko 5 baje".
-  // The meridiem word (baje/am/pm) is REQUIRED so bare numbers
-  // (e.g. digits inside a phone number) never match.
-  // NOTE: "baje" is meridiem-neutral; only am/pm shift the hour, plus
-  // evening period words (shaam/raat/...) with a neutral meridiem.
-  m = text.match(/(subah|savere|morning|dopahar|afternoon|shaam|sham|evening|raat|night)?\s*(\d{1,2})\s*(baje|pm|am)(?!\d)/);
-  if (m) {
-    let h = Number(m[2]);
-    const period = m[1];
-    const ap = m[3];
-    const isPM = ap === 'pm';
-    const isAM = ap === 'am';
-    if (isPM && h < 12) h += 12;
-    if (isAM && h === 12) h = 0;
-    if (!isPM && !isAM && (period === 'shaam' || period === 'sham' || period === 'evening' || period === 'raat' || period === 'night') && h < 12) h += 12;
-    if (h > 23) return null;
-    return `${String(h).padStart(2, '0')}:00`;
-  }
-
-  return null;
-}
-
-/** Guess the service/job title from common trade keywords. */
-const SERVICE_KEYWORDS: Array<{ keys: string[]; title: string }> = [
-  { keys: ['ac', 'air conditioner', 'cooler'], title: 'AC Service' },
-  { keys: ['fridge', 'refrigerator'], title: 'Fridge Repair' },
-  { keys: ['washing machine', 'washer'], title: 'Washing Machine Repair' },
-  { keys: ['plumb', 'nal', 'tap', 'pipe', 'leak'], title: 'Plumbing Work' },
-  { keys: ['electric', 'bijli', 'wire', 'switch', 'board', 'fan', 'pankha', 'light'], title: 'Electrical Work' },
-  { keys: ['pest', 'cockroach', 'termite', 'deemak'], title: 'Pest Control' },
-  { keys: ['clean', 'safai', 'saaf'], title: 'Cleaning Service' },
-  { keys: ['paint'], title: 'Painting Work' },
-  { keys: ['carpenter', 'furniture', 'lakdi'], title: 'Carpentry Work' },
-  { keys: ['tv', 'television'], title: 'TV Repair' },
-  { keys: ['chimney'], title: 'Chimney Service' },
-  { keys: ['geyser', 'water heater'], title: 'Geyser Service' },
-  { keys: ['microwave', 'oven'], title: 'Microwave Repair' },
-];
-
-export function extractServiceTitle(raw: string): string | null {
-  const text = norm(raw);
-  for (const s of SERVICE_KEYWORDS) {
-    if (hasAny(text, s.keys)) return s.title;
-  }
-  return null;
-}
-
-const NAME_STOPWORDS = new Set([
-  'kal', 'parso', 'aaj', 'ajj', 'aj', 'kaam', 'job', 'repair', 'service',
-  'ac', 'tv', 'fridge', 'cooler', 'fan', 'pankha', 'geyser', 'chimney',
-  'tap', 'nal', 'pipe', 'mere', 'mera', 'meri', 'apna', 'apni',
-  'uska', 'uski', 'iska', 'iski', 'ghar', 'dukaan', 'shop', 'office',
-  'ka', 'ke', 'ki', 'ko', 'mein', 'me', 'par', 'se', 'hai', 'tha',
-]);
-
-function capitalizeWord(w: string): string {
-  return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
-}
-
-/**
- * Guess a customer name. Heuristics for Hinglish WhatsApp text:
- *  - "Ramesh ka AC repair" / "Ramesh ke ghar" (word right before ka/ke/ki,
- *    stopword-filtered so "AC ka" / "ghar ka" don't match)
- *  - "customer: Ramesh Kumar" / "naam Ramesh hai"
- */
-export function extractCustomerName(raw: string): string | null {
-  const text = raw.trim();
-
-  const m1 = text.match(/\b([A-Za-z]{2,25})\s+(?:ka|ke|ki)\b/);
-  if (m1 && !NAME_STOPWORDS.has(m1[1].toLowerCase())) {
-    return capitalizeWord(m1[1]);
-  }
-
-  const m2 = text.match(/(?:customer|client|grahak|naam|name)\s*[:\-]?\s*([A-Za-z][A-Za-z\s]{1,30}?)(?:\s*,|\s+ka\b|\s+ke\b|\s+ki\b|\s+hai\b|\s*₹|\s*\d|$)/i);
-  if (m2) {
-    const name = m2[1].trim().split(/\s+/).map(capitalizeWord).join(' ');
-    if (name.length >= 2 && !/^(kaam|job|repair|service)$/i.test(name)) return name;
-  }
-
-  return null;
-}
-
-/** Address hints: "address: ...", "ghar ...", "sector 21", "at ..." */
-export function extractAddress(raw: string): string | null {
-  const text = raw.trim();
-  // Commas are allowed so "Sector 21, Noida" is captured whole.
-  // The confirmation preview lets the user correct over-capture.
-  const m = text.match(/(?:address|pata)\s*[:\-]\s*([^\n]{3,80})/i);
-  if (m) return m[1].trim();
-  const m2 = text.match(/\b(sector\s*\d+[a-z]?[^,\n]{0,40})/i);
-  if (m2) return m2[1].trim();
-  return null;
-}
-
-// ---------------------------------------------------------------------------
-// Intent detection
-// ---------------------------------------------------------------------------
-
-export function detectIntent(raw: string): CopilotIntent {
-  const text = ' ' + norm(raw) + ' ';
-
-  const isQuestion = /[?]/.test(raw) || hasAny(text, [
-    ' kitna ', ' kitne ', ' kitni ', ' kab ', ' kaun ', ' kya ', ' kaise ',
-    ' batao ', ' bataye ', ' dikhao ', ' show ', ' list ', ' check ',
-    ' how much ', ' how many ', ' what ', ' when ',
-  ]);
-
-  // 1. Payment reminder drafting
-  if (hasAny(text, [' reminder ', ' yaad dilao ', ' msg banao ', ' message banao ', ' payment reminder '])) {
-    return 'draft_reminder';
-  }
-
-  // 2. Revenue questions
-  if (hasAny(text, [' kamai ', ' kamaya ', ' revenue ', ' collection ', ' earning ', ' income '])) {
-    return 'ask_revenue';
-  }
-
-  // 3. Unpaid / outstanding questions
-  if (hasAny(text, [' unpaid ', ' outstanding ', ' baki ', ' pending payment ', ' udhar ', ' wasool ', ' dues '])) {
-    return 'ask_unpaid';
-  }
-
-  // 4. Job creation — BEFORE schedule queries, so "Ramesh ka AC repair kal"
-  //    is treated as a booking, not a question about tomorrow's jobs.
-  //    Bare "schedule"/"add"/"create" are NOT booking verbs on their own
-  //    ("schedule dikhao" is a query); only action phrases count.
-  const hasBookingVerb = hasAny(text, [
-    ' book ', ' book karo ', ' book kar ', ' schedule karo ', ' schedule kar ',
-    ' add karo ', ' add kar ', ' create karo ', ' naya kaam ', ' kaam hai ',
-    ' repair karna ', ' fix karna ', ' bhejo ', ' bhej do ', ' lagwana ',
-  ]);
-  const hasService = extractServiceTitle(raw) !== null;
-  const hasWho = extractCustomerName(raw) !== null || extractPhone(raw) !== null;
-  if (hasBookingVerb || (hasService && hasWho && !isQuestion)) {
-    return 'create_job';
-  }
-
-  // 5a. Customer count / list questions ("mere kitne customers hain?", "customer list dikhao")
-  const mentionsCustomer = hasAny(text, [' customer ', ' customers ', ' client ', ' clients ', ' grahak ']);
-  const wantsCountOrList = isQuestion || hasAny(text, [' kitne ', ' kitna ', ' kitni ', ' how many ', ' list ', ' dikhao ', ' batao ']);
-  if (mentionsCustomer && wantsCountOrList && !extractPhone(raw)) {
-    return 'ask_customers';
-  }
-
-  // 5b. Customer lookup
-  if (
-    mentionsCustomer ||
-    (/ number /.test(text) && / ka /.test(text)) ||
-    / find /.test(text)
-  ) {
-    return 'find_customer';
-  }
-
-  // 6. Schedule questions
-  if (
-    hasAny(text, [' schedule ', ' aaj ', ' ajj ', ' aj ', ' kal ', ' parso ', ' jobs ', ' appointments ', ' kaam '])
-  ) {
-    return 'ask_schedule';
-  }
-
-  // 7. Help
-  if (hasAny(text, [' help ', ' madad ', ' kya kar sakte ', ' what can you do '])) {
-    return 'help';
-  }
-
-  // Default: question-ish -> schedule overview, else help
-  if (isQuestion) return 'ask_schedule';
-  return 'help';
-}
 
 // ---------------------------------------------------------------------------
 // Data fetchers (always businessId-scoped)
@@ -441,6 +160,35 @@ const HELP_TEXT = `Main aapki madad kar sakta hoon:
 
 Kuch bhi poochho — main aapke asli business data se jawab dunga.`;
 
+/** Short greeting — kept separate from help so "hi" doesn't dump the manual. */
+const GREETING_TEXT = `Namaste! 🙏 Main aapka Kivo assistant hoon.
+
+• Job book karni hai? Jaise likho: "Ramesh ka AC repair kal 3 baje, ₹800"
+• Schedule dekhna hai? "Aaj ke jobs?" ya "Kal ke jobs?"
+• "Kitna outstanding hai?" — baki payments ka hisaab
+
+Bas aise hi message bhejo — job hamesha aapke confirm karne par hi book hogi.`;
+
+/** Asked when the message carries no recognizable intent — never silence,
+ *  never a wrong guess. */
+const CLARIFY_TEXT = `Samajh nahi aaya — thoda detail mein bataoge? 🙂
+
+Job book karni hai to aise likho:
+"Ramesh ka AC repair kal 3 baje, ₹800"
+
+Ya bas batao — kaunsa kaam hai, kiske liye hai, aur kab karna hai?`;
+
+/** True for bare greetings ("hi", "namaste") — longer sentences that happen
+ *  to contain "hi" (e.g. "Ramesh hi karega") are NOT greetings. */
+function isGreeting(raw: string): boolean {
+  const text = norm(raw);
+  if (text.split(' ').length > 3) return false;
+  return hasAny(' ' + text + ' ', [
+    ' namaste ', ' namaskar ', ' hello ', ' hi ', ' hey ', ' salaam ',
+    ' good morning ', ' good evening ', ' ram ram ',
+  ]);
+}
+
 // ---------------------------------------------------------------------------
 // Main entry
 // ---------------------------------------------------------------------------
@@ -448,20 +196,27 @@ Kuch bhi poochho — main aapke asli business data se jawab dunga.`;
 export async function runCopilot(
   businessId: string,
   _userId: string,
-  message: string
+  message: string,
+  history: CopilotHistoryItem[] = []
 ): Promise<CopilotResult> {
   const biz = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } });
   const currency = biz?.currency ?? 'INR';
-  const intent = detectIntent(message);
+  // Pronoun follow-ups ("usko kal kar do") resolve against recent turns.
+  const followUpName = resolveFollowUpName(message, history);
+  const intent = detectIntent(message, followUpName);
   const todayStr = toISODateLocal(new Date());
 
   switch (intent) {
     case 'create_job': {
+      // Track whether the date was explicitly understood: defaulting to
+      // today without telling the user was a real mis-parse ("25 ko" once
+      // silently became "today"). When unsure, say so in the reply.
+      const explicitDate = extractDate(message);
       const draft: JobDraft = {
         title: extractServiceTitle(message) ?? 'General Service',
-        date: extractDate(message) ?? todayStr,
+        date: explicitDate ?? todayStr,
         time: extractTime(message),
-        customerName: extractCustomerName(message) ?? '',
+        customerName: extractCustomerName(message) ?? followUpName ?? '',
         phone: extractPhone(message),
         address: extractAddress(message),
         price: extractMoney(message),
@@ -477,6 +232,25 @@ export async function runCopilot(
         if (matched && !draft.customerName) draft.customerName = matched.name;
       }
 
+      // Does this customer already exist in the workspace? Never silently
+      // proceed: say so explicitly, and suggest a close match if there is one.
+      let customerExists = !!matched;
+      let similarCustomer: string | null = null;
+      if (!customerExists && draft.customerName) {
+        const candidates = await prisma.customer.findMany({
+          where: { businessId, name: { contains: draft.customerName } },
+          select: { name: true },
+          take: 5,
+        });
+        const wanted = draft.customerName.trim().toLowerCase();
+        customerExists = candidates.some(
+          (c) => c.name.trim().toLowerCase() === wanted
+        );
+        if (!customerExists && candidates.length > 0) {
+          similarCustomer = candidates[0].name;
+        }
+      }
+
       const lines = [
         'Maine yeh job samjha hai — confirm karein?',
         '',
@@ -488,7 +262,22 @@ export async function runCopilot(
         `Address: ${draft.address ?? '—'}`,
         `Price: ${draft.price !== null ? formatMoney(draft.price, currency) : '(set nahi)'}`,
       ];
-      if (matched) lines.push('', `Note: ${matched.name} aapke customers mein pehle se hai.`);
+      if (!explicitDate) {
+        lines.push('', 'Note: date saaf nahi thi, isliye aaj ki date li hai — preview mein sahi date set kar lena.');
+      }
+      if (matched) {
+        lines.push('', `Note: ${matched.name} aapke customers mein pehle se hai.`);
+      } else if (draft.customerName && !customerExists) {
+        lines.push(
+          '',
+          `Note: "${draft.customerName}" aapke customers mein nahi mila — confirm karne par main inhe naye customer ke roop mein add kar dunga.`
+        );
+        if (similarCustomer) {
+          lines.push(`Kya aapka matlab "${similarCustomer}" tha?`);
+        }
+      } else if (!draft.customerName) {
+        lines.push('', 'Note: customer ka naam nahi mila — preview mein naam zaroor likh dein, tabhi booking hogi.');
+      }
       lines.push('', 'Confirm karne par hi job book hogi.');
 
       return { intent, reply: lines.join('\n'), preview: draft };
@@ -628,8 +417,15 @@ export async function runCopilot(
     }
 
     case 'help':
-    case 'unknown':
-    default:
       return { intent: 'help', reply: HELP_TEXT };
+
+    case 'unknown':
+    default: {
+      // Ambiguous input ("fix the thing for the guy") previously fell
+      // through to the generic help dump — and in one case produced no
+      // useful reply at all. Always answer, and ask what you need.
+      if (isGreeting(message)) return { intent: 'unknown', reply: GREETING_TEXT };
+      return { intent: 'unknown', reply: CLARIFY_TEXT };
+    }
   }
 }

@@ -219,10 +219,17 @@ export default function GlobalCopilotWidget({ currency }: { currency?: string })
     setIsTyping(true);
 
     try {
+      // Minimal conversation context for pronoun follow-ups ("usko kal kar
+      // do"): the last few turns, excluding the message just pushed above
+      // (the ref updates after render).
+      const history = messagesRef.current.slice(-6).map((m) => ({
+        role: m.role,
+        content: m.content.slice(0, 2000),
+      }));
       const res = await fetch('/api/copilot', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ message: clean }),
+        body: JSON.stringify({ message: clean, history }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Request failed');

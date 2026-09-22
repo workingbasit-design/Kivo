@@ -8,6 +8,12 @@ import { requireAuth } from "@/lib/auth";
  * so it never duplicates data on repeat runs.
  */
 export async function seedFullDatabase(): Promise<{ message: string }> {
+  // Safety: demo seed must never run in production, even if some UI path
+  // ever references this action again.
+  if (process.env.NODE_ENV === 'production') {
+    return { message: 'Demo seed is disabled in production.' };
+  }
+
   const { businessId } = await requireAuth();
 
   const existing = await prisma.customer.count({ where: { businessId } });

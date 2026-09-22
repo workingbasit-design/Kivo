@@ -9,7 +9,7 @@ import {
 import { updateJobStatus, deleteJob, seedSampleJobs, updateJobSchedule } from '@/app/actions/jobs';
 import { validNextStatuses } from '@/lib/job-status';
 import { formatMoney } from '@/lib/money';
-import { toISODateLocal } from '@/lib/utils';
+import { toISODateLocal, formatDateLabel } from '@/lib/utils';
 
 type Job = {
   id: string;
@@ -64,6 +64,9 @@ export default function ScheduleClient({
   const [isPending, startTransition] = useTransition();
   /** Last failed status/date change — shown as a banner so rejections are never silent. */
   const [actionError, setActionError] = useState<string | null>(null);
+  /** Job awaiting remove-from-schedule confirmation (in-app modal — never
+   *  native confirm(), which automated browsers auto-dismiss). */
+  const [removingJobId, setRemovingJobId] = useState<string | null>(null);
 
   // Local calendar-day key (YYYY-MM-DD). The server passes its own today so
   // the filter always agrees with the day tiles above.
@@ -71,11 +74,10 @@ export default function ScheduleClient({
     ? todayKey
     : toISODateLocal(new Date());
 
-  // Helper to format date cleanly
-  const formatDateLabel = (dateInput: Date | string) => {
-    const d = new Date(dateInput);
-    return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
-  };
+  // Day filtering/counting uses job.dateKey (server-local calendar date);
+  // display labels use the shared timezone-safe formatDateLabel from
+  // @/lib/utils (never `new Date(iso)` + toLocaleDateString, which shifts
+  // the day for timezones behind UTC).
 
   // Filter jobs logic — compare calendar-day keys, never UTC date strings.
   const filteredJobs = initialJobs.filter((job) => {
@@ -124,11 +126,16 @@ export default function ScheduleClient({
   };
 
   const handleDeleteJob = (jobId: string) => {
-    if (confirm("Are you sure you want to remove this job from the schedule?")) {
-      startTransition(async () => {
-        await deleteJob(jobId);
-      });
-    }
+    setActionError(null);
+    setRemovingJobId(null);
+    startTransition(async () => {
+      try {
+        const res = await deleteJob(jobId);
+        if (res?.error) setActionError(res.error);
+      } catch {
+        setActionError('Could not remove the job — please try again.');
+      }
+    });
   };
 
   const handleSeedJobs = () => {
@@ -336,7 +343,11 @@ export default function ScheduleClient({
                       </div>
 
                       <div className="text-xs font-medium text-zinc-500">
-                        📅 {formatDateLabel(job.date)}
+                        {/* Render the server-computed calendar-day key
+                            (YYYY-MM-DD), never the raw timestamp: the ISO
+                            instant shifts a day in timezones behind/ahead of
+                            UTC, the day key cannot. */}
+                        📅 {formatDateLabel(job.dateKey)}
                       </div>
                     </div>
 
@@ -462,9 +473,9 @@ export default function ScheduleClient({
 
                     {/* Remove/Delete Button */}
                     <button
-                      onClick={() => handleDeleteJob(job.id)}
+                      onClick={() => setRemovingJobId(job.id)}
                       disabled={isPending}
-                      className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition-colors"
+                      className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition-colors disabled:opacity-50"
                       title="Remove from Schedule"
                     >
                       <Trash2 size={16} />
@@ -477,6 +488,50 @@ export default function ScheduleClient({
           </div>
         )}
       </div>
+
+      {/* Remove-from-schedule confirmation (in-app modal) */}
+      {removingJobId && (() => {
+        const target = initialJobs.find((j) => j.id === removingJobId);
+        return (
+          <div
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-zinc-950/50 p-4"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Remove job from schedule"
+            onClick={() => !isPending && setRemovingJobId(null)}
+          >
+            <div
+              className="w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-zinc-200 p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-sm font-bold text-zinc-900">Remove from schedule?</h3>
+              <p className="mt-2 text-xs text-zinc-500 leading-relaxed">
+                {target ? (
+                  <>“{target.title}” will be permanently deleted. This cannot be undone.</>
+                ) : (
+                  <>This job will be permanently deleted. This cannot be undone.</>
+                )}
+              </p>
+              <div className="mt-5 flex gap-2">
+                <button
+                  onClick={() => setRemovingJobId(null)}
+                  disabled={isPending}
+                  className="flex-1 bg-zinc-100 hover:bg-zinc-200 disabled:opacity-50 text-zinc-700 text-xs font-semibold py-2.5 rounded-xl transition-colors"
+                >
+                  Keep it
+                </button>
+                <button
+                  onClick={() => handleDeleteJob(removingJobId)}
+                  disabled={isPending}
+                  className="flex-1 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white text-xs font-semibold py-2.5 rounded-xl transition-colors"
+                >
+                  {isPending ? 'Removing…' : 'Yes, remove'}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

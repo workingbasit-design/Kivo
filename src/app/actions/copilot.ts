@@ -2,7 +2,7 @@
 
 import { requireAuth } from '@/lib/auth';
 import { rateLimit } from '@/lib/rate-limit';
-import { runCopilot, type CopilotIntent, type JobDraft } from '@/lib/copilot/engine';
+import { runCopilot, type CopilotHistoryItem, type CopilotIntent, type JobDraft } from '@/lib/copilot/engine';
 import { tryAnthropicReply } from '@/lib/copilot/anthropic';
 
 export interface CopilotActionResult {
@@ -17,8 +17,14 @@ export interface CopilotActionResult {
  * Server-action wrapper around the copilot engine.
  * Used by server components / widgets that prefer actions over fetch.
  * Job creation still requires explicit confirmation via /api/copilot (confirm:true).
+ *
+ * `history` is optional: recent conversation turns so pronoun follow-ups
+ * ("usko kal kar do") can resolve against earlier messages.
  */
-export async function chatWithCopilot(message: string): Promise<CopilotActionResult> {
+export async function chatWithCopilot(
+  message: string,
+  history: CopilotHistoryItem[] = []
+): Promise<CopilotActionResult> {
   const { user, businessId } = await requireAuth();
 
   const rl = rateLimit(`copilot:${user.id}`, { limit: 30, windowMs: 60_000 });
@@ -42,7 +48,7 @@ export async function chatWithCopilot(message: string): Promise<CopilotActionRes
     };
   }
 
-  const result = await runCopilot(businessId, user.id, clean);
+  const result = await runCopilot(businessId, user.id, clean, history.slice(-6));
 
   let reply = result.reply;
   if (process.env.ANTHROPIC_API_KEY) {

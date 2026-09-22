@@ -13,29 +13,27 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const SITE_URL = "https://kivo-nine-silk.vercel.app";
+const SITE_TITLE = "Kivo — Every job. One place.";
+const SITE_DESCRIPTION =
+  "Kivo is a free field-service platform for service businesses in India and Canada: jobs, schedule, customers, quotes, invoices and a Hinglish AI assistant — all in one place.";
+
 export const metadata: Metadata = {
-  title: "Kivo - Modern Field Service Platform",
-  description: "The ultimate platform for field service professionals to manage their operations efficiently.",
+  metadataBase: new URL(SITE_URL),
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
   openGraph: {
-    title: "Kivo - Modern Field Service Platform",
-    description: "The ultimate platform for field service professionals to manage their operations efficiently.",
-    url: "https://kivo.com",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    url: SITE_URL,
     siteName: "Kivo",
-    images: [
-      {
-        url: "https://kivo.com/og-image.jpg",
-        width: 1200,
-        height: 630,
-      },
-    ],
     locale: "en_US",
     type: "website",
   },
   twitter: {
-    card: "summary_large_image",
-    title: "Kivo - Modern Field Service Platform",
-    description: "The ultimate platform for field service professionals to manage their operations efficiently.",
-    images: ["https://kivo.com/og-image.jpg"],
+    card: "summary",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
   },
 };
 
@@ -51,19 +49,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
-              "@type": "LocalBusiness",
+              "@type": "SoftwareApplication",
               name: "Kivo",
-              image: "https://kivo.com/logo.png",
-              description: "The ultimate platform for field service professionals.",
-              address: {
-                "@type": "PostalAddress",
-                streetAddress: "123 Kivo Street",
-                addressLocality: "San Francisco",
-                addressRegion: "CA",
-                postalCode: "94107",
-                addressCountry: "US",
+              applicationCategory: "BusinessApplication",
+              operatingSystem: "Web",
+              description: SITE_DESCRIPTION,
+              url: SITE_URL,
+              offers: {
+                "@type": "Offer",
+                price: "0",
+                priceCurrency: "INR",
               },
-              telephone: "+1-555-555-5555",
+              publisher: {
+                "@type": "Organization",
+                name: "Kivo",
+                url: SITE_URL,
+              },
             }),
           }}
         />

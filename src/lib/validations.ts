@@ -39,6 +39,7 @@ export const jobSchema = z.object({
   price: z.coerce.number().min(0, "Price can't be negative").max(10_000_000),
   status: z.enum(JOB_STATUSES).default("SCHEDULED"),
   notes: z.string().trim().max(2000).optional().default(""),
+  technician: z.string().trim().max(120).optional().default(""),
   assignedToId: z.string().optional().nullable(),
 });
 

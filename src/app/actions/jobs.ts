@@ -81,6 +81,7 @@ export async function createJob(
     price: formData.get('price'),
     status: 'SCHEDULED',
     notes: formData.get('notes') ?? '',
+    technician: formData.get('technician') ?? '',
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? 'Invalid job details.' };
@@ -102,6 +103,7 @@ export async function createJob(
       price: parsed.data.price,
       status: 'SCHEDULED',
       notes: parsed.data.notes || null,
+      technician: parsed.data.technician || null,
     },
   });
 
@@ -132,6 +134,7 @@ export async function updateJob(
       address: formData.get('address') ?? '',
       price: formData.get('price'),
       notes: formData.get('notes') ?? '',
+      technician: formData.get('technician') ?? '',
     });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? 'Invalid job details.' };
@@ -141,8 +144,6 @@ export async function updateJob(
     where: { id: parsed.data.customerId, businessId },
   });
   if (!customer) return { error: 'Selected customer not found.' };
-
-  const technician = String(formData.get('technician') ?? '').trim().slice(0, 120);
 
   await prisma.job.update({
     where: { id },
@@ -154,7 +155,7 @@ export async function updateJob(
       address: parsed.data.address || null,
       price: parsed.data.price,
       notes: parsed.data.notes || null,
-      technician: technician || null,
+      technician: parsed.data.technician || null,
     },
   });
 

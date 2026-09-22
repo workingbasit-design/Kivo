@@ -4,7 +4,7 @@ import crypto from 'crypto';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { rateLimit } from '@/lib/rate-limit';
-import { runCopilot, type JobDraft } from '@/lib/copilot/engine';
+import { runCopilot, type JobDraft, type CopilotHistoryItem } from '@/lib/copilot/engine';
 import { tryAnthropicReply } from '@/lib/copilot/anthropic';
 import { formatDateShort } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
@@ -41,6 +41,17 @@ const confirmSchema = z.object({
 
 const messageSchema = z.object({
   message: z.string().min(1).max(2000),
+  // Recent conversation turns for pronoun follow-ups ("usko kal kar do").
+  // Minimal context: the last few messages only.
+  history: z
+    .array(
+      z.object({
+        role: z.enum(['user', 'assistant']),
+        content: z.string().max(2000),
+      })
+    )
+    .max(6)
+    .optional(),
 });
 
 export async function POST(req: Request) {
@@ -97,7 +108,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Message bhejo — khaali message nahi chalega.' }, { status: 400 });
   }
 
-  const result = await runCopilot(businessId, session.user.id, asMessage.data.message);
+  const result = await runCopilot(
+    businessId,
+    session.user.id,
+    asMessage.data.message,
+    (asMessage.data.history ?? []) as CopilotHistoryItem[]
+  );
 
   // Optional LLM polish: grounded on the engine's real data. Falls back silently.
   let reply = result.reply;
