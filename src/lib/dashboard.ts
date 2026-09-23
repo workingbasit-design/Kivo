@@ -1,5 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { dayRange, todayInTimezone } from "@/lib/utils";
+import {
+  bucketRevenueByService,
+  type ServiceRevenueRow,
+} from "@/lib/revenue-by-service";
 
 export interface TodayJob {
   id: string;
@@ -213,6 +217,10 @@ export interface ReportStats {
   avgJobValue: number;
   quoteWinRate: number | null;
   quotesSent: number;
+  /** Completed/paid job revenue grouped by price-book service (6-month window). */
+  revenueByService: ServiceRevenueRow[];
+  /** Open jobs scheduled in the next 14 days (business-local dates). */
+  upcomingWorkload: { count: number; totalPrice: number };
 }
 
 interface ReportJob {
@@ -222,6 +230,7 @@ interface ReportJob {
   date: Date;
   customerId: string;
   customer: { name: string };
+  service: { name: string } | null;
 }
 
 interface ReportPayment {
@@ -229,7 +238,10 @@ interface ReportPayment {
   createdAt: Date;
 }
 
-export async function getReportStats(businessId: string): Promise<ReportStats> {
+export async function getReportStats(
+  businessId: string,
+  locale: "en" | "fr" = "en"
+): Promise<ReportStats> {
   // Build 6 month buckets, oldest -> newest
   const now = new Date();
   const buckets: { key: string; label: string; start: Date; end: Date }[] = [];
@@ -243,12 +255,24 @@ export async function getReportStats(businessId: string): Promise<ReportStats> {
   }
   const rangeStart = buckets[0].start;
 
-  const [payments, jobs, jobsByStatusRaw, openInvoices, quotes]: [
+  // Business-local "today" drives the upcoming-workload window, matching
+  // the dashboard's day-boundary behavior.
+  const biz = await prisma.business.findUnique({
+    where: { id: businessId },
+    select: { timezone: true, regionCode: true },
+  });
+  const todayStr = todayInTimezone(biz?.timezone, biz?.regionCode);
+  const { gte: todayStart } = dayRange(todayStr);
+  const workloadEnd = new Date(todayStart);
+  workloadEnd.setDate(workloadEnd.getDate() + 14);
+
+  const [payments, jobs, jobsByStatusRaw, openInvoices, quotes, upcoming]: [
     ReportPayment[],
     ReportJob[],
     StatusCount[],
     InvoiceWithPayments[],
     StatusCount[],
+    { price: number | null }[],
   ] = await Promise.all([
     prisma.payment.findMany({
       where: {
@@ -267,6 +291,7 @@ export async function getReportStats(businessId: string): Promise<ReportStats> {
         date: true,
         customerId: true,
         customer: { select: { name: true } },
+        service: { select: { name: true } },
       },
     }),
     prisma.job.groupBy({
@@ -285,6 +310,14 @@ export async function getReportStats(businessId: string): Promise<ReportStats> {
       by: ["status"],
       where: { businessId },
       _count: { status: true },
+    }),
+    prisma.job.findMany({
+      where: {
+        businessId,
+        date: { gte: todayStart, lt: workloadEnd },
+        status: { in: OPEN_JOB_STATUSES },
+      },
+      select: { price: true },
     }),
   ]);
 
@@ -329,6 +362,21 @@ export async function getReportStats(businessId: string): Promise<ReportStats> {
       ? doneJobs.reduce((s: number, j: ReportJob) => s + (j.price ?? 0), 0) / doneJobs.length
       : 0;
 
+  // Revenue grouped by price-book service; jobs with no linked service
+  // bucket under the localized "Other" label.
+  const revenueByService = bucketRevenueByService(
+    doneJobs.map((j) => ({
+      price: j.price,
+      serviceName: j.service?.name ?? null,
+    })),
+    locale === "fr" ? "Autre" : "Other"
+  );
+
+  const upcomingWorkload = {
+    count: upcoming.length,
+    totalPrice: upcoming.reduce((s: number, j: { price: number | null }) => s + (j.price ?? 0), 0),
+  };
+
   const approved = quotes.find((q: StatusCount) => q.status === "APPROVED")?._count.status ?? 0;
   const decided = quotes
     .filter((q: StatusCount) => ["APPROVED", "DECLINED"].includes(q.status))
@@ -349,5 +397,7 @@ export async function getReportStats(businessId: string): Promise<ReportStats> {
     avgJobValue,
     quoteWinRate,
     quotesSent,
+    revenueByService,
+    upcomingWorkload,
   };
 }

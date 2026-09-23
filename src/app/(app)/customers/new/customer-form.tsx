@@ -96,6 +96,15 @@ export default function NewCustomerForm() {
             />
           </Field>
 
+          <Field label="Tags" hint="Comma-separated, e.g. vip, senior — helps you filter this list.">
+            <input
+              name="tags"
+              placeholder="vip, senior"
+              maxLength={400}
+              className={inputClass}
+            />
+          </Field>
+
           {state?.error && (
             <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
               <AlertCircle size={14} className="mt-0.5 shrink-0" />

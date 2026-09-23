@@ -37,6 +37,9 @@ export default async function ChecklistTemplatesPage() {
           id: tpl.id,
           name: tpl.name,
           items: tpl.items.map((i) => i.label),
+          price: tpl.price,
+          durationMin: tpl.durationMin,
+          notes: tpl.notes,
         }))}
       />
     </div>

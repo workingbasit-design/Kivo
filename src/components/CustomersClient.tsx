@@ -12,13 +12,14 @@ export type CustomerRow = {
   phone: string | null;
   email: string | null;
   address: string | null;
+  tags: string[];
   jobCount: number;
   revenue: number;
 };
 
 /**
- * Customer list with a live search box. Typing filters the list
- * client-side across name, phone, email and address — no submit or
+ * Customer list with a live search box and tag filter chips. Typing filters
+ * the list client-side across name, phone, email and address — no submit or
  * page reload needed.
  */
 export default function CustomersClient({
@@ -29,17 +30,31 @@ export default function CustomersClient({
   currency?: string;
 }) {
   const [query, setQuery] = useState('');
+  const [activeTag, setActiveTag] = useState<string | null>(null);
+
+  // Distinct tags across this business's customers (tenant-safe: only this
+  // business's customers are in `customers`), for the filter chips.
+  const allTags = useMemo(() => {
+    const set = new Set<string>();
+    for (const c of customers) {
+      for (const t of c.tags ?? []) set.add(t);
+    }
+    return [...set].sort((a, b) => a.localeCompare(b));
+  }, [customers]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return customers;
-    return customers.filter((c) =>
-      (c.name ?? '').toLowerCase().includes(q) ||
-      (c.phone ?? '').toLowerCase().includes(q) ||
-      (c.email ?? '').toLowerCase().includes(q) ||
-      (c.address ?? '').toLowerCase().includes(q)
-    );
-  }, [customers, query]);
+    return customers.filter((c) => {
+      if (activeTag && !(c.tags ?? []).includes(activeTag)) return false;
+      if (!q) return true;
+      return (
+        (c.name ?? '').toLowerCase().includes(q) ||
+        (c.phone ?? '').toLowerCase().includes(q) ||
+        (c.email ?? '').toLowerCase().includes(q) ||
+        (c.address ?? '').toLowerCase().includes(q)
+      );
+    });
+  }, [customers, query, activeTag]);
 
   return (
     <div className="space-y-6">
@@ -55,14 +70,45 @@ export default function CustomersClient({
         />
       </div>
 
+      {/* Tag filter chips */}
+      {allTags.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filter by tag">
+          <button
+            type="button"
+            onClick={() => setActiveTag(null)}
+            className={`text-[11px] font-bold rounded-full px-3 py-1.5 transition-colors ${
+              activeTag === null
+                ? 'bg-ink text-white'
+                : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
+            }`}
+          >
+            All
+          </button>
+          {allTags.map((tag) => (
+            <button
+              key={tag}
+              type="button"
+              onClick={() => setActiveTag(activeTag === tag ? null : tag)}
+              className={`text-[11px] font-bold rounded-full px-3 py-1.5 transition-colors ${
+                activeTag === tag
+                  ? 'bg-ink text-white'
+                  : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
+              }`}
+            >
+              {tag}
+            </button>
+          ))}
+        </div>
+      )}
+
       {filtered.length === 0 ? (
         <Card>
           <EmptyState
             icon={<Users size={24} />}
-            title={query.trim() ? 'No customers found' : 'No customers yet'}
+            title={query.trim() || activeTag ? 'No customers found' : 'No customers yet'}
             description={
-              query.trim()
-                ? `No customers match "${query.trim()}". Try a different search, or add a new customer.`
+              query.trim() || activeTag
+                ? `No customers match${activeTag ? ` tag "${activeTag}"` : ''}${query.trim() ? ` and "${query.trim()}"` : ''}. Try a different search, or add a new customer.`
                 : 'Add your first customer to start creating jobs and invoices for them.'
             }
             action={
@@ -76,7 +122,17 @@ export default function CustomersClient({
         <>
           <p className="text-xs font-semibold text-zinc-500">
             {filtered.length} customer{filtered.length === 1 ? '' : 's'}
+            {activeTag ? ` tagged "${activeTag}"` : ''}
             {query.trim() ? ` matching "${query.trim()}"` : ''}
+            {(activeTag || query.trim()) && (
+              <button
+                type="button"
+                onClick={() => { setActiveTag(null); setQuery(''); }}
+                className="ml-2 text-ink font-bold hover:underline"
+              >
+                Clear filters
+              </button>
+            )}
           </p>
           <Card>
             <ul className="divide-y divide-zinc-100">
@@ -102,6 +158,18 @@ export default function CustomersClient({
                             'No phone'
                           )}
                         </p>
+                        {(c.tags ?? []).length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1.5">
+                            {(c.tags ?? []).map((tag) => (
+                              <span
+                                key={tag}
+                                className="text-[10px] font-semibold bg-zinc-100 text-zinc-600 rounded-full px-2 py-0.5"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                       <div className="text-right shrink-0">
                         <p className="font-bold text-sm text-zinc-900">{formatMoney(c.revenue, currency)}</p>

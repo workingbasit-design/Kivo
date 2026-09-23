@@ -64,7 +64,7 @@ function job(over: Partial<JobRow>): JobRow {
 
 test('settings default to all ON', () => {
   const s = defaultSettings();
-  assert.equal(NOTIFICATION_TYPES.length, 6);
+  assert.equal(NOTIFICATION_TYPES.length, 7); // + messaging_quota (Track 9)
   for (const k of NOTIFICATION_TYPES) assert.equal(s[k], true, k);
 });
 

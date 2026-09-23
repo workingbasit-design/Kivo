@@ -16,6 +16,7 @@ export type CustomerFormData = {
   province: string | null;
   postalCode: string | null;
   notes: string | null;
+  tags: string | null;
 };
 
 export function EditCustomerForm({ customer }: { customer: CustomerFormData }) {
@@ -92,6 +93,10 @@ export function EditCustomerForm({ customer }: { customer: CustomerFormData }) {
 
       <Field label="Notes">
         <textarea name="notes" rows={3} defaultValue={customer.notes ?? ''} className={inputClass} />
+      </Field>
+
+      <Field label="Tags" hint="Comma-separated, e.g. vip, senior">
+        <input name="tags" defaultValue={customer.tags ?? ''} placeholder="vip, senior" maxLength={400} className={inputClass} />
       </Field>
 
       {state?.error && (

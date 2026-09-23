@@ -78,6 +78,15 @@ export default async function SettingsPage() {
         </Link>
       </Card>
       <Card className="p-5 md:p-6">
+        <h2 className="text-sm font-bold text-zinc-900 mb-1">Connected accounts</h2>
+        <p className="text-xs text-zinc-500 mb-4">
+          Connect Google to import your Google reviews with one tap. / Connectez Google pour importer vos avis Google en un clic.
+        </p>
+        <Link href="/reviews" className={secondaryBtnClass}>
+          Manage Google connection
+        </Link>
+      </Card>
+      <Card className="p-5 md:p-6">
         <h2 className="text-sm font-bold text-zinc-900 mb-1 flex items-center gap-2">
           <ListChecks size={14} /> {t(locale, 'jobops.templates.title')}
         </h2>

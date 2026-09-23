@@ -92,6 +92,18 @@ export async function createJob(
   });
   if (!customer) return { error: 'Selected customer not found.' };
 
+  // Optional price-book service link: tenant-scoped — a service that doesn't
+  // belong to this business is ignored rather than failing the whole job.
+  let serviceId: string | null = null;
+  const rawServiceId = String(formData.get('serviceId') ?? '').trim();
+  if (rawServiceId) {
+    const service = await prisma.service.findFirst({
+      where: { id: rawServiceId, businessId },
+      select: { id: true },
+    });
+    if (service) serviceId = service.id;
+  }
+
   const job = await prisma.job.create({
     data: {
       title: parsed.data.title,
@@ -104,8 +116,29 @@ export async function createJob(
       status: 'SCHEDULED',
       notes: parsed.data.notes || null,
       technician: parsed.data.technician || null,
+      serviceId,
     },
   });
+
+  // Optional checklist-template bundle: copy the template's items into the
+  // new job. Tenant-scoped — another business's template is ignored.
+  const rawTemplateId = String(formData.get('templateId') ?? '').trim();
+  if (rawTemplateId) {
+    const template = await prisma.checklistTemplate.findFirst({
+      where: { id: rawTemplateId, businessId },
+      include: { items: { orderBy: { sortOrder: 'asc' } } },
+    });
+    if (template && template.items.length > 0) {
+      await prisma.jobChecklistItem.createMany({
+        data: template.items.map((item, i) => ({
+          jobId: job.id,
+          label: item.label,
+          done: false,
+          sortOrder: i,
+        })),
+      });
+    }
+  }
 
   revalidateJobPaths(job.id);
   redirect(`/jobs/${job.id}`);

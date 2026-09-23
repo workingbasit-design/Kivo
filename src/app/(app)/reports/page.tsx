@@ -7,23 +7,58 @@ import {
   Target,
   Trophy,
   ChevronRight,
+  Wrench,
+  CalendarClock,
 } from "lucide-react";
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getReportStats } from "@/lib/dashboard";
 import { cn } from "@/lib/utils";
 import { formatMoney } from "@/lib/money";
+import { getLocale } from "@/lib/i18n/server";
 import { PageHeader, Card, StatCard, StatusBadge, EmptyState } from "@/components/ui";
 
 const JOB_STATUS_ORDER = ["NEW", "SCHEDULED", "IN PROGRESS", "COMPLETED", "PAID", "CANCELLED"];
 
+const frReports = {
+  revenueByService: 'Revenus par service',
+  revenueByServiceSub: 'Tâches terminées et payées',
+  noServiceRevenue: 'Aucune tâche terminée pour le moment — liez vos tâches à votre carnet de prix pour voir la répartition.',
+  upcomingWorkload: 'Charge de travail à venir',
+  upcomingWorkloadSub: '14 prochains jours',
+  jobsScheduled: 'tâches planifiées',
+  jobScheduled: 'tâche planifiée',
+  estimatedValue: 'Valeur estimée',
+  nothingScheduled: "Rien de planifié dans les 14 prochains jours.",
+  otherLabelJobs: 'tâches',
+  otherLabelJob: 'tâche',
+};
+
+const enReports = {
+  revenueByService: 'Revenue by service',
+  revenueByServiceSub: 'Completed & paid jobs',
+  noServiceRevenue: 'No completed jobs yet — link jobs to your price book to see the breakdown.',
+  upcomingWorkload: 'Upcoming workload',
+  upcomingWorkloadSub: 'Next 14 days',
+  jobsScheduled: 'jobs scheduled',
+  jobScheduled: 'job scheduled',
+  estimatedValue: 'Estimated value',
+  nothingScheduled: 'Nothing scheduled in the next 14 days.',
+  otherLabelJobs: 'jobs',
+  otherLabelJob: 'job',
+};
+
 export default async function ReportsPage() {
   const { businessId } = await requireAuth();
+  const locale = await getLocale();
+  const r = locale === 'fr' ? frReports : enReports;
+  const moneyLocale = locale === 'fr' ? 'fr' : 'en';
   const business = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } });
   const currency = business?.currency;
-  const stats = await getReportStats(businessId);
+  const stats = await getReportStats(businessId, locale);
 
   const maxRevenue = Math.max(1, ...stats.months.map((m) => m.revenue));
+  const maxServiceRevenue = Math.max(1, ...stats.revenueByService.map((s) => s.revenue));
   const hasData =
     stats.totalCollected > 0 ||
     stats.jobsByStatus.length > 0 ||
@@ -89,6 +124,81 @@ export default async function ReportsPage() {
               icon={<Target size={16} />}
               accent="bg-blue-100 text-blue-700"
             />
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-4">
+            {/* Revenue by service */}
+            <Card className="p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
+                  <Wrench size={14} className="text-zinc-400" /> {r.revenueByService}
+                </h2>
+                <span className="text-[11px] text-zinc-400 font-medium">{r.revenueByServiceSub}</span>
+              </div>
+              {stats.revenueByService.length === 0 ? (
+                <p className="text-sm text-zinc-500">{r.noServiceRevenue}</p>
+              ) : (
+                <div className="space-y-3">
+                  {stats.revenueByService.map((s) => (
+                    <div key={s.name}>
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="text-xs font-semibold text-zinc-600 truncate mr-2">{s.name}</p>
+                        <p className="text-xs font-bold text-zinc-900 shrink-0">
+                          {formatMoney(s.revenue, currency, moneyLocale)}
+                        </p>
+                      </div>
+                      <div className="h-2.5 bg-zinc-100 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-ink rounded-full transition-all"
+                          style={{ width: `${Math.max(2, (s.revenue / maxServiceRevenue) * 100)}%` }}
+                        />
+                      </div>
+                      <p className="text-[11px] text-zinc-400 mt-1">
+                        {s.jobs} {s.jobs === 1 ? r.otherLabelJob : r.otherLabelJobs}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+
+            {/* Upcoming workload */}
+            <Card className="p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
+                  <CalendarClock size={14} className="text-zinc-400" /> {r.upcomingWorkload}
+                </h2>
+                <span className="text-[11px] text-zinc-400 font-medium">{r.upcomingWorkloadSub}</span>
+              </div>
+              {stats.upcomingWorkload.count === 0 ? (
+                <p className="text-sm text-zinc-500">{r.nothingScheduled}</p>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-end justify-between">
+                    <div>
+                      <p className="text-3xl font-bold text-zinc-900">
+                        {stats.upcomingWorkload.count}
+                      </p>
+                      <p className="text-xs text-zinc-500 mt-0.5">
+                        {stats.upcomingWorkload.count === 1 ? r.jobScheduled : r.jobsScheduled}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xl font-bold text-zinc-900">
+                        {formatMoney(stats.upcomingWorkload.totalPrice, currency, moneyLocale)}
+                      </p>
+                      <p className="text-xs text-zinc-500 mt-0.5">{r.estimatedValue}</p>
+                    </div>
+                  </div>
+                  <Link
+                    href="/schedule"
+                    className="text-xs font-semibold text-ink hover:underline inline-flex items-center gap-1"
+                  >
+                    View schedule <ChevronRight size={13} />
+                  </Link>
+                </div>
+              )}
+            </Card>
           </div>
 
           <div className="grid lg:grid-cols-2 gap-4">

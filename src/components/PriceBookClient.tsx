@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useTransition } from 'react';
-import { Plus, Search, Tag, Trash2, X, ListPlus } from 'lucide-react';
+import Link from 'next/link';
+import { Clock, Plus, Search, Tag, Trash2, X, ListPlus, Briefcase } from 'lucide-react';
 import { createService, deleteService, seedDefaultServices } from '@/app/actions/services';
 import { currencySymbol, formatMoney } from '@/lib/money';
 import ConfirmDialog from '@/components/ConfirmDialog';
@@ -10,19 +11,41 @@ type Service = {
   id: string;
   name: string;
   price: number;
+  durationMin: number | null;
+  description: string | null;
 };
 
-export default function PriceBookClient({ initialServices, currency }: { initialServices: Service[]; currency?: string }) {
+const fr = {
+  duration: 'Durée (min)',
+  durationHint: 'Optionnel — p. ex. 60',
+  description: 'Description',
+  descriptionHint: 'Optionnel — courte description du service',
+  useInJob: 'Utiliser dans une tâche',
+};
+
+const en = {
+  duration: 'Duration (min)',
+  durationHint: 'Optional — e.g. 60',
+  description: 'Description',
+  descriptionHint: 'Optional — short plain-language description',
+  useInJob: 'Use in job',
+};
+
+export default function PriceBookClient({ initialServices, currency, locale }: { initialServices: Service[]; currency?: string; locale?: 'en' | 'fr' }) {
+  const str = locale === 'fr' ? fr : en;
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
+  const [durationMin, setDurationMin] = useState('');
+  const [description, setDescription] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   const filteredServices = initialServices.filter(s => 
-    s.name.toLowerCase().includes(searchQuery.toLowerCase())
+    s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (s.description ?? '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleAddService = (e: React.FormEvent) => {
@@ -32,6 +55,8 @@ export default function PriceBookClient({ initialServices, currency }: { initial
     const fd = new FormData();
     fd.append('name', name);
     fd.append('price', price);
+    fd.append('durationMin', durationMin);
+    fd.append('description', description);
 
     startTransition(async () => {
       setError(null);
@@ -42,6 +67,8 @@ export default function PriceBookClient({ initialServices, currency }: { initial
       }
       setName('');
       setPrice('');
+      setDurationMin('');
+      setDescription('');
       setIsModalOpen(false);
     });
   };
@@ -146,7 +173,26 @@ export default function PriceBookClient({ initialServices, currency }: { initial
               </div>
 
               <h3 className="font-bold text-base text-zinc-900 mb-1">{service.name}</h3>
-              <p className="text-xs text-zinc-500">Standard flat rate service</p>
+              {service.description ? (
+                <p className="text-xs text-zinc-500 line-clamp-2 mb-2">{service.description}</p>
+              ) : (
+                <p className="text-xs text-zinc-500 mb-2">Standard flat rate service</p>
+              )}
+              <div className="flex items-center justify-between gap-2 mt-1">
+                {service.durationMin != null ? (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-zinc-600 bg-zinc-100 rounded-lg px-2 py-1">
+                    <Clock size={11} /> {service.durationMin} min
+                  </span>
+                ) : (
+                  <span />
+                )}
+                <Link
+                  href={`/jobs/new?service=${service.id}`}
+                  className="inline-flex items-center gap-1 text-[11px] font-bold text-ink hover:underline"
+                >
+                  <Briefcase size={11} /> {str.useInJob}
+                </Link>
+              </div>
             </div>
           ))}
 
@@ -217,14 +263,43 @@ export default function PriceBookClient({ initialServices, currency }: { initial
                 />
               </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-zinc-700 uppercase mb-1">Flat Rate Price ({currencySymbol(currency)})</label>
+                  <input 
+                    type="number" 
+                    required
+                    placeholder="e.g. 1500"
+                    min={0}
+                    step="1"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-zinc-700 uppercase mb-1">{str.duration}</label>
+                  <input 
+                    type="number" 
+                    placeholder={str.durationHint}
+                    min={5}
+                    max={1440}
+                    step="1"
+                    value={durationMin}
+                    onChange={(e) => setDurationMin(e.target.value)}
+                    className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink"
+                  />
+                </div>
+              </div>
+
               <div>
-                <label className="block text-xs font-bold text-zinc-700 uppercase mb-1">Flat Rate Price ({currencySymbol(currency)})</label>
-                <input 
-                  type="number" 
-                  required
-                  placeholder="e.g. 1500"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
+                <label className="block text-xs font-bold text-zinc-700 uppercase mb-1">{str.description}</label>
+                <textarea
+                  placeholder={str.descriptionHint}
+                  rows={2}
+                  maxLength={500}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
                   className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink"
                 />
               </div>

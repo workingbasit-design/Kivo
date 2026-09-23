@@ -22,6 +22,10 @@ export interface JobFormInitial {
   price?: number;
   notes?: string | null;
   technician?: string | null;
+  /** Price-book service this job was created from (create flow only). */
+  serviceId?: string;
+  /** Checklist template this job was created from (create flow only). */
+  templateId?: string;
 }
 
 /**
@@ -66,6 +70,8 @@ export default function JobForm({
   return (
     <form action={formAction} className="space-y-5">
       {initial?.id && <input type="hidden" name="id" value={initial.id} />}
+      {initial?.serviceId && <input type="hidden" name="serviceId" value={initial.serviceId} />}
+      {initial?.templateId && <input type="hidden" name="templateId" value={initial.templateId} />}
 
       <Field label="Job title">
         <input

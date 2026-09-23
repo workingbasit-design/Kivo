@@ -31,6 +31,7 @@ async function loadCustomer(id: string, businessId: string) {
       province: true,
       postalCode: true,
       notes: true,
+      tags: true,
       messageConsent: true,
       messageConsentAt: true,
       preferredLocale: true,
@@ -167,6 +168,21 @@ export default async function CustomerDetailPage({
               </div>
             </div>
           )}
+          {customer.tags && (
+            <div className="flex items-start gap-2.5 sm:col-span-2">
+              <StickyNote size={15} className="text-zinc-400 mt-0.5 shrink-0" />
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Tags</p>
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                  {customer.tags.split(',').filter(Boolean).map((tag) => (
+                    <span key={tag} className="text-[11px] font-semibold bg-zinc-100 text-zinc-700 rounded-full px-2.5 py-1">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="flex flex-wrap gap-2 pt-4 border-t border-zinc-100">
@@ -188,6 +204,7 @@ export default async function CustomerDetailPage({
               province: customer.province,
               postalCode: customer.postalCode,
               notes: customer.notes,
+              tags: customer.tags,
             }}
           />
           <DeleteCustomerButton customerId={customer.id} customerName={customerName} />

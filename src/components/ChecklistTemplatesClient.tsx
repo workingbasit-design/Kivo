@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useActionState, useEffect, useRef, useState, useTransition } from 'react';
-import { ListChecks, Pencil, Plus, Trash2, AlertCircle } from 'lucide-react';
+import Link from 'next/link';
+import { Clock, ListChecks, Pencil, Plus, Trash2, AlertCircle, Briefcase } from 'lucide-react';
 import {
   createChecklistTemplate,
   updateChecklistTemplate,
@@ -11,13 +12,38 @@ import {
 import { Card } from '@/components/ui';
 import { jInputClass, jPrimaryBtnClass, jSecondaryBtnClass } from '@/components/jobops-classes';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import { formatMoney } from '@/lib/money';
 import { t, type Locale } from '@/lib/i18n';
 
 export interface TemplateData {
   id: string;
   name: string;
   items: string[];
+  price: number | null;
+  durationMin: number | null;
+  notes: string | null;
 }
+
+/** New-field labels the shared i18n files don't cover (inline EN/FR). */
+const frBundle = {
+  price: 'Prix par défaut',
+  priceHint: 'Optionnel — pré-remplit le prix de la tâche',
+  duration: 'Durée (min)',
+  durationHint: 'Optionnel — entre 5 et 1440',
+  notes: 'Notes par défaut',
+  notesHint: 'Optionnel — pré-remplies sur la tâche',
+  useAsJob: 'Utiliser comme tâche',
+};
+
+const enBundle = {
+  price: 'Default price',
+  priceHint: 'Optional — pre-fills the job price',
+  duration: 'Duration (min)',
+  durationHint: 'Optional — between 5 and 1440',
+  notes: 'Default notes',
+  notesHint: 'Optional — pre-filled on the job',
+  useAsJob: 'Use as job',
+};
 
 /** Checklist-template CRUD for /settings/checklists. */
 export function ChecklistTemplatesClient({
@@ -93,6 +119,7 @@ function TemplateRow({
   const [isPending, startTransition] = useTransition();
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const bundle = locale === 'fr' ? frBundle : enBundle;
 
   const runDelete = () => {
     setConfirming(false);
@@ -114,6 +141,23 @@ function TemplateRow({
           <p className="text-[11px] text-graphite mt-1">
             {template.items.length} {t(locale, 'jobops.templates.items')}
           </p>
+          {(template.price != null || template.durationMin != null) && (
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {template.price != null && (
+                <span className="text-[11px] font-semibold text-ink bg-zinc-100 rounded-lg px-2 py-0.5">
+                  {formatMoney(template.price, undefined, locale === 'fr' ? 'fr' : 'en')}
+                </span>
+              )}
+              {template.durationMin != null && (
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-graphite bg-zinc-100 rounded-lg px-2 py-0.5">
+                  <Clock size={10} /> {template.durationMin} min
+                </span>
+              )}
+            </div>
+          )}
+          {template.notes && (
+            <p className="text-xs text-graphite mt-2 line-clamp-2">{template.notes}</p>
+          )}
           <ul className="mt-2 space-y-1">
             {template.items.slice(0, 5).map((label, i) => (
               <li key={i} className="text-xs text-graphite truncate">
@@ -124,6 +168,12 @@ function TemplateRow({
               <li className="text-[11px] text-graphite">…</li>
             )}
           </ul>
+          <Link
+            href={`/jobs/new?template=${template.id}`}
+            className="inline-flex items-center gap-1.5 text-[11px] font-bold text-ink hover:underline mt-3"
+          >
+            <Briefcase size={11} /> {bundle.useAsJob}
+          </Link>
           {error && <p className="text-[11px] text-rose-600 mt-2 font-medium">{error}</p>}
         </div>
         <div className="flex items-center gap-1 shrink-0">
@@ -176,6 +226,7 @@ function TemplateEditor({
     {}
   );
   const formRef = useRef<HTMLFormElement>(null);
+  const bundle = locale === 'fr' ? frBundle : enBundle;
 
   useEffect(() => {
     if (state?.ok) onDone();
@@ -198,6 +249,50 @@ function TemplateEditor({
             placeholder={t(locale, 'jobops.templates.namePlaceholder')}
             className={jInputClass}
             autoFocus
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-graphite mb-1">
+              {bundle.price}
+            </label>
+            <input
+              name="price"
+              type="number"
+              min={0}
+              step="1"
+              defaultValue={template?.price ?? ''}
+              placeholder={bundle.priceHint}
+              className={jInputClass}
+            />
+          </div>
+          <div>
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-graphite mb-1">
+              {bundle.duration}
+            </label>
+            <input
+              name="durationMin"
+              type="number"
+              min={5}
+              max={1440}
+              step="1"
+              defaultValue={template?.durationMin ?? ''}
+              placeholder={bundle.durationHint}
+              className={jInputClass}
+            />
+          </div>
+        </div>
+        <div>
+          <label className="block text-[11px] font-bold uppercase tracking-wider text-graphite mb-1">
+            {bundle.notes}
+          </label>
+          <textarea
+            name="notes"
+            rows={2}
+            maxLength={2000}
+            defaultValue={template?.notes ?? ''}
+            placeholder={bundle.notesHint}
+            className={jInputClass}
           />
         </div>
         <div>

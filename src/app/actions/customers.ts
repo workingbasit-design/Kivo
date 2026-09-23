@@ -8,6 +8,7 @@ import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { customerSchema } from '@/lib/validations';
 import { validatePhone, INVALID_PHONE_MESSAGE } from '@/lib/phone';
 import { validatePostalCode, INVALID_POSTAL_MESSAGE } from '@/lib/postal';
+import { tagsToDb } from '@/lib/tags';
 
 export type ActionResult = { error?: string; ok?: boolean };
 
@@ -47,6 +48,7 @@ function parseCustomerForm(formData: FormData) {
     province: formData.get('province'),
     postalCode: formData.get('postalCode'),
     notes: formData.get('notes'),
+    tags: formData.get('tags'),
   });
 }
 
@@ -76,7 +78,7 @@ export async function createCustomer(
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? 'Invalid details.' };
   }
-  const { name, phone, email, address, province, postalCode, notes } = parsed.data;
+  const { name, phone, email, address, province, postalCode, notes, tags } = parsed.data;
 
   const region = await businessRegion(businessId);
   const phoneCheck = checkPhone(phone, region);
@@ -94,6 +96,7 @@ export async function createCustomer(
       province: nullIfEmpty(province)?.toUpperCase() ?? null,
       postalCode: postalCheck.formatted,
       notes: nullIfEmpty(notes),
+      tags: tagsToDb(tags),
       businessId,
     },
   });
@@ -122,7 +125,7 @@ export async function updateCustomer(
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? 'Invalid details.' };
   }
-  const { name, phone, email, address, province, postalCode, notes } = parsed.data;
+  const { name, phone, email, address, province, postalCode, notes, tags } = parsed.data;
 
   const region = await businessRegion(businessId);
   const phoneCheck = checkPhone(phone, region);
@@ -141,6 +144,7 @@ export async function updateCustomer(
       province: nullIfEmpty(province)?.toUpperCase() ?? null,
       postalCode: postalCheck.formatted,
       notes: nullIfEmpty(notes),
+      tags: tagsToDb(tags),
     },
   });
 

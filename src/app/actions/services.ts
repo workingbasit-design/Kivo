@@ -9,14 +9,38 @@ import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 
 export type ServiceResult = { error?: string; ok?: boolean };
 
+/**
+ * Extended service fields: duration (minutes, 5–1440, optional) and
+ * description (optional plain-text). Blank inputs stay null.
+ */
+const serviceFieldsSchema = serviceSchema.extend({
+  durationMin: z.preprocess(
+    (v) => (String(v ?? '').trim() === '' ? undefined : v),
+    z.coerce
+      .number()
+      .int('Duration must be a whole number of minutes.')
+      .min(5, 'Duration must be between 5 and 1440 minutes.')
+      .max(1440, 'Duration must be between 5 and 1440 minutes.')
+      .optional()
+  ),
+  description: z.string().trim().max(500, 'Description is too long.').optional().default(''),
+});
+
+type ServiceFields = z.infer<typeof serviceFieldsSchema>;
+
+function nullIfBlank(v: string | undefined): string | null {
+  const t = (v ?? '').trim();
+  return t === '' ? null : t;
+}
+
 function limited(businessId: string): ServiceResult | null {
   const rl = rateLimit(`services:${businessId}`, ACTION_LIMIT);
   if (!rl.ok) return { error: 'Too many requests. Please slow down.' };
   return null;
 }
 
-async function parse(data: unknown): Promise<{ data?: z.infer<typeof serviceSchema>; error?: string }> {
-  const parsed = serviceSchema.safeParse(data);
+async function parse(data: unknown): Promise<{ data?: ServiceFields; error?: string }> {
+  const parsed = serviceFieldsSchema.safeParse(data);
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? 'Invalid service details.' };
   }
@@ -32,6 +56,8 @@ export async function createService(formData: FormData): Promise<ServiceResult> 
   const { data, error } = await parse({
     name: formData.get('name'),
     price: formData.get('price'),
+    durationMin: formData.get('durationMin'),
+    description: formData.get('description'),
   });
   if (error || !data) return { error: error ?? 'Invalid service details.' };
 
@@ -47,7 +73,13 @@ export async function createService(formData: FormData): Promise<ServiceResult> 
   }
 
   await prisma.service.create({
-    data: { name: data.name, price: data.price, businessId },
+    data: {
+      name: data.name,
+      price: data.price,
+      durationMin: data.durationMin ?? null,
+      description: nullIfBlank(data.description),
+      businessId,
+    },
   });
   revalidatePath('/pricebook');
   return { ok: true };
@@ -65,12 +97,19 @@ export async function updateService(id: string, formData: FormData): Promise<Ser
   const { data, error } = await parse({
     name: formData.get('name'),
     price: formData.get('price'),
+    durationMin: formData.get('durationMin'),
+    description: formData.get('description'),
   });
   if (error || !data) return { error: error ?? 'Invalid service details.' };
 
   await prisma.service.update({
     where: { id },
-    data: { name: data.name, price: data.price },
+    data: {
+      name: data.name,
+      price: data.price,
+      durationMin: data.durationMin ?? null,
+      description: nullIfBlank(data.description),
+    },
   });
   revalidatePath('/pricebook');
   return { ok: true };

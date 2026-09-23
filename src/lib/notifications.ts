@@ -21,6 +21,7 @@ export const NOTIFICATION_TYPES = [
   'quote_expiring',
   'booking_new',
   'payment_recorded',
+  'messaging_quota',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 
@@ -34,6 +35,7 @@ export function defaultSettings(): NotificationSettings {
     quote_expiring: true,
     booking_new: true,
     payment_recorded: true,
+    messaging_quota: true,
   };
 }
 

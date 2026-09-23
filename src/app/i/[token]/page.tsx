@@ -109,6 +109,7 @@ export default async function InvoicePortalPage({
     stripeConn?.chargesEnabled === true && (!stripeLive || !!stripeConn?.liveConfirmedAt);
 
   const locale = await getLocale();
+  const dateLocale = locale === 'fr' ? 'fr-CA' : 'en-CA';
 
   const whatsappHref = waLink(
     invoice.business.whatsappNumber || invoice.business.phone,
@@ -134,7 +135,7 @@ export default async function InvoicePortalPage({
             <div>
               <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">{invoice.number}</p>
               <p className="text-xs text-zinc-400 mt-1">
-                Dated {invoice.date.toLocaleDateString('en-CA', { day: 'numeric', month: 'short', year: 'numeric' })}
+                Dated {invoice.date.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })}
               </p>
             </div>
             <StatusBadge status={invoice.status} />

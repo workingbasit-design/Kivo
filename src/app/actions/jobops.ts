@@ -12,6 +12,10 @@ import {
   validateChecklistLabel,
   parseTemplateItemLines,
 } from '@/lib/costing';
+import {
+  parseTemplateBundleFields,
+  type TemplateBundleFields,
+} from '@/lib/template-bundle';
 
 export type JobOpsActionResult = { error?: string; ok?: boolean };
 
@@ -28,6 +32,25 @@ async function checkLimit(userId: string): Promise<JobOpsActionResult | null> {
 async function err(key: string): Promise<JobOpsActionResult> {
   const locale: Locale = await getLocale();
   return { error: t(locale, `jobops.errors.${key}`) };
+}
+
+/** Inline EN/FR error for the new bundle fields (i18n files are shared). */
+async function errBundle(en: string, fr: string): Promise<JobOpsActionResult> {
+  const locale: Locale = await getLocale();
+  return { error: locale === 'fr' ? fr : en };
+}
+
+/** Parse optional price/durationMin/notes from the template form; error or fields. */
+async function parseBundle(
+  formData: FormData
+): Promise<{ fields?: TemplateBundleFields; error?: JobOpsActionResult }> {
+  const parsed = parseTemplateBundleFields({
+    price: formData.get('price'),
+    durationMin: formData.get('durationMin'),
+    notes: formData.get('notes'),
+  });
+  if (!parsed.ok) return { error: await errBundle(parsed.errorEn, parsed.errorFr) };
+  return { fields: parsed.data };
 }
 
 /** Tenant-scoped job fetch; null when the job belongs to another business. */
@@ -63,11 +86,16 @@ export async function createChecklistTemplate(
   if (name.length < 2) return err('templateNameRequired');
   const items = parseTemplateItemLines(formData.get('items'));
   if (items.length === 0) return err('templateItemsRequired');
+  const { fields, error: bundleError } = await parseBundle(formData);
+  if (bundleError || !fields) return bundleError ?? err('notFound');
 
   await prisma.checklistTemplate.create({
     data: {
       businessId,
       name,
+      price: fields.price,
+      durationMin: fields.durationMin,
+      notes: fields.notes,
       items: { create: items.map((label, i) => ({ label, sortOrder: i })) },
     },
   });
@@ -91,6 +119,8 @@ export async function updateChecklistTemplate(
   if (name.length < 2) return err('templateNameRequired');
   const items = parseTemplateItemLines(formData.get('items'));
   if (items.length === 0) return err('templateItemsRequired');
+  const { fields, error: bundleError } = await parseBundle(formData);
+  if (bundleError || !fields) return bundleError ?? err('notFound');
 
   await prisma.$transaction([
     prisma.checklistTemplateItem.deleteMany({ where: { templateId: id } }),
@@ -98,6 +128,9 @@ export async function updateChecklistTemplate(
       where: { id },
       data: {
         name,
+        price: fields.price,
+        durationMin: fields.durationMin,
+        notes: fields.notes,
         items: { create: items.map((label, i) => ({ label, sortOrder: i })) },
       },
     }),

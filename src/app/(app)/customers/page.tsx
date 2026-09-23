@@ -37,6 +37,7 @@ export default async function CustomersPage() {
         phone: true,
         email: true,
         address: true,
+        tags: true,
         _count: { select: { jobs: true } },
         jobs: { select: { price: true } },
       },
@@ -51,6 +52,7 @@ export default async function CustomersPage() {
       phone: c.phone ?? null,
       email: c.email ?? null,
       address: c.address ?? null,
+      tags: (c.tags ?? '').split(',').map((t) => t.trim()).filter(Boolean),
       jobCount: c._count?.jobs ?? 0,
       revenue: (c.jobs ?? []).reduce(
         (s, j) => s + (typeof j?.price === 'number' ? j.price : 0),
