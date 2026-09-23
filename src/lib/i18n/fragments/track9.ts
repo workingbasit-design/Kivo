@@ -15,7 +15,7 @@ const fragment = {
       whatsappTitle: 'WhatsApp (Meta Cloud API)',
       whatsappDesc: 'Connect your own WhatsApp Business number. Free monthly quota applies per number.',
       whatsappFreeNote:
-        'How the free quota works: Meta delivers these reminders free only inside an open 24-hour customer-service window, and gives each number 1,000 free service messages per month. Outside that window Meta requires a paid utility template — EveryJob never sends paid templates, so the message automatically falls back to email instead.',
+        'How the free quota works: each WhatsApp number includes 1,000 free service messages per month (Meta pricing, effective Oct 1, 2026). EveryJob hard-stops at that limit and never sends paid templates — if Meta requires a paid utility template (e.g. outside the 24-hour service window), the message automatically falls back to email instead.',
       whatsappSetupHint: 'In your Meta developer dashboard: WhatsApp → API setup → copy the phone number ID and create an access token.',
       phoneNumberId: 'Phone number ID',
       accessToken: 'Access token',
@@ -185,7 +185,7 @@ const fragment = {
       whatsappTitle: 'WhatsApp (API Cloud de Meta)',
       whatsappDesc: 'Connectez votre propre numéro WhatsApp Business. Quota mensuel gratuit par numéro.',
       whatsappFreeNote:
-        "Fonctionnement du quota gratuit : Meta livre ces rappels gratuitement uniquement dans une fenêtre de service de 24 h ouverte, et accorde 1 000 messages de service gratuits par mois par numéro. Hors de cette fenêtre, Meta exige un modèle utilitaire payant — EveryJob n’envoie jamais de modèles payants : le message bascule automatiquement vers le courriel.",
+        "Fonctionnement du quota gratuit : chaque numéro WhatsApp inclut 1 000 messages de service gratuits par mois (tarification Meta, en vigueur depuis le 1er oct. 2026). EveryJob s’arrête strictement à cette limite et n’envoie jamais de modèles payants : si Meta exige un modèle utilitaire payant (p. ex. hors de la fenêtre de service de 24 h), le message bascule automatiquement vers le courriel.",
       whatsappSetupHint: 'Dans votre tableau de bord développeur Meta : WhatsApp → Configuration API → copiez l’ID du numéro et créez un jeton d’accès.',
       phoneNumberId: 'ID du numéro de téléphone',
       accessToken: 'Jeton d’accès',

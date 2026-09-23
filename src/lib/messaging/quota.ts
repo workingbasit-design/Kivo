@@ -3,17 +3,25 @@
  *
  * Pure, testable TypeScript: no DB, no network, no Next.js imports.
  *
- * Verified free-tier limits (research 2026-09-23):
- * - WhatsApp: Meta allows 1,000 free *service messages* per calendar month per
- *   business phone number (Meta admin email 2026-09-05; per-message pricing
- *   from 2026-10-01). Business-initiated utility templates are PAID per
- *   message — EveryJob never sends those; we send free-form service text,
- *   which Meta delivers free inside an open 24h customer-service window or
- *   rejects (template_required), in which case we fall back to email.
- * - Email (Resend free tier): 3,000/month AND 100/day — the daily cap is the
- *   binding constraint (resend.com/pricing; resend.com/docs/knowledge-base/
- *   account-quotas-and-limits). Exceeding either pauses sending.
- * - SMS: no genuine ongoing free tier exists (trial credits only) — disabled.
+ * Verified free-tier limits (official sources, research 2026-09-23):
+ * - WhatsApp: Meta grants 1,000 free *delivered service messages* per calendar
+ *   month per business phone number, effective 2026-10-01; unused messages do
+ *   not roll over and billing starts at the 1,001st at the market's per-message
+ *   utility/authentication rate. Without a payment method on file Meta simply
+ *   stops delivering after the free tier.
+ *   Source: https://developers.facebook.com/documentation/business-messaging/whatsapp/pricing
+ *   Business-initiated utility templates are PAID per message — EveryJob never
+ *   sends those; we send free-form service text, which Meta delivers inside an
+ *   open 24h customer-service window (within the free tier) or rejects
+ *   (template_required), in which case we fall back to email. Our own counter
+ *   hard-stops at 1,000 so the paid tier is never reached.
+ * - Email (Resend free-forever plan): 3,000/month AND 100/day — the daily cap
+ *   is the binding constraint (https://resend.com/pricing;
+ *   https://resend.com/docs/knowledge-base/account-quotas-and-limits).
+ *   Exceeding either pauses sending.
+ * - SMS: no genuine ongoing free tier exists (Twilio: one-time $15 trial
+ *   credit, verified numbers only; Textbelt: 1 free text/day test courtesy) —
+ *   disabled by design.
  */
 
 export interface QuotaLimits {

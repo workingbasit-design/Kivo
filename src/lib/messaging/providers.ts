@@ -6,10 +6,14 @@
  * a disabled stub that explains why — the system never sends paid SMS.
  *
  * IMPORTANT WhatsApp caveat: Meta only delivers free-form text inside the
- * 24-hour customer-service window. Business-initiated notifications (like
- * reminders) require a Meta-approved *utility template*; otherwise the API
+ * 24-hour customer-service window, and since 2026-10-01 those service
+ * messages count against the number's 1,000/month free tier (billed
+ * per-message after that — our quota hard-stop means we never reach the
+ * paid tier). Business-initiated notifications (like reminders) outside the
+ * window require a Meta-approved *utility template*; otherwise the API
  * rejects the send with a template error, which we classify as
  * 'template_required' so the owner knows what to fix in their Meta dashboard.
+ * Source: https://developers.facebook.com/documentation/business-messaging/whatsapp/pricing
  *
  * Secrets (tokens/keys) are passed in by the caller and NEVER logged here.
  * `fetchFn` is injectable so tests run with zero live provider calls.

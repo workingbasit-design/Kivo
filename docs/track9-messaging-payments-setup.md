@@ -80,17 +80,18 @@ never logged, and only decrypted in memory at send time.
 3. They set the webhook (URL above) in the Meta dashboard using
    `WHATSAPP_VERIFY_TOKEN`, and subscribe to **messages** so customer
    STOP/HELP replies are received.
-4. **Free-quota behavior.** Meta delivers free-form text free only inside an
-   open 24-hour customer-service window and grants each number 1,000 free
-   service messages per calendar month (Meta's published WhatsApp pricing —
-   re-verify in the
-   [WhatsApp Business Platform pricing docs](https://developers.facebook.com/docs/whatsapp/pricing)
-   before relying on it, as Meta changes these terms). Outside the service
-   window Meta requires an approved **utility template** (paid). EveryJob
-   never sends paid templates: if Meta answers `template_required`, the
-   message automatically **falls back to email** instead, and the monthly
-   WhatsApp counter hard-stops at 1,000. WhatsApp sending is fail-closed by
-   design.
+4. **Free-quota behavior (verified against official Meta docs, 2026-09-23).**
+   Effective **Oct 1, 2026**, each business phone number gets **1,000 free
+   delivered service messages per calendar month**. Unused messages do not
+   roll over; from the 1,001st, Meta bills per message at the market's
+   utility/authentication rate. Without a payment method on file, Meta simply
+   stops delivering after the free tier. Business-initiated messages outside
+   the 24-hour customer-service window require an approved **utility
+   template** (paid). EveryJob never sends paid templates: if Meta answers
+   `template_required`, the message automatically **falls back to email**,
+   and EveryJob's own monthly counter hard-stops at 1,000 — the paid tier is
+   never reached. WhatsApp sending is fail-closed by design.
+   Source: <https://developers.facebook.com/documentation/business-messaging/whatsapp/pricing>
 
 ### Email (Settings → Messaging → Email)
 
@@ -98,18 +99,23 @@ never logged, and only decrypted in memory at send time.
    sending domain in Resend.
 2. They paste the from-address and API key into EveryJob; EveryJob verifies
    with a read-only `GET /domains` call before saving.
-3. **Free tier (Resend's published limits —
-   [pricing](https://resend.com/pricing),
-   [quotas & limits](https://resend.com/docs/knowledge-base/account-quotas-and-limits)):
-   3,000 emails/month **and** 100 emails/day.** EveryJob enforces **both**
-   caps (monthly counter + a business-timezone daily counter) and hard-stops
-   at whichever hits first.
+3. **Free tier — Resend's free-forever plan (verified 2026-09-23):**
+   3,000 emails/month **and** 100 emails/day; 3 custom domains; 1 webhook
+   endpoint. Sources:
+   [pricing](https://resend.com/pricing) (Free plan column + FAQ, which calls
+   it a "free-forever plan" — no trial expiry),
+   [quotas & limits](https://resend.com/docs/knowledge-base/account-quotas-and-limits).
+   EveryJob enforces **both** caps (monthly counter + a business-timezone
+   daily counter) and hard-stops at whichever hits first.
 
 ### SMS
 
 Disabled by design. No carrier offers a genuine ongoing free SMS tier, so the
 SMS provider is a stub that refuses to send rather than risk a charge. There
-is nothing to configure.
+is nothing to configure. (Verified 2026-09-23: Twilio's trial is a one-time
+$15 credit restricted to verified phone numbers — not a recurring tier,
+<https://www.twilio.com/en-us/signup-credits>; Textbelt offers 1 free
+text/day as a testing courtesy, not a business-grade tier.)
 
 ### Stripe (Settings → Payments)
 
@@ -125,6 +131,16 @@ is nothing to configure.
 4. Invoice **Pay now** and quote **deposit** buttons appear on the public
    portals only when Stripe is connected, charges are enabled, and (for live
    accounts) live mode was explicitly confirmed.
+
+**Stripe Canada pricing (verified 2026-09-23, <https://stripe.com/ca/pricing>):**
+pay-as-you-go, no setup/monthly/hidden fees. Domestic cards **2.9% + CA$0.30**
+per successful transaction (+0.8% international; in-person 2.7% + CA$0.05;
+dispute fee CA$15.00). Checkout and Payment Links are included with Payments.
+Connect **direct charges** are confirmed in official docs — the Checkout
+Session is created on the connected account, funds settle directly there,
+EveryJob never touches the money:
+<https://docs.stripe.com/connect/charges>,
+<https://docs.stripe.com/connect/direct-charges>.
 
 ## 4. How the automations work
 
@@ -146,8 +162,15 @@ is nothing to configure.
 - **Payments**: Stripe webhooks are signature-verified and idempotent
   (each `evt_…` handled once; duplicate deliveries are safe). Successful
   checkout records the payment/deposit, receipt URL, and notifies the owner.
-  Interac e-Transfer / cash / cheque remain record-only flows. Online Interac
-  is **not** offered (no officially verified support).
+  Interac e-Transfer / cash / cheque remain record-only flows — Stripe does
+  **not** support Interac e-Transfer. **Interac Debit online** is now
+  officially available to Stripe's Canadian retail customers through
+  participating digital wallets (Interac announcement, Feb 10, 2026:
+  <https://www.interac.ca/en/content/news/interac-debit-is-now-available-for-online-and-in-app-payments-with-stripes-customers/>),
+  but enablement is arranged per-merchant with Stripe and only works for
+  customers whose banks participate — it is **not yet wired into EveryJob**
+  (product decision pending; paying customers would use Apple Pay / Google
+  Pay with a provisioned Interac card inside Stripe Checkout).
 
 ## 5. Verification checklist
 
