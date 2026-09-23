@@ -71,6 +71,13 @@ model Business {
   directoryClaim       DirectoryClaim?
   notificationSettings String? // JSON: { job_tomorrow: bool, job_soon: bool, ... }; null = all types on
   notifications      Notification[]
+  messagingSettings    MessagingSettings?
+  messagingConnections MessagingConnection[]
+  messageQuotas        MessageQuota[]
+  consentLogs          ConsentLog[]
+  stripeConnection     StripeConnection?
+  stripeEvents         StripeEvent[]
+  quoteDeposits        QuoteDeposit[]
   directoryReports     DirectoryReport[]
   campaigns            Campaign[]
   createdAt            DateTime              @default(now())
@@ -88,6 +95,12 @@ model Customer {
   postalCode    String? // Validated + formatted: "A1A 1A1" (CA) or 6-digit PIN (IN)
   notes         String?
   tags          String? // comma-separated customer tags, e.g. "vip,senior,dog-friendly"
+  messageConsent       Boolean   @default(false) // CASL express consent for automated messages; required before any auto-send
+  messageConsentAt     DateTime? // when consent was given/withdrawn
+  messageConsentSource String? // "settings-ui" | "whatsapp-inbound" | "customer-import"
+  preferredLocale      String? // "en" | "fr"; null = business default
+  consentLogs          ConsentLog[]
+  messageLogs          MessageLog[]
   businessId    String
   business      Business              @relation(fields: [businessId], references: [id], onDelete: Cascade)
   jobs          Job[]
@@ -220,6 +233,9 @@ model Payment {
   provider      String // "STRIPE", "INTERAC", "CASH", "CHEQUE"
   transactionId String?
   status        String // "PENDING", "COMPLETED", "FAILED"
+  stripePaymentIntentId   String? @unique // pi_...; set for Stripe card payments
+  stripeCheckoutSessionId String? @unique // cs_...; set for Stripe Checkout payments
+  receiptUrl    String? // Stripe receipt URL, when available
   invoiceId     String
   invoice       Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   createdAt     DateTime @default(now())
@@ -231,10 +247,21 @@ model MessageLog {
   type       String // "SMS", "WHATSAPP", "EMAIL"
   recipient  String
   content    String
-  status     String // "SENT", "FAILED", "DELIVERED"
+  status     String // "SENT", "FAILED", "DELIVERED", "BLOCKED_QUOTA", "BLOCKED_NO_CONSENT", "BLOCKED_QUIET_HOURS", "DRY_RUN", "DEFERRED"
+  direction  String   @default("OUT") // "OUT" (we sent) | "IN" (customer replied, e.g. STOP/HELP)
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  template   String? // MessageTemplateId, e.g. "reminder_24h"; null for manual/ad-hoc
+  locale     String? // "en" | "fr"
+  eventKey   String? // idempotency key for automated sends; null for manual
+  error      String? // failure reason, when status is FAILED/BLOCKED_*
+  providerMessageId String? // WhatsApp wamid / Resend id
   businessId String
   business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
   createdAt  DateTime @default(now())
+
+  @@index([businessId, eventKey])
+  @@index([businessId, createdAt])
 }
 
 model Communication {
@@ -302,6 +329,8 @@ model Quote {
   shareTokens       ShareToken[]
   signatureRequests SignatureRequest[]
   addons            QuoteAddon[]
+  depositAmount     Float? // requested deposit (CAD); null = no deposit requested
+  deposits          QuoteDeposit[]
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
 }
@@ -533,4 +562,152 @@ model Notification {
 
   @@unique([businessId, dedupeKey])
   @@index([businessId, readAt, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// TRACK 9 — Automated messaging (free-quota only) + online payments (Stripe).
+// User decision 2026-09-23: automated messaging and online payments are now
+// OPT-IN features. Messaging only ever goes to customers with explicit
+// opt-in consent (CASL), respects quiet hours, and HARD-STOPS at the free
+// quota — the system cannot silently incur messaging charges. Payments flow
+// through each business's OWN Stripe Connect account; EveryJob never holds
+// money. Card data never touches our servers (Stripe Checkout only).
+// ---------------------------------------------------------------------------
+
+// Per-business automated-messaging toggles + guardrails. All automations
+// default OFF; the owner opts in per trigger. dryRun defaults ON so the
+// owner previews exactly what would send before anything goes out.
+model MessagingSettings {
+  id                String   @id @default(cuid())
+  businessId        String   @unique
+  business          Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  reminder24h       Boolean  @default(false)
+  reminderDayOf     Boolean  @default(false)
+  invoiceDue        Boolean  @default(false)
+  invoiceOverdue    Boolean  @default(false)
+  quoteFollowup     Boolean  @default(false)
+  reviewRequest     Boolean  @default(false)
+  quietStartHour    Int      @default(21) // no automated messages 21:00–08:00 business tz
+  quietEndHour      Int      @default(8)
+  dryRun            Boolean  @default(true) // preview mode: log candidates, send nothing
+  // Free-quota hard caps — verified 2026-09-23:
+  // - whatsappLimit: Meta's 1,000 free service messages / calendar month / number
+  // - emailLimit: Resend free tier 3,000 / month
+  // - emailDailyLimit: Resend free tier 100 / day (binding constraint)
+  whatsappLimit     Int      @default(1000)
+  emailLimit        Int      @default(3000)
+  emailDailyLimit   Int      @default(100)
+  quotaNotifiedAt   DateTime? // last in-app quota-exhausted notice (avoid spam)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+// A business's own messaging provider connections. Secrets (tokens/keys)
+// are stored ENCRYPTED at rest (AES-256-GCM, see src/lib/messaging/crypto.ts),
+// never logged, and only used for that business's sends.
+model MessagingConnection {
+  id               String    @id @default(cuid())
+  channel          String // "WHATSAPP" | "EMAIL"
+  provider         String // "META_WHATSAPP" | "RESEND"
+  waPhoneNumberId  String? // WhatsApp Cloud API phone_number_id
+  waBusinessAcctId String? // WhatsApp Business Account id
+  waAccessToken    String? // Meta token (secret)
+  waDisplayNumber  String? // the business's WhatsApp number, for display
+  emailFromName    String?
+  emailFromAddress String?
+  emailApiKey      String? // Resend API key (secret)
+  enabled          Boolean   @default(true)
+  verifiedAt       DateTime?
+  businessId       String
+  business         Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@unique([businessId, channel])
+}
+
+// Monthly per-business usage counters. The engine atomically reserves one
+// unit per send and refuses to send past the free-quota limit (hard stop).
+model MessageQuota {
+  id            String   @id @default(cuid())
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  month         String // "YYYY-MM" in the business's timezone
+  whatsappCount Int      @default(0)
+  emailCount    Int      @default(0)
+  blockedCount  Int      @default(0) // sends refused because the quota was exhausted
+  emailDay      String? // "YYYY-MM-DD" in the business's timezone (Resend free tier: daily cap)
+  emailDayCount Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([businessId, month])
+}
+
+// CASL consent audit trail: every opt-in / opt-out / STOP / HELP, tenant-scoped.
+model ConsentLog {
+  id         String   @id @default(cuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  channel    String // "WHATSAPP" | "EMAIL"
+  action     String // "OPT_IN" | "OPT_OUT" | "STOP_RECEIVED" | "HELP_RECEIVED"
+  source     String? // "settings-ui" | "whatsapp-inbound" | "customer-import"
+  createdAt  DateTime @default(now())
+
+  @@index([businessId, customerId])
+}
+
+// The business's own Stripe account via Stripe Connect OAuth. Funds settle
+// directly to the business; EveryJob never holds money.
+model StripeConnection {
+  id                 String    @id @default(cuid())
+  businessId         String    @unique
+  business           Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  stripeAccountId    String    @unique // acct_...
+  livemode           Boolean   @default(false)
+  chargesEnabled     Boolean   @default(false)
+  payoutsEnabled     Boolean   @default(false)
+  onboardingComplete Boolean   @default(false)
+  liveConfirmedAt    DateTime? // explicit owner confirmation before live charges
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+}
+
+// Processed Stripe webhook events (idempotency: each event handled once).
+model StripeEvent {
+  id            String   @id @default(cuid())
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  stripeEventId String   @unique // evt_...
+  type          String // e.g. "checkout.session.completed"
+  livemode      Boolean  @default(false)
+  processedAt   DateTime? // set only after the handler succeeded; absent → Stripe retries
+  createdAt     DateTime @default(now())
+
+  @@index([businessId])
+}
+
+// Deposit collection on a quote. Card deposits go through Stripe Checkout;
+// manual deposits (Interac/cash/cheque) are recorded by the owner.
+// EveryJob never holds money — Stripe settles to the business's account.
+model QuoteDeposit {
+  id                      String    @id @default(cuid())
+  quoteId                 String
+  quote                   Quote     @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  businessId              String
+  business                Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  amount                  Float
+  provider                String    @default("STRIPE") // "STRIPE" | "INTERAC" | "CASH" | "CHEQUE"
+  status                  String    @default("PENDING") // "PENDING" | "COMPLETED" | "FAILED"
+  stripePaymentIntentId   String?   @unique
+  stripeCheckoutSessionId String?   @unique
+  receiptUrl              String?
+  note                    String?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  @@index([quoteId])
+  @@index([businessId])
 }

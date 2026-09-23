@@ -60,6 +60,24 @@ export default async function SettingsPage() {
         <LanguageToggle current={locale} />
       </Card>
       <Card className="p-5 md:p-6">
+        <h2 className="text-sm font-bold text-zinc-900 mb-1">Automated messaging</h2>
+        <p className="text-xs text-zinc-500 mb-4">
+          Reminders, follow-ups and review requests — opt-in only, quiet hours, free-quota hard stop.
+        </p>
+        <Link href="/settings/messaging" className={secondaryBtnClass}>
+          Manage messaging
+        </Link>
+      </Card>
+      <Card className="p-5 md:p-6">
+        <h2 className="text-sm font-bold text-zinc-900 mb-1">Online payments</h2>
+        <p className="text-xs text-zinc-500 mb-4">
+          Card payments via your own Stripe account. EveryJob never holds money.
+        </p>
+        <Link href="/settings/payments" className={secondaryBtnClass}>
+          Manage payments
+        </Link>
+      </Card>
+      <Card className="p-5 md:p-6">
         <h2 className="text-sm font-bold text-zinc-900 mb-1 flex items-center gap-2">
           <ListChecks size={14} /> {t(locale, 'jobops.templates.title')}
         </h2>

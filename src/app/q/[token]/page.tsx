@@ -11,6 +11,7 @@ import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import QuotePortalActions from '@/components/QuotePortalActions';
 import PortalNotice from '@/components/PortalNotice';
+import PayDepositButton from '@/components/PayDepositButton';
 
 /**
  * Public client portal for a quote. No authentication — the share token in
@@ -31,10 +32,13 @@ async function clientIp(): Promise<string> {
 
 export default async function QuotePortalPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ token: string }>;
+  searchParams: Promise<{ paid?: string }>;
 }) {
   const { token } = await params;
+  const { paid } = await searchParams;
 
   const rl = rateLimit(`portal:quote:${await clientIp()}`, PORTAL_LIMIT);
   if (!rl.ok) return <PortalNotice variant="rate-limited" />;
@@ -56,11 +60,16 @@ export default async function QuotePortalPage({
       title: true,
       total: true,
       status: true,
+      depositAmount: true,
       createdAt: true,
       customer: { select: { name: true } },
       addons: {
         select: { id: true, title: true, price: true, selected: true },
         orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+      },
+      deposits: {
+        where: { status: 'COMPLETED' },
+        select: { amount: true },
       },
       business: {
         select: {
@@ -70,6 +79,9 @@ export default async function QuotePortalPage({
           address: true,
           regionCode: true,
           currency: true,
+          stripeConnection: {
+            select: { chargesEnabled: true, livemode: true, liveConfirmedAt: true },
+          },
         },
       },
     },
@@ -85,6 +97,17 @@ export default async function QuotePortalPage({
   const selectedAddons = quote.addons.filter((a) => a.selected);
   const approvedTotal =
     selectedAddons.length > 0 ? addonQuoteTotal(quote.total, quote.addons) : quote.total;
+
+  // Deposit state: owner-set deposit amount minus completed/recorded deposits.
+  const depositTarget = quote.depositAmount ?? 0;
+  const depositPaid = quote.deposits.reduce((s, d) => s + d.amount, 0);
+  const depositRemaining = Math.max(0, depositTarget - depositPaid);
+  const stripeConn = quote.business.stripeConnection;
+  const stripeLive = stripeConn?.livemode === true;
+  const canPayDepositOnline =
+    stripeConn?.chargesEnabled === true && (!stripeLive || !!stripeConn?.liveConfirmedAt);
+  const showDeposit =
+    quote.status === 'APPROVED' && depositTarget > 0 && depositRemaining > 0 && canPayDepositOnline;
 
   const whatsappHref = waLink(
     quote.business.whatsappNumber || quote.business.phone,
@@ -104,6 +127,12 @@ export default async function QuotePortalPage({
           <h1 className="text-xl font-bold text-zinc-900 tracking-tight">{quote.business.name}</h1>
           <p className="text-sm text-zinc-500 mt-0.5">{L('quotes.portal.quoteFor')} {quote.customer.name}</p>
         </div>
+
+        {paid === '1' && (
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 text-center">
+            {L('payments.depositPaidThanks')}
+          </div>
+        )}
 
         <Card className="p-6">
           <div className="flex items-start justify-between gap-3 mb-4">
@@ -188,6 +217,23 @@ export default async function QuotePortalPage({
                 <p className="text-xs text-zinc-500 mt-1">{L('quotes.portal.notReadyNote')}</p>
               </>
             )}
+          </Card>
+        )}
+
+        {showDeposit && (
+          <Card className="p-6">
+            <h2 className="text-sm font-bold text-zinc-900 mb-1">{L('payments.depositTitle')}</h2>
+            <p className="text-xs text-zinc-500 mb-3">
+              {depositPaid > 0
+                ? `${L('payments.depositRemaining')} ${formatMoney(depositRemaining, quote.business.currency, moneyLocale)}`
+                : L('payments.depositDesc')}
+            </p>
+            <PayDepositButton
+              token={token}
+              amount={depositRemaining}
+              testMode={!stripeLive}
+              locale={moneyLocale}
+            />
           </Card>
         )}
 

@@ -10,6 +10,9 @@ import { formatMoney } from '@/lib/money';
 import { taxIdLabelForRegion } from '@/lib/tax';
 import CopyButton from '@/components/CopyButton';
 import PortalNotice from '@/components/PortalNotice';
+import PayNowButton from '@/components/PayNowButton';
+import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
 
 /**
  * Public client portal for an invoice. No authentication — the share token
@@ -31,10 +34,13 @@ async function clientIp(): Promise<string> {
 
 export default async function InvoicePortalPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ token: string }>;
+  searchParams: Promise<{ paid?: string }>;
 }) {
   const { token } = await params;
+  const { paid: paidParam } = await searchParams;
 
   const rl = rateLimit(`portal:invoice:${await clientIp()}`, PORTAL_LIMIT);
   if (!rl.ok) return <PortalNotice variant="rate-limited" />;
@@ -76,6 +82,9 @@ export default async function InvoicePortalPage({
           taxId: true,
           regionCode: true,
           currency: true,
+          stripeConnection: {
+            select: { chargesEnabled: true, livemode: true, liveConfirmedAt: true },
+          },
         },
       },
       payments: {
@@ -90,6 +99,16 @@ export default async function InvoicePortalPage({
   const paid = invoice.payments.reduce((s, p) => s + p.amount, 0);
   const balance = Math.max(0, invoice.total - paid);
   const round2 = (n: number) => Math.round(n * 100) / 100;
+
+  // Online card payments: only when the business connected Stripe with
+  // charges enabled. Live accounts additionally need the owner's explicit
+  // live confirmation (the /api/pay/invoice endpoint enforces this too).
+  const stripeConn = invoice.business.stripeConnection;
+  const stripeLive = stripeConn?.livemode === true;
+  const canPayOnline =
+    stripeConn?.chargesEnabled === true && (!stripeLive || !!stripeConn?.liveConfirmedAt);
+
+  const locale = await getLocale();
 
   const whatsappHref = waLink(
     invoice.business.whatsappNumber || invoice.business.phone,
@@ -181,6 +200,23 @@ export default async function InvoicePortalPage({
             <p className="text-xs text-zinc-500 mt-4 bg-zinc-50 rounded-xl px-3 py-2.5 whitespace-pre-wrap">{notes}</p>
           )}
         </Card>
+
+        {paidParam === '1' && balance <= 0 && (
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 text-center">
+            {t(locale, 'payments.paidThanks')}
+          </div>
+        )}
+
+        {balance > 0 && canPayOnline && (
+          <Card className="p-6">
+            <PayNowButton token={token} amount={balance} testMode={!stripeLive} locale={locale} />
+            {invoice.business.interacEmail && (
+              <p className="text-[11px] text-zinc-400 mt-2 text-center">
+                {t(locale, 'payments.cardAlso')}
+              </p>
+            )}
+          </Card>
+        )}
 
         {balance > 0 && invoice.business.interacEmail && (
           <Card className="p-6">

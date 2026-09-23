@@ -20,6 +20,7 @@ import QuoteActions from './QuoteActions';
 import QuoteAddons from './QuoteAddons';
 import ShareTokenManager from '@/components/ShareTokenManager';
 import WhatsAppButton from '@/components/WhatsAppButton';
+import QuoteDepositCard from '@/components/QuoteDepositCard';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -39,6 +40,7 @@ export default async function QuoteDetailPage({
       customer: true,
       business: { select: { regionCode: true, taxRegion: true, currency: true, name: true } },
       addons: { orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }] },
+      deposits: { orderBy: { createdAt: 'desc' } },
     },
   });
   if (!quote) notFound();
@@ -177,6 +179,21 @@ export default async function QuoteDetailPage({
       </Card>
 
       <SignatureRequestsCard quoteId={quote.id} L={L} locale={locale} />
+
+      <QuoteDepositCard
+        quoteId={quote.id}
+        depositAmount={quote.depositAmount}
+        deposits={quote.deposits.map((d) => ({
+          id: d.id,
+          amount: d.amount,
+          provider: d.provider,
+          status: d.status,
+          note: d.note,
+          receiptUrl: d.receiptUrl,
+          createdAt: d.createdAt.toISOString(),
+        }))}
+        locale={locale}
+      />
 
       <Card className="p-6">
         <ShareTokenManager

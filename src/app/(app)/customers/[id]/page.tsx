@@ -11,6 +11,8 @@ import { secondaryBtnClass } from '@/components/ui';
 import { EditCustomerForm, DeleteCustomerButton } from './customer-forms';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import PortalLinkManager from '@/components/PortalLinkManager';
+import CustomerConsentCard from '@/components/CustomerConsentCard';
+import { getLocale } from '@/lib/i18n/server';
 import { CA_PROVINCES } from '@/lib/tax';
 
 /**
@@ -29,6 +31,9 @@ async function loadCustomer(id: string, businessId: string) {
       province: true,
       postalCode: true,
       notes: true,
+      messageConsent: true,
+      messageConsentAt: true,
+      preferredLocale: true,
       createdAt: true,
       jobs: {
         orderBy: { date: 'desc' },
@@ -200,6 +205,15 @@ export default async function CustomerDetailPage({
           initialTokenId={activePortalToken?.id ?? null}
         />
       </Card>
+
+      {/* CASL consent for automated messaging */}
+      <CustomerConsentCard
+        customerId={customer.id}
+        consent={customer.messageConsent ?? false}
+        consentAt={customer.messageConsentAt?.toISOString() ?? null}
+        preferredLocale={customer.preferredLocale}
+        locale={await getLocale()}
+      />
 
       {/* Job history */}
       <Card>
