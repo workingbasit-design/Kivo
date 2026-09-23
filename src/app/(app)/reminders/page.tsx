@@ -7,6 +7,7 @@ import { t, type Locale } from '@/lib/i18n';
 import { PageHeader, Card, EmptyState, StatusBadge } from '@/components/ui';
 import { formatMoney } from '@/lib/money';
 import { formatWhenLabel } from '@/lib/reminders';
+import { todayInTimezone } from '@/lib/utils';
 import ReminderRow, { type ReminderUiStrings } from '@/components/reminders/ReminderRow';
 import MissedCallCard from '@/components/reminders/MissedCallCard';
 
@@ -35,20 +36,26 @@ export default async function RemindersPage() {
 
   const business = await prisma.business.findUnique({
     where: { id: businessId },
-    select: { regionCode: true, currency: true },
+    select: { regionCode: true, currency: true, timezone: true },
   });
   const regionCode = business?.regionCode ?? 'CA';
   const currency = business?.currency ?? 'CAD';
 
-  const now = new Date();
-  const in48h = new Date(now.getTime() + 48 * 60 * 60 * 1000);
+  // Job dates are stored at (server-local) midnight of their calendar day,
+  // so the window must start at the business-local day boundary — comparing
+  // against the current instant would hide today's jobs after midnight.
+  const todayStr = todayInTimezone(business?.timezone, regionCode);
+  const [ty, tm, td] = todayStr.split('-').map(Number);
+  const dayStart = new Date(ty, tm - 1, td, 0, 0, 0, 0);
+  const in48h = new Date(dayStart.getTime() + 48 * 60 * 60 * 1000);
 
   const [jobRows, invoiceRows, customerRows] = await Promise.all([
-    // Upcoming jobs (next 48h, scheduled/in-progress) whose customer has a phone.
+    // Upcoming jobs (next 48h from the start of the business-local day,
+    // scheduled/in-progress) whose customer has a phone.
     prisma.job.findMany({
       where: {
         businessId,
-        date: { gte: now, lte: in48h },
+        date: { gte: dayStart, lte: in48h },
         status: { in: ['SCHEDULED', 'IN PROGRESS'] },
       },
       include: {

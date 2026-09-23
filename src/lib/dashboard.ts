@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { dayRange, toISODateLocal } from "@/lib/utils";
+import { dayRange, todayInTimezone } from "@/lib/utils";
 
 export interface TodayJob {
   id: string;
@@ -72,7 +72,13 @@ function daysAgo(n: number): Date {
 }
 
 export async function getDashboardStats(businessId: string): Promise<DashboardStats> {
-  const todayStr = toISODateLocal(new Date());
+  // "Today" is the business-local calendar day — the server runs on UTC, so
+  // a server-local date would show the wrong day's jobs in the evening.
+  const biz = await prisma.business.findUnique({
+    where: { id: businessId },
+    select: { timezone: true, regionCode: true },
+  });
+  const todayStr = todayInTimezone(biz?.timezone, biz?.regionCode);
   const { gte: todayStart, lte: todayEnd } = dayRange(todayStr);
   const weekStart = daysAgo(6); // last 7 days incl. today
 
