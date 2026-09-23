@@ -4,6 +4,8 @@ import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { PageHeader, Card, EmptyState } from '@/components/ui';
 import { isDirectoryAdminEmail } from '@/lib/directory';
+import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
 import ClaimRow from './claim-row';
 
 export const metadata = { title: 'Directory claims | EveryJob' };
@@ -18,15 +20,17 @@ export const dynamic = 'force-dynamic';
 export default async function DirectoryClaimsPage() {
   const session = await getSession();
   if (!session?.user?.businessId) redirect('/login');
+  const locale = await getLocale();
+  const tr = (path: string) => t(locale, path);
   if (!isDirectoryAdminEmail(session.user.email)) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Directory claims" subtitle="Listing verification queue." />
+        <PageHeader title={tr('t10misc.claims.title')} subtitle={tr('t10misc.claims.subtitle')} />
         <Card>
           <EmptyState
             icon={<Inbox size={24} />}
-            title="Not authorized"
-            description="This page is only visible to EveryJob directory admins."
+            title={tr('t10misc.claims.notAuthorizedTitle')}
+            description={tr('t10misc.claims.notAuthorizedDesc')}
           />
         </Card>
       </div>
@@ -50,23 +54,22 @@ export default async function DirectoryClaimsPage() {
   });
 
   const pendingCount = claims.filter((c) => c.status === 'PENDING').length;
+  const subtitle =
+    pendingCount > 0
+      ? tr('t10misc.claims.pendingWaiting')
+          .replace('{count}', String(pendingCount))
+          .replaceAll('{s}', pendingCount === 1 ? '' : 's')
+      : tr('t10misc.claims.noPending');
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Directory claims"
-        subtitle={
-          pendingCount > 0
-            ? `${pendingCount} listing${pendingCount === 1 ? '' : 's'} waiting for review`
-            : 'No pending verifications — every request has been reviewed.'
-        }
-      />
+      <PageHeader title={tr('t10misc.claims.title')} subtitle={subtitle} />
       {claims.length === 0 ? (
         <Card>
           <EmptyState
             icon={<ShieldCheck size={24} />}
-            title="No claims yet"
-            description="When a business requests directory verification, it appears here for review."
+            title={tr('t10misc.claims.noClaimsTitle')}
+            description={tr('t10misc.claims.noClaimsDesc')}
           />
         </Card>
       ) : (

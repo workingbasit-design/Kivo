@@ -3,8 +3,9 @@
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
-import { inputClass, primaryBtnClass } from '@/components/ui';
+import { Field, inputClass, primaryBtnClass } from '@/components/ui';
 import { createMilestoneInvoice } from '@/app/actions/batch-invoicing';
 
 /**
@@ -25,25 +26,33 @@ export default function MilestoneInvoiceForm({
   const [busy, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [invoiceId, setInvoiceId] = useState<string | null>(null);
+  const T = (k: string) => t(locale, `t10work.${k}`);
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setInvoiceId(null);
     start(async () => {
-      const res = await createMilestoneInvoice(jobId, {
-        label,
-        amount,
-        description,
-      });
-      if (res.error) {
-        setError(res.error);
-        return;
+      try {
+        const res = await createMilestoneInvoice(jobId, {
+          label,
+          amount,
+          description,
+        });
+        if (res.error) {
+          setError(res.error);
+          toast.error(T('milestoneCreateError'));
+          return;
+        }
+        setInvoiceId(res.invoiceId ?? null);
+        setLabel('');
+        setAmount('');
+        setDescription('');
+        toast.success(T('milestoneCreated'));
+      } catch {
+        setError(T('milestoneCreateError'));
+        toast.error(T('milestoneCreateError'));
       }
-      setInvoiceId(res.invoiceId ?? null);
-      setLabel('');
-      setAmount('');
-      setDescription('');
     });
   }
 
@@ -70,10 +79,7 @@ export default function MilestoneInvoiceForm({
         </div>
       )}
       <form onSubmit={onSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div>
-          <label className="text-xs font-semibold text-zinc-600 block mb-1">
-            {t(locale, 'billing.labelLabel')}
-          </label>
+        <Field label={t(locale, 'billing.labelLabel')}>
           <input
             className={inputClass}
             value={label}
@@ -81,11 +87,8 @@ export default function MilestoneInvoiceForm({
             placeholder={t(locale, 'billing.labelPlaceholder')}
             maxLength={80}
           />
-        </div>
-        <div>
-          <label className="text-xs font-semibold text-zinc-600 block mb-1">
-            {t(locale, 'billing.amountLabel')}
-          </label>
+        </Field>
+        <Field label={t(locale, 'billing.amountLabel')}>
           <input
             className={inputClass}
             value={amount}
@@ -93,19 +96,18 @@ export default function MilestoneInvoiceForm({
             placeholder={t(locale, 'billing.amountPlaceholder')}
             inputMode="decimal"
           />
-        </div>
+        </Field>
         <div className="sm:col-span-2">
-          <label className="text-xs font-semibold text-zinc-600 block mb-1">
-            {t(locale, 'billing.descriptionLabel')}
-          </label>
-          <textarea
-            className={inputClass}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder={t(locale, 'billing.descriptionPlaceholder')}
-            rows={2}
-            maxLength={2000}
-          />
+          <Field label={t(locale, 'billing.descriptionLabel')}>
+            <textarea
+              className={inputClass}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder={t(locale, 'billing.descriptionPlaceholder')}
+              rows={2}
+              maxLength={2000}
+            />
+          </Field>
         </div>
         <div className="sm:col-span-2">
           <button type="submit" className={primaryBtnClass} disabled={busy}>

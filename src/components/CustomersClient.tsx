@@ -3,8 +3,25 @@
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Users, Plus, Search, Phone } from 'lucide-react';
+import { t, type Locale } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
-import { Card, EmptyState, primaryBtnClass } from '@/components/ui';
+import {
+  Avatar,
+  Badge,
+  Card,
+  EmptyState,
+  inputClass,
+  primaryBtnClass,
+} from '@/components/ui';
+
+/** Replace `{name}` tokens in a template string (minimal inline fill helper). */
+function fill(template: string, vars: Record<string, string | number>): string {
+  let out = template;
+  for (const [k, v] of Object.entries(vars)) {
+    out = out.split(`{${k}}`).join(String(v));
+  }
+  return out;
+}
 
 export type CustomerRow = {
   id: string;
@@ -25,12 +42,15 @@ export type CustomerRow = {
 export default function CustomersClient({
   customers,
   currency,
+  locale = 'en',
 }: {
   customers: CustomerRow[];
   currency?: string;
+  locale?: Locale;
 }) {
   const [query, setQuery] = useState('');
   const [activeTag, setActiveTag] = useState<string | null>(null);
+  const L = (path: string) => t(locale, `t10money.${path}`);
 
   // Distinct tags across this business's customers (tenant-safe: only this
   // business's customers are in `customers`), for the filter chips.
@@ -56,44 +76,47 @@ export default function CustomersClient({
     });
   }, [customers, query, activeTag]);
 
+  const hasFilter = query.trim() !== '' || activeTag !== null;
+  const countLabel = fill(
+    L(filtered.length === 1 ? 'custListCountOne' : 'custListCountMany'),
+    { count: filtered.length }
+  );
+
+  const chipClass = (active: boolean) =>
+    `min-h-[44px] inline-flex items-center text-xs font-bold rounded-full px-4 transition-colors ${
+      active ? 'bg-ink text-white' : 'bg-white text-zinc-600 border border-zinc-200 hover:border-zinc-300'
+    }`;
+
   return (
     <div className="space-y-6">
       <div className="relative max-w-md">
-        <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
+        <Search
+          size={16}
+          className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none"
+        />
         <input
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by name, phone, or address…"
-          aria-label="Search customers"
-          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 bg-white text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-ink/30 focus:border-ink"
+          placeholder={t(locale, 'customers.searchPlaceholder')}
+          aria-label={t(locale, 'customers.searchPlaceholder')}
+          className={`${inputClass} !pl-11 !rounded-full !bg-white shadow-sm`}
         />
       </div>
 
       {/* Tag filter chips */}
       {allTags.length > 0 && (
-        <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filter by tag">
-          <button
-            type="button"
-            onClick={() => setActiveTag(null)}
-            className={`text-[11px] font-bold rounded-full px-3 py-1.5 transition-colors ${
-              activeTag === null
-                ? 'bg-ink text-white'
-                : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
-            }`}
-          >
-            All
+        <div className="flex flex-wrap items-center gap-2" role="group" aria-label={L('custListFilterTags')}>
+          <button type="button" onClick={() => setActiveTag(null)} className={chipClass(activeTag === null)}>
+            {L('custListAll')}
           </button>
           {allTags.map((tag) => (
             <button
               key={tag}
               type="button"
               onClick={() => setActiveTag(activeTag === tag ? null : tag)}
-              className={`text-[11px] font-bold rounded-full px-3 py-1.5 transition-colors ${
-                activeTag === tag
-                  ? 'bg-ink text-white'
-                  : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
-              }`}
+              aria-pressed={activeTag === tag}
+              className={chipClass(activeTag === tag)}
             >
               {tag}
             </button>
@@ -105,15 +128,15 @@ export default function CustomersClient({
         <Card>
           <EmptyState
             icon={<Users size={24} />}
-            title={query.trim() || activeTag ? 'No customers found' : 'No customers yet'}
+            title={hasFilter ? t(locale, 'customers.noResults') : L('custListNoCustomersYet')}
             description={
-              query.trim() || activeTag
-                ? `No customers match${activeTag ? ` tag "${activeTag}"` : ''}${query.trim() ? ` and "${query.trim()}"` : ''}. Try a different search, or add a new customer.`
-                : 'Add your first customer to start creating jobs and invoices for them.'
+              hasFilter
+                ? `${countLabel}${activeTag ? ` ${fill(L('custListTagged'), { tag: activeTag })}` : ''}${query.trim() ? ` ${fill(L('custListMatching'), { q: query.trim() })}` : ''}.`
+                : L('custListNoCustomersDesc')
             }
             action={
               <Link href="/customers/new" className={primaryBtnClass}>
-                <Plus size={14} /> Add customer
+                <Plus size={14} /> {L('custListAddCustomer')}
               </Link>
             }
           />
@@ -121,66 +144,67 @@ export default function CustomersClient({
       ) : (
         <>
           <p className="text-xs font-semibold text-zinc-500">
-            {filtered.length} customer{filtered.length === 1 ? '' : 's'}
-            {activeTag ? ` tagged "${activeTag}"` : ''}
-            {query.trim() ? ` matching "${query.trim()}"` : ''}
-            {(activeTag || query.trim()) && (
+            {countLabel}
+            {activeTag ? ` ${fill(L('custListTagged'), { tag: activeTag })}` : ''}
+            {query.trim() ? ` ${fill(L('custListMatching'), { q: query.trim() })}` : ''}
+            {hasFilter && (
               <button
                 type="button"
-                onClick={() => { setActiveTag(null); setQuery(''); }}
-                className="ml-2 text-ink font-bold hover:underline"
+                onClick={() => {
+                  setActiveTag(null);
+                  setQuery('');
+                }}
+                className="ml-2 min-h-[44px] inline-flex items-center text-ink font-bold hover:underline"
               >
-                Clear filters
+                {L('custListClear')}
               </button>
             )}
           </p>
-          <Card>
+          <Card className="!p-0 overflow-hidden">
             <ul className="divide-y divide-zinc-100">
-              {filtered.map((c) => {
-                const initial = (c.name || '?').charAt(0).toUpperCase();
-                return (
-                  <li key={c.id}>
-                    <Link
-                      href={`/customers/${c.id}`}
-                      className="flex items-center gap-4 px-5 py-4 hover:bg-zinc-50 transition-colors"
-                    >
-                      <div className="w-10 h-10 rounded-full bg-ink/10 text-ink flex items-center justify-center font-bold text-sm shrink-0">
-                        {initial}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm text-zinc-900 truncate">{c.name}</p>
-                        <p className="text-xs text-zinc-500 truncate flex items-center gap-1">
-                          {c.phone ? (
-                            <>
-                              <Phone size={11} /> {c.phone}
-                            </>
-                          ) : (
-                            'No phone'
-                          )}
+              {filtered.map((c, i) => (
+                <li
+                  key={c.id}
+                  className="ej-row-in"
+                  style={{ '--row-delay': `${Math.min(i, 12) * 35}ms` } as React.CSSProperties}
+                >
+                  <Link
+                    href={`/customers/${c.id}`}
+                    className="flex items-center gap-3.5 px-4 sm:px-5 py-3.5 hover:bg-zinc-50 active:bg-zinc-100 transition-colors min-h-[72px]"
+                  >
+                    <Avatar name={c.name} />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm text-zinc-900 truncate">{c.name}</p>
+                      {c.phone ? (
+                        <p className="text-xs text-zinc-500 truncate flex items-center gap-1 mt-0.5">
+                          <Phone size={11} aria-hidden /> {c.phone}
                         </p>
-                        {(c.tags ?? []).length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1.5">
-                            {(c.tags ?? []).map((tag) => (
-                              <span
-                                key={tag}
-                                className="text-[10px] font-semibold bg-zinc-100 text-zinc-600 rounded-full px-2 py-0.5"
-                              >
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      <div className="text-right shrink-0">
-                        <p className="font-bold text-sm text-zinc-900">{formatMoney(c.revenue, currency)}</p>
-                        <p className="text-[11px] text-zinc-500">
-                          {c.jobCount} job{c.jobCount === 1 ? '' : 's'}
-                        </p>
-                      </div>
-                    </Link>
-                  </li>
-                );
-              })}
+                      ) : (
+                        <p className="text-xs text-zinc-400 mt-0.5">{L('custListNoPhone')}</p>
+                      )}
+                      {(c.tags ?? []).length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1.5">
+                          {(c.tags ?? []).map((tag) => (
+                            <Badge key={tag} tone="neutral">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="font-bold text-sm text-zinc-900">
+                        {formatMoney(c.revenue, currency)}
+                      </p>
+                      <p className="text-[11px] text-zinc-500">
+                        {fill(L(c.jobCount === 1 ? 'custListJobOne' : 'custListJobMany'), {
+                          count: c.jobCount,
+                        })}
+                      </p>
+                    </div>
+                  </Link>
+                </li>
+              ))}
             </ul>
           </Card>
         </>

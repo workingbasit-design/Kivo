@@ -179,7 +179,7 @@ export function JobCostingCard({
                 <p className="font-semibold text-ink truncate">{e.name}</p>
                 <p className="text-[11px] text-graphite">
                   {e.dateLabel}
-                  {e.active && ' · active now'}
+                  {e.active && ` · ${t(locale, 't10work.costingActiveNow')}`}
                 </p>
               </div>
               <span className="text-sm font-bold text-ink tabular-nums shrink-0">

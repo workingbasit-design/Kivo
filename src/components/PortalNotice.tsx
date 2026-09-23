@@ -1,4 +1,6 @@
 import { FileWarning, Link2Off, Timer } from 'lucide-react';
+import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
 import { Card } from '@/components/ui';
 
 /**
@@ -6,26 +8,27 @@ import { Card } from '@/components/ui';
  * Never reveals whether a document exists — invalid, expired and revoked
  * tokens all get the same safe message.
  */
-export default function PortalNotice({
+export default async function PortalNotice({
   variant,
 }: {
   variant: 'expired' | 'legacy' | 'rate-limited';
 }) {
+  const locale = await getLocale();
   const copy = {
     expired: {
       icon: <Link2Off size={36} className="mx-auto text-zinc-300 mb-3" />,
-      title: 'This link is expired or invalid',
-      body: 'The link may have been revoked, expired, or typed incorrectly. Please ask the business to send you a fresh link.',
+      title: t(locale, 't10money.noticeExpiredTitle'),
+      body: t(locale, 't10money.noticeExpiredBody'),
     },
     legacy: {
       icon: <FileWarning size={36} className="mx-auto text-amber-400 mb-3" />,
-      title: 'This link format is no longer used',
-      body: 'Share links have been upgraded for better security. Please ask the business to send you a new link — the document itself is unchanged.',
+      title: t(locale, 't10money.noticeLegacyTitle'),
+      body: t(locale, 't10money.noticeLegacyBody'),
     },
     'rate-limited': {
       icon: <Timer size={36} className="mx-auto text-zinc-300 mb-3" />,
-      title: 'Too many requests',
-      body: 'Please wait a minute and try again.',
+      title: t(locale, 't10money.noticeRateTitle'),
+      body: t(locale, 't10money.noticeRateBody'),
     },
   }[variant];
 

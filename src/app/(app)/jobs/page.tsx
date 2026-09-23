@@ -3,10 +3,12 @@ import Link from 'next/link';
 import { Plus, Briefcase, Search } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { PageHeader, Card, StatusBadge, EmptyState } from '@/components/ui';
-import { formatDateShort, cn, hasJobTime } from '@/lib/utils';
+import { PageHeader, Card, StatusBadge, EmptyState, limeBtnClass, inputClass } from '@/components/ui';
+import { formatDateShort, hasJobTime, cn } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import { JOB_STATUSES } from '@/lib/validations';
+import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
 
 export default async function JobsPage({
   searchParams,
@@ -15,6 +17,9 @@ export default async function JobsPage({
 }) {
   const { businessId } = await requireAuth();
   const { status, q } = await searchParams;
+  const locale = await getLocale();
+  const T = (k: string) => t(locale, `t10work.${k}`);
+  const jobsL = (k: string) => t(locale, `jobs.${k}`);
 
   const activeStatus =
     status && (JOB_STATUSES as readonly string[]).includes(status) ? status : 'ALL';
@@ -50,101 +55,107 @@ export default async function JobsPage({
     return `/jobs${qs ? `?${qs}` : ''}`;
   };
 
+  const countLabel =
+    filtered.length === 1
+      ? T('jobsCountOne').replace('{count}', '1')
+      : T('jobsCountMany').replace('{count}', String(filtered.length));
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <PageHeader
-        title="Jobs"
-        subtitle={`${filtered.length} job${filtered.length === 1 ? '' : 's'}`}
+        title={jobsL('title')}
+        subtitle={countLabel}
         actions={
-          <Link
-            href="/jobs/new"
-            className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
-          >
-            <Plus size={14} /> New job
+          <Link href="/jobs/new" className={limeBtnClass}>
+            <Plus size={16} /> {jobsL('newJob')}
           </Link>
         }
       />
 
       {/* Search */}
-      <form method="GET" action="/jobs" className="relative">
+      <form method="GET" action="/jobs" className="relative" role="search">
         {activeStatus !== 'ALL' && <input type="hidden" name="status" value={activeStatus} />}
-        <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" />
+        <label htmlFor="jobs-search" className="sr-only">
+          {t(locale, 'common.search')}
+        </label>
+        <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
         <input
-          type="text"
+          id="jobs-search"
+          type="search"
           name="q"
           defaultValue={q ?? ''}
-          placeholder="Search by job, customer, or address…"
-          className="w-full pl-10 pr-4 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ink/30 focus:border-ink"
+          placeholder={T('jobsSearchPlaceholder')}
+          className={cn(inputClass, '!pl-10 !bg-white')}
         />
       </form>
 
       {/* Status filter tabs */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+      <div
+        role="group"
+        aria-label={jobsL('status')}
+        className="flex items-center gap-1.5 overflow-x-auto pb-1"
+      >
         {['ALL', ...JOB_STATUSES].map((s) => (
           <Link
             key={s}
             href={statusLink(s)}
+            aria-current={activeStatus === s ? 'true' : undefined}
             className={cn(
-              'px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors',
+              'px-3 min-h-[44px] inline-flex items-center rounded-lg text-xs font-semibold whitespace-nowrap transition-colors border',
               activeStatus === s
-                ? 'bg-ink text-white'
-                : 'bg-white text-zinc-600 border border-zinc-200 hover:bg-zinc-50'
+                ? 'bg-ink text-white border-ink'
+                : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50'
             )}
           >
-            {s === 'ALL' ? 'All' : s}
+            {s === 'ALL' ? T('jobsTabAll') : s}
           </Link>
         ))}
       </div>
 
-      {/* Job list */}
-      <Card>
-        {filtered.length === 0 ? (
+      {/* Job list — cards on mobile, compact rows on desktop */}
+      {filtered.length === 0 ? (
+        <Card>
           <EmptyState
             icon={<Briefcase size={24} />}
-            title={jobs.length === 0 ? 'No jobs yet' : 'No jobs match your filters'}
-            description={
-              jobs.length === 0
-                ? 'Create your first job — it takes less than 20 seconds.'
-                : 'Try a different status or search term.'
-            }
+            title={jobs.length === 0 ? T('jobsEmptyTitle') : T('jobsNoMatchTitle')}
+            description={jobs.length === 0 ? T('jobsEmptyDesc') : T('jobsNoMatchDesc')}
             action={
               jobs.length === 0 ? (
-                <Link
-                  href="/jobs/new"
-                  className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2"
-                >
-                  <Plus size={14} /> Create first job
+                <Link href="/jobs/new" className={limeBtnClass}>
+                  <Plus size={16} /> {T('jobsCreateFirst')}
                 </Link>
               ) : undefined
             }
           />
-        ) : (
-          <div className="divide-y divide-zinc-100">
-            {filtered.map((job) => (
-              <Link
-                key={job.id}
-                href={`/jobs/${job.id}`}
-                className="flex items-center justify-between gap-4 p-4 md:p-5 hover:bg-zinc-50/70 transition-colors"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-semibold text-zinc-900 text-sm truncate">{job.title}</p>
-                    <StatusBadge status={job.status} />
-                  </div>
-                  <p className="text-xs text-zinc-500 mt-1 truncate">
-                    {job.customer.name}
-                    {hasJobTime(job.time) ? ` · ${job.time}` : ''} · {formatDateShort(job.date)}
-                    {job.address ? ` · ${job.address}` : ''}
-                  </p>
+        </Card>
+      ) : (
+        <div className="space-y-3 md:space-y-0 md:bg-white md:rounded-2xl md:border md:border-zinc-200/60 md:shadow-sm md:overflow-hidden md:divide-y md:divide-zinc-100">
+          {filtered.map((job, i) => (
+            <Link
+              key={job.id}
+              href={`/jobs/${job.id}`}
+              className="ej-row-in flex items-center justify-between gap-4 p-4 md:p-5 bg-white rounded-2xl border border-zinc-200/60 shadow-sm md:rounded-none md:border-0 md:shadow-none hover:bg-zinc-50/70 transition-colors"
+              // @ts-expect-error CSS custom property for the stagger animation
+              style={{ '--row-delay': `${Math.min(i, 12) * 35}ms` }}
+            >
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="font-semibold text-zinc-900 text-sm">{job.title}</p>
+                  <StatusBadge status={job.status} />
                 </div>
-                <p className="font-bold text-zinc-900 text-sm whitespace-nowrap">
-                  {formatMoney(job.price, currency)}
+                <p className="text-xs text-zinc-500 mt-1 truncate">
+                  {job.customer.name}
+                  {hasJobTime(job.time) ? ` · ${job.time}` : ''} · {formatDateShort(job.date)}
+                  {job.address ? ` · ${job.address}` : ''}
                 </p>
-              </Link>
-            ))}
-          </div>
-        )}
-      </Card>
+              </div>
+              <p className="font-bold text-zinc-900 text-sm whitespace-nowrap tabular-nums">
+                {formatMoney(job.price, currency)}
+              </p>
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

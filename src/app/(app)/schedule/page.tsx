@@ -3,14 +3,14 @@ import Link from 'next/link';
 import { ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { PageHeader, Card } from '@/components/ui';
+import { PageHeader, Card, limeBtnClass } from '@/components/ui';
 import ScheduleClient from '@/components/ScheduleClient';
 import WeatherStrip, { type StripDay } from '@/components/WeatherStrip';
 import { getWeatherForDates, geocodeLocation } from '@/lib/weather';
 import { getHolidays } from '@/lib/holidays';
-import { toISODateLocal, todayInTimezone, cn } from '@/lib/utils';
-
-const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+import { toISODateLocal, todayInTimezone, cn, localeDateTag } from '@/lib/utils';
+import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
 
 /** Monday of the week containing `d` (local time). */
 function mondayOf(d: Date): Date {
@@ -35,11 +35,6 @@ function dayKey(date: Date): string {
   return toISODateLocal(new Date(date));
 }
 
-const MONTHS = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-];
-
 export default async function SchedulePage({
   searchParams,
 }: {
@@ -47,6 +42,9 @@ export default async function SchedulePage({
 }) {
   const { businessId } = await requireAuth();
   const { week, day } = await searchParams;
+  const locale = await getLocale();
+  const dateLocale = localeDateTag(locale);
+  const T = (k: string) => t(locale, `t10work.${k}`);
 
   // Fetch the business first: the "today" highlight and the default week must
   // use the business timezone (Vercel servers run UTC, so server-local
@@ -88,6 +86,12 @@ export default async function SchedulePage({
 
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
+  // Localized day/month names (EN + fr-CA) — never hardcode English names.
+  const dayName = (d: Date) => d.toLocaleDateString(dateLocale, { weekday: 'short' });
+  const dayMonth = (d: Date) =>
+    d.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short' });
+  const yearOf = (d: Date) => d.getFullYear();
+
   // Weather strip: geocode the business address (Nominatim, cached) then fetch
   // a 5-day Open-Meteo forecast. Fails silently — no location or no data means
   // no strip, never an error.
@@ -98,7 +102,7 @@ export default async function SchedulePage({
     const wx = await getWeatherForDates(geo.lat, geo.lon, stripDates);
     stripDays = days.slice(0, 5).map((d, i) => ({
       dateISO: stripDates[i],
-      label: DAY_NAMES[i],
+      label: dayName(d),
       weather: wx.get(stripDates[i]) ?? null,
     }));
   }
@@ -134,7 +138,7 @@ export default async function SchedulePage({
     counts.set(key, (counts.get(key) ?? 0) + 1);
   }
 
-  const weekLabel = `${days[0].getDate()} ${MONTHS[days[0].getMonth()]} – ${days[6].getDate()} ${MONTHS[days[6].getMonth()]} ${days[6].getFullYear()}`;
+  const weekLabel = `${dayMonth(days[0])} – ${dayMonth(days[6])} ${yearOf(days[6])}`;
 
   const weekLink = (monday: Date) => `/schedule?week=${toISODateLocal(monday)}`;
   const dayLink = (d: Date) =>
@@ -143,14 +147,11 @@ export default async function SchedulePage({
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Schedule"
+        title={t(locale, 'schedule.title')}
         subtitle={weekLabel}
         actions={
-          <Link
-            href="/jobs/new"
-            className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
-          >
-            <CalendarDays size={14} /> New job
+          <Link href="/jobs/new" className={limeBtnClass}>
+            <CalendarDays size={16} /> {T('schedNewJobBtn')}
           </Link>
         }
       />
@@ -161,27 +162,27 @@ export default async function SchedulePage({
 
       {/* Week navigator */}
       <Card className="p-4">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between gap-2 mb-4">
           <Link
             href={weekLink(addDays(weekStart, -7))}
-            className="p-2 rounded-xl hover:bg-zinc-100 text-zinc-600 transition-colors"
-            aria-label="Previous week"
+            className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl hover:bg-zinc-100 text-zinc-600 transition-colors"
+            aria-label={T('schedPrevWeek')}
           >
             <ChevronLeft size={18} />
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap justify-center min-w-0">
             <Link
               href="/schedule"
-              className="text-xs font-bold text-ink bg-smoke hover:bg-smoke px-3 py-1.5 rounded-xl border border-smoke transition-colors"
+              className="text-xs font-bold text-ink bg-smoke hover:bg-smoke px-3 py-2 min-h-[44px] inline-flex items-center rounded-xl border border-smoke transition-colors"
             >
-              This week
+              {T('schedThisWeek')}
             </Link>
             <span className="text-sm font-bold text-zinc-900">{weekLabel}</span>
           </div>
           <Link
             href={weekLink(addDays(weekStart, 7))}
-            className="p-2 rounded-xl hover:bg-zinc-100 text-zinc-600 transition-colors"
-            aria-label="Next week"
+            className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl hover:bg-zinc-100 text-zinc-600 transition-colors"
+            aria-label={T('schedNextWeek')}
           >
             <ChevronRight size={18} />
           </Link>
@@ -199,8 +200,9 @@ export default async function SchedulePage({
               <Link
                 key={key}
                 href={dayLink(d)}
+                aria-current={isActive ? 'date' : undefined}
                 className={cn(
-                  'flex flex-col items-center rounded-xl border py-2 md:py-3 transition-colors',
+                  'flex flex-col items-center rounded-xl border py-2 md:py-3 transition-colors min-h-[64px]',
                   isActive
                     ? 'bg-ink text-white border-ink shadow-sm'
                     : 'bg-white border-zinc-200 hover:border-smoke hover:bg-paper',
@@ -213,7 +215,7 @@ export default async function SchedulePage({
                     isActive ? 'text-white/80' : 'text-zinc-400'
                   )}
                 >
-                  {DAY_NAMES[i]}
+                  {dayName(d)}
                 </span>
                 <span
                   className={cn(
@@ -225,7 +227,7 @@ export default async function SchedulePage({
                 </span>
                 <span
                   className={cn(
-                    'mt-1 min-w-5 h-5 px-1 rounded-full text-[10px] font-bold flex items-center justify-center',
+                    'mt-1 min-w-5 h-5 px-1 rounded-full text-[10px] font-bold flex items-center justify-center tabular-nums',
                     isActive
                       ? 'bg-white/25 text-white'
                       : count > 0
@@ -237,7 +239,7 @@ export default async function SchedulePage({
                 </span>
                 {holiday && (
                   <span
-                    title={`${holiday} — public holiday`}
+                    title={holiday}
                     className={cn(
                       'mt-1 max-w-full truncate rounded-full border px-1.5 py-px text-[9px] font-bold',
                       isActive
@@ -257,9 +259,9 @@ export default async function SchedulePage({
           <div className="mt-3 text-center">
             <Link
               href={weekLink(weekStart)}
-              className="text-xs font-semibold text-ink hover:underline"
+              className="text-xs font-semibold text-ink hover:underline inline-flex items-center min-h-[44px] px-3"
             >
-              Show whole week
+              {T('schedShowWholeWeek')}
             </Link>
           </div>
         )}
@@ -273,6 +275,7 @@ export default async function SchedulePage({
         allowSeed={totalCount === 0}
         currency={currency}
         todayKey={todayKey}
+        locale={locale}
       />
     </div>
   );

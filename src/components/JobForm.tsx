@@ -2,9 +2,12 @@
 
 import React, { useActionState, useEffect, useState } from 'react';
 import { AlertCircle, CloudOff, Save } from 'lucide-react';
+import { toast } from 'sonner';
 import { Field, inputClass, primaryBtnClass } from '@/components/ui';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 import { toISODateLocal } from '@/lib/utils';
+import { currencySymbol } from '@/lib/money';
+import { t, type Locale } from '@/lib/i18n';
 import type { JobActionResult } from '@/app/actions/jobs';
 
 export interface JobFormCustomer {
@@ -28,6 +31,17 @@ export interface JobFormInitial {
   templateId?: string;
 }
 
+/** Resolve the app locale in a client component: an explicit prop wins,
+ *  otherwise the `kivo-locale` cookie (LanguageToggle writes it). */
+function resolveLocale(prop?: Locale): Locale {
+  if (prop) return prop;
+  if (typeof document !== 'undefined') {
+    const m = document.cookie.match(/(?:^|;\s*)kivo-locale=(en|fr)/);
+    if (m) return m[1] as Locale;
+  }
+  return 'en';
+}
+
 /**
  * Shared create/edit job form. Quick-create stays minimal so a job
  * can be captured in under 20 seconds, even for a brand-new customer.
@@ -37,13 +51,23 @@ export default function JobForm({
   initial,
   action,
   submitLabel,
+  locale: localeProp,
+  currency,
 }: {
   customers: JobFormCustomer[];
   initial?: JobFormInitial;
   action: (_prev: JobActionResult, formData: FormData) => Promise<JobActionResult>;
   submitLabel: string;
+  /** Optional — falls back to the `kivo-locale` cookie so pages that don't
+   *  pass it (e.g. /jobs/new) still render in the user's language. */
+  locale?: Locale;
+  /** Business currency code — drives the price label (e.g. CAD). */
+  currency?: string;
 }) {
   const [state, formAction, isPending] = useActionState(action, {});
+  const [locale] = useState<Locale>(() => resolveLocale(localeProp));
+  const T = (k: string) => t(locale, `t10work.${k}`);
+  const jobsL = (k: string) => t(locale, `jobs.${k}`);
   // Freshness: the SSR `customers` prop can be stale (client-side navigation
   // reuses cached RSC). Refresh on mount so a customer created moments ago
   // always appears in the combobox.
@@ -62,6 +86,9 @@ export default function JobForm({
       cancelled = true;
     };
   }, []);
+  useEffect(() => {
+    if (state?.error) toast.error(state.error);
+  }, [state]);
   const [customerChoice, setCustomerChoice] = useState<string>(
     initial?.customerId ?? (customers[0]?.id ?? '__NEW__')
   );
@@ -73,19 +100,19 @@ export default function JobForm({
       {initial?.serviceId && <input type="hidden" name="serviceId" value={initial.serviceId} />}
       {initial?.templateId && <input type="hidden" name="templateId" value={initial.templateId} />}
 
-      <Field label="Job title">
+      <Field label={T('formTitleLabel')}>
         <input
           name="title"
           required
           autoFocus
           defaultValue={initial?.title ?? ''}
-          placeholder="e.g. AC repair, tap leakage, deep cleaning"
+          placeholder={T('formTitlePlaceholder')}
           maxLength={200}
           className={inputClass}
         />
       </Field>
 
-      <Field label="Customer">
+      <Field label={jobsL('customer')}>
         <select
           name="customerId"
           value={customerChoice}
@@ -97,24 +124,24 @@ export default function JobForm({
               {c.name}
             </option>
           ))}
-          <option value="__NEW__">＋ New customer…</option>
+          <option value="__NEW__">{T('formNewCustomerOption')}</option>
         </select>
       </Field>
 
       {showNewCustomer && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-paper border border-smoke rounded-2xl">
-          <Field label="New customer name">
+          <Field label={T('formNewCustomerName')}>
             <input
               name="newCustomerName"
-              placeholder="e.g. Priya Nair"
+              placeholder={T('formNewCustomerNamePlaceholder')}
               maxLength={120}
               className={inputClass}
             />
           </Field>
-          <Field label="Phone (optional)">
+          <Field label={T('formNewCustomerPhone')}>
             <input
               name="newCustomerPhone"
-              placeholder="+91 …"
+              placeholder={T('formPhonePlaceholder')}
               maxLength={25}
               inputMode="tel"
               className={inputClass}
@@ -123,8 +150,8 @@ export default function JobForm({
         </div>
       )}
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <Field label="Date">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Field label={jobsL('date')}>
           <input
             type="date"
             name="date"
@@ -133,7 +160,7 @@ export default function JobForm({
             className={inputClass}
           />
         </Field>
-        <Field label="Time">
+        <Field label={jobsL('time')}>
           <input
             name="time"
             defaultValue={initial?.time ?? ''}
@@ -142,7 +169,7 @@ export default function JobForm({
             className={inputClass}
           />
         </Field>
-        <Field label="Price (Rs)">
+        <Field label={T('formPriceLabel').replace('{symbol}', currencySymbol(currency))}>
           <input
             type="number"
             name="price"
@@ -157,31 +184,31 @@ export default function JobForm({
         </Field>
       </div>
 
-      <Field label="Address (optional)">
+      <Field label={`${jobsL('address')} (${T('formOptional')})`}>
         <AddressAutocomplete
           name="address"
           defaultValue={initial?.address ?? ''}
-          placeholder="Flat / street / area"
+          placeholder={T('formAddressPlaceholder')}
           maxLength={500}
           className={inputClass}
         />
       </Field>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Field label="Technician (optional)">
+        <Field label={`${jobsL('technician')} (${T('formOptional')})`}>
           <input
             name="technician"
             defaultValue={initial?.technician ?? ''}
-            placeholder="Who is doing this job?"
+            placeholder={T('formTechnicianPlaceholder')}
             maxLength={120}
             className={inputClass}
           />
         </Field>
-        <Field label="Notes (optional)">
+        <Field label={`${jobsL('notes')} (${T('formOptional')})`}>
           <textarea
             name="notes"
             defaultValue={initial?.notes ?? ''}
-            placeholder="Anything the technician should know…"
+            placeholder={T('formNotesPlaceholder')}
             rows={2}
             maxLength={2000}
             className={inputClass}
@@ -192,10 +219,7 @@ export default function JobForm({
       {state?.queued && (
         <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium rounded-xl px-3 py-2.5">
           <CloudOff size={14} className="mt-0.5 shrink-0" />
-          <span>
-            You&apos;re offline — this job is saved on your device and will sync
-            automatically when you&apos;re back online.
-          </span>
+          <span>{T('formOffline')}</span>
         </div>
       )}
 
@@ -208,7 +232,7 @@ export default function JobForm({
 
       <button type="submit" disabled={isPending} className={primaryBtnClass}>
         <Save size={14} />
-        {isPending ? 'Saving…' : submitLabel}
+        {isPending ? t(locale, 'common.saving') : submitLabel}
       </button>
     </form>
   );

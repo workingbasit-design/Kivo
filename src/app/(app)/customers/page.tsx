@@ -7,6 +7,7 @@ import { prisma } from '@/lib/prisma';
 import { PageHeader, Card, primaryBtnClass } from '@/components/ui';
 import CustomersClient from '@/components/CustomersClient';
 import type { CustomerRow } from '@/components/CustomersClient';
+import { getLocale } from '@/lib/i18n/server';
 
 /**
  * Customers list — defensive by design (production incident 2026-09-23:
@@ -96,7 +97,11 @@ export default async function CustomersPage() {
           </div>
         </Card>
       ) : (
-        <CustomersClient customers={customers} currency={currency} />
+        <CustomersClient
+          customers={customers}
+          currency={currency}
+          locale={await getLocale()}
+        />
       )}
     </div>
   );

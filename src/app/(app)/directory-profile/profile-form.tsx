@@ -1,9 +1,11 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useEffect } from 'react';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { updateDirectoryProfile } from '@/app/actions/directory-profile';
 import { Field, inputClass, primaryBtnClass, Card } from '@/components/ui';
+import { useResolvedT } from '@/hooks/useResolvedLocale';
 
 export type ProfileInitial = {
   headline: string;
@@ -19,79 +21,78 @@ export type ProfileInitial = {
 
 /** Editable public directory profile — EN + Canadian French. */
 export default function DirectoryProfileForm({ initial }: { initial: ProfileInitial }) {
+  const { t } = useResolvedT();
   const [state, formAction, isPending] = useActionState(updateDirectoryProfile, {});
+
+  useEffect(() => {
+    if (state?.ok) toast.success(t('t10misc.profile.saved'));
+    else if (state?.error) toast.error(state.error);
+  }, [state, t]);
 
   return (
     <Card>
       <form action={formAction} className="space-y-5">
         <div>
-          <h3 className="font-bold text-sm text-zinc-900">Public profile</h3>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            Shown on your directory page. Write it in English and French — French customers see the French version when you provide it.
-          </p>
+          <h3 className="font-bold text-sm text-zinc-900">{t('t10misc.profile.formTitle')}</h3>
+          <p className="text-xs text-zinc-500 mt-0.5">{t('t10misc.profile.formDesc')}</p>
         </div>
 
         <div className="grid sm:grid-cols-2 gap-4">
-          <Field label="Headline (EN)" hint="e.g. Reliable plumbing, done right">
-            <input name="headline" defaultValue={initial.headline} maxLength={120} placeholder="Reliable plumbing, done right" className={inputClass} />
+          <Field label={t('t10misc.profile.headlineEn')} hint={t('t10misc.profile.headlineEnHint')}>
+            <input name="headline" defaultValue={initial.headline} maxLength={120} placeholder={t('t10misc.profile.headlineEnHint')} className={inputClass} />
           </Field>
-          <Field label="Titre (FR)" hint="p. ex. Plomberie fiable, bien faite">
-            <input name="headlineFr" defaultValue={initial.headlineFr} maxLength={120} placeholder="Plomberie fiable, bien faite" className={inputClass} />
+          <Field label={t('t10misc.profile.headlineFr')} hint={t('t10misc.profile.headlineFrHint')}>
+            <input name="headlineFr" defaultValue={initial.headlineFr} maxLength={120} placeholder={t('t10misc.profile.headlineFrHint')} className={inputClass} />
           </Field>
         </div>
 
         <div className="grid sm:grid-cols-2 gap-4">
-          <Field label="Short intro (EN)" hint="One or two sentences">
-            <textarea name="intro" defaultValue={initial.intro} maxLength={500} rows={2} placeholder="Family-run plumbing serving the east end for 12 years." className={inputClass} />
+          <Field label={t('t10misc.profile.introEn')} hint={t('t10misc.profile.introEnHint')}>
+            <textarea name="intro" defaultValue={initial.intro} maxLength={500} rows={2} className={inputClass} />
           </Field>
-          <Field label="Présentation (FR)">
-            <textarea name="introFr" defaultValue={initial.introFr} maxLength={500} rows={2} placeholder="Plomberie familiale dans l'est depuis 12 ans." className={inputClass} />
+          <Field label={t('t10misc.profile.introFr')}>
+            <textarea name="introFr" defaultValue={initial.introFr} maxLength={500} rows={2} className={inputClass} />
           </Field>
         </div>
 
         <div className="grid sm:grid-cols-2 gap-4">
-          <Field label="About (EN)" hint="Longer description, services, experience">
-            <textarea name="description" defaultValue={initial.description} maxLength={2000} rows={4} placeholder="What you do, how long you've done it, what makes you reliable…" className={inputClass} />
+          <Field label={t('t10misc.profile.aboutEn')} hint={t('t10misc.profile.aboutEnHint')}>
+            <textarea name="description" defaultValue={initial.description} maxLength={2000} rows={4} className={inputClass} />
           </Field>
-          <Field label="À propos (FR)">
-            <textarea name="descriptionFr" defaultValue={initial.descriptionFr} maxLength={2000} rows={4} placeholder="Ce que vous faites, votre expérience…" className={inputClass} />
+          <Field label={t('t10misc.profile.aboutFr')}>
+            <textarea name="descriptionFr" defaultValue={initial.descriptionFr} maxLength={2000} rows={4} className={inputClass} />
           </Field>
         </div>
 
-        <Field label="Areas served" hint="Comma-separated cities or neighbourhoods, e.g. Toronto, Scarborough, East York">
-          <input name="serviceAreas" defaultValue={initial.serviceAreas} maxLength={500} placeholder="Toronto, Scarborough, East York" className={inputClass} />
+        <Field label={t('t10misc.profile.areasServed')} hint={t('t10misc.profile.areasHint')}>
+          <input name="serviceAreas" defaultValue={initial.serviceAreas} maxLength={500} className={inputClass} />
         </Field>
 
         <div className="space-y-2.5">
           <label className="flex items-start gap-2.5 text-xs text-zinc-700 cursor-pointer">
-            <input type="checkbox" name="showPhone" defaultChecked={initial.showPhone} className="mt-0.5 accent-zinc-900" />
+            <input type="checkbox" name="showPhone" defaultChecked={initial.showPhone} className="mt-0.5 w-5 h-5 accent-zinc-900 shrink-0" />
             <span>
-              <span className="font-semibold">Show my phone & WhatsApp on the public profile</span>
-              <span className="block text-zinc-500">Uncheck to hide contact buttons — customers can still book online or request a quote.</span>
+              <span className="font-semibold">{t('t10misc.profile.showPhone')}</span>
+              <span className="block text-zinc-500">{t('t10misc.profile.showPhoneHint')}</span>
             </span>
           </label>
           <label className="flex items-start gap-2.5 text-xs text-zinc-700 cursor-pointer">
-            <input type="checkbox" name="enabled" defaultChecked={initial.enabled} className="mt-0.5 accent-zinc-900" />
+            <input type="checkbox" name="enabled" defaultChecked={initial.enabled} className="mt-0.5 w-5 h-5 accent-zinc-900 shrink-0" />
             <span>
-              <span className="font-semibold">Online booking page enabled</span>
-              <span className="block text-zinc-500">Uncheck to pause new online bookings without unpublishing your directory listing.</span>
+              <span className="font-semibold">{t('t10misc.profile.bookingEnabled')}</span>
+              <span className="block text-zinc-500">{t('t10misc.profile.bookingEnabledHint')}</span>
             </span>
           </label>
         </div>
 
         {state?.error && (
-          <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+          <div role="alert" className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
             <AlertCircle size={14} className="mt-0.5 shrink-0" /> <span>{state.error}</span>
-          </div>
-        )}
-        {state?.ok && (
-          <div className="flex items-start gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium rounded-xl px-3 py-2.5">
-            <CheckCircle2 size={14} className="mt-0.5 shrink-0" /> <span>Profile saved.</span>
           </div>
         )}
 
         <button type="submit" disabled={isPending} className={primaryBtnClass}>
-          {isPending ? 'Saving…' : 'Save profile'}
+          {isPending ? t('t10misc.profile.saving') : t('t10misc.profile.saveProfile')}
         </button>
       </form>
     </Card>

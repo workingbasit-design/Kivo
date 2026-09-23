@@ -1,7 +1,9 @@
 'use client';
 
-import React, { useActionState, useEffect, useState } from 'react';
+import React, { useActionState, useEffect, useRef, useState } from 'react';
 import { AlertCircle, Link2, MessageCircle, RefreshCw, ShieldOff } from 'lucide-react';
+import { toast } from 'sonner';
+import { t, type Locale } from '@/lib/i18n';
 import CopyButton from '@/components/CopyButton';
 import { secondaryBtnClass } from '@/components/ui';
 import {
@@ -9,6 +11,27 @@ import {
   revokePortalLink,
   type PortalActionResult,
 } from '@/app/actions/portal';
+
+/**
+ * Fires a toast exactly once per server-action result. Minimal inline
+ * replacement for the removed useActionToast helper.
+ */
+function useResultToast<T extends { ok?: boolean; error?: string }>(
+  state: T | undefined,
+  messages: { success?: string; error?: string }
+) {
+  const seen = useRef<T | undefined>(undefined);
+  useEffect(() => {
+    if (!state || seen.current === state) return;
+    seen.current = state;
+    if (state.ok && messages.success) {
+      toast.success(messages.success);
+    } else if (state.error) {
+      toast.error(messages.error ?? state.error);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
+}
 
 type RegenResult = PortalActionResult;
 
@@ -27,6 +50,7 @@ export default function PortalLinkManager({
   businessName,
   regionCode,
   initialTokenId,
+  locale = 'en',
 }: {
   customerId: string;
   customerName: string;
@@ -34,6 +58,7 @@ export default function PortalLinkManager({
   businessName: string;
   regionCode?: string | null;
   initialTokenId: string | null;
+  locale?: Locale;
 }) {
   const [token, setToken] = useState<string | null>(null);
   const [tokenId, setTokenId] = useState<string | null>(initialTokenId);
@@ -63,6 +88,13 @@ export default function PortalLinkManager({
     }
   }, [revokeState]);
 
+  useResultToast(regenState, {
+    success: t(locale, 't10money.portalLinkCreated'),
+  });
+  useResultToast(revokeState, {
+    success: t(locale, 't10money.portalLinkRevoked'),
+  });
+
   // Set after mount so SSR and the first client render agree.
   const [origin, setOrigin] = useState('');
   useEffect(() => {
@@ -71,15 +103,11 @@ export default function PortalLinkManager({
   const url = token ? `${origin}/portal/${token}` : null;
 
   const error = regenState?.error || revokeState?.error;
-  const okMsg =
-    (regenState?.ok && 'Portal link created — share it with the customer.') ||
-    (revokeState?.ok && 'Portal link revoked.') ||
-    null;
 
   if (!customerPhone) {
     return (
       <p className="text-xs text-zinc-500">
-        Add a phone number for this customer to share their portal link over WhatsApp.
+        {t(locale, 't10money.portalMgrNoPhone')}
       </p>
     );
   }
@@ -87,20 +115,19 @@ export default function PortalLinkManager({
   const digits = customerPhone.replace(/\D/g, '');
   const cc = '1'; // Canada-only (NANP)
   const waDigits = digits.length === 10 && !digits.startsWith(cc) ? cc + digits : digits;
-  const waMessage =
-    `Hi ${customerName}! View your jobs, quotes, invoices and balance with ${businessName} here: ${url ?? ''}` +
-    `\n\n— sent via EveryJob`;
+  const waMessage = t(locale, 't10money.portalMgrWaMessage')
+    .replace('{name}', customerName)
+    .replace('{business}', businessName)
+    .replace('{url}', url ?? '');
   const waHref = url ? `https://wa.me/${waDigits}?text=${encodeURIComponent(waMessage)}` : '';
 
   return (
     <div className="space-y-3">
       <h3 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
-        <Link2 size={14} /> Customer portal link
+        <Link2 size={14} /> {t(locale, 't10money.portalMgrTitle')}
       </h3>
       <p className="text-xs text-zinc-500">
-        A private magic link where {customerName} can see their jobs, quotes, invoices and
-        balance. Share it over WhatsApp — the customer taps the button and sends it
-        from their own WhatsApp app.
+        {t(locale, 't10money.portalMgrDesc').replace('{name}', customerName)}
       </p>
 
       {error && (
@@ -109,16 +136,11 @@ export default function PortalLinkManager({
           <span>{error}</span>
         </div>
       )}
-      {okMsg && (
-        <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium rounded-xl px-3 py-2.5">
-          {okMsg}
-        </div>
-      )}
 
       {url ? (
         <>
           <div className="flex items-center gap-2">
-            <code className="flex-1 text-xs bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 truncate text-zinc-700">
+            <code className="flex-1 min-w-0 text-xs bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 truncate text-zinc-700">
               {url}
             </code>
             <CopyButton text={url} />
@@ -128,37 +150,37 @@ export default function PortalLinkManager({
               href={waHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors border bg-[#25D366]/10 border-[#25D366]/30 text-[#128C4A] hover:bg-[#25D366]/20"
-              title="Opens WhatsApp with the portal invite prefilled"
+              className="min-h-[44px] inline-flex items-center gap-1.5 px-3 rounded-xl text-xs font-semibold transition-colors border bg-[#25D366]/10 border-[#25D366]/30 text-[#128C4A] hover:bg-[#25D366]/20"
+              title={t(locale, 't10money.portalMgrWaTitle')}
             >
-              <MessageCircle size={13} /> Share portal link on WhatsApp
+              <MessageCircle size={13} /> {t(locale, 't10money.portalMgrWaShare')}
             </a>
             {confirming !== 'revoke' ? (
               <button
                 type="button"
                 onClick={() => setConfirming('revoke')}
-                className="text-xs font-semibold text-rose-600 hover:text-rose-700 inline-flex items-center gap-1.5 px-2 py-2"
+                className="min-h-[44px] text-xs font-semibold text-rose-600 hover:text-rose-700 inline-flex items-center gap-1.5 px-2"
               >
-                <ShieldOff size={13} /> Revoke link
+                <ShieldOff size={13} /> {t(locale, 't10money.portalMgrRevoke')}
               </button>
             ) : (
-              <form action={revokeFormAction} className="flex items-center gap-2 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2">
+              <form action={revokeFormAction} className="flex flex-wrap items-center gap-2 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2">
                 <input type="hidden" name="tokenId" value={tokenId ?? ''} />
                 <input type="hidden" name="customerId" value={customerId} />
-                <span className="text-xs text-rose-700 font-medium">Revoke this link?</span>
+                <span className="text-xs text-rose-700 font-medium">{t(locale, 't10money.portalMgrRevokeConfirm')}</span>
                 <button
                   type="submit"
                   disabled={revokePending}
-                  className="text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-60 px-3 py-1.5 rounded-lg transition-colors"
+                  className="min-h-[44px] text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-60 px-4 rounded-lg transition-colors"
                 >
-                  {revokePending ? 'Revoking…' : 'Yes, revoke'}
+                  {revokePending ? t(locale, 't10money.portalMgrRevoking') : t(locale, 't10money.portalMgrYesRevoke')}
                 </button>
                 <button
                   type="button"
                   onClick={() => setConfirming(null)}
-                  className="text-xs font-semibold text-zinc-600 hover:text-zinc-800 px-2 py-1.5"
+                  className="min-h-[44px] text-xs font-semibold text-zinc-600 hover:text-zinc-800 px-3"
                 >
-                  Keep
+                  {t(locale, 't10money.portalMgrKeep')}
                 </button>
               </form>
             )}
@@ -169,37 +191,37 @@ export default function PortalLinkManager({
           <input type="hidden" name="customerId" value={customerId} />
           {tokenId && confirming !== 'regen' ? (
             <div className="flex flex-wrap items-center gap-2">
-              <p className="text-xs text-zinc-500">A portal link is already active for this customer.</p>
+              <p className="text-xs text-zinc-500">{t(locale, 't10money.portalMgrActive')}</p>
               <button
                 type="button"
                 onClick={() => setConfirming('regen')}
                 className={secondaryBtnClass}
               >
-                <RefreshCw size={13} /> Regenerate
+                <RefreshCw size={13} /> {t(locale, 't10money.portalMgrRegenerate')}
               </button>
             </div>
           ) : confirming === 'regen' ? (
-            <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
-              <span className="text-xs text-amber-800 font-medium">Old link stops working. Continue?</span>
+            <div className="flex flex-wrap items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+              <span className="text-xs text-amber-800 font-medium">{t(locale, 't10money.portalMgrRegenConfirm')}</span>
               <button
                 type="submit"
                 disabled={regenPending}
-                className="text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 disabled:opacity-60 px-3 py-1.5 rounded-lg transition-colors"
+                className="min-h-[44px] text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 disabled:opacity-60 px-4 rounded-lg transition-colors"
               >
-                {regenPending ? 'Working…' : 'Yes, regenerate'}
+                {regenPending ? t(locale, 't10money.portalMgrWorking') : t(locale, 't10money.portalMgrYesRegen')}
               </button>
               <button
                 type="button"
                 onClick={() => setConfirming(null)}
-                className="text-xs font-semibold text-zinc-600 hover:text-zinc-800 px-2 py-1.5"
+                className="min-h-[44px] text-xs font-semibold text-zinc-600 hover:text-zinc-800 px-3"
               >
-                Keep
+                {t(locale, 't10money.portalMgrKeep')}
               </button>
             </div>
           ) : (
             <button type="submit" disabled={regenPending} className={secondaryBtnClass}>
               <Link2 size={13} />
-              {regenPending ? 'Creating…' : 'Create portal link'}
+              {regenPending ? t(locale, 't10money.portalMgrCreating') : t(locale, 't10money.portalMgrCreate')}
             </button>
           )}
         </form>

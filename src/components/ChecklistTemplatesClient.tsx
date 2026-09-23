@@ -24,27 +24,6 @@ export interface TemplateData {
   notes: string | null;
 }
 
-/** New-field labels the shared i18n files don't cover (inline EN/FR). */
-const frBundle = {
-  price: 'Prix par défaut',
-  priceHint: 'Optionnel — pré-remplit le prix de la tâche',
-  duration: 'Durée (min)',
-  durationHint: 'Optionnel — entre 5 et 1440',
-  notes: 'Notes par défaut',
-  notesHint: 'Optionnel — pré-remplies sur la tâche',
-  useAsJob: 'Utiliser comme tâche',
-};
-
-const enBundle = {
-  price: 'Default price',
-  priceHint: 'Optional — pre-fills the job price',
-  duration: 'Duration (min)',
-  durationHint: 'Optional — between 5 and 1440',
-  notes: 'Default notes',
-  notesHint: 'Optional — pre-filled on the job',
-  useAsJob: 'Use as job',
-};
-
 /** Checklist-template CRUD for /settings/checklists. */
 export function ChecklistTemplatesClient({
   templates,
@@ -95,7 +74,7 @@ export function ChecklistTemplatesClient({
             )
           )}
           {templates.length > 0 && editing !== 'new' && (
-            <button type="button" onClick={() => setEditing('new')} className={jSecondaryBtnClass}>
+            <button type="button" onClick={() => setEditing('new')} className={`${jSecondaryBtnClass} min-h-[44px]`}>
               <Plus size={14} /> {t(locale, 'jobops.templates.new')}
             </button>
           )}
@@ -119,7 +98,7 @@ function TemplateRow({
   const [isPending, startTransition] = useTransition();
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const bundle = locale === 'fr' ? frBundle : enBundle;
+  const bundle = (key: string) => t(locale, `t10misc.templates.${key}`);
 
   const runDelete = () => {
     setConfirming(false);
@@ -170,9 +149,9 @@ function TemplateRow({
           </ul>
           <Link
             href={`/jobs/new?template=${template.id}`}
-            className="inline-flex items-center gap-1.5 text-[11px] font-bold text-ink hover:underline mt-3"
+            className="inline-flex items-center gap-1.5 min-h-[44px] text-[11px] font-bold text-ink hover:underline mt-1"
           >
-            <Briefcase size={11} /> {bundle.useAsJob}
+            <Briefcase size={11} /> {bundle('useAsJob')}
           </Link>
           {error && <p className="text-[11px] text-rose-600 mt-2 font-medium">{error}</p>}
         </div>
@@ -183,7 +162,7 @@ function TemplateRow({
             disabled={editing || isPending}
             title={t(locale, 'jobops.templates.edit')}
             aria-label={`${t(locale, 'jobops.templates.edit')}: ${template.name}`}
-            className="p-2 text-graphite hover:text-ink hover:bg-zinc-100 rounded-lg transition-colors"
+            className="min-w-[44px] min-h-[44px] inline-flex items-center justify-center text-graphite hover:text-ink hover:bg-zinc-100 rounded-lg transition-colors"
           >
             <Pencil size={14} />
           </button>
@@ -193,7 +172,7 @@ function TemplateRow({
             disabled={editing || isPending}
             title={t(locale, 'jobops.templates.delete')}
             aria-label={`${t(locale, 'jobops.templates.delete')}: ${template.name}`}
-            className="p-2 text-zinc-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+            className="min-w-[44px] min-h-[44px] inline-flex items-center justify-center text-zinc-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
           >
             <Trash2 size={14} />
           </button>
@@ -226,7 +205,7 @@ function TemplateEditor({
     {}
   );
   const formRef = useRef<HTMLFormElement>(null);
-  const bundle = locale === 'fr' ? frBundle : enBundle;
+  const bundle = (key: string) => t(locale, `t10misc.templates.${key}`);
 
   useEffect(() => {
     if (state?.ok) onDone();
@@ -247,14 +226,14 @@ function TemplateEditor({
             maxLength={120}
             defaultValue={template?.name ?? ''}
             placeholder={t(locale, 'jobops.templates.namePlaceholder')}
-            className={jInputClass}
+            className={`${jInputClass} min-h-[44px]`}
             autoFocus
           />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-[11px] font-bold uppercase tracking-wider text-graphite mb-1">
-              {bundle.price}
+              {bundle('price')}
             </label>
             <input
               name="price"
@@ -262,13 +241,13 @@ function TemplateEditor({
               min={0}
               step="1"
               defaultValue={template?.price ?? ''}
-              placeholder={bundle.priceHint}
+              placeholder={bundle('priceHint')}
               className={jInputClass}
             />
           </div>
           <div>
             <label className="block text-[11px] font-bold uppercase tracking-wider text-graphite mb-1">
-              {bundle.duration}
+              {bundle('duration')}
             </label>
             <input
               name="durationMin"
@@ -277,21 +256,21 @@ function TemplateEditor({
               max={1440}
               step="1"
               defaultValue={template?.durationMin ?? ''}
-              placeholder={bundle.durationHint}
+              placeholder={bundle('durationHint')}
               className={jInputClass}
             />
           </div>
         </div>
         <div>
           <label className="block text-[11px] font-bold uppercase tracking-wider text-graphite mb-1">
-            {bundle.notes}
+            {bundle('notes')}
           </label>
           <textarea
             name="notes"
             rows={2}
             maxLength={2000}
             defaultValue={template?.notes ?? ''}
-            placeholder={bundle.notesHint}
+            placeholder={bundle('notesHint')}
             className={jInputClass}
           />
         </div>
@@ -315,14 +294,14 @@ function TemplateEditor({
           </div>
         )}
         <div className="flex gap-2">
-          <button type="submit" disabled={isPending} className={jPrimaryBtnClass}>
+          <button type="submit" disabled={isPending} className={`${jPrimaryBtnClass} min-h-[44px] justify-center`}>
             {isPending
               ? '…'
               : template
                 ? t(locale, 'jobops.templates.save')
                 : t(locale, 'jobops.templates.create')}
           </button>
-          <button type="button" onClick={onDone} className={jSecondaryBtnClass}>
+          <button type="button" onClick={onDone} className={`${jSecondaryBtnClass} min-h-[44px]`}>
             {t(locale, 'jobops.templates.cancel')}
           </button>
         </div>

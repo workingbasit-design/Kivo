@@ -3,62 +3,12 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  LayoutDashboard, Calendar, Users, Briefcase, FileText,
-  Settings, ClipboardList, UserCog, Bell,
-  Tag, Star, PieChart, UserPlus, LogOut, Timer, Megaphone, Repeat, Route, CalendarCheck, BellRing, Import
-} from 'lucide-react';
+import { Bell, LogOut } from 'lucide-react';
 import EveryJobLogo from '@/components/EveryJobLogo';
 import { logout } from '@/app/actions/auth';
 import { formatMoney } from '@/lib/money';
 import { t, type Locale } from '@/lib/i18n';
-
-const navSections = [
-  {
-    labelKey: 'nav.sections.work',
-    items: [
-      { nameKey: 'nav.dashboard', href: '/dashboard', icon: LayoutDashboard },
-      { nameKey: 'nav.schedule', href: '/schedule', icon: Calendar },
-      { nameKey: 'nav.jobs', href: '/jobs', icon: Briefcase },
-      { nameKey: 'nav.recurring', href: '/recurring', icon: Repeat },
-      { nameKey: 'nav.routes', href: '/routes', icon: Route },
-      { nameKey: 'nav.timesheets', href: '/timesheets', icon: Timer },
-    ],
-  },
-  {
-    labelKey: 'nav.sections.money',
-    items: [
-      { nameKey: 'nav.quotes', href: '/quotes', icon: ClipboardList },
-      { nameKey: 'nav.invoices', href: '/invoices', icon: FileText },
-    ],
-  },
-  {
-    labelKey: 'nav.sections.customers',
-    items: [
-      { nameKey: 'nav.leads', href: '/leads', icon: UserPlus, badgeKey: 'leads' },
-      { nameKey: 'nav.customers', href: '/customers', icon: Users },
-      { nameKey: 'nav.reviews', href: '/reviews', icon: Star },
-    ],
-  },
-  {
-    labelKey: 'nav.sections.grow',
-    items: [
-      { nameKey: 'nav.pricebook', href: '/pricebook', icon: Tag },
-      { nameKey: 'nav.marketing', href: '/marketing', icon: Megaphone },
-      { nameKey: 'nav.reminders', href: '/reminders', icon: BellRing },
-      { nameKey: 'nav.onlineBooking', href: '/settings/booking', icon: CalendarCheck },
-    ],
-  },
-  {
-    labelKey: 'nav.sections.manage',
-    items: [
-      { nameKey: 'nav.reports', href: '/reports', icon: PieChart },
-      { nameKey: 'nav.imports', href: '/imports', icon: Import },
-      { nameKey: 'nav.team', href: '/settings/team', icon: UserCog },
-      { nameKey: 'nav.settings', href: '/settings', icon: Settings },
-    ],
-  },
-];
+import { navSections, navBadgeKeys } from '@/components/nav-sections';
 
 export interface SidebarStats {
   bookedToday: number;
@@ -141,7 +91,7 @@ export default function AppSidebar({
                   pathname.startsWith(item.href + '/') ||
                   (pathname === '/' && item.href === '/dashboard');
                 const badge =
-                  item.badgeKey === 'leads' && stats.newLeads > 0 ? stats.newLeads : null;
+                  navBadgeKeys[item.href] === 'leads' && stats.newLeads > 0 ? stats.newLeads : null;
                 const label = t(locale, item.nameKey);
                 return (
                   <Link
@@ -181,8 +131,8 @@ export default function AppSidebar({
       {/* User profile / Logout */}
       <div className="p-4 border-t border-white/10 mt-auto">
         <form action={logout}>
-          <button className="flex items-center gap-3 px-3 py-2 text-white/50 hover:bg-white/10 hover:text-white transition-colors rounded-xl w-full text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70">
-            <div className="w-8 h-8 rounded-full bg-ink text-white flex items-center justify-center text-sm font-bold shadow-inner shrink-0">
+          <button className="flex items-center gap-3 px-3 py-2.5 text-white/50 hover:bg-white/10 hover:text-white transition-colors rounded-xl w-full text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70">
+            <div className="w-9 h-9 rounded-full bg-lime text-ink flex items-center justify-center text-sm font-bold shrink-0">
               {(user.name || user.email).charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">

@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { PageHeader, Card, StatusBadge } from '@/components/ui';
+import { PageHeader, Card, StatusBadge, SectionTitle } from '@/components/ui';
 import { formatDateLabel, toISODateLocal, hasJobTime, localeDateTag, localeMoneyTag } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import { entryMinutes } from '@/lib/timesheets';
@@ -31,6 +31,8 @@ export default async function JobDetailPage({
   const { id } = await params;
   const { businessId } = await requireAuth();
   const locale = await getLocale();
+  const T = (k: string) => t(locale, `t10work.${k}`);
+  const jobsL = (k: string) => t(locale, `jobs.${k}`);
   const dateLocale = localeDateTag(locale);
   const moneyLocale = localeMoneyTag(locale);
   const business = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true, name: true, regionCode: true, defaultHourlyRate: true } });
@@ -87,22 +89,22 @@ export default async function JobDetailPage({
   const infoRows: Array<{ icon: React.ReactNode; label: string; value: React.ReactNode }> = [
     {
       icon: <Calendar size={14} className="text-zinc-400" />,
-      label: 'Date',
+      label: jobsL('date'),
       value: formatDateLabel(jobDateKey, dateLocale),
     },
     {
       icon: <Clock size={14} className="text-zinc-400" />,
-      label: 'Time',
+      label: jobsL('time'),
       value: hasJobTime(job.time) ? job.time : '—',
     },
     {
       icon: <DollarSign size={14} className="text-zinc-400" />,
-      label: 'Price',
-      value: <span className="font-bold text-zinc-900">{formatMoney(job.price, currency, moneyLocale)}</span>,
+      label: jobsL('price'),
+      value: <span className="font-bold text-zinc-900 tabular-nums">{formatMoney(job.price, currency, moneyLocale)}</span>,
     },
     {
       icon: <User size={14} className="text-zinc-400" />,
-      label: 'Customer',
+      label: jobsL('customer'),
       value: (
         <Link
           href={`/customers/${job.customer.id}`}
@@ -116,7 +118,7 @@ export default async function JobDetailPage({
       ? [
           {
             icon: <Phone size={14} className="text-zinc-400" />,
-            label: 'Phone',
+            label: T('jobPhone'),
             value: (
               <a href={`tel:${job.customer.phone}`} className="hover:underline">
                 {job.customer.phone}
@@ -127,13 +129,13 @@ export default async function JobDetailPage({
       : []),
     {
       icon: <MapPin size={14} className="text-zinc-400" />,
-      label: 'Address',
+      label: jobsL('address'),
       value: job.address || '—',
     },
     {
       icon: <User size={14} className="text-zinc-400" />,
-      label: 'Technician',
-      value: job.technician || job.assignedTo?.name || 'Unassigned',
+      label: jobsL('technician'),
+      value: job.technician || job.assignedTo?.name || T('jobUnassigned'),
     },
   ];
 
@@ -141,50 +143,52 @@ export default async function JobDetailPage({
     <div className="space-y-6 max-w-3xl">
       <Link
         href="/jobs"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900 min-h-[44px] px-2 -ml-2"
       >
-        <ArrowLeft size={14} /> Back to jobs
+        <ArrowLeft size={14} /> {T('jobBackToJobs')}
       </Link>
 
       <PageHeader
         title={job.title}
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             {/* wa.me chat with the customer — user taps to send from their own
                 WhatsApp; EveryJob never sends anything automatically. */}
             <WhatsAppButton
               phone={job.customer.phone}
               regionCode={business?.regionCode}
               message={`Hi ${job.customer.name}! ${business?.name ?? 'We'} have your "${job.title}" booking scheduled for ${formatDateLabel(jobDateKey, dateLocale)}${hasJobTime(job.time) ? ` at ${job.time}` : ''}.`}
-              label="WhatsApp"
+              label={T('jobWhatsAppLabel')}
             />
             <Link
               href={`/jobs/${job.id}/edit`}
-              className="bg-white hover:bg-zinc-50 text-zinc-700 px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 border border-zinc-200 shadow-sm"
+              className="bg-white hover:bg-zinc-50 text-zinc-700 min-h-[44px] px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 border border-zinc-200 shadow-sm"
             >
-              <Pencil size={14} /> Edit
+              <Pencil size={14} /> {t(locale, 'common.edit')}
             </Link>
           </div>
         }
       />
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-wrap">
         <StatusBadge status={job.status} />
         <span className="text-xs text-zinc-400">
-          Created {formatDateLabel(job.createdAt, dateLocale)}
+          {T('jobCreatedOn').replace('{date}', formatDateLabel(job.createdAt, dateLocale))}
         </span>
       </div>
 
       {/* Status controls */}
       <Card className="p-5">
-        <JobStatusButtons jobId={job.id} status={job.status} />
+        <JobStatusButtons jobId={job.id} status={job.status} locale={locale} />
       </Card>
 
       {/* Details */}
       <Card className="p-5 md:p-6">
-        <h2 className="text-sm font-bold text-zinc-900 mb-4 flex items-center gap-2">
-          <FileText size={14} /> Job details
-        </h2>
+        <SectionTitle>
+          <span className="inline-flex items-center gap-2 normal-case tracking-normal">
+            <FileText size={14} /> {T('jobDetailsTitle')}
+          </span>
+        </SectionTitle>
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
           {infoRows.map((row) => (
             <div key={row.label} className="flex items-start gap-2.5">
@@ -201,14 +205,14 @@ export default async function JobDetailPage({
         {job.notes && (
           <div className="mt-5 pt-5 border-t border-zinc-100">
             <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
-              Notes
+              {jobsL('notes')}
             </p>
             <p className="text-sm text-zinc-700 whitespace-pre-wrap">{job.notes}</p>
           </div>
         )}
       </Card>
 
-      {/* Checklist */}
+      {/* Checklist (with progress bar) */}
       <JobChecklist
         jobId={job.id}
         locale={locale}
@@ -254,9 +258,11 @@ export default async function JobDetailPage({
 
       {/* Progress invoicing — milestone invoices linked to this job */}
       <Card className="p-5 md:p-6">
-        <h2 className="text-sm font-bold text-zinc-900 mb-1 flex items-center gap-2">
-          <DollarSign size={14} /> {t(locale, 'billing.progressTitle')}
-        </h2>
+        <SectionTitle>
+          <span className="inline-flex items-center gap-2 normal-case tracking-normal">
+            <DollarSign size={14} /> {t(locale, 'billing.progressTitle')}
+          </span>
+        </SectionTitle>
         <p className="text-xs text-zinc-500 mb-4">
           {t(locale, 'billing.progressDesc')}
         </p>
@@ -266,7 +272,7 @@ export default async function JobDetailPage({
               <li key={inv.id}>
                 <Link
                   href={`/invoices/${inv.id}`}
-                  className="flex items-center justify-between gap-3 py-2.5 hover:bg-zinc-50 rounded-lg px-2 -mx-2"
+                  className="flex items-center justify-between gap-3 py-2.5 hover:bg-zinc-50 rounded-lg px-2 -mx-2 min-h-[56px]"
                 >
                   <div className="min-w-0 flex items-center gap-2">
                     <span className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-semibold text-zinc-600 shrink-0">
@@ -277,7 +283,7 @@ export default async function JobDetailPage({
                     </span>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
-                    <span className="text-sm font-bold text-zinc-900">
+                    <span className="text-sm font-bold text-zinc-900 tabular-nums">
                       {formatMoney(inv.total, currency, moneyLocale)}
                     </span>
                     <StatusBadge status={inv.status} />
@@ -296,15 +302,20 @@ export default async function JobDetailPage({
 
       {/* Job notes */}
       <Card className="p-5 md:p-6">
-        <h2 className="text-sm font-bold text-zinc-900 mb-2 flex items-center gap-2">
-          <StickyNote size={14} /> Activity notes
-          <span className="text-[11px] font-semibold text-zinc-400">
-            ({job.jobNotes.length})
+        <SectionTitle
+          action={
+            <span className="text-[11px] font-semibold text-zinc-400 tabular-nums">
+              ({job.jobNotes.length})
+            </span>
+          }
+        >
+          <span className="inline-flex items-center gap-2 normal-case tracking-normal">
+            <StickyNote size={14} /> {T('jobNotesTitle')}
           </span>
-        </h2>
+        </SectionTitle>
         {job.jobNotes.length === 0 ? (
           <p className="text-xs text-zinc-400 py-3">
-            No notes yet. Add visit updates, customer requests, or follow-ups here.
+            {T('jobNotesEmpty')}
           </p>
         ) : (
           <div className="mb-2">
@@ -312,6 +323,7 @@ export default async function JobDetailPage({
               <JobNoteItem
                 key={note.id}
                 jobId={job.id}
+                locale={locale}
                 noteId={note.id}
                 content={note.content}
                 authorName={note.author.name || note.author.email}
@@ -321,7 +333,7 @@ export default async function JobDetailPage({
           </div>
         )}
         <div className="pt-4 border-t border-zinc-100 mt-2">
-          <JobNoteForm jobId={job.id} />
+          <JobNoteForm jobId={job.id} locale={locale} />
         </div>
       </Card>
     </div>

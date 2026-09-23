@@ -2,6 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { AlertTriangle, RotateCcw } from 'lucide-react';
+import { primaryBtnClass } from '@/components/ui';
 
 /**
  * Error boundary for the signed-in app. Next.js renders this when any page
@@ -36,7 +37,7 @@ export default function AppError({
         <button
           type="button"
           onClick={reset}
-          className="inline-flex items-center gap-2 bg-ink hover:bg-graphite text-white px-6 py-3 rounded-full text-sm font-semibold transition active:scale-95"
+          className={primaryBtnClass + ' rounded-full px-8'}
         >
           <RotateCcw size={15} /> Try again
         </button>

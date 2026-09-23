@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import { ArrowLeft, Printer, User } from 'lucide-react';
+import { ArrowLeft, Printer, User, AlertTriangle } from 'lucide-react';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { PageHeader, Card, StatusBadge } from '@/components/ui';
+import { PageHeader, Card, StatusBadge, Badge } from '@/components/ui';
 import { formatDateShort, localeDateTag, localeMoneyTag } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import { splitStoredTax, taxIdLabelForRegion } from '@/lib/tax';
@@ -49,6 +49,12 @@ export default async function InvoiceDetailPage({
 
   const paid = Math.round(invoice.payments.reduce((s, p) => s + p.amount, 0) * 100) / 100;
   const remaining = Math.round((invoice.total - paid) * 100) / 100;
+  // Usual 30-day payment terms — the Invoice model stores no contractual
+  // due date, so this is a follow-up hint, not a legal state.
+  const overdue =
+    remaining > 0 &&
+    invoice.status !== 'PAID' &&
+    new Date(invoice.date).getTime() < Date.now() - 30 * 24 * 60 * 60 * 1000;
   const userNotes = displayNotes(invoice.notes, invoice.lineItems.length > 0);
   const currency = 'CAD';
   // French (fr) locale renders invoice labels in French and formats CAD
@@ -77,7 +83,7 @@ export default async function InvoiceDetailPage({
       <div className="flex items-center justify-between">
         <Link
           href="/invoices"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-800"
+          className="min-h-[44px] inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-800"
         >
           <ArrowLeft size={14} /> {L('invoices.backToInvoices')}
         </Link>
@@ -97,8 +103,25 @@ export default async function InvoiceDetailPage({
       <PageHeader
         title={`${L('invoices.invoice')} ${invoice.number}`}
         subtitle={`${L('invoices.dated')} ${formatDateShort(invoice.date, dateLocale)}`}
-        actions={<StatusBadge status={invoice.status} />}
+        actions={
+          <span className="flex items-center gap-1.5">
+            {overdue && <Badge tone="danger">{t(locale, 't10money.overdue')}</Badge>}
+            <StatusBadge status={invoice.status} />
+          </span>
+        }
       />
+
+      {overdue && (
+        <div className="bg-rose-50 border border-rose-200 rounded-2xl px-4 py-3 flex items-start gap-3 print:hidden">
+          <span className="mt-0.5 text-rose-500 shrink-0" aria-hidden><AlertTriangle size={18} /></span>
+          <div>
+            <p className="text-sm font-bold text-rose-700">
+              {t(locale, 't10money.overdue')} — {formatMoney(remaining, currency, moneyLocale)} {L('invoices.balanceDue').toLowerCase()}
+            </p>
+            <p className="text-xs text-rose-600 mt-0.5">{t(locale, 't10money.overdueNote')}</p>
+          </div>
+        </div>
+      )}
 
       {/* Printable invoice */}
       <Card className="p-6 md:p-8 print:shadow-none print:border-zinc-300" >
@@ -130,28 +153,24 @@ export default async function InvoiceDetailPage({
         </div>
 
         {invoice.lineItems.length > 0 && (
-          <table className="w-full text-sm mt-6">
-            <thead>
-              <tr className="text-left text-[11px] uppercase tracking-wider text-zinc-400 border-b border-zinc-200">
-                <th className="py-2 pr-2 font-bold">{L('invoices.item')}</th>
-                <th className="py-2 px-2 text-right font-bold">{L('invoices.qty')}</th>
-                <th className="py-2 text-right font-bold">{L('invoices.amount')}</th>
-              </tr>
-            </thead>
-            <tbody>
+          <div className="mt-6">
+            <ul className="space-y-2">
               {invoice.lineItems.map((item) => (
-                <tr key={item.id} className="border-b border-zinc-100">
-                  <td className="py-2.5 pr-2 text-zinc-800">{item.description}</td>
-                  <td className="py-2.5 px-2 text-right text-zinc-500 whitespace-nowrap">
+                <li
+                  key={item.id}
+                  className="rounded-xl border border-zinc-100 bg-zinc-50/40 px-3 py-2.5 print:bg-transparent"
+                >
+                  <p className="text-sm font-semibold text-zinc-800">{item.description}</p>
+                  <p className="text-xs text-zinc-500 mt-1">
                     {item.qty} × {formatMoney(item.unitPrice, currency, moneyLocale)}
-                  </td>
-                  <td className="py-2.5 text-right font-semibold text-zinc-900 whitespace-nowrap">
-                    {formatMoney(round2(item.qty * item.unitPrice), currency, moneyLocale)}
-                  </td>
-                </tr>
+                    <span className="font-bold text-zinc-800">
+                      {' '}· {formatMoney(round2(item.qty * item.unitPrice), currency, moneyLocale)}
+                    </span>
+                  </p>
+                </li>
               ))}
-            </tbody>
-          </table>
+            </ul>
+          </div>
         )}
 
         <dl className="mt-6 space-y-1.5 text-sm max-w-xs ml-auto">
@@ -175,8 +194,8 @@ export default async function InvoiceDetailPage({
             <dt>{L('invoices.paid')}</dt>
             <dd className="font-semibold">{formatMoney(paid, currency, moneyLocale)}</dd>
           </div>
-          <div className="flex justify-between text-amber-700">
-            <dt>{L('invoices.balanceDue')}</dt>
+          <div className="flex justify-between items-center text-base bg-ink text-white rounded-xl px-4 py-3 -mx-1 mt-2">
+            <dt className="font-bold">{L('invoices.balanceDue')}</dt>
             <dd className="font-bold">{formatMoney(remaining, currency, moneyLocale)}</dd>
           </div>
         </dl>
@@ -223,7 +242,13 @@ export default async function InvoiceDetailPage({
       )}
 
       <Card className="p-6 print:hidden">
-        <InvoiceActions id={invoice.id} status={invoice.status} remaining={remaining} currency={currency} />
+        <InvoiceActions
+          id={invoice.id}
+          status={invoice.status}
+          remaining={remaining}
+          currency={currency}
+          locale={locale}
+        />
       </Card>
 
       <Card className="p-6 print:hidden">
@@ -251,7 +276,7 @@ export default async function InvoiceDetailPage({
       <div className="flex items-center gap-2 text-zinc-400 print:hidden">
         <Printer size={14} />
         <p className="text-[11px]">
-          Use the Print button for a clean paper copy.
+          {L('t10money.printHint')}
         </p>
       </div>
     </div>

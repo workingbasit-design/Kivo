@@ -1,10 +1,12 @@
 'use client';
 
-import React, { useActionState, useTransition } from 'react';
-import { AlertCircle, CheckCircle2, Trash2, UserPlus, ShieldCheck, User } from 'lucide-react';
+import React, { useActionState, useEffect, useTransition } from 'react';
+import { AlertCircle, Trash2, UserPlus, ShieldCheck, User } from 'lucide-react';
+import { toast } from 'sonner';
 import { inviteTeamMember, removeTeamMember, type SettingsResult } from '@/app/actions/settings';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { Card, EmptyState, Field, StatusBadge, inputClass, primaryBtnClass } from '@/components/ui';
+import { useResolvedT } from '@/hooks/useResolvedLocale';
 
 export type TeamMember = {
   id: string;
@@ -15,61 +17,69 @@ export type TeamMember = {
 };
 
 function InviteForm() {
+  const { t } = useResolvedT();
   const [state, formAction, isPending] = useActionState<SettingsResult, FormData>(
     inviteTeamMember,
     {}
   );
   const [show, setShow] = React.useState(false);
 
+  useEffect(() => {
+    if (state?.ok) {
+      toast.success(t('t10misc.team.added'));
+      setShow(false);
+    } else if (state?.error) {
+      toast.error(state.error);
+    }
+  }, [state, t]);
+
   return (
     <div>
       {!show ? (
         <button onClick={() => setShow(true)} className={primaryBtnClass}>
-          <UserPlus size={14} /> Invite member
+          <UserPlus size={14} /> {t('t10misc.team.inviteMember')}
         </button>
       ) : (
         <Card className="p-5 mb-6">
-          <h3 className="font-bold text-zinc-900 mb-4">Invite team member</h3>
+          <h3 className="font-bold text-zinc-900 mb-4">{t('t10misc.team.inviteTitle')}</h3>
           <form action={formAction} className="space-y-4">
             <div className="grid sm:grid-cols-2 gap-4">
-              <Field label="Name">
-                <input name="name" type="text" required maxLength={100} placeholder="Priya Sharma" className={inputClass} />
+              <Field label={t('t10misc.team.nameLabel')}>
+                <input name="name" type="text" required maxLength={100} placeholder={t('t10misc.team.namePlaceholder')} className={inputClass} />
               </Field>
-              <Field label="Email">
-                <input name="email" type="email" required maxLength={255} placeholder="priya@example.in" className={inputClass} />
+              <Field label={t('t10misc.team.emailLabel')}>
+                <input name="email" type="email" required maxLength={255} placeholder={t('t10misc.team.emailPlaceholder')} className={inputClass} autoComplete="email" />
               </Field>
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
-              <Field label="Password" hint="Min. 8 characters, with a letter & number">
+              <Field label={t('t10misc.team.passwordLabel')} hint={t('t10misc.team.passwordHint')}>
                 <input name="password" type="password" required autoComplete="new-password" className={inputClass} />
               </Field>
-              <Field label="Role">
+              <Field label={t('t10misc.team.roleLabel')}>
                 <select name="role" defaultValue="MEMBER" className={inputClass}>
-                  <option value="MEMBER">Member — jobs & customers</option>
-                  <option value="ADMIN">Admin — full access</option>
+                  <option value="MEMBER">{t('t10misc.team.roleMember')}</option>
+                  <option value="ADMIN">{t('t10misc.team.roleAdmin')}</option>
                 </select>
               </Field>
             </div>
 
             {state?.error && (
-              <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+              <div role="alert" className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
                 <AlertCircle size={14} className="mt-0.5 shrink-0" />
                 <span>{state.error}</span>
               </div>
             )}
-            {state?.ok && (
-              <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium rounded-xl px-3 py-2.5">
-                <CheckCircle2 size={14} className="shrink-0" />
-                <span>Team member added.</span>
-              </div>
-            )}
 
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <button type="submit" disabled={isPending} className={primaryBtnClass}>
-                {isPending ? 'Adding…' : 'Add member'}
+                {isPending ? t('t10misc.team.adding') : t('t10misc.team.addMember')}
               </button>
-              <button type="button" onClick={() => setShow(false)} className="px-4 py-2.5 rounded-xl text-xs font-semibold text-zinc-500 hover:bg-zinc-100">
-                Cancel
+              <button
+                type="button"
+                onClick={() => setShow(false)}
+                className="min-h-[44px] px-4 py-2.5 rounded-xl text-xs font-semibold text-zinc-500 hover:bg-zinc-100"
+              >
+                {t('t10misc.team.cancel')}
               </button>
             </div>
           </form>
@@ -80,6 +90,7 @@ function InviteForm() {
 }
 
 function MemberRow({ member, isSelf }: { member: TeamMember; isSelf: boolean }) {
+  const { t } = useResolvedT();
   const [isPending, startTransition] = useTransition();
   const [confirming, setConfirming] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -89,9 +100,16 @@ function MemberRow({ member, isSelf }: { member: TeamMember; isSelf: boolean }) 
     startTransition(async () => {
       setError(null);
       const res = await removeTeamMember(member.id);
-      if (res.error) setError(res.error);
+      if (res.error) {
+        setError(res.error);
+        toast.error(res.error);
+      } else {
+        toast.success(t('t10misc.team.removed'));
+      }
     });
   };
+
+  const displayName = member.name || member.email;
 
   return (
     <div className="px-5 py-4 border-b border-zinc-100 last:border-0">
@@ -102,8 +120,8 @@ function MemberRow({ member, isSelf }: { member: TeamMember; isSelf: boolean }) 
           </div>
           <div className="min-w-0">
             <p className="text-sm font-bold text-zinc-900 truncate">
-              {member.name || member.email}
-              {isSelf && <span className="ml-2 text-[10px] font-bold uppercase tracking-wider text-zinc-400">(you)</span>}
+              {displayName}
+              {isSelf && <span className="ml-2 text-[10px] font-bold uppercase tracking-wider text-zinc-400">{t('t10misc.team.you')}</span>}
             </p>
             <p className="text-xs text-zinc-500 truncate">{member.email}</p>
           </div>
@@ -114,24 +132,23 @@ function MemberRow({ member, isSelf }: { member: TeamMember; isSelf: boolean }) 
             <button
               onClick={() => setConfirming(true)}
               disabled={isPending}
-              className="text-zinc-300 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors"
-              title="Remove member"
-              aria-label={`Remove ${member.name || member.email}`}
+              className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center text-zinc-400 hover:text-rose-600 p-2.5 rounded-lg hover:bg-rose-50 transition-colors"
+              aria-label={t('t10misc.team.removeTitle').replace('{name}', displayName)}
             >
-              <Trash2 size={16} />
+              <Trash2 size={18} />
             </button>
           )}
         </div>
       </div>
       {error && (
-        <p className="text-[11px] text-rose-600 mt-2 font-medium">{error}</p>
+        <p className="text-[11px] text-rose-600 mt-2 font-medium" role="alert">{error}</p>
       )}
       <ConfirmDialog
         open={confirming}
-        title={`Remove ${member.name || member.email}?`}
-        message="They will lose access to this business immediately. This cannot be undone."
-        confirmLabel="Yes, remove"
-        cancelLabel="Keep"
+        title={t('t10misc.team.removeTitle').replace('{name}', displayName)}
+        message={t('t10misc.team.removeMessage')}
+        confirmLabel={t('t10misc.team.removeConfirm')}
+        cancelLabel={t('t10misc.team.keep')}
         busy={isPending}
         onConfirm={runRemove}
         onClose={() => setConfirming(false)}
@@ -147,15 +164,16 @@ export default function TeamClient({
   members: TeamMember[];
   currentUserId: string;
 }) {
+  const { t } = useResolvedT();
   return (
     <div className="space-y-6">
       <InviteForm />
-      <Card>
+      <Card className="p-0 overflow-hidden">
         {members.length === 0 ? (
           <EmptyState
             icon={<User size={24} />}
-            title="No team members"
-            description="Invite your staff so everyone can see jobs, customers, and schedules."
+            title={t('t10misc.team.noMembersTitle')}
+            description={t('t10misc.team.noMembersDesc')}
           />
         ) : (
           <div>
@@ -165,9 +183,7 @@ export default function TeamClient({
           </div>
         )}
       </Card>
-      <p className="text-xs text-zinc-400">
-        Admins have full access including team management and settings. Members can manage jobs, customers, quotes, and invoices.
-      </p>
+      <p className="text-xs text-zinc-400 leading-relaxed">{t('t10misc.team.rolesHint')}</p>
     </div>
   );
 }

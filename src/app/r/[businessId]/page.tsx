@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation';
 import { Star } from 'lucide-react';
 import EveryJobLogo from '@/components/EveryJobLogo';
 import { prisma } from '@/lib/prisma';
+import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
 import PublicReviewForm from '@/components/PublicReviewForm';
 
 // Public page — no auth. Only the business name is ever shown here.
@@ -29,6 +31,8 @@ export default async function PublicReviewPage({
   });
   if (!business) notFound();
 
+  const locale = await getLocale();
+
   return (
     <div className="min-h-screen bg-zinc-50 flex flex-col items-center px-4 py-10">
       <div className="w-full max-w-md space-y-6">
@@ -37,22 +41,22 @@ export default async function PublicReviewPage({
             <EveryJobLogo size={44} />
           </div>
           <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
-            Leave a review for
+            {t(locale, 't10money.reviewPageFor')}
           </p>
           <h1 className="text-2xl font-bold text-zinc-900 tracking-tight mt-1">
             {business.name}
           </h1>
-          <div className="flex items-center justify-center gap-1 mt-2">
+          <div className="flex items-center justify-center gap-1 mt-2" aria-hidden="true">
             {[1, 2, 3, 4, 5].map((n) => (
               <Star key={n} size={16} className="fill-amber-400 text-amber-400" />
             ))}
           </div>
         </div>
 
-        <PublicReviewForm businessId={businessId} />
+        <PublicReviewForm businessId={businessId} locale={locale} />
 
         <p className="text-center text-[11px] text-zinc-400">
-          Powered by EveryJob — every job, one place.
+          {t(locale, 't10money.reviewPagePowered')}
         </p>
       </div>
     </div>

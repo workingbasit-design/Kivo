@@ -1,11 +1,41 @@
 'use client';
 
-import React, { useActionState, useState } from 'react';
+import React, { useActionState, useEffect, useRef, useState } from 'react';
 import { AlertCircle, CheckCircle2, Pencil, Trash2, X } from 'lucide-react';
+import { toast } from 'sonner';
+import { t, type Locale } from '@/lib/i18n';
 import { updateCustomer, deleteCustomer } from '@/app/actions/customers';
-import { Field, inputClass, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
+import {
+  Field,
+  FormGrid,
+  inputClass,
+  primaryBtnClass,
+  secondaryBtnClass,
+} from '@/components/ui';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 import { CA_PROVINCES } from '@/lib/tax';
+
+/**
+ * Fires a toast exactly once per server-action result. Minimal inline
+ * replacement for the removed useActionToast helper.
+ */
+function useResultToast<T extends { ok?: boolean; error?: string }>(
+  state: T | undefined,
+  messages: { success?: string; error?: string }
+) {
+  const seen = useRef<T | undefined>(undefined);
+  useEffect(() => {
+    if (!state || seen.current === state) return;
+    seen.current = state;
+    if (state.ok && messages.success) {
+      toast.success(messages.success);
+    } else if (state.error) {
+      toast.error(messages.error ?? state.error);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
+}
 
 export type CustomerFormData = {
   id: string;
@@ -19,9 +49,19 @@ export type CustomerFormData = {
   tags: string | null;
 };
 
-export function EditCustomerForm({ customer }: { customer: CustomerFormData }) {
+export function EditCustomerForm({
+  customer,
+  locale = 'en',
+}: {
+  customer: CustomerFormData;
+  locale?: Locale;
+}) {
   const [editing, setEditing] = useState(false);
   const [state, formAction, isPending] = useActionState(updateCustomer, {});
+
+  useResultToast(state, {
+    success: t(locale, 't10money.customerSaved'),
+  });
 
   if (!editing) {
     return (
@@ -39,7 +79,7 @@ export function EditCustomerForm({ customer }: { customer: CustomerFormData }) {
         <input name="name" required defaultValue={customer.name} className={inputClass} />
       </Field>
 
-      <div className="grid sm:grid-cols-2 gap-4">
+      <FormGrid>
         <Field label="Phone" hint="e.g. +1 416 555 0100">
           <input
             name="phone"
@@ -58,7 +98,7 @@ export function EditCustomerForm({ customer }: { customer: CustomerFormData }) {
             className={inputClass}
           />
         </Field>
-      </div>
+      </FormGrid>
 
       <Field label="Address">
         <AddressAutocomplete
@@ -69,7 +109,7 @@ export function EditCustomerForm({ customer }: { customer: CustomerFormData }) {
         />
       </Field>
 
-      <div className="grid sm:grid-cols-2 gap-4">
+      <FormGrid>
         <Field label="Province">
           <select name="province" defaultValue={customer.province ?? ''} className={inputClass}>
             <option value="">—</option>
@@ -89,7 +129,7 @@ export function EditCustomerForm({ customer }: { customer: CustomerFormData }) {
             className={inputClass + ' uppercase'}
           />
         </Field>
-      </div>
+      </FormGrid>
 
       <Field label="Notes">
         <textarea name="notes" rows={3} defaultValue={customer.notes ?? ''} className={inputClass} />
@@ -108,54 +148,61 @@ export function EditCustomerForm({ customer }: { customer: CustomerFormData }) {
       {state?.ok && (
         <div className="flex items-start gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium rounded-xl px-3 py-2.5">
           <CheckCircle2 size={14} className="mt-0.5 shrink-0" />
-          <span>Saved.</span>
+          <span>{t(locale, 't10money.customerSaved')}</span>
         </div>
       )}
 
       <div className="flex gap-2">
         <button type="submit" disabled={isPending} className={primaryBtnClass}>
-          {isPending ? 'Saving…' : 'Save changes'}
+          {isPending ? t(locale, 't10money.custEditSaving') : t(locale, 't10money.custEditSaveChanges')}
         </button>
         <button type="button" onClick={() => setEditing(false)} className={secondaryBtnClass}>
-          <X size={14} /> Cancel
+          <X size={14} /> {t(locale, 't10money.custEditCancel')}
         </button>
       </div>
     </form>
   );
 }
 
-export function DeleteCustomerButton({ customerId, customerName }: { customerId: string; customerName: string }) {
+export function DeleteCustomerButton({
+  customerId,
+  customerName,
+  locale = 'en',
+}: {
+  customerId: string;
+  customerName: string;
+  locale?: Locale;
+}) {
   const [confirming, setConfirming] = useState(false);
   const [state, formAction, isPending] = useActionState(deleteCustomer, {});
 
-  if (!confirming) {
-    return (
-      <button
-        onClick={() => setConfirming(true)}
-        className="text-rose-600 hover:text-rose-700 px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 border border-rose-200 hover:bg-rose-50"
-      >
-        <Trash2 size={14} /> Delete
-      </button>
-    );
-  }
+  // deleteCustomer redirects to /customers on success; toast on failure only.
+  useResultToast(state, {
+    success: t(locale, 't10money.customerDeleted'),
+  });
 
   return (
-    <form action={formAction} className="flex flex-wrap items-center gap-2">
-      <input type="hidden" name="id" value={customerId} />
-      <span className="text-xs text-zinc-600">
-        Delete <strong>{customerName}</strong>? Jobs and invoices linked to them will also be removed.
-      </span>
+    <>
       <button
-        type="submit"
-        disabled={isPending}
-        className="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl font-semibold text-xs transition-colors disabled:opacity-60"
+        onClick={() => setConfirming(true)}
+        className="text-rose-600 hover:text-rose-700 min-h-[44px] px-4 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 border border-rose-200 hover:bg-rose-50"
       >
-        {isPending ? 'Deleting…' : 'Yes, delete'}
+        <Trash2 size={14} /> {t(locale, 't10money.custDelete')}
       </button>
-      <button type="button" onClick={() => setConfirming(false)} className={secondaryBtnClass}>
-        Cancel
-      </button>
+      <ConfirmDialog
+        open={confirming}
+        locale={locale}
+        title={t(locale, 't10money.custDelete')}
+        message={t(locale, 't10money.custDeleteMsg').replace('{name}', customerName)}
+        busy={isPending}
+        onConfirm={() => {
+          const fd = new FormData();
+          fd.append('id', customerId);
+          formAction(fd);
+        }}
+        onClose={() => !isPending && setConfirming(false)}
+      />
       {state?.error && <span className="text-xs text-rose-600">{state.error}</span>}
-    </form>
+    </>
   );
 }

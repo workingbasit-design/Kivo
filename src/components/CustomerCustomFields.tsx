@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { Tag, Plus, Pencil, Trash2, Loader2, Check } from 'lucide-react';
+import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import { Card, Field, inputClass, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
 import {
@@ -61,6 +62,7 @@ export default function CustomerCustomFields({
     const res = await setFieldValue(customerId, fieldId, values[fieldId] ?? '');
     if (!res.ok) {
       setError(errMsg(res.error));
+      toast.error(errMsg(res.error));
       return;
     }
     setSavedId(fieldId);
@@ -72,6 +74,7 @@ export default function CustomerCustomFields({
     const res = await createFieldDef(newName);
     if (!res.ok) {
       setError(errMsg(res.error));
+      toast.error(errMsg(res.error));
       return;
     }
     setNewName('');
@@ -130,13 +133,13 @@ export default function CustomerCustomFields({
         )}
 
         {adding && (
-          <div className="flex gap-2 mb-4">
+          <div className="flex flex-wrap gap-2 mb-4">
             <input
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               maxLength={40}
               placeholder={L('customfields.fieldNamePlaceholder')}
-              className={inputClass}
+              className={`${inputClass} flex-1 min-w-[160px]`}
               aria-label={L('customfields.fieldName')}
             />
             <button
@@ -209,7 +212,7 @@ export default function CustomerCustomFields({
                       type="button"
                       disabled={busy}
                       onClick={() => startTransition(() => saveValue(def.id))}
-                      className="p-2 rounded-lg text-emerald-600 hover:bg-emerald-50"
+                      className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-emerald-600 hover:bg-emerald-50 disabled:opacity-50"
                       title={L('customfields.save')}
                       aria-label={L('customfields.save')}
                     >
@@ -222,7 +225,7 @@ export default function CustomerCustomFields({
                         setRenameValue(def.name);
                         setError(null);
                       }}
-                      className="p-2 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100"
+                      className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100"
                       aria-label={L('customfields.rename')}
                     >
                       <Pencil size={14} />
@@ -230,7 +233,7 @@ export default function CustomerCustomFields({
                     <button
                       type="button"
                       onClick={() => startTransition(() => removeDef(def.id))}
-                      className="p-2 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-50"
+                      className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-zinc-400 hover:text-rose-600 hover:bg-rose-50"
                       aria-label={L('customfields.delete')}
                     >
                       <Trash2 size={14} />

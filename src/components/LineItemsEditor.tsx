@@ -2,7 +2,8 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
-import { inputClass, secondaryBtnClass } from '@/components/ui';
+import { t, type Locale } from '@/lib/i18n';
+import { Field, inputClass, secondaryBtnClass } from '@/components/ui';
 import { currencySymbol, formatMoney } from '@/lib/money';
 
 export interface LineItemRow {
@@ -26,12 +27,14 @@ export default function LineItemsEditor({
   currency,
   initialItems,
   initialDiscount,
+  locale = 'en',
 }: {
   onSubtotal?: (subtotal: number) => void;
   onDiscount?: (discount: { type: 'PERCENT' | 'AMOUNT' | null; value: number }) => void;
   currency?: string;
   initialItems?: { desc: string; qty: string; rate: string }[];
   initialDiscount?: { type: 'PERCENT' | 'AMOUNT' | null; value: string };
+  locale?: Locale;
 }) {
   const [rows, setRows] = useState<LineItemRow[]>(
     initialItems && initialItems.length > 0 ? initialItems : [blankRow()]
@@ -42,6 +45,8 @@ export default function LineItemsEditor({
       : ''
   );
   const [discountValue, setDiscountValue] = useState(initialDiscount?.value ?? '');
+
+  const L = (path: string) => t(locale, path);
 
   const validRows = useMemo(
     () =>
@@ -95,55 +100,76 @@ export default function LineItemsEditor({
       <input type="hidden" name="itemsJson" value={JSON.stringify(validRows)} />
       <input type="hidden" name="discountType" value={discount.type ?? ''} />
       <input type="hidden" name="discountValue" value={discount.type ? String(discount.value) : ''} />
-      <div className="space-y-2">
+      <div className="space-y-3">
         {rows.map((row, i) => (
-          <div key={i} className="grid grid-cols-[1fr_72px_96px_36px] gap-2 items-center">
-            <input
-              value={row.desc}
-              onChange={(e) => setRow(i, { desc: e.target.value })}
-              placeholder={`Item ${i + 1} — e.g. Fan installation`}
-              className={inputClass}
-              maxLength={200}
-            />
-            <input
-              value={row.qty}
-              onChange={(e) => setRow(i, { qty: e.target.value })}
-              placeholder="Qty"
-              inputMode="decimal"
-              className={inputClass}
-              aria-label="Quantity"
-            />
-            <input
-              value={row.rate}
-              onChange={(e) => setRow(i, { rate: e.target.value })}
-              placeholder={`Rate ${currencySymbol(currency)}`}
-              inputMode="decimal"
-              className={inputClass}
-              aria-label="Rate"
-            />
-            <button
-              type="button"
-              onClick={() => removeRow(i)}
-              className="p-2.5 rounded-xl text-zinc-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-              aria-label="Remove item"
-            >
-              <Trash2 size={16} />
-            </button>
+          <div
+            key={i}
+            className="rounded-2xl border border-zinc-200/70 bg-zinc-50/50 p-3.5 space-y-3"
+          >
+            <Field label={`${L('t10money.lineItemLabel')} ${i + 1}`}>
+              <input
+                value={row.desc}
+                onChange={(e) => setRow(i, { desc: e.target.value })}
+                placeholder={L('t10money.itemPlaceholder').replace('{n}', String(i + 1))}
+                className={`${inputClass} bg-white`}
+                maxLength={200}
+              />
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label={L('t10money.qtyLabel')}>
+                <input
+                  value={row.qty}
+                  onChange={(e) => setRow(i, { qty: e.target.value })}
+                  placeholder="1"
+                  inputMode="decimal"
+                  className={`${inputClass} bg-white`}
+                />
+              </Field>
+              <Field label={`${L('t10money.rateLabel')} ${currencySymbol(currency)}`}>
+                <input
+                  value={row.rate}
+                  onChange={(e) => setRow(i, { rate: e.target.value })}
+                  placeholder="0.00"
+                  inputMode="decimal"
+                  className={`${inputClass} bg-white`}
+                />
+              </Field>
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-zinc-500">
+                {L('t10money.itemAmountPreview')}:{' '}
+                <span className="font-bold text-zinc-900">
+                  {formatMoney(
+                    Math.round(Number(row.qty || 0) * Number(row.rate || 0) * 100) / 100,
+                    currency
+                  )}
+                </span>
+              </p>
+              <button
+                type="button"
+                onClick={() => removeRow(i)}
+                disabled={rows.length <= 1}
+                className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-xl text-zinc-400 hover:text-rose-600 hover:bg-rose-50 transition-colors disabled:opacity-30"
+                aria-label={L('t10money.removeItemLabel')}
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
           </div>
         ))}
       </div>
-      <div className="flex items-center justify-between mt-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 mt-3">
         <button type="button" onClick={() => setRows((p) => [...p, blankRow()])} className={secondaryBtnClass}>
-          <Plus size={14} /> Add item
+          <Plus size={14} /> {L('t10money.addItemLabel')}
         </button>
         <p className="text-sm text-zinc-600">
-          Subtotal: <span className="font-bold text-zinc-900">{formatMoney(subtotal, currency)}</span>
+          {L('t10money.subtotalLabel')}: <span className="font-bold text-zinc-900">{formatMoney(subtotal, currency)}</span>
         </p>
       </div>
 
-      <div className="flex items-center gap-2 mt-3">
+      <div className="flex flex-wrap items-center gap-2 mt-3">
         <label htmlFor="discountType" className="text-xs font-semibold text-zinc-500 shrink-0">
-          Discount
+          {L('t10money.discountLabel')}
         </label>
         <select
           id="discountType"
@@ -155,17 +181,17 @@ export default function LineItemsEditor({
           }}
           className={`${inputClass} w-auto`}
         >
-          <option value="">None</option>
-          <option value="PERCENT">% off</option>
-          <option value="AMOUNT">$ off</option>
+          <option value="">{L('t10money.discountNone')}</option>
+          <option value="PERCENT">{L('t10money.discountPercent')}</option>
+          <option value="AMOUNT">{L('t10money.discountAmount')}</option>
         </select>
         {discountType && (
           <input
             value={discountValue}
             onChange={(e) => setDiscountValue(e.target.value)}
-            placeholder={discountType === 'PERCENT' ? 'e.g. 10' : `e.g. 25`}
+            placeholder={discountType === 'PERCENT' ? '10' : '25'}
             inputMode="decimal"
-            aria-label="Discount value"
+            aria-label={L('t10money.discountValueLabel')}
             className={`${inputClass} w-28`}
           />
         )}

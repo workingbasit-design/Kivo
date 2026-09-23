@@ -3,6 +3,7 @@
 import React, { useActionState, useEffect, useRef, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { CheckSquare, Plus, Trash2, AlertCircle, Square } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   addChecklistItem,
   applyChecklistTemplate,
@@ -10,7 +11,7 @@ import {
   deleteChecklistItem,
   type JobOpsActionResult,
 } from '@/app/actions/jobops';
-import { Card } from '@/components/ui';
+import { Card, ProgressBar } from '@/components/ui';
 import { jInputClass, jPrimaryBtnClass, jSecondaryBtnClass } from '@/components/jobops-classes';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { t, type Locale } from '@/lib/i18n';
@@ -39,23 +40,33 @@ export function JobChecklist({
   locale: Locale;
 }) {
   const doneCount = items.filter((i) => i.done).length;
+  const T = (k: string) => t(locale, `t10work.${k}`);
 
   return (
     <Card className="p-5 md:p-6">
-      <div className="flex items-center justify-between gap-3 mb-4">
+      <div className="flex items-center justify-between gap-3 mb-3">
         <h2 className="text-sm font-bold text-ink flex items-center gap-2">
           <CheckSquare size={14} /> {t(locale, 'jobops.checklist.title')}
-          <span className="text-[11px] font-semibold text-graphite">
+          <span className="text-[11px] font-semibold text-graphite tabular-nums">
             {items.length > 0 && `${doneCount} ${t(locale, 'jobops.checklist.ofDone')} ${items.length} ${t(locale, 'jobops.checklist.done')}`}
           </span>
         </h2>
         <Link
           href="/settings/checklists"
-          className="text-[11px] font-bold text-ink hover:underline shrink-0"
+          className="text-[11px] font-bold text-ink hover:underline shrink-0 min-h-[44px] inline-flex items-center"
         >
           {t(locale, 'jobops.checklist.manageTemplates')}
         </Link>
       </div>
+
+      {items.length > 0 && (
+        <ProgressBar
+          value={doneCount}
+          max={items.length}
+          label={T('checklistProgress')}
+          className="mb-4"
+        />
+      )}
 
       <ApplyTemplateForm jobId={jobId} templates={templates} locale={locale} />
 
@@ -91,6 +102,7 @@ function ApplyTemplateForm({
   const [templateId, setTemplateId] = useState('');
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const T = (k: string) => t(locale, `t10work.${k}`);
 
   if (templates.length === 0) return null;
 
@@ -100,7 +112,10 @@ function ApplyTemplateForm({
     startTransition(async () => {
       const res = await applyChecklistTemplate(jobId, templateId);
       if (res?.error) setError(res.error);
-      else setTemplateId('');
+      else {
+        setTemplateId('');
+        toast.success(T('checklistTemplateApplied'));
+      }
     });
   };
 
@@ -143,12 +158,16 @@ function ChecklistRow({ item, locale }: { item: ChecklistItemData; locale: Local
   const [isPending, startTransition] = useTransition();
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const T = (k: string) => t(locale, `t10work.${k}`);
 
   const toggle = () => {
     setError(null);
     startTransition(async () => {
       const res = await toggleChecklistItem(item.id, !item.done);
-      if (res?.error) setError(res.error);
+      if (res?.error) {
+        setError(res.error);
+        toast.error(T('checklistErrorToggle'));
+      }
     });
   };
 
@@ -157,23 +176,28 @@ function ChecklistRow({ item, locale }: { item: ChecklistItemData; locale: Local
     setError(null);
     startTransition(async () => {
       const res = await deleteChecklistItem(item.id);
-      if (res?.error) setError(res.error);
+      if (res?.error) {
+        setError(res.error);
+        toast.error(T('checklistErrorDelete'));
+      } else {
+        toast.success(T('checklistRemoved'));
+      }
     });
   };
 
   return (
-    <li className="py-2.5 flex items-center gap-3">
+    <li className="py-1.5 flex items-center gap-2">
       <button
         type="button"
         onClick={toggle}
         disabled={isPending}
         aria-pressed={item.done}
         aria-label={item.label}
-        className={`shrink-0 transition-colors ${
+        className={`shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors disabled:opacity-60 ${
           item.done ? 'text-emerald-600' : 'text-zinc-300 hover:text-graphite'
         }`}
       >
-        {item.done ? <CheckSquare size={20} /> : <Square size={20} />}
+        {item.done ? <CheckSquare size={22} /> : <Square size={22} />}
       </button>
       <span
         className={`flex-1 min-w-0 text-sm break-words ${
@@ -189,9 +213,9 @@ function ChecklistRow({ item, locale }: { item: ChecklistItemData; locale: Local
         disabled={isPending}
         title={t(locale, 'jobops.checklist.deleteItem')}
         aria-label={t(locale, 'jobops.checklist.deleteItem')}
-        className="p-1.5 text-zinc-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors shrink-0"
+        className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-zinc-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors shrink-0 disabled:opacity-60"
       >
-        <Trash2 size={14} />
+        <Trash2 size={15} />
       </button>
       <ConfirmDialog
         open={confirming}
@@ -211,10 +235,16 @@ function AddItemForm({ jobId, locale }: { jobId: string; locale: Locale }) {
     {}
   );
   const formRef = useRef<HTMLFormElement>(null);
+  const T = (k: string) => t(locale, `t10work.${k}`);
+  const toastedFor = useRef<JobOpsActionResult | null>(null);
 
   useEffect(() => {
-    if (state?.ok) formRef.current?.reset();
-  }, [state]);
+    if (state?.ok && toastedFor.current !== state) {
+      toastedFor.current = state;
+      formRef.current?.reset();
+      toast.success(t(locale, 't10work.checklistAdded'));
+    }
+  }, [state, locale]);
 
   return (
     <form ref={formRef} action={formAction}>

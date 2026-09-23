@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { toast } from 'sonner';
 import {
   RefreshCw,
   Unplug,
@@ -20,6 +21,7 @@ import {
 } from '@/app/actions/google-reviews';
 import { googleErrorMessage, type GoogleErrorKind } from '@/lib/google-reviews';
 import { Card } from '@/components/ui';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 const G = (locale: Locale, key: string) => t(locale, `googleReviews.${key}`);
 
@@ -110,20 +112,18 @@ export default function GoogleReviewsPanel({
       if (res.ok) {
         const imported = res.imported ?? 0;
         const skipped = res.skipped ?? 0;
-        setMsg({
-          ok: true,
-          text: `${G(locale, 'synced')} — ${imported} ${G(locale, 'newReviews')}${
-            skipped ? `, ${skipped} ${G(locale, 'alreadyHere')}` : ''
-          }.`,
-        });
+        const text = `${G(locale, 'synced')} — ${imported} ${G(locale, 'newReviews')}${
+          skipped ? `, ${skipped} ${G(locale, 'alreadyHere')}` : ''
+        }.`;
+        setMsg({ ok: true, text });
+        toast.success(text);
         setConnectedState((s) => ({ ...s, lastSyncAt: new Date().toISOString() }));
       } else {
-        setMsg({
-          ok: false,
-          text: res.errorKind
-            ? googleErrorMessage(res.errorKind, fr)
-            : res.error ?? G(locale, 'syncFailed'),
-        });
+        const text = res.errorKind
+          ? googleErrorMessage(res.errorKind, fr)
+          : res.error ?? G(locale, 'syncFailed');
+        setMsg({ ok: false, text });
+        toast.error(text);
       }
     });
   }
@@ -145,8 +145,10 @@ export default function GoogleReviewsPanel({
     });
   }
 
+  const [confirmingDisconnect, setConfirmingDisconnect] = useState(false);
+
   function doDisconnect() {
-    if (!confirm(G(locale, 'disconnectConfirm'))) return;
+    setConfirmingDisconnect(false);
     startDisconnect(async () => {
       await disconnectGoogle();
       setConnectedState({
@@ -157,7 +159,9 @@ export default function GoogleReviewsPanel({
         lastSyncAt: null,
         googleAccountId: null,
       });
-      setMsg({ ok: true, text: G(locale, 'disconnected') });
+      const text = G(locale, 'disconnected');
+      setMsg({ ok: true, text });
+      toast.success(text);
     });
   }
 
@@ -187,7 +191,7 @@ export default function GoogleReviewsPanel({
           <p className="text-xs text-zinc-600">{G(locale, 'connectDesc')}</p>
           <a
             href="/api/google/connect"
-            className="inline-flex items-center gap-2 bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-bold text-xs"
+            className="min-h-[44px] inline-flex items-center gap-2 bg-ink hover:bg-graphite text-white px-4 rounded-xl font-bold text-xs"
           >
             <ExternalLink size={13} /> {G(locale, 'connectButton')}
           </a>
@@ -207,7 +211,7 @@ export default function GoogleReviewsPanel({
                   </span>
                   <input type="hidden" name="locationId" value={l.locationId} />
                   <input type="hidden" name="title" value={l.title} />
-                  <button type="submit" className="text-xs font-bold text-ink hover:underline shrink-0">
+                  <button type="submit" className="min-h-[44px] text-xs font-bold text-ink hover:underline shrink-0">
                     {G(locale, 'useThis')}
                   </button>
                 </form>
@@ -215,7 +219,7 @@ export default function GoogleReviewsPanel({
             </div>
           )}
           {!locLoading && (
-            <button onClick={loadLocations} className="text-xs font-semibold text-zinc-500 hover:text-zinc-800">
+            <button onClick={loadLocations} className="min-h-[44px] text-xs font-semibold text-zinc-500 hover:text-zinc-800">
               {G(locale, 'reloadLocations')}
             </button>
           )}
@@ -242,19 +246,27 @@ export default function GoogleReviewsPanel({
             <button
               onClick={doSync}
               disabled={syncing}
-              className="inline-flex items-center gap-1.5 bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-bold text-xs disabled:opacity-60"
+              className="min-h-[44px] inline-flex items-center gap-1.5 bg-ink hover:bg-graphite text-white px-4 rounded-xl font-bold text-xs disabled:opacity-60"
             >
               <RefreshCw size={13} className={syncing ? 'animate-spin' : ''} />
               {syncing ? G(locale, 'syncing') : G(locale, 'syncNow')}
             </button>
             <button
-              onClick={doDisconnect}
+              onClick={() => setConfirmingDisconnect(true)}
               disabled={disconnecting}
-              className="inline-flex items-center gap-1.5 border border-zinc-300 hover:border-zinc-500 text-zinc-600 px-4 py-2.5 rounded-xl font-bold text-xs disabled:opacity-60"
+              className="min-h-[44px] inline-flex items-center gap-1.5 border border-zinc-300 hover:border-zinc-500 text-zinc-600 px-4 rounded-xl font-bold text-xs disabled:opacity-60"
             >
               <Unplug size={13} /> {G(locale, 'disconnect')}
             </button>
           </div>
+          <ConfirmDialog
+            open={confirmingDisconnect}
+            title={G(locale, 'disconnect')}
+            message={G(locale, 'disconnectConfirm')}
+            busy={disconnecting}
+            onConfirm={doDisconnect}
+            onClose={() => setConfirmingDisconnect(false)}
+          />
           <p className="text-[11px] text-zinc-400">{G(locale, 'syncNote')}</p>
         </div>
       )}

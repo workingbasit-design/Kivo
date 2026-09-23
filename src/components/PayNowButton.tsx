@@ -51,7 +51,7 @@ export default function PayNowButton({
       <button
         onClick={start}
         disabled={pending}
-        className="flex items-center justify-center gap-2 w-full bg-ink hover:bg-graphite disabled:opacity-60 text-white font-bold text-sm py-3 rounded-2xl transition-colors"
+        className="min-h-[52px] flex items-center justify-center gap-2 w-full bg-ink hover:bg-graphite disabled:opacity-60 text-white font-bold text-sm py-3 rounded-2xl transition-colors"
       >
         <CreditCard size={16} />
         {pending

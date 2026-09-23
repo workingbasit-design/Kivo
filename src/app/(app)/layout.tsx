@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { dayRange, toISODateLocal, todayInTimezone } from '@/lib/utils';
 import AppSidebar from '@/components/AppSidebar';
 import MobileNav from '@/components/MobileNav';
+import BottomNav from '@/components/BottomNav';
 import GlobalCopilotWidget from '@/components/GlobalCopilotWidget';
 import { getLocale } from '@/lib/i18n/server';
 import { syncNotifications, getUnreadCount } from '@/lib/notifications';
@@ -63,10 +64,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         unreadCount={unreadCount}
       />
       <div className="flex-1 min-w-0 flex flex-col">
-        <MobileNav user={user} locale={locale} unreadCount={unreadCount} />
-        <main className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-8">
+        <MobileNav locale={locale} unreadCount={unreadCount} />
+        <main className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-8 pb-28 md:pb-8">
           {children}
         </main>
+        <BottomNav user={user} locale={locale} />
       </div>
       <GlobalCopilotWidget currency={business?.currency} locale={locale} />
     </div>

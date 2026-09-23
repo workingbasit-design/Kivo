@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
+import { toast } from 'sonner';
 import { revokeSignRequest } from '@/app/actions/esign';
 
 /**
@@ -40,6 +41,7 @@ export default function RevokeSignButton({
     }
     setConfirming(false);
     setDone(true);
+    toast.success(revokedText);
     router.refresh();
   }
 
@@ -53,7 +55,7 @@ export default function RevokeSignButton({
             setConfirming(true);
           }}
           disabled={busy || done}
-          className="text-xs font-semibold text-rose-600 hover:text-rose-700 disabled:opacity-60"
+          className="min-h-[44px] inline-flex items-center text-xs font-semibold text-rose-600 hover:text-rose-700 disabled:opacity-60"
         >
           {busy ? '…' : done ? revokedText : revokeText}
         </button>
@@ -80,7 +82,7 @@ export default function RevokeSignButton({
                 type="button"
                 onClick={() => setConfirming(false)}
                 disabled={busy}
-                className="text-zinc-400 hover:text-zinc-700 transition-colors"
+                className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center text-zinc-400 hover:text-zinc-700 transition-colors rounded-xl"
                 aria-label={cancelText}
               >
                 <X size={16} />
@@ -97,7 +99,7 @@ export default function RevokeSignButton({
                 type="button"
                 onClick={() => setConfirming(false)}
                 disabled={busy}
-                className="flex-1 bg-zinc-100 hover:bg-zinc-200 disabled:opacity-50 text-zinc-700 text-xs font-semibold py-2.5 rounded-xl transition-colors"
+                className="flex-1 bg-zinc-100 hover:bg-zinc-200 disabled:opacity-50 text-zinc-700 text-xs font-semibold min-h-[44px] py-2.5 rounded-xl transition-colors"
               >
                 {cancelText}
               </button>
@@ -105,7 +107,7 @@ export default function RevokeSignButton({
                 type="button"
                 onClick={doRevoke}
                 disabled={busy}
-                className="flex-1 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white text-xs font-bold py-2.5 rounded-xl transition-colors"
+                className="flex-1 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white text-xs font-bold min-h-[44px] py-2.5 rounded-xl transition-colors"
               >
                 {busy ? '…' : revokeText}
               </button>

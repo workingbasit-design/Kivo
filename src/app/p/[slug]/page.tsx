@@ -14,6 +14,8 @@ import { prisma } from '@/lib/prisma';
 import { waLink } from '@/lib/whatsapp';
 import { formatMoney } from '@/lib/money';
 import { formatWorkingHoursSummary } from '@/lib/working-hours';
+import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
 import {
   localityFromAddress,
   isPhoneVerified,
@@ -125,7 +127,14 @@ export default async function PublicProfilePage({
   const showAddress = b.directoryHideAddress ? locality : b.address;
   const showContact = page.showPhone; // business chose to display phone/WhatsApp publicly
   const serviceAreas = parseServiceAreas(page.serviceAreas);
-  const aboutText = page.description || page.intro;
+
+  const locale = await getLocale();
+  const L = (path: string) => t(locale, path);
+  const headline = locale === 'fr' ? page.headlineFr || page.headline : page.headline;
+  const aboutText =
+    locale === 'fr'
+      ? page.descriptionFr || page.description || page.introFr || page.intro
+      : page.description || page.intro;
 
   // Similar pros nearby: other directory businesses in the same city with
   // overlapping services. Real discovery cross-linking, no fake data.
@@ -167,7 +176,7 @@ export default async function PublicProfilePage({
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
     name: b.name,
-    description: page.headline ?? undefined,
+    description: headline ?? undefined,
     telephone: b.phone ?? undefined,
     address: locality ?? undefined,
     aggregateRating:
@@ -182,17 +191,17 @@ export default async function PublicProfilePage({
       />
       <header className="bg-ink text-white">
         <div className="max-w-2xl mx-auto px-4 py-8">
-          <Link href="/directory" className="text-xs text-white/60 hover:text-white">
-            ← Back to directory
+          <Link href="/directory" className="min-h-[44px] inline-flex items-center text-xs text-white/60 hover:text-white">
+            {L('t10money.profileBack')}
           </Link>
           <div className="flex items-start justify-between gap-3 mt-3">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{b.name}</h1>
-              {page.headline && <p className="text-white/60 mt-1 text-sm">{page.headline}</p>}
+              {headline && <p className="text-white/60 mt-1 text-sm">{headline}</p>}
             </div>
             {verified && (
               <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-400/30 rounded-full px-2.5 py-1 shrink-0">
-                <BadgeCheck size={12} /> Phone verified
+                <BadgeCheck size={12} /> {L('t10money.profilePhoneVerified')}
               </span>
             )}
           </div>
@@ -200,10 +209,10 @@ export default async function PublicProfilePage({
             {avg !== null ? (
               <span className="inline-flex items-center gap-1.5 text-white font-semibold">
                 <Star size={13} className="fill-amber-400 text-amber-400" />
-                {avg} <span className="font-normal text-white/60">({count} review{count === 1 ? '' : 's'})</span>
+                {avg} <span className="font-normal text-white/60">({count} {L(count === 1 ? 't10money.profileReviewsOne' : 't10money.profileReviewsMany')})</span>
               </span>
             ) : (
-              <span>No reviews yet — be the first</span>
+              <span>{L('t10money.profileNoReviewsCta')}</span>
             )}
             {showAddress && (
               <span className="inline-flex items-center gap-1">
@@ -219,26 +228,26 @@ export default async function PublicProfilePage({
           <div className="flex flex-wrap gap-2 mt-5">
             <Link
               href={`/book/${slug}`}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-lime hover:bg-lime/85 text-ink text-sm font-bold px-5 py-2.5 transition-colors"
+              className="min-h-[44px] inline-flex items-center gap-1.5 rounded-xl bg-lime hover:bg-lime/85 text-ink text-sm font-bold px-5 py-2.5 transition-colors"
             >
-              <CalendarCheck size={15} /> Book now
+              <CalendarCheck size={15} /> {L('t10money.profileBookNow')}
             </Link>
             {showContact && wa && (
               <a
                 href={wa}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-xl bg-[#1faa55] hover:bg-[#1a9449] text-white text-sm font-bold px-5 py-2.5 transition-colors"
+                className="min-h-[44px] inline-flex items-center gap-1.5 rounded-xl bg-[#1faa55] hover:bg-[#1a9449] text-white text-sm font-bold px-5 py-2.5 transition-colors"
               >
-                <MessageCircle size={15} /> WhatsApp
+                <MessageCircle size={15} /> {L('t10money.profileWhatsapp')}
               </a>
             )}
             {showContact && b.phone && (
               <a
                 href={`tel:${b.phone.replace(/\s/g, '')}`}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-white/25 hover:border-white/60 text-white text-sm font-bold px-5 py-2.5 transition-colors"
+                className="min-h-[44px] inline-flex items-center gap-1.5 rounded-xl border border-white/25 hover:border-white/60 text-white text-sm font-bold px-5 py-2.5 transition-colors"
               >
-                <Phone size={15} /> Call
+                <Phone size={15} /> {L('t10money.profileCall')}
               </a>
             )}
           </div>
@@ -248,14 +257,14 @@ export default async function PublicProfilePage({
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-5">
         {aboutText && (
           <section className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-5">
-            <h2 className="text-sm font-bold text-zinc-900 mb-1.5">About</h2>
+            <h2 className="text-sm font-bold text-zinc-900 mb-1.5">{L('t10money.profileAbout')}</h2>
             <p className="text-sm text-zinc-600 leading-relaxed whitespace-pre-line">{aboutText}</p>
           </section>
         )}
 
         {serviceAreas.length > 0 && (
           <section className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-5">
-            <h2 className="text-sm font-bold text-zinc-900 mb-3">Areas served</h2>
+            <h2 className="text-sm font-bold text-zinc-900 mb-3">{L('t10money.profileAreas')}</h2>
             <div className="flex flex-wrap gap-1.5">
               {serviceAreas.map((a) => (
                 <span key={a} className="inline-flex items-center gap-1 text-xs font-medium text-zinc-700 bg-smoke rounded-full px-2.5 py-1">
@@ -267,9 +276,9 @@ export default async function PublicProfilePage({
         )}
 
         <section className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-5">
-          <h2 className="text-sm font-bold text-zinc-900 mb-3">Services & prices</h2>
+          <h2 className="text-sm font-bold text-zinc-900 mb-3">{L('t10money.profileServices')}</h2>
           {services.length === 0 ? (
-            <p className="text-sm text-zinc-500">Services not listed yet — ask on WhatsApp for a quote.</p>
+            <p className="text-sm text-zinc-500">{L('t10money.profileServicesEmpty')}</p>
           ) : (
             <ul className="divide-y divide-zinc-100">
               {services.map((s) => (
@@ -282,23 +291,23 @@ export default async function PublicProfilePage({
               ))}
             </ul>
           )}
-          <p className="text-[11px] text-zinc-400 mt-3">Prices are indicative — confirm with the business.</p>
+          <p className="text-[11px] text-zinc-400 mt-3">{L('t10money.profilePricesNote')}</p>
         </section>
 
         <section className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-bold text-zinc-900">
-              Reviews {count > 0 && <span className="text-zinc-400 font-medium">({count})</span>}
+              {L('t10money.profileReviewsMany')} {count > 0 && <span className="text-zinc-400 font-medium">({count})</span>}
             </h2>
             <Link
               href={`/directory/request`}
-              className="text-xs font-bold text-ink hover:underline"
+              className="min-h-[44px] inline-flex items-center text-xs font-bold text-ink hover:underline"
             >
-              Request a quote
+              {L('t10money.profileRequestQuote')}
             </Link>
           </div>
           {reviews.length === 0 ? (
-            <p className="text-sm text-zinc-500">No reviews yet.</p>
+            <p className="text-sm text-zinc-500">{L('t10money.profileNoReviews')}</p>
           ) : (
             <ul className="space-y-3">
               {reviews.map((r, i) => (
@@ -319,31 +328,31 @@ export default async function PublicProfilePage({
           )}
           <Link
             href={`/r/${b.id}`}
-            className="inline-block mt-3 text-xs font-bold text-ink hover:underline"
+            className="min-h-[44px] inline-flex items-center mt-3 text-xs font-bold text-ink hover:underline"
           >
-            Leave a review →
+            {L('t10money.profileLeaveReview')}
           </Link>
         </section>
 
         <section className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-5">
           <h2 className="text-sm font-bold text-zinc-900 mb-1 flex items-center gap-1.5">
-            <Flag size={13} /> Report this business
+            <Flag size={13} /> {L('t10money.profileReportTitle')}
           </h2>
           <p className="text-xs text-zinc-500 mb-3">
-            Seen something wrong — spam, fake details, bad behaviour? Tell us and we&apos;ll look into it.
+            {L('t10money.profileReportDesc')}
           </p>
           <ReportBusinessForm slug={slug} />
         </section>
 
         {similarPros.length > 0 && (
           <section className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-5">
-            <h2 className="text-sm font-bold text-zinc-900 mb-3">Similar pros nearby</h2>
+            <h2 className="text-sm font-bold text-zinc-900 mb-3">{L('t10money.profileSimilar')}</h2>
             <ul className="space-y-2">
               {similarPros.map((p) => (
                 <li key={p.slug}>
                   <Link
                     href={`/p/${p.slug}`}
-                    className="flex items-center justify-between gap-2 rounded-xl border border-zinc-100 hover:border-ink px-3.5 py-2.5 transition-colors"
+                    className="min-h-[44px] flex items-center justify-between gap-2 rounded-xl border border-zinc-100 hover:border-ink px-3.5 py-2.5 transition-colors"
                   >
                     <span>
                       <span className="block text-sm font-semibold text-zinc-800">{p.name}</span>
@@ -362,7 +371,7 @@ export default async function PublicProfilePage({
         )}
 
         <p className="text-center text-[11px] text-zinc-400 pb-8 flex items-center justify-center gap-1.5">
-          <BadgeCheck size={11} /> Listed on the EveryJob Directory — free for businesses, no commission.
+          <BadgeCheck size={11} /> {L('t10money.profileListedNote')}
         </p>
       </main>
     </div>

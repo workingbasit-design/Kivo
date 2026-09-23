@@ -2,17 +2,25 @@
 
 import React, { useActionState, useState } from 'react';
 import { AlertCircle, CheckCircle2, Star } from 'lucide-react';
+import { t, type Locale } from '@/lib/i18n';
 import { createPublicReview, type MarketingResult } from '@/app/actions/marketing';
 import { Field, inputClass, primaryBtnClass } from '@/components/ui';
 import { cn } from '@/lib/utils';
 
-export default function PublicReviewForm({ businessId }: { businessId: string }) {
+export default function PublicReviewForm({
+  businessId,
+  locale = 'en',
+}: {
+  businessId: string;
+  locale?: Locale;
+}) {
   const [state, formAction, pending] = useActionState<MarketingResult, FormData>(
     createPublicReview,
     {}
   );
   const [rating, setRating] = useState(0);
   const [hovered, setHovered] = useState(0);
+  const L = (path: string) => t(locale, path);
 
   if (state?.ok) {
     return (
@@ -20,8 +28,8 @@ export default function PublicReviewForm({ businessId }: { businessId: string })
         <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-4">
           <CheckCircle2 size={24} />
         </div>
-        <h2 className="text-lg font-bold text-zinc-900 mb-1">Thank you!</h2>
-        <p className="text-sm text-zinc-500">Your review has been recorded.</p>
+        <h2 className="text-lg font-bold text-zinc-900 mb-1">{L('t10money.reviewThanksTitle')}</h2>
+        <p className="text-sm text-zinc-500">{L('t10money.reviewThanksBody')}</p>
       </div>
     );
   }
@@ -35,14 +43,15 @@ export default function PublicReviewForm({ businessId }: { businessId: string })
 
       {state?.error && (
         <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
-          <AlertCircle size={14} className="mt-0.5 shrink-0" />
-          <span>{state.error}</span>
+          <AlertCircle size={14} className="mt-0.5 shrink-0" /> <span>{state.error}</span>
         </div>
       )}
 
       <div>
-        <p className="block text-xs font-semibold text-zinc-700 mb-2">Your rating</p>
-        <div className="flex gap-1.5" role="radiogroup" aria-label="Star rating">
+        <p id="review-rating-label" className="block text-xs font-semibold text-zinc-700 mb-2">
+          {L('t10money.reviewYourRating')}
+        </p>
+        <div className="flex gap-1" role="radiogroup" aria-labelledby="review-rating-label">
           {[1, 2, 3, 4, 5].map((n) => (
             <button
               key={n}
@@ -50,8 +59,9 @@ export default function PublicReviewForm({ businessId }: { businessId: string })
               onClick={() => setRating(n)}
               onMouseEnter={() => setHovered(n)}
               onMouseLeave={() => setHovered(0)}
-              aria-label={`${n} star${n === 1 ? '' : 's'}`}
-              className="p-1"
+              aria-checked={rating === n}
+              aria-label={`${n}`}
+              className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
             >
               <Star
                 size={34}
@@ -64,25 +74,25 @@ export default function PublicReviewForm({ businessId }: { businessId: string })
           ))}
         </div>
         {rating === 0 && (
-          <p className="text-[11px] text-zinc-400 mt-1">Tap a star to rate.</p>
+          <p className="text-[11px] text-zinc-400 mt-1">{L('t10money.reviewTapToRate')}</p>
         )}
       </div>
 
-      <Field label="Your name (optional)">
+      <Field label={L('t10money.reviewYourName')}>
         <input
           name="customerName"
           maxLength={120}
-          placeholder="e.g. Ramesh"
+          placeholder={L('t10money.reviewNamePlaceholder')}
           className={inputClass}
         />
       </Field>
 
-      <Field label="Tell us about your experience (optional)">
+      <Field label={L('t10money.reviewCommentLabel')}>
         <textarea
           name="comment"
           maxLength={2000}
           rows={4}
-          placeholder="What did you like about the work?"
+          placeholder={L('t10money.reviewCommentPlaceholder')}
           className={inputClass}
         />
       </Field>
@@ -90,9 +100,9 @@ export default function PublicReviewForm({ businessId }: { businessId: string })
       <button
         type="submit"
         disabled={pending || rating === 0}
-        className={primaryBtnClass}
+        className={cn(primaryBtnClass, 'min-h-[52px] w-full text-base')}
       >
-        {pending ? 'Submitting…' : 'Submit review'}
+        {pending ? L('t10money.reviewSubmitting') : L('t10money.reviewSubmit')}
       </button>
     </form>
   );

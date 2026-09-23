@@ -42,6 +42,7 @@ export default async function ReviewsPage() {
       />
       <GoogleReviewsPanel status={googleStatus} locale={locale} />
       <ReviewsClient
+        locale={locale}
         reviews={reviews.map(
           (r: {
             id: string;

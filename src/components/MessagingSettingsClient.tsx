@@ -1,17 +1,20 @@
 'use client';
 
-import { useActionState, useState, useTransition } from 'react';
+import { useActionState, useEffect, useState, useTransition } from 'react';
 import {
   MessageCircle,
   Mail,
   Play,
   Eye,
+  EyeOff,
   Unplug,
   ShieldCheck,
   Clock,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import { Card, Field, inputClass, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import {
   getMessagingDashboard,
   saveMessagingSettingsAction,
@@ -68,16 +71,48 @@ export default function MessagingSettingsClient({
   const [running, startRun] = useTransition();
   const [report, setReport] = useState<Awaited<ReturnType<typeof previewMessagingAction>>['report'] | null>(null);
   const [reportKind, setReportKind] = useState<'preview' | 'run' | null>(null);
+  const [showToken, setShowToken] = useState(false);
+  const [showKey, setShowKey] = useState(false);
+  const [confirming, setConfirming] = useState<
+    null | { kind: 'disconnect'; channel: 'WHATSAPP' | 'EMAIL' } | { kind: 'run' }
+  >(null);
 
   const s = dash.settings;
+
+  useEffect(() => {
+    if (saveState.error) toast.error(saveState.error);
+    else if (saveState.ok) toast.success(t(locale, 'messaging.settingsSaved'));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [saveState.ok, saveState.error]);
+  useEffect(() => {
+    if (waState.error) toast.error(waState.error);
+    else if ((waState as { ok?: boolean }).ok) {
+      toast.success(t(locale, 'messaging.connectSaved'));
+      void refresh();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [waState]);
+  useEffect(() => {
+    if (emState.error) toast.error(emState.error);
+    else if ((emState as { ok?: boolean }).ok) {
+      toast.success(t(locale, 'messaging.connectSaved'));
+      void refresh();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [emState]);
 
   async function refresh() {
     setDash(await getMessagingDashboard());
   }
 
   async function doDisconnect(channel: 'WHATSAPP' | 'EMAIL') {
-    if (!confirm(t(locale, 'messaging.disconnect') + '?')) return;
-    await disconnectChannelAction(channel);
+    try {
+      await disconnectChannelAction(channel);
+      toast.success(t(locale, 'messaging.disconnected'));
+    } catch {
+      toast.error(t(locale, 't10misc.misc.draftError'));
+    }
+    setConfirming(null);
     await refresh();
   }
 
@@ -93,7 +128,14 @@ export default function MessagingSettingsClient({
   }
 
   function doRun() {
-    if (!s.dryRun && !confirm(t(locale, 'messaging.confirmRun'))) return;
+    if (!s.dryRun) {
+      setConfirming({ kind: 'run' });
+      return;
+    }
+    executeRun();
+  }
+
+  function executeRun() {
     startRun(async () => {
       const res = await runMessagingNowAction();
       if (res.ok) {
@@ -101,6 +143,7 @@ export default function MessagingSettingsClient({
         setReportKind('run');
         await refresh();
       }
+      setConfirming(null);
     });
   }
 
@@ -147,7 +190,7 @@ export default function MessagingSettingsClient({
             {dash.whatsapp.tokenMasked && (
               <span className="text-xs text-zinc-500">Token {dash.whatsapp.tokenMasked}</span>
             )}
-            <button onClick={() => doDisconnect('WHATSAPP')} className={secondaryBtnClass}>
+            <button onClick={() => setConfirming({ kind: 'disconnect', channel: 'WHATSAPP' })} className={secondaryBtnClass}>
               <Unplug size={13} /> {t(locale, 'messaging.disconnect')}
             </button>
           </div>
@@ -158,7 +201,24 @@ export default function MessagingSettingsClient({
               <input name="phoneNumberId" required className={inputClass} placeholder="123456789012345" />
             </Field>
             <Field label={t(locale, 'messaging.accessToken')}>
-              <input name="accessToken" required type="password" className={inputClass} autoComplete="off" />
+              <div className="relative">
+                <input
+                  name="accessToken"
+                  required
+                  type={showToken ? 'text' : 'password'}
+                  className={`${inputClass} pr-12`}
+                  autoComplete="off"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowToken((v) => !v)}
+                  aria-label={showToken ? t(locale, 't10misc.settings.hideValue') : t(locale, 't10misc.settings.showValue')}
+                  aria-pressed={showToken}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 w-11 h-11 inline-flex items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-700"
+                >
+                  {showToken ? <EyeOff size={17} /> : <Eye size={17} />}
+                </button>
+              </div>
             </Field>
             <div className="grid grid-cols-2 gap-3">
               <Field label={t(locale, 'messaging.displayNumber')}>
@@ -193,7 +253,7 @@ export default function MessagingSettingsClient({
             {dash.email.keyMasked && (
               <span className="text-xs text-zinc-500">Key {dash.email.keyMasked}</span>
             )}
-            <button onClick={() => doDisconnect('EMAIL')} className={secondaryBtnClass}>
+            <button onClick={() => setConfirming({ kind: 'disconnect', channel: 'EMAIL' })} className={secondaryBtnClass}>
               <Unplug size={13} /> {t(locale, 'messaging.disconnect')}
             </button>
           </div>
@@ -209,7 +269,24 @@ export default function MessagingSettingsClient({
               </Field>
             </div>
             <Field label={t(locale, 'messaging.apiKey')}>
-              <input name="apiKey" required type="password" className={inputClass} autoComplete="off" />
+              <div className="relative">
+                <input
+                  name="apiKey"
+                  required
+                  type={showKey ? 'text' : 'password'}
+                  className={`${inputClass} pr-12`}
+                  autoComplete="off"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowKey((v) => !v)}
+                  aria-label={showKey ? t(locale, 't10misc.settings.hideValue') : t(locale, 't10misc.settings.showValue')}
+                  aria-pressed={showKey}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 w-11 h-11 inline-flex items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-700"
+                >
+                  {showKey ? <EyeOff size={17} /> : <Eye size={17} />}
+                </button>
+              </div>
             </Field>
             {emState.error && <p className="text-xs font-semibold text-rose-600">{emState.error}</p>}
             <button type="submit" className={primaryBtnClass}>
@@ -374,36 +451,88 @@ export default function MessagingSettingsClient({
         {dash.log.length === 0 ? (
           <p className="text-xs text-zinc-500">{t(locale, 'messaging.logEmpty')}</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="text-left text-zinc-400 border-b border-zinc-100">
-                  <th className="py-1.5 pr-2 font-semibold">{t(locale, 'messaging.colWhen')}</th>
-                  <th className="py-1.5 pr-2 font-semibold">{t(locale, 'messaging.colChannel')}</th>
-                  <th className="py-1.5 pr-2 font-semibold">{t(locale, 'messaging.colTo')}</th>
-                  <th className="py-1.5 pr-2 font-semibold">{t(locale, 'messaging.colTemplate')}</th>
-                  <th className="py-1.5 font-semibold">{t(locale, 'messaging.colStatus')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {dash.log.map((row) => (
-                  <tr key={row.id} className="border-b border-zinc-50">
-                    <td className="py-1.5 pr-2 text-zinc-500 whitespace-nowrap">
-                      {new Date(row.createdAt).toLocaleString(locale === 'fr' ? 'fr-CA' : 'en-CA')}
-                    </td>
-                    <td className="py-1.5 pr-2">{row.direction === 'IN' ? '←' : '→'} {row.type}</td>
-                    <td className="py-1.5 pr-2">{row.customerName ?? row.recipient}</td>
-                    <td className="py-1.5 pr-2">
-                      {row.template ? t(locale, `messaging.tpl_${row.template}` as Parameters<typeof t>[1]) : '—'}
-                    </td>
-                    <td className="py-1.5 font-semibold">{statusLabel(row.status)}</td>
+          <>
+            {/* Desktop table */}
+            <div className="overflow-x-auto hidden md:block">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="text-left text-zinc-400 border-b border-zinc-100">
+                    <th className="py-1.5 pr-2 font-semibold">{t(locale, 'messaging.colWhen')}</th>
+                    <th className="py-1.5 pr-2 font-semibold">{t(locale, 'messaging.colChannel')}</th>
+                    <th className="py-1.5 pr-2 font-semibold">{t(locale, 'messaging.colTo')}</th>
+                    <th className="py-1.5 pr-2 font-semibold">{t(locale, 'messaging.colTemplate')}</th>
+                    <th className="py-1.5 font-semibold">{t(locale, 'messaging.colStatus')}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {dash.log.map((row) => (
+                    <tr key={row.id} className="border-b border-zinc-50">
+                      <td className="py-1.5 pr-2 text-zinc-500 whitespace-nowrap">
+                        {new Date(row.createdAt).toLocaleString(locale === 'fr' ? 'fr-CA' : 'en-CA')}
+                      </td>
+                      <td className="py-1.5 pr-2">{row.direction === 'IN' ? '←' : '→'} {row.type}</td>
+                      <td className="py-1.5 pr-2">{row.customerName ?? row.recipient}</td>
+                      <td className="py-1.5 pr-2">
+                        {row.template ? t(locale, `messaging.tpl_${row.template}` as Parameters<typeof t>[1]) : '—'}
+                      </td>
+                      <td className="py-1.5 font-semibold">{statusLabel(row.status)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {/* Mobile cards */}
+            <ul className="space-y-2.5 md:hidden">
+              {dash.log.map((row) => (
+                <li
+                  key={row.id}
+                  className="rounded-xl border border-zinc-200/70 bg-white p-3.5 text-xs"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="font-bold text-zinc-800 truncate">
+                      {row.customerName ?? row.recipient}
+                    </p>
+                    <span className="font-semibold text-zinc-600 shrink-0">{statusLabel(row.status)}</span>
+                  </div>
+                  <p className="text-zinc-500 mt-1">
+                    {row.direction === 'IN' ? '←' : '→'} {row.type}
+                    {row.template && (
+                      <> · {t(locale, `messaging.tpl_${row.template}` as Parameters<typeof t>[1])}</>
+                    )}
+                  </p>
+                  <p className="text-zinc-400 mt-1">
+                    {new Date(row.createdAt).toLocaleString(locale === 'fr' ? 'fr-CA' : 'en-CA')}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </>
         )}
       </Card>
+      <ConfirmDialog
+        open={confirming !== null}
+        locale={locale}
+        title={
+          confirming?.kind === 'run'
+            ? t(locale, 't10misc.confirm.sendTitle')
+            : t(locale, 't10misc.confirm.disconnectChannelTitle')
+        }
+        message={
+          confirming?.kind === 'run'
+            ? t(locale, 'messaging.confirmRun')
+            : t(locale, 't10misc.confirm.disconnectChannelMsg')
+        }
+        confirmLabel={
+          confirming?.kind === 'run'
+            ? t(locale, 't10misc.confirm.yesSend')
+            : t(locale, 't10misc.confirm.yesDisconnect')
+        }
+        onConfirm={() => {
+          if (confirming?.kind === 'run') executeRun();
+          else if (confirming?.kind === 'disconnect') void doDisconnect(confirming.channel);
+        }}
+        onClose={() => setConfirming(null)}
+      />
     </div>
   );
 }

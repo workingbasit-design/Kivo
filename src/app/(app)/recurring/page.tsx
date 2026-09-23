@@ -3,10 +3,11 @@ import Link from 'next/link';
 import { Plus, Repeat, Clock, MapPin } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { PageHeader, Card, EmptyState } from '@/components/ui';
+import { PageHeader, Card, EmptyState, Badge, limeBtnClass, secondaryBtnClass } from '@/components/ui';
 import { formatDateShort, cn } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
-import { frequencyLabel } from '@/lib/recurring';
+import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
 import RecurringRowActions from './RecurringRowActions';
 import GenerateDueJobsButton from './GenerateDueJobsButton';
 
@@ -17,6 +18,8 @@ export default async function RecurringPage({
 }) {
   const { businessId } = await requireAuth();
   const { filter } = await searchParams;
+  const locale = await getLocale();
+  const T = (k: string) => t(locale, `t10work.${k}`);
   const activeFilter = filter === 'paused' ? 'paused' : filter === 'active' ? 'active' : 'ALL';
 
   const business = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } });
@@ -39,43 +42,48 @@ export default async function RecurringPage({
   });
 
   const filterLink = (f: string) => (f === 'ALL' ? '/recurring' : `/recurring?filter=${f}`);
+  const freqLabel = (f: string) =>
+    f === 'WEEKLY' ? T('freqWeekly') : f === 'BIWEEKLY' ? T('freqBiweekly') : f === 'MONTHLY' ? T('freqMonthly') : f;
+
+  const plansLabel =
+    plans.length === 1
+      ? T('recurPlansOne').replace('{count}', '1')
+      : T('recurPlansMany').replace('{count}', String(plans.length));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <PageHeader
-        title="Recurring jobs"
+        title={T('recurTitle')}
         subtitle={
           dueCount > 0
-            ? `${plans.length} plan${plans.length === 1 ? '' : 's'} · ${dueCount} due now`
-            : `${plans.length} plan${plans.length === 1 ? '' : 's'}`
+            ? `${plansLabel} · ${T('recurDueNow').replace('{count}', String(dueCount))}`
+            : plansLabel
         }
         actions={
           <>
             <GenerateDueJobsButton />
-            <Link
-              href="/recurring/new"
-              className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
-            >
-              <Plus size={14} /> New plan
+            <Link href="/recurring/new" className={limeBtnClass}>
+              <Plus size={16} /> {T('recurNewPlan')}
             </Link>
           </>
         }
       />
 
       {/* Filter tabs */}
-      <div className="flex items-center gap-1.5">
+      <div role="group" aria-label={T('recurTitle')} className="flex items-center gap-1.5">
         {['ALL', 'active', 'paused'].map((f) => (
           <Link
             key={f}
             href={filterLink(f)}
+            aria-current={activeFilter === f ? 'true' : undefined}
             className={cn(
-              'px-3 py-1.5 rounded-lg text-xs font-semibold capitalize whitespace-nowrap transition-colors',
+              'px-4 min-h-[44px] inline-flex items-center rounded-lg text-xs font-semibold whitespace-nowrap transition-colors border',
               activeFilter === f
-                ? 'bg-ink text-white'
-                : 'bg-white text-zinc-600 border border-zinc-200 hover:bg-zinc-50'
+                ? 'bg-ink text-white border-ink'
+                : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50'
             )}
           >
-            {f === 'ALL' ? 'All' : f}
+            {f === 'ALL' ? T('recurTabAll') : f === 'active' ? T('recurActive') : T('recurPaused')}
           </Link>
         ))}
       </div>
@@ -86,30 +94,24 @@ export default async function RecurringPage({
             icon={<Repeat size={24} />}
             title={
               activeFilter === 'ALL'
-                ? 'No recurring plans yet'
+                ? T('recurEmptyAll')
                 : activeFilter === 'active'
-                  ? 'No active plans'
-                  : 'No paused plans'
+                  ? T('recurEmptyActive')
+                  : T('recurEmptyPaused')
             }
             description={
               activeFilter === 'ALL'
-                ? "Set up weekly, fortnightly, or monthly visits once — EveryJob creates the jobs for you when they're due."
-                : 'No plans match this filter. Try a different filter, or create a new plan.'
+                ? T('recurEmptyDescAll')
+                : T('recurEmptyDescFiltered')
             }
             action={
               activeFilter === 'ALL' ? (
-                <Link
-                  href="/recurring/new"
-                  className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
-                >
-                  <Plus size={14} /> Create your first plan
+                <Link href="/recurring/new" className={limeBtnClass}>
+                  <Plus size={16} /> {T('recurCreateFirst')}
                 </Link>
               ) : (
-                <Link
-                  href="/recurring"
-                  className="bg-zinc-900 hover:bg-zinc-700 text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
-                >
-                  Show all plans
+                <Link href="/recurring" className={secondaryBtnClass}>
+                  {T('recurShowAll')}
                 </Link>
               )
             }
@@ -117,25 +119,22 @@ export default async function RecurringPage({
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {plans.map((plan) => (
-            <Card key={plan.id} className={cn('p-5', !plan.active && 'opacity-70')}>
+          {plans.map((plan, i) => (
+            <Card
+              key={plan.id}
+              className={cn('p-5 ej-row-in', !plan.active && 'opacity-70')}
+              style={{ '--row-delay': `${Math.min(i, 8) * 45}ms` } as React.CSSProperties}
+            >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-bold text-zinc-900 text-sm">{plan.title}</h3>
-                    <span
-                      className={cn(
-                        'inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border',
-                        plan.active
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                          : 'bg-zinc-100 text-zinc-500 border-zinc-200'
-                      )}
-                    >
-                      {plan.active ? 'Active' : 'Paused'}
-                    </span>
+                    <Badge tone={plan.active ? 'success' : 'neutral'}>
+                      {plan.active ? T('recurActive') : T('recurPaused')}
+                    </Badge>
                   </div>
                   <p className="text-xs text-zinc-500 mt-1">
-                    {plan.customer.name} · {frequencyLabel(plan.frequency)}
+                    {plan.customer.name} · {freqLabel(plan.frequency)}
                   </p>
                 </div>
                 <RecurringRowActions id={plan.id} active={plan.active} />
@@ -144,7 +143,7 @@ export default async function RecurringPage({
               <div className="mt-4 space-y-1.5 text-xs text-zinc-600">
                 <p className="flex items-center gap-2">
                   <Clock size={13} className="text-zinc-400 shrink-0" />
-                  Next run:{' '}
+                  {T('recurNextRun')}:{' '}
                   <span className="font-semibold text-zinc-900">
                     {formatDateShort(plan.nextRun)}
                   </span>
@@ -159,9 +158,11 @@ export default async function RecurringPage({
               </div>
 
               <div className="mt-4 pt-3 border-t border-zinc-100 flex items-center justify-between">
-                <span className="text-sm font-bold text-zinc-900">{formatMoney(plan.price, currency)}</span>
+                <span className="text-sm font-bold text-zinc-900 tabular-nums">{formatMoney(plan.price, currency)}</span>
                 <span className="text-[11px] text-zinc-400 font-medium">
-                  {plan._count.jobs} job{plan._count.jobs === 1 ? '' : 's'} generated
+                  {plan._count.jobs === 1
+                    ? T('recurJobsGeneratedOne').replace('{count}', '1')
+                    : T('recurJobsGeneratedMany').replace('{count}', String(plan._count.jobs))}
                 </span>
               </div>
             </Card>

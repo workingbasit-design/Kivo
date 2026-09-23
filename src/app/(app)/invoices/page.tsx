@@ -5,7 +5,7 @@ import { getSession } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { prisma } from '@/lib/prisma';
-import { PageHeader, Card, StatusBadge, EmptyState, StatCard } from '@/components/ui';
+import { PageHeader, Card, StatusBadge, EmptyState, StatCard, Badge, primaryBtnClass } from '@/components/ui';
 import { formatDateShort, cn } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import { INVOICE_STATUSES } from '@/lib/validations';
@@ -66,14 +66,11 @@ export default async function InvoicesPage({
           <div className="flex items-center gap-2">
             <Link
               href="/invoices/batch"
-              className="bg-white hover:bg-zinc-50 text-zinc-700 px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 border border-zinc-200 shadow-sm"
+              className="bg-white hover:bg-zinc-50 text-zinc-700 px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 border border-zinc-200 shadow-sm min-h-[44px]"
             >
               <Receipt size={14} /> {t(locale, 'billing.batchTitle')}
             </Link>
-            <Link
-              href="/invoices/new"
-              className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
-            >
+            <Link href="/invoices/new" className={primaryBtnClass}>
               <Plus size={14} /> New invoice
             </Link>
           </div>
@@ -102,8 +99,9 @@ export default async function InvoicesPage({
           <Link
             key={f}
             href={f === 'ALL' ? '/invoices' : `/invoices?status=${encodeURIComponent(f)}`}
+            aria-current={activeFilter === f ? 'page' : undefined}
             className={cn(
-              'px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-colors',
+              'min-h-[44px] inline-flex items-center px-4 rounded-full text-xs font-semibold border transition-colors',
               activeFilter === f
                 ? 'bg-ink text-white border-ink'
                 : 'bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300'
@@ -119,43 +117,54 @@ export default async function InvoicesPage({
           <EmptyState
             icon={<FileText size={24} />}
             title="No invoices yet"
-            description="Raise a GST-ready invoice in under a minute — tax math handled for you."
+            description="Raise a tax-ready invoice in under a minute — tax math handled for you."
             action={
-              <Link
-                href="/invoices/new"
-                className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2"
-              >
+              <Link href="/invoices/new" className={primaryBtnClass}>
                 <Plus size={14} /> New invoice
               </Link>
             }
           />
         </Card>
       ) : (
-        <Card>
+        <Card className="!p-0 overflow-hidden">
           <ul className="divide-y divide-zinc-100">
             {invoices.map((inv) => {
               const paid = inv.payments.reduce((s, p) => s + p.amount, 0);
               const due = Math.round((inv.total - paid) * 100) / 100;
+              // Usual 30-day payment terms — the Invoice model stores no
+              // contractual due date, so this is a follow-up hint, not a legal state.
+              const overdue =
+                due > 0 &&
+                inv.status !== 'PAID' &&
+                new Date(inv.date).getTime() < Date.now() - 30 * 24 * 60 * 60 * 1000;
               return (
                 <li key={inv.id}>
                   <Link
                     href={`/invoices/${inv.id}`}
-                    className="flex items-center justify-between gap-4 px-5 py-4 hover:bg-zinc-50 transition-colors"
+                    className={cn(
+                      'flex items-center justify-between gap-4 px-4 sm:px-5 py-4 hover:bg-zinc-50 active:bg-zinc-100 transition-colors min-h-[76px] border-l-4',
+                      overdue ? 'border-l-rose-500' : 'border-l-transparent'
+                    )}
                   >
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-zinc-900 truncate">
                         {inv.number} · {inv.customer.name}
                       </p>
-                      <p className="text-xs text-zinc-500 mt-0.5">
+                      <p className="text-xs text-zinc-500 mt-1">
                         {formatDateShort(inv.date)}
                         {due > 0 && inv.status !== 'PAID' && (
                           <span className="text-amber-700 font-semibold"> · {formatMoney(due, business?.currency)} due</span>
                         )}
                       </p>
                     </div>
-                    <div className="flex items-center gap-3 shrink-0">
+                    <div className="flex flex-col items-end gap-1.5 shrink-0">
                       <span className="text-sm font-bold text-zinc-900">{formatMoney(inv.total, business?.currency)}</span>
-                      <StatusBadge status={inv.status} />
+                      <span className="flex items-center gap-1.5">
+                        {overdue && (
+                          <Badge tone="danger">{t(locale, 't10money.overdue')}</Badge>
+                        )}
+                        <StatusBadge status={inv.status} />
+                      </span>
                     </div>
                   </Link>
                 </li>

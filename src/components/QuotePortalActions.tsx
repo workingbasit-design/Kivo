@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Check, X } from 'lucide-react';
+import { toast } from 'sonner';
 import { portalQuoteDecisionByToken } from '@/app/actions/quotes';
 import { formatMoney } from '@/lib/money';
 import { addonQuoteTotal } from '@/lib/quotes';
@@ -78,7 +79,9 @@ export default function QuotePortalActions({
       if (res.ok) {
         router.refresh();
       } else {
-        setMessage(res.error ?? strings.errorLabel);
+        const err = res.error ?? strings.errorLabel;
+        setMessage(err);
+        toast.error(err);
         if (res.status) router.refresh();
       }
     });

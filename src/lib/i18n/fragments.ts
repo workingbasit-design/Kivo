@@ -28,8 +28,11 @@ import track8 from './fragments/track8.ts';
 import billing from './fragments/billing.ts';
 import customerExtras from './fragments/customer-extras.ts';
 import quoteItems from './fragments/quote-items.ts';
+import track10work from './fragments/track10-work.ts';
+import track10money from './fragments/track10-money.ts';
+import track10misc from './fragments/track10-misc.ts';
 
-const FRAGMENTS: I18nFragment[] = [reminders, jobops, quotes, homehero, homefaq, notifications, track9, googleReviews, attachments, imports, googleAuth, track8, billing, customerExtras, quoteItems];
+const FRAGMENTS: I18nFragment[] = [reminders, jobops, quotes, homehero, homefaq, notifications, track9, googleReviews, attachments, imports, googleAuth, track8, billing, customerExtras, quoteItems, track10work, track10money, track10misc];
 
 function deepMerge(target: Dictionary, src: Dictionary): Dictionary {
   for (const [k, v] of Object.entries(src)) {

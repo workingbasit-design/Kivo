@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useTransition } from 'react';
+import React, { useEffect, useState, useTransition } from 'react';
 import { CheckCircle2, X, MessageSquare, Clock, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
 import { completeBusinessSetup } from '@/app/actions/settings';
+import { useResolvedT } from '@/hooks/useResolvedLocale';
 
 type Props = {
   isOpen: boolean;
@@ -40,11 +41,27 @@ function presetToWorkingHoursJson(preset: string): string {
 export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props) {
   const [whatsappEnabled, setWhatsappEnabled] = useState(true);
   const [whatsappNumber, setWhatsappNumber] = useState('');
-  const [workingHours, setWorkingHours] = useState('09:00 AM - 06:00 PM');
+  const [workingHours, setWorkingHours] = useState('08:00 AM - 06:00 PM');
   const [autoAssignTech, setAutoAssignTech] = useState(true);
   const [isCompleted, setIsCompleted] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const { t } = useResolvedT();
+  const L = (key: string) => t(`t10misc.setupModal.${key}`);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -65,94 +82,99 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-      <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-zinc-200 overflow-hidden flex flex-col">
-        
+    <div
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label={L('title')}
+    >
+      <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-zinc-200 overflow-hidden flex flex-col max-h-[90vh] ej-sheet-in">
+
         {/* Modal Header */}
-        <div className="p-6 bg-ink text-white flex justify-between items-center relative overflow-hidden">
+        <div className="p-6 bg-ink text-white flex justify-between items-center relative overflow-hidden shrink-0">
           <div className="absolute top-0 right-0 w-32 h-32 bg-[#ff7a59]/20 rounded-full blur-2xl pointer-events-none"></div>
-          
+
           <div className="flex items-center gap-3 relative z-10">
             <div className="w-10 h-10 rounded-2xl bg-[#ff7a59] flex items-center justify-center text-white shadow-lg">
               <Zap size={20} />
             </div>
             <div>
-              <h3 className="text-lg font-bold">Finish Workspace Setup</h3>
-              <p className="text-xs text-zinc-300">Configure remaining 2 action items</p>
+              <h3 className="text-lg font-bold">{L('title')}</h3>
+              <p className="text-xs text-zinc-300">{L('subtitle')}</p>
             </div>
           </div>
 
-          <button 
+          <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors relative z-10"
+            aria-label={t('t10misc.confirmDialog.close')}
+            className="min-w-[44px] min-h-[44px] rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors relative z-10"
           >
             <X size={16} />
           </button>
         </div>
 
         {/* Body Content */}
-        <div className="p-6 space-y-6 flex-1 overflow-y-auto max-h-[70vh]">
+        <div className="p-6 space-y-6 flex-1 overflow-y-auto">
           {isCompleted ? (
             <div className="py-8 text-center space-y-4">
               <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center shadow-inner">
                 <CheckCircle2 size={36} />
               </div>
-              <h3 className="text-2xl font-bold text-zinc-900">Workspace 100% Ready!</h3>
+              <h3 className="text-2xl font-bold text-zinc-900">{L('doneTitle')}</h3>
               <p className="text-sm text-zinc-500 max-w-sm mx-auto">
-                WhatsApp auto-reply is turned on and team availability schedules are configured. You are ready to receive and process service jobs.
+                {L('doneDesc')}
               </p>
               <button
                 onClick={onClose}
-                className="w-full bg-ink hover:bg-graphite text-white font-bold py-3.5 rounded-2xl transition-all shadow-md shadow-ink/30"
+                className="w-full min-h-[52px] bg-ink hover:bg-graphite text-white font-bold py-3.5 rounded-2xl transition-all shadow-md shadow-ink/30 flex items-center justify-center gap-2 text-sm"
               >
-                Back to Dashboard
+                {L('backToDash')} <ArrowRight size={16} />
               </button>
             </div>
           ) : (
             <>
               {/* Item 1: WhatsApp Auto-Reply */}
               <div className="bg-zinc-50 p-4 rounded-2xl border border-zinc-200/80 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
                       <MessageSquare size={16} />
                     </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-zinc-900">1. WhatsApp Auto-Reply</h4>
-                      <p className="text-[11px] text-zinc-500">Instantly respond to inbound leads within 60s</p>
+                    <div className="min-w-0">
+                      <h4 className="text-sm font-bold text-zinc-900">{L('waTitle')}</h4>
+                      <p className="text-[11px] text-zinc-500">{L('waDesc')}</p>
                     </div>
                   </div>
-                  
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input 
-                      type="checkbox" 
+
+                  <label className="relative inline-flex items-center cursor-pointer shrink-0 min-w-[44px] min-h-[44px] justify-center">
+                    <span className="sr-only">{L('waTitle')}</span>
+                    <input
+                      type="checkbox"
                       checked={whatsappEnabled}
                       onChange={(e) => setWhatsappEnabled(e.target.checked)}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                    <div className="w-11 h-6 bg-zinc-200 peer-focus-visible:outline-2 peer-focus-visible:outline-ink rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-1/2 after:-translate-y-1/2 after:left-[9px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
                   </label>
                 </div>
 
                 {whatsappEnabled && (
                   <div className="text-xs bg-white p-3 rounded-xl border border-zinc-200/60 text-zinc-600 space-y-2">
-                    <p>
-                      "Hi! Thanks for reaching out to FieldFlow. We received your request and will confirm your service slot shortly."
-                    </p>
+                    <p>{L('waSample')}</p>
                     <div>
                       <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">
-                        WhatsApp number
+                        {L('waNumber')}
                       </label>
                       <input
                         type="tel"
                         value={whatsappNumber}
                         onChange={(e) => setWhatsappNumber(e.target.value)}
-                        placeholder="+91 98765 43210"
+                        placeholder="+1 416 555 0100"
                         maxLength={25}
-                        className="w-full text-xs text-zinc-900 bg-white border border-zinc-200 rounded-xl p-2.5 font-medium placeholder:text-zinc-400"
+                        className="w-full min-h-[44px] text-xs text-zinc-900 bg-white border border-zinc-200 rounded-xl p-2.5 font-medium placeholder:text-zinc-400"
                       />
                       <p className="text-[10px] text-zinc-400 mt-1">
-                        Saved on your business — used for WhatsApp chat links on invoices and quotes.
+                        {L('waHint')}
                       </p>
                     </div>
                   </div>
@@ -162,41 +184,42 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
               {/* Item 2: Team Availability */}
               <div className="bg-zinc-50 p-4 rounded-2xl border border-zinc-200/80 space-y-3">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-smoke text-ink flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-xl bg-smoke text-ink flex items-center justify-center shrink-0">
                     <Clock size={16} />
                   </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-zinc-900">2. Team Availability & Shift Hours</h4>
-                    <p className="text-[11px] text-zinc-500">Set working window for field dispatch</p>
+                  <div className="min-w-0">
+                    <h4 className="text-sm font-bold text-zinc-900">{L('availTitle')}</h4>
+                    <p className="text-[11px] text-zinc-500">{L('availDesc')}</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                   <div>
-                    <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Working Hours</label>
+                    <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">{L('hoursLabel')}</label>
                     <select
                       value={workingHours}
                       onChange={(e) => setWorkingHours(e.target.value)}
-                      className="w-full text-xs text-zinc-900 bg-white border border-zinc-200 rounded-xl p-2.5 font-medium placeholder:text-zinc-400"
+                      className="w-full min-h-[44px] text-xs text-zinc-900 bg-white border border-zinc-200 rounded-xl p-2.5 font-medium placeholder:text-zinc-400"
                     >
-                      <option value="08:00 AM - 06:00 PM">08:00 AM - 06:00 PM (Standard)</option>
-                      <option value="09:00 AM - 07:00 PM">09:00 AM - 07:00 PM</option>
-                      <option value="24/7 Availability">24/7 Emergency Service</option>
+                      <option value="08:00 AM - 06:00 PM">{L('hoursStandard')}</option>
+                      <option value="09:00 AM - 07:00 PM">{L('hoursLate')}</option>
+                      <option value="24/7 Availability">{L('hours247')}</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Dispatch Mode</label>
+                    <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">{L('dispatchLabel')}</label>
                     <button
                       type="button"
                       onClick={() => setAutoAssignTech(!autoAssignTech)}
-                      className={`w-full text-xs border rounded-xl p-2.5 font-semibold text-left transition-colors ${
-                        autoAssignTech 
-                          ? 'bg-smoke border-smoke text-ink' 
+                      aria-pressed={autoAssignTech}
+                      className={`w-full min-h-[44px] text-xs border rounded-xl p-2.5 font-semibold text-left transition-colors ${
+                        autoAssignTech
+                          ? 'bg-smoke border-smoke text-ink'
                           : 'bg-white border-zinc-200 text-zinc-700'
                       }`}
                     >
-                      {autoAssignTech ? '✓ Auto-Assign Available Tech' : 'Manual Dispatch'}
+                      {autoAssignTech ? `✓ ${L('dispatchAuto')}` : L('dispatchManual')}
                     </button>
                   </div>
                 </div>
@@ -212,10 +235,10 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
                 <button
                   onClick={handleSaveSetup}
                   disabled={isPending}
-                  className="w-full bg-ink hover:bg-graphite text-white font-bold py-3.5 rounded-2xl transition-all shadow-md shadow-ink/30 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer text-sm"
+                  className="w-full min-h-[52px] bg-ink hover:bg-graphite text-white font-bold py-3.5 rounded-2xl transition-all shadow-md shadow-ink/30 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer text-sm"
                 >
                   <ShieldCheck size={16} />
-                  {isPending ? 'Saving Setup...' : 'Complete & Enable Workspace Now'}
+                  {isPending ? L('saving') : L('complete')}
                 </button>
               </div>
             </>

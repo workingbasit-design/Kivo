@@ -4,6 +4,8 @@ import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { PageHeader, Card, EmptyState } from '@/components/ui';
 import { isDirectoryAdminEmail } from '@/lib/directory';
+import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
 import DemandRow from './demand-row';
 
 export const metadata = { title: 'Directory demand | EveryJob' };
@@ -18,15 +20,17 @@ export const metadata = { title: 'Directory demand | EveryJob' };
 export default async function DirectoryRequestsPage() {
   const session = await getSession();
   if (!session?.user?.businessId) redirect('/login');
+  const locale = await getLocale();
+  const tr = (path: string) => t(locale, path);
   if (!isDirectoryAdminEmail(session.user.email)) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Directory demand" subtitle="Unmatched quote requests." />
+        <PageHeader title={tr('t10misc.demand.title')} subtitle={tr('t10misc.demand.subtitle')} />
         <Card>
           <EmptyState
             icon={<Inbox size={24} />}
-            title="Not authorized"
-            description="This page is only visible to EveryJob directory admins."
+            title={tr('t10misc.claims.notAuthorizedTitle')}
+            description={tr('t10misc.claims.notAuthorizedDesc')}
           />
         </Card>
       </div>
@@ -39,27 +43,26 @@ export default async function DirectoryRequestsPage() {
   });
 
   const openCount = requests.filter((r) => r.status === 'OPEN').length;
+  const subtitle =
+    openCount > 0
+      ? tr('t10misc.demand.openWaiting')
+          .replace('{count}', String(openCount))
+          .replaceAll('{s}', openCount === 1 ? '' : 's')
+      : tr('t10misc.demand.noPending');
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Directory demand"
-        subtitle={
-          openCount > 0
-            ? `${openCount} open request${openCount === 1 ? '' : 's'} with no matching pro yet`
-            : 'No unmatched demand — every request found a pro.'
-        }
-      />
+      <PageHeader title={tr('t10misc.demand.title')} subtitle={subtitle} />
       {requests.length === 0 ? (
         <Card>
           <EmptyState
             icon={<Inbox size={24} />}
-            title="No requests yet"
-            description="Unmatched public quote requests will appear here as open lead drafts."
+            title={tr('t10misc.demand.noRequestsTitle')}
+            description={tr('t10misc.demand.noRequestsDesc')}
           />
         </Card>
       ) : (
-        <Card className="divide-y divide-zinc-100">
+        <Card className="divide-y divide-zinc-100 p-0 overflow-hidden">
           {requests.map((r) => (
             <DemandRow
               key={r.id}

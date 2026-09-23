@@ -1,12 +1,35 @@
 'use client';
 
-import React, { useActionState, useState } from 'react';
+import React, { useActionState, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { AlertCircle, Receipt } from 'lucide-react';
+import { toast } from 'sonner';
+import { t, type Locale } from '@/lib/i18n';
 import { createInvoice, type ActionResult } from '@/app/actions/invoices';
 import LineItemsEditor from '@/components/LineItemsEditor';
-import { Field, inputClass, primaryBtnClass, secondaryBtnClass, Card } from '@/components/ui';
+import { Field, FormGrid, inputClass, primaryBtnClass, secondaryBtnClass, Card } from '@/components/ui';
 import { toISODateLocal } from '@/lib/utils';
+
+/**
+ * Fires a toast exactly once per server-action result. Minimal inline
+ * replacement for the removed useActionToast helper.
+ */
+function useResultToast<T extends { ok?: boolean; error?: string }>(
+  state: T | undefined,
+  messages: { success?: string; error?: string }
+) {
+  const seen = useRef<T | undefined>(undefined);
+  useEffect(() => {
+    if (!state || seen.current === state) return;
+    seen.current = state;
+    if (state.ok && messages.success) {
+      toast.success(messages.success);
+    } else if (state.error) {
+      toast.error(messages.error ?? state.error);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
+}
 import { formatMoney } from '@/lib/money';
 import {
   defaultTaxType,
@@ -35,14 +58,19 @@ function taxTypeOptions(config: TaxConfig): { value: string; label: string }[] {
 export default function InvoiceForm({
   customers,
   taxConfig,
+  locale = 'en',
 }: {
   customers: { id: string; name: string }[];
   taxConfig: TaxConfig;
+  locale?: Locale;
 }) {
   const [state, formAction, isPending] = useActionState<ActionResult, FormData>(
     createInvoice,
     {}
   );
+
+  // createInvoice redirects to the new invoice on success; toast on failure only.
+  useResultToast(state, {});
   const [subtotal, setSubtotal] = useState(0);
   const [taxRate, setTaxRate] = useState(totalTaxRate(taxConfig));
   const [taxType, setTaxType] = useState<string>(defaultTaxType(taxConfig));
@@ -61,7 +89,7 @@ export default function InvoiceForm({
   return (
     <form action={formAction} className="space-y-6 max-w-2xl">
       <Card className="p-6 space-y-4">
-        <div className="grid sm:grid-cols-2 gap-4">
+        <FormGrid>
           <Field label="Customer">
             <select name="customerId" required className={inputClass} defaultValue="">
               <option value="" disabled>
@@ -92,7 +120,7 @@ export default function InvoiceForm({
               className={inputClass}
             />
           </Field>
-        </div>
+        </FormGrid>
         <Field label="Notes (optional)" hint="Shown on the invoice.">
           <textarea
             name="notes"
@@ -106,12 +134,12 @@ export default function InvoiceForm({
 
       <Card className="p-6">
         <h2 className="text-sm font-bold text-zinc-900 mb-3">Line items</h2>
-        <LineItemsEditor onSubtotal={setSubtotal} currency={taxConfig.currency} />
+        <LineItemsEditor onSubtotal={setSubtotal} currency={taxConfig.currency} locale={locale} />
       </Card>
 
       <Card className="p-6 space-y-4">
         <h2 className="text-sm font-bold text-zinc-900">Tax</h2>
-        <div className="grid sm:grid-cols-2 gap-4">
+        <FormGrid>
           <Field label="Tax type">
             <select
               name="taxType"
@@ -145,7 +173,7 @@ export default function InvoiceForm({
                   key={r}
                   type="button"
                   onClick={() => setTaxRate(r)}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-colors ${
+                  className={`min-h-[44px] px-3.5 rounded-lg text-[11px] font-bold border transition-colors ${
                     taxRate === r
                       ? 'bg-ink text-white border-ink'
                       : 'bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300'
@@ -156,11 +184,11 @@ export default function InvoiceForm({
               ))}
             </div>
           </Field>
-        </div>
+        </FormGrid>
 
         <dl className="border-t border-zinc-100 pt-4 space-y-1.5 text-sm">
           <div className="flex justify-between text-zinc-600">
-            <dt>Subtotal</dt>
+            <dt>{t(locale, 't10money.subtotalLabel')}</dt>
             <dd className="font-semibold">{formatMoney(subtotal, taxConfig.currency)}</dd>
           </div>
           {lines.map((l) => (
@@ -172,7 +200,7 @@ export default function InvoiceForm({
             </div>
           ))}
           <div className="flex justify-between text-base pt-1">
-            <dt className="font-bold text-zinc-900">Total</dt>
+            <dt className="font-bold text-zinc-900">{t(locale, 't10money.totalLabel')}</dt>
             <dd className="font-bold text-zinc-900">{formatMoney(total, taxConfig.currency)}</dd>
           </div>
         </dl>
@@ -188,10 +216,10 @@ export default function InvoiceForm({
       <div className="flex gap-2">
         <button type="submit" disabled={isPending} className={primaryBtnClass}>
           <Receipt size={14} />
-          {isPending ? 'Creating…' : 'Create invoice'}
+          {isPending ? t(locale, 't10money.invCreating') : t(locale, 't10money.invCreate')}
         </button>
         <Link href="/invoices" className={secondaryBtnClass}>
-          Cancel
+          {t(locale, 't10money.formCancel')}
         </Link>
       </div>
     </form>

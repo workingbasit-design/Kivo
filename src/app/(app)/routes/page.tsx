@@ -1,11 +1,10 @@
 import React from 'react';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { PageHeader, Card, EmptyState } from '@/components/ui';
-import { dayRange, toISODateLocal, formatDateLabel, localeDateTag, localeMoneyTag } from '@/lib/utils';
+import { PageHeader, Card, EmptyState, limeBtnClass, inputClass, Field } from '@/components/ui';
+import { dayRange, toISODateLocal, formatDateLabel, localeDateTag } from '@/lib/utils';
 import { MapPinned } from 'lucide-react';
 import RoutesClient from '@/components/RoutesClient';
-import { inputClass } from '@/components/ui';
 import type { RouteStop } from '@/lib/routes';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
@@ -19,8 +18,8 @@ export default async function RoutesPage({
 }) {
   const { businessId } = await requireAuth();
   const locale = await getLocale();
+  const T = (k: string) => t(locale, `t10work.${k}`);
   const dateLocale = localeDateTag(locale);
-  const moneyLocale = localeMoneyTag(locale);
   const __biz = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } });
   const currency = __biz?.currency;
   const { date } = await searchParams;
@@ -50,49 +49,56 @@ export default async function RoutesPage({
   }));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <PageHeader
-        title="Route planner"
-        subtitle={`Jobs for ${formatDateLabel(dateStr, dateLocale)}`}
+        title={T('routesTitle')}
+        subtitle={T('routesSubtitle').replace('{date}', formatDateLabel(dateStr, dateLocale))}
       />
 
       {stops.length === 0 ? (
         <Card>
-          <form method="GET" action="/routes" className="flex items-center gap-2 px-6 pt-6">
-            <label htmlFor="route-date-empty" className="text-xs font-semibold text-zinc-500">
-              Day:
-            </label>
-            <input
-              id="route-date-empty"
-              type="date"
-              name="date"
-              defaultValue={dateStr}
-              className={inputClass + ' w-auto'}
-              aria-label="Route date"
-            />
-            <button
-              type="submit"
-              className="bg-zinc-900 hover:bg-zinc-700 text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors"
-            >
-              Show
-            </button>
+          <form method="GET" action="/routes" className="px-5 pt-5">
+            <div className="flex items-end gap-2 max-w-md">
+              <div className="flex-1">
+                <Field label={T('routesDay')}>
+                  <input
+                    id="route-date-empty"
+                    type="date"
+                    name="date"
+                    defaultValue={dateStr}
+                    className={inputClass}
+                    aria-label={T('routesRouteDate')}
+                  />
+                </Field>
+              </div>
+              <button
+                type="submit"
+                className="bg-zinc-900 hover:bg-zinc-700 text-white min-h-[44px] px-5 rounded-xl font-semibold text-xs transition-colors"
+              >
+                {T('routesShow')}
+              </button>
+            </div>
           </form>
           <EmptyState
             icon={<MapPinned size={24} />}
-            title="No stops on this day"
-            description="Pick a day with scheduled jobs, then hit “Optimize route” to compute the best visit order from real driving data."
+            title={T('routesEmptyTitle')}
+            description={T('routesEmptyDesc')}
             action={
-              <a
-                href="/schedule"
-                className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
-              >
-                Go to schedule
+              <a href="/schedule" className={limeBtnClass}>
+                {T('routesGoSchedule')}
               </a>
             }
           />
         </Card>
       ) : (
-        <RoutesClient key={dateStr} initialStops={stops} dateStr={dateStr} currency={currency} fullRouteLabel={t(locale, 'quotes.route.openFullRoute')} />
+        <RoutesClient
+          key={dateStr}
+          initialStops={stops}
+          dateStr={dateStr}
+          currency={currency}
+          locale={locale}
+          fullRouteLabel={t(locale, 'quotes.route.openFullRoute')}
+        />
       )}
     </div>
   );

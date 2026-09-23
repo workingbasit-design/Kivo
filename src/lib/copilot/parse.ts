@@ -373,10 +373,10 @@ function leadingName(rawToks: string[]): string | null {
 
 /**
  * Guess a customer name from English/French booking text:
- *  - "for Priya" / "for Ramesh Kumar" / "pour Sarah Tremblay"
+ *  - "for Sarah" / "for Martin Roy" / "pour Sarah Tremblay"
  *  - "schedule a Jon for 29th October" / "book Sarah for tomorrow" (name
  *    BEFORE the "for"/"pour" cue, anchored on a booking verb)
- *  - "customer: Priya" / "client: Sarah"
+ *  - "customer: Liam" / "client: Sarah"
  *
  * Service/trade words ("plumbing", "plomberie", …) are stopwords and can
  * never be returned as a name. A name containing a filler word mid-phrase

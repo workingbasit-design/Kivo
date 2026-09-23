@@ -8,6 +8,8 @@ import {
   requestDirectoryClaim,
 } from '@/app/actions/directory-profile';
 import { parseServiceAreas } from '@/lib/directory-claim';
+import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
 import DirectoryProfileForm from './profile-form';
 
 export const metadata = { title: 'Directory listing | EveryJob' };
@@ -21,6 +23,9 @@ export const dynamic = 'force-dynamic';
 export default async function DirectoryProfilePage() {
   const { businessId } = await requireAuth();
   await ensureClaimState(businessId);
+
+  const locale = await getLocale();
+  const tr = (path: string) => t(locale, path);
 
   const [business, page, claim] = await Promise.all([
     prisma.business.findUnique({
@@ -48,9 +53,13 @@ export default async function DirectoryProfilePage() {
   if (!business) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Directory listing" subtitle="Your public profile." />
+        <PageHeader title={tr('t10misc.profile.title')} subtitle={tr('t10misc.profile.subtitle')} />
         <Card>
-          <EmptyState icon={<Store size={24} />} title="Business not found" description="Please sign in again." />
+          <EmptyState
+            icon={<Store size={24} />}
+            title={tr('t10misc.profile.notFoundTitle')}
+            description={tr('t10misc.profile.notFoundDesc')}
+          />
         </Card>
       </div>
     );
@@ -63,10 +72,7 @@ export default async function DirectoryProfilePage() {
 
   return (
     <div className="space-y-6 max-w-3xl">
-      <PageHeader
-        title="Directory listing"
-        subtitle="How customers find you on the EveryJob directory."
-      />
+      <PageHeader title={tr('t10misc.profile.title')} subtitle={tr('t10misc.profile.subtitle')} />
 
       {/* Verification status */}
       <Card>
@@ -81,45 +87,41 @@ export default async function DirectoryProfilePage() {
           <div className="min-w-0 flex-1">
             {verified ? (
               <>
-                <p className="text-sm font-bold text-zinc-900">Your listing is live</p>
+                <p className="text-sm font-bold text-zinc-900">{tr('t10misc.profile.liveTitle')}</p>
                 <p className="text-xs text-zinc-500 mt-1">
-                  Customers can find {business.name} in the directory and send quote requests.
+                  {tr('t10misc.profile.liveDesc').replace('{name}', business.name)}
                 </p>
                 {page && (
                   <Link
                     href={`/p/${page.slug}`}
                     target="_blank"
-                    className="inline-flex items-center gap-1 text-xs font-bold text-ink hover:underline mt-2"
+                    className="inline-flex items-center gap-1 min-h-[44px] text-xs font-bold text-ink hover:underline mt-1 px-1 -ml-1"
                   >
-                    View public profile <ExternalLink size={12} />
+                    {tr('t10misc.profile.viewPublic')} <ExternalLink size={12} />
                   </Link>
                 )}
               </>
             ) : pending ? (
               <>
-                <p className="text-sm font-bold text-zinc-900">Verification pending</p>
-                <p className="text-xs text-zinc-500 mt-1">
-                  Your request was received and is waiting for review. Your listing stays
-                  unpublished until it is approved — nothing is public yet.
-                </p>
+                <p className="text-sm font-bold text-zinc-900">{tr('t10misc.profile.pendingTitle')}</p>
+                <p className="text-xs text-zinc-500 mt-1">{tr('t10misc.profile.pendingDesc')}</p>
               </>
             ) : (
               <>
                 <p className="text-sm font-bold text-zinc-900">
-                  {rejected ? 'Verification not approved' : 'Your listing is not public'}
+                  {rejected ? tr('t10misc.profile.rejectedTitle') : tr('t10misc.profile.notPublicTitle')}
                 </p>
                 <p className="text-xs text-zinc-500 mt-1">
                   {rejected && claim?.note
-                    ? `Reason: ${claim.note}`
-                    : 'Request verification to publish your business in the EveryJob directory. ' +
-                      'A reviewer checks every request by hand — listings never go live automatically.'}
+                    ? `${tr('t10misc.profile.reason')}: ${claim.note}`
+                    : tr('t10misc.profile.requestDesc')}
                 </p>
                 <form action={requestDirectoryClaim} className="mt-3">
                   <button
                     type="submit"
-                    className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-bold text-xs"
+                    className="min-h-[44px] inline-flex items-center bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-bold text-xs"
                   >
-                    Request verification
+                    {tr('t10misc.profile.requestButton')}
                   </button>
                 </form>
               </>

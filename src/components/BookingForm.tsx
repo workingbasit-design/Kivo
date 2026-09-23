@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useState } from 'react';
 import { CalendarCheck, CheckCircle2, Clock, Phone } from 'lucide-react';
+import { t, type Locale } from '@/lib/i18n';
 import { getBookingSlots, submitBookingWithTime, type SlotsResult } from '@/app/actions/booking-slots';
 import { Field, inputClass, primaryBtnClass } from '@/components/ui';
 import { formatMoney } from '@/lib/money';
@@ -26,6 +27,7 @@ export default function BookingForm({
   currency,
   hoursSummary,
   strings,
+  locale = 'en',
 }: {
   slug: string;
   services: { id: string; name: string; price: number }[];
@@ -33,6 +35,7 @@ export default function BookingForm({
   currency?: string;
   hoursSummary: string | null;
   strings: BookingSlotStrings;
+  locale?: Locale;
 }) {
   const [state, formAction, pending] = useActionState(submitBookingWithTime, initialState);
   // One key per form render: double-submits / retries carry the same key and
@@ -45,6 +48,8 @@ export default function BookingForm({
   const [slotsResult, setSlotsResult] = useState<SlotsResult | null>(null);
 
   const today = new Date().toISOString().slice(0, 10);
+
+  const L = (path: string) => t(locale, path);
 
   // Date -> available slots. The server re-validates the chosen slot at
   // confirm time, so a stale pick can never double-book.
@@ -86,16 +91,16 @@ export default function BookingForm({
         <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-4">
           <CheckCircle2 size={28} />
         </div>
-        <h2 className="text-lg font-bold text-zinc-900 mb-1">Request received!</h2>
+        <h2 className="text-lg font-bold text-zinc-900 mb-1">{L('t10money.bookingFormReceived')}</h2>
         <p className="text-sm text-zinc-500 max-w-sm mx-auto">
-          Thank you — we&apos;ll call you back shortly to confirm your booking.
+          {L('t10money.bookingFormThanks')}
         </p>
         {businessPhone && (
           <a
             href={`tel:${businessPhone.replace(/\s/g, '')}`}
-            className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-ink"
+            className="mt-5 min-h-[44px] inline-flex items-center gap-2 text-sm font-semibold text-ink"
           >
-            <Phone size={15} /> Call us: {businessPhone}
+            <Phone size={15} /> {L('t10money.bookingFormCallUs').replace('{phone}', businessPhone)}
           </a>
         )}
       </div>
@@ -112,20 +117,20 @@ export default function BookingForm({
       <input type="hidden" name="time" value={selectedTime} />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Field label="Your name *">
-          <input name="name" required minLength={2} maxLength={100} placeholder="e.g. Sarah Miller" className={inputClass} autoComplete="name" />
+        <Field label={L('t10money.bookingFormYourName')}>
+          <input name="name" required minLength={2} maxLength={100} placeholder={L('t10money.bookingFormNamePlaceholder')} className={inputClass} autoComplete="name" />
         </Field>
-        <Field label="Phone *">
-          <input name="phone" required maxLength={25} placeholder="e.g. 416 555 0100" className={inputClass} autoComplete="tel" inputMode="tel" />
+        <Field label={L('t10money.bookingFormPhone')}>
+          <input name="phone" required maxLength={25} placeholder={L('t10money.bookingFormPhonePlaceholder')} className={inputClass} autoComplete="tel" inputMode="tel" />
         </Field>
       </div>
 
-      <Field label="Address">
-        <AddressAutocomplete name="address" rows={2} maxLength={500} placeholder="Where should we come?" className={inputClass} />
+      <Field label={L('t10money.bookingFormAddress')}>
+        <AddressAutocomplete name="address" rows={2} maxLength={500} placeholder={L('t10money.bookingFormAddressPlaceholder')} className={inputClass} />
       </Field>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Field label="Preferred date *">
+        <Field label={L('t10money.bookingFormDate')}>
           <input
             name="date"
             type="date"
@@ -136,9 +141,9 @@ export default function BookingForm({
             className={inputClass}
           />
         </Field>
-        <Field label="Service needed">
+        <Field label={L('t10money.bookingFormService')}>
           <select name="serviceId" className={inputClass} defaultValue="">
-            <option value="">General / not sure yet</option>
+            <option value="">{L('t10money.bookingFormGeneral')}</option>
             {services.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name}
@@ -197,10 +202,10 @@ export default function BookingForm({
                     onClick={() => setSelectedTime(slot.start)}
                     className={
                       selected
-                        ? 'px-2 py-2 rounded-xl text-xs font-bold bg-ink text-white shadow-sm'
+                        ? 'min-h-[44px] px-2 py-2 rounded-xl text-xs font-bold bg-ink text-white shadow-sm'
                         : slot.available
-                          ? 'px-2 py-2 rounded-xl text-xs font-semibold bg-zinc-50 border border-smoke text-zinc-700 hover:border-ink hover:text-ink'
-                          : 'px-2 py-2 rounded-xl text-xs font-medium bg-zinc-50 border border-smoke text-zinc-300 line-through cursor-not-allowed'
+                          ? 'min-h-[44px] px-2 py-2 rounded-xl text-xs font-semibold bg-zinc-50 border border-smoke text-zinc-700 hover:border-ink hover:text-ink'
+                          : 'min-h-[44px] px-2 py-2 rounded-xl text-xs font-medium bg-zinc-50 border border-smoke text-zinc-300 line-through cursor-not-allowed'
                     }
                   >
                     {slot.label}
@@ -215,8 +220,8 @@ export default function BookingForm({
         )}
       </Field>
 
-      <Field label="Notes">
-        <textarea name="notes" rows={2} maxLength={1000} placeholder="Anything we should know?" className={inputClass} />
+      <Field label={L('t10money.bookingFormNotes')}>
+        <textarea name="notes" rows={2} maxLength={1000} placeholder={L('t10money.bookingFormNotesPlaceholder')} className={inputClass} />
       </Field>
 
       {state.error && (
@@ -225,12 +230,12 @@ export default function BookingForm({
         </p>
       )}
 
-      <button type="submit" disabled={pending} className={`${primaryBtnClass} w-full justify-center !py-3 !text-sm`}>
+      <button type="submit" disabled={pending} className={`${primaryBtnClass} w-full justify-center min-h-[52px] !py-3 !text-sm`}>
         <CalendarCheck size={16} />
-        {pending ? 'Requesting…' : 'Request booking'}
+        {pending ? L('t10money.bookingFormRequesting') : L('t10money.bookingFormRequest')}
       </button>
       <p className="text-[11px] text-graphite text-center">
-        No advance payment needed — we confirm every request by phone.
+        {L('t10money.bookingFormNoPayment')}
       </p>
     </form>
   );

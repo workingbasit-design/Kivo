@@ -1,11 +1,34 @@
 'use client';
 
-import React, { useActionState, useTransition } from 'react';
-import { Star, Trash2, AlertCircle, CheckCircle2, Plus } from 'lucide-react';
+import React, { useActionState, useEffect, useTransition } from 'react';
+import { Star, Trash2, AlertCircle, Plus } from 'lucide-react';
+import { toast } from 'sonner';
 import { createReview, deleteReview, type ReviewResult } from '@/app/actions/reviews';
 import ConfirmDialog from '@/components/ConfirmDialog';
-import { Card, StatCard, EmptyState, Field, inputClass, primaryBtnClass } from '@/components/ui';
+import { Card, StatCard, EmptyState, Field, FormGrid, inputClass, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
+import { t, type Locale } from '@/lib/i18n';
 import { formatDateShort } from '@/lib/utils';
+
+/**
+ * Fires a toast exactly once per server-action result. Minimal inline
+ * replacement for the removed useActionToast helper.
+ */
+function useResultToast<T extends { ok?: boolean; error?: string }>(
+  state: T | undefined,
+  messages: { success?: string; error?: string }
+) {
+  const seen = React.useRef<T | undefined>(undefined);
+  React.useEffect(() => {
+    if (!state || seen.current === state) return;
+    seen.current = state;
+    if (state.ok && messages.success) {
+      toast.success(messages.success);
+    } else if (state.error) {
+      toast.error(messages.error ?? state.error);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
+}
 
 export type ReviewItem = {
   id: string;
@@ -34,37 +57,53 @@ function Stars({ rating, size = 14 }: { rating: number; size?: number }) {
   );
 }
 
-function AddReviewForm({ customers }: { customers: CustomerOption[] }) {
+function AddReviewForm({
+  customers,
+  locale,
+}: {
+  customers: CustomerOption[];
+  locale: Locale;
+}) {
   const [state, formAction, isPending] = useActionState<ReviewResult, FormData>(createReview, {});
   const [show, setShow] = React.useState(false);
+
+  useResultToast(state, {
+    success: t(locale, 't10money.reviewSaved'),
+  });
+
+  useEffect(() => {
+    if (state?.ok) setShow(false);
+  }, [state]);
 
   return (
     <div>
       {!show ? (
         <button onClick={() => setShow(true)} className={primaryBtnClass}>
-          <Plus size={14} /> Add review
+          <Plus size={14} /> {t(locale, 't10money.reviewAdd')}
         </button>
       ) : (
         <Card className="p-5 mb-6">
-          <h3 className="font-bold text-zinc-900 mb-4">Add a review</h3>
+          <h3 className="font-bold text-zinc-900 mb-4">{t(locale, 't10money.reviewAddTitle')}</h3>
           <form action={formAction} className="space-y-4">
-            <div className="grid sm:grid-cols-2 gap-4">
-              <Field label="Rating">
+            <FormGrid>
+              <Field label={t(locale, 't10money.reviewRating')}>
                 <select name="rating" required defaultValue="5" className={inputClass}>
                   {[5, 4, 3, 2, 1].map((r) => (
                     <option key={r} value={r}>
-                      {r} star{r === 1 ? '' : 's'}
+                      {r === 1
+                        ? t(locale, 't10money.reviewStarOne')
+                        : t(locale, 't10money.reviewStarMany').replace('{count}', String(r))}
                     </option>
                   ))}
                 </select>
               </Field>
-              <Field label="Source" hint="e.g. Google, WhatsApp, Direct">
+              <Field label={t(locale, 't10money.reviewSource')} hint={t(locale, 't10money.reviewSourceHint')}>
                 <input name="source" type="text" maxLength={100} placeholder="Google" className={inputClass} />
               </Field>
-            </div>
-            <Field label="Customer (optional)">
+            </FormGrid>
+            <Field label={t(locale, 't10money.reviewCustomerOptional')}>
               <select name="customerId" defaultValue="" className={inputClass}>
-                <option value="">— No customer linked —</option>
+                <option value="">{t(locale, 't10money.reviewNoCustomer')}</option>
                 {customers.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
@@ -72,12 +111,12 @@ function AddReviewForm({ customers }: { customers: CustomerOption[] }) {
                 ))}
               </select>
             </Field>
-            <Field label="Comment">
+            <Field label={t(locale, 't10money.reviewComment')}>
               <textarea
                 name="comment"
                 rows={3}
                 maxLength={2000}
-                placeholder="What did the customer say?"
+                placeholder={t(locale, 't10money.reviewAddCommentPlaceholder')}
                 className={inputClass}
               />
             </Field>
@@ -88,19 +127,13 @@ function AddReviewForm({ customers }: { customers: CustomerOption[] }) {
                 <span>{state.error}</span>
               </div>
             )}
-            {state?.ok && (
-              <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium rounded-xl px-3 py-2.5">
-                <CheckCircle2 size={14} className="shrink-0" />
-                <span>Review saved.</span>
-              </div>
-            )}
 
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <button type="submit" disabled={isPending} className={primaryBtnClass}>
-                {isPending ? 'Saving…' : 'Save review'}
+                {isPending ? t(locale, 't10money.reviewSaving') : t(locale, 't10money.reviewSave')}
               </button>
-              <button type="button" onClick={() => setShow(false)} className="px-4 py-2.5 rounded-xl text-xs font-semibold text-zinc-500 hover:bg-zinc-100">
-                Cancel
+              <button type="button" onClick={() => setShow(false)} className={secondaryBtnClass}>
+                {t(locale, 't10money.leadCancel')}
               </button>
             </div>
           </form>
@@ -110,7 +143,7 @@ function AddReviewForm({ customers }: { customers: CustomerOption[] }) {
   );
 }
 
-function ReviewRow({ review }: { review: ReviewItem }) {
+function ReviewRow({ review, locale }: { review: ReviewItem; locale: Locale }) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = React.useState<string | null>(null);
   const [confirming, setConfirming] = React.useState(false);
@@ -120,7 +153,12 @@ function ReviewRow({ review }: { review: ReviewItem }) {
     startTransition(async () => {
       setError(null);
       const res = await deleteReview(review.id);
-      if (res.error) setError(res.error);
+      if (res.error) {
+        setError(res.error);
+        toast.error(res.error);
+      } else {
+        toast.success(t(locale, 't10money.reviewDeleted'));
+      }
     });
   };
 
@@ -143,23 +181,25 @@ function ReviewRow({ review }: { review: ReviewItem }) {
           </div>
           {review.comment && <p className="text-sm text-zinc-800">{review.comment}</p>}
           <p className="text-xs text-zinc-400 mt-1">
-            {review.reviewerName ?? review.customerName ?? 'Anonymous'} · {formatDateShort(review.reviewedAt ?? review.createdAt)}
+            {review.reviewerName ?? review.customerName ?? t(locale, 't10money.reviewAnonymous')} · {formatDateShort(review.reviewedAt ?? review.createdAt)}
           </p>
         </div>
         <button
           onClick={() => setConfirming(true)}
           disabled={isPending}
-          className="text-zinc-300 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors shrink-0 disabled:opacity-50"
-          title="Delete review"
-          aria-label="Delete review"
+          className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center text-zinc-300 hover:text-rose-600 rounded-xl hover:bg-rose-50 transition-colors shrink-0 disabled:opacity-50"
+          title={t(locale, 't10money.reviewDeleteAria')}
+          aria-label={t(locale, 't10money.reviewDeleteAria')}
         >
           <Trash2 size={16} />
         </button>
       </div>
       <ConfirmDialog
         open={confirming}
-        title="Delete this review?"
-        message="The review will be permanently removed. This cannot be undone."
+        title={t(locale, 't10money.reviewDeleteTitle')}
+        message={t(locale, 't10money.reviewDeleteMessage')}
+        confirmLabel={t(locale, 't10money.reviewDeleteConfirm')}
+        cancelLabel={t(locale, 't10money.reviewDeleteKeep')}
         busy={isPending}
         onConfirm={runDelete}
         onClose={() => setConfirming(false)}
@@ -173,32 +213,38 @@ export default function ReviewsClient({
   customers,
   average,
   total,
+  locale = 'en',
 }: {
   reviews: ReviewItem[];
   customers: CustomerOption[];
   average: string;
   total: number;
+  locale?: Locale;
 }) {
   return (
     <div className="space-y-6">
       <div className="grid sm:grid-cols-2 gap-4">
         <StatCard
-          label="Average rating"
+          label={t(locale, 't10money.reviewAvgRating')}
           value={average}
-          sub={total === 0 ? 'No reviews yet' : `Across ${total} review${total === 1 ? '' : 's'}`}
+          sub={total === 0
+            ? t(locale, 't10money.reviewNoReviewsYet')
+            : total === 1
+              ? t(locale, 't10money.reviewAcrossOne')
+              : t(locale, 't10money.reviewAcrossMany').replace('{count}', String(total))}
           icon={<Star size={16} />}
           accent="bg-amber-100 text-amber-600"
         />
         <StatCard
-          label="Total reviews"
+          label={t(locale, 't10money.reviewTotalReviews')}
           value={String(total)}
-          sub="Collect reviews to build trust"
+          sub={t(locale, 't10money.reviewCollectHint')}
           icon={<Star size={16} />}
           accent="bg-zinc-100 text-zinc-600"
         />
       </div>
 
-      <AddReviewForm customers={customers} />
+      <AddReviewForm customers={customers} locale={locale} />
 
       <Card>
         {reviews.length === 0 ? (
@@ -210,7 +256,7 @@ export default function ReviewsClient({
         ) : (
           <div>
             {reviews.map((r) => (
-              <ReviewRow key={r.id} review={r} />
+              <ReviewRow key={r.id} review={r} locale={locale} />
             ))}
           </div>
         )}

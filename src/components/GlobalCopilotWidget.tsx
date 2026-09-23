@@ -3,12 +3,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   Bot, X, Send, User, Briefcase, Calendar, Clock,
-  MapPin, Phone, Wallet, Check, PencilLine,
+  MapPin, Phone, Wallet, Check, PencilLine, Sparkles,
 } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { currencySymbol } from '@/lib/money';
-import en from '@/lib/i18n/en';
-import fr from '@/lib/i18n/fr';
+import { toast } from 'sonner';
+import { t, type Locale } from '@/lib/i18n';
 import type { JobDraft } from '@/lib/copilot/engine';
 import VoiceInputButton from '@/components/copilot/VoiceInputButton';
 
@@ -22,19 +22,20 @@ type Message = {
   idempotencyKey?: string | null;
 };
 
-const QUICK_PROMPTS_EN = [
-  "Today's jobs?",
-  "What's outstanding?",
-  'How much did I earn today?',
-  "Tomorrow's jobs?",
-];
-
-const QUICK_PROMPTS_FR = [
-  "Les tâches d'aujourd'hui?",
-  'Combien me doit-on?',
-  "Combien ai-je gagné aujourd'hui?",
-  'Les tâches de demain?',
-];
+const QUICK_PROMPTS: Record<Locale, string[]> = {
+  en: [
+    "Today's jobs?",
+    "What's outstanding?",
+    'How much did I earn today?',
+    "Tomorrow's jobs?",
+  ],
+  fr: [
+    "Les tâches d'aujourd'hui?",
+    'Combien me doit-on?',
+    "Combien ai-je gagné aujourd'hui?",
+    'Les tâches de demain?',
+  ],
+};
 
 function PreviewCard({
   preview,
@@ -42,14 +43,14 @@ function PreviewCard({
   onDiscard,
   confirming,
   currency,
-  lang,
+  locale,
 }: {
   preview: JobDraft;
   onConfirm: (draft: JobDraft) => void;
   onDiscard: () => void;
   confirming: boolean;
   currency?: string;
-  lang: 'en' | 'fr';
+  locale: Locale;
 }) {
   const [draft, setDraft] = useState<JobDraft>(preview);
   const set = (patch: Partial<JobDraft>) => setDraft((d) => ({ ...d, ...patch }));
@@ -58,6 +59,8 @@ function PreviewCard({
   const phoneOk = phoneDigits === '' || /^[2-9]\d{9}$/.test(phoneDigits);
   const priceOk = draft.price == null || (Number.isFinite(draft.price) && draft.price >= 0);
   const canConfirm = !confirming && draft.customerName.trim().length > 0 && phoneOk && priceOk;
+  const fieldClass =
+    'w-full bg-zinc-50 border border-zinc-200 rounded-lg px-2.5 py-2 min-h-[44px] text-sm text-zinc-800 font-medium focus:outline-none focus:ring-2 focus:ring-ink/30';
 
   return (
     <div className="mt-2 bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-sm">
@@ -65,45 +68,49 @@ function PreviewCard({
         <div className="w-6 h-6 rounded-full bg-ink/10 flex items-center justify-center">
           <Briefcase size={14} />
         </div>
-        {lang === 'fr' ? 'Aperçu du travail — modifiez puis confirmez' : 'Job preview — edit, then confirm'}
+        {t(locale, 't10misc.copilot.previewTitle')}
       </div>
       <div className="p-4 space-y-2.5 text-sm">
-        <Row icon={<Briefcase size={15} />} label={lang === 'fr' ? 'Service' : 'Service'} value={preview.title} />
-        <EditRow icon={<User size={15} />} label={lang === 'fr' ? 'Client' : 'Customer'}>
+        <Row icon={<Briefcase size={15} />} label={t(locale, 'copilot.fieldService')} value={preview.title} />
+        <EditRow icon={<User size={15} />} label={t(locale, 'copilot.fieldCustomer')}>
           <input
             value={draft.customerName}
             onChange={(e) => set({ customerName: e.target.value })}
-            placeholder={lang === 'fr' ? 'Nom du client' : 'Customer name'}
-            className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-2.5 py-1.5 text-sm text-zinc-800 font-medium focus:outline-none focus:ring-2 focus:ring-ink/30"
+            placeholder={t(locale, 'copilot.namePlaceholder')}
+            aria-label={t(locale, 'copilot.fieldCustomer')}
+            className={fieldClass}
           />
         </EditRow>
-        <EditRow icon={<Calendar size={15} />} label={lang === 'fr' ? 'Date' : 'Date'}>
+        <EditRow icon={<Calendar size={15} />} label={t(locale, 'copilot.fieldDate')}>
           <input
             type="date"
             value={draft.date}
             onChange={(e) => set({ date: e.target.value })}
-            className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-2.5 py-1.5 text-sm text-zinc-800 font-medium focus:outline-none focus:ring-2 focus:ring-ink/30"
+            aria-label={t(locale, 'copilot.fieldDate')}
+            className={fieldClass}
           />
         </EditRow>
-        <EditRow icon={<Clock size={15} />} label={lang === 'fr' ? 'Heure' : 'Time'}>
+        <EditRow icon={<Clock size={15} />} label={t(locale, 'copilot.fieldTime')}>
           <input
             type="time"
             value={draft.time ?? ''}
             onChange={(e) => set({ time: e.target.value || null })}
-            className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-2.5 py-1.5 text-sm text-zinc-800 font-medium focus:outline-none focus:ring-2 focus:ring-ink/30"
+            aria-label={t(locale, 'copilot.fieldTime')}
+            className={fieldClass}
           />
         </EditRow>
-        <EditRow icon={<Phone size={15} />} label={lang === 'fr' ? 'Téléphone' : 'Phone'}>
+        <EditRow icon={<Phone size={15} />} label={t(locale, 'copilot.fieldPhone')}>
           <input
             inputMode="numeric"
             value={draft.phone ?? ''}
             onChange={(e) => set({ phone: e.target.value.replace(/\D/g, '').slice(0, 10) || null })}
-            placeholder={lang === 'fr' ? 'Mobile à 10 chiffres' : '10-digit mobile'}
-            className={`w-full bg-zinc-50 border rounded-lg px-2.5 py-1.5 text-sm text-zinc-800 font-medium focus:outline-none focus:ring-2 focus:ring-ink/30 ${phoneOk ? 'border-zinc-200' : 'border-red-400'}`}
+            placeholder={t(locale, 'copilot.phonePlaceholder')}
+            aria-label={t(locale, 'copilot.fieldPhone')}
+            className={`${fieldClass} ${phoneOk ? '' : '!border-red-400'}`}
           />
         </EditRow>
-        {preview.address && <Row icon={<MapPin size={15} />} label="Address" value={preview.address} />}
-        <EditRow icon={<Wallet size={15} />} label={lang === 'fr' ? 'Prix' : 'Price'}>
+        {preview.address && <Row icon={<MapPin size={15} />} label={t(locale, 'copilot.fieldAddress')} value={preview.address} />}
+        <EditRow icon={<Wallet size={15} />} label={t(locale, 'copilot.fieldPrice')}>
           <input
             inputMode="numeric"
             value={draft.price ?? ''}
@@ -112,7 +119,8 @@ function PreviewCard({
               set({ price: v === '' ? null : Number(v) });
             }}
             placeholder={`amount (${currencySymbol(currency)})`}
-            className={`w-full bg-zinc-50 border rounded-lg px-2.5 py-1.5 text-sm text-zinc-800 font-medium focus:outline-none focus:ring-2 focus:ring-ink/30 ${priceOk ? 'border-zinc-200' : 'border-red-400'}`}
+            aria-label={t(locale, 'copilot.fieldPrice')}
+            className={`${fieldClass} ${priceOk ? '' : '!border-red-400'}`}
           />
         </EditRow>
       </div>
@@ -120,26 +128,22 @@ function PreviewCard({
         <button
           onClick={() => onConfirm({ ...draft, customerName: draft.customerName.trim(), phone: phoneDigits || null })}
           disabled={!canConfirm}
-          className="flex-1 bg-ink hover:bg-graphite disabled:opacity-50 text-white text-xs font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-colors"
+          className="flex-1 min-h-[44px] bg-ink hover:bg-graphite disabled:opacity-50 text-white text-xs font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-colors"
         >
           <Check size={14} />
-          {confirming ? (lang === 'fr' ? 'Réservation…' : 'Booking…') : (lang === 'fr' ? 'Confirmer et réserver' : 'Confirm & book')}
+          {confirming ? t(locale, 't10misc.copilot.booking') : t(locale, 't10misc.copilot.confirmBook')}
         </button>
         <button
           onClick={onDiscard}
           disabled={confirming}
-          className="flex-1 bg-zinc-100 hover:bg-zinc-200 disabled:opacity-50 text-zinc-700 text-xs font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-colors"
+          className="flex-1 min-h-[44px] bg-zinc-100 hover:bg-zinc-200 disabled:opacity-50 text-zinc-700 text-xs font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-colors"
         >
           <PencilLine size={14} />
-          Discard
+          {t(locale, 't10misc.copilot.discard')}
         </button>
       </div>
       {!draft.customerName.trim() && (
-        <p className="px-4 pb-3 text-[11px] text-amber-600">
-{lang === 'fr'
-            ? 'Le nom du client est requis — écrivez-le ci-dessus ou envoyez un nouveau message, par ex. « Réparation de clim pour Sarah demain ».'
-            : 'Customer name is required — type it above or send a new message, e.g. "AC repair for Sarah tomorrow".'}
-        </p>
+        <p className="px-4 pb-3 text-[11px] text-amber-600">{t(locale, 'copilot.nameRequired')}</p>
       )}
     </div>
   );
@@ -165,6 +169,46 @@ function EditRow({ icon, label, children }: { icon: React.ReactNode; label: stri
   );
 }
 
+function EmptyStateCard({
+  locale,
+  onExample,
+  disabled,
+}: {
+  locale: Locale;
+  onExample: (text: string) => void;
+  disabled: boolean;
+}) {
+  const examples = [
+    t(locale, 't10misc.copilot.example1'),
+    t(locale, 't10misc.copilot.example2'),
+    t(locale, 't10misc.copilot.example3'),
+  ];
+  return (
+    <div className="rounded-2xl border border-smoke bg-white p-5 shadow-sm">
+      <div className="flex items-center gap-3 mb-2">
+        <div className="w-10 h-10 rounded-2xl bg-lime flex items-center justify-center shrink-0">
+          <Sparkles size={18} className="text-ink" />
+        </div>
+        <h4 className="text-sm font-bold text-zinc-900">{t(locale, 't10misc.copilot.emptyTitle')}</h4>
+      </div>
+      <p className="text-xs text-zinc-500 leading-relaxed mb-3">{t(locale, 't10misc.copilot.emptySubtitle')}</p>
+      <div className="space-y-2">
+        {examples.map((ex) => (
+          <button
+            key={ex}
+            type="button"
+            onClick={() => onExample(ex)}
+            disabled={disabled}
+            className="w-full text-left text-xs font-medium text-ink bg-ink/5 hover:bg-ink/10 border border-smoke rounded-xl px-3.5 py-2.5 min-h-[44px] transition-colors disabled:opacity-50"
+          >
+            “{ex}”
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function GlobalCopilotWidget({
   currency,
   locale,
@@ -172,15 +216,15 @@ export default function GlobalCopilotWidget({
   currency?: string;
   locale?: string;
 }) {
-  const lang = (locale === 'fr' ? 'fr' : 'en') as 'en' | 'fr';
-  const L = (lang === 'fr' ? fr : en).copilot as Record<string, string>;
-  const quickPrompts = lang === 'fr' ? QUICK_PROMPTS_FR : QUICK_PROMPTS_EN;
+  const lang: Locale = locale === 'fr' ? 'fr' : 'en';
+  const quickPrompts = QUICK_PROMPTS[lang];
+  const reduceMotion = useReducedMotion();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
       role: 'assistant',
-      content: L.greeting,
+      content: t(lang, 'copilot.greeting'),
     },
   ]);
   const [input, setInput] = useState('');
@@ -203,7 +247,7 @@ export default function GlobalCopilotWidget({
   const sendMessageRef = useRef<(text: string) => Promise<void>>(async () => {});
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth' });
   };
 
   useEffect(() => {
@@ -241,9 +285,9 @@ export default function GlobalCopilotWidget({
     setIsTyping(true);
 
     try {
-      // Minimal conversation context for pronoun follow-ups ("usko kal kar
-      // do"): the last few turns, excluding the message just pushed above
-      // (the ref updates after render).
+      // Minimal conversation context for pronoun follow-ups: the last few
+      // turns, excluding the message just pushed above (the ref updates
+      // after render).
       const history = messagesRef.current.slice(-6).map((m) => ({
         role: m.role,
         content: m.content.slice(0, 2000),
@@ -265,10 +309,12 @@ export default function GlobalCopilotWidget({
         idempotencyKey: json.needsConfirm ? crypto.randomUUID() : null,
       });
     } catch {
+      const msg = t(lang, 't10misc.copilot.sendError');
       pushMessage({
         role: 'assistant',
-        content: 'Kuch gadbad ho gayi — dobara try karein.',
+        content: msg,
       });
+      toast.error(msg);
     } finally {
       sendBusyRef.current = false;
       setIsTyping(false);
@@ -306,7 +352,9 @@ export default function GlobalCopilotWidget({
       );
       pushMessage({ role: 'assistant', content: json.reply as string, created: true });
     } catch {
-      pushMessage({ role: 'assistant', content: 'Job book nahi ho payi — dobara try karein.' });
+      const msg = t(lang, 't10misc.copilot.confirmError');
+      pushMessage({ role: 'assistant', content: msg });
+      toast.error(msg);
     } finally {
       confirmingRef.current = null;
       setConfirmingId(null);
@@ -319,7 +367,7 @@ export default function GlobalCopilotWidget({
     const msg = messagesRef.current.find((m) => m.id === msgId);
     if (!msg?.preview) return;
     setMessages((prev) => prev.map((m) => (m.id === msgId ? { ...m, preview: null } : m)));
-    pushMessage({ role: 'assistant', content: 'Theek hai, job book nahi ki. Kuch aur chahiye to batao!' });
+    pushMessage({ role: 'assistant', content: t(lang, 'copilot.bookingCancelled') });
   };
 
   const handleSend = async (e: React.FormEvent) => {
@@ -328,6 +376,8 @@ export default function GlobalCopilotWidget({
     setInput('');
     await sendMessage(text);
   };
+
+  const hasUserMessage = messages.some((m) => m.role === 'user');
 
   return (
     <>
@@ -341,10 +391,10 @@ export default function GlobalCopilotWidget({
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-6 right-6 md:bottom-10 md:right-10 w-14 h-14 bg-ink rounded-full flex items-center justify-center shadow-2xl z-50 hover:bg-graphite transition-colors"
-            aria-label="Open EveryJob AI assistant"
+            className="fixed bottom-6 right-6 md:bottom-10 md:right-10 w-14 h-14 bg-lime rounded-full flex items-center justify-center shadow-2xl shadow-ink/20 z-50 hover:brightness-105 transition-all border border-ink/10"
+            aria-label={t(lang, 'copilot.openLabel')}
           >
-            <Bot className="w-6 h-6 text-white" />
+            <Bot className="w-6 h-6 text-ink" />
           </motion.button>
         )}
       </AnimatePresence>
@@ -357,28 +407,31 @@ export default function GlobalCopilotWidget({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed bottom-4 right-4 md:bottom-10 md:right-10 w-[calc(100vw-32px)] md:w-[400px] h-[600px] max-h-[calc(100vh-100px)] bg-[#fbfbfd] rounded-3xl shadow-2xl border border-zinc-200 overflow-hidden flex flex-col z-50"
+            role="dialog"
+            aria-modal="false"
+            aria-label={t(lang, 'copilot.openLabel')}
+            className="fixed bottom-0 inset-x-0 sm:bottom-10 sm:right-10 sm:left-auto w-full sm:w-[400px] h-[calc(100dvh-5.5rem)] sm:h-[600px] sm:max-h-[calc(100dvh-120px)] bg-[#fbfbfd] rounded-t-3xl sm:rounded-3xl shadow-2xl border border-zinc-200 overflow-hidden flex flex-col z-50"
           >
             {/* Header */}
             <div className="px-5 py-4 border-b border-zinc-200 bg-white flex justify-between items-center shrink-0">
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-ink rounded-lg flex items-center justify-center shadow-sm">
-                  <Bot className="w-4 h-4 text-white" />
+                  <Bot className="w-4 h-4 text-lime" />
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold tracking-tight text-zinc-900">EveryJob AI</h3>
                   <div className="flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                     <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">
-                      Aapke data se jawab
+                      {t(lang, 't10misc.copilot.onlineBadge')}
                     </span>
                   </div>
                 </div>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-zinc-100 transition-colors text-zinc-500"
-                aria-label="Close"
+                className="w-11 h-11 rounded-full flex items-center justify-center hover:bg-zinc-100 transition-colors text-zinc-500"
+                aria-label={t(lang, 'copilot.closeLabel')}
               >
                 <X className="w-4 h-4" />
               </button>
@@ -386,6 +439,9 @@ export default function GlobalCopilotWidget({
 
             {/* Messages Area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-5">
+              {!hasUserMessage && !isTyping && (
+                <EmptyStateCard locale={lang} onExample={(ex) => void sendMessage(ex)} disabled={isTyping} />
+              )}
               {messages.map((msg) => (
                 <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[88%] ${msg.role === 'user' ? '' : 'w-full'}`}>
@@ -412,7 +468,7 @@ export default function GlobalCopilotWidget({
                     </div>
                     {msg.preview && (
                       <div className="ml-8 mt-1">
-                        <PreviewCard lang={lang} currency={currency}
+                        <PreviewCard locale={lang} currency={currency}
                           preview={msg.preview}
                           confirming={confirmingId === msg.id}
                           onConfirm={(draft) => handleConfirm(msg.id, draft)}
@@ -425,7 +481,7 @@ export default function GlobalCopilotWidget({
               ))}
 
               {isTyping && (
-                <div className="flex justify-start">
+                <div className="flex justify-start" role="status" aria-label={t(lang, 't10misc.copilot.onlineBadge')}>
                   <div className="flex gap-2">
                     <div className="w-6 h-6 rounded-full bg-ink/10 flex items-center justify-center border border-smoke mt-1">
                       <Bot className="w-3 h-3 text-ink" />
@@ -443,13 +499,13 @@ export default function GlobalCopilotWidget({
             </div>
 
             {/* Quick prompts */}
-            <div className="px-4 pt-2 flex gap-2 overflow-x-auto shrink-0 bg-[#fbfbfd]">
+            <div className="px-4 pt-2 pb-1 flex gap-2 overflow-x-auto shrink-0 bg-[#fbfbfd]">
               {quickPrompts.map((q) => (
                 <button
                   key={q}
                   onClick={() => sendMessage(q)}
                   disabled={isTyping}
-                  className="shrink-0 text-[11px] font-medium text-ink bg-ink/5 border border-smoke rounded-full px-3 py-1.5 hover:bg-ink/10 disabled:opacity-50 transition-colors"
+                  className="shrink-0 min-h-[44px] text-[11px] font-medium text-ink bg-ink/5 border border-smoke rounded-full px-3 py-1.5 hover:bg-ink/10 disabled:opacity-50 transition-colors"
                 >
                   {q}
                 </button>
@@ -457,7 +513,7 @@ export default function GlobalCopilotWidget({
             </div>
 
             {/* Input Area */}
-            <div className="p-4 bg-white border-t border-zinc-200 shrink-0">
+            <div className="p-3 sm:p-4 bg-white border-t border-zinc-200 shrink-0">
               <form onSubmit={handleSend} className="relative flex items-center gap-2">
                 <VoiceInputButton
                   compact
@@ -465,21 +521,25 @@ export default function GlobalCopilotWidget({
                     setInput((prev) => (prev ? `${prev} ${text}` : text))
                   }
                 />
+                <label htmlFor="copilot-input" className="sr-only">
+                  {t(lang, 'copilot.sendLabel')}
+                </label>
                 <input
+                  id="copilot-input"
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder={L.inputPlaceholder}
-                  aria-label="Ask EveryJob AI"
-                  className="w-full pl-4 pr-12 py-3 rounded-xl border border-zinc-200 bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-ink/40 focus:border-transparent text-sm text-zinc-900 placeholder:text-zinc-400 transition-shadow"
+                  placeholder={t(lang, 'copilot.inputPlaceholder')}
+                  aria-label={t(lang, 'copilot.sendLabel')}
+                  className="w-full min-h-[44px] pl-4 pr-14 py-3 rounded-xl border border-zinc-200 bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-ink/40 focus:border-transparent text-sm text-zinc-900 placeholder:text-zinc-400 transition-shadow"
                 />
                 <button
                   type="submit"
                   disabled={!input.trim() || isTyping}
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-ink hover:bg-graphite disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-white transition-colors"
-                  aria-label="Send"
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 w-11 h-11 rounded-xl bg-ink hover:bg-graphite disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-white transition-colors"
+                  aria-label={t(lang, 'copilot.sendLabel')}
                 >
-                  <Send className="w-3.5 h-3.5 ml-0.5" />
+                  <Send className="w-4 h-4 ml-0.5" />
                 </button>
               </form>
             </div>

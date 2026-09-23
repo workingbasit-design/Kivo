@@ -73,11 +73,11 @@ function NotificationRow({
           <span className="shrink-0 text-xs text-zinc-400">{timeAgo(n.createdAt, locale)}</span>
         </div>
         <p className="mt-0.5 text-sm text-graphite">{body}</p>
-        <div className="mt-2 flex items-center gap-3">
+        <div className="mt-2 flex items-center gap-2 flex-wrap">
           {n.href && (
             <Link
               href={`/notifications/${n.id}/open`}
-              className="inline-flex items-center gap-1 text-[13px] font-semibold text-ink underline-offset-4 hover:underline"
+              className="inline-flex items-center gap-1 min-h-[44px] text-[13px] font-semibold text-ink underline-offset-4 hover:underline px-2 -ml-2"
             >
               {t(locale, 'notifications.viewDetails')}
               <ChevronRight size={14} />
@@ -87,7 +87,7 @@ function NotificationRow({
             <form action={markNotificationRead.bind(null, n.id)}>
               <button
                 type="submit"
-                className="inline-flex items-center gap-1 text-[13px] text-graphite underline-offset-4 hover:text-ink hover:underline"
+                className="inline-flex items-center gap-1 min-h-[44px] text-[13px] text-graphite underline-offset-4 hover:text-ink hover:underline px-2 -ml-2"
               >
                 <Check size={14} />
                 {t(locale, 'notifications.markRead')}

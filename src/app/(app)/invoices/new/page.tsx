@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { PageHeader } from '@/components/ui';
 import { getTaxConfig } from '@/lib/tax';
 import InvoiceForm from './InvoiceForm';
+import { getLocale } from '@/lib/i18n/server';
 
 export default async function NewInvoicePage() {
   const session = await getSession();
@@ -30,7 +31,7 @@ export default async function NewInvoicePage() {
         title="New invoice"
         subtitle={`Tax is computed on the server — what you see is what gets billed. Default: ${taxConfig.label}.`}
       />
-      <InvoiceForm customers={customers} taxConfig={taxConfig} />
+      <InvoiceForm customers={customers} taxConfig={taxConfig} locale={await getLocale()} />
     </div>
   );
 }

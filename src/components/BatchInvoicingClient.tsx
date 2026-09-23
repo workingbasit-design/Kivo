@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { FileText, AlertTriangle, CheckCircle2, Receipt } from 'lucide-react';
+import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import { Card, EmptyState, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
 import { confirmBatchInvoices } from '@/app/actions/batch-invoicing';
 import type { BatchPreviewRow } from '@/lib/billing';
+import { formatMoney } from '@/lib/money';
 
 function fill(template: string, count: number): string {
   return template.replace('{count}', String(count));
@@ -28,6 +30,8 @@ export default function BatchInvoicingClient({
   const [busy, start] = useTransition();
   const [error, setError] = useState<string | null>(loadError);
   const [created, setCreated] = useState<number | null>(null);
+  // Explicit second confirmation before creating invoices.
+  const [confirming, setConfirming] = useState(false);
 
   const selected = rows.filter((r) => checked[r.jobId]);
   const grandTotal = selected.reduce((s, r) => s + r.total, 0);
@@ -49,6 +53,8 @@ export default function BatchInvoicingClient({
       );
       if (res.error) {
         setError(res.error);
+        toast.error(res.error);
+        setConfirming(false);
         return;
       }
       // Success: remove the newly invoiced jobs from the preview.
@@ -59,6 +65,8 @@ export default function BatchInvoicingClient({
         for (const id of doneIds) delete next[id];
         return next;
       });
+      setConfirming(false);
+      toast.success(t(locale, 't10money.invoicesCreated').replace('{count}', String(res.created ?? 0)));
       setCreated(res.created ?? 0);
     });
   }
@@ -112,70 +120,115 @@ export default function BatchInvoicingClient({
         </Card>
       ) : (
         <>
-          <Card className="overflow-hidden">
+          <Card className="!p-0 overflow-hidden">
             <div className="px-5 py-3 border-b border-zinc-100 flex items-center gap-3">
-              <input
-                type="checkbox"
-                checked={rows.length > 0 && rows.every((r) => checked[r.jobId])}
-                onChange={toggleAll}
-                className="h-4 w-4 rounded border-zinc-300 accent-zinc-900"
-                aria-label={t(locale, 'billing.selectAll')}
-              />
+              <label className="min-h-[44px] min-w-[44px] flex items-center justify-center -ml-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={rows.length > 0 && rows.every((r) => checked[r.jobId])}
+                  onChange={toggleAll}
+                  className="h-5 w-5 rounded border-zinc-300 accent-zinc-900"
+                  aria-label={t(locale, 'billing.selectAll')}
+                />
+              </label>
               <span className="text-xs font-semibold text-zinc-500">
                 {fill(t(locale, 'billing.selected'), selected.length)}
               </span>
             </div>
             <ul className="divide-y divide-zinc-100">
-              {rows.map((r) => (
-                <li key={r.jobId} className="flex items-center gap-4 px-5 py-3.5">
-                  <input
-                    type="checkbox"
-                    checked={!!checked[r.jobId]}
-                    onChange={() => toggle(r.jobId)}
-                    className="h-4 w-4 rounded border-zinc-300 accent-zinc-900 shrink-0"
-                    aria-label={r.title}
-                  />
+              {rows.map((r, i) => (
+                <li
+                  key={r.jobId}
+                  className="ej-row-in flex items-start gap-3 px-4 sm:px-5 py-3.5"
+                  style={{ '--row-delay': `${Math.min(i, 12) * 35}ms` } as CSSProperties}
+                >
+                  <label className="min-h-[44px] min-w-[44px] flex items-center justify-center -ml-2 cursor-pointer shrink-0">
+                    <input
+                      type="checkbox"
+                      checked={!!checked[r.jobId]}
+                      onChange={() => toggle(r.jobId)}
+                      className="h-5 w-5 rounded border-zinc-300 accent-zinc-900"
+                      aria-label={r.title}
+                    />
+                  </label>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-zinc-900 truncate flex items-center gap-2">
+                    <p className="text-sm font-semibold text-zinc-900 flex items-center gap-2">
                       <FileText size={14} className="text-zinc-400 shrink-0" />
-                      {r.title}
+                      <span className="truncate">{r.title}</span>
                     </p>
                     <p className="text-xs text-zinc-500 mt-0.5">
                       {r.customerName} · {r.date}
                     </p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-sm font-bold text-zinc-900">
-                      ${r.total.toFixed(2)}
-                    </p>
-                    <p className="text-[11px] text-zinc-400">
-                      ${r.subtotal.toFixed(2)} + ${r.taxAmount.toFixed(2)}{' '}
+                    <p className="text-[11px] text-zinc-400 mt-0.5">
+                      {formatMoney(r.subtotal, 'CAD')} + {formatMoney(r.taxAmount, 'CAD')}{' '}
                       {t(locale, 'billing.colTax').toLowerCase()}
                     </p>
                   </div>
+                  <p className="text-sm font-bold text-zinc-900 shrink-0 pt-0.5">
+                    {formatMoney(r.total, 'CAD')}
+                  </p>
                 </li>
               ))}
             </ul>
           </Card>
 
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <p className="text-sm text-zinc-600">
-              {t(locale, 'billing.grandTotal')}:{' '}
-              <span className="font-bold text-zinc-900">
-                ${grandTotal.toFixed(2)}
-              </span>
-            </p>
-            <button
-              type="button"
-              className={primaryBtnClass}
-              disabled={busy || selected.length === 0}
-              onClick={onConfirm}
-            >
-              {busy
-                ? t(locale, 'billing.creating')
-                : fill(t(locale, 'billing.createInvoices'), selected.length)}
-            </button>
-          </div>
+          {confirming ? (
+            <Card className="p-6 border-amber-200 bg-amber-50/50">
+              <div className="flex items-start gap-3">
+                <AlertTriangle size={20} className="text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <h2 className="text-sm font-bold text-zinc-900">
+                    {t(locale, 't10money.batchConfirmTitle')}
+                  </h2>
+                  <p className="text-sm text-zinc-600 mt-1 leading-relaxed">
+                    {t(locale, 't10money.batchConfirmBody')
+                      .replace('{count}', String(selected.length))
+                      .replace('{total}', formatMoney(grandTotal, 'CAD'))}
+                  </p>
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    <button
+                      type="button"
+                      className={primaryBtnClass}
+                      disabled={busy}
+                      onClick={onConfirm}
+                    >
+                      {busy
+                        ? t(locale, 'billing.creating')
+                        : t(locale, 't10money.batchConfirmCta').replace(
+                            '{count}',
+                            String(selected.length)
+                          )}
+                    </button>
+                    <button
+                      type="button"
+                      className={secondaryBtnClass}
+                      disabled={busy}
+                      onClick={() => setConfirming(false)}
+                    >
+                      {t(locale, 't10money.batchKeep')}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          ) : (
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <p className="text-sm text-zinc-600">
+                {t(locale, 'billing.grandTotal')}:{' '}
+                <span className="font-bold text-zinc-900">
+                  {formatMoney(grandTotal, 'CAD')}
+                </span>
+              </p>
+              <button
+                type="button"
+                className={primaryBtnClass}
+                disabled={busy || selected.length === 0}
+                onClick={() => setConfirming(true)}
+              >
+                {fill(t(locale, 'billing.createInvoices'), selected.length)}
+              </button>
+            </div>
+          )}
         </>
       )}
     </div>

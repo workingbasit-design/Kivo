@@ -2,6 +2,7 @@
 
 import React, { useActionState, useEffect, useRef, useState, useTransition } from 'react';
 import { Receipt, Trash2, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   addExpense,
   deleteExpense,
@@ -42,7 +43,7 @@ export function JobExpenses({
     <Card className="p-5 md:p-6">
       <h2 className="text-sm font-bold text-ink mb-4 flex items-center gap-2">
         <Receipt size={14} /> {t(locale, 'jobops.expenses.title')}
-        <span className="text-[11px] font-semibold text-graphite">
+        <span className="text-[11px] font-semibold text-graphite tabular-nums">
           ({expenses.length})
         </span>
       </h2>
@@ -88,13 +89,19 @@ function ExpenseRow({
   const [isPending, startTransition] = useTransition();
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const T = (k: string) => t(locale, `t10work.${k}`);
 
   const runDelete = () => {
     setConfirming(false);
     setError(null);
     startTransition(async () => {
       const res = await deleteExpense(expense.id);
-      if (res?.error) setError(res.error);
+      if (res?.error) {
+        setError(res.error);
+        toast.error(T('expenseErrorDelete'));
+      } else {
+        toast.success(T('expenseDeleted'));
+      }
     });
   };
 
@@ -106,7 +113,7 @@ function ExpenseRow({
         : 'jobops.expenses.materials';
 
   return (
-    <li className="py-2.5 flex items-center justify-between gap-3">
+    <li className="py-2 flex items-center justify-between gap-3">
       <div className="min-w-0 flex-1">
         <p className="text-sm font-semibold text-ink truncate">{expense.description}</p>
         <p className="text-[11px] text-graphite">
@@ -123,9 +130,9 @@ function ExpenseRow({
         disabled={isPending}
         title={t(locale, 'jobops.expenses.delete')}
         aria-label={t(locale, 'jobops.expenses.delete')}
-        className="p-1.5 text-zinc-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors shrink-0"
+        className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-zinc-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors shrink-0 disabled:opacity-60"
       >
-        <Trash2 size={14} />
+        <Trash2 size={15} />
       </button>
       <ConfirmDialog
         open={confirming}
@@ -145,10 +152,16 @@ function AddExpenseForm({ jobId, locale }: { jobId: string; locale: Locale }) {
     {}
   );
   const formRef = useRef<HTMLFormElement>(null);
+  const T = (k: string) => t(locale, `t10work.${k}`);
+  const toastedFor = useRef<JobOpsActionResult | null>(null);
 
   useEffect(() => {
-    if (state?.ok) formRef.current?.reset();
-  }, [state]);
+    if (state?.ok && toastedFor.current !== state) {
+      toastedFor.current = state;
+      formRef.current?.reset();
+      toast.success(t(locale, 't10work.expenseAdded'));
+    }
+  }, [state, locale]);
 
   return (
     <form ref={formRef} action={formAction} className="space-y-3">

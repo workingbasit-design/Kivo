@@ -1,26 +1,55 @@
 'use client';
 
-import React, { useActionState } from 'react';
+import React, { useActionState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { AlertCircle, FileCheck } from 'lucide-react';
+import { toast } from 'sonner';
 import { createQuote, type ActionResult } from '@/app/actions/quotes';
 import LineItemsEditor from '@/components/LineItemsEditor';
 import { Field, inputClass, primaryBtnClass, secondaryBtnClass, Card } from '@/components/ui';
 import { formatMoney } from '@/lib/money';
 import { calcTax, type TaxConfig } from '@/lib/tax';
+import type { Locale } from '@/lib/i18n';
+import { t } from '@/lib/i18n';
+
+/**
+ * Fires a toast exactly once per server-action result. Minimal inline
+ * replacement for the removed useActionToast helper.
+ */
+function useResultToast<T extends { ok?: boolean; error?: string }>(
+  state: T | undefined,
+  messages: { success?: string; error?: string }
+) {
+  const seen = useRef<T | undefined>(undefined);
+  useEffect(() => {
+    if (!state || seen.current === state) return;
+    seen.current = state;
+    if (state.ok && messages.success) {
+      toast.success(messages.success);
+    } else if (state.error) {
+      toast.error(messages.error ?? state.error);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
+}
 
 export default function QuoteForm({
   customers,
   taxConfig,
+  locale = 'en',
 }: {
   customers: { id: string; name: string }[];
   taxConfig: TaxConfig;
+  locale?: Locale;
 }) {
   const [state, formAction, isPending] = useActionState<ActionResult, FormData>(
     createQuote,
     {}
   );
   const [subtotal, setSubtotal] = React.useState(0);
+
+  // createQuote redirects to the new quote page on success; toast on failure only.
+  useResultToast(state, {});
 
   // Client-side preview — the server recomputes the same numbers.
   const { taxAmount, breakdown } = calcTax(subtotal, taxConfig);
@@ -63,13 +92,13 @@ export default function QuoteForm({
 
       <Card className="p-6">
         <h2 className="text-sm font-bold text-zinc-900 mb-3">Line items</h2>
-        <LineItemsEditor onSubtotal={setSubtotal} currency={taxConfig.currency} />
+        <LineItemsEditor onSubtotal={setSubtotal} currency={taxConfig.currency} locale={locale} />
       </Card>
 
       <Card className="p-6">
         <dl className="space-y-1.5 text-sm">
           <div className="flex justify-between text-zinc-600">
-            <dt>Subtotal</dt>
+            <dt>{t(locale, 't10money.subtotalLabel')}</dt>
             <dd className="font-semibold">{formatMoney(subtotal, taxConfig.currency)}</dd>
           </div>
           {breakdown.map((b) => (
@@ -81,7 +110,7 @@ export default function QuoteForm({
             </div>
           ))}
           <div className="flex justify-between items-center border-t border-zinc-100 pt-3 mt-1">
-            <dt className="text-zinc-600">Quote total</dt>
+            <dt className="text-zinc-600">{t(locale, 't10money.quoteTotalLabel')}</dt>
             <dd className="text-2xl font-bold text-zinc-900">
               {formatMoney(total, taxConfig.currency)}
             </dd>
@@ -102,10 +131,10 @@ export default function QuoteForm({
       <div className="flex gap-2">
         <button type="submit" disabled={isPending} className={primaryBtnClass}>
           <FileCheck size={14} />
-          {isPending ? 'Creating…' : 'Create quote'}
+          {isPending ? t(locale, 't10money.quoteCreating') : t(locale, 't10money.quoteCreate')}
         </button>
         <Link href="/quotes" className={secondaryBtnClass}>
-          Cancel
+          {t(locale, 't10money.formCancel')}
         </Link>
       </div>
     </form>

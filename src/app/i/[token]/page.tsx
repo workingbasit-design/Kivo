@@ -127,7 +127,7 @@ export default async function InvoicePortalPage({
             <ReceiptText className="w-6 h-6 text-white" />
           </div>
           <h1 className="text-xl font-bold text-zinc-900 tracking-tight">{invoice.business.name}</h1>
-          <p className="text-sm text-zinc-500 mt-0.5">Invoice for {invoice.customer.name}</p>
+          <p className="text-sm text-zinc-500 mt-0.5">{t(locale, 't10money.invPortalFor')} {invoice.customer.name}</p>
         </div>
 
         <Card className="p-6">
@@ -135,63 +135,57 @@ export default async function InvoicePortalPage({
             <div>
               <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">{invoice.number}</p>
               <p className="text-xs text-zinc-400 mt-1">
-                Dated {invoice.date.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })}
+                {t(locale, 't10money.invPortalDated')} {invoice.date.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })}
               </p>
             </div>
             <StatusBadge status={invoice.status} />
           </div>
 
           {invoice.lineItems.length > 0 && (
-            <table className="w-full text-sm mb-4">
-              <thead>
-                <tr className="text-left text-[11px] uppercase tracking-wider text-zinc-400 border-b border-zinc-200">
-                  <th className="py-2 pr-2 font-bold">Item</th>
-                  <th className="py-2 px-1 text-right font-bold">Qty</th>
-                  <th className="py-2 text-right font-bold">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {invoice.lineItems.map((item, i) => (
-                  <tr key={i} className="border-b border-zinc-100">
-                    <td className="py-2.5 pr-2 text-zinc-800">{item.description}</td>
-                    <td className="py-2.5 px-1 text-right text-zinc-500 whitespace-nowrap">
-                      {item.qty} × {formatMoney(item.unitPrice, invoice.business.currency)}
-                    </td>
-                    <td className="py-2.5 text-right font-semibold text-zinc-900 whitespace-nowrap">
-                      {formatMoney(round2(item.qty * item.unitPrice), invoice.business.currency)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <ul className="space-y-2 mb-4">
+              {invoice.lineItems.map((item, i) => (
+                <li
+                  key={i}
+                  className="rounded-xl border border-zinc-100 bg-zinc-50/40 px-3 py-2.5"
+                >
+                  <p className="text-sm font-semibold text-zinc-800">{item.description}</p>
+                  <p className="text-xs text-zinc-500 mt-1">
+                    {item.qty} × {formatMoney(item.unitPrice, invoice.business.currency)}
+                    <span className="font-bold text-zinc-800">
+                      {' '}· {formatMoney(round2(item.qty * item.unitPrice), invoice.business.currency)}
+                    </span>
+                  </p>
+                </li>
+              ))}
+            </ul>
           )}
 
           <dl className="space-y-2 text-sm border-t border-zinc-100 pt-4">
             <div className="flex justify-between">
-              <dt className="text-zinc-500">Subtotal</dt>
+              <dt className="text-zinc-500">{t(locale, 't10money.invPortalSubtotal')}</dt>
               <dd className="font-semibold text-zinc-900">{formatMoney(invoice.subtotal, invoice.business.currency)}</dd>
             </div>
             {invoice.taxAmount > 0 && (
               <div className="flex justify-between">
                 <dt className="text-zinc-500">
-                  Tax{invoice.taxType ? ` (${invoice.taxType}${invoice.taxRate ? ` ${invoice.taxRate}%` : ''})` : ''}
+                  {t(locale, 't10money.invPortalTax')}{invoice.taxType ? ` (${invoice.taxType}${invoice.taxRate ? ` ${invoice.taxRate}%` : ''})` : ''}
                 </dt>
                 <dd className="font-semibold text-zinc-900">{formatMoney(invoice.taxAmount, invoice.business.currency)}</dd>
               </div>
             )}
             <div className="flex justify-between border-t border-zinc-100 pt-2">
-              <dt className="font-bold text-zinc-900">Total</dt>
+              <dt className="font-bold text-zinc-900">{t(locale, 't10money.invPortalTotal')}</dt>
               <dd className="text-xl font-bold text-zinc-900 tracking-tight">{formatMoney(invoice.total, invoice.business.currency)}</dd>
             </div>
             {paid > 0 && (
               <>
                 <div className="flex justify-between">
-                  <dt className="text-zinc-500">Paid</dt>
+                  <dt className="text-zinc-500">{t(locale, 't10money.invPortalPaid')}</dt>
                   <dd className="font-semibold text-emerald-700">{formatMoney(paid, invoice.business.currency)}</dd>
                 </div>
-                <div className="flex justify-between">
-                  <dt className="font-bold text-zinc-900">Balance due</dt>
-                  <dd className="font-bold text-zinc-900">{formatMoney(balance, invoice.business.currency)}</dd>
+                <div className="flex justify-between items-center bg-ink text-white rounded-xl px-4 py-3 -mx-1">
+                  <dt className="font-bold">{t(locale, 't10money.invPortalBalance')}</dt>
+                  <dd className="font-bold">{formatMoney(balance, invoice.business.currency)}</dd>
                 </div>
               </>
             )}
@@ -221,19 +215,18 @@ export default async function InvoicePortalPage({
 
         {balance > 0 && invoice.business.interacEmail && (
           <Card className="p-6">
-            <h2 className="text-sm font-bold text-zinc-900 mb-1">Pay via Interac e-Transfer</h2>
+            <h2 className="text-sm font-bold text-zinc-900 mb-1">{t(locale, 't10money.invPortalInteracTitle')}</h2>
             <p className="text-xs text-zinc-500 mb-3">
-              Send an Interac e-Transfer to this email from your banking app, then share the
-              confirmation on WhatsApp.
+              {t(locale, 't10money.invPortalInteracDesc')}
             </p>
             <div className="flex items-center gap-2">
-              <code className="flex-1 text-sm bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 truncate text-zinc-800 font-mono">
+              <code className="flex-1 min-w-0 text-sm bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 truncate text-zinc-800 font-mono">
                 {invoice.business.interacEmail}
               </code>
               <CopyButton text={invoice.business.interacEmail} />
             </div>
             <p className="text-[11px] text-zinc-400 mt-2">
-              EveryJob never handles your money — payment happens directly between you and the business.
+              {t(locale, 't10money.invPortalInteracNote')}
             </p>
           </Card>
         )}
@@ -243,9 +236,9 @@ export default async function InvoicePortalPage({
             href={whatsappHref}
             target="_blank"
             rel="noreferrer"
-            className="flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#1fb857] text-white font-bold text-sm py-3 rounded-2xl transition-colors"
+            className="min-h-[44px] flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#1fb857] text-white font-bold text-sm py-3 rounded-2xl transition-colors"
           >
-            <MessageCircle size={16} /> Questions? Chat on WhatsApp
+            <MessageCircle size={16} /> {t(locale, 't10money.invPortalWhatsapp')}
           </a>
         )}
 
@@ -255,7 +248,7 @@ export default async function InvoicePortalPage({
               <p>
                 <a
                   href={`tel:${invoice.business.phone.replace(/\s/g, '')}`}
-                  className="inline-flex items-center gap-1.5 font-semibold text-ink"
+                  className="min-h-[44px] inline-flex items-center gap-1.5 font-semibold text-ink"
                 >
                   <Phone size={12} /> {invoice.business.phone}
                 </a>

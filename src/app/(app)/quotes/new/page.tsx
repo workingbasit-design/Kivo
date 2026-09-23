@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { PageHeader } from '@/components/ui';
 import { getTaxConfig } from '@/lib/tax';
 import QuoteForm from './QuoteForm';
+import { getLocale } from '@/lib/i18n/server';
 
 export default async function NewQuotePage() {
   const session = await getSession();
@@ -30,7 +31,7 @@ export default async function NewQuotePage() {
         title="New quote"
         subtitle={`Line items in, total out — ${taxConfig.label} is added automatically from your region settings.`}
       />
-      <QuoteForm customers={customers} taxConfig={taxConfig} />
+      <QuoteForm customers={customers} taxConfig={taxConfig} locale={await getLocale()} />
     </div>
   );
 }

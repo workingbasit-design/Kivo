@@ -9,14 +9,23 @@ import {
   previewAudience,
   type MarketingResult,
 } from '@/app/actions/marketing';
-import { AUDIENCES, renderTemplate, type Audience } from '@/lib/marketing';
+import { renderTemplate, type Audience } from '@/lib/marketing';
+import { t, type Locale } from '@/lib/i18n';
 import { Field, inputClass, primaryBtnClass, secondaryBtnClass, Card } from '@/components/ui';
+
+const AUDIENCE_KEYS: { value: Audience; labelKey: string; hintKey: string }[] = [
+  { value: 'ALL_CUSTOMERS', labelKey: 't10misc.marketing.audienceAll', hintKey: 't10misc.marketing.hintAll' },
+  { value: 'WITH_UNPAID', labelKey: 't10misc.marketing.audienceUnpaid', hintKey: 't10misc.marketing.hintUnpaid' },
+  { value: 'RECENT_JOBS', labelKey: 't10misc.marketing.audienceRecent', hintKey: 't10misc.marketing.hintRecent' },
+];
 
 export default function CampaignForm({
   businessName,
+  locale,
   initial,
 }: {
   businessName: string;
+  locale: Locale;
   initial?: { id: string; name: string; subject: string; body: string; audience: Audience };
 }) {
   const router = useRouter();
@@ -47,11 +56,16 @@ export default function CampaignForm({
     }
   }
 
-  const audienceHint = AUDIENCES.find((a) => a.value === audience)?.hint;
-  const livePreview = renderTemplate(body || 'Your message will appear here…', {
-    name: 'Ramesh',
+  const audienceHint = AUDIENCE_KEYS.find((a) => a.value === audience)?.hintKey;
+  const livePreview = renderTemplate(body || t(locale, 't10misc.marketing.previewFallback'), {
+    name: t(locale, 't10misc.marketing.previewSampleName'),
     business: businessName,
   });
+  const recipientLine = preview
+    ? t(locale, 't10misc.marketing.recipients')
+        .replace('{count}', String(preview.count))
+        .replace('{s}', preview.count === 1 ? '' : locale === 'fr' ? 's' : 's')
+    : '';
 
   return (
     <form action={formAction} className="space-y-6 max-w-3xl">
@@ -64,80 +78,78 @@ export default function CampaignForm({
       )}
 
       <Card className="p-6 space-y-4">
-        <Field label="Campaign name">
+        <Field label={t(locale, 't10misc.marketing.campaignName')}>
           <input
             name="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
             maxLength={120}
-            placeholder="e.g. Diwali AC service offer"
+            placeholder={t(locale, 't10misc.marketing.campaignNamePlaceholder')}
             className={inputClass}
           />
         </Field>
 
         <div>
-          <Field label="Audience">
+          <Field label={t(locale, 't10misc.marketing.audience')}>
             <select
               name="audience"
               value={audience}
               onChange={(e) => setAudience(e.target.value as Audience)}
               className={inputClass}
             >
-              {AUDIENCES.map((a) => (
+              {AUDIENCE_KEYS.map((a) => (
                 <option key={a.value} value={a.value}>
-                  {a.label}
+                  {t(locale, a.labelKey)}
                 </option>
               ))}
             </select>
           </Field>
           <div className="flex items-center justify-between mt-1.5">
-            <p className="text-[11px] text-zinc-400">{audienceHint}</p>
+            <p className="text-[11px] text-zinc-400">{audienceHint ? t(locale, audienceHint) : ''}</p>
             <button
               type="button"
               onClick={handlePreview}
               disabled={previewLoading}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink hover:text-graphite disabled:opacity-60"
+              className="inline-flex items-center gap-1.5 min-h-[44px] text-xs font-semibold text-ink hover:text-graphite disabled:opacity-60"
             >
               <Users size={13} />
-              {previewLoading ? 'Checking…' : 'Preview audience'}
+              {previewLoading ? t(locale, 't10misc.marketing.checking') : t(locale, 't10misc.marketing.previewAudience')}
             </button>
           </div>
           {preview && (
             <div className="mt-2 bg-smoke border border-smoke rounded-xl px-3 py-2.5">
-              <p className="text-xs font-bold text-ink">
-                {preview.count} recipient{preview.count === 1 ? '' : 's'}
-              </p>
+              <p className="text-xs font-bold text-ink">{recipientLine}</p>
               {preview.sample.length > 0 && (
                 <p className="text-[11px] text-ink mt-0.5">
-                  e.g. {preview.sample.map((s) => s.name).join(', ')}
+                  {t(locale, 't10misc.marketing.samplePrefix')}{preview.sample.map((s) => s.name).join(', ')}
                   {preview.count > preview.sample.length && '…'}
                 </p>
               )}
               {preview.count === 0 && (
                 <p className="text-[11px] text-ink mt-0.5">
-                  No customers match this audience yet.
+                  {t(locale, 't10misc.marketing.noMatch')}
                 </p>
               )}
             </div>
           )}
         </div>
 
-        <Field label="Subject / first line">
+        <Field label={t(locale, 't10misc.marketing.subject')}>
           <input
             name="subject"
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             required
             maxLength={160}
-            placeholder="e.g. Festive offer: 20% off AC servicing"
+            placeholder={t(locale, 't10misc.marketing.subjectPlaceholder')}
             className={inputClass}
           />
         </Field>
 
         <Field
-          label="Message"
-          hint="Use {{name}} for the customer's name and {{business}} for your business name."
+          label={t(locale, 't10misc.marketing.message')}
+          hint={t(locale, 't10misc.marketing.messageHint')}
         >
           <textarea
             name="body"
@@ -146,7 +158,7 @@ export default function CampaignForm({
             required
             maxLength={4000}
             rows={6}
-            placeholder={'Namaste {{name}}! This is {{business}}. …'}
+            placeholder={t(locale, 't10misc.marketing.messagePlaceholder')}
             className={inputClass}
           />
         </Field>
@@ -154,33 +166,32 @@ export default function CampaignForm({
 
       <Card className="p-6">
         <h3 className="text-sm font-bold text-zinc-900 flex items-center gap-2 mb-3">
-          <Eye size={14} className="text-zinc-400" /> Live preview
+          <Eye size={14} className="text-zinc-400" /> {t(locale, 't10misc.marketing.livePreview')}
         </h3>
         <div className="bg-zinc-50 border border-zinc-200 rounded-xl p-4">
-          <p className="text-xs font-bold text-zinc-900">{subject || 'Subject line…'}</p>
+          <p className="text-xs font-bold text-zinc-900">{subject || t(locale, 't10misc.marketing.previewSubjectFallback')}</p>
           <p className="text-sm text-zinc-600 mt-1.5 whitespace-pre-wrap">{livePreview}</p>
         </div>
         <p className="text-[11px] text-zinc-400 mt-2">
-          Preview shows a sample name — the real message is personalised per customer.
+          {t(locale, 't10misc.marketing.previewNote')}
         </p>
       </Card>
 
       <div className="flex items-center gap-2">
         <button type="submit" disabled={pending} className={primaryBtnClass}>
-          {pending ? 'Saving…' : initial ? 'Save changes' : 'Save draft campaign'}
+          {pending ? t(locale, 't10misc.marketing.savingBtn') : initial ? t(locale, 't10misc.marketing.saveChanges') : t(locale, 't10misc.marketing.saveDraft')}
         </button>
         <button
           type="button"
           onClick={() => router.back()}
           className={secondaryBtnClass}
         >
-          Cancel
+          {t(locale, 't10misc.marketing.cancel')}
         </button>
       </div>
 
       <p className="text-[11px] text-zinc-400">
-        EveryJob never sends messages itself — after queueing, you copy each message and send it
-        yourself via WhatsApp or SMS.
+        {t(locale, 't10misc.marketing.neverSends')}
       </p>
     </form>
   );

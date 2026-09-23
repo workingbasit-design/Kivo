@@ -7,36 +7,38 @@ import { createCustomer } from '@/app/actions/customers';
 import { PageHeader, Card, Field, inputClass, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 import { CA_PROVINCES } from '@/lib/tax';
+import { useResolvedT } from '@/hooks/useResolvedLocale';
 
 export default function NewCustomerForm() {
   const [state, formAction, isPending] = useActionState(createCustomer, {});
+  const { t } = useResolvedT();
 
   return (
     <div className="space-y-6 max-w-2xl">
       <PageHeader
-        title="Add customer"
-        subtitle="Save a customer once, reuse them on every job."
+        title={t('t10money.custNewTitle')}
+        subtitle={t('t10money.custNewSubtitle')}
         actions={
           <Link href="/customers" className={secondaryBtnClass}>
-            <ArrowLeft size={14} /> Back
+            <ArrowLeft size={14} /> {t('t10money.custBack')}
           </Link>
         }
       />
 
       <Card className="p-6 md:p-8">
         <form action={formAction} className="space-y-5">
-          <Field label="Name *">
+          <Field label={`${t('t10money.custName')} *`}>
             <input
               name="name"
               required
-              placeholder="e.g. Sarah Miller"
+              placeholder={t('t10money.custNamePh')}
               autoComplete="name"
               className={inputClass}
             />
           </Field>
 
           <div className="grid sm:grid-cols-2 gap-5">
-            <Field label="Phone" hint="e.g. +1 416 555 0100">
+            <Field label={t('t10money.custPhone')} hint={t('t10money.custPhoneHint')}>
               <input
                 name="phone"
                 type="tel"
@@ -45,28 +47,28 @@ export default function NewCustomerForm() {
                 className={inputClass}
               />
             </Field>
-            <Field label="Email">
+            <Field label={t('t10money.custEmail')}>
               <input
                 name="email"
                 type="email"
-                placeholder="customer@example.com"
+                placeholder={t('t10money.custEmailPh')}
                 autoComplete="email"
                 className={inputClass}
               />
             </Field>
           </div>
 
-          <Field label="Address">
+          <Field label={t('t10money.custAddress')}>
             <AddressAutocomplete
               name="address"
               rows={2}
-              placeholder="Street / unit / city"
+              placeholder={t('t10money.custAddressPh')}
               className={inputClass}
             />
           </Field>
 
           <div className="grid sm:grid-cols-2 gap-5">
-            <Field label="Province">
+            <Field label={t('t10money.custProvince')}>
               <select name="province" defaultValue="" className={inputClass}>
                 <option value="">—</option>
                 {CA_PROVINCES.map((p) => (
@@ -76,7 +78,7 @@ export default function NewCustomerForm() {
                 ))}
               </select>
             </Field>
-            <Field label="Postal code" hint="e.g. M5V 2T6">
+            <Field label={t('t10money.custPostal')} hint={t('t10money.custPostalHint')}>
               <input
                 name="postalCode"
                 placeholder="M5V 2T6"
@@ -87,16 +89,16 @@ export default function NewCustomerForm() {
             </Field>
           </div>
 
-          <Field label="Notes" hint="Gate code, parking, preferences — anything useful on a visit.">
+          <Field label={t('t10money.custNotes')} hint={t('t10money.custNotesHint')}>
             <textarea
               name="notes"
               rows={3}
-              placeholder="e.g. Call before arriving, 2nd floor, dog in house"
+              placeholder={t('t10money.custNotesPh')}
               className={inputClass}
             />
           </Field>
 
-          <Field label="Tags" hint="Comma-separated, e.g. vip, senior — helps you filter this list.">
+          <Field label={t('t10money.custTags')} hint={t('t10money.custTagsHint')}>
             <input
               name="tags"
               placeholder="vip, senior"
@@ -114,7 +116,7 @@ export default function NewCustomerForm() {
 
           <button type="submit" disabled={isPending} className={primaryBtnClass}>
             <UserPlus size={14} />
-            {isPending ? 'Saving…' : 'Save customer'}
+            {isPending ? t('t10money.custSaving') : t('t10money.custSave')}
           </button>
         </form>
       </Card>

@@ -12,7 +12,7 @@
  *
  * Replies are bilingual (English / Canadian French), chosen from the
  * business's UI locale. English replies are written in plain professional
- * English that works for both Canadian and Indian businesses.
+ * Canadian English.
  */
 
 import { prisma } from '@/lib/prisma';
@@ -516,7 +516,7 @@ export async function runCopilot(
           reply: pick(
             lang,
             'Which customer should I look up? Give me a name or mobile number, e.g. "Sarah’s number".',
-            'Quel client dois-je chercher? Donnez-moi un nom ou un numéro de mobile, par exemple « le numéro de Ramesh ».'
+            'Quel client dois-je chercher? Donnez-moi un nom ou un numéro de mobile, par exemple « le numéro de Sarah ».'
           ),
         };
       }

@@ -4,11 +4,15 @@ import { PageHeader, Card } from '@/components/ui';
 import { formatWorkingHoursSummary } from '@/lib/working-hours';
 import BookingSettingsForm from '@/components/BookingSettingsForm';
 import { slugify } from '@/lib/slug';
+import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
 
 export const metadata = { title: 'Online booking | EveryJob' };
 
 export default async function BookingSettingsPage() {
   const { businessId } = await requireAuth();
+  const locale = await getLocale();
+  const tr = (path: string) => t(locale, path);
 
   const [page, business] = await Promise.all([
     prisma.bookingPage.findUnique({
@@ -28,8 +32,8 @@ export default async function BookingSettingsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Online booking"
-        subtitle="Let customers book you from a simple public link — no app or login needed."
+        title={tr('t10misc.booking.pageTitle')}
+        subtitle={tr('t10misc.booking.pageSubtitle')}
       />
       <BookingSettingsForm
         initial={
@@ -45,16 +49,16 @@ export default async function BookingSettingsPage() {
         suggestedSlug={slugify(business.name)}
       />
       <Card className="p-5 md:p-6 max-w-2xl">
-        <h2 className="text-sm font-bold text-zinc-900 mb-1">Working hours</h2>
+        <h2 className="text-sm font-bold text-zinc-900 mb-1">{tr('t10misc.booking.hoursTitle')}</h2>
         {hoursSummary ? (
           <p className="text-sm text-zinc-600">{hoursSummary}</p>
         ) : (
           <p className="text-sm text-zinc-500">
-            Not set yet — add them in Settings so customers see when you&apos;re available.
+            {tr('t10misc.booking.hoursEmpty')}
           </p>
         )}
         <p className="text-[11px] text-zinc-400 mt-2">
-          Set in Settings → Working hours. They&apos;re also shown on your public booking page.
+          {tr('t10misc.booking.hoursNote')}
         </p>
       </Card>
     </div>

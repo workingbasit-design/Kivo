@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Bell } from 'lucide-react';
+import { toast } from 'sonner';
 import { Card, primaryBtnClass } from '@/components/ui';
 import { t, type Locale } from '@/lib/i18n';
 import {
@@ -41,20 +42,21 @@ export default function NotificationSettingsForm({
         action={async (formData: FormData) => {
           await saveNotificationSettingsAction(formData);
           setSaved(true);
+          toast.success(savedMessage);
         }}
         className="space-y-1"
       >
         {NOTIFICATION_TYPES.map((key) => (
           <label
             key={key}
-            className="flex items-start gap-3 rounded-xl px-3 py-3 cursor-pointer hover:bg-zinc-50 transition-colors"
+            className="flex items-start gap-3 rounded-xl px-3 py-3 min-h-[52px] cursor-pointer hover:bg-zinc-50 transition-colors"
           >
             <input
               type="checkbox"
               name={`notify_${key}`}
               checked={values[key]}
               onChange={() => toggle(key)}
-              className="mt-1 h-4 w-4 shrink-0 rounded accent-[#161616]"
+              className="mt-1 h-5 w-5 shrink-0 rounded accent-[#161616]"
             />
             <span>
               <span className="block text-[14px] font-semibold text-zinc-900">

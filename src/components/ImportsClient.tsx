@@ -2,6 +2,7 @@
 
 import { useRef, useState, useTransition, type ElementType } from 'react';
 import { CalendarDays, Upload, CheckCircle2, AlertTriangle, Download } from 'lucide-react';
+import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import { Card, inputClass, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
 import {
@@ -106,7 +107,9 @@ export default function ImportsClient({
     startCal(async () => {
       const res = await confirmCalendarImport(items);
       if (!res.ok) {
-        setCalErr(res.error ?? t(locale, 'imports.importFailed'));
+        const err = res.error ?? t(locale, 'imports.importFailed');
+        setCalErr(err);
+        toast.error(err);
         return;
       }
       const parts: string[] = [];
@@ -114,7 +117,9 @@ export default function ImportsClient({
         parts.push(t(locale, 'imports.importedJobs').replace('{count}', String(res.imported)));
       if ((res.skipped ?? 0) > 0)
         parts.push(t(locale, 'imports.skippedDupes').replace('{count}', String(res.skipped)));
-      setCalMsg(parts.join(' ') || t(locale, 'imports.noEvents'));
+      const done = parts.join(' ') || t(locale, 'imports.noEvents');
+      setCalMsg(done);
+      toast.success(done);
       setDrafts([]);
       setChecked({});
       setPickedCustomer({});
@@ -162,9 +167,12 @@ export default function ImportsClient({
       const res = await commitCsvImport(csvType, csvValid);
       if (!res.ok) {
         setCsvErrors(res.errors ?? []);
+        toast.error(t(locale, 'imports.importFailed'));
         return;
       }
-      setCsvMsg(t(locale, 'imports.importComplete').replace('{imported}', String(res.imported ?? 0)));
+      const done = t(locale, 'imports.importComplete').replace('{imported}', String(res.imported ?? 0));
+      setCsvMsg(done);
+      toast.success(done);
       setCsvValid([]);
       setCsvErrors([]);
       setCsvFileName(null);
@@ -368,7 +376,8 @@ export default function ImportsClient({
             <p className="font-semibold text-emerald-900 text-sm">
               {t(locale, 'imports.validRows').replace('{count}', String(csvValid.length))}
             </p>
-            <div className="overflow-x-auto rounded-xl border border-zinc-200">
+            {/* Desktop table */}
+            <div className="overflow-x-auto rounded-xl border border-zinc-200 hidden md:block">
               <table className="min-w-full text-sm">
                 <thead>
                   <tr className="bg-zinc-50">
@@ -392,7 +401,30 @@ export default function ImportsClient({
                 </tbody>
               </table>
             </div>
-            {csvValid.length > 20 && <p className="text-xs text-zinc-500">+ {csvValid.length - 20} more</p>}
+            {/* Mobile cards */}
+            <div className="space-y-2.5 md:hidden">
+              {csvValid.slice(0, 20).map((r, i) => (
+                <div key={i} className="rounded-xl border border-zinc-200 bg-white p-3.5">
+                  <dl className="space-y-1.5">
+                    {csvCols[csvType].map((c) => {
+                      const v = cellValue(r, c.key);
+                      if (!v) return null;
+                      return (
+                        <div key={c.key} className="flex items-start justify-between gap-3 text-sm">
+                          <dt className="shrink-0 font-medium text-zinc-500">{c.label}</dt>
+                          <dd className="min-w-0 text-right text-zinc-800 break-words">{v}</dd>
+                        </div>
+                      );
+                    })}
+                  </dl>
+                </div>
+              ))}
+            </div>
+            {csvValid.length > 20 && (
+              <p className="text-xs text-zinc-500">
+                {t(locale, 't10misc.imports.moreRows').replace('{count}', String(csvValid.length - 20))}
+              </p>
+            )}
             <button
               onClick={importCsv}
               disabled={csvBusy || csvErrors.length > 0}

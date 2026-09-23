@@ -47,6 +47,10 @@ const en: Dict = {
     onlineBooking: 'Online booking',
     imports: 'Imports',
     logout: 'Log out',
+    more: 'More',
+    menu: 'Menu',
+    close: 'Close',
+    primary: 'Primary',
     sections: {
       work: 'Work',
       money: 'Money',

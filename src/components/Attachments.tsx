@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useTransition } from 'react';
+import { toast } from 'sonner';
 import {
   Paperclip,
   Upload,
@@ -11,7 +12,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { t, type Locale } from '@/lib/i18n';
-import { Card } from '@/components/ui';
+import { Card, Dialog, Skeleton, secondaryBtnClass, dangerBtnClass } from '@/components/ui';
 import {
   blobConfigured,
   listAttachments,
@@ -43,6 +44,7 @@ export default function Attachments({
   const [error, setError] = useState<AttachmentErrorCode | null>(null);
   const [uploading, startUpload] = useTransition();
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<AttachmentRow | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   function errMsg(code: AttachmentErrorCode): string {
@@ -86,22 +88,28 @@ export default function Attachments({
       if (res.ok) {
         if (inputRef.current) inputRef.current.value = '';
         await refresh();
+        toast.success(t(locale, 'attachments.uploaded'));
       } else if (res.error) {
         setError(res.error);
+        toast.error(errMsg(res.error));
       }
     });
   }
 
-  async function handleDelete(row: AttachmentRow) {
-    if (!confirm(t(locale, 'attachments.confirmDelete'))) return;
+  async function confirmDelete() {
+    const row = pendingDelete;
+    if (!row) return;
+    setPendingDelete(null);
     setDeletingId(row.id);
     setError(null);
     const res = await deleteAttachment(row.id);
     setDeletingId(null);
     if (res.ok) {
       setRows((prev) => prev.filter((r) => r.id !== row.id));
+      toast.success(t(locale, 'attachments.deleted'));
     } else if (res.error) {
       setError(res.error);
+      toast.error(errMsg(res.error));
     }
   }
 
@@ -185,10 +193,10 @@ export default function Attachments({
                   </div>
                   <button
                     type="button"
-                    onClick={() => handleDelete(row)}
+                    onClick={() => setPendingDelete(row)}
                     disabled={deletingId === row.id}
                     aria-label={t(locale, 'attachments.deleteLabel')}
-                    className="absolute top-1.5 right-1.5 rounded-lg bg-white/90 border border-zinc-200 p-1.5 text-zinc-500 hover:text-rose-600 hover:border-rose-200 shadow-sm disabled:opacity-50"
+                    className="absolute top-1.5 right-1.5 rounded-lg bg-white/90 border border-zinc-200 min-w-[36px] min-h-[36px] p-2 text-zinc-500 hover:text-rose-600 hover:border-rose-200 shadow-sm disabled:opacity-50 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/60"
                   >
                     {deletingId === row.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
                   </button>
@@ -210,15 +218,15 @@ export default function Attachments({
               type="button"
               onClick={() => inputRef.current?.click()}
               disabled={uploading}
-              className="bg-white hover:bg-zinc-50 text-zinc-700 px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 border border-zinc-200 shadow-sm disabled:opacity-50"
+              className={secondaryBtnClass + ' disabled:opacity-50'}
             >
               {uploading ? (
                 <>
-                  <Loader2 size={14} className="animate-spin" /> {t(locale, 'attachments.uploading')}
+                  <Loader2 size={16} className="animate-spin" /> {t(locale, 'attachments.uploading')}
                 </>
               ) : (
                 <>
-                  <Upload size={14} /> {t(locale, 'attachments.uploadButton')}
+                  <Upload size={16} /> {t(locale, 'attachments.uploadButton')}
                 </>
               )}
             </button>
@@ -226,6 +234,32 @@ export default function Attachments({
           </div>
         </>
       )}
+
+      {configured === null && (
+        <div className="mt-3 grid grid-cols-3 gap-3" aria-hidden>
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-28 rounded-xl" />
+          ))}
+        </div>
+      )}
+
+      <Dialog
+        open={pendingDelete !== null}
+        onClose={() => setPendingDelete(null)}
+        title={t(locale, 'attachments.confirmDeleteTitle')}
+      >
+        <p className="text-sm text-zinc-600 mb-6">
+          {t(locale, 'attachments.confirmDelete').replace('{name}', pendingDelete?.fileName ?? '')}
+        </p>
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+          <button type="button" onClick={() => setPendingDelete(null)} className={secondaryBtnClass}>
+            {t(locale, 'attachments.cancel')}
+          </button>
+          <button type="button" onClick={confirmDelete} className={dangerBtnClass}>
+            <Trash2 size={16} /> {t(locale, 'attachments.delete')}
+          </button>
+        </div>
+      </Dialog>
     </Card>
   );
 }

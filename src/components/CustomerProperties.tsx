@@ -2,8 +2,10 @@
 
 import { useState, useTransition } from 'react';
 import { MapPin, Plus, Pencil, Trash2, Star, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import { Card, Field, inputClass, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import {
   listProperties,
   addProperty,
@@ -35,6 +37,7 @@ export default function CustomerProperties({
   const [notes, setNotes] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, startTransition] = useTransition();
+  const [pendingDelete, setPendingDelete] = useState<string | null>(null);
 
   const L = (path: string) => t(locale, path);
   const errMsg = (code: PropertyErrorCode) => L(`properties.errors.${code}`);
@@ -83,18 +86,23 @@ export default function CustomerProperties({
         : await addProperty(customerId, payload);
     if (!res.ok) {
       setError(errMsg(res.error));
+      toast.error(errMsg(res.error));
       return;
     }
+    toast.success(L('properties.save'));
     closeForm();
     refresh();
   }
 
   async function remove(id: string) {
-    if (!window.confirm(L('properties.deleteConfirm'))) return;
     setError(null);
     const res = await deleteProperty(id);
-    if (!res.ok) setError(errMsg(res.error));
-    else refresh();
+    if (!res.ok) {
+      setError(errMsg(res.error));
+      toast.error(errMsg(res.error));
+    } else {
+      refresh();
+    }
   }
 
   async function makePrimary(id: string) {
@@ -206,7 +214,7 @@ export default function CustomerProperties({
                       type="button"
                       title={L('properties.setPrimary')}
                       onClick={() => startTransition(() => makePrimary(p.id))}
-                      className="p-2 rounded-lg text-zinc-400 hover:text-amber-600 hover:bg-amber-50"
+                      className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-zinc-400 hover:text-amber-600 hover:bg-amber-50"
                       aria-label={L('properties.setPrimary')}
                     >
                       <Star size={14} />
@@ -215,15 +223,15 @@ export default function CustomerProperties({
                   <button
                     type="button"
                     onClick={() => startTransition(() => openEdit(p))}
-                    className="p-2 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100"
+                    className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100"
                     aria-label={L('properties.edit')}
                   >
                     <Pencil size={14} />
                   </button>
                   <button
                     type="button"
-                    onClick={() => startTransition(() => remove(p.id))}
-                    className="p-2 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-50"
+                    onClick={() => setPendingDelete(p.id)}
+                    className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-zinc-400 hover:text-rose-600 hover:bg-rose-50"
                     aria-label={L('properties.delete')}
                   >
                     <Trash2 size={14} />
@@ -234,6 +242,18 @@ export default function CustomerProperties({
           </ul>
         )}
       </div>
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        locale={locale}
+        title={t(locale, 't10misc.confirm.deleteFieldTitle')}
+        message={L('properties.deleteConfirm')}
+        onConfirm={() => {
+          const id = pendingDelete;
+          setPendingDelete(null);
+          if (id) startTransition(() => remove(id));
+        }}
+        onClose={() => setPendingDelete(null)}
+      />
     </Card>
   );
 }

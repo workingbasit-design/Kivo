@@ -101,7 +101,7 @@ export default async function QuoteDetailPage({
     <div className="space-y-6 max-w-3xl">
       <Link
         href="/quotes"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-800"
+        className="min-h-[44px] inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-800"
       >
         <ArrowLeft size={14} /> Back to quotes
       </Link>
@@ -113,9 +113,9 @@ export default async function QuoteDetailPage({
       />
 
       <Card className="p-6 space-y-5">
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-zinc-100 text-zinc-500 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-zinc-100 text-zinc-500 flex items-center justify-center shrink-0">
               <User size={18} />
             </div>
             <div>
@@ -135,42 +135,34 @@ export default async function QuoteDetailPage({
               </div>
             </div>
           </div>
-          <p className="text-2xl font-bold text-zinc-900">{formatMoney(quote.total, currency, moneyLocale)}</p>
+          <p className="text-2xl font-bold text-zinc-900 sm:text-right">{formatMoney(quote.total, currency, moneyLocale)}</p>
         </div>
 
         {hasLineItems && (
           <div className="border-t border-zinc-100 pt-4">
             <h2 className="text-sm font-bold text-zinc-900 mb-1">{L('quoteItems.title')}</h2>
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-[11px] uppercase tracking-wider text-zinc-400 text-left">
-                  <th className="py-1.5 pr-2 font-bold">{L('quoteItems.desc')}</th>
-                  <th className="py-1.5 px-2 font-bold text-right">{L('quoteItems.qty')}</th>
-                  <th className="py-1.5 px-2 font-bold text-right">{L('quoteItems.rate')}</th>
-                  <th className="py-1.5 pl-2 font-bold text-right">{L('quoteItems.amount')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {quote.lineItems.map((item) => (
-                  <tr key={item.id} className="border-t border-zinc-50 text-zinc-700">
-                    <td className="py-2 pr-2">{item.description}</td>
-                    <td className="py-2 px-2 text-right">{item.qty}</td>
-                    <td className="py-2 px-2 text-right">
-                      {formatMoney(item.unitPrice, currency, moneyLocale)}
-                    </td>
-                    <td className="py-2 pl-2 text-right font-semibold text-zinc-900">
-                      {formatMoney(round2(item.qty * item.unitPrice), currency, moneyLocale)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <ul className="mt-2 space-y-2">
+              {quote.lineItems.map((item) => (
+                <li
+                  key={item.id}
+                  className="rounded-xl border border-zinc-100 bg-zinc-50/50 px-3 py-2.5"
+                >
+                  <p className="text-sm font-semibold text-zinc-900">{item.description}</p>
+                  <p className="text-xs text-zinc-500 mt-1">
+                    {item.qty} × {formatMoney(item.unitPrice, currency, moneyLocale)}
+                    <span className="font-bold text-zinc-800">
+                      {' '}· {formatMoney(round2(item.qty * item.unitPrice), currency, moneyLocale)}
+                    </span>
+                  </p>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
 
         <dl className="border-t border-zinc-100 pt-4 space-y-1.5 text-sm">
           <div className="flex justify-between text-zinc-600">
-            <dt>Subtotal</dt>
+            <dt>{L('t10money.subtotalLabel')}</dt>
             <dd className="font-semibold">{formatMoney(subtotal, currency, moneyLocale)}</dd>
           </div>
           {showDiscount && (
@@ -187,17 +179,17 @@ export default async function QuoteDetailPage({
               <dd className="font-semibold">{formatMoney(l.amount, currency, moneyLocale)}</dd>
             </div>
           ))}
-          <div className="flex justify-between text-base pt-1">
-            <dt className="font-bold text-zinc-900">Total</dt>
-            <dd className="font-bold text-zinc-900">{formatMoney(quote.total, currency, moneyLocale)}</dd>
+          <div className="flex justify-between items-center text-base bg-ink text-white rounded-xl px-4 py-3 -mx-1 mt-2">
+            <dt className="font-bold">{L('t10money.totalLabel')}</dt>
+            <dd className="font-bold">{formatMoney(quote.total, currency, moneyLocale)}</dd>
           </div>
         </dl>
 
         <div className="border-t border-zinc-100 pt-5 space-y-3">
-          <QuoteActions id={quote.id} status={quote.status} />
+          <QuoteActions id={quote.id} status={quote.status} locale={locale} />
           <Link
             href={`/quotes/${quote.id}/sign`}
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-700"
+            className="min-h-[44px] inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-700"
           >
             {L('esign.sendForSignature')}
           </Link>
@@ -250,6 +242,7 @@ export default async function QuoteDetailPage({
             locked: L('quotes.addons.locked'),
             errorInvalid: L('quotes.addons.errorInvalid'),
           }}
+          locale={locale}
         />
       </Card>
 

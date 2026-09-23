@@ -46,6 +46,10 @@ const fr: Dictionary = {
     onlineBooking: 'Réservation en ligne',
     imports: 'Importations',
     logout: 'Déconnexion',
+    more: 'Plus',
+    menu: 'Menu',
+    close: 'Fermer',
+    primary: 'Principal',
     sections: {
       work: 'Travail',
       money: 'Argent',

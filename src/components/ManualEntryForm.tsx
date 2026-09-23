@@ -4,6 +4,7 @@ import React, { useState, useTransition } from 'react';
 import { PlusCircle, AlertCircle } from 'lucide-react';
 import { createManualEntry } from '@/app/actions/timesheets';
 import { Field, inputClass, primaryBtnClass } from '@/components/ui';
+import { useResolvedT } from '@/hooks/useResolvedLocale';
 import { cn } from '@/lib/utils';
 
 /** Form to log a manual time entry. Admins pick any member; members are locked to self. */
@@ -21,6 +22,7 @@ export default function ManualEntryForm({
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
+  const { t } = useResolvedT();
 
   const submit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -51,13 +53,13 @@ export default function ManualEntryForm({
         className="flex items-center gap-2 text-sm font-bold text-zinc-900"
       >
         <PlusCircle size={16} className="text-ink" />
-        {open ? 'Hide manual entry' : 'Add manual entry'}
+        {open ? t('t10work.manualHide') : t('t10work.manualAdd')}
       </button>
 
       {open && (
         <form onSubmit={submit} className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
           {isAdmin && (
-            <Field label="Team member">
+            <Field label={t('t10work.manualMember')}>
               <select name="userId" required className={inputClass} defaultValue={selfId}>
                 {members.map((m) => (
                   <option key={m.id} value={m.id}>
@@ -67,15 +69,15 @@ export default function ManualEntryForm({
               </select>
             </Field>
           )}
-          <Field label="Start">
+          <Field label={t('t10work.manualStart')}>
             <input name="clockIn" type="datetime-local" required className={inputClass} />
           </Field>
-          <Field label="End">
+          <Field label={t('t10work.manualEnd')}>
             <input name="clockOut" type="datetime-local" required className={inputClass} />
           </Field>
-          <Field label="Job (optional)">
+          <Field label={t('t10work.manualJob')}>
             <select name="jobId" className={inputClass} defaultValue="">
-              <option value="">No job — general work</option>
+              <option value="">{t('t10work.manualNoJob')}</option>
               {jobs.map((j) => (
                 <option key={j.id} value={j.id}>
                   {j.title}
@@ -84,12 +86,12 @@ export default function ManualEntryForm({
             </select>
           </Field>
           <div className="sm:col-span-2">
-            <Field label="Notes (optional)">
+            <Field label={t('t10work.manualNotes')}>
               <input
                 name="notes"
                 type="text"
                 maxLength={500}
-                placeholder="e.g. Overtime — rewiring 2nd floor"
+                placeholder={t('t10work.manualNotesPh')}
                 className={inputClass}
               />
             </Field>
@@ -102,7 +104,7 @@ export default function ManualEntryForm({
           )}
           <div className="sm:col-span-2">
             <button type="submit" disabled={isPending} className={cn(primaryBtnClass)}>
-              {isPending ? 'Saving…' : 'Save entry'}
+              {isPending ? t('t10work.manualSaving') : t('t10work.manualSave')}
             </button>
           </div>
         </form>

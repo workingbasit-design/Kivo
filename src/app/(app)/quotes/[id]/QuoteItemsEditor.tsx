@@ -1,11 +1,33 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useEffect, useRef, useState } from 'react';
 import { Pencil } from 'lucide-react';
+import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import { Card, secondaryBtnClass, primaryBtnClass } from '@/components/ui';
 import LineItemsEditor from '@/components/LineItemsEditor';
 import { updateQuoteItems, type ActionResult } from '@/app/actions/quotes';
+
+/**
+ * Fires a toast exactly once per server-action result. Minimal inline
+ * replacement for the removed useActionToast helper.
+ */
+function useResultToast<T extends { ok?: boolean; error?: string }>(
+  state: T | undefined,
+  messages: { success?: string; error?: string }
+) {
+  const seen = useRef<T | undefined>(undefined);
+  useEffect(() => {
+    if (!state || seen.current === state) return;
+    seen.current = state;
+    if (state.ok && messages.success) {
+      toast.success(messages.success);
+    } else if (state.error) {
+      toast.error(messages.error ?? state.error);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
+}
 
 /**
  * Draft-only line-item editor on the quote detail page. Posts the new items
@@ -30,6 +52,10 @@ export default function QuoteItemsEditor({
   );
   const [open, setOpen] = useState(false);
 
+  useResultToast(state, {
+    success: t(locale, 't10money.quoteItemsSaved'),
+  });
+
   return (
     <Card className="p-6">
       {!open ? (
@@ -41,6 +67,7 @@ export default function QuoteItemsEditor({
           <input type="hidden" name="id" value={quoteId} />
           <h2 className="text-sm font-bold text-zinc-900">{t(locale, 'quoteItems.editItems')}</h2>
           <LineItemsEditor
+            locale={locale}
             initialItems={initial.items}
             initialDiscount={{
               type: initial.discountType,

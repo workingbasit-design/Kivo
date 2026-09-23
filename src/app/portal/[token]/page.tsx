@@ -141,17 +141,19 @@ export default async function CustomerPortalPage({
             ) : (
               <ul className="divide-y divide-zinc-100">
                 {jobs.map((j) => (
-                  <li key={j.id} className="flex items-center gap-3 px-5 py-3.5">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-zinc-900 truncate">{j.title}</p>
+                  <li key={j.id} className="px-5 py-3.5">
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="text-sm font-semibold text-zinc-900 flex-1 min-w-0">{j.title}</p>
+                      <span className="text-sm font-bold text-zinc-900 shrink-0">
+                        {formatMoney(j.price, currency, moneyLocale)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-3 mt-1.5">
                       <p className="text-xs text-zinc-500">
                         {formatDateShort(j.date, dateLocale)}{j.time ? ` · ${j.time}` : ''}
                       </p>
+                      <StatusBadge status={j.status} />
                     </div>
-                    <StatusBadge status={j.status} />
-                    <span className="text-sm font-bold text-zinc-900 shrink-0">
-                      {formatMoney(j.price, currency, moneyLocale)}
-                    </span>
                   </li>
                 ))}
               </ul>
@@ -169,15 +171,17 @@ export default async function CustomerPortalPage({
             ) : (
               <ul className="divide-y divide-zinc-100">
                 {quotes.map((q) => (
-                  <li key={q.id} className="flex items-center gap-3 px-5 py-3.5">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-zinc-900 truncate">{q.title}</p>
-                      <p className="text-xs text-zinc-500">{q.number}</p>
+                  <li key={q.id} className="px-5 py-3.5">
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="text-sm font-semibold text-zinc-900 flex-1 min-w-0">{q.title}</p>
+                      <span className="text-sm font-bold text-zinc-900 shrink-0">
+                        {formatMoney(q.total, currency, moneyLocale)}
+                      </span>
                     </div>
-                    <StatusBadge status={q.status} />
-                    <span className="text-sm font-bold text-zinc-900 shrink-0">
-                      {formatMoney(q.total, currency, moneyLocale)}
-                    </span>
+                    <div className="flex items-center justify-between gap-3 mt-1.5">
+                      <p className="text-xs text-zinc-500">{q.number}</p>
+                      <StatusBadge status={q.status} />
+                    </div>
                   </li>
                 ))}
               </ul>

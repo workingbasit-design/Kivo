@@ -4,6 +4,7 @@ import React, { useEffect, useState, useTransition } from 'react';
 import { Play, Square, AlertCircle, Timer } from 'lucide-react';
 import { clockIn, clockOut } from '@/app/actions/timesheets';
 import { primaryBtnClass, secondaryBtnClass, inputClass } from '@/components/ui';
+import { useResolvedT } from '@/hooks/useResolvedLocale';
 import { cn } from '@/lib/utils';
 
 export interface ActiveSession {
@@ -32,6 +33,7 @@ export default function ClockWidget({
   const [isPending, startTransition] = useTransition();
   const [jobId, setJobId] = useState('');
   const [now, setNow] = useState(() => Date.now());
+  const { t, locale } = useResolvedT();
 
   useEffect(() => {
     if (!activeSession) return;
@@ -67,7 +69,7 @@ export default function ClockWidget({
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
               </span>
-              Clocked in
+              {t('t10work.clockedIn')}
               {activeSession.jobTitle && (
                 <span className="normal-case tracking-normal font-semibold text-white/80 truncate">
                   · {activeSession.jobTitle}
@@ -78,7 +80,11 @@ export default function ClockWidget({
               {formatElapsed(elapsed)}
             </p>
             <p className="text-xs text-white/50 mt-1">
-              since {new Date(activeSession.clockInISO).toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' })}
+              {t('t10work.clockSince')}{' '}
+              {new Date(activeSession.clockInISO).toLocaleTimeString(
+                locale === 'fr' ? 'fr-CA' : 'en-CA',
+                { hour: '2-digit', minute: '2-digit' }
+              )}
             </p>
           </div>
           <button
@@ -90,7 +96,7 @@ export default function ClockWidget({
             )}
           >
             <Square size={14} />
-            {isPending ? 'Clocking out…' : 'Clock out'}
+            {isPending ? t('t10work.clockingOut') : t('t10work.clockOut')}
           </button>
         </div>
         {error && (
@@ -110,8 +116,8 @@ export default function ClockWidget({
           <Timer size={16} />
         </div>
         <div>
-          <h2 className="text-sm font-bold text-zinc-900">Track your time</h2>
-          <p className="text-xs text-zinc-500">Clock in when you start a job</p>
+          <h2 className="text-sm font-bold text-zinc-900">{t('t10work.clockTitle')}</h2>
+          <p className="text-xs text-zinc-500">{t('t10work.clockSubtitle')}</p>
         </div>
       </div>
       <div className="flex flex-col sm:flex-row gap-2">
@@ -119,9 +125,9 @@ export default function ClockWidget({
           value={jobId}
           onChange={(e) => setJobId(e.target.value)}
           className={cn(inputClass, 'sm:max-w-xs')}
-          aria-label="Job (optional)"
+          aria-label={t('t10work.clockJobAria')}
         >
-          <option value="">No job — general work</option>
+          <option value="">{t('t10work.clockNoJob')}</option>
           {jobs.map((j) => (
             <option key={j.id} value={j.id}>
               {j.title}
@@ -130,7 +136,7 @@ export default function ClockWidget({
         </select>
         <button onClick={runClockIn} disabled={isPending} className={cn(primaryBtnClass, '!py-2.5')}>
           <Play size={14} />
-          {isPending ? 'Clocking in…' : 'Clock in'}
+          {isPending ? t('t10work.clockingIn') : t('t10work.clockIn')}
         </button>
       </div>
       {error && (

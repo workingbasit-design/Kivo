@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useActionState, useState } from 'react';
+import React, { useActionState, useEffect, useRef, useState } from 'react';
 import { AlertCircle, Save } from 'lucide-react';
+import { toast } from 'sonner';
 import { Field, inputClass, primaryBtnClass } from '@/components/ui';
 import { toISODateLocal } from '@/lib/utils';
 import { currencySymbol, formatMoney } from '@/lib/money';
 import { RECURRING_FREQUENCIES } from '@/lib/validations';
-import { frequencyLabel } from '@/lib/recurring';
+import { t, type Locale } from '@/lib/i18n';
 import type { RecurringActionResult } from '@/app/actions/recurring';
 
 export interface RecurringFormCustomer {
@@ -32,6 +33,17 @@ export interface RecurringFormInitial {
   notes?: string | null;
 }
 
+/** Resolve the app locale in a client component: an explicit prop wins,
+ *  otherwise the `kivo-locale` cookie (LanguageToggle writes it). */
+function resolveLocale(prop?: Locale): Locale {
+  if (prop) return prop;
+  if (typeof document !== 'undefined') {
+    const m = document.cookie.match(/(?:^|;\s*)kivo-locale=(en|fr)/);
+    if (m) return m[1] as Locale;
+  }
+  return 'en';
+}
+
 /**
  * Shared create/edit form for a recurring job plan. Pick a customer, a
  * service from the price book (fills the price), how often it repeats,
@@ -44,6 +56,7 @@ export default function RecurringForm({
   action,
   submitLabel,
   currency,
+  locale: localeProp,
 }: {
   customers: RecurringFormCustomer[];
   services: RecurringFormService[];
@@ -51,11 +64,20 @@ export default function RecurringForm({
   action: (_prev: RecurringActionResult, formData: FormData) => Promise<RecurringActionResult>;
   submitLabel: string;
   currency?: string;
+  /** Optional — falls back to the `kivo-locale` cookie so pages that don't
+   *  pass it still render in the user's language. */
+  locale?: Locale;
 }) {
   const [state, formAction, isPending] = useActionState(action, {});
+  const [locale] = useState<Locale>(() => resolveLocale(localeProp));
+  const toastedFor = useRef<RecurringActionResult | null>(null);
+  const T = (k: string) => t(locale, `t10work.${k}`);
+  const jobsL = (k: string) => t(locale, `jobs.${k}`);
   const [price, setPrice] = useState<string>(initial?.price != null ? String(initial.price) : '');
 
   const todayISO = toISODateLocal(new Date());
+  const freqLabel = (f: string) =>
+    f === 'WEEKLY' ? T('freqWeekly') : f === 'BIWEEKLY' ? T('freqBiweekly') : f === 'MONTHLY' ? T('freqMonthly') : f;
 
   const handleServicePick = (serviceId: string) => {
     if (!serviceId) return;
@@ -63,23 +85,31 @@ export default function RecurringForm({
     if (svc) setPrice(String(svc.price));
   };
 
+  useEffect(() => {
+    if (state && toastedFor.current !== state) {
+      toastedFor.current = state;
+      if (state.ok) toast.success(t(locale, 't10work.recurFormSaved'));
+      else if (state.error) toast.error(state.error);
+    }
+  }, [state, locale]);
+
   return (
     <form action={formAction} className="space-y-5">
       {initial?.id && <input type="hidden" name="id" value={initial.id} />}
 
-      <Field label="Plan title">
+      <Field label={T('recurFormTitleLabel')}>
         <input
           name="title"
           required
           autoFocus
           defaultValue={initial?.title ?? ''}
-          placeholder="e.g. Monthly AC servicing, Weekly home cleaning"
+          placeholder={T('recurFormTitlePlaceholder')}
           maxLength={200}
           className={inputClass}
         />
       </Field>
 
-      <Field label="Customer">
+      <Field label={jobsL('customer')}>
         <select
           name="customerId"
           required
@@ -95,7 +125,7 @@ export default function RecurringForm({
       </Field>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Field label="Frequency" hint="How often a job is created from this plan.">
+        <Field label={T('recurFormFrequency')} hint={T('recurFormFrequencyHint')}>
           <select
             name="frequency"
             required
@@ -104,15 +134,15 @@ export default function RecurringForm({
           >
             {RECURRING_FREQUENCIES.map((f) => (
               <option key={f} value={f}>
-                {frequencyLabel(f)}
+                {freqLabel(f)}
               </option>
             ))}
           </select>
         </Field>
 
         <Field
-          label={initial?.id ? 'Next run date' : 'First run date'}
-          hint="The next job is due on this date."
+          label={initial?.id ? T('recurFormNextRun') : T('recurFormFirstRun')}
+          hint={T('recurFormRunHint')}
         >
           <input
             type="date"
@@ -125,13 +155,13 @@ export default function RecurringForm({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Field label="Service (from price book)" hint="Picking one fills the price below.">
+        <Field label={T('recurFormService')} hint={T('recurFormServiceHint')}>
           <select
             onChange={(e) => handleServicePick(e.target.value)}
             defaultValue=""
             className={inputClass}
           >
-            <option value="">— pick a service —</option>
+            <option value="">{T('recurFormServicePick')}</option>
             {services.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name} — {formatMoney(s.price, currency)}
@@ -140,7 +170,7 @@ export default function RecurringForm({
           </select>
         </Field>
 
-        <Field label={`Price (${currencySymbol(currency)})`}>
+        <Field label={T('recurFormPrice').replace('{symbol}', currencySymbol(currency))}>
           <input
             type="number"
             name="price"
@@ -149,43 +179,43 @@ export default function RecurringForm({
             step="1"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
-            placeholder="e.g. 1499"
+            placeholder={T('recurFormPricePlaceholder')}
             className={inputClass}
           />
         </Field>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Field label="Time">
+        <Field label={jobsL('time')}>
           <input
             type="text"
             name="time"
             defaultValue={initial?.time ?? ''}
-            placeholder="e.g. 10:00 AM"
+            placeholder="10:00 AM"
             maxLength={30}
             className={inputClass}
           />
         </Field>
 
-        <Field label="Address">
+        <Field label={jobsL('address')}>
           <input
             type="text"
             name="address"
             defaultValue={initial?.address ?? ''}
-            placeholder="Job location"
+            placeholder={T('recurFormAddressPlaceholder')}
             maxLength={500}
             className={inputClass}
           />
         </Field>
       </div>
 
-      <Field label="Notes (optional)">
+      <Field label={`${jobsL('notes')} (${T('formOptional')})`}>
         <textarea
           name="notes"
           defaultValue={initial?.notes ?? ''}
           rows={3}
           maxLength={2000}
-          placeholder="Anything the technician should know each visit…"
+          placeholder={T('recurFormNotesPlaceholder')}
           className={inputClass}
         />
       </Field>
@@ -199,7 +229,7 @@ export default function RecurringForm({
 
       <button type="submit" disabled={isPending} className={primaryBtnClass}>
         <Save size={14} />
-        {isPending ? 'Saving…' : submitLabel}
+        {isPending ? t(locale, 'common.saving') : submitLabel}
       </button>
     </form>
   );

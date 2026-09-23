@@ -93,13 +93,19 @@ export default async function PublicBookingPage({
           currency={business.currency}
           hoursSummary={formatWorkingHoursSummary(business.workingHours)}
           strings={slotStrings}
+          locale={locale}
         />
 
         {(business.phone || business.address) && (
           <div className="text-center text-xs text-zinc-500 space-y-1 pb-8">
             {business.phone && (
-              <p className="inline-flex items-center gap-1.5">
-                <Phone size={12} /> {business.phone}
+              <p>
+                <a
+                  href={`tel:${business.phone.replace(/\s/g, '')}`}
+                  className="min-h-[44px] inline-flex items-center gap-1.5 font-semibold text-ink"
+                >
+                  <Phone size={12} /> {business.phone}
+                </a>
               </p>
             )}
             {business.address && (

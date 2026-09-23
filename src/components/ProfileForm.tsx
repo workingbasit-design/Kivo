@@ -1,7 +1,8 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useEffect } from 'react';
 import { AlertCircle, CheckCircle2, UserRound } from 'lucide-react';
+import { toast } from 'sonner';
 import { updateProfile } from '@/app/actions/auth';
 import { t, type Locale } from '@/lib/i18n';
 
@@ -17,6 +18,11 @@ export default function ProfileForm({
   initial: { name: string; email: string; phone: string; googleLinked: boolean };
 }) {
   const [state, formAction, isPending] = useActionState(updateProfile, {});
+
+  useEffect(() => {
+    if (state?.ok) toast.success(t(locale, 'googleAuth.profileSaved'));
+    else if (state?.error) toast.error(state.error);
+  }, [state, locale]);
 
   return (
     <form action={formAction} className="space-y-4">
@@ -83,7 +89,7 @@ export default function ProfileForm({
       <button
         type="submit"
         disabled={isPending}
-        className="bg-ink hover:bg-graphite disabled:opacity-60 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors"
+        className="min-h-[44px] inline-flex items-center justify-center w-full sm:w-auto bg-ink hover:bg-graphite disabled:opacity-60 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors"
       >
         {isPending ? '…' : t(locale, 'googleAuth.save')}
       </button>

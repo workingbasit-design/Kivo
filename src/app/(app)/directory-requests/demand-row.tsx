@@ -1,7 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { Check, X } from 'lucide-react';
+import { toast } from 'sonner';
 import { updateDirectoryRequestStatus } from '@/app/actions/directory';
+import { useResolvedT } from '@/hooks/useResolvedLocale';
 
 type DemandRequest = {
   id: string;
@@ -22,58 +25,73 @@ const STATUS_STYLE: Record<string, string> = {
 };
 
 export default function DemandRow({ request }: { request: DemandRequest }) {
+  const { t } = useResolvedT();
   const [status, setStatus] = useState(request.status);
   const [busy, setBusy] = useState(false);
 
-  async function set(next: 'FULFILLED' | 'DISMISSED') {
+  async function setStatusTo(next: 'FULFILLED' | 'DISMISSED') {
     setBusy(true);
-    const res = await updateDirectoryRequestStatus(request.id, next);
-    setBusy(false);
-    if (res.ok) setStatus(next);
+    try {
+      const res = await updateDirectoryRequestStatus(request.id, next);
+      if (res.ok) {
+        setStatus(next);
+        toast.success(
+          t(next === 'FULFILLED' ? 't10misc.demand.fulfilledToast' : 't10misc.demand.dismissedToast')
+        );
+      } else {
+        toast.error(t('t10misc.misc.draftError'));
+      }
+    } catch {
+      toast.error(t('t10misc.misc.draftError'));
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
-    <div className="p-4 flex flex-wrap items-start justify-between gap-3">
-      <div className="min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <p className="text-sm font-bold text-zinc-900">{request.serviceNeed}</p>
-          <span
-            className={`text-[11px] font-bold border rounded-full px-2 py-0.5 ${STATUS_STYLE[status] ?? STATUS_STYLE.OPEN}`}
-          >
-            {status}
-          </span>
+    <div className="p-4 sm:p-5">
+      <div className="flex flex-col gap-3">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="text-sm font-bold text-zinc-900">{request.serviceNeed}</p>
+            <span
+              className={`text-[11px] font-bold border rounded-full px-2 py-0.5 ${STATUS_STYLE[status] ?? STATUS_STYLE.OPEN}`}
+            >
+              {status}
+            </span>
+          </div>
+          <p className="text-xs text-zinc-600 mt-1">
+            {request.city}
+            {request.area ? ` (${request.area})` : ''}
+            {' · '}
+            {request.name} · {request.phone}
+          </p>
+          {request.details && (
+            <p className="text-xs text-zinc-500 mt-1 whitespace-pre-wrap">{request.details}</p>
+          )}
+          <p className="text-[11px] text-zinc-400 mt-1">
+            {new Date(request.createdAt).toLocaleString()}
+          </p>
         </div>
-        <p className="text-xs text-zinc-600 mt-1">
-          {request.city}
-          {request.area ? ` (${request.area})` : ''}
-          {' · '}
-          {request.name} · {request.phone}
-        </p>
-        {request.details && (
-          <p className="text-xs text-zinc-500 mt-1 whitespace-pre-wrap">{request.details}</p>
+        {status === 'OPEN' && (
+          <div className="flex flex-col sm:flex-row gap-2">
+            <button
+              onClick={() => setStatusTo('FULFILLED')}
+              disabled={busy}
+              className="min-h-[44px] inline-flex items-center justify-center gap-1.5 text-xs font-bold px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-60"
+            >
+              <Check size={14} /> {busy ? '…' : t('t10misc.demand.markFulfilled')}
+            </button>
+            <button
+              onClick={() => setStatusTo('DISMISSED')}
+              disabled={busy}
+              className="min-h-[44px] inline-flex items-center justify-center gap-1.5 text-xs font-bold px-4 rounded-xl border border-zinc-200 hover:bg-zinc-50 text-zinc-600 disabled:opacity-60"
+            >
+              <X size={14} /> {t('t10misc.demand.dismiss')}
+            </button>
+          </div>
         )}
-        <p className="text-[11px] text-zinc-400 mt-1">
-          {new Date(request.createdAt).toLocaleString()}
-        </p>
       </div>
-      {status === 'OPEN' && (
-        <div className="flex gap-2 shrink-0">
-          <button
-            onClick={() => set('FULFILLED')}
-            disabled={busy}
-            className="text-xs font-bold px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-60"
-          >
-            Mark fulfilled
-          </button>
-          <button
-            onClick={() => set('DISMISSED')}
-            disabled={busy}
-            className="text-xs font-bold px-3 py-1.5 rounded-lg border border-zinc-200 hover:bg-zinc-50 text-zinc-600 disabled:opacity-60"
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
     </div>
   );
 }

@@ -1,9 +1,10 @@
 import Link from 'next/link';
+import type { CSSProperties } from 'react';
 import { redirect } from 'next/navigation';
 import { Plus, ClipboardList } from 'lucide-react';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { PageHeader, Card, StatusBadge, EmptyState } from '@/components/ui';
+import { PageHeader, Card, StatusBadge, EmptyState, primaryBtnClass } from '@/components/ui';
 import { formatDateShort, cn } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import { QUOTE_STATUSES } from '@/lib/validations';
@@ -46,10 +47,7 @@ export default async function QuotesPage({
         title="Quotes"
         subtitle={`${quotes.length} quote${quotes.length === 1 ? '' : 's'} · ${formatMoney(pipelineTotal, business?.currency)} in open pipeline`}
         actions={
-          <Link
-            href="/quotes/new"
-            className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
-          >
+          <Link href="/quotes/new" className={primaryBtnClass}>
             <Plus size={14} /> New quote
           </Link>
         }
@@ -60,8 +58,9 @@ export default async function QuotesPage({
           <Link
             key={f}
             href={f === 'ALL' ? '/quotes' : `/quotes?status=${f}`}
+            aria-current={activeFilter === f ? 'page' : undefined}
             className={cn(
-              'px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-colors',
+              'min-h-[44px] inline-flex items-center px-4 rounded-full text-xs font-semibold border transition-colors',
               activeFilter === f
                 ? 'bg-ink text-white border-ink'
                 : 'bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300'
@@ -79,33 +78,34 @@ export default async function QuotesPage({
             title="No quotes yet"
             description="Send your first quote in under a minute — line items in, a clean total out."
             action={
-              <Link
-                href="/quotes/new"
-                className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2"
-              >
+              <Link href="/quotes/new" className={primaryBtnClass}>
                 <Plus size={14} /> New quote
               </Link>
             }
           />
         </Card>
       ) : (
-        <Card>
+        <Card className="!p-0 overflow-hidden">
           <ul className="divide-y divide-zinc-100">
-            {quotes.map((q) => (
-              <li key={q.id}>
+            {quotes.map((q, i) => (
+              <li
+                key={q.id}
+                className="ej-row-in"
+                style={{ '--row-delay': `${Math.min(i, 12) * 35}ms` } as CSSProperties}
+              >
                 <Link
                   href={`/quotes/${q.id}`}
-                  className="flex items-center justify-between gap-4 px-5 py-4 hover:bg-zinc-50 transition-colors"
+                  className="flex items-center justify-between gap-4 px-4 sm:px-5 py-4 hover:bg-zinc-50 active:bg-zinc-100 transition-colors min-h-[76px]"
                 >
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-zinc-900 truncate">
                       {q.number} · {q.title}
                     </p>
-                    <p className="text-xs text-zinc-500 mt-0.5">
+                    <p className="text-xs text-zinc-500 mt-1">
                       {q.customer.name} · {formatDateShort(q.createdAt)}
                     </p>
                   </div>
-                  <div className="flex items-center gap-3 shrink-0">
+                  <div className="flex flex-col items-end gap-1.5 shrink-0">
                     <span className="text-sm font-bold text-zinc-900">{formatMoney(q.total, business?.currency)}</span>
                     <StatusBadge status={q.status} />
                   </div>

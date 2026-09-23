@@ -1,11 +1,33 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useEffect, useRef, useState } from 'react';
 import { HandCoins, Plus } from 'lucide-react';
+import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
-import { Card, Field, inputClass, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
+import { Card, Field, inputClass, primaryBtnClass, secondaryBtnClass, ProgressBar } from '@/components/ui';
 import { formatMoney } from '@/lib/money';
 import { setQuoteDepositAction, recordManualQuoteDepositAction } from '@/app/actions/stripe';
+
+/**
+ * Fires a toast exactly once per server-action result. Minimal inline
+ * replacement for the removed useActionToast helper.
+ */
+function useResultToast<T extends { ok?: boolean; error?: string }>(
+  state: T | undefined,
+  messages: { success?: string; error?: string }
+) {
+  const seen = useRef<T | undefined>(undefined);
+  useEffect(() => {
+    if (!state || seen.current === state) return;
+    seen.current = state;
+    if (state.ok && messages.success) {
+      toast.success(messages.success);
+    } else if (state.error) {
+      toast.error(messages.error ?? state.error);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
+}
 
 type Deposit = {
   id: string;
@@ -36,6 +58,17 @@ export default function QuoteDepositCard({
   const [recState, recAction] = useActionState(recordManualQuoteDepositAction, {});
   const [showRecord, setShowRecord] = useState(false);
 
+  useResultToast(amtState, {
+    success: t(locale, 't10money.depositSaved'),
+  });
+  useResultToast(recState, {
+    success: t(locale, 't10money.depositRecorded'),
+  });
+
+  useEffect(() => {
+    if (recState?.ok) setShowRecord(false);
+  }, [recState]);
+
   const collected = deposits
     .filter((d) => d.status === 'COMPLETED')
     .reduce((s, d) => s + d.amount, 0);
@@ -52,6 +85,7 @@ export default function QuoteDepositCard({
 
       {target > 0 && (
         <div className="mb-4 rounded-xl bg-zinc-50 border border-zinc-200/70 px-3 py-2.5 text-xs">
+          <ProgressBar value={collected} max={target} className="mb-2.5" />
           <div className="flex justify-between font-semibold text-zinc-700">
             <span>{t(locale, 'payments.depositRequired')}</span>
             <span>{formatMoney(target, 'CAD', locale)}</span>

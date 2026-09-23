@@ -9,6 +9,7 @@ import {
   type MarketingResult,
 } from '@/app/actions/marketing';
 import { renderTemplate } from '@/lib/marketing';
+import { t, type Locale } from '@/lib/i18n';
 import CopyButton from '@/components/CopyButton';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import { primaryBtnClass, secondaryBtnClass } from '@/components/ui';
@@ -18,12 +19,15 @@ export default function CampaignDetailClient({
   recipients,
   businessName,
   regionCode,
+  locale,
 }: {
   campaign: { id: string; name: string; subject: string; body: string; status: string };
   recipients: { id: string; name: string; phone: string | null }[];
   businessName: string;
   regionCode?: string | null;
+  locale: Locale;
 }) {
+  const tr = (path: string) => t(locale, path);
   const router = useRouter();
   const [advanceState, advanceAction, advancePending] = useActionState<MarketingResult, FormData>(
     async () => advanceCampaignStatus(campaign.id),
@@ -42,7 +46,7 @@ export default function CampaignDetailClient({
       router.push('/marketing');
     } else {
       setDeletePending(false);
-      setDeleteError(res?.error ?? 'Could not delete this campaign.');
+      setDeleteError(res?.error ?? t(locale, 't10misc.marketing.deleteFailed'));
     }
   }
 
@@ -50,9 +54,9 @@ export default function CampaignDetailClient({
 
   const nextLabel =
     campaign.status === 'DRAFT'
-      ? 'Queue for manual sending'
+      ? tr('t10misc.marketing.queueBtn')
       : campaign.status === 'QUEUED'
-        ? 'Mark as sent'
+        ? tr('t10misc.marketing.markSentBtn')
         : null;
 
   const visible = expanded ? recipients : recipients.slice(0, 10);
@@ -69,9 +73,7 @@ export default function CampaignDetailClient({
         <div className="flex items-start gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium rounded-xl px-3 py-2.5">
           <CheckCircle2 size={14} className="mt-0.5 shrink-0" />
           <span>
-            {campaign.status === 'DRAFT'
-              ? 'Ready for manual sending. Copy each message below and send it yourself via WhatsApp or SMS.'
-              : 'Marked as sent.'}
+            {campaign.status === 'DRAFT' ? tr('t10misc.marketing.queuedNotice') : tr('t10misc.marketing.sentNotice')}
           </span>
         </div>
       )}
@@ -81,7 +83,7 @@ export default function CampaignDetailClient({
           <form action={advanceAction}>
             <button type="submit" disabled={advancePending} className={primaryBtnClass}>
               <Send size={13} />
-              {advancePending ? 'Saving…' : nextLabel}
+              {advancePending ? tr('t10misc.marketing.savingBtn') : nextLabel}
             </button>
           </form>
         )}
@@ -91,34 +93,34 @@ export default function CampaignDetailClient({
             onClick={() => router.push(`/marketing/${campaign.id}/edit`)}
             className={secondaryBtnClass}
           >
-            <Pencil size={13} /> Edit
+            <Pencil size={13} /> {tr('t10misc.marketing.editBtn')}
           </button>
         )}
         {!confirmingDelete ? (
           <button
             type="button"
             onClick={() => setConfirmingDelete(true)}
-            className="ml-auto text-xs font-semibold text-rose-600 hover:text-rose-700 inline-flex items-center gap-1.5"
+            className="ml-auto text-xs font-semibold text-rose-600 hover:text-rose-700 inline-flex items-center gap-1.5 min-h-[44px] px-2 -mr-2"
           >
-            <Trash2 size={13} /> Delete campaign
+            <Trash2 size={13} /> {tr('t10misc.marketing.deleteCampaign')}
           </button>
         ) : (
           <div className="ml-auto flex items-center gap-2 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2.5">
-            <span className="text-xs text-rose-700 font-medium">Delete this campaign?</span>
+            <span className="text-xs text-rose-700 font-medium">{tr('t10misc.marketing.deletePrompt')}</span>
             <button
               type="button"
               onClick={handleDelete}
               disabled={deletePending}
-              className="text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-60 px-3 py-1.5 rounded-lg transition-colors"
+              className="text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-60 px-3 min-h-[44px] inline-flex items-center rounded-lg transition-colors"
             >
-              {deletePending ? 'Deleting…' : 'Yes, delete'}
+              {deletePending ? tr('t10misc.marketing.deletingBtn') : tr('t10misc.marketing.yesDelete')}
             </button>
             <button
               type="button"
               onClick={() => setConfirmingDelete(false)}
-              className="text-xs font-semibold text-zinc-600 hover:text-zinc-800 px-2 py-1.5"
+              className="text-xs font-semibold text-zinc-600 hover:text-zinc-800 px-3 min-h-[44px] inline-flex items-center"
             >
-              Keep
+              {tr('t10misc.marketing.keepBtn')}
             </button>
           </div>
         )}
@@ -126,15 +128,15 @@ export default function CampaignDetailClient({
 
       <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3">
         <p className="text-xs text-amber-800 font-medium">
-          EveryJob doesn&apos;t send messages itself — tap Send via WhatsApp on a
-          message, or copy it and send it via WhatsApp or SMS yourself.{' '}
-          {recipients.length} recipient{recipients.length === 1 ? '' : 's'}.
+          {tr('t10misc.marketing.manualNotice')
+            .replace('{count}', String(recipients.length))
+            .replace('{s}', recipients.length === 1 ? '' : 's')}
         </p>
       </div>
 
       {recipients.length === 0 ? (
         <p className="text-sm text-zinc-500">
-          No recipients match this campaign&apos;s audience right now.
+          {tr('t10misc.marketing.noRecipients')}
         </p>
       ) : (
         <div className="space-y-3">
@@ -155,7 +157,7 @@ export default function CampaignDetailClient({
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <WhatsAppButton phone={r.phone} message={message} regionCode={regionCode} />
-                    <CopyButton text={message} label="Copy message" />
+                    <CopyButton text={message} label={tr('t10misc.marketing.copyMessage')} />
                   </div>
                 </div>
                 <p className="text-xs text-zinc-600 whitespace-pre-wrap bg-zinc-50 rounded-xl p-3 border border-zinc-100">
@@ -168,9 +170,11 @@ export default function CampaignDetailClient({
             <button
               type="button"
               onClick={() => setExpanded(!expanded)}
-              className="text-xs font-semibold text-ink hover:text-graphite"
+              className="text-xs font-semibold text-ink hover:text-graphite min-h-[44px] inline-flex items-center px-2 -ml-2"
             >
-              {expanded ? 'Show fewer' : `Show all ${recipients.length} recipients`}
+              {expanded
+                ? tr('t10misc.marketing.showFewer')
+                : tr('t10misc.marketing.showAll').replace('{count}', String(recipients.length))}
             </button>
           )}
         </div>

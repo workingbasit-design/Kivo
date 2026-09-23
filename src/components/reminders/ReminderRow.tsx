@@ -26,7 +26,7 @@ export interface ReminderUiStrings {
 }
 
 const sendBtnClass =
-  'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border bg-white border-smoke text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900';
+  'inline-flex items-center gap-1.5 min-h-[44px] px-3 rounded-lg text-xs font-semibold transition-colors border bg-white border-smoke text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900';
 
 export default function ReminderRow({
   kind,

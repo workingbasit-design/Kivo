@@ -4,11 +4,15 @@ import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { PageHeader } from '@/components/ui';
 import ReviewRequestsClient from '@/components/ReviewRequestsClient';
+import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
 
 export const metadata = { title: 'Review requests | EveryJob' };
 
 export default async function ReviewRequestsPage() {
   const { businessId } = await requireAuth();
+  const locale = await getLocale();
+  const tr = (path: string) => t(locale, path);
 
   const business = await prisma.business.findUnique({
     where: { id: businessId },
@@ -60,16 +64,17 @@ export default async function ReviewRequestsPage() {
         href="/marketing"
         className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-800"
       >
-        <ArrowLeft size={14} /> Back to marketing
+        <ArrowLeft size={14} /> {tr('t10misc.marketing.backToMarketing')}
       </Link>
       <PageHeader
-        title="Review requests"
-        subtitle="Ask happy customers for reviews. Copy a message and send it via WhatsApp — EveryJob never sends anything itself."
+        title={tr('t10misc.marketing.reviewsTitle')}
+        subtitle={tr('t10misc.marketing.reviewsSubtitle')}
       />
       <ReviewRequestsClient
         businessId={businessId}
         businessName={business?.name ?? 'our business'}
         rows={rows}
+        locale={locale}
       />
     </div>
   );

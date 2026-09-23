@@ -2,9 +2,12 @@
 
 import React, { useState, useTransition } from 'react';
 import Link from 'next/link';
-import { Clock, Plus, Search, Tag, Trash2, X, ListPlus, Briefcase } from 'lucide-react';
+import { Clock, Plus, Search, Tag, Trash2, ListPlus, Briefcase } from 'lucide-react';
+import { toast } from 'sonner';
 import { createService, deleteService, seedDefaultServices } from '@/app/actions/services';
 import { currencySymbol, formatMoney } from '@/lib/money';
+import { t, type Locale } from '@/lib/i18n';
+import { Dialog, Field, inputClass, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
 import ConfirmDialog from '@/components/ConfirmDialog';
 
 type Service = {
@@ -15,24 +18,18 @@ type Service = {
   description: string | null;
 };
 
-const fr = {
-  duration: 'Durée (min)',
-  durationHint: 'Optionnel — p. ex. 60',
-  description: 'Description',
-  descriptionHint: 'Optionnel — courte description du service',
-  useInJob: 'Utiliser dans une tâche',
-};
+export default function PriceBookClient({
+  initialServices,
+  currency,
+  locale,
+}: {
+  initialServices: Service[];
+  currency?: string;
+  locale?: Locale;
+}) {
+  const loc: Locale = locale ?? 'en';
+  const tr = (path: string) => t(loc, path);
 
-const en = {
-  duration: 'Duration (min)',
-  durationHint: 'Optional — e.g. 60',
-  description: 'Description',
-  descriptionHint: 'Optional — short plain-language description',
-  useInJob: 'Use in job',
-};
-
-export default function PriceBookClient({ initialServices, currency, locale }: { initialServices: Service[]; currency?: string; locale?: 'en' | 'fr' }) {
-  const str = locale === 'fr' ? fr : en;
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [name, setName] = useState('');
@@ -43,9 +40,10 @@ export default function PriceBookClient({ initialServices, currency, locale }: {
   const [isPending, startTransition] = useTransition();
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
-  const filteredServices = initialServices.filter(s => 
-    s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (s.description ?? '').toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredServices = initialServices.filter(
+    (s) =>
+      s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (s.description ?? '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleAddService = (e: React.FormEvent) => {
@@ -63,6 +61,7 @@ export default function PriceBookClient({ initialServices, currency, locale }: {
       const res = await createService(fd);
       if (res.error) {
         setError(res.error);
+        toast.error(res.error);
         return;
       }
       setName('');
@@ -70,6 +69,7 @@ export default function PriceBookClient({ initialServices, currency, locale }: {
       setDurationMin('');
       setDescription('');
       setIsModalOpen(false);
+      toast.success(tr('t10misc.pricebook.added'));
     });
   };
 
@@ -80,7 +80,12 @@ export default function PriceBookClient({ initialServices, currency, locale }: {
     startTransition(async () => {
       setError(null);
       const res = await deleteService(id);
-      if (res.error) setError(res.error);
+      if (res.error) {
+        setError(res.error);
+        toast.error(res.error);
+      } else {
+        toast.success(tr('t10misc.pricebook.removed'));
+      }
     });
   };
 
@@ -88,7 +93,12 @@ export default function PriceBookClient({ initialServices, currency, locale }: {
     startTransition(async () => {
       setError(null);
       const res = await seedDefaultServices();
-      if (res.error) setError(res.error);
+      if (res.error) {
+        setError(res.error);
+        toast.error(res.error);
+      } else {
+        toast.success(tr('t10misc.pricebook.added'));
+      }
     });
   };
 
@@ -97,26 +107,28 @@ export default function PriceBookClient({ initialServices, currency, locale }: {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-zinc-200/60 shadow-sm">
         <div>
-          <h1 className="text-3xl font-bold text-zinc-900 tracking-tight">Price Book</h1>
-          <p className="text-zinc-500 mt-1">Manage your standard service offerings and pricing</p>
+          <h1 className="text-3xl font-bold text-zinc-900 tracking-tight">
+            {tr('t10misc.pricebook.title')}
+          </h1>
+          <p className="text-zinc-500 mt-1">{tr('t10misc.pricebook.subtitle')}</p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {initialServices.length === 0 && (
-            <button 
+            <button
               onClick={handleSeed}
               disabled={isPending}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors flex items-center gap-2 shadow-sm"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 min-h-[44px] rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm disabled:opacity-60"
             >
-              <ListPlus size={14} /> Add Standard Services
+              <ListPlus size={14} /> {tr('t10misc.pricebook.addStandard')}
             </button>
           )}
 
-          <button 
+          <button
             onClick={() => setIsModalOpen(true)}
-            className="bg-ink hover:bg-graphite text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition-colors flex items-center gap-2 shadow-sm cursor-pointer"
+            className="bg-ink hover:bg-graphite text-white px-5 min-h-[44px] rounded-xl font-semibold text-sm transition-colors inline-flex items-center gap-2 shadow-sm cursor-pointer"
           >
-            <Plus size={16} /> Add Service
+            <Plus size={16} /> {tr('t10misc.pricebook.addService')}
           </button>
         </div>
       </div>
@@ -124,48 +136,53 @@ export default function PriceBookClient({ initialServices, currency, locale }: {
       {/* Main Container */}
       {error && (
         <div className="bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-4 py-3 flex items-start gap-2">
-          <span className="font-bold">Couldn't save:</span>
+          <span className="font-bold">{tr('t10misc.pricebook.errorPrefix')}</span>
           <span>{error}</span>
           <button
             type="button"
             onClick={() => setError(null)}
-            className="ml-auto text-rose-400 hover:text-rose-600 font-bold"
-            aria-label="Dismiss error"
+            className="ml-auto text-rose-400 hover:text-rose-600 font-bold min-w-[44px] min-h-[44px] inline-flex items-center justify-center -mr-2 -my-2"
+            aria-label={tr('t10misc.pricebook.dismissError')}
           >
             ✕
           </button>
         </div>
       )}
       <div className="bg-white rounded-2xl shadow-sm border border-zinc-200/60 p-6">
-        
         {/* Search Bar */}
         <div className="relative max-w-md mb-6">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={16} />
-          <input 
-            type="text" 
-            placeholder="Search price book by name..." 
+          <input
+            type="text"
+            placeholder={tr('t10misc.pricebook.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink"
+            aria-label={tr('t10misc.pricebook.searchPlaceholder')}
+            className="w-full pl-9 pr-4 py-2.5 min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink"
           />
         </div>
 
         {/* Services Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredServices.map(service => (
-            <div key={service.id} className="p-5 border border-zinc-200 rounded-2xl hover:border-smoke hover:shadow-md transition-all group relative bg-white">
+          {filteredServices.map((service) => (
+            <div
+              key={service.id}
+              className="p-5 border border-zinc-200 rounded-2xl hover:border-smoke hover:shadow-md transition-all group relative bg-white"
+            >
               <div className="flex justify-between items-start mb-3">
                 <div className="w-10 h-10 rounded-xl bg-smoke text-ink flex items-center justify-center">
                   <Tag size={18} />
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-lg text-zinc-900">{formatMoney(service.price, currency)}</span>
+                  <span className="font-bold text-lg text-zinc-900">
+                    {formatMoney(service.price, currency)}
+                  </span>
                   <button
                     onClick={() => setPendingDeleteId(service.id)}
-                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 text-rose-500 hover:text-rose-700 p-1.5 hover:bg-rose-50 rounded-lg transition-all"
-                    title="Delete service"
-                    aria-label={`Delete ${service.name}`}
+                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 text-rose-500 hover:text-rose-700 min-w-[44px] min-h-[44px] inline-flex items-center justify-center hover:bg-rose-50 rounded-lg transition-all"
+                    title={tr('t10misc.pricebook.removeTitle')}
+                    aria-label={`${tr('t10misc.pricebook.removeTitle')}: ${service.name}`}
                   >
                     <Trash2 size={16} />
                   </button>
@@ -176,7 +193,7 @@ export default function PriceBookClient({ initialServices, currency, locale }: {
               {service.description ? (
                 <p className="text-xs text-zinc-500 line-clamp-2 mb-2">{service.description}</p>
               ) : (
-                <p className="text-xs text-zinc-500 mb-2">Standard flat rate service</p>
+                <p className="text-xs text-zinc-500 mb-2">{tr('t10misc.pricebook.standardFlat')}</p>
               )}
               <div className="flex items-center justify-between gap-2 mt-1">
                 {service.durationMin != null ? (
@@ -188,9 +205,9 @@ export default function PriceBookClient({ initialServices, currency, locale }: {
                 )}
                 <Link
                   href={`/jobs/new?service=${service.id}`}
-                  className="inline-flex items-center gap-1 text-[11px] font-bold text-ink hover:underline"
+                  className="inline-flex items-center gap-1 min-h-[44px] text-[11px] font-bold text-ink hover:underline px-1"
                 >
-                  <Briefcase size={11} /> {str.useInJob}
+                  <Briefcase size={11} /> {tr('t10misc.pricebook.useInJob')}
                 </Link>
               </div>
             </div>
@@ -201,28 +218,36 @@ export default function PriceBookClient({ initialServices, currency, locale }: {
               <Tag size={40} className="text-zinc-300 mb-3" />
               {initialServices.length === 0 ? (
                 <>
-                  <h3 className="text-base font-bold text-zinc-900 mb-1">No services yet</h3>
-                  <p className="text-xs text-zinc-500 mb-4 max-w-xs">Add your service list to streamline quotes and invoicing.</p>
+                  <h3 className="text-base font-bold text-zinc-900 mb-1">
+                    {tr('t10misc.pricebook.noServicesTitle')}
+                  </h3>
+                  <p className="text-xs text-zinc-500 mb-4 max-w-xs">
+                    {tr('t10misc.pricebook.noServicesDesc')}
+                  </p>
 
                   <button
                     onClick={handleSeed}
                     disabled={isPending}
-                    className="bg-ink text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-graphite transition-colors flex items-center gap-2"
+                    className="bg-ink text-white px-4 min-h-[44px] rounded-xl text-xs font-semibold hover:bg-graphite transition-colors inline-flex items-center gap-2 disabled:opacity-60"
                   >
-                    <ListPlus size={14} /> Populate 6 Standard Services
+                    <ListPlus size={14} /> {tr('t10misc.pricebook.seedButton')}
                   </button>
                 </>
               ) : (
                 <>
-                  <h3 className="text-base font-bold text-zinc-900 mb-1">No services match your search</h3>
+                  <h3 className="text-base font-bold text-zinc-900 mb-1">
+                    {tr('t10misc.pricebook.noMatchTitle')}
+                  </h3>
                   <p className="text-xs text-zinc-500 mb-4 max-w-xs">
-                    Try a different search term — your {initialServices.length} saved service{initialServices.length === 1 ? ' is' : 's are'} still in the price book.
+                    {tr('t10misc.pricebook.noMatchDesc')
+                      .replace('{count}', String(initialServices.length))
+                      .replace('{s}', initialServices.length === 1 ? '' : 's')}
                   </p>
                   <button
                     onClick={() => setSearchQuery('')}
-                    className="bg-zinc-900 text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-zinc-700 transition-colors"
+                    className="bg-zinc-900 text-white px-4 min-h-[44px] rounded-xl text-xs font-semibold hover:bg-zinc-700 transition-colors"
                   >
-                    Clear search
+                    {tr('t10misc.pricebook.clearSearch')}
                   </button>
                 </>
               )}
@@ -231,99 +256,96 @@ export default function PriceBookClient({ initialServices, currency, locale }: {
         </div>
       </div>
 
-      {/* Add Service Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl relative">
-            <button 
-              onClick={() => setIsModalOpen(false)} 
-              className="absolute top-6 right-6 text-zinc-400 hover:text-zinc-700"
+      {/* Add Service Dialog */}
+      <Dialog
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={tr('t10misc.pricebook.modalTitle')}
+      >
+        <p className="text-xs text-zinc-500 mb-6">{tr('t10misc.pricebook.modalDesc')}</p>
+
+        <form onSubmit={handleAddService} className="space-y-4">
+          {error && (
+            <div className="bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+              {error}
+            </div>
+          )}
+          <Field label={tr('t10misc.pricebook.serviceName')}>
+            <input
+              type="text"
+              required
+              placeholder={tr('t10misc.pricebook.serviceNamePlaceholder')}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className={inputClass}
+            />
+          </Field>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Field
+              label={tr('t10misc.pricebook.flatRate').replace('{symbol}', currencySymbol(currency))}
             >
-              <X size={20} />
-            </button>
-
-            <h2 className="text-xl font-bold text-zinc-900 mb-1">Add New Service</h2>
-            <p className="text-xs text-zinc-500 mb-6">Add a flat rate service item to your price book.</p>
-
-            <form onSubmit={handleAddService} className="space-y-4">
-              {error && (
-                <div className="bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
-                  {error}
-                </div>
-              )}
-              <div>
-                <label className="block text-xs font-bold text-zinc-700 uppercase mb-1">Service Name</label>
-                <input 
-                  type="text" 
-                  required
-                  placeholder="e.g. Split AC Jet Wash"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-zinc-700 uppercase mb-1">Flat Rate Price ({currencySymbol(currency)})</label>
-                  <input 
-                    type="number" 
-                    required
-                    placeholder="e.g. 1500"
-                    min={0}
-                    step="1"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-zinc-700 uppercase mb-1">{str.duration}</label>
-                  <input 
-                    type="number" 
-                    placeholder={str.durationHint}
-                    min={5}
-                    max={1440}
-                    step="1"
-                    value={durationMin}
-                    onChange={(e) => setDurationMin(e.target.value)}
-                    className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-zinc-700 uppercase mb-1">{str.description}</label>
-                <textarea
-                  placeholder={str.descriptionHint}
-                  rows={2}
-                  maxLength={500}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink"
-                />
-              </div>
-
-              <div className="pt-2">
-                <button 
-                  type="submit" 
-                  disabled={isPending}
-                  className="w-full bg-ink hover:bg-graphite text-white py-3.5 rounded-xl font-bold text-sm transition-colors shadow-sm disabled:opacity-50"
-                >
-                  {isPending ? 'Saving...' : 'Save to Price Book'}
-                </button>
-              </div>
-            </form>
+              <input
+                type="number"
+                required
+                placeholder={tr('t10misc.pricebook.flatRatePlaceholder')}
+                min={0}
+                step="1"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                className={inputClass}
+              />
+            </Field>
+            <Field label={tr('t10misc.pricebook.duration')} hint={tr('t10misc.pricebook.durationHint')}>
+              <input
+                type="number"
+                placeholder={tr('t10misc.pricebook.durationHint')}
+                min={5}
+                max={1440}
+                step="1"
+                value={durationMin}
+                onChange={(e) => setDurationMin(e.target.value)}
+                className={inputClass}
+              />
+            </Field>
           </div>
-        </div>
-      )}
+
+          <Field label={tr('t10misc.pricebook.description')} hint={tr('t10misc.pricebook.descriptionHint')}>
+            <textarea
+              placeholder={tr('t10misc.pricebook.descriptionHint')}
+              rows={2}
+              maxLength={500}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className={inputClass}
+            />
+          </Field>
+
+          <div className="pt-2 flex flex-col sm:flex-row gap-2">
+            <button
+              type="submit"
+              disabled={isPending}
+              className={`${primaryBtnClass} flex-1 justify-center`}
+            >
+              {isPending ? tr('t10misc.pricebook.saving') : tr('t10misc.pricebook.save')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(false)}
+              className={secondaryBtnClass}
+            >
+              {tr('t10misc.pricebook.keep')}
+            </button>
+          </div>
+        </form>
+      </Dialog>
 
       <ConfirmDialog
         open={pendingDeleteId !== null}
-        title="Remove this service?"
-        message="The service will be removed from your price book. This cannot be undone."
-        confirmLabel="Yes, remove"
-        cancelLabel="Keep"
+        title={tr('t10misc.pricebook.removeTitle')}
+        message={tr('t10misc.pricebook.removeMessage')}
+        confirmLabel={tr('t10misc.pricebook.removeConfirm')}
+        cancelLabel={tr('t10misc.pricebook.keep')}
         busy={isPending}
         onConfirm={runDelete}
         onClose={() => setPendingDeleteId(null)}

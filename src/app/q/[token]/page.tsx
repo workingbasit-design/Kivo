@@ -242,7 +242,7 @@ export default async function QuotePortalPage({
             href={whatsappHref}
             target="_blank"
             rel="noreferrer"
-            className="flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#1fb857] text-white font-bold text-sm py-3 rounded-2xl transition-colors"
+            className="min-h-[44px] flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#1fb857] text-white font-bold text-sm py-3 rounded-2xl transition-colors"
           >
             <MessageCircle size={16} /> {L('quotes.portal.whatsappCta')}
           </a>
@@ -252,7 +252,7 @@ export default async function QuotePortalPage({
           <p className="text-center">
             <a
               href={`tel:${quote.business.phone.replace(/\s/g, '')}`}
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink"
+              className="min-h-[44px] inline-flex items-center gap-1.5 text-sm font-semibold text-ink"
             >
               <Phone size={15} /> {quote.business.phone}
             </a>

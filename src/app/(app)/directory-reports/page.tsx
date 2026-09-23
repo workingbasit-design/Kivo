@@ -4,17 +4,11 @@ import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { PageHeader, Card, EmptyState } from '@/components/ui';
 import { isDirectoryAdminEmail } from '@/lib/directory';
+import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
 import ReportRow from './report-row';
 
 export const metadata = { title: 'Directory reports | EveryJob' };
-
-const REASON_LABELS: Record<string, string> = {
-  spam: 'Spam / scam',
-  'fake-listing': 'Fake listing',
-  'wrong-info': 'Wrong contact info or prices',
-  'rude-behaviour': 'Rude behaviour',
-  other: 'Something else',
-};
 
 /**
  * Internal trust & safety queue. Super-admin only, gated by the
@@ -24,15 +18,17 @@ const REASON_LABELS: Record<string, string> = {
 export default async function DirectoryReportsPage() {
   const session = await getSession();
   if (!session?.user?.businessId) redirect('/login');
+  const locale = await getLocale();
+  const tr = (path: string) => t(locale, path);
   if (!isDirectoryAdminEmail(session.user.email)) {
     return (
       <div className="space-y-6">
-        <PageHeader title="Directory reports" subtitle="Trust & safety queue." />
+        <PageHeader title={tr('t10misc.reports.title')} subtitle={tr('t10misc.reports.subtitle')} />
         <Card>
           <EmptyState
             icon={<Flag size={24} />}
-            title="Not authorized"
-            description="This page is only visible to EveryJob directory admins."
+            title={tr('t10misc.claims.notAuthorizedTitle')}
+            description={tr('t10misc.claims.notAuthorizedDesc')}
           />
         </Card>
       </div>
@@ -46,34 +42,33 @@ export default async function DirectoryReportsPage() {
   });
 
   const openCount = reports.filter((r) => r.status === 'OPEN').length;
+  const subtitle =
+    openCount > 0
+      ? tr('t10misc.reports.openWaiting')
+          .replace('{count}', String(openCount))
+          .replaceAll('{s}', openCount === 1 ? '' : 's')
+      : tr('t10misc.reports.allClear');
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Directory reports"
-        subtitle={
-          openCount > 0
-            ? `${openCount} open report${openCount === 1 ? '' : 's'} to review`
-            : 'Trust & safety queue — all clear.'
-        }
-      />
+      <PageHeader title={tr('t10misc.reports.title')} subtitle={subtitle} />
       {reports.length === 0 ? (
         <Card>
           <EmptyState
             icon={<Flag size={24} />}
-            title="No reports"
-            description="Nobody has reported a directory business yet."
+            title={tr('t10misc.reports.noReportsTitle')}
+            description={tr('t10misc.reports.noReportsDesc')}
           />
         </Card>
       ) : (
-        <Card className="divide-y divide-zinc-100">
+        <Card className="divide-y divide-zinc-100 p-0 overflow-hidden">
           {reports.map((r) => (
             <ReportRow
               key={r.id}
               report={{
                 id: r.id,
                 businessName: r.business.name,
-                reason: REASON_LABELS[r.reason] ?? r.reason,
+                reason: r.reason,
                 details: r.details,
                 reporterContact: r.reporterContact,
                 status: r.status,

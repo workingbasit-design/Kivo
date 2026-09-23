@@ -6,7 +6,7 @@ import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { formatDateShort } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
-import { PageHeader, Card, StatusBadge } from '@/components/ui';
+import { PageHeader, Card, StatusBadge, Badge } from '@/components/ui';
 import { secondaryBtnClass } from '@/components/ui';
 import { EditCustomerForm, DeleteCustomerButton } from './customer-forms';
 import WhatsAppButton from '@/components/WhatsAppButton';
@@ -150,16 +150,34 @@ export default async function CustomerDetailPage({
         <div className="grid sm:grid-cols-2 gap-4 text-sm mb-6">
           <div className="flex items-start gap-2.5">
             <Phone size={15} className="text-zinc-400 mt-0.5 shrink-0" />
-            <div>
+            <div className="min-w-0">
               <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Phone</p>
-              <p className="text-zinc-800">{customer.phone ?? '—'}</p>
+              {customer.phone ? (
+                <a
+                  href={`tel:${customer.phone.replace(/\s/g, '')}`}
+                  className="text-ink font-semibold hover:underline min-h-[44px] inline-flex items-center"
+                >
+                  {customer.phone}
+                </a>
+              ) : (
+                <p className="text-zinc-800">—</p>
+              )}
             </div>
           </div>
           <div className="flex items-start gap-2.5">
             <Mail size={15} className="text-zinc-400 mt-0.5 shrink-0" />
-            <div>
+            <div className="min-w-0">
               <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Email</p>
-              <p className="text-zinc-800 break-all">{customer.email ?? '—'}</p>
+              {customer.email ? (
+                <a
+                  href={`mailto:${customer.email}`}
+                  className="text-ink font-semibold hover:underline break-all min-h-[44px] inline-flex items-center"
+                >
+                  {customer.email}
+                </a>
+              ) : (
+                <p className="text-zinc-800">—</p>
+              )}
             </div>
           </div>
           <div className="flex items-start gap-2.5 sm:col-span-2">
@@ -210,6 +228,7 @@ export default async function CustomerDetailPage({
             label="WhatsApp"
           />
           <EditCustomerForm
+            locale={await getLocale()}
             customer={{
               id: customer.id,
               name: customerName,
@@ -222,7 +241,11 @@ export default async function CustomerDetailPage({
               tags: customer.tags,
             }}
           />
-          <DeleteCustomerButton customerId={customer.id} customerName={customerName} />
+          <DeleteCustomerButton
+            customerId={customer.id}
+            customerName={customerName}
+            locale={await getLocale()}
+          />
         </div>
       </Card>
 
@@ -235,6 +258,7 @@ export default async function CustomerDetailPage({
           businessName={business?.name ?? 'us'}
           regionCode={regionCode}
           initialTokenId={activePortalToken?.id ?? null}
+          locale={await getLocale()}
         />
       </Card>
 
@@ -274,23 +298,34 @@ export default async function CustomerDetailPage({
       />
 
       {/* Job history */}
-      <Card>
-        <div className="px-6 py-4 border-b border-zinc-100 flex items-center gap-2">
-          <Briefcase size={16} className="text-zinc-400" />
-          <h3 className="font-bold text-sm text-zinc-900">Job history</h3>
+      <Card className="!p-0 overflow-hidden">
+        <div className="px-5 py-4 border-b border-zinc-100 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Briefcase size={16} className="text-zinc-400" />
+            <h3 className="font-bold text-sm text-zinc-900">Job history</h3>
+          </div>
+          {customer.jobs.length > 0 && (
+            <Badge tone="neutral">{customer.jobs.length}</Badge>
+          )}
         </div>
         {customer.jobs.length === 0 ? (
           <p className="px-6 py-8 text-sm text-zinc-500 text-center">No jobs yet.</p>
         ) : (
           <ul className="divide-y divide-zinc-100">
-            {customer.jobs.map((j) => (
-              <li key={j.id} className="flex items-center gap-3 px-6 py-3.5">
+            {customer.jobs.map((j, i) => (
+              <li
+                key={j.id}
+                className="ej-row-in flex items-center gap-3 px-5 py-3.5"
+                style={{ '--row-delay': `${Math.min(i, 10) * 30}ms` } as React.CSSProperties}
+              >
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-zinc-900 truncate">{j.title}</p>
                   <p className="text-xs text-zinc-500">{formatDateShort(j.date)}</p>
                 </div>
-                <StatusBadge status={j.status} />
-                <span className="text-sm font-bold text-zinc-900 shrink-0">{formatMoney(j.price, currency)}</span>
+                <div className="flex flex-col items-end gap-1 shrink-0">
+                  <span className="text-sm font-bold text-zinc-900">{formatMoney(j.price, currency)}</span>
+                  <StatusBadge status={j.status} />
+                </div>
               </li>
             ))}
           </ul>
@@ -298,23 +333,36 @@ export default async function CustomerDetailPage({
       </Card>
 
       {/* Invoice history */}
-      <Card>
-        <div className="px-6 py-4 border-b border-zinc-100 flex items-center gap-2">
-          <FileText size={16} className="text-zinc-400" />
-          <h3 className="font-bold text-sm text-zinc-900">Invoices</h3>
+      <Card className="!p-0 overflow-hidden">
+        <div className="px-5 py-4 border-b border-zinc-100 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <FileText size={16} className="text-zinc-400" />
+            <h3 className="font-bold text-sm text-zinc-900">Invoices</h3>
+          </div>
+          {customer.invoices.length > 0 && (
+            <Badge tone="neutral">{customer.invoices.length}</Badge>
+          )}
         </div>
         {customer.invoices.length === 0 ? (
           <p className="px-6 py-8 text-sm text-zinc-500 text-center">No invoices yet.</p>
         ) : (
           <ul className="divide-y divide-zinc-100">
-            {customer.invoices.map((inv) => (
-              <li key={inv.id} className="flex items-center gap-3 px-6 py-3.5">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-zinc-900">#{inv.number}</p>
-                  <p className="text-xs text-zinc-500">{formatDateShort(inv.date)}</p>
-                </div>
-                <StatusBadge status={inv.status} />
-                <span className="text-sm font-bold text-zinc-900 shrink-0">{formatMoney(inv.total, currency)}</span>
+            {customer.invoices.map((inv, i) => (
+              <li key={inv.id}>
+                <Link
+                  href={`/invoices/${inv.id}`}
+                  className="ej-row-in flex items-center gap-3 px-5 py-3.5 hover:bg-zinc-50 active:bg-zinc-100 transition-colors"
+                  style={{ '--row-delay': `${Math.min(i, 10) * 30}ms` } as React.CSSProperties}
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-zinc-900">#{inv.number}</p>
+                    <p className="text-xs text-zinc-500">{formatDateShort(inv.date)}</p>
+                  </div>
+                  <div className="flex flex-col items-end gap-1 shrink-0">
+                    <span className="text-sm font-bold text-zinc-900">{formatMoney(inv.total, currency)}</span>
+                    <StatusBadge status={inv.status} />
+                  </div>
+                </Link>
               </li>
             ))}
           </ul>

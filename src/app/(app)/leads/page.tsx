@@ -2,6 +2,7 @@ import React from 'react';
 import { redirect } from 'next/navigation';
 import { UserPlus } from 'lucide-react';
 import { getSession } from '@/lib/auth';
+import { getLocale } from '@/lib/i18n/server';
 import { prisma } from '@/lib/prisma';
 import { PageHeader, Card, EmptyState } from '@/components/ui';
 import { AddLeadForm, LeadsBoard, type LeadItem } from './leads-client';
@@ -17,6 +18,7 @@ export default async function LeadsPage() {
   });
 
   const newCount = leads.filter((l) => l.status === 'NEW').length;
+  const locale = await getLocale();
 
   // Serialize for the client component boundary (dates as ISO strings).
   const items: LeadItem[] = leads.map((l) => ({
@@ -39,7 +41,7 @@ export default async function LeadsPage() {
             ? `${newCount} new lead${newCount === 1 ? '' : 's'} waiting for a follow-up`
             : 'Track enquiries until they become customers.'
         }
-        actions={<AddLeadForm />}
+        actions={<AddLeadForm locale={locale} />}
       />
 
       {leads.length === 0 ? (
@@ -48,11 +50,11 @@ export default async function LeadsPage() {
             icon={<UserPlus size={24} />}
             title="No leads yet"
             description="When someone enquires on WhatsApp or by phone, add them here so no enquiry slips through."
-            action={<AddLeadForm />}
+            action={<AddLeadForm locale={locale} />}
           />
         </Card>
       ) : (
-        <LeadsBoard leads={items} />
+        <LeadsBoard leads={items} locale={locale} />
       )}
     </div>
   );

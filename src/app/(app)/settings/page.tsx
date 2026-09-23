@@ -41,15 +41,16 @@ export default async function SettingsPage() {
   }
 
   const locale = await getLocale();
+  const tr = (path: string) => t(locale, path);
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Settings"
-        subtitle="Your business profile, shown on quotes and invoices."
+        title={tr('t10misc.settingsMain.title')}
+        subtitle={tr('t10misc.settingsMain.subtitle')}
         actions={
           <Link href="/settings/team" className={secondaryBtnClass}>
-            <Users size={14} /> Manage team
+            <Users size={14} /> {tr('t10misc.settingsMain.manageTeam')}
           </Link>
         }
       />
@@ -61,21 +62,21 @@ export default async function SettingsPage() {
         <LanguageToggle current={locale} />
       </Card>
       <Card className="p-5 md:p-6">
-        <h2 className="text-sm font-bold text-zinc-900 mb-1">Automated messaging</h2>
+        <h2 className="text-sm font-bold text-zinc-900 mb-1">{tr('t10misc.settingsMain.messagingTitle')}</h2>
         <p className="text-xs text-zinc-500 mb-4">
-          Reminders, follow-ups and review requests — opt-in only, quiet hours, free-quota hard stop.
+          {tr('t10misc.settingsMain.messagingDesc')}
         </p>
         <Link href="/settings/messaging" className={secondaryBtnClass}>
-          Manage messaging
+          {tr('t10misc.settingsMain.manageMessaging')}
         </Link>
       </Card>
       <Card className="p-5 md:p-6">
-        <h2 className="text-sm font-bold text-zinc-900 mb-1">Online payments</h2>
+        <h2 className="text-sm font-bold text-zinc-900 mb-1">{tr('t10misc.settingsMain.paymentsTitle')}</h2>
         <p className="text-xs text-zinc-500 mb-4">
-          Card payments via your own Stripe account. EveryJob never holds money.
+          {tr('t10misc.settingsMain.paymentsDesc')}
         </p>
         <Link href="/settings/payments" className={secondaryBtnClass}>
-          Manage payments
+          {tr('t10misc.settingsMain.managePayments')}
         </Link>
       </Card>
       <Card className="p-5 md:p-6">
@@ -86,12 +87,12 @@ export default async function SettingsPage() {
         </Link>
       </Card>
       <Card className="p-5 md:p-6">
-        <h2 className="text-sm font-bold text-zinc-900 mb-1">Connected accounts</h2>
+        <h2 className="text-sm font-bold text-zinc-900 mb-1">{tr('t10misc.settingsMain.accountsTitle')}</h2>
         <p className="text-xs text-zinc-500 mb-4">
-          Connect Google to import your Google reviews with one tap. / Connectez Google pour importer vos avis Google en un clic.
+          {tr('t10misc.settingsMain.accountsDesc')}
         </p>
         <Link href="/reviews" className={secondaryBtnClass}>
-          Manage Google connection
+          {tr('t10misc.settingsMain.manageGoogle')}
         </Link>
       </Card>
       <Card className="p-5 md:p-6">
@@ -139,10 +140,10 @@ export default async function SettingsPage() {
       />
       <Card className="p-5 md:p-6">
         <h2 className="text-sm font-bold text-zinc-900 mb-1 flex items-center gap-2">
-          <Download size={14} /> Data export & backup
+          <Download size={14} /> {tr('t10misc.settingsMain.exportTitle')}
         </h2>
         <p className="text-xs text-zinc-500 mb-4">
-          Your data belongs to you. Download any list as a CSV file anytime — no lock-in, no fees.
+          {tr('t10misc.settingsMain.exportDesc')}
         </p>
         <div className="flex flex-wrap gap-2">
           {EXPORT_TYPES.map((t) => (

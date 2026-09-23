@@ -33,8 +33,18 @@ body {
     @apply transition-transform duration-100 ease-out active:scale-[0.98];
   }
 
+  /* Visible keyboard focus everywhere in the app (inputs/buttons already
+     carry their own rings; this is the fallback for links and custom
+     interactive elements). */
+  :where(a, [role='button'], [role='tab'], [role='radio'], summary):focus-visible {
+    outline: 2px solid #161616;
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
   html {
     scroll-behavior: smooth;
+    -webkit-tap-highlight-color: rgba(22, 22, 22, 0.08);
   }
 
   ::selection {
@@ -180,7 +190,68 @@ body {
     animation: ej-fade-up 0.55s cubic-bezier(0.22, 0.61, 0.21, 1) both;
     animation-delay: var(--msg-delay, 0ms);
   }
-}
+
+  /* ---------- EveryJob app UI (Track 10 design system) ---------- */
+
+  /* Loading skeleton shimmer. */
+  @keyframes ej-skeleton-shimmer {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -200% 0;
+    }
+  }
+  .ej-skeleton {
+    background-image: linear-gradient(
+      100deg,
+      #ececea 30%,
+      #f6f6f3 46%,
+      #f6f6f3 54%,
+      #ececea 70%
+    );
+    background-size: 200% 100%;
+    animation: ej-skeleton-shimmer 1.6s linear infinite;
+  }
+
+  /* Bottom-sheet entrance for dialogs on mobile. */
+  @keyframes ej-sheet-in {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .ej-sheet-in {
+    animation: ej-sheet-in 0.25s cubic-bezier(0.22, 0.61, 0.21, 1) both;
+  }
+
+  /* Subtle stagger for list rows appearing after load. */
+  .ej-row-in {
+    animation: ej-fade-up 0.4s cubic-bezier(0.22, 0.61, 0.21, 1) both;
+    animation-delay: var(--row-delay, 0ms);
+  }
+
+  /* Safe-area padding for the mobile bottom tab bar. */
+  .ej-safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Calm the app UI for users who prefer reduced motion. */
+  @media (prefers-reduced-motion: reduce) {
+    .ej-sheet-in,
+    .ej-row-in {
+      animation: none;
+    }
+    .ej-skeleton {
+      animation: none;
+      background-image: none;
+      background-color: #ececea;
+    }
+  }
 
 @media (prefers-reduced-motion: reduce) {
   .ej-hero-anim,
@@ -200,4 +271,6 @@ body {
     opacity: 1;
     animation: none;
   }
+}
+
 }

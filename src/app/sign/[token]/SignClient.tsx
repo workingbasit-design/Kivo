@@ -148,7 +148,7 @@ export default function SignClient({
         <button
           type="button"
           onClick={() => setMode('draw')}
-          className={`rounded-md px-3 py-2 text-sm font-semibold transition ${
+          className={`min-h-[44px] rounded-md px-3 py-2 text-sm font-semibold transition ${
             mode === 'draw' ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500'
           }`}
         >
@@ -157,7 +157,7 @@ export default function SignClient({
         <button
           type="button"
           onClick={() => setMode('type')}
-          className={`rounded-md px-3 py-2 text-sm font-semibold transition ${
+          className={`min-h-[44px] rounded-md px-3 py-2 text-sm font-semibold transition ${
             mode === 'type' ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500'
           }`}
         >
@@ -180,7 +180,7 @@ export default function SignClient({
           <button
             type="button"
             onClick={clear}
-            className="mt-2 text-xs font-semibold text-zinc-500 underline underline-offset-2"
+            className="mt-2 min-h-[44px] inline-flex items-center text-xs font-semibold text-zinc-500 underline underline-offset-2"
           >
             {s.signClear}
           </button>
@@ -214,7 +214,7 @@ export default function SignClient({
           <button
             type="button"
             onClick={() => setStatus('idle')}
-            className="mt-1 text-xs font-semibold text-red-600 underline underline-offset-2"
+            className="mt-1 min-h-[44px] inline-flex items-center text-xs font-semibold text-red-600 underline underline-offset-2"
           >
             {s.retry}
           </button>
@@ -225,7 +225,7 @@ export default function SignClient({
         type="button"
         onClick={sign}
         disabled={!nameOk || status === 'sending'}
-        className="mt-4 w-full rounded-lg bg-ink px-4 py-3 text-sm font-bold text-white transition disabled:opacity-40"
+        className="mt-4 min-h-[52px] w-full rounded-lg bg-ink px-4 py-3 text-sm font-bold text-white transition disabled:opacity-40"
       >
         {status === 'sending' ? s.signing : s.signButton}
       </button>
