@@ -1,14 +1,18 @@
 import { requireAuth } from '@/lib/auth';
+import { getLocale } from '@/lib/i18n/server';
 import { prisma } from '@/lib/prisma';
 import { PageHeader } from '@/components/ui';
 import ReviewsClient from '@/components/ReviewsClient';
+import GoogleReviewsPanel from '@/components/GoogleReviewsPanel';
+import { getGoogleStatus } from '@/app/actions/google-reviews';
 
 export const metadata = { title: 'Reviews | EveryJob' };
 
 export default async function ReviewsPage() {
   const { businessId } = await requireAuth();
+  const locale = await getLocale();
 
-  const [reviews, customers, agg] = await Promise.all([
+  const [reviews, customers, agg, googleStatus] = await Promise.all([
     prisma.review.findMany({
       where: { businessId },
       orderBy: { createdAt: 'desc' },
@@ -24,6 +28,7 @@ export default async function ReviewsPage() {
       _avg: { rating: true },
       _count: { id: true },
     }),
+    getGoogleStatus(),
   ]);
 
   const total = agg._count.id;
@@ -35,6 +40,7 @@ export default async function ReviewsPage() {
         title="Reviews"
         subtitle="Track what customers say about your work."
       />
+      <GoogleReviewsPanel status={googleStatus} locale={locale} />
       <ReviewsClient
         reviews={reviews.map(
           (r: {
@@ -42,6 +48,8 @@ export default async function ReviewsPage() {
             rating: number;
             comment: string | null;
             source: string | null;
+            reviewerName: string | null;
+            reviewedAt: Date | null;
             customer: { name: string } | null;
             createdAt: Date;
           }) => ({
@@ -49,6 +57,8 @@ export default async function ReviewsPage() {
             rating: r.rating,
             comment: r.comment,
             source: r.source,
+            reviewerName: r.reviewerName,
+            reviewedAt: r.reviewedAt ? r.reviewedAt.toISOString() : null,
             customerName: r.customer?.name ?? null,
             createdAt: r.createdAt.toISOString(),
           })

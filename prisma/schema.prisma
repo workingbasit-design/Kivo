@@ -69,6 +69,7 @@ model Business {
   directoryHideAddress Boolean               @default(true) // show area/city only, not the exact address
   directoryVerifiedAt  DateTime? // set when a directory claim is approved (or self-verified by the account holder). Public directory requires this + directoryOptIn.
   directoryClaim       DirectoryClaim?
+  googleConnection   GoogleConnection?
   notificationSettings String? // JSON: { job_tomorrow: bool, job_soon: bool, ... }; null = all types on
   notifications      Notification[]
   messagingSettings    MessagingSettings?
@@ -357,16 +358,21 @@ model SignatureRequest {
 }
 
 model Review {
-  id         String    @id @default(cuid())
-  rating     Int // 1-5
-  comment    String?
-  source     String? // e.g., "Google", "WhatsApp", "Direct"
-  customerId String?
-  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
-  businessId String
-  business   Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  id           String    @id @default(cuid())
+  rating       Int // 1-5
+  comment      String?
+  source       String? // e.g., "Manual", "Google", "WhatsApp", "Direct"
+  externalId   String? // Google review resource name (accounts/.../reviews/...) — dedupe key for sync; null for manual reviews
+  reviewerName String? // Google reviewer display name; null when anonymous
+  reviewedAt   DateTime? // Google's createTime; manual reviews use createdAt
+  customerId   String?
+  customer     Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  businessId   String
+  business     Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([businessId, externalId]) // Postgres treats NULLs as distinct: many manual (null) rows allowed
 }
 
 model RecurringJob {
@@ -485,6 +491,27 @@ model DirectoryClaim {
   decidedAt  DateTime?
 
   @@index([status])
+}
+
+// Google Business Profile connection (Track 5). Stores OAuth tokens so the
+// business can sync its Google reviews on demand with one tap. Tokens are
+// DB-stored (trade-off: anyone with DB access can read them — Disconnect
+// revokes at Google and deletes them). No background auto-sync: sync is an
+// explicit user action only. Nothing is ever sent anywhere automatically.
+model GoogleConnection {
+  id              String    @id @default(cuid())
+  businessId      String    @unique
+  business        Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  googleAccountId String? // numeric account id from the Account Management API
+  locationId      String? // numeric location id the business picked
+  locationName    String? // display title of the picked location
+  accessToken     String // short-lived OAuth access token (DB-stored)
+  refreshToken    String? // long-lived refresh token (DB-stored)
+  expiresAt       DateTime? // access token expiry
+  scopes          String? // space-separated granted scopes
+  connectedAt     DateTime  @default(now())
+  lastSyncAt      DateTime?
+  updatedAt       DateTime  @updatedAt
 }
 
 // ── Jobber-parity additions (all free) ──

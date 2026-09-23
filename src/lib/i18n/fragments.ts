@@ -20,8 +20,9 @@ import homehero from './fragments/homehero.ts';
 import homefaq from './fragments/homefaq.ts';
 import notifications from './fragments/notifications.ts';
 import track9 from './fragments/track9.ts';
+import googleReviews from './fragments/google-reviews.ts';
 
-const FRAGMENTS: I18nFragment[] = [reminders, jobops, quotes, homehero, homefaq, notifications, track9];
+const FRAGMENTS: I18nFragment[] = [reminders, jobops, quotes, homehero, homefaq, notifications, track9, googleReviews];
 
 function deepMerge(target: Dictionary, src: Dictionary): Dictionary {
   for (const [k, v] of Object.entries(src)) {

@@ -12,6 +12,8 @@ export type ReviewItem = {
   rating: number;
   comment: string | null;
   source: string | null;
+  reviewerName: string | null;
+  reviewedAt: string | null;
   customerName: string | null;
   createdAt: string;
 };
@@ -141,7 +143,7 @@ function ReviewRow({ review }: { review: ReviewItem }) {
           </div>
           {review.comment && <p className="text-sm text-zinc-800">{review.comment}</p>}
           <p className="text-xs text-zinc-400 mt-1">
-            {review.customerName ?? 'Anonymous'} · {formatDateShort(review.createdAt)}
+            {review.reviewerName ?? review.customerName ?? 'Anonymous'} · {formatDateShort(review.reviewedAt ?? review.createdAt)}
           </p>
         </div>
         <button
