@@ -50,7 +50,9 @@ export const config = {
      * - _next/static, _next/image (static files)
      * - favicon.ico, sitemap.xml, robots.txt (metadata)
      * - manifest.webmanifest, sw.js (PWA: browsers fetch these without a session)
+     * - og/, icons/, apple-touch-icon.png (public share/PWA assets: social
+     *   crawlers fetch og:image with no session; guarding them breaks previews)
      */
-    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|manifest.webmanifest|sw.js).*)',
+    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|manifest.webmanifest|sw.js|og/|icons/|apple-touch-icon.png).*)',
   ],
 };

@@ -241,6 +241,7 @@ const fr: Dictionary = {
     nav: {
       features: 'Fonctionnalités',
       aiCopilot: 'Copilote IA',
+      faq: 'FAQ',
       directory: 'Répertoire',
       login: 'Connexion',
       signUp: "S'inscrire",

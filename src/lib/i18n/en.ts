@@ -241,6 +241,7 @@ const en: Dict = {
     nav: {
       features: 'Features',
       aiCopilot: 'AI Copilot',
+      faq: 'FAQ',
       directory: 'Directory',
       login: 'Login',
       signUp: 'Sign Up',

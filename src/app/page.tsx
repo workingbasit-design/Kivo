@@ -33,7 +33,7 @@ import {
 export const metadata: Metadata = {
   title: 'EveryJob — Every job. One place.',
   description:
-    'EveryJob is a free field-service platform for service businesses: jobs, schedule, customers, quotes, invoices, payments, reminders and an AI assistant — all in one place. Free forever.',
+    'EveryJob is free field-service software for Canadian home-service businesses: jobs, schedule, customers, quotes, invoices, payment records and a bilingual English–French AI assistant — all in one place. No credit card required.',
 };
 
 const APPLE_FONT =
@@ -43,10 +43,27 @@ export default async function LandingPage() {
   const locale = await getLocale();
   const h = (path: string) => t(locale, `home.${path}`);
   const hh = (path: string) => t(locale, `homehero.${path}`);
+  const hf = (path: string) => t(locale, `homefaq.${path}`);
+
+  const FAQS = [1, 2, 3, 4, 5, 6, 7].map((n) => ({
+    q: hf(`q${n}`),
+    a: hf(`a${n}`),
+  }));
+
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: FAQS.map((f) => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  };
 
   const NAV_LINKS = [
     { label: h('nav.features'), href: '#features' },
     { label: h('nav.aiCopilot'), href: '#copilot' },
+    { label: h('nav.faq'), href: '#faq' },
     { label: h('nav.directory'), href: '/directory' },
   ];
 
@@ -498,6 +515,43 @@ export default async function LandingPage() {
             </Reveal>
           </div>
         </section>
+
+        {/* FAQ */}
+        <section id="faq" className="py-20 md:py-28 bg-paper border-y border-smoke scroll-mt-16">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6">
+            <Reveal>
+              <p className="text-[13px] font-semibold uppercase tracking-[0.14em] text-graphite mb-4">
+                {hf('eyebrow')}
+              </p>
+              <h2 className="text-4xl md:text-[52px] leading-[1.05] font-bold tracking-[-0.025em] mb-4">
+                {hf('title')}
+              </h2>
+              <p className="text-[17px] text-graphite mb-10">{hf('subtitle')}</p>
+            </Reveal>
+            <div className="space-y-3">
+              {FAQS.map((f, i) => (
+                <Reveal key={i} delay={i * 40}>
+                  <details className="group rounded-2xl border border-smoke bg-white/70 px-6 py-1 open:shadow-[0_12px_32px_-16px_rgba(22,22,22,0.25)] transition-shadow">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-[17px] font-semibold tracking-[-0.01em] [&::-webkit-details-marker]:hidden">
+                      {f.q}
+                      <span
+                        aria-hidden
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink text-[18px] font-light text-lime transition-transform duration-300 group-open:rotate-45"
+                      >
+                        +
+                      </span>
+                    </summary>
+                    <p className="pb-6 text-[15.5px] leading-relaxed text-graphite">{f.a}</p>
+                  </details>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
 
         {/* Final CTA */}
         <section className="relative pb-24 md:pb-32 overflow-hidden">
