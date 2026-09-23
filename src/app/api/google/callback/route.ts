@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import {
@@ -6,12 +7,13 @@ import {
   GOOGLE_TOKEN_URL,
   fetchGoogleAccounts,
 } from '@/lib/google-reviews';
+import { GOOGLE_BP_STATE_COOKIE } from '../connect/route';
 
 /**
- * Google OAuth callback. Verifies the session matches the state (no open
- * redirects — we only ever redirect to our own /reviews page), exchanges
- * the code for tokens, and stores the connection. Location picking happens
- * on the Reviews page afterwards.
+ * Google OAuth callback. Verifies the random state against the cookie
+ * (CSRF) and the session's business, exchanges the code for tokens, and
+ * stores the connection. Location picking happens on the Reviews page
+ * afterwards. No open redirects — we only ever redirect to /reviews.
  */
 export async function GET(req: Request) {
   const url = new URL(req.url);
@@ -21,20 +23,29 @@ export async function GET(req: Request) {
     return NextResponse.redirect(new URL('/login', req.url));
   }
 
+  const denied = (reason: string) => {
+    const res = NextResponse.redirect(new URL(`/reviews?google=${reason}`, req.url));
+    res.cookies.set(GOOGLE_BP_STATE_COOKIE, '', { path: '/api/google/callback', maxAge: 0 });
+    return res;
+  };
+
   const error = url.searchParams.get('error');
   if (error) {
     // User denied consent (access_denied) or Google errored — graceful.
-    return NextResponse.redirect(new URL('/reviews?google=denied', req.url));
+    return denied('denied');
   }
 
-  // State must be this business: prevents completing another account's flow.
-  if (url.searchParams.get('state') !== businessId) {
-    return NextResponse.redirect(new URL('/reviews?google=invalid-state', req.url));
+  // Random state must match the cookie from /api/google/connect.
+  const state = url.searchParams.get('state');
+  const jar = await cookies();
+  const cookieState = jar.get(GOOGLE_BP_STATE_COOKIE)?.value;
+  if (!state || !cookieState || state !== cookieState) {
+    return denied('invalid-state');
   }
 
   const code = url.searchParams.get('code');
   if (!code || !process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-    return NextResponse.redirect(new URL('/reviews?google=error', req.url));
+    return denied('error');
   }
 
   try {
@@ -103,8 +114,10 @@ export async function GET(req: Request) {
       });
     }
 
-    return NextResponse.redirect(new URL('/reviews?google=connected', req.url));
+    const ok = NextResponse.redirect(new URL('/reviews?google=connected', req.url));
+    ok.cookies.set(GOOGLE_BP_STATE_COOKIE, '', { path: '/api/google/callback', maxAge: 0 });
+    return ok;
   } catch {
-    return NextResponse.redirect(new URL('/reviews?google=error', req.url));
+    return denied('error');
   }
 }
