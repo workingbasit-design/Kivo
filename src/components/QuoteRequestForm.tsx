@@ -118,7 +118,7 @@ export default function QuoteRequestForm() {
             minLength={2}
             maxLength={100}
             defaultValue={v?.city ?? ''}
-            placeholder="e.g. Mumbai"
+            placeholder="e.g. Toronto"
             className={inputClass}
           />
         </div>
@@ -131,7 +131,7 @@ export default function QuoteRequestForm() {
             name="area"
             maxLength={100}
             defaultValue={v?.area ?? ''}
-            placeholder="e.g. Andheri West"
+            placeholder="e.g. Leslieville"
             className={inputClass}
           />
         </div>

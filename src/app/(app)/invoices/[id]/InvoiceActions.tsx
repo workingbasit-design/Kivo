@@ -11,7 +11,7 @@ import {
 import { Field, inputClass, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
 import { currencySymbol, formatMoney } from '@/lib/money';
 
-const PROVIDERS = ['CASH', 'INTERAC', 'CHEQUE', 'STRIPE', 'RAZORPAY'] as const;
+const PROVIDERS = ['CASH', 'INTERAC', 'CHEQUE', 'STRIPE'] as const;
 
 /** Human labels for payment providers (record-only — EveryJob never processes payments). */
 const PROVIDER_LABELS: Record<string, string> = {
@@ -19,7 +19,6 @@ const PROVIDER_LABELS: Record<string, string> = {
   INTERAC: 'Interac e-Transfer',
   CHEQUE: 'Cheque',
   STRIPE: 'Stripe',
-  RAZORPAY: 'Razorpay',
 };
 
 export default function InvoiceActions({

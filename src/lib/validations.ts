@@ -69,7 +69,7 @@ export const invoiceSchema = z.object({
 export const paymentSchema = z.object({
   invoiceId: z.string().min(1),
   amount: z.coerce.number().positive("Amount must be positive").max(10_000_000),
-  provider: z.enum(["CASH", "INTERAC", "CHEQUE", "STRIPE", "RAZORPAY"]).default("CASH"),
+  provider: z.enum(["CASH", "INTERAC", "CHEQUE", "STRIPE"]).default("CASH"),
   transactionId: z.string().trim().max(200).optional().default(""),
 });
 

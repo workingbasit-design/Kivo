@@ -8,7 +8,7 @@ import ScheduleClient from '@/components/ScheduleClient';
 import WeatherStrip, { type StripDay } from '@/components/WeatherStrip';
 import { getWeatherForDates, geocodeLocation } from '@/lib/weather';
 import { getHolidays } from '@/lib/holidays';
-import { toISODateLocal, cn } from '@/lib/utils';
+import { toISODateLocal, todayInTimezone, cn } from '@/lib/utils';
 
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -46,20 +46,30 @@ export default async function SchedulePage({
   searchParams: Promise<{ week?: string; day?: string }>;
 }) {
   const { businessId } = await requireAuth();
-  const __biz = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } });
-  const currency = __biz?.currency;
   const { week, day } = await searchParams;
+
+  // Fetch the business first: the "today" highlight and the default week must
+  // use the business timezone (Vercel servers run UTC, so server-local
+  // `new Date()` is the wrong day for Toronto evenings).
+  const business = await prisma.business.findUnique({
+    where: { id: businessId },
+    select: { currency: true, regionCode: true, taxRegion: true, address: true, timezone: true },
+  });
+  const currency = business?.currency;
+
+  /** "Today" in the business's timezone (defaults to America/Toronto). */
+  const todayKey = todayInTimezone(business?.timezone, business?.regionCode);
 
   const weekStart =
     week && /^\d{4}-\d{2}-\d{2}$/.test(week)
       ? mondayOf(new Date(`${week}T00:00:00`))
-      : mondayOf(new Date());
+      : mondayOf(new Date(`${todayKey}T00:00:00`));
   const weekEnd = addDays(weekStart, 7);
   const weekKey = toISODateLocal(weekStart);
 
   const activeDay = day && /^\d{4}-\d{2}-\d{2}$/.test(day) ? day : null;
 
-  const [jobs, totalCount, business] = await Promise.all([
+  const [jobs, totalCount] = await Promise.all([
     prisma.job.findMany({
       where: { businessId, date: { gte: weekStart, lt: weekEnd } },
       include: {
@@ -69,10 +79,6 @@ export default async function SchedulePage({
       orderBy: [{ date: 'asc' }, { createdAt: 'asc' }],
     }),
     prisma.job.count({ where: { businessId } }),
-    prisma.business.findUnique({
-      where: { id: businessId },
-      select: { regionCode: true, taxRegion: true, address: true },
-    }),
   ]);
 
   const countryCode = 'CA' as const;
@@ -128,7 +134,6 @@ export default async function SchedulePage({
     counts.set(key, (counts.get(key) ?? 0) + 1);
   }
 
-  const todayKey = toISODateLocal(new Date());
   const weekLabel = `${days[0].getDate()} ${MONTHS[days[0].getMonth()]} – ${days[6].getDate()} ${MONTHS[days[6].getMonth()]} ${days[6].getFullYear()}`;
 
   const weekLink = (monday: Date) => `/schedule?week=${toISODateLocal(monday)}`;

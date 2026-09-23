@@ -104,7 +104,7 @@ export default async function DirectoryPage({
               <input
                 name="city"
                 defaultValue={city}
-                placeholder="City, e.g. Mumbai"
+                placeholder="City, e.g. Toronto"
                 maxLength={100}
                 className="w-full rounded-xl bg-white/10 border border-white/15 pl-9 pr-3 py-2.5 text-sm text-white placeholder:text-zinc-400 outline-none focus:border-[#8b5cf6]"
               />

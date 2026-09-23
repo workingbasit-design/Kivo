@@ -1,6 +1,13 @@
 import type { Metadata } from 'next';
+import type { CSSProperties } from 'react';
 import Link from 'next/link';
 import EveryJobLogo from '@/components/EveryJobLogo';
+import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
+import Reveal from '@/components/home/Reveal';
+import TradesMarquee from '@/components/home/TradesMarquee';
+import ScheduleMock from '@/components/home/ScheduleMock';
+import CopilotDemo from '@/components/home/CopilotDemo';
 import {
   ArrowRight,
   Bell,
@@ -32,78 +39,6 @@ export const metadata: Metadata = {
 const APPLE_FONT =
   "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', Inter, 'Segoe UI', sans-serif";
 
-const NAV_LINKS = [
-  { label: 'Features', href: '#features' },
-  { label: 'AI Copilot', href: '#copilot' },
-  { label: 'Directory', href: '/directory' },
-];
-
-const TRADES = [
-  'Plumbers',
-  'Electricians',
-  'AC & heating',
-  'Salons',
-  'Pest control',
-  'Carpenters',
-  'Painters',
-  'Appliance repair',
-];
-
-/** The 12 modules — icon + name grid, Apple-style hairline dividers. */
-const FEATURE_GRID = [
-  { icon: Sparkles, label: 'AI Copilot' },
-  { icon: CalendarClock, label: 'Schedule' },
-  { icon: Briefcase, label: 'Jobs' },
-  { icon: Users, label: 'Customers' },
-  { icon: ReceiptText, label: 'Quotes' },
-  { icon: FileText, label: 'Invoices' },
-  { icon: Wallet, label: 'Payments' },
-  { icon: Share2, label: 'Sharing' },
-  { icon: Tag, label: 'Price Book' },
-  { icon: Bell, label: 'Reminders' },
-  { icon: PieChart, label: 'Reports' },
-  { icon: UserCog, label: 'Team' },
-];
-
-/** Honest stats only — every number here is verifiably true. */
-const STATS = [
-  { value: 'Free', label: 'Cost', desc: 'Free forever. No credit card, no commissions, no locked features.' },
-  { value: '12', label: 'Modules', desc: 'Jobs to reports — every module works for every business.' },
-  { value: '13', label: 'Provinces & territories', desc: 'Correct GST, HST, PST and QST for every province.' },
-  { value: '2', label: 'Languages', desc: 'Full English and Canadian French across the app.' },
-];
-
-/** Local where it matters — built for Canada, province by province. */
-const CANADA_POINTS = [
-  'Province-correct taxes: GST, HST, PST, QST',
-  'CAD with cents-accurate math',
-  'Interac e-Transfer on invoices — get paid directly',
-  'Full French interface — Français partout',
-  'Canadian statutory holidays in the schedule',
-  'Share on WhatsApp in one tap',
-];
-
-const STEPS = [
-  {
-    n: '1',
-    icon: Users,
-    title: 'Add your customers',
-    desc: 'Save a customer in seconds. Their jobs, quotes and payments build up automatically.',
-  },
-  {
-    n: '2',
-    icon: Calendar,
-    title: 'Schedule the job',
-    desc: 'Pick a customer, a service and a time — or let the AI copilot draft it from one message.',
-  },
-  {
-    n: '3',
-    icon: FileText,
-    title: 'Invoice and get paid',
-    desc: 'Send a clean invoice, share it anywhere, and record the payment when it lands.',
-  },
-];
-
 function Logo() {
   return (
     <span className="flex items-center gap-2">
@@ -113,7 +48,69 @@ function Logo() {
   );
 }
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const locale = await getLocale();
+  const h = (path: string) => t(locale, `home.${path}`);
+
+  const NAV_LINKS = [
+    { label: h('nav.features'), href: '#features' },
+    { label: h('nav.aiCopilot'), href: '#copilot' },
+    { label: h('nav.directory'), href: '/directory' },
+  ];
+
+  const TRADES = [
+    h('trades.plumbers'),
+    h('trades.electricians'),
+    h('trades.acHeating'),
+    h('trades.salons'),
+    h('trades.pestControl'),
+    h('trades.carpenters'),
+    h('trades.painters'),
+    h('trades.applianceRepair'),
+  ];
+
+  /** The 12 modules — icon + name grid, Apple-style hairline dividers. */
+  const FEATURE_GRID = [
+    { icon: Sparkles, key: 'copilot' },
+    { icon: CalendarClock, key: 'schedule' },
+    { icon: Briefcase, key: 'jobs' },
+    { icon: Users, key: 'customers' },
+    { icon: ReceiptText, key: 'quotes' },
+    { icon: FileText, key: 'invoices' },
+    { icon: Wallet, key: 'payments' },
+    { icon: Share2, key: 'sharing' },
+    { icon: Tag, key: 'priceBook' },
+    { icon: Bell, key: 'reminders' },
+    { icon: PieChart, key: 'reports' },
+    { icon: UserCog, key: 'team' },
+  ];
+
+  /** Honest stats only — every number here is verifiably true. */
+  const STATS = [
+    { key: 'cost', value: h('stats.costValue') },
+    { key: 'modules', value: h('stats.modulesValue') },
+    { key: 'regions', value: h('stats.regionsValue') },
+    { key: 'langs', value: h('stats.langsValue') },
+  ];
+
+  /** Local where it matters — built for Canada, province by province. */
+  const CANADA_POINTS = [
+    h('canada.point1'),
+    h('canada.point2'),
+    h('canada.point3'),
+    h('canada.point4'),
+    h('canada.point5'),
+    h('canada.point6'),
+  ];
+
+  const STEPS = [
+    { n: '1', icon: Users, key: 'step1' },
+    { n: '2', icon: Calendar, key: 'step2' },
+    { n: '3', icon: FileText, key: 'step3' },
+  ];
+
+  const heroDelay = (ms: number) => ({ '--ej-delay': `${ms}ms` }) as CSSProperties;
+
   return (
     <div
       className="landing-focus min-h-screen bg-white text-zinc-900 antialiased"
@@ -123,7 +120,7 @@ export default function LandingPage() {
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-zinc-200/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-[68px]">
-            <Link href="/" aria-label="EveryJob home">
+            <Link href="/" aria-label="EveryJob home" className="rounded-lg">
               <Logo />
             </Link>
             <nav className="hidden md:flex items-center gap-8" aria-label="Primary">
@@ -131,7 +128,7 @@ export default function LandingPage() {
                 <Link
                   key={l.label}
                   href={l.href}
-                  className="text-[15px] text-zinc-600 hover:text-zinc-900 transition"
+                  className="text-[15px] text-zinc-600 hover:text-zinc-900 transition-colors rounded"
                 >
                   {l.label}
                 </Link>
@@ -140,15 +137,15 @@ export default function LandingPage() {
             <div className="flex items-center gap-2">
               <Link
                 href="/login"
-                className="text-[15px] text-zinc-600 hover:text-zinc-900 transition px-4 py-2"
+                className="text-[15px] text-zinc-600 hover:text-zinc-900 transition-colors px-4 py-2 rounded-full"
               >
-                Login
+                {h('nav.login')}
               </Link>
               <Link
                 href="/register"
-                className="bg-zinc-900 text-white px-5 py-2.5 rounded-full text-[15px] font-medium hover:bg-zinc-700 transition active:scale-95"
+                className="bg-zinc-900 text-white px-5 py-2.5 rounded-full text-[15px] font-medium hover:bg-zinc-700 transition active:scale-95 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.4)]"
               >
-                Sign Up
+                {h('nav.signUp')}
               </Link>
             </div>
           </div>
@@ -156,210 +153,180 @@ export default function LandingPage() {
       </header>
 
       <main>
-        {/* Hero — Apple-style statement headline */}
+        {/* Hero — Apple-style statement headline, staggered entrance */}
         <section className="relative overflow-hidden">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 md:pt-28 md:pb-24 text-center">
-            <p className="inline-flex items-center gap-2 text-[13px] font-medium text-zinc-500 border border-zinc-200 rounded-full px-4 py-1.5 mb-8">
+          <div aria-hidden className="pointer-events-none absolute inset-0">
+            <div className="absolute -top-48 left-1/2 -translate-x-1/2 h-[520px] w-[880px] rounded-full bg-[#6329d4]/[0.09] blur-3xl" />
+            <div className="absolute top-48 -left-48 h-[340px] w-[340px] rounded-full bg-[#a78bfa]/[0.12] blur-3xl" />
+            <div className="absolute top-72 -right-48 h-[340px] w-[340px] rounded-full bg-[#6329d4]/[0.07] blur-3xl" />
+          </div>
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 md:pt-28 md:pb-24 text-center">
+            <p
+              className="ej-hero-anim inline-flex items-center gap-2 text-[13px] font-medium text-zinc-500 border border-zinc-200 bg-white/70 backdrop-blur rounded-full px-4 py-1.5 mb-8"
+              style={heroDelay(0)}
+            >
               <Sparkles size={14} className="text-[#6329d4]" />
-              Free forever · No credit card · Made for Canada
+              {h('hero.badge')}
             </p>
-            <h1 className="text-[44px] leading-[1.04] sm:text-6xl md:text-7xl lg:text-[84px] font-bold tracking-[-0.03em] mb-6">
-              Every job.
+            <h1
+              className="ej-hero-anim text-[44px] leading-[1.04] sm:text-6xl md:text-7xl lg:text-[84px] font-bold tracking-[-0.03em] mb-6"
+              style={heroDelay(110)}
+            >
+              {h('hero.title1')}
               <br />
-              <span className="text-zinc-400">One place.</span>
+              <span className="bg-gradient-to-b from-[#6329d4] via-[#7c3aed] to-[#a855f7] bg-clip-text text-transparent">
+                {h('hero.title2')}
+              </span>
             </h1>
-            <p className="text-lg md:text-[21px] leading-relaxed text-zinc-600 mb-10 max-w-2xl mx-auto">
-              The free field-service app for independent service businesses — plumbers,
-              electricians, HVAC, salons and more. Jobs, schedule, quotes, invoices
-              and an AI assistant that speaks your language.
+            <p
+              className="ej-hero-anim text-lg md:text-[21px] leading-relaxed text-zinc-600 mb-10 max-w-2xl mx-auto"
+              style={heroDelay(220)}
+            >
+              {h('hero.subtitle')}
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center mb-6">
+            <div
+              className="ej-hero-anim flex flex-col sm:flex-row gap-3 justify-center mb-6"
+              style={heroDelay(320)}
+            >
               <Link
                 href="/register"
-                className="inline-flex items-center justify-center gap-2 bg-[#6329d4] text-white px-8 py-3.5 rounded-full text-[17px] font-medium hover:bg-[#5221b3] transition active:scale-95"
+                className="group inline-flex items-center justify-center gap-2 bg-[#6329d4] text-white px-8 py-3.5 rounded-full text-[17px] font-medium hover:bg-[#5221b3] transition active:scale-95 shadow-[0_16px_40px_-12px_rgba(99,41,212,0.55)]"
               >
-                Start free <ArrowRight size={18} />
+                {h('hero.ctaStart')}
+                <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
               </Link>
               <Link
                 href="#features"
                 className="inline-flex items-center justify-center gap-2 text-[#6329d4] px-8 py-3.5 rounded-full text-[17px] font-medium hover:underline underline-offset-4"
               >
-                See what&apos;s inside
+                {h('hero.ctaSee')}
               </Link>
             </div>
-            <p className="text-[13px] text-zinc-400">
-              Book your first job in under 20 seconds.
+            <p className="ej-hero-anim text-[13px] text-zinc-400" style={heroDelay(420)}>
+              {h('hero.reassure')}
             </p>
           </div>
 
-          {/* Product visual — honest stylized mock of the real app */}
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 md:pb-28">
-            <div
-              className="rounded-[24px] border border-zinc-200 bg-white shadow-[0_24px_80px_-24px_rgba(0,0,0,0.18)] overflow-hidden"
-              aria-label="Preview of the EveryJob app"
-            >
-              <div className="flex items-center gap-2 px-5 py-3.5 border-b border-zinc-100">
-                <span className="w-3 h-3 rounded-full bg-[#ff5f57]" />
-                <span className="w-3 h-3 rounded-full bg-[#febc2e]" />
-                <span className="w-3 h-3 rounded-full bg-[#28c840]" />
-                <span className="ml-3 text-[13px] text-zinc-400">Today&apos;s schedule — EveryJob</span>
-              </div>
-              <div className="grid sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-zinc-100">
-                {[
-                  { name: 'Sharma Residence', job: 'AC service', time: '10:00 AM', amt: '$120', status: 'Confirmed', tone: 'text-emerald-600 bg-emerald-50' },
-                  { name: 'Priya S.', job: 'Plumbing repair', time: '1:30 PM', amt: '$85', status: 'On the way', tone: 'text-amber-600 bg-amber-50' },
-                  { name: 'Amit K.', job: 'Fan install', time: '4:00 PM', amt: '$60', status: 'Scheduled', tone: 'text-sky-600 bg-sky-50' },
-                ].map((j) => (
-                  <div key={j.name} className="p-5">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full ${j.tone}`}>
-                        {j.status}
-                      </span>
-                      <span className="text-[13px] text-zinc-400">{j.time}</span>
-                    </div>
-                    <p className="text-[17px] font-semibold tracking-tight">{j.name}</p>
-                    <p className="text-[14px] text-zinc-500 mb-3">{j.job}</p>
-                    <p className="text-[15px] font-semibold">{j.amt}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="flex items-center gap-3 px-5 py-4 bg-zinc-50 border-t border-zinc-100">
-                <Share2 size={17} className="text-[#6329d4] shrink-0" />
-                <p className="text-[13px] text-zinc-600">
-                  Invoice <span className="font-semibold text-zinc-900">INV-0001</span> shared with
-                  customer — payment recorded
-                </p>
-                <Check size={16} className="ml-auto text-emerald-600 shrink-0" />
-              </div>
-            </div>
+          {/* Product visual — animated stylized mock of the real app */}
+          <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 md:pb-28">
+            <Reveal delay={150}>
+              <ScheduleMock
+                strings={{
+                  title: h('mock.title'),
+                  jobs: [1, 2, 3].map((n) => ({
+                    name: h(`mock.job${n}Name`),
+                    service: h(`mock.job${n}Service`),
+                    time: h(`mock.job${n}Time`),
+                    amt: h(`mock.job${n}Amt`),
+                    status: h(`mock.job${n}Status`),
+                  })),
+                  footerBefore: h('mock.footerBefore'),
+                  footerInv: h('mock.footerInv'),
+                  footerAfter: h('mock.footerAfter'),
+                }}
+              />
+            </Reveal>
           </div>
         </section>
 
-        {/* Trades strip */}
-        <section className="border-y border-zinc-100 py-8">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div className="flex flex-wrap justify-center gap-x-8 gap-y-3">
-              {TRADES.map((t) => (
-                <span key={t} className="text-[15px] text-zinc-400 font-medium">
-                  {t}
-                </span>
-              ))}
-            </div>
-          </div>
+        {/* Trades marquee */}
+        <section className="border-y border-zinc-100 py-7">
+          <TradesMarquee trades={TRADES} label={h('trades.label')} />
         </section>
 
         {/* Feature grid — hairline dividers, Apple style */}
         <section id="features" className="py-20 md:py-28 scroll-mt-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto mb-12">
+            <Reveal className="text-center max-w-2xl mx-auto mb-12">
               <h2 className="text-4xl md:text-[56px] leading-[1.05] font-bold tracking-[-0.025em] mb-4">
-                Everything runs
+                {h('features.title1')}
                 <br />
-                <span className="text-zinc-400">on EveryJob.</span>
+                <span className="text-zinc-400">{h('features.title2')}</span>
               </h2>
-              <p className="text-lg md:text-[19px] text-zinc-600">
-                Twelve modules, one login. No add-ons, no locked features — it all just works.
-              </p>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-px bg-zinc-200/80 border border-zinc-200/80 rounded-[28px] overflow-hidden">
-              {FEATURE_GRID.map((f) => (
-                <div
-                  key={f.label}
-                  className="bg-white p-6 md:p-7 flex flex-col items-center text-center gap-3 hover:bg-zinc-50 transition"
-                >
-                  <f.icon size={26} strokeWidth={1.5} className="text-zinc-800" />
-                  <span className="text-[13px] font-medium text-zinc-600">{f.label}</span>
-                </div>
-              ))}
-            </div>
+              <p className="text-lg md:text-[19px] text-zinc-600">{h('features.subtitle')}</p>
+            </Reveal>
+            <Reveal delay={120}>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-px bg-zinc-200/80 border border-zinc-200/80 rounded-[28px] overflow-hidden">
+                {FEATURE_GRID.map((f) => (
+                  <div
+                    key={f.key}
+                    className="group bg-white p-6 md:p-7 flex flex-col items-center text-center gap-3 hover:bg-[#6329d4]/[0.045] transition-colors"
+                  >
+                    <f.icon
+                      size={26}
+                      strokeWidth={1.5}
+                      className="text-zinc-800 transition-all duration-300 group-hover:text-[#6329d4] group-hover:scale-110"
+                    />
+                    <span className="text-[13px] font-medium text-zinc-600 group-hover:text-zinc-900 transition-colors">
+                      {h(`features.${f.key}`)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </Reveal>
           </div>
         </section>
 
         {/* AI Copilot — dark section */}
-        <section id="copilot" className="py-20 md:py-28 bg-zinc-950 text-white scroll-mt-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section id="copilot" className="relative py-20 md:py-28 bg-zinc-950 text-white scroll-mt-16 overflow-hidden">
+          <div aria-hidden className="pointer-events-none absolute inset-0">
+            <div className="absolute -top-32 left-1/4 h-[380px] w-[520px] rounded-full bg-[#6329d4]/20 blur-3xl" />
+            <div className="absolute bottom-0 right-0 h-[280px] w-[380px] rounded-full bg-[#a855f7]/[0.12] blur-3xl" />
+          </div>
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-              {/* Chat mock */}
+              {/* Chat mock — messages stagger in on scroll */}
               <div className="order-2 lg:order-1">
-                <div className="bg-white/[0.05] rounded-[24px] border border-white/10 p-6 md:p-8">
-                  <div className="flex items-center gap-2.5 mb-6">
-                    <span className="w-8 h-8 rounded-full bg-[#6329d4] flex items-center justify-center">
-                      <Sparkles size={16} className="text-white" />
-                    </span>
-                    <span className="font-semibold text-[15px]">EveryJob Copilot</span>
-                    <span className="ml-auto text-[11px] font-medium uppercase tracking-widest text-white/40">
-                      English · Français · हिन्दी
-                    </span>
-                  </div>
-                  <div className="space-y-4 text-[14px]">
-                    <div className="flex justify-end">
-                      <p className="bg-[#6329d4] text-white px-4 py-2.5 rounded-2xl rounded-br-md max-w-[85%]">
-                        Book an AC service for Sharma tomorrow morning
-                      </p>
-                    </div>
-                    <div className="flex">
-                      <p className="bg-white/10 text-zinc-200 px-4 py-2.5 rounded-2xl rounded-bl-md max-w-[85%]">
-                        Found <span className="font-semibold text-white">Sharma Residence</span>.
-                        AC service, tomorrow 10:00 AM, about $120. Shall I confirm?
-                      </p>
-                    </div>
-                    <div className="flex justify-end">
-                      <p className="bg-[#6329d4] text-white px-4 py-2.5 rounded-2xl rounded-br-md max-w-[85%]">
-                        Yes, confirm
-                      </p>
-                    </div>
-                    <div className="flex">
-                      <div className="bg-emerald-500/10 border border-emerald-400/25 px-4 py-3 rounded-2xl rounded-bl-md max-w-[85%]">
-                        <p className="text-emerald-300 font-semibold flex items-center gap-2 mb-1 text-[14px]">
-                          <Check size={15} /> Job created
-                        </p>
-                        <p className="text-zinc-400 text-[13px]">
-                          AC service · Sharma Residence · Tomorrow 10:00 AM · $120
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-6 bg-white/5 border border-white/10 rounded-full px-5 py-3 flex items-center gap-3">
-                    <span className="text-[#a78bfa] text-[13px] font-medium">EveryJob AI</span>
-                    <span className="w-px h-4 bg-white/15" />
-                    <span className="text-white/30 text-[14px]">Type the way you talk…</span>
-                  </div>
-                </div>
+                <Reveal>
+                  <CopilotDemo
+                    strings={{
+                      chatTitle: h('copilot.chatTitle'),
+                      langBadge: h('copilot.langBadge'),
+                      msg1: h('copilot.msg1'),
+                      msg2: h('copilot.msg2'),
+                      msg3: h('copilot.msg3'),
+                      msg4Title: h('copilot.msg4Title'),
+                      msg4Detail: h('copilot.msg4Detail'),
+                      inputLabel: h('copilot.inputLabel'),
+                      inputHint: h('copilot.inputHint'),
+                    }}
+                  />
+                </Reveal>
               </div>
               {/* Copy */}
               <div className="order-1 lg:order-2">
-                <p className="text-[13px] font-semibold tracking-[0.18em] text-[#a78bfa] uppercase mb-5">
-                  EveryJob Copilot
-                </p>
-                <h2 className="text-4xl md:text-[56px] leading-[1.05] font-bold tracking-[-0.025em] mb-6">
-                  AI that works where
-                  <br />
-                  you work.
-                </h2>
-                <p className="text-lg md:text-[19px] text-white/55 mb-8 leading-relaxed max-w-lg">
-                  Tell the copilot what you need — in your own words and language —
-                  and it drafts the job, quote or reminder for you.
-                </p>
+                <Reveal>
+                  <p className="text-[13px] font-semibold tracking-[0.18em] text-[#a78bfa] uppercase mb-5">
+                    {h('copilot.eyebrow')}
+                  </p>
+                  <h2 className="text-4xl md:text-[56px] leading-[1.05] font-bold tracking-[-0.025em] mb-6">
+                    {h('copilot.title1')}
+                    <br />
+                    {h('copilot.title2')}
+                  </h2>
+                  <p className="text-lg md:text-[19px] text-white/55 mb-8 leading-relaxed max-w-lg">
+                    {h('copilot.subtitle')}
+                  </p>
+                </Reveal>
                 <ul className="space-y-4 mb-10">
-                  {[
-                    'Understands dates, prices, names and time-of-day naturally',
-                    'Warns you if a customer does not exist yet',
-                    'Always asks first — nothing is created or sent without your OK',
-                  ].map((t) => (
-                    <li key={t} className="flex items-start gap-3 text-white/75 text-[15px]">
+                  {[1, 2, 3].map((n) => (
+                    <Reveal as="li" key={n} delay={n * 90} className="flex items-start gap-3 text-white/75 text-[15px]">
                       <span className="w-5 h-5 rounded-full bg-[#6329d4] flex items-center justify-center shrink-0 mt-0.5">
                         <Check size={12} className="text-white" />
                       </span>
-                      {t}
-                    </li>
+                      {h(`copilot.bullet${n}`)}
+                    </Reveal>
                   ))}
                 </ul>
-                <Link
-                  href="/register"
-                  className="inline-flex items-center gap-2 text-[#a78bfa] font-medium text-[17px] hover:text-white transition"
-                >
-                  Try the copilot free <ArrowRight size={18} />
-                </Link>
+                <Reveal delay={300}>
+                  <Link
+                    href="/register"
+                    className="group inline-flex items-center gap-2 text-[#a78bfa] font-medium text-[17px] hover:text-white transition-colors"
+                  >
+                    {h('copilot.cta')}
+                    <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
+                  </Link>
+                </Reveal>
               </div>
             </div>
           </div>
@@ -368,60 +335,67 @@ export default function LandingPage() {
         {/* Honest stats — Apple rhythm, true numbers only */}
         <section className="py-20 md:py-28">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-4xl md:text-[56px] leading-[1.05] font-bold tracking-[-0.025em] text-center mb-14">
-              Run your business
-              <br />
-              <span className="text-zinc-400">like a machine.</span>
-            </h2>
+            <Reveal className="text-center mb-14">
+              <h2 className="text-4xl md:text-[56px] leading-[1.05] font-bold tracking-[-0.025em]">
+                {h('stats.title1')}
+                <br />
+                <span className="text-zinc-400">{h('stats.title2')}</span>
+              </h2>
+            </Reveal>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-10 md:gap-8">
-              {STATS.map((s) => (
-                <div key={s.label} className="text-center lg:text-left">
+              {STATS.map((s, i) => (
+                <Reveal key={s.key} delay={i * 90} className="text-center lg:text-left">
                   <p className="text-[12px] font-semibold tracking-[0.16em] text-[#6329d4] uppercase mb-2">
-                    {s.label}
+                    {h(`stats.${s.key}Label`)}
                   </p>
                   <p className="text-5xl md:text-6xl font-bold tracking-[-0.03em] mb-3">{s.value}</p>
                   <p className="text-[14px] text-zinc-500 leading-relaxed max-w-[220px] mx-auto lg:mx-0">
-                    {s.desc}
+                    {h(`stats.${s.key}Desc`)}
                   </p>
-                </div>
+                </Reveal>
               ))}
             </div>
-            <div className="text-center mt-14">
+            <Reveal className="text-center mt-14">
               <Link
                 href="/register"
-                className="inline-flex items-center justify-center gap-2 bg-zinc-900 text-white px-8 py-3.5 rounded-full text-[17px] font-medium hover:bg-zinc-700 transition active:scale-95"
+                className="group inline-flex items-center justify-center gap-2 bg-zinc-900 text-white px-8 py-3.5 rounded-full text-[17px] font-medium hover:bg-zinc-700 transition active:scale-95 shadow-[0_12px_32px_-12px_rgba(0,0,0,0.45)]"
               >
-                Start free <ArrowRight size={18} />
+                {h('stats.cta')}
+                <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
               </Link>
-            </div>
+            </Reveal>
           </div>
         </section>
 
         {/* How it works */}
         <section id="how-it-works" className="py-20 md:py-28 bg-zinc-50 border-y border-zinc-100 scroll-mt-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto mb-14">
+            <Reveal className="text-center max-w-2xl mx-auto mb-14">
               <h2 className="text-4xl md:text-[52px] leading-[1.05] font-bold tracking-[-0.025em] mb-4">
-                From first call to paid,
+                {h('steps.title1')}
                 <br />
-                <span className="text-zinc-400">in three steps.</span>
+                <span className="text-zinc-400">{h('steps.title2')}</span>
               </h2>
-              <p className="text-lg text-zinc-600">
-                No training needed. If you can send a text, you can use EveryJob.
-              </p>
-            </div>
+              <p className="text-lg text-zinc-600">{h('steps.subtitle')}</p>
+            </Reveal>
             <div className="grid md:grid-cols-3 gap-5">
-              {STEPS.map((s) => (
-                <div key={s.n} className="relative bg-white rounded-[24px] border border-zinc-200/80 p-8">
+              {STEPS.map((s, i) => (
+                <Reveal
+                  key={s.n}
+                  delay={i * 110}
+                  className="relative bg-white rounded-[24px] border border-zinc-200/80 p-8 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_24px_56px_-20px_rgba(0,0,0,0.18)] hover:border-zinc-300"
+                >
                   <span className="absolute top-6 right-7 text-[64px] leading-none font-bold text-zinc-100 select-none">
                     {s.n}
                   </span>
                   <div className="w-12 h-12 rounded-2xl bg-zinc-900 text-white flex items-center justify-center mb-5">
                     <s.icon size={22} strokeWidth={1.6} />
                   </div>
-                  <h3 className="text-[19px] font-semibold tracking-tight text-zinc-900 mb-2">{s.title}</h3>
-                  <p className="text-[15px] text-zinc-600 leading-relaxed">{s.desc}</p>
-                </div>
+                  <h3 className="text-[19px] font-semibold tracking-tight text-zinc-900 mb-2">
+                    {h(`steps.${s.key}Title`)}
+                  </h3>
+                  <p className="text-[15px] text-zinc-600 leading-relaxed">{h(`steps.${s.key}Desc`)}</p>
+                </Reveal>
               ))}
             </div>
           </div>
@@ -430,121 +404,137 @@ export default function LandingPage() {
         {/* Local where it matters — built for Canada */}
         <section id="regions" className="py-20 md:py-28 scroll-mt-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto mb-14">
+            <Reveal className="text-center max-w-2xl mx-auto mb-14">
               <p className="text-[13px] font-semibold tracking-[0.18em] text-[#6329d4] uppercase mb-5 flex items-center justify-center gap-2">
-                <Globe2 size={15} /> Local where it matters
+                <Globe2 size={15} /> {h('canada.eyebrow')}
               </p>
               <h2 className="text-4xl md:text-[52px] leading-[1.05] font-bold tracking-[-0.025em] mb-4">
-                One app, at home
+                {h('canada.title1')}
                 <br />
-                <span className="text-zinc-400">in Canada.</span>
+                <span className="text-zinc-400">{h('canada.title2')}</span>
               </h2>
-              <p className="text-lg text-zinc-600">
-                Not a generic tool with a sticker on it — taxes, money and language
-                are built in for Canada from day one.
-              </p>
-            </div>
+              <p className="text-lg text-zinc-600">{h('canada.subtitle')}</p>
+            </Reveal>
             <div className="max-w-4xl mx-auto">
-              <div className="bg-white rounded-[24px] border border-zinc-200/80 p-8 hover:shadow-[0_16px_48px_-16px_rgba(0,0,0,0.12)] transition">
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="w-11 h-11 rounded-2xl bg-[#6329d4]/10 text-[#6329d4] flex items-center justify-center">
-                    <MapPin size={22} strokeWidth={1.6} />
+              <Reveal delay={120}>
+                <div className="bg-white rounded-[24px] border border-zinc-200/80 p-8 transition-shadow duration-300 hover:shadow-[0_16px_48px_-16px_rgba(0,0,0,0.12)]">
+                  <div className="flex items-center gap-3 mb-5">
+                    <div className="w-11 h-11 rounded-2xl bg-[#6329d4]/10 text-[#6329d4] flex items-center justify-center">
+                      <MapPin size={22} strokeWidth={1.6} />
+                    </div>
+                    <h3 className="text-[22px] font-semibold tracking-tight text-zinc-900">
+                      {h('canada.cardTitle')}
+                    </h3>
                   </div>
-                  <h3 className="text-[22px] font-semibold tracking-tight text-zinc-900">Canada</h3>
+                  <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-3">
+                    {CANADA_POINTS.map((p) => (
+                      <li key={p} className="flex items-start gap-3 text-[15px] text-zinc-600">
+                        <span className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
+                          <Check size={12} className="text-emerald-700" />
+                        </span>
+                        {p}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-3">
-                  {CANADA_POINTS.map((p) => (
-                    <li key={p} className="flex items-start gap-3 text-[15px] text-zinc-600">
-                      <span className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
-                        <Check size={12} className="text-emerald-700" />
-                      </span>
-                      {p}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              </Reveal>
             </div>
-            <p className="text-center text-[14px] text-zinc-400 mt-10 flex items-center justify-center gap-2">
-              <Languages size={15} /> Switch the whole app to Français anytime, from Settings.
-            </p>
+            <Reveal delay={200}>
+              <p className="text-center text-[14px] text-zinc-400 mt-10 flex items-center justify-center gap-2">
+                <Languages size={15} /> {h('canada.footnote')}
+              </p>
+            </Reveal>
           </div>
         </section>
 
         {/* Directory teaser */}
         <section id="directory" className="pb-20 md:pb-28 scroll-mt-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid lg:grid-cols-2 gap-10 items-center bg-zinc-50 rounded-[32px] border border-zinc-200/70 p-8 md:p-14">
-              <div>
-                <p className="text-[13px] font-semibold tracking-[0.18em] text-[#6329d4] uppercase mb-5">
-                  EveryJob Directory
-                </p>
-                <h2 className="text-3xl md:text-[40px] leading-[1.08] font-bold tracking-[-0.02em] mb-4">
-                  Customers can find you, too.
-                </h2>
-                <p className="text-[17px] text-zinc-600 mb-8 leading-relaxed">
-                  List your business on the public EveryJob Directory. Customers search by
-                  service and city — their requests land in your inbox as lead drafts.
-                  Listing is free, like everything else.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Link
-                    href="/directory"
-                    className="inline-flex items-center justify-center gap-2 bg-zinc-900 text-white px-6 py-3 rounded-full text-[15px] font-medium hover:bg-zinc-700 transition active:scale-95"
-                  >
-                    Explore the directory <ArrowRight size={16} />
-                  </Link>
-                  <Link
-                    href="/register"
-                    className="inline-flex items-center justify-center gap-2 text-[#6329d4] px-6 py-3 rounded-full text-[15px] font-medium hover:underline underline-offset-4"
-                  >
-                    List your business — free
-                  </Link>
-                </div>
-              </div>
-              <div className="bg-white rounded-[24px] border border-zinc-200 p-6">
-                <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-zinc-400 mb-4">
-                  How customers find you
-                </p>
-                <div className="space-y-3 text-[14px]">
-                  <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-zinc-50 border border-zinc-100">
-                    <Search size={18} className="text-zinc-700 shrink-0" />
-                    <p className="text-zinc-600">
-                      Customer searches <span className="font-semibold text-zinc-900">&ldquo;Plumber in Toronto&rdquo;</span>
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-zinc-50 border border-zinc-100">
-                    <Users size={18} className="text-zinc-700 shrink-0" />
-                    <p className="text-zinc-600">
-                      They find <span className="font-semibold text-zinc-900">your business</span> and request a quote
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-[#6329d4]/[0.06] border border-[#6329d4]/20">
-                    <Bell size={18} className="text-[#6329d4] shrink-0" />
-                    <p className="text-zinc-600">
-                      It arrives in your EveryJob inbox as a <span className="font-semibold text-zinc-900">lead draft</span>
-                    </p>
+            <Reveal>
+              <div className="grid lg:grid-cols-2 gap-10 items-center bg-zinc-50 rounded-[32px] border border-zinc-200/70 p-8 md:p-14">
+                <div>
+                  <p className="text-[13px] font-semibold tracking-[0.18em] text-[#6329d4] uppercase mb-5">
+                    {h('directory.eyebrow')}
+                  </p>
+                  <h2 className="text-3xl md:text-[40px] leading-[1.08] font-bold tracking-[-0.02em] mb-4">
+                    {h('directory.title')}
+                  </h2>
+                  <p className="text-[17px] text-zinc-600 mb-8 leading-relaxed">
+                    {h('directory.subtitle')}
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Link
+                      href="/directory"
+                      className="group inline-flex items-center justify-center gap-2 bg-zinc-900 text-white px-6 py-3 rounded-full text-[15px] font-medium hover:bg-zinc-700 transition active:scale-95"
+                    >
+                      {h('directory.ctaExplore')}
+                      <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+                    </Link>
+                    <Link
+                      href="/register"
+                      className="inline-flex items-center justify-center gap-2 text-[#6329d4] px-6 py-3 rounded-full text-[15px] font-medium hover:underline underline-offset-4"
+                    >
+                      {h('directory.ctaList')}
+                    </Link>
                   </div>
                 </div>
+                <div className="bg-white rounded-[24px] border border-zinc-200 p-6">
+                  <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-zinc-400 mb-4">
+                    {h('directory.cardTitle')}
+                  </p>
+                  <div className="space-y-3 text-[14px]">
+                    <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-zinc-50 border border-zinc-100">
+                      <Search size={18} className="text-zinc-700 shrink-0" />
+                      <p className="text-zinc-600">
+                        {h('directory.card1Pre')}
+                        <span className="font-semibold text-zinc-900">{h('directory.card1Bold')}</span>
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-zinc-50 border border-zinc-100">
+                      <Users size={18} className="text-zinc-700 shrink-0" />
+                      <p className="text-zinc-600">
+                        {h('directory.card2Pre')}
+                        <span className="font-semibold text-zinc-900">{h('directory.card2Bold')}</span>
+                        {h('directory.card2Post')}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-[#6329d4]/[0.06] border border-[#6329d4]/20">
+                      <Bell size={18} className="text-[#6329d4] shrink-0" />
+                      <p className="text-zinc-600">
+                        {h('directory.card3Pre')}
+                        <span className="font-semibold text-zinc-900">{h('directory.card3Bold')}</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
+            </Reveal>
           </div>
         </section>
 
         {/* Final CTA */}
-        <section className="pb-24 md:pb-32">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
-            <h2 className="text-4xl md:text-[52px] leading-[1.05] font-bold tracking-[-0.025em] mb-6">
-              Every job.
-              <br />
-              <span className="text-zinc-400">One place.</span>
-            </h2>
-            <Link
-              href="/register"
-              className="inline-flex items-center justify-center gap-2 bg-[#6329d4] text-white px-9 py-4 rounded-full text-[17px] font-medium hover:bg-[#5221b3] transition active:scale-95"
-            >
-              Start free <ArrowRight size={18} />
-            </Link>
-            <p className="text-[13px] text-zinc-400 mt-5">Free forever · No credit card</p>
+        <section className="relative pb-24 md:pb-32 overflow-hidden">
+          <div aria-hidden className="pointer-events-none absolute inset-0">
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[300px] w-[700px] rounded-full bg-[#6329d4]/[0.08] blur-3xl" />
+          </div>
+          <div className="relative max-w-3xl mx-auto px-4 sm:px-6 text-center">
+            <Reveal>
+              <h2 className="text-4xl md:text-[52px] leading-[1.05] font-bold tracking-[-0.025em] mb-6">
+                {h('finalCta.title1')}
+                <br />
+                <span className="bg-gradient-to-b from-[#6329d4] via-[#7c3aed] to-[#a855f7] bg-clip-text text-transparent">
+                  {h('finalCta.title2')}
+                </span>
+              </h2>
+              <Link
+                href="/register"
+                className="group inline-flex items-center justify-center gap-2 bg-[#6329d4] text-white px-9 py-4 rounded-full text-[17px] font-medium hover:bg-[#5221b3] transition active:scale-95 shadow-[0_16px_40px_-12px_rgba(99,41,212,0.55)]"
+              >
+                {h('finalCta.cta')}
+                <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
+              </Link>
+              <p className="text-[13px] text-zinc-400 mt-5">{h('finalCta.note')}</p>
+            </Reveal>
           </div>
         </section>
       </main>
@@ -553,28 +543,26 @@ export default function LandingPage() {
       <footer className="border-t border-zinc-200 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <Link href="/" aria-label="EveryJob home">
+            <Link href="/" aria-label="EveryJob home" className="rounded-lg">
               <Logo />
             </Link>
             <nav className="flex flex-wrap justify-center gap-x-8 gap-y-3" aria-label="Footer">
-              <Link href="/login" className="text-[14px] text-zinc-500 hover:text-zinc-900 transition">
-                Login
+              <Link href="/login" className="text-[14px] text-zinc-500 hover:text-zinc-900 transition-colors">
+                {h('footer.login')}
               </Link>
-              <Link href="/register" className="text-[14px] text-zinc-500 hover:text-zinc-900 transition">
-                Create free account
+              <Link href="/register" className="text-[14px] text-zinc-500 hover:text-zinc-900 transition-colors">
+                {h('footer.createAccount')}
               </Link>
-              <Link href="/directory" className="text-[14px] text-zinc-500 hover:text-zinc-900 transition">
-                EveryJob Directory
+              <Link href="/directory" className="text-[14px] text-zinc-500 hover:text-zinc-900 transition-colors">
+                {h('footer.directory')}
               </Link>
             </nav>
           </div>
           <div className="mt-8 pt-8 border-t border-zinc-100 text-center">
             <p className="text-[14px] text-zinc-500">
-              &copy; {new Date().getFullYear()} EveryJob. Every job. One place.
+              &copy; {new Date().getFullYear()} {h('footer.rightsSuffix')}
             </p>
-            <p className="text-[13px] text-zinc-400 mt-1">
-              Free forever. Made for Canada.
-            </p>
+            <p className="text-[13px] text-zinc-400 mt-1">{h('footer.madeFor')}</p>
           </div>
         </div>
       </footer>

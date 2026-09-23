@@ -2,8 +2,8 @@
 
 /**
  * Voice input via the free Web Speech API (no keys, no backend).
- * Supports Hindi (hi-IN) and English (en-IN) with a language toggle —
- * built for low-literacy field users who'd rather speak than type.
+ * Supports English (en-CA) and French (fr-CA) with a language toggle —
+ * built for bilingual Canadian field users who'd rather speak than type.
  *
  * States: 'idle' | 'listening' | 'unsupported' | 'denied' | 'error'
  *
@@ -12,7 +12,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-export type VoiceLang = 'hi-IN' | 'en-IN';
+export type VoiceLang = 'en-CA' | 'fr-CA';
 export type VoiceState = 'idle' | 'listening' | 'unsupported' | 'denied' | 'error';
 
 /* Minimal Web Speech API typings (not in TS DOM lib). */
@@ -61,7 +61,7 @@ export function isVoiceSupported(): boolean {
   return getRecognitionCtor() !== null;
 }
 
-export function useVoiceInput(initialLang: VoiceLang = 'hi-IN') {
+export function useVoiceInput(initialLang: VoiceLang = 'en-CA') {
   const [state, setState] = useState<VoiceState>('idle');
   const [lang, setLang] = useState<VoiceLang>(initialLang);
   const [transcript, setTranscript] = useState(''); // final transcript

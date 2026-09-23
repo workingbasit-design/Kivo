@@ -93,7 +93,7 @@ export default async function QuotePortalPage({
               <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">{quote.number}</p>
               <h2 className="text-lg font-bold text-zinc-900 mt-0.5">{quote.title}</h2>
               <p className="text-xs text-zinc-400 mt-1">
-                Issued {quote.createdAt.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                Issued {quote.createdAt.toLocaleDateString('en-CA', { day: 'numeric', month: 'short', year: 'numeric' })}
               </p>
             </div>
             <StatusBadge status={quote.status} />

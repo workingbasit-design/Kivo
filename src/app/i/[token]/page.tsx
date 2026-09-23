@@ -115,7 +115,7 @@ export default async function InvoicePortalPage({
             <div>
               <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">{invoice.number}</p>
               <p className="text-xs text-zinc-400 mt-1">
-                Dated {invoice.date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                Dated {invoice.date.toLocaleDateString('en-CA', { day: 'numeric', month: 'short', year: 'numeric' })}
               </p>
             </div>
             <StatusBadge status={invoice.status} />

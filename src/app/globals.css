@@ -47,4 +47,148 @@ body {
     outline: 2px solid #6329d4;
     outline-offset: 3px;
   }
+
+  /* ---------- EveryJob landing-page motion (CSS only, no JS cost) ---------- */
+
+  @keyframes ej-fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(26px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes ej-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes ej-marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  /* Gentle float for the hero schedule mock. */
+  @keyframes ej-float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-7px);
+    }
+  }
+
+  /* Shimmer sweep used on the mock's "payment recorded" strip. */
+  @keyframes ej-shimmer {
+    from {
+      background-position: -200% 0;
+    }
+    to {
+      background-position: 200% 0;
+    }
+  }
+
+  /* Soft pulse for the "live" dot in the mock header. */
+  @keyframes ej-pulse-dot {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.55;
+      transform: scale(0.8);
+    }
+  }
+
+  /* Hero entrance — staggered via --ej-delay. */
+  .ej-hero-anim {
+    animation: ej-fade-up 0.85s cubic-bezier(0.22, 0.61, 0.21, 1) both;
+    animation-delay: var(--ej-delay, 0ms);
+    will-change: opacity, transform;
+  }
+
+  /* Scroll-reveal — toggled by the Reveal island via .ej-reveal-visible. */
+  .ej-reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition:
+      opacity 0.7s ease,
+      transform 0.7s cubic-bezier(0.22, 0.61, 0.21, 1);
+    transition-delay: var(--ej-delay, 0ms);
+  }
+  .ej-reveal-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Trades marquee — infinite CSS loop, pauses on hover. */
+  .ej-marquee-track {
+    animation: ej-marquee 34s linear infinite;
+    will-change: transform;
+  }
+  .ej-marquee:hover .ej-marquee-track {
+    animation-play-state: paused;
+  }
+
+  /* Hero schedule mock — gentle float + shimmering payment strip. */
+  .ej-mock-float {
+    animation: ej-float 7s ease-in-out infinite;
+  }
+  .ej-mock-live-dot {
+    animation: ej-pulse-dot 2.2s ease-in-out infinite;
+  }
+  .ej-mock-shimmer {
+    background-image: linear-gradient(
+      100deg,
+      transparent 30%,
+      rgba(99, 41, 212, 0.1) 46%,
+      rgba(99, 41, 212, 0.18) 50%,
+      rgba(99, 41, 212, 0.1) 54%,
+      transparent 70%
+    );
+    background-size: 200% 100%;
+    animation: ej-shimmer 4.5s linear infinite;
+  }
+
+  /* Copilot chat — messages appear one by one once revealed. */
+  .ej-chat-msg {
+    opacity: 0;
+  }
+  .ej-reveal-visible .ej-chat-msg {
+    animation: ej-fade-up 0.55s cubic-bezier(0.22, 0.61, 0.21, 1) both;
+    animation-delay: var(--msg-delay, 0ms);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ej-hero-anim,
+  .ej-marquee-track,
+  .ej-mock-float,
+  .ej-mock-live-dot,
+  .ej-mock-shimmer {
+    animation: none;
+  }
+  .ej-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .ej-reveal-visible .ej-chat-msg,
+  .ej-chat-msg {
+    opacity: 1;
+    animation: none;
+  }
 }

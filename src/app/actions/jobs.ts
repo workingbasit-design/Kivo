@@ -318,9 +318,9 @@ export async function seedSampleJobs(): Promise<JobActionResult> {
   if (!customer) {
     customer = await prisma.customer.create({
       data: {
-        name: 'Aarav Sharma',
+        name: 'Martin Roy',
         phone: '+1 416 555 0100',
-        address: 'Andheri West, Mumbai',
+        address: 'Leslieville, Toronto',
         businessId,
       },
     });
@@ -329,9 +329,9 @@ export async function seedSampleJobs(): Promise<JobActionResult> {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const samples = [
-    { title: 'AC deep servicing (2 units)', days: 0, time: '10:00 AM', price: 2499 },
-    { title: 'Bathroom tap leakage repair', days: 0, time: '2:00 PM', price: 499 },
-    { title: 'Full home deep cleaning', days: 1, time: '9:00 AM', price: 3499 },
+    { title: 'Furnace and AC tune-up', days: 0, time: '10:00 AM', price: 299 },
+    { title: 'Bathroom faucet leak repair', days: 0, time: '2:00 PM', price: 189 },
+    { title: 'Full home deep cleaning', days: 1, time: '9:00 AM', price: 349 },
   ];
 
   for (const s of samples) {

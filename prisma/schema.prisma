@@ -203,7 +203,7 @@ model CustomerPortalToken {
 model Payment {
   id            String    @id @default(cuid())
   amount        Float
-  provider      String    // "STRIPE", "RAZORPAY", "CASH", "CHEQUE"
+  provider      String    // "STRIPE", "INTERAC", "CASH", "CHEQUE"
   transactionId String?
   status        String    // "PENDING", "COMPLETED", "FAILED"
   invoiceId     String

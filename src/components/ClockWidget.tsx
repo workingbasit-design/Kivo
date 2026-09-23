@@ -78,7 +78,7 @@ export default function ClockWidget({
               {formatElapsed(elapsed)}
             </p>
             <p className="text-xs text-[#938b9f] mt-1">
-              since {new Date(activeSession.clockInISO).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+              since {new Date(activeSession.clockInISO).toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' })}
             </p>
           </div>
           <button

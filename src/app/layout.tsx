@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 const SITE_URL = "https://kivo-nine-silk.vercel.app";
 const SITE_TITLE = "EveryJob — Every job. One place.";
 const SITE_DESCRIPTION =
-  "EveryJob is a free field-service platform for service businesses in India and Canada: jobs, schedule, customers, quotes, invoices and a Hinglish AI assistant — all in one place.";
+  "EveryJob is a free field-service platform for Canadian home-service businesses: jobs, schedule, customers, quotes, invoices, payments and a bilingual English–French AI assistant — all in one place.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     url: SITE_URL,
     siteName: "EveryJob",
-    locale: "en_US",
+    locale: "en_CA",
     type: "website",
   },
   twitter: {

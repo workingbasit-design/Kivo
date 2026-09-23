@@ -178,7 +178,7 @@ export async function previewAudience(
 
 /**
  * Build a polite, copy-paste payment reminder for an invoice.
- * Never sends anything — returns draft text only. UPI ID is text only.
+ * Never sends anything — returns draft text only. Interac details are text only.
  */
 export async function draftPaymentReminder(
   invoiceId: string

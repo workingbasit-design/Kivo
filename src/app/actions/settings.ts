@@ -47,7 +47,7 @@ const businessSettingsSchema = z.object({
     .default(''),
   directoryOptIn: z.coerce.boolean().default(true),
   directoryHideAddress: z.coerce.boolean().default(true),
-  // For IN: GST slab as a string ("18"). For CA: province code ("ON").
+  // taxRegion stores the Canadian province code ("ON").
   // Stored in the existing taxRegion column — no schema change needed.
   taxRegion: z.string().trim().max(10).optional().default(''),
 });
@@ -96,7 +96,7 @@ function parseWorkingHoursForm(formData: FormData): string | null | 'invalid' {
   return any ? serializeWorkingHours(hours) : null;
 }
 
-/** Update business profile: name, phone, address, TAXID, UPI ID, region + tax settings. */
+/** Update business profile: name, phone, address, GST/HST number, Interac email, timezone, region + tax settings. */
 export async function updateBusinessSettings(
   _prev: SettingsResult,
   formData: FormData

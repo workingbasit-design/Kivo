@@ -5,7 +5,7 @@
  *
  *   <VoiceInputButton onTranscript={(text) => setInput((p) => p ? `${p} ${text}` : text)} />
  *
- * Shows a listening state with a live transcript preview, a hi-IN / en-IN
+ * Shows a listening state with a live transcript preview, an en-CA / fr-CA
  * toggle, and graceful fallbacks when the mic or the Web Speech API is
  * unavailable. NOT wired into the copilot widget yet — intentional, so it
  * can be reviewed before it touches the widget.
@@ -15,8 +15,8 @@ import { Mic, MicOff, Square } from 'lucide-react';
 import { useVoiceInput, type VoiceLang } from '@/hooks/useVoiceInput';
 
 const LANGS: { code: VoiceLang; label: string }[] = [
-  { code: 'hi-IN', label: 'हिं' },
-  { code: 'en-IN', label: 'EN' },
+  { code: 'en-CA', label: 'English (Canada)' },
+  { code: 'fr-CA', label: 'Français (Canada)' },
 ];
 
 export default function VoiceInputButton({
@@ -28,7 +28,7 @@ export default function VoiceInputButton({
   /** Compact mode: just the round mic button, for tight input rows. */
   compact?: boolean;
 }) {
-  const { state, lang, setLang, transcript, interim, toggle, reset } = useVoiceInput('hi-IN');
+  const { state, lang, setLang, transcript, interim, toggle, reset } = useVoiceInput('en-CA');
 
   const listening = state === 'listening';
 

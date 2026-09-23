@@ -21,10 +21,10 @@ export async function publicClientIp(): Promise<string> {
 }
 
 /**
- * Extract a displayable locality ("Andheri West, Mumbai" / "Liberty Village, Toronto")
- * from a free-text address ("Shop 12, MG Road, Andheri West, Mumbai 400053").
- * Heuristic: last two comma-separated segments, minus any trailing pincode
- * (Indian 5–6 digits) or Canadian postal code (A1A 1A1).
+ * Extract a displayable locality ("Leslieville, Toronto")
+ * from a free-text address ("412 Queen St E, Leslieville, Toronto M4M 1H6").
+ * Heuristic: last two comma-separated segments, minus any trailing
+ * Canadian postal code (A1A 1A1).
  */
 export function localityFromAddress(address: string | null | undefined): string | null {
   if (!address) return null;

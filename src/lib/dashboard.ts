@@ -232,7 +232,7 @@ export async function getReportStats(businessId: string): Promise<ReportStats> {
     const start = new Date(d.getFullYear(), d.getMonth(), 1, 0, 0, 0, 0);
     const end = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59, 999);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-    const label = d.toLocaleDateString("en-IN", { month: "short" });
+    const label = d.toLocaleDateString("en-CA", { month: "short" });
     buckets.push({ key, label, start, end });
   }
   const rangeStart = buckets[0].start;
