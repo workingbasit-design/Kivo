@@ -46,6 +46,17 @@ const en: Dict = {
     routes: 'Routes',
     onlineBooking: 'Online booking',
     logout: 'Log out',
+    sections: {
+      work: 'Work',
+      money: 'Money',
+      customers: 'Customers',
+      grow: 'Grow',
+      manage: 'Manage',
+    },
+    todayView: 'Today, in one view',
+    bookedToday: 'booked today',
+    jobLeft: '{count} job left',
+    jobsLeft: '{count} jobs left',
   },
   jobs: {
     title: 'Jobs',

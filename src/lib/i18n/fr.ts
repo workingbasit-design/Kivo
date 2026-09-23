@@ -45,6 +45,17 @@ const fr: Dictionary = {
     routes: 'Itinéraires',
     onlineBooking: 'Réservation en ligne',
     logout: 'Déconnexion',
+    sections: {
+      work: 'Travail',
+      money: 'Argent',
+      customers: 'Clients',
+      grow: 'Croissance',
+      manage: 'Gestion',
+    },
+    todayView: 'Aujourd’hui, en un coup d’œil',
+    bookedToday: 'réservé aujourd’hui',
+    jobLeft: '{count} rendez-vous restant',
+    jobsLeft: '{count} rendez-vous restants',
   },
   jobs: {
     title: 'Travaux',
