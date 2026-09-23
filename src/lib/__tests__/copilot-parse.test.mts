@@ -192,3 +192,86 @@ test('extractCustomerName: "looking for a plumber" finds no name', () => {
 test('detectIntent: "schedule a Jon for 29th october" is create_job', () => {
   assert.equal(detectIntent('schedule a Jon for 29th october'), 'create_job');
 });
+
+// --- Regression: real-scenario hardening matrix (2026-09-23) ---
+test('extractCustomerName: trailing preposition dropped ("for Priya on 25 oct")', () => {
+  assert.equal(extractCustomerName('plumbing for Priya on 25 oct, 900 dollars'), 'Priya');
+});
+
+test('extractCustomerName: "for Sarah tomorrow at 3pm" yields Sarah', () => {
+  assert.equal(extractCustomerName('AC repair for Sarah tomorrow at 3pm, $800'), 'Sarah');
+});
+
+test('extractCustomerName: month is never a name ("book Sarah for dec 5")', () => {
+  assert.equal(extractCustomerName('book Sarah for dec 5'), 'Sarah');
+});
+
+test('extractCustomerName: "for next Monday" yields no name from the date', () => {
+  assert.equal(extractCustomerName('schedule Ramesh Kumar for next Monday'), 'Ramesh Kumar');
+});
+
+test('extractCustomerName: possessive ("schedule Sarah\'s AC repair") yields Sarah', () => {
+  assert.equal(extractCustomerName("schedule Sarah's AC repair for tomorrow"), 'Sarah');
+});
+
+test('extractCustomerName: possessive verb stripped ("cancel tomorrow\'s job")', () => {
+  assert.equal(extractCustomerName("cancel tomorrow's job"), null);
+});
+
+test('extractCustomerName: question word possessive ("what\'s on my schedule")', () => {
+  assert.equal(extractCustomerName("what's on my schedule tomorrow?"), null);
+});
+
+test('extractCustomerName: phone between name and for ("book Sarah 4165551234 for tomorrow")', () => {
+  assert.equal(extractCustomerName('book Sarah 4165551234 for tomorrow'), 'Sarah');
+});
+
+test('extractPhone: 10-digit NANP number', () => {
+  assert.equal(extractPhone('book Sarah 4165551234 for tomorrow'), '4165551234');
+});
+
+test('extractPhone: "+1 416-555-1234" normalizes', () => {
+  assert.equal(extractPhone('call +1 416-555-1234'), '4165551234');
+});
+
+test('detectIntent: "remind me to call Sarah tomorrow" is draft_reminder', () => {
+  assert.equal(detectIntent('remind me to call Sarah tomorrow'), 'draft_reminder');
+});
+
+test('detectIntent: "how much did I earn today?" is ask_revenue', () => {
+  assert.equal(detectIntent('how much did I earn today?'), 'ask_revenue');
+});
+
+test('detectIntent: "cancel tomorrow\'s job" never books and is not a schedule query', () => {
+  const i = detectIntent("cancel tomorrow's job");
+  assert.notEqual(i, 'create_job');
+  assert.notEqual(i, 'ask_schedule');
+});
+
+test('detectIntent: "delete the job for Sarah" never books', () => {
+  assert.notEqual(detectIntent('delete the job for Sarah'), 'create_job');
+});
+
+test('detectIntent: "looking for a plumber" does not book', () => {
+  assert.notEqual(detectIntent('looking for a plumber'), 'create_job');
+});
+
+test('extractDate: "15h30" is not confused by "at 15h30"', () => {
+  assert.equal(extractDate('plumbing for Priya at 15h30'), null);
+});
+
+test('extractTime: "demain soir" is 17:00', () => {
+  assert.equal(extractTime('schedule Jon for demain soir'), '17:00');
+});
+
+test('extractTime: "9:30 am" is 09:30', () => {
+  assert.equal(extractTime('job for Sarah at 9:30 am'), '09:30');
+});
+
+test('extractMoney: "2 thousand" is 2000', () => {
+  assert.equal(extractMoney('AC repair for Sarah tomorrow 2 thousand'), 2000);
+});
+
+test('extractMoney: "800 cad" is 800', () => {
+  assert.equal(extractMoney('book Mike for Friday, 800 cad'), 800);
+});

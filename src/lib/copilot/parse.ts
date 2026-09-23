@@ -284,9 +284,22 @@ const NAME_STOPWORDS = new Set([
   'dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi',
   // pronouns — so "schedule it for tomorrow" never books customer "It"
   'it', 'this', 'that', 'these', 'those', 'him', 'her', 'them', 'us', 'me', 'you', 'we', 'they', 'he', 'she',
+  // prepositions / determiners — so "for Priya on 25 oct" doesn't become
+  // "Priya On" and "for next Monday" doesn't become "Next"
+  'on', 'at', 'in', 'into', 'by', 'from', 'with', 'a', 'au', 'aux', 'en', 'vers',
+  'next', 'last', 'this',
+  // question words — so "what's on my schedule tomorrow?" never yields "What"
+  'what', 'when', 'where', 'which', 'who', 'whom', 'whose', 'why', 'how',
+  'quoi', 'quand', 'qui', 'que', 'quel', 'quelle', 'quels', 'quelles',
+  'comment', 'pourquoi', 'combien', 'est', 'ce', 'ces', 'ca',
+  // conjunctions / cue words — never part of a name
+  'and', 'et', 'or', 'ou', 'for', 'pour',
   // gerunds / trade nouns that are never a person's name
   'cleaning', 'painting', 'plumbing', 'wiring', 'roofing', 'mowing', 'entretien', 'reparation',
 ]);
+
+/** Month names can never be a customer name ("book Sarah for dec 5"). */
+for (const m of Object.keys(MONTHS)) NAME_STOPWORDS.add(m);
 
 /**
  * Trade/service tokens must NEVER be mistaken for a customer name
@@ -303,8 +316,59 @@ for (const t of SERVICE_TOKENS) NAME_STOPWORDS.add(t);
 const HONORIFICS = ['mr', 'mrs', 'ms', 'miss', 'dr', 'monsieur', 'madame', 'm', 'mme', 'sir'];
 const HONORIFIC_RE = new RegExp(`\\b(?:${HONORIFICS.join('|')})\\.?\\b`, 'gi');
 
+/** Booking verbs — never part of a customer name ("schedule Sarah's" -> "Sarah"). */
+const BOOKING_VERBS = new Set([
+  'schedule', 'scheduling', 'book', 'booking', 'booked', 'create', 'add',
+  'plan', 'arrange', 'reserver', 'reserve', 'reservation', 'planifier',
+  'planifie', 'ajouter', 'ajoute', 'creer', 'cree',
+  'cancel', 'cancelled', 'delete', 'remove', 'annuler', 'annule', 'supprimer',
+]);
+
 function capitalizeWord(w: string): string {
   return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+}
+
+/**
+ * Words that may legitimately follow a name in a "for <name> ..." capture
+ * without invalidating it ("for Sarah tomorrow at 3pm" -> "Sarah").
+ * Anything else mid-phrase ("for Nonexistent Person XYZ") means the capture
+ * is unreliable and the whole name is rejected rather than truncated.
+ */
+const DATE_TIME_WORDS = new Set<string>([
+  'today', 'tomorrow', 'morning', 'evening', 'afternoon', 'night',
+  'matin', 'soir', 'soiree', 'apres', 'midi', 'nuit',
+  'week', 'semaine', 'weekend', 'next', 'last', 'this',
+  ...Object.keys(WEEKDAYS),
+  ...Object.keys(MONTHS),
+]);
+
+/**
+ * Turn raw captured words into a plausible name: drop trailing fillers
+ * ("for Priya on 25 oct" -> "Priya"), keep the leading run of name-like
+ * words ("for Sarah tomorrow at 3pm" -> "Sarah"), but reject the capture
+ * when a non-date/time filler appears mid-phrase ("for Nonexistent Person
+ * XYZ" -> null: booking under a half-guessed name is worse than asking).
+ */
+function leadingName(rawToks: string[]): string | null {
+  const toks = rawToks.map((t) => t.trim()).filter((t) => t.length >= 2);
+  while (toks.length > 1 && NAME_STOPWORDS.has(toks[toks.length - 1].toLowerCase())) {
+    toks.pop();
+  }
+  const name: string[] = [];
+  let i = 0;
+  for (; i < toks.length; i++) {
+    if (NAME_STOPWORDS.has(toks[i].toLowerCase())) break;
+    name.push(toks[i]);
+  }
+  if (name.length === 0) return null;
+  const remainder = toks.slice(i);
+  if (
+    remainder.length > 0 &&
+    !remainder.every((t) => DATE_TIME_WORDS.has(t.toLowerCase()))
+  ) {
+    return null;
+  }
+  return name.map(capitalizeWord).join(' ');
 }
 
 /**
@@ -323,22 +387,32 @@ export function extractCustomerName(raw: string): string | null {
   const text = raw.trim().replace(HONORIFIC_RE, ' ');
 
   // English "for Priya" / French "pour Sarah Tremblay" — up to three name
-  // words; every token must look like a name part. Trailing time words as
-  // in "for Priya tomorrow morning" are dropped, keeping "Priya".
+  // words. Trailing fillers are dropped and only the leading name-like run
+  // is kept, so "for Priya on 25 oct" -> "Priya" and "for Sarah tomorrow
+  // at 3pm" -> "Sarah".
   const mFor = text.match(
     /\b(?:for|pour)\s+([A-Za-z]{2,25}(?:\s+[A-Za-z]{2,25}){0,2})(?=[\s,]|$)/i
   );
   if (mFor) {
-    const toks = mFor[1].trim().split(/\s+/);
-    while (toks.length > 1 && NAME_STOPWORDS.has(toks[toks.length - 1].toLowerCase())) {
-      toks.pop();
+    const name = leadingName(mFor[1].split(/\s+/));
+    if (name) return name;
+  }
+
+  // Possessive: "schedule Sarah's AC repair for tomorrow" -> "Sarah".
+  // A possessive almost always marks the customer; fillers ("tomorrow's",
+  // "it's") are rejected by the stopword check.
+  const mPoss = text.match(
+    /\b([A-Za-z]{2,25}(?:\s+[A-Za-z]{2,25}){0,1})['\u2019]s\b/i
+  );
+  if (mPoss) {
+    // A leading booking verb is not part of the name ("schedule Sarah's"
+    // must yield "Sarah", never "Schedule Sarah").
+    const rawToks = mPoss[1].split(/\s+/);
+    while (rawToks.length > 1 && BOOKING_VERBS.has(rawToks[0].toLowerCase())) {
+      rawToks.shift();
     }
-    if (
-      toks.length > 0 &&
-      toks.every((t) => t.length >= 2 && !NAME_STOPWORDS.has(t.toLowerCase()))
-    ) {
-      return toks.map(capitalizeWord).join(' ');
-    }
+    const name = leadingName(rawToks);
+    if (name) return name;
   }
 
   const m2 = text.match(
@@ -357,21 +431,17 @@ export function extractCustomerName(raw: string): string | null {
   }
 
   // "schedule a Jon for 29th October" / "book Sarah for tomorrow" /
-  // "planifier Jon pour demain" — the name sits BEFORE the "for"/"pour"
-  // cue. Anchored on a booking verb so "looking for X" or "I need it for
-  // tomorrow" never match. Tried last: an explicit "for <name>" always wins.
+  // "book Sarah 4165551234 for tomorrow" / "planifier Jon pour demain" —
+  // the name sits BEFORE the "for"/"pour" cue, anchored on a booking verb
+  // so "looking for X" or "I need it for tomorrow" never match. An optional
+  // phone chunk may sit between the name and "for". Tried after the
+  // explicit patterns above: a "for <name>" always wins.
   const mForBefore = text.match(
-    /\b(?:schedule|scheduling|book|booking|booked|create|add|plan|arrange|reserver|reserve|reservation|planifier|planifie|ajouter|ajoute|creer|cree)\s+(?:(?:a|an|the|un|une|le|la|les|des|du)\s+)?([A-Za-z]{2,25}(?:\s+[A-Za-z]{2,25}){0,1})\s+(?:for|pour)\b/i
+    /\b(?:schedule|scheduling|book|booking|booked|create|add|plan|arrange|reserver|reserve|reservation|planifier|planifie|ajouter|ajoute|creer|cree)\s+(?:(?:a|an|the|un|une|le|la|les|des|du)\s+)?([A-Za-z]{2,25}(?:\s+[A-Za-z]{2,25}){0,1})(?:\s+\+?[\d][\d\s\-.()]{5,17})?\s+(?:for|pour)\b/i
   );
   if (mForBefore) {
-    const name = mForBefore[1].trim().split(/\s+/).map(capitalizeWord).join(' ');
-    const toks = name.split(' ');
-    if (
-      name.length >= 2 &&
-      toks.every((t) => t.length >= 2 && !NAME_STOPWORDS.has(t.toLowerCase()))
-    ) {
-      return name;
-    }
+    const name = leadingName(mForBefore[1].split(/\s+/));
+    if (name) return name;
   }
 
   return null;
@@ -441,6 +511,11 @@ function isCancellation(text: string): boolean {
 export function detectIntent(raw: string, followUpName: string | null = null): CopilotIntent {
   const text = ' ' + norm(raw) + ' ';
 
+  // Explicit cancellation — the copilot has no cancel capability, so a
+  // cancellation must NEVER book and must not masquerade as a schedule
+  // query either ("cancel tomorrow's job" contains "tomorrow"). Ask.
+  if (isCancellation(text)) return 'unknown';
+
   const isQuestion = /[?]/.test(raw) || hasAny(text, [
     ' how much ', ' how many ', ' what ', ' when ', ' show ', ' list ', ' check ',
     ' combien ', ' quand ', ' quoi ', ' qui ', ' montre ', ' montre moi ',
@@ -448,12 +523,12 @@ export function detectIntent(raw: string, followUpName: string | null = null): C
   ]);
 
   // 1. Payment reminder drafting
-  if (hasAny(text, [' reminder ', ' payment reminder ', ' rappel ', ' rappel de paiement ', ' relance '])) {
+  if (hasAny(text, [' reminder ', ' remind ', ' payment reminder ', ' rappel ', ' rappelle ', ' rappeler ', ' relance '])) {
     return 'draft_reminder';
   }
 
   // 2. Revenue questions
-  if (hasAny(text, [' revenue ', ' earning ', ' earnings ', ' income ', ' collection ', ' revenu ', ' revenus ', ' gains ', ' chiffre '])) {
+  if (hasAny(text, [' revenue ', ' earning ', ' earnings ', ' earn ', ' earned ', ' income ', ' collection ', ' revenu ', ' revenus ', ' gains ', ' chiffre '])) {
     return 'ask_revenue';
   }
 
