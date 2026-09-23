@@ -9,7 +9,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { addonQuoteTotal } from '../quotes.ts';
+import { addonQuoteTotal, convertedJobDetails } from '../quotes.ts';
 import { signatureDocPayload, signatureDocHash } from '../esign.ts';
 import { googleMapsRouteUrl } from '../routes.ts';
 
@@ -197,4 +197,23 @@ test('googleMapsRouteUrl: encodes accents and special characters', () => {
     url?.includes('origin=1250%20Rue%20Sainte-Catherine%20O%2C%20Montr%C3%A9al%20QC'),
     `got: ${url}`
   );
+});
+
+test('convertedJobDetails: price includes selected add-ons', () => {
+  const { price, notes } = convertedJobDetails('Q-1042', 200, [
+    { title: 'Rush service', price: 50, selected: true },
+    { title: 'Extended warranty', price: 25, selected: false },
+  ]);
+  assert.equal(price, 250);
+  assert.ok(notes.includes('Q-1042'));
+  assert.ok(notes.includes('Rush service ($50.00)'));
+  assert.ok(!notes.includes('Extended warranty'));
+});
+
+test('convertedJobDetails: no add-ons selected keeps base total and plain note', () => {
+  const { price, notes } = convertedJobDetails('Q-1043', 189.99, [
+    { title: 'Rush service', price: 50, selected: false },
+  ]);
+  assert.equal(price, 189.99);
+  assert.equal(notes, 'Converted from quote Q-1043.');
 });
