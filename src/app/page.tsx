@@ -161,7 +161,7 @@ export default async function LandingPage() {
               {hh('eyebrow')}
             </p>
             <h1
-              className="ej-hero-anim text-[46px] leading-[1.02] sm:text-7xl md:text-8xl lg:text-[96px] font-bold tracking-[-0.035em] mb-6"
+              className="ej-hero-anim text-[32px] leading-[1.04] sm:text-5xl md:text-6xl lg:text-[68px] font-bold tracking-[-0.03em] mb-6"
               style={heroDelay(110)}
             >
               {hh('title1')}
