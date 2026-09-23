@@ -30,7 +30,7 @@ export default function PortalNotice({
   }[variant];
 
   return (
-    <div className="min-h-screen bg-[#fafafa] font-sans">
+    <div className="min-h-screen bg-paper font-sans">
       <main className="max-w-lg mx-auto px-4 py-16">
         <Card className="p-8 text-center">
           {copy.icon}

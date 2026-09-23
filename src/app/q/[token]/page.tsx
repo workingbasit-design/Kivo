@@ -91,7 +91,7 @@ export default async function QuotePortalPage({
   );
 
   return (
-    <div className="min-h-screen bg-[#fafafa] font-sans">
+    <div className="min-h-screen bg-paper font-sans">
       <main className="max-w-lg mx-auto px-4 py-8 space-y-5">
         <div className="text-center">
           <div className="w-11 h-11 rounded-xl bg-ink flex items-center justify-center mx-auto mb-3">

@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { Check, Sparkles } from 'lucide-react';
+import { Check, Bot } from 'lucide-react';
 
 export interface CopilotDemoStrings {
   chatTitle: string;
@@ -48,7 +48,7 @@ export default function CopilotDemo({ strings }: { strings: CopilotDemoStrings }
         style={{ '--msg-delay': '0ms' } as CSSProperties}
       >
         <span className="w-8 h-8 rounded-full bg-ink flex items-center justify-center">
-          <Sparkles size={16} className="text-white" />
+          <Bot size={16} className="text-white" />
         </span>
         <span className="font-semibold text-[15px]">{strings.chatTitle}</span>
         <span className="ml-auto text-[11px] font-medium uppercase tracking-widest text-white/40">

@@ -8,7 +8,6 @@ import {
   MapPin,
   MessageCircle,
   Phone,
-  Sparkles,
   Star,
 } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
@@ -339,7 +338,7 @@ export default async function PublicProfilePage({
         )}
 
         <p className="text-center text-[11px] text-zinc-400 pb-8 flex items-center justify-center gap-1.5">
-          <Sparkles size={11} /> Listed on the EveryJob Directory — free for businesses, no commission.
+          <BadgeCheck size={11} /> Listed on the EveryJob Directory — free for businesses, no commission.
         </p>
       </main>
     </div>

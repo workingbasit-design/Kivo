@@ -79,7 +79,7 @@ export default async function SignedDocumentPrintPage({
       : null;
 
   return (
-    <div className="min-h-screen bg-[#fafafa] font-sans">
+    <div className="min-h-screen bg-paper font-sans">
       <main className="mx-auto max-w-2xl px-4 py-8 print:max-w-none print:px-0 print:py-0">
         <div className="no-print mb-4 flex items-center justify-between">
           <PageHeader title={L('esign.title')} subtitle={quote.number} />

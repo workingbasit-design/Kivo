@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useTransition } from 'react';
-import { Sparkles, CheckCircle2, X, MessageSquare, Clock, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
+import { CheckCircle2, X, MessageSquare, Clock, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
 import { completeBusinessSetup } from '@/app/actions/settings';
 
 type Props = {
@@ -216,19 +216,6 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
                 >
                   <ShieldCheck size={16} />
                   {isPending ? 'Saving Setup...' : 'Complete & Enable Workspace Now'}
-                </button>
-
-                <button
-                  onClick={() => {
-                    handleSaveSetup();
-                    window.dispatchEvent(new CustomEvent('open-copilot', { 
-                      detail: { message: "Please summarize my completed workspace setup and send a test WhatsApp ping." } 
-                    }));
-                  }}
-                  className="w-full bg-zinc-100 text-zinc-800 hover:bg-zinc-200 font-semibold py-3 rounded-2xl transition-colors text-xs flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <Sparkles size={14} className="text-[#ff7a59]" />
-                  Auto-Finish with EveryJobBrain AI
                 </button>
               </div>
             </>

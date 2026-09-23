@@ -112,7 +112,7 @@ export default async function SignPage({
   const fields = parseFields(resolved.fieldsJson);
 
   return (
-    <div className="min-h-screen bg-[#fafafa] font-sans">
+    <div className="min-h-screen bg-paper font-sans">
       <header className="bg-ink text-white">
         <div className="mx-auto max-w-lg px-4 py-8">
           <div className="mb-4">

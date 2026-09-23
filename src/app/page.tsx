@@ -11,6 +11,7 @@ import CopilotDemo from '@/components/home/CopilotDemo';
 import {
   ArrowRight,
   Bell,
+  Bot,
   Briefcase,
   Calendar,
   CalendarClock,
@@ -23,7 +24,6 @@ import {
   ReceiptText,
   Search,
   Share2,
-  Sparkles,
   Tag,
   UserCog,
   Users,
@@ -63,7 +63,7 @@ export default async function LandingPage() {
 
   /** The 12 modules — icon + name grid, Apple-style hairline dividers. */
   const FEATURE_GRID = [
-    { icon: Sparkles, key: 'copilot' },
+    { icon: Bot, key: 'copilot' },
     { icon: CalendarClock, key: 'schedule' },
     { icon: Briefcase, key: 'jobs' },
     { icon: Users, key: 'customers' },
@@ -157,7 +157,7 @@ export default async function LandingPage() {
               className="ej-hero-anim inline-flex items-center gap-2 text-[13px] font-medium text-graphite border border-smoke bg-white/70 backdrop-blur rounded-full px-4 py-1.5 mb-8"
               style={heroDelay(0)}
             >
-              <Sparkles size={14} className="text-ink" />
+              <span className="w-1.5 h-1.5 rounded-full bg-lime" aria-hidden />
               {hh('eyebrow')}
             </p>
             <h1

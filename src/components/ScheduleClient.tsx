@@ -4,7 +4,7 @@ import React, { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { 
   Calendar as CalendarIcon, Clock, MapPin, ChevronLeft, ChevronRight, 
-  User as UserIcon, Plus, Trash2, Edit3, Filter, Search, Sparkles, CheckCircle2, XCircle
+  User as UserIcon, Plus, Trash2, Edit3, Filter, Search, ListPlus, CheckCircle2, XCircle
 } from 'lucide-react';
 import { updateJobStatus, deleteJob, seedSampleJobs, updateJobSchedule } from '@/app/actions/jobs';
 import { validNextStatuses } from '@/lib/job-status';
@@ -225,7 +225,7 @@ export default function ScheduleClient({
               disabled={isPending}
               className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors flex items-center gap-2 shadow-sm disabled:opacity-50"
             >
-              <Sparkles size={14} /> Auto-Generate Sample Schedule
+              <ListPlus size={14} /> Add 3 sample jobs
             </button>
           )}
 
@@ -308,7 +308,7 @@ export default function ScheduleClient({
                   disabled={isPending}
                   className="bg-ink text-white font-semibold px-4 py-2.5 rounded-xl text-xs hover:bg-graphite transition-colors flex items-center gap-2"
                 >
-                  <Sparkles size={14} /> Populate 3 Mapped Jobs Now
+                  <ListPlus size={14} /> Add 3 sample jobs
                 </button>
               ) : (
                 <button

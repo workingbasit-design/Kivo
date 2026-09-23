@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { CheckCircle2, ArrowRight, Sparkles, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, ArrowRight, ShieldCheck } from 'lucide-react';
 import FinishSetupModal from './FinishSetupModal';
 
 export default function DashboardSetupCard({ initialCompleted = false }: { initialCompleted?: boolean }) {

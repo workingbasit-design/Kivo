@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useTransition } from 'react';
-import { Plus, Search, Tag, Trash2, X, Sparkles } from 'lucide-react';
+import { Plus, Search, Tag, Trash2, X, ListPlus } from 'lucide-react';
 import { createService, deleteService, seedDefaultServices } from '@/app/actions/services';
 import { currencySymbol, formatMoney } from '@/lib/money';
 import ConfirmDialog from '@/components/ConfirmDialog';
@@ -81,7 +81,7 @@ export default function PriceBookClient({ initialServices, currency }: { initial
               disabled={isPending}
               className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors flex items-center gap-2 shadow-sm"
             >
-              <Sparkles size={14} /> Add Standard Services
+              <ListPlus size={14} /> Add Standard Services
             </button>
           )}
 
@@ -163,7 +163,7 @@ export default function PriceBookClient({ initialServices, currency }: { initial
                     disabled={isPending}
                     className="bg-ink text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-graphite transition-colors flex items-center gap-2"
                   >
-                    <Sparkles size={14} /> Populate 6 Standard Services
+                    <ListPlus size={14} /> Populate 6 Standard Services
                   </button>
                 </>
               ) : (

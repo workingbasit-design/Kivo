@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import {
-  Sparkles, X, Send, User, Briefcase, Calendar, Clock,
+  Bot, X, Send, User, Briefcase, Calendar, Clock,
   MapPin, Phone, Wallet, Check, PencilLine,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
@@ -344,7 +344,7 @@ export default function GlobalCopilotWidget({
             className="fixed bottom-6 right-6 md:bottom-10 md:right-10 w-14 h-14 bg-ink rounded-full flex items-center justify-center shadow-2xl z-50 hover:bg-graphite transition-colors"
             aria-label="Open EveryJob AI assistant"
           >
-            <Sparkles className="w-6 h-6 text-white" />
+            <Bot className="w-6 h-6 text-white" />
           </motion.button>
         )}
       </AnimatePresence>
@@ -363,7 +363,7 @@ export default function GlobalCopilotWidget({
             <div className="px-5 py-4 border-b border-zinc-200 bg-white flex justify-between items-center shrink-0">
               <div className="flex items-center space-x-3">
                 <div className="w-8 h-8 bg-ink rounded-lg flex items-center justify-center shadow-sm">
-                  <Sparkles className="w-4 h-4 text-white" />
+                  <Bot className="w-4 h-4 text-white" />
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold tracking-tight text-zinc-900">EveryJob AI</h3>
@@ -392,7 +392,7 @@ export default function GlobalCopilotWidget({
                     <div className="flex gap-2">
                       {msg.role === 'assistant' && (
                         <div className="w-6 h-6 shrink-0 rounded-full bg-ink/10 flex items-center justify-center border border-smoke mt-1">
-                          <Sparkles className="w-3 h-3 text-ink" />
+                          <Bot className="w-3 h-3 text-ink" />
                         </div>
                       )}
                       <div
@@ -428,7 +428,7 @@ export default function GlobalCopilotWidget({
                 <div className="flex justify-start">
                   <div className="flex gap-2">
                     <div className="w-6 h-6 rounded-full bg-ink/10 flex items-center justify-center border border-smoke mt-1">
-                      <Sparkles className="w-3 h-3 text-ink" />
+                      <Bot className="w-3 h-3 text-ink" />
                     </div>
                     <div className="px-4 py-3 rounded-2xl rounded-tl-sm bg-white border border-zinc-200 shadow-sm flex items-center space-x-1.5 h-[42px]">
                       <div className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>

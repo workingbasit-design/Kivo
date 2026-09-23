@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useActionState } from 'react';
-import { Sparkles, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { BadgeCheck, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { register } from '@/app/actions/auth';
 
 export default function RegisterPage() {
@@ -12,7 +12,7 @@ export default function RegisterPage() {
   return (
     <div className="bg-white rounded-3xl border border-zinc-200/70 shadow-xl shadow-zinc-200/50 p-8">
       <div className="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-bold px-2.5 py-1 rounded-full mb-4">
-        <Sparkles size={12} /> FREE FOREVER PLAN
+        <BadgeCheck size={12} /> FREE FOREVER PLAN
       </div>
       <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Set up your business</h1>
       <p className="text-sm text-zinc-500 mt-1 mb-6">

@@ -91,7 +91,7 @@ export default async function CustomerPortalPage({
   const totalOwed = balances.reduce((s, i) => s + i.balance, 0);
 
   return (
-    <div className="min-h-screen bg-[#fafafa] font-sans">
+    <div className="min-h-screen bg-paper font-sans">
       <header className="bg-ink text-white">
         <div className="max-w-lg mx-auto px-4 py-8">
           <div className="mb-4">

@@ -4,7 +4,7 @@ import Logo from '@/components/Logo';
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-[#fafafa] flex flex-col">
+    <div className="min-h-screen bg-paper flex flex-col">
       <nav className="px-6 py-4">
         <Link href="/" className="inline-flex items-center gap-2 rounded-lg">
           <Logo size={32} />

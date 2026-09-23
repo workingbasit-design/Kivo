@@ -43,7 +43,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   };
 
   return (
-    <div className="min-h-screen bg-[#fafafa] flex">
+    <div className="min-h-screen bg-paper flex">
       <AppSidebar
         user={user}
         locale={locale}

@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
-import { MapPin, Phone, Sparkles } from 'lucide-react';
+import { MapPin, Phone } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
+import EveryJobLogo from '@/components/EveryJobLogo';
 import BookingForm, { type BookingSlotStrings } from '@/components/BookingForm';
 import { formatWorkingHoursSummary } from '@/lib/working-hours';
 import { getLocale } from '@/lib/i18n/server';
@@ -68,8 +69,8 @@ export default async function PublicBookingPage({
     <div className="min-h-screen bg-paper font-sans">
       <header className="bg-ink text-white">
         <div className="max-w-lg mx-auto px-4 py-8 text-center">
-          <div className="w-11 h-11 rounded-xl bg-lime flex items-center justify-center mx-auto mb-3">
-            <Sparkles className="w-6 h-6 text-ink" />
+          <div className="mx-auto mb-3 w-fit">
+            <EveryJobLogo size={44} />
           </div>
           <h1 className="text-2xl font-bold tracking-tight">{business.name}</h1>
           {page.headline && (
