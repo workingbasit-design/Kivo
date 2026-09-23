@@ -384,8 +384,19 @@ export async function submitSignature(
   if (!opts.signerName || !opts.signerName.trim()) throw new Error('Signer name is required.');
   if (!opts.signatureData) throw new Error('Signature data is required.');
 
-  const updated = await prisma.signatureRequest.update({
-    where: { id: rec.id },
+  // Atomic claim: only one concurrent submit can flip the status from an
+  // active state to 'signed'. updateMany with the active-state filter makes
+  // the check-and-set a single statement — a double-submit (or replayed
+  // request) that loses the race gets "no longer active" instead of
+  // overwriting the first signature.
+  const claimed = await prisma.signatureRequest.updateMany({
+    where: {
+      id: rec.id,
+      businessId,
+      status: { in: ['sent', 'viewed'] },
+      revokedAt: null,
+      expiresAt: { gt: new Date() },
+    },
     data: {
       status: 'signed',
       signedAt: new Date(),
@@ -393,9 +404,11 @@ export async function submitSignature(
       signatureData: opts.signatureData,
       auditJson: appendAudit(rec.auditJson, 'signed', 'client'),
     },
-    select: { id: true },
   });
-  return updated.id;
+  if (claimed.count !== 1) {
+    throw new Error('This signing link is no longer active.');
+  }
+  return rec.id;
 }
 
 /**
