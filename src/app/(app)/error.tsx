@@ -36,7 +36,7 @@ export default function AppError({
         <button
           type="button"
           onClick={reset}
-          className="inline-flex items-center gap-2 bg-[#6329d4] hover:bg-[#5221b3] text-white px-6 py-3 rounded-full text-sm font-semibold transition active:scale-95"
+          className="inline-flex items-center gap-2 bg-ink hover:bg-graphite text-white px-6 py-3 rounded-full text-sm font-semibold transition active:scale-95"
         >
           <RotateCcw size={15} /> Try again
         </button>

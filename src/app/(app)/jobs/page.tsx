@@ -58,7 +58,7 @@ export default async function JobsPage({
         actions={
           <Link
             href="/jobs/new"
-            className="bg-[#6329d4] hover:bg-[#5221b3] text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
+            className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
           >
             <Plus size={14} /> New job
           </Link>
@@ -74,7 +74,7 @@ export default async function JobsPage({
           name="q"
           defaultValue={q ?? ''}
           placeholder="Search by job, customer, or address…"
-          className="w-full pl-10 pr-4 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6329d4]/30 focus:border-[#6329d4]"
+          className="w-full pl-10 pr-4 py-2.5 bg-white border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ink/30 focus:border-ink"
         />
       </form>
 
@@ -87,7 +87,7 @@ export default async function JobsPage({
             className={cn(
               'px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors',
               activeStatus === s
-                ? 'bg-[#6329d4] text-white'
+                ? 'bg-ink text-white'
                 : 'bg-white text-zinc-600 border border-zinc-200 hover:bg-zinc-50'
             )}
           >
@@ -111,7 +111,7 @@ export default async function JobsPage({
               jobs.length === 0 ? (
                 <Link
                   href="/jobs/new"
-                  className="bg-[#6329d4] hover:bg-[#5221b3] text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2"
+                  className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2"
                 >
                   <Plus size={14} /> Create first job
                 </Link>

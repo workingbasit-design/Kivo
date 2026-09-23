@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
-import { Sparkles } from 'lucide-react';
+import Logo from '@/components/Logo';
 import QuoteRequestForm from '@/components/QuoteRequestForm';
 
 export const metadata = {
@@ -11,17 +11,15 @@ export const metadata = {
 
 export default function QuoteRequestPage() {
   return (
-    <div className="min-h-screen bg-[#fafafa] font-sans">
-      <header className="bg-[#17122b] text-white">
+    <div className="min-h-screen bg-paper font-sans">
+      <header className="bg-ink text-white">
         <div className="max-w-2xl mx-auto px-4 py-8">
-          <Link href="/directory" className="text-xs text-[#b8b0c9] hover:text-white">
+          <Link href="/directory" className="text-xs text-white/60 hover:text-white">
             ← Back to directory
           </Link>
-          <div className="flex items-center gap-2 mt-3">
-            <div className="w-9 h-9 rounded-xl bg-[#6329d4] flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-            <p className="text-sm font-bold tracking-tight">EveryJob Directory</p>
+          <div className="flex items-center gap-3 mt-3">
+            <Logo tone="onDark" size={30} />
+              <span className="text-sm font-semibold text-white/60">Directory</span>
           </div>
         </div>
       </header>

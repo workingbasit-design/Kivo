@@ -52,7 +52,7 @@ export default function QuoteForm({
           {customers.length === 0 && (
             <p className="text-[11px] text-zinc-400 mt-1">
               No customers yet —{' '}
-              <Link href="/customers/new" className="text-[#6329d4] font-semibold hover:underline">
+              <Link href="/customers/new" className="text-ink font-semibold hover:underline">
                 add one first
               </Link>
               .

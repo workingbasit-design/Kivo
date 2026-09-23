@@ -111,7 +111,7 @@ export default async function TimesheetsPage({
               <select
                 name="member"
                 defaultValue={sp.member || ''}
-                className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-sm focus:outline-none focus:ring-2 focus:ring-[#6329d4]/30 focus:border-[#6329d4] text-zinc-900"
+                className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-sm focus:outline-none focus:ring-2 focus:ring-ink/30 focus:border-ink text-zinc-900"
               >
                 <option value="">Everyone</option>
                 {members.map((m) => (
@@ -128,7 +128,7 @@ export default async function TimesheetsPage({
               type="date"
               name="from"
               defaultValue={toDateInputValue(fromDate)}
-              className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-sm focus:outline-none focus:ring-2 focus:ring-[#6329d4]/30 focus:border-[#6329d4] text-zinc-900"
+              className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-sm focus:outline-none focus:ring-2 focus:ring-ink/30 focus:border-ink text-zinc-900"
             />
           </div>
           <div className="flex-1">
@@ -137,12 +137,12 @@ export default async function TimesheetsPage({
               type="date"
               name="to"
               defaultValue={toDateInputValue(toDate)}
-              className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-sm focus:outline-none focus:ring-2 focus:ring-[#6329d4]/30 focus:border-[#6329d4] text-zinc-900"
+              className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-sm focus:outline-none focus:ring-2 focus:ring-ink/30 focus:border-ink text-zinc-900"
             />
           </div>
           <button
             type="submit"
-            className="bg-[#6329d4] hover:bg-[#5221b3] text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
+            className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
           >
             <Filter size={14} /> Apply
           </button>
@@ -186,7 +186,7 @@ export default async function TimesheetsPage({
               const canDelete = isAdmin || e.userId === user.id;
               return (
                 <li key={e.id} className="p-4 flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-violet-100 text-[#6329d4] flex items-center justify-center shrink-0 font-bold text-xs">
+                  <div className="w-9 h-9 rounded-xl bg-smoke text-ink flex items-center justify-center shrink-0 font-bold text-xs">
                     {(e.user.name || e.user.email).charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -208,7 +208,7 @@ export default async function TimesheetsPage({
                           {' · '}
                           <Link
                             href={`/jobs/${e.job.id}`}
-                            className="font-semibold text-[#6329d4] hover:underline"
+                            className="font-semibold text-ink hover:underline"
                           >
                             {e.job.title}
                           </Link>

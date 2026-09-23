@@ -31,7 +31,7 @@ export default function RegisterPage() {
             required
             autoComplete="name"
             placeholder="Sarah Miller"
-            className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#6329d4]/30 focus:border-[#6329d4]"
+            className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-ink/30 focus:border-ink"
           />
         </div>
 
@@ -46,7 +46,7 @@ export default function RegisterPage() {
             required
             autoComplete="organization"
             placeholder="Maple Leaf Plumbing"
-            className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#6329d4]/30 focus:border-[#6329d4]"
+            className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-ink/30 focus:border-ink"
           />
         </div>
 
@@ -61,7 +61,7 @@ export default function RegisterPage() {
             required
             autoComplete="email"
             placeholder="you@yourbusiness.ca"
-            className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#6329d4]/30 focus:border-[#6329d4]"
+            className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-ink/30 focus:border-ink"
           />
         </div>
 
@@ -76,7 +76,7 @@ export default function RegisterPage() {
             required
             autoComplete="new-password"
             placeholder="Min. 8 characters, with a letter & number"
-            className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#6329d4]/30 focus:border-[#6329d4]"
+            className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-ink/30 focus:border-ink"
           />
         </div>
 
@@ -90,7 +90,7 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={isPending}
-          className="w-full bg-[#6329d4] hover:bg-[#5221b3] disabled:opacity-60 text-white font-semibold text-sm py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+          className="w-full bg-ink hover:bg-graphite disabled:opacity-60 text-white font-semibold text-sm py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
         >
           <CheckCircle2 size={16} />
           {isPending ? 'Creating workspace…' : 'Create free workspace'}
@@ -99,7 +99,7 @@ export default function RegisterPage() {
 
       <p className="text-center text-xs text-zinc-500 mt-6">
         Already have an account?{' '}
-        <Link href="/login" className="font-semibold text-[#6329d4] hover:underline">
+        <Link href="/login" className="font-semibold text-ink hover:underline">
           Log in
         </Link>
       </p>

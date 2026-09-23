@@ -51,7 +51,7 @@ export default function CustomersClient({
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by name, phone, or address…"
           aria-label="Search customers"
-          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 bg-white text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#6329d4]/30 focus:border-[#6329d4]"
+          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 bg-white text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-ink/30 focus:border-ink"
         />
       </div>
 
@@ -88,7 +88,7 @@ export default function CustomersClient({
                       href={`/customers/${c.id}`}
                       className="flex items-center gap-4 px-5 py-4 hover:bg-zinc-50 transition-colors"
                     >
-                      <div className="w-10 h-10 rounded-full bg-[#6329d4]/10 text-[#6329d4] flex items-center justify-center font-bold text-sm shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-ink/10 text-ink flex items-center justify-center font-bold text-sm shrink-0">
                         {initial}
                       </div>
                       <div className="flex-1 min-w-0">

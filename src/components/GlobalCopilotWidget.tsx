@@ -61,8 +61,8 @@ function PreviewCard({
 
   return (
     <div className="mt-2 bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-sm">
-      <div className="bg-[#6329d4]/5 border-b border-[#6329d4]/10 px-4 py-3 flex items-center gap-2 text-[#6329d4] font-semibold text-sm">
-        <div className="w-6 h-6 rounded-full bg-[#6329d4]/10 flex items-center justify-center">
+      <div className="bg-ink/5 border-b border-smoke px-4 py-3 flex items-center gap-2 text-ink font-semibold text-sm">
+        <div className="w-6 h-6 rounded-full bg-ink/10 flex items-center justify-center">
           <Briefcase size={14} />
         </div>
         {lang === 'fr' ? 'Aperçu du travail — modifiez puis confirmez' : 'Job preview — edit, then confirm'}
@@ -74,7 +74,7 @@ function PreviewCard({
             value={draft.customerName}
             onChange={(e) => set({ customerName: e.target.value })}
             placeholder={lang === 'fr' ? 'Nom du client' : 'Customer name'}
-            className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-2.5 py-1.5 text-sm text-zinc-800 font-medium focus:outline-none focus:ring-2 focus:ring-[#6329d4]/30"
+            className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-2.5 py-1.5 text-sm text-zinc-800 font-medium focus:outline-none focus:ring-2 focus:ring-ink/30"
           />
         </EditRow>
         <EditRow icon={<Calendar size={15} />} label={lang === 'fr' ? 'Date' : 'Date'}>
@@ -82,7 +82,7 @@ function PreviewCard({
             type="date"
             value={draft.date}
             onChange={(e) => set({ date: e.target.value })}
-            className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-2.5 py-1.5 text-sm text-zinc-800 font-medium focus:outline-none focus:ring-2 focus:ring-[#6329d4]/30"
+            className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-2.5 py-1.5 text-sm text-zinc-800 font-medium focus:outline-none focus:ring-2 focus:ring-ink/30"
           />
         </EditRow>
         <EditRow icon={<Clock size={15} />} label={lang === 'fr' ? 'Heure' : 'Time'}>
@@ -90,7 +90,7 @@ function PreviewCard({
             type="time"
             value={draft.time ?? ''}
             onChange={(e) => set({ time: e.target.value || null })}
-            className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-2.5 py-1.5 text-sm text-zinc-800 font-medium focus:outline-none focus:ring-2 focus:ring-[#6329d4]/30"
+            className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-2.5 py-1.5 text-sm text-zinc-800 font-medium focus:outline-none focus:ring-2 focus:ring-ink/30"
           />
         </EditRow>
         <EditRow icon={<Phone size={15} />} label={lang === 'fr' ? 'Téléphone' : 'Phone'}>
@@ -99,7 +99,7 @@ function PreviewCard({
             value={draft.phone ?? ''}
             onChange={(e) => set({ phone: e.target.value.replace(/\D/g, '').slice(0, 10) || null })}
             placeholder={lang === 'fr' ? 'Mobile à 10 chiffres' : '10-digit mobile'}
-            className={`w-full bg-zinc-50 border rounded-lg px-2.5 py-1.5 text-sm text-zinc-800 font-medium focus:outline-none focus:ring-2 focus:ring-[#6329d4]/30 ${phoneOk ? 'border-zinc-200' : 'border-red-400'}`}
+            className={`w-full bg-zinc-50 border rounded-lg px-2.5 py-1.5 text-sm text-zinc-800 font-medium focus:outline-none focus:ring-2 focus:ring-ink/30 ${phoneOk ? 'border-zinc-200' : 'border-red-400'}`}
           />
         </EditRow>
         {preview.address && <Row icon={<MapPin size={15} />} label="Address" value={preview.address} />}
@@ -112,7 +112,7 @@ function PreviewCard({
               set({ price: v === '' ? null : Number(v) });
             }}
             placeholder={`amount (${currencySymbol(currency)})`}
-            className={`w-full bg-zinc-50 border rounded-lg px-2.5 py-1.5 text-sm text-zinc-800 font-medium focus:outline-none focus:ring-2 focus:ring-[#6329d4]/30 ${priceOk ? 'border-zinc-200' : 'border-red-400'}`}
+            className={`w-full bg-zinc-50 border rounded-lg px-2.5 py-1.5 text-sm text-zinc-800 font-medium focus:outline-none focus:ring-2 focus:ring-ink/30 ${priceOk ? 'border-zinc-200' : 'border-red-400'}`}
           />
         </EditRow>
       </div>
@@ -120,7 +120,7 @@ function PreviewCard({
         <button
           onClick={() => onConfirm({ ...draft, customerName: draft.customerName.trim(), phone: phoneDigits || null })}
           disabled={!canConfirm}
-          className="flex-1 bg-[#6329d4] hover:bg-[#5221b3] disabled:opacity-50 text-white text-xs font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-colors"
+          className="flex-1 bg-ink hover:bg-graphite disabled:opacity-50 text-white text-xs font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-colors"
         >
           <Check size={14} />
           {confirming ? (lang === 'fr' ? 'Réservation…' : 'Booking…') : (lang === 'fr' ? 'Confirmer et réserver' : 'Confirm & book')}
@@ -341,7 +341,7 @@ export default function GlobalCopilotWidget({
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-6 right-6 md:bottom-10 md:right-10 w-14 h-14 bg-[#6329d4] rounded-full flex items-center justify-center shadow-2xl z-50 hover:bg-[#5221b3] transition-colors"
+            className="fixed bottom-6 right-6 md:bottom-10 md:right-10 w-14 h-14 bg-ink rounded-full flex items-center justify-center shadow-2xl z-50 hover:bg-graphite transition-colors"
             aria-label="Open EveryJob AI assistant"
           >
             <Sparkles className="w-6 h-6 text-white" />
@@ -362,7 +362,7 @@ export default function GlobalCopilotWidget({
             {/* Header */}
             <div className="px-5 py-4 border-b border-zinc-200 bg-white flex justify-between items-center shrink-0">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-[#6329d4] rounded-lg flex items-center justify-center shadow-sm">
+                <div className="w-8 h-8 bg-ink rounded-lg flex items-center justify-center shadow-sm">
                   <Sparkles className="w-4 h-4 text-white" />
                 </div>
                 <div>
@@ -391,14 +391,14 @@ export default function GlobalCopilotWidget({
                   <div className={`max-w-[88%] ${msg.role === 'user' ? '' : 'w-full'}`}>
                     <div className="flex gap-2">
                       {msg.role === 'assistant' && (
-                        <div className="w-6 h-6 shrink-0 rounded-full bg-[#6329d4]/10 flex items-center justify-center border border-[#6329d4]/20 mt-1">
-                          <Sparkles className="w-3 h-3 text-[#6329d4]" />
+                        <div className="w-6 h-6 shrink-0 rounded-full bg-ink/10 flex items-center justify-center border border-smoke mt-1">
+                          <Sparkles className="w-3 h-3 text-ink" />
                         </div>
                       )}
                       <div
                         className={`p-3 rounded-2xl flex-1 ${
                           msg.role === 'user'
-                            ? 'bg-[#6329d4] text-white rounded-tr-sm'
+                            ? 'bg-ink text-white rounded-tr-sm'
                             : 'bg-white border border-zinc-200 shadow-sm rounded-tl-sm text-zinc-800'
                         }`}
                       >
@@ -427,8 +427,8 @@ export default function GlobalCopilotWidget({
               {isTyping && (
                 <div className="flex justify-start">
                   <div className="flex gap-2">
-                    <div className="w-6 h-6 rounded-full bg-[#6329d4]/10 flex items-center justify-center border border-[#6329d4]/20 mt-1">
-                      <Sparkles className="w-3 h-3 text-[#6329d4]" />
+                    <div className="w-6 h-6 rounded-full bg-ink/10 flex items-center justify-center border border-smoke mt-1">
+                      <Sparkles className="w-3 h-3 text-ink" />
                     </div>
                     <div className="px-4 py-3 rounded-2xl rounded-tl-sm bg-white border border-zinc-200 shadow-sm flex items-center space-x-1.5 h-[42px]">
                       <div className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
@@ -449,7 +449,7 @@ export default function GlobalCopilotWidget({
                   key={q}
                   onClick={() => sendMessage(q)}
                   disabled={isTyping}
-                  className="shrink-0 text-[11px] font-medium text-[#6329d4] bg-[#6329d4]/5 border border-[#6329d4]/15 rounded-full px-3 py-1.5 hover:bg-[#6329d4]/10 disabled:opacity-50 transition-colors"
+                  className="shrink-0 text-[11px] font-medium text-ink bg-ink/5 border border-smoke rounded-full px-3 py-1.5 hover:bg-ink/10 disabled:opacity-50 transition-colors"
                 >
                   {q}
                 </button>
@@ -471,12 +471,12 @@ export default function GlobalCopilotWidget({
                   onChange={(e) => setInput(e.target.value)}
                   placeholder={L.inputPlaceholder}
                   aria-label="Ask EveryJob AI"
-                  className="w-full pl-4 pr-12 py-3 rounded-xl border border-zinc-200 bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-[#6329d4]/40 focus:border-transparent text-sm text-zinc-900 placeholder:text-zinc-400 transition-shadow"
+                  className="w-full pl-4 pr-12 py-3 rounded-xl border border-zinc-200 bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-ink/40 focus:border-transparent text-sm text-zinc-900 placeholder:text-zinc-400 transition-shadow"
                 />
                 <button
                   type="submit"
                   disabled={!input.trim() || isTyping}
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-[#6329d4] hover:bg-[#5221b3] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-white transition-colors"
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-ink hover:bg-graphite disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-white transition-colors"
                   aria-label="Send"
                 >
                   <Send className="w-3.5 h-3.5 ml-0.5" />

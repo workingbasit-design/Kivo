@@ -28,7 +28,7 @@ export default function LoginPage() {
             required
             autoComplete="email"
             placeholder="you@yourbusiness.in"
-            className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#6329d4]/30 focus:border-[#6329d4]"
+            className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-ink/30 focus:border-ink"
           />
         </div>
 
@@ -43,7 +43,7 @@ export default function LoginPage() {
             required
             autoComplete="current-password"
             placeholder="••••••••"
-            className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#6329d4]/30 focus:border-[#6329d4]"
+            className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-ink/30 focus:border-ink"
           />
         </div>
 
@@ -57,7 +57,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={isPending}
-          className="w-full bg-[#6329d4] hover:bg-[#5221b3] disabled:opacity-60 text-white font-semibold text-sm py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+          className="w-full bg-ink hover:bg-graphite disabled:opacity-60 text-white font-semibold text-sm py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
         >
           <LogIn size={16} />
           {isPending ? 'Logging in…' : 'Log in'}
@@ -66,7 +66,7 @@ export default function LoginPage() {
 
       <p className="text-center text-xs text-zinc-500 mt-6">
         New to EveryJob?{' '}
-        <Link href="/register" className="font-semibold text-[#6329d4] hover:underline">
+        <Link href="/register" className="font-semibold text-ink hover:underline">
           Create your free workspace
         </Link>
       </p>

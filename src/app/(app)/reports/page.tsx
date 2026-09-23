@@ -50,7 +50,7 @@ export default async function ReportsPage() {
             action={
               <Link
                 href="/jobs/new"
-                className="bg-[#6329d4] hover:bg-[#5221b3] text-white px-4 py-2.5 rounded-xl font-semibold text-xs inline-flex items-center gap-2"
+                className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs inline-flex items-center gap-2"
               >
                 Create your first job
               </Link>
@@ -73,7 +73,7 @@ export default async function ReportsPage() {
               value={formatMoney(stats.avgJobValue, currency)}
               sub="Completed & paid jobs"
               icon={<Briefcase size={16} />}
-              accent="bg-violet-100 text-[#6329d4]"
+              accent="bg-smoke text-ink"
             />
             <StatCard
               label="Outstanding"
@@ -95,7 +95,7 @@ export default async function ReportsPage() {
             {/* Team performance shortcut */}
             <Link
               href="/reports/team"
-              className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-zinc-200/60 p-5 flex items-center justify-between gap-4 hover:border-[#6329d4]/40 transition-colors"
+              className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-zinc-200/60 p-5 flex items-center justify-between gap-4 hover:border-smoke transition-colors"
             >
               <div>
                 <h2 className="text-sm font-bold text-zinc-900">Team performance</h2>
@@ -103,7 +103,7 @@ export default async function ReportsPage() {
                   Jobs completed, revenue, and attendance by team member.
                 </p>
               </div>
-              <span className="text-xs font-semibold text-[#6329d4] inline-flex items-center gap-1 shrink-0">
+              <span className="text-xs font-semibold text-ink inline-flex items-center gap-1 shrink-0">
                 View report <ChevronRight size={13} />
               </span>
             </Link>
@@ -125,7 +125,7 @@ export default async function ReportsPage() {
                       <div
                         className={cn(
                           "h-full rounded-full transition-all",
-                          m.revenue > 0 ? "bg-[#6329d4]" : "bg-zinc-200"
+                          m.revenue > 0 ? "bg-ink" : "bg-zinc-200"
                         )}
                         style={{ width: `${Math.max(2, (m.revenue / maxRevenue) * 100)}%` }}
                       />
@@ -144,7 +144,7 @@ export default async function ReportsPage() {
                 <h2 className="text-sm font-bold text-zinc-900">Jobs by status</h2>
                 <Link
                   href="/jobs"
-                  className="text-xs font-semibold text-[#6329d4] hover:underline inline-flex items-center gap-1"
+                  className="text-xs font-semibold text-ink hover:underline inline-flex items-center gap-1"
                 >
                   All jobs <ChevronRight size={13} />
                 </Link>
@@ -231,7 +231,7 @@ export default async function ReportsPage() {
                 </div>
                 <Link
                   href="/invoices"
-                  className="bg-[#6329d4] hover:bg-[#5221b3] text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm shrink-0"
+                  className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm shrink-0"
                 >
                   Review invoices <ChevronRight size={13} />
                 </Link>

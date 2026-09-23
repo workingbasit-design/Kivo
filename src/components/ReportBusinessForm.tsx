@@ -34,7 +34,7 @@ export default function ReportBusinessForm({ slug }: { slug: string }) {
         name="reason"
         required
         defaultValue="spam"
-        className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 outline-none focus:border-[#8b5cf6]"
+        className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 outline-none focus:border-ink"
         aria-label="Reason"
       >
         {REASONS.map((r) => (
@@ -48,14 +48,14 @@ export default function ReportBusinessForm({ slug }: { slug: string }) {
         rows={2}
         maxLength={1000}
         placeholder="What happened? (optional)"
-        className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 placeholder:text-zinc-400 outline-none focus:border-[#8b5cf6]"
+        className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 placeholder:text-zinc-400 outline-none focus:border-ink"
       />
       <input
         name="reporterContact"
         type="text"
         maxLength={120}
         placeholder="Your phone or email so we can follow up (optional)"
-        className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 placeholder:text-zinc-400 outline-none focus:border-[#8b5cf6]"
+        className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-800 placeholder:text-zinc-400 outline-none focus:border-ink"
       />
       {state?.error && (
         <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">

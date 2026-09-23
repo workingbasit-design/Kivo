@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
-import { Sparkles, Star } from 'lucide-react';
+import { Star } from 'lucide-react';
+import EveryJobLogo from '@/components/EveryJobLogo';
 import { prisma } from '@/lib/prisma';
 import PublicReviewForm from '@/components/PublicReviewForm';
 
@@ -32,8 +33,8 @@ export default async function PublicReviewPage({
     <div className="min-h-screen bg-zinc-50 flex flex-col items-center px-4 py-10">
       <div className="w-full max-w-md space-y-6">
         <div className="text-center">
-          <div className="w-12 h-12 rounded-2xl bg-[#6329d4] flex items-center justify-center mx-auto mb-4">
-            <Sparkles className="w-6 h-6 text-white" />
+          <div className="mx-auto mb-4 w-fit">
+            <EveryJobLogo size={44} />
           </div>
           <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
             Leave a review for

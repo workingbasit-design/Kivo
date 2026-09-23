@@ -47,7 +47,7 @@ export default function CopilotDemo({ strings }: { strings: CopilotDemoStrings }
         className="ej-chat-msg flex items-center gap-2.5 mb-6"
         style={{ '--msg-delay': '0ms' } as CSSProperties}
       >
-        <span className="w-8 h-8 rounded-full bg-[#6329d4] flex items-center justify-center">
+        <span className="w-8 h-8 rounded-full bg-ink flex items-center justify-center">
           <Sparkles size={16} className="text-white" />
         </span>
         <span className="font-semibold text-[15px]">{strings.chatTitle}</span>
@@ -57,7 +57,7 @@ export default function CopilotDemo({ strings }: { strings: CopilotDemoStrings }
       </div>
       <div className="space-y-4 text-[14px]">
         <Msg side="user" delay={250}>
-          <p className="bg-[#6329d4] text-white px-4 py-2.5 rounded-2xl rounded-br-md">
+          <p className="bg-ink text-white px-4 py-2.5 rounded-2xl rounded-br-md">
             {strings.msg1}
           </p>
         </Msg>
@@ -67,7 +67,7 @@ export default function CopilotDemo({ strings }: { strings: CopilotDemoStrings }
           </p>
         </Msg>
         <Msg side="user" delay={1650}>
-          <p className="bg-[#6329d4] text-white px-4 py-2.5 rounded-2xl rounded-br-md">
+          <p className="bg-ink text-white px-4 py-2.5 rounded-2xl rounded-br-md">
             {strings.msg3}
           </p>
         </Msg>
@@ -84,7 +84,7 @@ export default function CopilotDemo({ strings }: { strings: CopilotDemoStrings }
         className="ej-chat-msg mt-6 bg-white/5 border border-white/10 rounded-full px-5 py-3 flex items-center gap-3"
         style={{ '--msg-delay': '2900ms' } as CSSProperties}
       >
-        <span className="text-[#a78bfa] text-[13px] font-medium">{strings.inputLabel}</span>
+        <span className="text-lime text-[13px] font-medium">{strings.inputLabel}</span>
         <span className="w-px h-4 bg-white/15" />
         <span className="text-white/30 text-[14px]">{strings.inputHint}</span>
       </div>

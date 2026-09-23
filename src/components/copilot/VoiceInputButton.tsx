@@ -76,7 +76,7 @@ export default function VoiceInputButton({
       } ${
         listening
           ? 'bg-red-500 text-white shadow-lg shadow-red-500/30 scale-105'
-          : 'bg-[#6329d4]/10 text-[#6329d4] hover:bg-[#6329d4]/20'
+          : 'bg-ink/10 text-ink hover:bg-smoke'
       }`}
     >
       {listening ? <Square size={15} /> : <Mic size={17} />}
@@ -140,7 +140,7 @@ export default function VoiceInputButton({
               onClick={() => setLang(l.code)}
               aria-pressed={lang === l.code}
               className={`rounded-full px-2 py-1 transition-colors ${
-                lang === l.code ? 'bg-[#6329d4] text-white' : 'text-zinc-400 hover:text-zinc-700'
+                lang === l.code ? 'bg-ink text-white' : 'text-zinc-400 hover:text-zinc-700'
               }`}
             >
               {l.label}

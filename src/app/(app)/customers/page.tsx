@@ -88,7 +88,7 @@ export default async function CustomersPage() {
             <Link href="/customers" className={primaryBtnClass}>
               Try again
             </Link>
-            <Link href="/customers/new" className="text-sm font-medium text-[#6329d4] hover:underline">
+            <Link href="/customers/new" className="text-sm font-medium text-ink hover:underline">
               Add a customer
             </Link>
           </div>

@@ -51,7 +51,7 @@ export default async function NewJobPage() {
       {customers.length === 0 && (
         <p className="text-xs text-zinc-400">
           Tip: you can also add customers properly from the{' '}
-          <Link href="/customers" className="text-[#6329d4] font-semibold hover:underline">
+          <Link href="/customers" className="text-ink font-semibold hover:underline">
             Customers
           </Link>{' '}
           page.

@@ -87,7 +87,7 @@ export default function PriceBookClient({ initialServices, currency }: { initial
 
           <button 
             onClick={() => setIsModalOpen(true)}
-            className="bg-[#6329d4] hover:bg-[#5221b3] text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition-colors flex items-center gap-2 shadow-sm cursor-pointer"
+            className="bg-ink hover:bg-graphite text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition-colors flex items-center gap-2 shadow-sm cursor-pointer"
           >
             <Plus size={16} /> Add Service
           </button>
@@ -119,16 +119,16 @@ export default function PriceBookClient({ initialServices, currency }: { initial
             placeholder="Search price book by name..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6329d4]/20 focus:border-[#6329d4]"
+            className="w-full pl-9 pr-4 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink"
           />
         </div>
 
         {/* Services Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredServices.map(service => (
-            <div key={service.id} className="p-5 border border-zinc-200 rounded-2xl hover:border-[#6329d4]/30 hover:shadow-md transition-all group relative bg-white">
+            <div key={service.id} className="p-5 border border-zinc-200 rounded-2xl hover:border-smoke hover:shadow-md transition-all group relative bg-white">
               <div className="flex justify-between items-start mb-3">
-                <div className="w-10 h-10 rounded-xl bg-[#f5f1fa] text-[#6329d4] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-smoke text-ink flex items-center justify-center">
                   <Tag size={18} />
                 </div>
 
@@ -161,7 +161,7 @@ export default function PriceBookClient({ initialServices, currency }: { initial
                   <button
                     onClick={handleSeed}
                     disabled={isPending}
-                    className="bg-[#6329d4] text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-[#5221b3] transition-colors flex items-center gap-2"
+                    className="bg-ink text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-graphite transition-colors flex items-center gap-2"
                   >
                     <Sparkles size={14} /> Populate 6 Standard Services
                   </button>
@@ -213,7 +213,7 @@ export default function PriceBookClient({ initialServices, currency }: { initial
                   placeholder="e.g. Split AC Jet Wash"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6329d4]/20 focus:border-[#6329d4]"
+                  className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink"
                 />
               </div>
 
@@ -225,7 +225,7 @@ export default function PriceBookClient({ initialServices, currency }: { initial
                   placeholder="e.g. 1500"
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
-                  className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6329d4]/20 focus:border-[#6329d4]"
+                  className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink"
                 />
               </div>
 
@@ -233,7 +233,7 @@ export default function PriceBookClient({ initialServices, currency }: { initial
                 <button 
                   type="submit" 
                   disabled={isPending}
-                  className="w-full bg-[#6329d4] hover:bg-[#5221b3] text-white py-3.5 rounded-xl font-bold text-sm transition-colors shadow-sm disabled:opacity-50"
+                  className="w-full bg-ink hover:bg-graphite text-white py-3.5 rounded-xl font-bold text-sm transition-colors shadow-sm disabled:opacity-50"
                 >
                   {isPending ? 'Saving...' : 'Save to Price Book'}
                 </button>

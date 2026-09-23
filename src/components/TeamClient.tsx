@@ -97,7 +97,7 @@ function MemberRow({ member, isSelf }: { member: TeamMember; isSelf: boolean }) 
     <div className="px-5 py-4 border-b border-zinc-100 last:border-0">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-full bg-[#f5f1fa] text-[#6329d4] flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-full bg-smoke text-ink flex items-center justify-center shrink-0">
             {member.role === 'ADMIN' ? <ShieldCheck size={18} /> : <User size={18} />}
           </div>
           <div className="min-w-0">

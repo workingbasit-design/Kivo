@@ -165,20 +165,20 @@ export default async function PublicProfilePage({
   };
 
   return (
-    <div className="min-h-screen bg-[#fafafa] font-sans">
+    <div className="min-h-screen bg-paper font-sans">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <header className="bg-[#17122b] text-white">
+      <header className="bg-ink text-white">
         <div className="max-w-2xl mx-auto px-4 py-8">
-          <Link href="/directory" className="text-xs text-[#b8b0c9] hover:text-white">
+          <Link href="/directory" className="text-xs text-white/60 hover:text-white">
             ← Back to directory
           </Link>
           <div className="flex items-start justify-between gap-3 mt-3">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{b.name}</h1>
-              {page.headline && <p className="text-[#b8b0c9] mt-1 text-sm">{page.headline}</p>}
+              {page.headline && <p className="text-white/60 mt-1 text-sm">{page.headline}</p>}
             </div>
             {verified && (
               <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-400/30 rounded-full px-2.5 py-1 shrink-0">
@@ -186,11 +186,11 @@ export default async function PublicProfilePage({
               </span>
             )}
           </div>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-3 text-xs text-[#b8b0c9]">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-3 text-xs text-white/60">
             {avg !== null ? (
               <span className="inline-flex items-center gap-1.5 text-white font-semibold">
                 <Star size={13} className="fill-amber-400 text-amber-400" />
-                {avg} <span className="font-normal text-[#b8b0c9]">({count} review{count === 1 ? '' : 's'})</span>
+                {avg} <span className="font-normal text-white/60">({count} review{count === 1 ? '' : 's'})</span>
               </span>
             ) : (
               <span>No reviews yet — be the first</span>
@@ -209,7 +209,7 @@ export default async function PublicProfilePage({
           <div className="flex flex-wrap gap-2 mt-5">
             <Link
               href={`/book/${slug}`}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-[#6329d4] hover:bg-[#5223b3] text-white text-sm font-bold px-5 py-2.5 transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-lime hover:bg-lime/85 text-ink text-sm font-bold px-5 py-2.5 transition-colors"
             >
               <CalendarCheck size={15} /> Book now
             </Link>
@@ -269,7 +269,7 @@ export default async function PublicProfilePage({
             </h2>
             <Link
               href={`/directory/request`}
-              className="text-xs font-bold text-[#6329d4] hover:underline"
+              className="text-xs font-bold text-ink hover:underline"
             >
               Request a quote
             </Link>
@@ -296,7 +296,7 @@ export default async function PublicProfilePage({
           )}
           <Link
             href={`/r/${b.id}`}
-            className="inline-block mt-3 text-xs font-bold text-[#6329d4] hover:underline"
+            className="inline-block mt-3 text-xs font-bold text-ink hover:underline"
           >
             Leave a review →
           </Link>
@@ -320,7 +320,7 @@ export default async function PublicProfilePage({
                 <li key={p.slug}>
                   <Link
                     href={`/p/${p.slug}`}
-                    className="flex items-center justify-between gap-2 rounded-xl border border-zinc-100 hover:border-[#8b5cf6] px-3.5 py-2.5 transition-colors"
+                    className="flex items-center justify-between gap-2 rounded-xl border border-zinc-100 hover:border-ink px-3.5 py-2.5 transition-colors"
                   >
                     <span>
                       <span className="block text-sm font-semibold text-zinc-800">{p.name}</span>

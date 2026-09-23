@@ -34,7 +34,7 @@ function setupCanvas(canvas: HTMLCanvasElement): CanvasRenderingContext2D | null
   ctx.lineWidth = 2.5;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
-  ctx.strokeStyle = '#17122b';
+  ctx.strokeStyle = '#161616';
   return ctx;
 }
 
@@ -204,7 +204,7 @@ export default function SignClient({
           onChange={(e) => setName(e.target.value)}
           maxLength={100}
           placeholder={signerNameHint ?? undefined}
-          className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-900 outline-none focus:border-[#17122b] focus:ring-1 focus:ring-[#17122b]"
+          className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-900 outline-none focus:border-ink focus:ring-1 focus:ring-ink"
         />
       </label>
 
@@ -225,7 +225,7 @@ export default function SignClient({
         type="button"
         onClick={sign}
         disabled={!nameOk || status === 'sending'}
-        className="mt-4 w-full rounded-lg bg-[#17122b] px-4 py-3 text-sm font-bold text-white transition disabled:opacity-40"
+        className="mt-4 w-full rounded-lg bg-ink px-4 py-3 text-sm font-bold text-white transition disabled:opacity-40"
       >
         {status === 'sending' ? s.signing : s.signButton}
       </button>

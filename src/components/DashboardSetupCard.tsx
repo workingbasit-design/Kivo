@@ -13,7 +13,7 @@ export default function DashboardSetupCard({ initialCompleted = false }: { initi
       <div className={`rounded-3xl p-6 border shadow-sm relative overflow-hidden transition-all ${
         isCompleted 
           ? 'bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-200' 
-          : 'bg-[#fcfaf8] border-[#ebdff5]'
+          : 'bg-paper border-smoke'
       }`}>
         <div className="flex justify-between items-start mb-4">
           <div>
@@ -79,7 +79,7 @@ export default function DashboardSetupCard({ initialCompleted = false }: { initi
         ) : (
           <button 
             onClick={() => setIsModalOpen(true)}
-            className="w-full bg-[#eadef7] hover:bg-[#d8c3f0] transition-colors text-[#5221b3] py-2.5 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 relative z-10 cursor-pointer shadow-sm"
+            className="w-full bg-ink hover:bg-graphite transition-colors text-white py-2.5 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 relative z-10 cursor-pointer shadow-sm"
           >
             Finish setup <ArrowRight size={14} />
           </button>

@@ -40,7 +40,7 @@ function Chip({
               : 'border-zinc-200 bg-white/90 text-zinc-700'
           }`}
         >
-          <Icon size={15} strokeWidth={1.8} className={accent ? 'text-amber-600' : 'text-[#6329d4]'} />
+          <Icon size={15} strokeWidth={1.8} className={accent ? 'text-amber-600' : 'text-ink'} />
           {label}
         </span>
       </div>
@@ -82,9 +82,9 @@ export default function HeroVisual({ strings }: { strings: HeroVisualStrings }) 
       >
         <defs>
           <linearGradient id="ej-hero-wave" x1="0" y1="0" x2="1200" y2="0" gradientUnits="userSpaceOnUse">
-            <stop stopColor="#6329d4" stopOpacity="0.25" />
-            <stop offset="0.55" stopColor="#7c3aed" stopOpacity="0.55" />
-            <stop offset="1" stopColor="#6329d4" stopOpacity="0.9" />
+            <stop stopColor="#161616" stopOpacity="0.25" />
+            <stop offset="0.55" stopColor="#161616" stopOpacity="0.55" />
+            <stop offset="1" stopColor="#161616" stopOpacity="0.9" />
           </linearGradient>
         </defs>
         <path
@@ -96,10 +96,10 @@ export default function HeroVisual({ strings }: { strings: HeroVisualStrings }) 
           className={styles.draw}
         />
         {/* Nodes appear as the wave passes */}
-        <circle cx="300" cy="300" r="6" fill="#fff" stroke="#7c3aed" strokeWidth="3" className={styles.node} style={nodeDelay(900)} />
-        <circle cx="540" cy="270" r="6" fill="#fff" stroke="#7c3aed" strokeWidth="3" className={styles.node} style={nodeDelay(1200)} />
-        <circle cx="790" cy="212" r="6" fill="#fff" stroke="#7c3aed" strokeWidth="3" className={styles.node} style={nodeDelay(1500)} />
-        <circle cx="1010" cy="243" r="6" fill="#fff" stroke="#7c3aed" strokeWidth="3" className={styles.node} style={nodeDelay(1750)} />
+        <circle cx="300" cy="300" r="6" fill="#fff" stroke="#161616" strokeWidth="3" className={styles.node} style={nodeDelay(900)} />
+        <circle cx="540" cy="270" r="6" fill="#fff" stroke="#161616" strokeWidth="3" className={styles.node} style={nodeDelay(1200)} />
+        <circle cx="790" cy="212" r="6" fill="#fff" stroke="#161616" strokeWidth="3" className={styles.node} style={nodeDelay(1500)} />
+        <circle cx="1010" cy="243" r="6" fill="#fff" stroke="#161616" strokeWidth="3" className={styles.node} style={nodeDelay(1750)} />
       </svg>
 
       {/* Scattered chips */}
@@ -139,13 +139,13 @@ export default function HeroVisual({ strings }: { strings: HeroVisualStrings }) 
         style={{ '--ej-delay': '1100ms' } as CSSProperties}
       >
         <div className={styles.float} style={{ '--float-delay': '-2.2s' } as CSSProperties}>
-          <span className="inline-flex items-center gap-3 rounded-2xl border border-[#6329d4]/25 bg-white/95 py-3 pl-3 pr-5 shadow-[0_20px_50px_-16px_rgba(99,41,212,0.45)] backdrop-blur">
+          <span className="inline-flex items-center gap-3 rounded-2xl border border-smoke bg-white/95 py-3 pl-3 pr-5 shadow-[0_20px_50px_-16px_rgba(22,22,22,0.4)] backdrop-blur">
             <EveryJobLogo size={36} />
             <span className="text-left leading-tight">
-              <span className="block text-[16px] font-semibold tracking-tight text-zinc-900">
+              <span className="block text-[16px] font-semibold tracking-tight text-ink">
                 EveryJob
               </span>
-              <span className="block text-[12px] font-medium text-[#6329d4]">
+              <span className="block text-[12px] font-medium text-graphite">
                 {strings.onePlace}
               </span>
             </span>

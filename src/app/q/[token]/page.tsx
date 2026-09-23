@@ -94,7 +94,7 @@ export default async function QuotePortalPage({
     <div className="min-h-screen bg-[#fafafa] font-sans">
       <main className="max-w-lg mx-auto px-4 py-8 space-y-5">
         <div className="text-center">
-          <div className="w-11 h-11 rounded-xl bg-[#6329d4] flex items-center justify-center mx-auto mb-3">
+          <div className="w-11 h-11 rounded-xl bg-ink flex items-center justify-center mx-auto mb-3">
             <FileText className="w-6 h-6 text-white" />
           </div>
           <h1 className="text-xl font-bold text-zinc-900 tracking-tight">{quote.business.name}</h1>
@@ -196,7 +196,7 @@ export default async function QuotePortalPage({
           <p className="text-center">
             <a
               href={`tel:${quote.business.phone.replace(/\s/g, '')}`}
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#6329d4]"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink"
             >
               <Phone size={15} /> {quote.business.phone}
             </a>

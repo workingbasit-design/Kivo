@@ -76,7 +76,7 @@ export default function InvoiceForm({
             {customers.length === 0 && (
               <p className="text-[11px] text-zinc-400 mt-1">
                 No customers yet —{' '}
-                <Link href="/customers/new" className="text-[#6329d4] font-semibold hover:underline">
+                <Link href="/customers/new" className="text-ink font-semibold hover:underline">
                   add one first
                 </Link>
                 .
@@ -147,7 +147,7 @@ export default function InvoiceForm({
                   onClick={() => setTaxRate(r)}
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-colors ${
                     taxRate === r
-                      ? 'bg-[#6329d4] text-white border-[#6329d4]'
+                      ? 'bg-ink text-white border-ink'
                       : 'bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300'
                   }`}
                 >

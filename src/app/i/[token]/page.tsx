@@ -100,10 +100,10 @@ export default async function InvoicePortalPage({
   const notes = displayNotes(invoice.notes, invoice.lineItems.length > 0);
 
   return (
-    <div className="min-h-screen bg-[#fafafa] font-sans">
+    <div className="min-h-screen bg-paper font-sans">
       <main className="max-w-lg mx-auto px-4 py-8 space-y-5">
         <div className="text-center">
-          <div className="w-11 h-11 rounded-xl bg-[#6329d4] flex items-center justify-center mx-auto mb-3">
+          <div className="w-11 h-11 rounded-xl bg-ink flex items-center justify-center mx-auto mb-3">
             <ReceiptText className="w-6 h-6 text-white" />
           </div>
           <h1 className="text-xl font-bold text-zinc-900 tracking-tight">{invoice.business.name}</h1>
@@ -218,7 +218,7 @@ export default async function InvoicePortalPage({
               <p>
                 <a
                   href={`tel:${invoice.business.phone.replace(/\s/g, '')}`}
-                  className="inline-flex items-center gap-1.5 font-semibold text-[#6329d4]"
+                  className="inline-flex items-center gap-1.5 font-semibold text-ink"
                 >
                   <Phone size={12} /> {invoice.business.phone}
                 </a>

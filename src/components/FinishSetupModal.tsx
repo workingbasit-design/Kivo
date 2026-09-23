@@ -69,7 +69,7 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
       <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-zinc-200 overflow-hidden flex flex-col">
         
         {/* Modal Header */}
-        <div className="p-6 bg-gradient-to-r from-[#1a1525] to-[#2b243b] text-white flex justify-between items-center relative overflow-hidden">
+        <div className="p-6 bg-ink text-white flex justify-between items-center relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-[#ff7a59]/20 rounded-full blur-2xl pointer-events-none"></div>
           
           <div className="flex items-center gap-3 relative z-10">
@@ -103,7 +103,7 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
               </p>
               <button
                 onClick={onClose}
-                className="w-full bg-[#6329d4] hover:bg-[#5221b3] text-white font-bold py-3.5 rounded-2xl transition-all shadow-md shadow-[#6329d4]/30"
+                className="w-full bg-ink hover:bg-graphite text-white font-bold py-3.5 rounded-2xl transition-all shadow-md shadow-ink/30"
               >
                 Back to Dashboard
               </button>
@@ -162,7 +162,7 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
               {/* Item 2: Team Availability */}
               <div className="bg-zinc-50 p-4 rounded-2xl border border-zinc-200/80 space-y-3">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-purple-100 text-[#6329d4] flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-xl bg-smoke text-ink flex items-center justify-center">
                     <Clock size={16} />
                   </div>
                   <div>
@@ -192,7 +192,7 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
                       onClick={() => setAutoAssignTech(!autoAssignTech)}
                       className={`w-full text-xs border rounded-xl p-2.5 font-semibold text-left transition-colors ${
                         autoAssignTech 
-                          ? 'bg-[#f3eefe] border-[#d8c3f0] text-[#6329d4]' 
+                          ? 'bg-smoke border-smoke text-ink' 
                           : 'bg-white border-zinc-200 text-zinc-700'
                       }`}
                     >
@@ -212,7 +212,7 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
                 <button
                   onClick={handleSaveSetup}
                   disabled={isPending}
-                  className="w-full bg-[#6329d4] hover:bg-[#5221b3] text-white font-bold py-3.5 rounded-2xl transition-all shadow-md shadow-[#6329d4]/30 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer text-sm"
+                  className="w-full bg-ink hover:bg-graphite text-white font-bold py-3.5 rounded-2xl transition-all shadow-md shadow-ink/30 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer text-sm"
                 >
                   <ShieldCheck size={16} />
                   {isPending ? 'Saving Setup...' : 'Complete & Enable Workspace Now'}

@@ -95,7 +95,7 @@ function WorkingHoursEditor({ initial }: { initial: string }) {
                 <button
                   type="button"
                   onClick={() => setDay(d.key, { open: '09:00', close: '18:00' })}
-                  className="text-[11px] font-semibold text-[#6329d4] hover:underline px-2 py-1 shrink-0"
+                  className="text-[11px] font-semibold text-ink hover:underline px-2 py-1 shrink-0"
                 >
                   Set hours
                 </button>
@@ -198,7 +198,7 @@ export default function SettingsForm({ business }: { business: BusinessFormData 
               type="checkbox"
               name="directoryOptIn"
               defaultChecked={business.directoryOptIn}
-              className="mt-0.5 h-4 w-4 rounded accent-[#6329d4]"
+              className="mt-0.5 h-4 w-4 rounded accent-ink"
             />
             <span className="text-xs text-zinc-700">
               <span className="font-semibold">Show my business in the EveryJob directory</span>
@@ -210,7 +210,7 @@ export default function SettingsForm({ business }: { business: BusinessFormData 
               type="checkbox"
               name="directoryHideAddress"
               defaultChecked={business.directoryHideAddress}
-              className="mt-0.5 h-4 w-4 rounded accent-[#6329d4]"
+              className="mt-0.5 h-4 w-4 rounded accent-ink"
             />
             <span className="text-xs text-zinc-700">
               <span className="font-semibold">Hide my exact address</span>

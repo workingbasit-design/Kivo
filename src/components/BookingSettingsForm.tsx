@@ -46,7 +46,7 @@ export default function BookingSettingsForm({
               type="checkbox"
               name="enabled"
               defaultChecked={initial?.enabled ?? true}
-              className="mt-1 w-4 h-4 accent-[#6329d4]"
+              className="mt-1 w-4 h-4 accent-ink"
             />
             <span>
               <span className="block text-sm font-semibold text-zinc-900">Enable online booking</span>
@@ -125,7 +125,7 @@ export default function BookingSettingsForm({
             {copied ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
             {copied ? 'Copied' : 'Copy'}
           </button>
-          <a href={publicUrl} target="_blank" rel="noreferrer" className="shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2.5 rounded-xl bg-[#6329d4] text-white hover:bg-[#5221b3]">
+          <a href={publicUrl} target="_blank" rel="noreferrer" className="shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2.5 rounded-xl bg-ink text-white hover:bg-graphite">
             <ExternalLink size={14} /> Open
           </a>
         </div>

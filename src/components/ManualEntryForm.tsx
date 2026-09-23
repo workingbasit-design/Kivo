@@ -50,7 +50,7 @@ export default function ManualEntryForm({
         onClick={() => setOpen(!open)}
         className="flex items-center gap-2 text-sm font-bold text-zinc-900"
       >
-        <PlusCircle size={16} className="text-[#6329d4]" />
+        <PlusCircle size={16} className="text-ink" />
         {open ? 'Hide manual entry' : 'Add manual entry'}
       </button>
 

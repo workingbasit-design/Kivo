@@ -59,10 +59,10 @@ export default function ClockWidget({
   if (activeSession) {
     const elapsed = now - new Date(activeSession.clockInISO).getTime();
     return (
-      <div className="bg-[#17122b] text-white rounded-2xl p-5 shadow-sm">
+      <div className="bg-ink text-white rounded-2xl p-5 shadow-sm">
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-[#938b9f] mb-1 flex items-center gap-1.5">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-white/50 mb-1 flex items-center gap-1.5">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
@@ -77,7 +77,7 @@ export default function ClockWidget({
             <p className="text-3xl font-bold tabular-nums tracking-tight">
               {formatElapsed(elapsed)}
             </p>
-            <p className="text-xs text-[#938b9f] mt-1">
+            <p className="text-xs text-white/50 mt-1">
               since {new Date(activeSession.clockInISO).toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' })}
             </p>
           </div>
@@ -86,7 +86,7 @@ export default function ClockWidget({
             disabled={isPending}
             className={cn(
               secondaryBtnClass,
-              '!bg-[#6329d4] !border-[#6329d4] !text-white hover:!bg-[#5221b3] !py-3 !px-5 !text-sm shrink-0'
+              '!bg-ink !border-ink !text-white hover:!bg-graphite !py-3 !px-5 !text-sm shrink-0'
             )}
           >
             <Square size={14} />
@@ -106,7 +106,7 @@ export default function ClockWidget({
   return (
     <div className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-5">
       <div className="flex items-center gap-2 mb-3">
-        <div className="w-8 h-8 rounded-xl bg-violet-100 text-[#6329d4] flex items-center justify-center">
+        <div className="w-8 h-8 rounded-xl bg-smoke text-ink flex items-center justify-center">
           <Timer size={16} />
         </div>
         <div>

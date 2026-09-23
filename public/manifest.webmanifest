@@ -1,5 +1,5 @@
 {
-  "background_color": "#fafafa",
+  "background_color": "#FAFAF7",
   "categories": [
     "business",
     "productivity",
@@ -35,5 +35,5 @@
   "scope": "/",
   "short_name": "EveryJob",
   "start_url": "/dashboard",
-  "theme_color": "#6329d4"
+  "theme_color": "#161616"
 }

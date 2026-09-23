@@ -1,4 +1,5 @@
 import { headers } from 'next/headers';
+import Logo from '@/components/Logo';
 import { FileText, PenLine } from 'lucide-react';
 import {
   resolveSignatureRequest,
@@ -69,7 +70,7 @@ function FieldMarker({
   const top = Math.min(100, Math.max(0, field.y <= 1 ? field.y * 100 : field.y));
   return (
     <span
-      className="pointer-events-none absolute z-10 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-full border border-[#17122b]/30 bg-[#17122b]/90 px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap text-white"
+      className="pointer-events-none absolute z-10 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-full border border-ink/30 bg-ink/90 px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap text-white"
       style={{ left: `${left}%`, top: `${top}%` }}
     >
       <PenLine size={10} />
@@ -112,9 +113,12 @@ export default async function SignPage({
 
   return (
     <div className="min-h-screen bg-[#fafafa] font-sans">
-      <header className="bg-[#17122b] text-white">
+      <header className="bg-ink text-white">
         <div className="mx-auto max-w-lg px-4 py-8">
-          <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#b8b0c9]">
+          <div className="mb-4">
+            <Logo tone="onDark" size={28} />
+          </div>
+          <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/60">
             {business.name}
           </p>
           <h1 className="text-2xl font-bold tracking-tight">{L('esign.signTitle')}</h1>

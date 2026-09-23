@@ -39,7 +39,7 @@ function ensureHeadTags() {
   };
   link('manifest', '/manifest.webmanifest');
   link('apple-touch-icon', '/icons/apple-touch-icon.png');
-  meta('theme-color', '#6329d4');
+  meta('theme-color', '#161616');
   meta('mobile-web-app-capable', 'yes');
   meta('apple-mobile-web-app-capable', 'yes');
   meta('apple-mobile-web-app-status-bar-style', 'default');

@@ -168,7 +168,7 @@ export default function CampaignDetailClient({
             <button
               type="button"
               onClick={() => setExpanded(!expanded)}
-              className="text-xs font-semibold text-[#6329d4] hover:text-[#5221b3]"
+              className="text-xs font-semibold text-ink hover:text-graphite"
             >
               {expanded ? 'Show fewer' : `Show all ${recipients.length} recipients`}
             </button>

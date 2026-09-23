@@ -106,7 +106,7 @@ function LeadCard({ lead }: { lead: LeadItem }) {
       {lead.phone && (
         <a
           href={`tel:${lead.phone.replace(/\s/g, '')}`}
-          className="text-xs text-zinc-600 flex items-center gap-1.5 hover:text-[#6329d4]"
+          className="text-xs text-zinc-600 flex items-center gap-1.5 hover:text-ink"
         >
           <Phone size={11} /> {lead.phone}
         </a>

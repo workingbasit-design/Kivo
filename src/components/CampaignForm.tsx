@@ -97,25 +97,25 @@ export default function CampaignForm({
               type="button"
               onClick={handlePreview}
               disabled={previewLoading}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#6329d4] hover:text-[#5221b3] disabled:opacity-60"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink hover:text-graphite disabled:opacity-60"
             >
               <Users size={13} />
               {previewLoading ? 'Checking…' : 'Preview audience'}
             </button>
           </div>
           {preview && (
-            <div className="mt-2 bg-violet-50 border border-violet-100 rounded-xl px-3 py-2.5">
-              <p className="text-xs font-bold text-violet-900">
+            <div className="mt-2 bg-smoke border border-smoke rounded-xl px-3 py-2.5">
+              <p className="text-xs font-bold text-ink">
                 {preview.count} recipient{preview.count === 1 ? '' : 's'}
               </p>
               {preview.sample.length > 0 && (
-                <p className="text-[11px] text-violet-700 mt-0.5">
+                <p className="text-[11px] text-ink mt-0.5">
                   e.g. {preview.sample.map((s) => s.name).join(', ')}
                   {preview.count > preview.sample.length && '…'}
                 </p>
               )}
               {preview.count === 0 && (
-                <p className="text-[11px] text-violet-700 mt-0.5">
+                <p className="text-[11px] text-ink mt-0.5">
                   No customers match this audience yet.
                 </p>
               )}

@@ -52,7 +52,7 @@ export default function AppSidebar({
   const pathname = usePathname();
 
   return (
-    <aside className="hidden md:flex flex-col w-64 bg-[#17122b] text-white min-h-screen sticky top-0 font-sans shrink-0">
+    <aside className="hidden md:flex flex-col w-64 bg-ink text-white min-h-screen sticky top-0 font-sans shrink-0">
       {/* Header / Logo */}
       <div className="p-6 pb-2">
         <Link href="/dashboard" className="flex items-center gap-3 mb-8">
@@ -61,13 +61,13 @@ export default function AppSidebar({
         </Link>
 
         <div className="mb-4">
-          <p className="text-[10px] uppercase tracking-wider text-[#938b9f] font-semibold mb-1">
+          <p className="text-[10px] uppercase tracking-wider text-white/50 font-semibold mb-1">
             Today, in one view
           </p>
           <div className="text-2xl font-bold text-white tracking-tight">
             {formatMoney(stats.bookedToday, stats.currency)}
           </div>
-          <p className="text-xs text-[#938b9f] mt-1">
+          <p className="text-xs text-white/50 mt-1">
             booked today · {stats.jobsLeftToday} job{stats.jobsLeftToday === 1 ? '' : 's'} left
           </p>
         </div>
@@ -90,15 +90,15 @@ export default function AppSidebar({
               aria-current={isActive ? 'page' : undefined}
               className={`flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70 ${
                 isActive
-                  ? 'bg-[#6329d4] text-white shadow-sm'
-                  : 'text-[#938b9f] hover:bg-[#2b243b] hover:text-white'
+                  ? 'bg-lime text-ink shadow-sm'
+                  : 'text-white/50 hover:bg-white/10 hover:text-white'
               }`}
             >
               <div className="flex items-center gap-3">
                 <item.icon
                   size={18}
                   strokeWidth={2}
-                  className={isActive ? 'text-white' : 'text-[#938b9f] group-hover:text-white'}
+                  className={isActive ? 'text-ink' : 'text-white/50 group-hover:text-white'}
                 />
                 <span className={`text-[13px] font-medium ${isActive ? 'font-semibold' : ''}`}>
                   {label}
@@ -116,15 +116,15 @@ export default function AppSidebar({
       </nav>
 
       {/* User profile / Logout */}
-      <div className="p-4 border-t border-[#2b243b] mt-auto">
+      <div className="p-4 border-t border-white/10 mt-auto">
         <form action={logout}>
-          <button className="flex items-center gap-3 px-3 py-2 text-[#938b9f] hover:bg-[#2b243b] hover:text-white transition-colors rounded-xl w-full text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70">
-            <div className="w-8 h-8 rounded-full bg-[#6329d4] text-white flex items-center justify-center text-sm font-bold shadow-inner shrink-0">
+          <button className="flex items-center gap-3 px-3 py-2 text-white/50 hover:bg-white/10 hover:text-white transition-colors rounded-xl w-full text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70">
+            <div className="w-8 h-8 rounded-full bg-ink text-white flex items-center justify-center text-sm font-bold shadow-inner shrink-0">
               {(user.name || user.email).charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold text-white truncate">{user.name || user.email}</p>
-              <p className="text-[10px] text-[#938b9f] truncate flex items-center gap-1">
+              <p className="text-[10px] text-white/50 truncate flex items-center gap-1">
                 <LogOut size={10} /> {t(locale, 'nav.logout')}
               </p>
             </div>

@@ -123,7 +123,7 @@ export default function RoutesClient({
 
   const legLine = (stop: RouteStop) =>
     stop.legKm != null || stop.legMinutes != null ? (
-      <p className="flex items-center gap-1.5 text-[11px] font-semibold text-[#6329d4]">
+      <p className="flex items-center gap-1.5 text-[11px] font-semibold text-ink">
         <Car size={13} className="shrink-0" />
         {stop.legKm != null ? `${stop.legKm} km` : '—'}
         {stop.legMinutes != null ? ` · ~${stop.legMinutes} min drive from previous` : ''}
@@ -278,7 +278,7 @@ export default function RoutesClient({
                         href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(stop.address)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-[#6329d4] font-semibold hover:underline"
+                        className="inline-flex items-center gap-2 text-ink font-semibold hover:underline"
                       >
                         <Navigation size={15} className="shrink-0" />
                         Get directions
@@ -331,7 +331,7 @@ export default function RoutesClient({
         <div className="space-y-2.5">
           {stops.map((stop, i) => (
             <Card key={stop.id} className="p-4 flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-[#6329d4] text-white flex items-center justify-center text-sm font-bold shrink-0">
+              <div className="w-8 h-8 rounded-xl bg-ink text-white flex items-center justify-center text-sm font-bold shrink-0">
                 {i + 1}
               </div>
               <div className="flex-1 min-w-0">

@@ -148,7 +148,7 @@ export default async function SchedulePage({
         actions={
           <Link
             href="/jobs/new"
-            className="bg-[#6329d4] hover:bg-[#5221b3] text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
+            className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
           >
             <CalendarDays size={14} /> New job
           </Link>
@@ -172,7 +172,7 @@ export default async function SchedulePage({
           <div className="flex items-center gap-2">
             <Link
               href="/schedule"
-              className="text-xs font-bold text-[#6329d4] bg-[#f3eefe] hover:bg-[#e9defc] px-3 py-1.5 rounded-xl border border-[#e5d8fd] transition-colors"
+              className="text-xs font-bold text-ink bg-smoke hover:bg-smoke px-3 py-1.5 rounded-xl border border-smoke transition-colors"
             >
               This week
             </Link>
@@ -202,9 +202,9 @@ export default async function SchedulePage({
                 className={cn(
                   'flex flex-col items-center rounded-xl border py-2 md:py-3 transition-colors',
                   isActive
-                    ? 'bg-[#6329d4] text-white border-[#6329d4] shadow-sm'
-                    : 'bg-white border-zinc-200 hover:border-[#6329d4]/40 hover:bg-[#faf8ff]',
-                  isToday && !isActive && 'border-[#6329d4]/50'
+                    ? 'bg-ink text-white border-ink shadow-sm'
+                    : 'bg-white border-zinc-200 hover:border-smoke hover:bg-paper',
+                  isToday && !isActive && 'border-smoke'
                 )}
               >
                 <span
@@ -229,7 +229,7 @@ export default async function SchedulePage({
                     isActive
                       ? 'bg-white/25 text-white'
                       : count > 0
-                        ? 'bg-[#f3eefe] text-[#6329d4]'
+                        ? 'bg-smoke text-ink'
                         : 'bg-zinc-100 text-zinc-400'
                   )}
                 >
@@ -257,7 +257,7 @@ export default async function SchedulePage({
           <div className="mt-3 text-center">
             <Link
               href={weekLink(weekStart)}
-              className="text-xs font-semibold text-[#6329d4] hover:underline"
+              className="text-xs font-semibold text-ink hover:underline"
             >
               Show whole week
             </Link>

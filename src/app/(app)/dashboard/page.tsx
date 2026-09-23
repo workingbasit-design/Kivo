@@ -51,7 +51,7 @@ export default async function DashboardPage() {
         actions={
           <Link
             href="/jobs/new"
-            className="bg-[#6329d4] hover:bg-[#5221b3] text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
+            className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
           >
             <Plus size={14} /> New job
           </Link>
@@ -65,7 +65,7 @@ export default async function DashboardPage() {
           value={formatMoney(stats.bookedToday, currency)}
           sub={`${stats.jobsLeftToday} job${stats.jobsLeftToday === 1 ? "" : "s"} still open`}
           icon={<Calendar size={16} />}
-          accent="bg-violet-100 text-[#6329d4]"
+          accent="bg-smoke text-ink"
         />
         <StatCard
           label="Collected · 7 days"
@@ -95,11 +95,11 @@ export default async function DashboardPage() {
         <Card>
           <div className="flex items-center justify-between px-5 pt-5 pb-3">
             <h2 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
-              <Clock size={15} className="text-[#6329d4]" /> Today&apos;s schedule
+              <Clock size={15} className="text-ink" /> Today&apos;s schedule
             </h2>
             <Link
               href="/schedule"
-              className="text-xs font-semibold text-[#6329d4] hover:underline inline-flex items-center gap-1"
+              className="text-xs font-semibold text-ink hover:underline inline-flex items-center gap-1"
             >
               Schedule <ChevronRight size={13} />
             </Link>
@@ -112,7 +112,7 @@ export default async function DashboardPage() {
               action={
                 <Link
                   href="/jobs/new"
-                  className="bg-[#6329d4] hover:bg-[#5221b3] text-white px-4 py-2.5 rounded-xl font-semibold text-xs inline-flex items-center gap-2"
+                  className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs inline-flex items-center gap-2"
                 >
                   <Plus size={14} /> New job
                 </Link>
@@ -148,7 +148,7 @@ export default async function DashboardPage() {
             </h2>
             <Link
               href="/invoices"
-              className="text-xs font-semibold text-[#6329d4] hover:underline inline-flex items-center gap-1"
+              className="text-xs font-semibold text-ink hover:underline inline-flex items-center gap-1"
             >
               Invoices <ChevronRight size={13} />
             </Link>
@@ -220,7 +220,7 @@ export default async function DashboardPage() {
                 <Link
                   key={g.status}
                   href="/jobs"
-                  className="inline-flex items-center gap-2 bg-zinc-50 border border-zinc-200 rounded-full px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:border-[#6329d4]/40 transition-colors"
+                  className="inline-flex items-center gap-2 bg-zinc-50 border border-zinc-200 rounded-full px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:border-smoke transition-colors"
                 >
                   <StatusBadge status={g.status} />
                   <span>{g.count}</span>
@@ -237,9 +237,9 @@ export default async function DashboardPage() {
               <Link
                 key={a.label}
                 href={a.href}
-                className="flex flex-col items-center gap-2 bg-zinc-50 hover:bg-[#6329d4]/5 border border-zinc-200 hover:border-[#6329d4]/30 rounded-2xl p-4 transition-colors"
+                className="flex flex-col items-center gap-2 bg-zinc-50 hover:bg-ink/5 border border-zinc-200 hover:border-smoke rounded-2xl p-4 transition-colors"
               >
-                <span className="w-9 h-9 rounded-xl bg-[#6329d4]/10 text-[#6329d4] flex items-center justify-center">
+                <span className="w-9 h-9 rounded-xl bg-ink/10 text-ink flex items-center justify-center">
                   <a.icon size={16} />
                 </span>
                 <span className="text-xs font-semibold text-zinc-700">{a.label}</span>

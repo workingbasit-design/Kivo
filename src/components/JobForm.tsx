@@ -96,7 +96,7 @@ export default function JobForm({
       </Field>
 
       {showNewCustomer && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-[#f8f6ff] border border-[#e5d8fd] rounded-2xl">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-paper border border-smoke rounded-2xl">
           <Field label="New customer name">
             <input
               name="newCustomerName"

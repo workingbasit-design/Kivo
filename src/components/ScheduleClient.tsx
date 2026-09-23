@@ -187,7 +187,7 @@ export default function ScheduleClient({
             <button 
               onClick={() => setSelectedDate('TODAY')}
               className={`px-3 py-1.5 font-bold text-xs rounded-lg transition-colors ${
-                selectedDate === 'TODAY' ? 'bg-[#6329d4] text-white shadow-sm' : 'text-zinc-600 hover:bg-white'
+                selectedDate === 'TODAY' ? 'bg-ink text-white shadow-sm' : 'text-zinc-600 hover:bg-white'
               }`}
             >
               Today
@@ -211,7 +211,7 @@ export default function ScheduleClient({
           </button>
 
           {selectedDate !== 'TODAY' && selectedDate !== 'ALL' && (
-            <span className="text-xs font-bold text-[#6329d4] bg-[#f3eefe] px-3 py-1.5 rounded-xl border border-[#e5d8fd]">
+            <span className="text-xs font-bold text-ink bg-smoke px-3 py-1.5 rounded-xl border border-smoke">
               {selectedDate}
             </span>
           )}
@@ -231,7 +231,7 @@ export default function ScheduleClient({
 
           <Link 
             href="/jobs/new" 
-            className="bg-[#6329d4] hover:bg-[#5221b3] text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors flex items-center gap-2 shadow-sm"
+            className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors flex items-center gap-2 shadow-sm"
           >
             <Plus size={14} /> Schedule New Job
           </Link>
@@ -249,7 +249,7 @@ export default function ScheduleClient({
               onClick={() => setStatusFilter(st)}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
                 statusFilter === st 
-                  ? 'bg-[#6329d4] text-white' 
+                  ? 'bg-ink text-white' 
                   : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
               }`}
             >
@@ -266,7 +266,7 @@ export default function ScheduleClient({
             placeholder="Search schedule..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#6329d4]/20 focus:border-[#6329d4]"
+            className="w-full pl-9 pr-4 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink"
           />
         </div>
       </div>
@@ -306,7 +306,7 @@ export default function ScheduleClient({
                 <button
                   onClick={handleSeedJobs}
                   disabled={isPending}
-                  className="bg-[#6329d4] text-white font-semibold px-4 py-2.5 rounded-xl text-xs hover:bg-[#5221b3] transition-colors flex items-center gap-2"
+                  className="bg-ink text-white font-semibold px-4 py-2.5 rounded-xl text-xs hover:bg-graphite transition-colors flex items-center gap-2"
                 >
                   <Sparkles size={14} /> Populate 3 Mapped Jobs Now
                 </button>
@@ -341,7 +341,7 @@ export default function ScheduleClient({
                         {job.status}
                       </span>
 
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-[#6329d4] bg-[#f3eefe] px-2.5 py-1 rounded-md">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-ink bg-smoke px-2.5 py-1 rounded-md">
                         <Clock size={12} />
                         <span>{hasJobTime(job.time) ? job.time : 'Time TBD'}</span>
                       </div>
@@ -356,7 +356,7 @@ export default function ScheduleClient({
                     </div>
 
                     <div>
-                      <Link href={`/jobs/${job.id}`} className="text-lg font-bold text-zinc-900 hover:text-[#6329d4] transition-colors">
+                      <Link href={`/jobs/${job.id}`} className="text-lg font-bold text-zinc-900 hover:text-ink transition-colors">
                         {job.title}
                       </Link>
                       <p className="text-xs font-medium text-zinc-600 mt-0.5">
@@ -424,7 +424,7 @@ export default function ScheduleClient({
                           <button
                             onClick={() => saveEdit(job.id)}
                             disabled={isPending}
-                            className="bg-[#6329d4] text-white text-xs px-3 py-1.5 rounded-lg font-semibold hover:bg-[#5221b3]"
+                            className="bg-ink text-white text-xs px-3 py-1.5 rounded-lg font-semibold hover:bg-graphite"
                           >
                             Save Changes
                           </button>
@@ -455,7 +455,7 @@ export default function ScheduleClient({
                               ? 'No further status changes available for this job'
                               : 'Change job status'
                           }
-                          className="text-xs bg-zinc-50 border border-zinc-200 font-semibold text-zinc-700 rounded-xl px-2.5 py-2 focus:outline-none focus:ring-1 focus:ring-[#6329d4] disabled:opacity-60"
+                          className="text-xs bg-zinc-50 border border-zinc-200 font-semibold text-zinc-700 rounded-xl px-2.5 py-2 focus:outline-none focus:ring-1 focus:ring-ink disabled:opacity-60"
                         >
                           <option value={job.status}>Current: {job.status}</option>
                           {nextStatuses.map((s) => (

@@ -55,7 +55,7 @@ export function LanguageToggle({ current }: { current: Locale }) {
           aria-pressed={current === l.code}
           className={`rounded-full px-3 py-1.5 transition-colors ${
             current === l.code
-              ? 'bg-[#6329d4] text-white shadow-sm'
+              ? 'bg-ink text-white shadow-sm'
               : 'text-zinc-500 hover:text-zinc-900'
           }`}
         >

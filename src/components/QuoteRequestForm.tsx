@@ -6,7 +6,7 @@ import { AlertCircle, CheckCircle2, Clock, MessageSquareQuote, Send } from 'luci
 import { submitQuoteRequest, type DirectoryActionResult } from '@/app/actions/directory';
 
 const inputClass =
-  'w-full rounded-xl border border-zinc-200 bg-white px-3.5 py-2.5 text-sm text-zinc-800 placeholder:text-zinc-400 outline-none focus:border-[#8b5cf6]';
+  'w-full rounded-xl border border-zinc-200 bg-white px-3.5 py-2.5 text-sm text-zinc-800 placeholder:text-zinc-400 outline-none focus:border-ink';
 
 export default function QuoteRequestForm() {
   const [state, formAction, isPending] = useActionState<DirectoryActionResult, FormData>(
@@ -36,7 +36,7 @@ export default function QuoteRequestForm() {
         <p className="text-xs text-zinc-400 mt-4">
           They&apos;ll contact you directly if they can take the work. EveryJob never charges you anything.
         </p>
-        <Link href="/directory" className="inline-block mt-4 text-sm font-bold text-[#6329d4] hover:underline">
+        <Link href="/directory" className="inline-block mt-4 text-sm font-bold text-ink hover:underline">
           ← Back to directory
         </Link>
       </div>
@@ -56,11 +56,11 @@ export default function QuoteRequestForm() {
           but your request is <span className="font-bold text-zinc-900">saved as an open lead</span>.
           Pros who join {state.city} will see it and can contact you directly.
         </p>
-        <div className="mt-4 bg-[#f8f6ff] border border-[#e5d8fd] rounded-xl px-4 py-3 text-xs text-zinc-600">
+        <div className="mt-4 bg-paper border border-smoke rounded-xl px-4 py-3 text-xs text-zinc-600">
           Tip: also try a nearby city — you can submit another request anytime, it&apos;s free.
         </div>
         <div className="mt-5 flex items-center justify-center gap-4">
-          <Link href="/directory" className="text-sm font-bold text-[#6329d4] hover:underline">
+          <Link href="/directory" className="text-sm font-bold text-ink hover:underline">
             ← Back to directory
           </Link>
           <Link
@@ -81,8 +81,8 @@ export default function QuoteRequestForm() {
       className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-6 md:p-8 space-y-4"
     >
       <div className="flex items-center gap-2.5 mb-1">
-        <div className="w-10 h-10 rounded-xl bg-[#f1ecfd] flex items-center justify-center">
-          <MessageSquareQuote className="w-5 h-5 text-[#6329d4]" />
+        <div className="w-10 h-10 rounded-xl bg-smoke flex items-center justify-center">
+          <MessageSquareQuote className="w-5 h-5 text-ink" />
         </div>
         <div>
           <h1 className="text-lg font-bold text-zinc-900 tracking-tight">Request quotes</h1>
@@ -196,7 +196,7 @@ export default function QuoteRequestForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[#6329d4] hover:bg-[#5223b3] text-white text-sm font-bold px-5 py-3 transition-colors disabled:opacity-60"
+        className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-ink hover:bg-graphite text-white text-sm font-bold px-5 py-3 transition-colors disabled:opacity-60"
       >
         <Send size={15} /> {isPending ? 'Sending…' : 'Send request to matching pros'}
       </button>

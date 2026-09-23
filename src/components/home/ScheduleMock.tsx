@@ -57,7 +57,7 @@ export default function ScheduleMock({ strings }: { strings: ScheduleMockStrings
       </div>
       <div className="relative flex items-center gap-3 px-5 py-4 bg-zinc-50 border-t border-zinc-100 overflow-hidden">
         <div className="ej-mock-shimmer pointer-events-none absolute inset-0" aria-hidden />
-        <Share2 size={17} className="text-[#6329d4] shrink-0" />
+        <Share2 size={17} className="text-ink shrink-0" />
         <p className="text-[13px] text-zinc-600">
           {strings.footerBefore} <span className="font-semibold text-zinc-900">{strings.footerInv}</span>{' '}
           {strings.footerAfter}

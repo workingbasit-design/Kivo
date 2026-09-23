@@ -1,4 +1,5 @@
 import { headers } from 'next/headers';
+import Logo from '@/components/Logo';
 import { Briefcase, FileText, Phone, ReceiptText, Wallet } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { rateLimit } from '@/lib/rate-limit';
@@ -91,13 +92,16 @@ export default async function CustomerPortalPage({
 
   return (
     <div className="min-h-screen bg-[#fafafa] font-sans">
-      <header className="bg-[#17122b] text-white">
+      <header className="bg-ink text-white">
         <div className="max-w-lg mx-auto px-4 py-8">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#b8b0c9] mb-1">
+          <div className="mb-4">
+            <Logo tone="onDark" size={28} />
+          </div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/60 mb-1">
             {customer.business.name}
           </p>
           <h1 className="text-2xl font-bold tracking-tight">Hi, {customer.name}</h1>
-          <p className="text-[#b8b0c9] mt-1 text-sm">
+          <p className="text-white/60 mt-1 text-sm">
             Your jobs, quotes and invoices — all in one place.
           </p>
         </div>

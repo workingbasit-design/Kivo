@@ -198,10 +198,10 @@ export default function AddressAutocomplete({
                   }}
                   onMouseEnter={() => setActiveIndex(i)}
                   className={`w-full text-left px-4 py-2.5 flex items-start gap-2.5 cursor-pointer ${
-                    i === activeIndex ? 'bg-[#f3ecff]' : 'hover:bg-zinc-50'
+                    i === activeIndex ? 'bg-smoke' : 'hover:bg-zinc-50'
                   }`}
                 >
-                  <MapPin size={14} className="text-[#6329d4] mt-0.5 shrink-0" />
+                  <MapPin size={14} className="text-ink mt-0.5 shrink-0" />
                   <span className="min-w-0">
                     <span className="block text-[13px] leading-snug text-zinc-900 truncate">
                       {s.displayName}

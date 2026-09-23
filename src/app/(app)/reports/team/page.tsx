@@ -109,7 +109,7 @@ export default async function TeamPerformancePage({
               href="/reports/team?period=week"
               className={cn(
                 'px-4 py-2.5 transition-colors',
-                period === 'week' ? 'bg-[#6329d4] text-white' : 'bg-white text-zinc-600 hover:bg-zinc-50'
+                period === 'week' ? 'bg-ink text-white' : 'bg-white text-zinc-600 hover:bg-zinc-50'
               )}
             >
               This week
@@ -118,7 +118,7 @@ export default async function TeamPerformancePage({
               href="/reports/team?period=month"
               className={cn(
                 'px-4 py-2.5 transition-colors',
-                period === 'month' ? 'bg-[#6329d4] text-white' : 'bg-white text-zinc-600 hover:bg-zinc-50'
+                period === 'month' ? 'bg-ink text-white' : 'bg-white text-zinc-600 hover:bg-zinc-50'
               )}
             >
               This month
@@ -133,7 +133,7 @@ export default async function TeamPerformancePage({
           value={formatDuration(totalMinutes)}
           sub={`${members.length} member${members.length === 1 ? '' : 's'}`}
           icon={<Clock3 size={16} />}
-          accent="bg-violet-100 text-[#6329d4]"
+          accent="bg-smoke text-ink"
         />
         <StatCard
           label="Jobs completed"
@@ -181,7 +181,7 @@ export default async function TeamPerformancePage({
                   <tr key={r.id} className="hover:bg-zinc-50/60">
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-violet-100 text-[#6329d4] flex items-center justify-center font-bold text-xs shrink-0">
+                        <div className="w-9 h-9 rounded-xl bg-smoke text-ink flex items-center justify-center font-bold text-xs shrink-0">
                           {(r.name || r.email).charAt(0).toUpperCase()}
                         </div>
                         <div className="min-w-0">

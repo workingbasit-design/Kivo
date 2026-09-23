@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { MapPin, Search, Star, BadgeCheck, Sparkles, MessageSquareQuote } from 'lucide-react';
+import { MapPin, Search, Star, BadgeCheck, MessageSquareQuote } from 'lucide-react';
+import Logo from '@/components/Logo';
 import { prisma } from '@/lib/prisma';
 import {
   matchesCity,
@@ -72,19 +73,17 @@ export default async function DirectoryPage({
   const searching = q.trim() !== '' || city.trim() !== '';
 
   return (
-    <div className="min-h-screen bg-[#fafafa] font-sans">
-      <header className="bg-[#17122b] text-white">
+    <div className="min-h-screen bg-paper font-sans">
+      <header className="bg-ink text-white">
         <div className="max-w-4xl mx-auto px-4 py-8">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-9 h-9 rounded-xl bg-[#6329d4] flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-            <p className="text-sm font-bold tracking-tight">EveryJob Directory</p>
+          <div className="flex items-center gap-3 mb-3">
+            <Logo tone="onDark" size={30} />
+              <span className="text-sm font-semibold text-white/60">Directory</span>
           </div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
             Find a trusted local pro
           </h1>
-          <p className="text-[#b8b0c9] mt-1 text-sm">
+          <p className="text-white/60 mt-1 text-sm">
             Plumbers, electricians, cleaners, AC repair & more — free quotes, no commission.
           </p>
 
@@ -96,7 +95,7 @@ export default async function DirectoryPage({
                 defaultValue={q}
                 placeholder="What do you need? e.g. AC repair"
                 maxLength={100}
-                className="w-full rounded-xl bg-white/10 border border-white/15 pl-9 pr-3 py-2.5 text-sm text-white placeholder:text-zinc-400 outline-none focus:border-[#8b5cf6]"
+                className="w-full rounded-xl bg-white/10 border border-white/15 pl-9 pr-3 py-2.5 text-sm text-white placeholder:text-zinc-400 outline-none focus:border-ink"
               />
             </label>
             <label className="relative">
@@ -106,25 +105,25 @@ export default async function DirectoryPage({
                 defaultValue={city}
                 placeholder="City, e.g. Toronto"
                 maxLength={100}
-                className="w-full rounded-xl bg-white/10 border border-white/15 pl-9 pr-3 py-2.5 text-sm text-white placeholder:text-zinc-400 outline-none focus:border-[#8b5cf6]"
+                className="w-full rounded-xl bg-white/10 border border-white/15 pl-9 pr-3 py-2.5 text-sm text-white placeholder:text-zinc-400 outline-none focus:border-ink"
               />
             </label>
             <button
               type="submit"
-              className="rounded-xl bg-[#6329d4] hover:bg-[#5223b3] text-white text-sm font-bold px-6 py-2.5 transition-colors"
+              className="rounded-xl bg-ink hover:bg-graphite text-white text-sm font-bold px-6 py-2.5 transition-colors"
             >
               Search
             </button>
           </form>
           <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-            <span className="text-[#b8b0c9]">Min rating:</span>
+            <span className="text-white/60">Min rating:</span>
             {['', '4', '4.5'].map((v) => (
               <Link
                 key={v || 'any'}
                 href={`/directory?${new URLSearchParams({ q, city, ...(v ? { minRating: v } : {}) }).toString()}`}
                 className={`px-3 py-1 rounded-full border font-semibold ${
                   (minRating || '') === v
-                    ? 'bg-white text-[#17122b] border-white'
+                    ? 'bg-white text-ink border-white'
                     : 'text-white border-white/25 hover:border-white/60'
                 }`}
               >
@@ -133,7 +132,7 @@ export default async function DirectoryPage({
             ))}
             <Link
               href="/directory/request"
-              className="ml-auto inline-flex items-center gap-1.5 text-[#c4b5fd] hover:text-white font-semibold"
+              className="ml-auto inline-flex items-center gap-1.5 text-lime hover:text-white font-semibold"
             >
               <MessageSquareQuote size={14} /> Request quotes from pros
             </Link>
@@ -152,8 +151,8 @@ export default async function DirectoryPage({
 
         {results.length === 0 ? (
           <div className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-10 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-[#f1ecfd] flex items-center justify-center mx-auto mb-4">
-              <Search className="w-6 h-6 text-[#6329d4]" />
+            <div className="w-12 h-12 rounded-2xl bg-smoke flex items-center justify-center mx-auto mb-4">
+              <Search className="w-6 h-6 text-ink" />
             </div>
             <h2 className="font-bold text-zinc-900">No pros found yet</h2>
             <p className="text-sm text-zinc-500 mt-1 max-w-sm mx-auto">
@@ -164,7 +163,7 @@ export default async function DirectoryPage({
             {!searching && (
               <Link
                 href="/register"
-                className="inline-block mt-4 rounded-xl bg-[#6329d4] hover:bg-[#5223b3] text-white text-sm font-bold px-6 py-2.5 transition-colors"
+                className="inline-block mt-4 rounded-xl bg-ink hover:bg-graphite text-white text-sm font-bold px-6 py-2.5 transition-colors"
               >
                 List my business — it&apos;s free
               </Link>
@@ -176,7 +175,7 @@ export default async function DirectoryPage({
               <li key={b.slug}>
                 <Link
                   href={`/p/${b.slug}`}
-                  className="block bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-5 hover:border-[#8b5cf6] hover:shadow-md transition-all"
+                  className="block bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-5 hover:border-ink hover:shadow-md transition-all"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <h2 className="font-bold text-zinc-900 leading-snug">{b.name}</h2>

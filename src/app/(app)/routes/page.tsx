@@ -82,7 +82,7 @@ export default async function RoutesPage({
             action={
               <a
                 href="/schedule"
-                className="bg-[#6329d4] hover:bg-[#5221b3] text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
+                className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
               >
                 Go to schedule
               </a>

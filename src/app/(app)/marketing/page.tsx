@@ -31,7 +31,7 @@ export default async function MarketingPage() {
             </Link>
             <Link
               href="/marketing/new"
-              className="bg-[#6329d4] hover:bg-[#5221b3] text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
+              className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
             >
               <Plus size={14} /> New campaign
             </Link>
@@ -48,7 +48,7 @@ export default async function MarketingPage() {
             action={
               <Link
                 href="/marketing/new"
-                className="bg-[#6329d4] hover:bg-[#5221b3] text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
+                className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
               >
                 <Plus size={14} /> Create your first campaign
               </Link>
@@ -59,7 +59,7 @@ export default async function MarketingPage() {
         <div className="grid gap-3">
           {campaigns.map((c) => (
             <Link key={c.id} href={`/marketing/${c.id}`}>
-              <Card className="p-4 md:p-5 hover:border-[#6329d4]/40 transition-colors">
+              <Card className="p-4 md:p-5 hover:border-smoke transition-colors">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-bold text-zinc-900 truncate">{c.name}</p>

@@ -62,7 +62,7 @@ export default async function InvoicesPage({
         actions={
           <Link
             href="/invoices/new"
-            className="bg-[#6329d4] hover:bg-[#5221b3] text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
+            className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
           >
             <Plus size={14} /> New invoice
           </Link>
@@ -94,7 +94,7 @@ export default async function InvoicesPage({
             className={cn(
               'px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-colors',
               activeFilter === f
-                ? 'bg-[#6329d4] text-white border-[#6329d4]'
+                ? 'bg-ink text-white border-ink'
                 : 'bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300'
             )}
           >
@@ -112,7 +112,7 @@ export default async function InvoicesPage({
             action={
               <Link
                 href="/invoices/new"
-                className="bg-[#6329d4] hover:bg-[#5221b3] text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2"
+                className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2"
               >
                 <Plus size={14} /> New invoice
               </Link>

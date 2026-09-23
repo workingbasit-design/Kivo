@@ -54,7 +54,7 @@ export default async function RecurringPage({
             <GenerateDueJobsButton />
             <Link
               href="/recurring/new"
-              className="bg-[#6329d4] hover:bg-[#5221b3] text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
+              className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
             >
               <Plus size={14} /> New plan
             </Link>
@@ -71,7 +71,7 @@ export default async function RecurringPage({
             className={cn(
               'px-3 py-1.5 rounded-lg text-xs font-semibold capitalize whitespace-nowrap transition-colors',
               activeFilter === f
-                ? 'bg-[#6329d4] text-white'
+                ? 'bg-ink text-white'
                 : 'bg-white text-zinc-600 border border-zinc-200 hover:bg-zinc-50'
             )}
           >
@@ -100,7 +100,7 @@ export default async function RecurringPage({
               activeFilter === 'ALL' ? (
                 <Link
                   href="/recurring/new"
-                  className="bg-[#6329d4] hover:bg-[#5221b3] text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
+                  className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
                 >
                   <Plus size={14} /> Create your first plan
                 </Link>
