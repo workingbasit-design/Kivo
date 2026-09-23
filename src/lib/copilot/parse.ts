@@ -74,6 +74,13 @@ const MONTHS: Record<string, number> = {
   dec: 11, december: 11, decembre: 11,
 };
 
+/** Build a YYYY-MM-DD for day+month, rolling to next year if already passed. */
+function dayMonthToISO(day: number, month: number, today: Date): string {
+  let year = today.getFullYear();
+  const candidate = new Date(year, month, day);
+  if (candidate < new Date(toISODateLocal(today))) year += 1; // roll to next year if passed
+  return toISODateLocal(new Date(year, month, day));
+}
 /** Resolve relative English/French date words to YYYY-MM-DD (local). */
 export function extractDate(raw: string): string | null {
   const text = norm(raw);
@@ -103,17 +110,20 @@ export function extractDate(raw: string): string | null {
   // otherwise require an explicit cue so bare amounts don't clash with money.
   // (Date+month and ISO forms below cover the common explicit cases.)
 
-  // "12 oct", "12 octobre", "5 jan"
+  // "12 oct", "12 octobre", "5 jan", "29th october" — ordinal suffixes ok
   const md = text.match(
-    /\b(\d{1,2})\s*(jan|january|janvier|feb|february|fevrier|fev|mar|march|mars|apr|april|avril|avr|may|mai|jun|june|juin|jul|july|juillet|juil|aug|august|aout|sep|sept|september|septembre|oct|october|octobre|nov|november|novembre|dec|december|decembre)\b/
+    /\b(\d{1,2})(?:st|nd|rd|th)?\s*(jan|january|janvier|feb|february|fevrier|fev|mar|march|mars|apr|april|avril|avr|may|mai|jun|june|juin|jul|july|juillet|juil|aug|august|aout|sep|sept|september|septembre|oct|october|octobre|nov|november|novembre|dec|december|decembre)\b/
   );
   if (md) {
-    const day = Number(md[1]);
-    const month = MONTHS[md[2]];
-    let year = today.getFullYear();
-    const candidate = new Date(year, month, day);
-    if (candidate < new Date(toISODateLocal(today))) year += 1; // roll to next year if passed
-    return toISODateLocal(new Date(year, month, day));
+    return dayMonthToISO(Number(md[1]), MONTHS[md[2]], today);
+  }
+
+  // "october 29th", "oct 12" — month first, ordinal suffixes ok
+  const dm = text.match(
+    /\b(jan|january|janvier|feb|february|fevrier|fev|mar|march|mars|apr|april|avril|avr|may|mai|jun|june|juin|jul|july|juillet|juil|aug|august|aout|sep|sept|september|septembre|oct|october|octobre|nov|november|novembre|dec|december|decembre)\s*(\d{1,2})(?:st|nd|rd|th)?\b/
+  );
+  if (dm) {
+    return dayMonthToISO(Number(dm[2]), MONTHS[dm[1]], today);
   }
 
   // ISO YYYY-MM-DD
@@ -272,6 +282,10 @@ const NAME_STOPWORDS = new Set([
   'matin', 'soir', 'soiree', 'apres', 'midi', 'nuit',
   'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday',
   'dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi',
+  // pronouns — so "schedule it for tomorrow" never books customer "It"
+  'it', 'this', 'that', 'these', 'those', 'him', 'her', 'them', 'us', 'me', 'you', 'we', 'they', 'he', 'she',
+  // gerunds / trade nouns that are never a person's name
+  'cleaning', 'painting', 'plumbing', 'wiring', 'roofing', 'mowing', 'entretien', 'reparation',
 ]);
 
 /**
@@ -296,6 +310,8 @@ function capitalizeWord(w: string): string {
 /**
  * Guess a customer name from English/French booking text:
  *  - "for Priya" / "for Ramesh Kumar" / "pour Sarah Tremblay"
+ *  - "schedule a Jon for 29th October" / "book Sarah for tomorrow" (name
+ *    BEFORE the "for"/"pour" cue, anchored on a booking verb)
  *  - "customer: Priya" / "client: Sarah"
  *
  * Service/trade words ("plumbing", "plomberie", …) are stopwords and can
@@ -335,6 +351,24 @@ export function extractCustomerName(raw: string): string | null {
       name.length >= 2 &&
       !/^(job|repair|service)$/i.test(name) &&
       !toks.some((t) => NAME_STOPWORDS.has(t.toLowerCase()))
+    ) {
+      return name;
+    }
+  }
+
+  // "schedule a Jon for 29th October" / "book Sarah for tomorrow" /
+  // "planifier Jon pour demain" — the name sits BEFORE the "for"/"pour"
+  // cue. Anchored on a booking verb so "looking for X" or "I need it for
+  // tomorrow" never match. Tried last: an explicit "for <name>" always wins.
+  const mForBefore = text.match(
+    /\b(?:schedule|scheduling|book|booking|booked|create|add|plan|arrange|reserver|reserve|reservation|planifier|planifie|ajouter|ajoute|creer|cree)\s+(?:(?:a|an|the|un|une|le|la|les|des|du)\s+)?([A-Za-z]{2,25}(?:\s+[A-Za-z]{2,25}){0,1})\s+(?:for|pour)\b/i
+  );
+  if (mForBefore) {
+    const name = mForBefore[1].trim().split(/\s+/).map(capitalizeWord).join(' ');
+    const toks = name.split(' ');
+    if (
+      name.length >= 2 &&
+      toks.every((t) => t.length >= 2 && !NAME_STOPWORDS.has(t.toLowerCase()))
     ) {
       return name;
     }

@@ -140,3 +140,55 @@ test('detectIntent: customer count', () => {
 test('detectIntent: help', () => {
   assert.equal(detectIntent('help, what can you do?'), 'help');
 });
+
+// --- Regression: "schedule a Jon for 29th october" (wrong answers, 2026-09-23) ---
+test('extractDate: "29th october" ordinal resolves to Oct 29', () => {
+  const d = extractDate('schedule a Jon for 29th october');
+  assert.ok(d && d.endsWith('-10-29'), `got ${d}`);
+});
+
+test('extractDate: "october 29th" month-first ordinal resolves to Oct 29', () => {
+  const d = extractDate('schedule Jon for october 29th');
+  assert.ok(d && d.endsWith('-10-29'), `got ${d}`);
+});
+
+test('extractDate: "1st jan" ordinal resolves to Jan 1', () => {
+  const d = extractDate('job on 1st jan');
+  assert.ok(d && d.endsWith('-01-01'), `got ${d}`);
+});
+
+test('extractCustomerName: "schedule a Jon for 29th october" finds Jon', () => {
+  assert.equal(extractCustomerName('schedule a Jon for 29th october'), 'Jon');
+});
+
+test('extractCustomerName: "book Sarah for tomorrow" finds Sarah', () => {
+  assert.equal(extractCustomerName('book Sarah for tomorrow'), 'Sarah');
+});
+
+test('extractCustomerName: "planifier Jon pour demain" finds Jon', () => {
+  assert.equal(extractCustomerName('planifier Jon pour demain'), 'Jon');
+});
+
+test('extractCustomerName: explicit "for <name>" still wins', () => {
+  assert.equal(extractCustomerName('schedule a job for Jon tomorrow'), 'Jon');
+});
+
+test('extractCustomerName: "schedule cleaning for tomorrow" finds no name', () => {
+  assert.equal(extractCustomerName('schedule cleaning for tomorrow'), null);
+});
+
+test('extractCustomerName: "schedule a job for tomorrow" finds no name', () => {
+  assert.equal(extractCustomerName('schedule a job for tomorrow'), null);
+});
+
+test('extractCustomerName: "schedule it for tomorrow" finds no name', () => {
+  assert.equal(extractCustomerName('schedule it for tomorrow'), null);
+});
+
+test('extractCustomerName: "looking for a plumber" finds no name', () => {
+  assert.equal(extractCustomerName('looking for a plumber tomorrow'), null);
+});
+
+test('detectIntent: "schedule a Jon for 29th october" is create_job', () => {
+  assert.equal(detectIntent('schedule a Jon for 29th october'), 'create_job');
+});
