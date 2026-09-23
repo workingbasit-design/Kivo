@@ -15,7 +15,7 @@ import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getDashboardStats } from "@/lib/dashboard";
 import { generateDueJobs } from "@/lib/recurring";
-import { formatDateLabel } from "@/lib/utils";
+import { formatDateLabel, hasJobTime } from "@/lib/utils";
 import { formatMoney } from "@/lib/money";
 import { PageHeader, Card, StatCard, StatusBadge, EmptyState } from "@/components/ui";
 
@@ -127,7 +127,7 @@ export default async function DashboardPage() {
                     className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-50 transition-colors"
                   >
                     <div className="w-14 shrink-0 text-center">
-                      <p className="text-xs font-bold text-zinc-900">{job.time ?? "—"}</p>
+                      <p className="text-xs font-bold text-zinc-900">{hasJobTime(job.time) ? job.time : "—"}</p>
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-zinc-900 truncate">{job.title}</p>
@@ -200,7 +200,7 @@ export default async function DashboardPage() {
                       <p className="text-sm font-semibold text-zinc-900 truncate">{job.title}</p>
                       <p className="text-xs text-zinc-500 truncate">
                         {job.customerName}
-                        {job.time ? ` · ${job.time}` : ""}
+                        {hasJobTime(job.time) ? ` · ${job.time}` : ""}
                       </p>
                     </div>
                     <StatusBadge status={job.status} />

@@ -4,10 +4,11 @@ import React, { useState, useTransition } from 'react';
 import {
   Route as RouteIcon, ArrowUp, ArrowDown, Play, X, ChevronLeft, ChevronRight,
   CheckCircle2, MapPin, Clock, RotateCcw, AlertCircle, Car, Loader2,
-  MapPinOff, Info,
+  MapPinOff, Info, Navigation,
 } from 'lucide-react';
 import { Card, StatusBadge, primaryBtnClass, secondaryBtnClass, inputClass } from '@/components/ui';
 import type { RouteStop } from '@/lib/routes';
+import { hasJobTime } from '@/lib/utils';
 import { optimizeDayRoute } from '@/app/actions/routes';
 import { updateJobStatus } from '@/app/actions/jobs';
 import { formatMoney } from '@/lib/money';
@@ -255,8 +256,19 @@ export default function RoutesClient({
                         {stop.address}
                       </p>
                     )}
+                    {stop.address && (
+                      <a
+                        href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(stop.address)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-[#6329d4] font-semibold hover:underline"
+                      >
+                        <Navigation size={15} className="shrink-0" />
+                        Get directions
+                      </a>
+                    )}
                     {legLine(stop)}
-                    {stop.time && (
+                    {hasJobTime(stop.time) && (
                       <p className="flex items-center gap-2 text-zinc-700">
                         <Clock size={15} className="text-zinc-400 shrink-0" />
                         {stop.time}
@@ -310,7 +322,7 @@ export default function RoutesClient({
                 <p className="text-xs text-zinc-500 truncate">
                   {stop.customerName}
                   {stop.address ? ` · ${stop.address}` : ''}
-                  {stop.time ? ` · ${stop.time}` : ''}
+                  {hasJobTime(stop.time) ? ` · ${stop.time}` : ''}
                 </p>
                 {i > 0 && legLine(stop)}
               </div>

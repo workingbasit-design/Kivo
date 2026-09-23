@@ -325,7 +325,8 @@ async function runConfirm(
       customerId: bookedCustomer.id,
       title: draft.title,
       date,
-      time: draft.time ?? 'TBD',
+      // A missing time is stored as NULL (never the display string "TBD").
+      time: draft.time ?? null,
       price: draft.price ?? 0,
       notes: 'Copilot se book kiya gaya',
       createdAt: { gte: new Date(Date.now() - DUPLICATE_WINDOW_MS) },
@@ -348,7 +349,8 @@ async function runConfirm(
       customerId: bookedCustomer.id,
       title: draft.title,
       date,
-      time: draft.time ?? 'TBD',
+      // Store NULL when no time was parsed — "TBD" is display text, not data.
+      time: draft.time ?? null,
       address: draft.address ?? undefined,
       price: draft.price ?? 0,
       status: 'SCHEDULED',

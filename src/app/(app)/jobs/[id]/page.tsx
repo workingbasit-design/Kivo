@@ -8,7 +8,7 @@ import {
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card, StatusBadge } from '@/components/ui';
-import { formatDateLabel, toISODateLocal } from '@/lib/utils';
+import { formatDateLabel, toISODateLocal, hasJobTime } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import { entryMinutes, formatDuration } from '@/lib/timesheets';
 import JobStatusButtons from '@/components/JobStatusButtons';
@@ -61,7 +61,7 @@ export default async function JobDetailPage({
     {
       icon: <Clock size={14} className="text-zinc-400" />,
       label: 'Time',
-      value: job.time || '—',
+      value: hasJobTime(job.time) ? job.time : '—',
     },
     {
       icon: <IndianRupee size={14} className="text-zinc-400" />,
@@ -123,7 +123,7 @@ export default async function JobDetailPage({
             <WhatsAppButton
               phone={job.customer.phone}
               regionCode={business?.regionCode}
-              message={`Namaste ${job.customer.name}! ${business?.name ?? 'Hum'}: aapki "${job.title}" booking ${formatDateLabel(jobDateKey)}${job.time ? `, ${job.time}` : ''} ke liye scheduled hai.`}
+              message={`Namaste ${job.customer.name}! ${business?.name ?? 'Hum'}: aapki "${job.title}" booking ${formatDateLabel(jobDateKey)}${hasJobTime(job.time) ? `, ${job.time}` : ''} ke liye scheduled hai.`}
               label="WhatsApp"
             />
             <Link

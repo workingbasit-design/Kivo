@@ -9,7 +9,7 @@ import {
 import { updateJobStatus, deleteJob, seedSampleJobs, updateJobSchedule } from '@/app/actions/jobs';
 import { validNextStatuses } from '@/lib/job-status';
 import { formatMoney } from '@/lib/money';
-import { toISODateLocal, formatDateLabel } from '@/lib/utils';
+import { toISODateLocal, formatDateLabel, hasJobTime } from '@/lib/utils';
 
 type Job = {
   id: string;
@@ -149,7 +149,11 @@ export default function ScheduleClient({
     // Prefill with the booked calendar day (not a UTC-derived date, which
     // would show the previous day for timezones ahead of UTC).
     setEditDate(job.dateKey);
-    setEditTime(job.time || '10:00 AM');
+    // Prefill the real time when one is set. Never invent "10:00 AM" for an
+    // unset time (saving would then silently set a time the user never chose),
+    // and never show the legacy "TBD" sentinel as if it were a real time —
+    // the save path already turns a blank input back into NULL.
+    setEditTime(hasJobTime(job.time) ? job.time : '');
     setEditStatus(job.status);
   };
 
@@ -339,7 +343,7 @@ export default function ScheduleClient({
 
                       <div className="flex items-center gap-1.5 text-xs font-bold text-[#6329d4] bg-[#f3eefe] px-2.5 py-1 rounded-md">
                         <Clock size={12} />
-                        <span>{job.time || 'Time TBD'}</span>
+                        <span>{hasJobTime(job.time) ? job.time : 'Time TBD'}</span>
                       </div>
 
                       <div className="text-xs font-medium text-zinc-500">
@@ -396,6 +400,7 @@ export default function ScheduleClient({
                               type="text"
                               value={editTime}
                               onChange={(e) => setEditTime(e.target.value)}
+                              placeholder="e.g. 10:00 AM (optional)"
                               className="w-full text-xs p-2 border rounded-lg bg-white"
                             />
                           </div>

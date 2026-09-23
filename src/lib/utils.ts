@@ -5,6 +5,20 @@ export function cn(
   return inputs.filter(Boolean).join(" ");
 }
 
+/**
+ * Whether a job's stored `time` counts as a real scheduled time.
+ *
+ * Jobs booked through Copilot before the TBD-sentinel fix stored the literal
+ * display string "TBD" in the `time` column instead of NULL. Treat that
+ * (and blanks) as "no time set" everywhere we display or edit the time,
+ * so the sentinel never leaks into inputs, badges or WhatsApp messages.
+ */
+export function hasJobTime(time: string | null | undefined): time is string {
+  if (!time) return false;
+  const t = time.trim();
+  return t !== "" && t.toUpperCase() !== "TBD";
+}
+
 /** Format a number as Indian Rupees, e.g. 6350 -> "Rs 6,350" */
 export function formatINR(n: number | null | undefined): string {
   if (n === null || n === undefined || Number.isNaN(n)) return "Rs 0";

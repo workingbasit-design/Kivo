@@ -4,7 +4,7 @@ import { Plus, Briefcase, Search } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card, StatusBadge, EmptyState } from '@/components/ui';
-import { formatDateShort, cn } from '@/lib/utils';
+import { formatDateShort, cn, hasJobTime } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import { JOB_STATUSES } from '@/lib/validations';
 
@@ -133,7 +133,7 @@ export default async function JobsPage({
                   </div>
                   <p className="text-xs text-zinc-500 mt-1 truncate">
                     {job.customer.name}
-                    {job.time ? ` · ${job.time}` : ''} · {formatDateShort(job.date)}
+                    {hasJobTime(job.time) ? ` · ${job.time}` : ''} · {formatDateShort(job.date)}
                     {job.address ? ` · ${job.address}` : ''}
                   </p>
                 </div>
