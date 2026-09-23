@@ -58,6 +58,7 @@ model Business {
   communications Communication[]
   leads      Lead[]
   quotes     Quote[]
+  signatureRequests SignatureRequest[]
   reviews    Review[]
   recurringJobs RecurringJob[]
   timeEntries TimeEntry[]
@@ -285,8 +286,30 @@ model Quote {
   businessId String
   business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
   shareTokens ShareToken[]
+  signatureRequests SignatureRequest[]
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+}
+
+model SignatureRequest {
+  id            String    @id @default(cuid())
+  tokenHash     String    @unique // SHA-256 of the signing-link token; raw token never stored
+  status        String    // "sent" | "viewed" | "signed" | "declined" | "expired" | "revoked"
+  fieldsJson    String    // JSON array of placed fields: {type: "signature"|"date"|"initials", x: number, y: number, page: number}
+  signerName    String?
+  signerContact String?   // phone or email the link was shared to
+  docHash       String    // SHA-256 of canonical quote JSON at send time (tamper evidence)
+  signatureData String?   // data URL of drawn signature image, or typed name
+  auditJson     String    // JSON array of {event, at, ip}
+  expiresAt     DateTime?
+  revokedAt     DateTime?
+  signedAt      DateTime?
+  quoteId       String
+  quote         Quote     @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  businessId    String
+  business      Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
 model Review {

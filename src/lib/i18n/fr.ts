@@ -139,6 +139,45 @@ const fr: Dictionary = {
     fieldAddress: 'Adresse',
     fieldPrice: 'Prix',
   },
+  esign: {
+    title: 'Signature électronique',
+    sendForSignature: 'Envoyer pour signature',
+    prepareTitle: 'Préparer le document à signer',
+    prepareHint:
+      'Touchez un champ, puis touchez le document pour le placer. Votre client signe à partir du lien — aucun compte requis.',
+    fieldSignature: 'Signature',
+    fieldDate: 'Date',
+    fieldInitials: 'Initiales',
+    sendLink: 'Envoyer le lien de signature',
+    shareTitle: 'Partager le lien de signature',
+    shareHint:
+      'WhatsApp s’ouvre en brouillon — c’est vous qui envoyez. EveryJob n’envoie jamais rien automatiquement.',
+    copyLink: 'Copier le lien',
+    copied: 'Lien copié',
+    status: 'État de la signature',
+    statusSent: 'Envoyé',
+    statusViewed: 'Consulté',
+    statusSigned: 'Signé',
+    statusDeclined: 'Refusé',
+    statusExpired: 'Expiré',
+    statusRevoked: 'Révoqué',
+    revoke: 'Révoquer le lien',
+    revoked: 'Lien révoqué',
+    downloadSigned: 'Télécharger le PDF signé',
+    convertToJob: 'Convertir en travail',
+    auditTitle: 'Journal d’audit',
+    legalLine:
+      'Juridiquement contraignant au Canada en vertu des lois provinciales sur le commerce électronique.',
+    signTitle: 'Veuillez signer',
+    signName: 'Écrivez votre nom complet',
+    signDrawHint: 'Dessinez votre signature ici',
+    signClear: 'Effacer',
+    signButton: 'Signer le document',
+    signedTitle: 'Signé — merci',
+    linkInvalid: 'Ce lien de signature est invalide ou a expiré.',
+    confirmRevoke:
+      'Révoquer ce lien de signature? Le client ne pourra plus signer.',
+  },
 };
 
 export default fr;
