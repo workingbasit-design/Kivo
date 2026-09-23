@@ -36,7 +36,6 @@ const NAV_LINKS = [
   { label: 'Features', href: '#features' },
   { label: 'AI Copilot', href: '#copilot' },
   { label: 'Directory', href: '/directory' },
-  { label: 'Free', href: '#free' },
 ];
 
 const TRADES = [
@@ -484,39 +483,6 @@ export default function LandingPage() {
             <p className="text-center text-[14px] text-zinc-400 mt-10 flex items-center justify-center gap-2">
               <Languages size={15} /> Switch the whole app to Français anytime, from Settings.
             </p>
-          </div>
-        </section>
-
-        {/* Free forever — black card, no upgrade language */}
-        <section id="free" className="pb-20 md:pb-28 scroll-mt-16">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="bg-zinc-950 rounded-[32px] px-8 py-14 md:p-20 text-white text-center relative overflow-hidden">
-              <div
-                aria-hidden
-                className="absolute inset-0 opacity-[0.35]"
-                style={{
-                  backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.14) 1px, transparent 1px)',
-                  backgroundSize: '26px 26px',
-                }}
-              />
-              <div className="relative">
-                <h2 className="text-4xl md:text-[56px] leading-[1.05] font-bold tracking-[-0.025em] mb-5">
-                  V1 is free.
-                  <br />
-                  <span className="text-zinc-500">Actually free.</span>
-                </h2>
-                <p className="text-lg text-white/55 mb-10 max-w-xl mx-auto leading-relaxed">
-                  No billing, no commissions, no locked features, no credit card.
-                  Every module works for every business.
-                </p>
-                <Link
-                  href="/register"
-                  className="inline-flex items-center gap-2 bg-white text-zinc-900 px-8 py-3.5 rounded-full text-[17px] font-medium hover:bg-zinc-200 transition active:scale-95"
-                >
-                  Create your free account <ArrowRight size={18} />
-                </Link>
-              </div>
-            </div>
           </div>
         </section>
 
