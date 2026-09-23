@@ -24,6 +24,16 @@ export function dateLocaleForRegion(_regionCode?: string | null): string {
   return 'en-CA';
 }
 
+/** Map an app locale ('en' | 'fr') to a full date locale tag. */
+export function localeDateTag(locale: string): string {
+  return locale === 'fr' ? 'fr-CA' : 'en-CA';
+}
+
+/** Map an app locale ('en' | 'fr') to a money-format locale tag. */
+export function localeMoneyTag(locale: string): 'en' | 'fr' {
+  return locale === 'fr' ? 'fr' : 'en';
+}
+
 /** Format a Date/string as "Mon, Jan 5, 2026" */
 export function formatDateLabel(
   dateInput: Date | string | null | undefined,

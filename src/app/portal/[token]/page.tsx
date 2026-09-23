@@ -7,6 +7,8 @@ import { resolveCustomerPortalToken } from '@/lib/portal';
 import { Card, StatusBadge } from '@/components/ui';
 import { formatMoney } from '@/lib/money';
 import { formatDateShort } from '@/lib/utils';
+import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
 import PortalNotice from '@/components/PortalNotice';
 
 /**
@@ -90,6 +92,11 @@ export default async function CustomerPortalPage({
   });
   const totalOwed = balances.reduce((s, i) => s + i.balance, 0);
 
+  const locale = await getLocale();
+  const L = (path: string) => t(locale, path);
+  const moneyLocale = locale === 'fr' ? 'fr' : 'en';
+  const dateLocale = locale === 'fr' ? 'fr-CA' : 'en-CA';
+
   return (
     <div className="min-h-screen bg-paper font-sans">
       <header className="bg-ink text-white">
@@ -100,9 +107,9 @@ export default async function CustomerPortalPage({
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/60 mb-1">
             {customer.business.name}
           </p>
-          <h1 className="text-2xl font-bold tracking-tight">Hi, {customer.name}</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{L('portal.hiName').replace('{name}', customer.name)}</h1>
           <p className="text-white/60 mt-1 text-sm">
-            Your jobs, quotes and invoices — all in one place.
+            {L('portal.tagline')}
           </p>
         </div>
       </header>
@@ -112,13 +119,13 @@ export default async function CustomerPortalPage({
           <Card className="p-5 bg-amber-50/60 border-amber-200">
             <div className="flex items-center justify-between">
               <p className="text-sm font-semibold text-zinc-700 flex items-center gap-2">
-                <Wallet size={15} className="text-amber-600" /> Balance due
+                <Wallet size={15} className="text-amber-600" /> {L('portal.balanceDue')}
               </p>
-              <p className="text-xl font-bold text-zinc-900">{formatMoney(totalOwed, currency)}</p>
+              <p className="text-xl font-bold text-zinc-900">{formatMoney(totalOwed, currency, moneyLocale)}</p>
             </div>
             {customer.business.phone && (
               <p className="text-xs text-zinc-500 mt-2 flex items-center gap-1.5">
-                <Phone size={12} /> Questions? Call {customer.business.name} at {customer.business.phone}
+                <Phone size={12} /> {L('portal.questionsCall').replace('{business}', customer.business.name).replace('{phone}', customer.business.phone)}
               </p>
             )}
           </Card>
@@ -126,11 +133,11 @@ export default async function CustomerPortalPage({
 
         <section>
           <h2 className="text-sm font-bold text-zinc-900 mb-2 flex items-center gap-2">
-            <Briefcase size={14} className="text-zinc-400" /> Jobs
+            <Briefcase size={14} className="text-zinc-400" /> {L('portal.jobs')}
           </h2>
           <Card>
             {jobs.length === 0 ? (
-              <p className="px-5 py-6 text-sm text-zinc-500 text-center">No jobs yet.</p>
+              <p className="px-5 py-6 text-sm text-zinc-500 text-center">{L('portal.noJobs')}</p>
             ) : (
               <ul className="divide-y divide-zinc-100">
                 {jobs.map((j) => (
@@ -138,12 +145,12 @@ export default async function CustomerPortalPage({
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-zinc-900 truncate">{j.title}</p>
                       <p className="text-xs text-zinc-500">
-                        {formatDateShort(j.date)}{j.time ? ` · ${j.time}` : ''}
+                        {formatDateShort(j.date, dateLocale)}{j.time ? ` · ${j.time}` : ''}
                       </p>
                     </div>
                     <StatusBadge status={j.status} />
                     <span className="text-sm font-bold text-zinc-900 shrink-0">
-                      {formatMoney(j.price, currency)}
+                      {formatMoney(j.price, currency, moneyLocale)}
                     </span>
                   </li>
                 ))}
@@ -154,11 +161,11 @@ export default async function CustomerPortalPage({
 
         <section>
           <h2 className="text-sm font-bold text-zinc-900 mb-2 flex items-center gap-2">
-            <FileText size={14} className="text-zinc-400" /> Quotes
+            <FileText size={14} className="text-zinc-400" /> {L('portal.quotes')}
           </h2>
           <Card>
             {quotes.length === 0 ? (
-              <p className="px-5 py-6 text-sm text-zinc-500 text-center">No quotes yet.</p>
+              <p className="px-5 py-6 text-sm text-zinc-500 text-center">{L('portal.noQuotes')}</p>
             ) : (
               <ul className="divide-y divide-zinc-100">
                 {quotes.map((q) => (
@@ -169,7 +176,7 @@ export default async function CustomerPortalPage({
                     </div>
                     <StatusBadge status={q.status} />
                     <span className="text-sm font-bold text-zinc-900 shrink-0">
-                      {formatMoney(q.total, currency)}
+                      {formatMoney(q.total, currency, moneyLocale)}
                     </span>
                   </li>
                 ))}
@@ -180,27 +187,27 @@ export default async function CustomerPortalPage({
 
         <section>
           <h2 className="text-sm font-bold text-zinc-900 mb-2 flex items-center gap-2">
-            <ReceiptText size={14} className="text-zinc-400" /> Invoices
+            <ReceiptText size={14} className="text-zinc-400" /> {L('portal.invoices')}
           </h2>
           <Card>
             {balances.length === 0 ? (
-              <p className="px-5 py-6 text-sm text-zinc-500 text-center">No invoices yet.</p>
+              <p className="px-5 py-6 text-sm text-zinc-500 text-center">{L('portal.noInvoices')}</p>
             ) : (
               <ul className="divide-y divide-zinc-100">
                 {balances.map((inv) => (
                   <li key={inv.id} className="flex items-center gap-3 px-5 py-3.5">
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-zinc-900">{inv.number}</p>
-                      <p className="text-xs text-zinc-500">{formatDateShort(inv.date)}</p>
+                      <p className="text-xs text-zinc-500">{formatDateShort(inv.date, dateLocale)}</p>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="text-sm font-bold text-zinc-900">{formatMoney(inv.total, currency)}</p>
+                      <p className="text-sm font-bold text-zinc-900">{formatMoney(inv.total, currency, moneyLocale)}</p>
                       {inv.balance > 0 ? (
                         <p className="text-[11px] font-semibold text-amber-700">
-                          {formatMoney(inv.balance, currency)} due
+                          {L('portal.dueAmount').replace('{amount}', formatMoney(inv.balance, currency, moneyLocale))}
                         </p>
                       ) : (
-                        <p className="text-[11px] font-semibold text-emerald-700">Paid</p>
+                        <p className="text-[11px] font-semibold text-emerald-700">{L('portal.paid')}</p>
                       )}
                     </div>
                   </li>
@@ -211,7 +218,7 @@ export default async function CustomerPortalPage({
         </section>
 
         <p className="text-center text-[11px] text-zinc-400 pt-2">
-          Shared privately by {customer.business.name} · Powered by EveryJob
+          {L('portal.poweredBy').replace('{business}', customer.business.name)}
         </p>
       </main>
     </div>

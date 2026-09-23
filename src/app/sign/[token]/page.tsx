@@ -170,7 +170,7 @@ export default async function SignPage({
         />
 
         <p className="pt-2 text-center text-[11px] text-zinc-400">
-          Shared privately by {business.name} · Powered by EveryJob
+          {L('esign.poweredBy').replace('{business}', business.name)}
         </p>
       </main>
     </div>

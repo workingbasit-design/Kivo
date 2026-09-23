@@ -2,7 +2,7 @@ import React from 'react';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card, EmptyState } from '@/components/ui';
-import { dayRange, toISODateLocal, formatDateLabel } from '@/lib/utils';
+import { dayRange, toISODateLocal, formatDateLabel, localeDateTag, localeMoneyTag } from '@/lib/utils';
 import { MapPinned } from 'lucide-react';
 import RoutesClient from '@/components/RoutesClient';
 import { inputClass } from '@/components/ui';
@@ -19,6 +19,8 @@ export default async function RoutesPage({
 }) {
   const { businessId } = await requireAuth();
   const locale = await getLocale();
+  const dateLocale = localeDateTag(locale);
+  const moneyLocale = localeMoneyTag(locale);
   const __biz = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } });
   const currency = __biz?.currency;
   const { date } = await searchParams;
@@ -51,7 +53,7 @@ export default async function RoutesPage({
     <div className="space-y-6">
       <PageHeader
         title="Route planner"
-        subtitle={`Jobs for ${formatDateLabel(dateStr)}`}
+        subtitle={`Jobs for ${formatDateLabel(dateStr, dateLocale)}`}
       />
 
       {stops.length === 0 ? (

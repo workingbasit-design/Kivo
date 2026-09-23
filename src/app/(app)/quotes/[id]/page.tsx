@@ -4,7 +4,7 @@ import { ArrowLeft, User } from 'lucide-react';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { PageHeader, Card, StatusBadge } from '@/components/ui';
-import { formatDateShort } from '@/lib/utils';
+import { formatDateShort, localeDateTag, localeMoneyTag } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import { getTaxConfig, totalTaxRate } from '@/lib/tax';
 import { getLocale } from '@/lib/i18n/server';
@@ -46,6 +46,8 @@ export default async function QuoteDetailPage({
   const shareState = await getQuoteShareState(quote.id);
 
   const locale = await getLocale();
+  const dateLocale = localeDateTag(locale);
+  const moneyLocale = localeMoneyTag(locale);
   const L = (path: string) => t(locale, path);
 
   const currency = 'CAD';
@@ -85,7 +87,7 @@ export default async function QuoteDetailPage({
 
       <PageHeader
         title={`${quote.number} · ${quote.title}`}
-        subtitle={`Created ${formatDateShort(quote.createdAt)}`}
+        subtitle={`Created ${formatDateShort(quote.createdAt, dateLocale)}`}
         actions={<StatusBadge status={quote.status} />}
       />
 
@@ -106,31 +108,31 @@ export default async function QuoteDetailPage({
                 <WhatsAppButton
                   phone={quote.customer.phone}
                   regionCode={quote.business.regionCode}
-                  message={`Hi ${quote.customer.name}! ${quote.business.name ?? 'We'} prepared quote ${quote.number} (${quote.title}) for you — total ${formatMoney(quote.total, currency)}. Just reply if you have any questions.`}
+                  message={`Hi ${quote.customer.name}! ${quote.business.name ?? 'We'} prepared quote ${quote.number} (${quote.title}) for you — total ${formatMoney(quote.total, currency, moneyLocale)}. Just reply if you have any questions.`}
                   label="WhatsApp"
                 />
               </div>
             </div>
           </div>
-          <p className="text-2xl font-bold text-zinc-900">{formatMoney(quote.total, currency)}</p>
+          <p className="text-2xl font-bold text-zinc-900">{formatMoney(quote.total, currency, moneyLocale)}</p>
         </div>
 
         <dl className="border-t border-zinc-100 pt-4 space-y-1.5 text-sm">
           <div className="flex justify-between text-zinc-600">
             <dt>Subtotal</dt>
-            <dd className="font-semibold">{formatMoney(subtotal, currency)}</dd>
+            <dd className="font-semibold">{formatMoney(subtotal, currency, moneyLocale)}</dd>
           </div>
           {taxLines.map((l) => (
             <div key={l.name} className="flex justify-between text-zinc-600">
               <dt>
                 {l.name} {l.rate}%
               </dt>
-              <dd className="font-semibold">{formatMoney(l.amount, currency)}</dd>
+              <dd className="font-semibold">{formatMoney(l.amount, currency, moneyLocale)}</dd>
             </div>
           ))}
           <div className="flex justify-between text-base pt-1">
             <dt className="font-bold text-zinc-900">Total</dt>
-            <dd className="font-bold text-zinc-900">{formatMoney(quote.total, currency)}</dd>
+            <dd className="font-bold text-zinc-900">{formatMoney(quote.total, currency, moneyLocale)}</dd>
           </div>
         </dl>
 
@@ -174,7 +176,7 @@ export default async function QuoteDetailPage({
         />
       </Card>
 
-      <SignatureRequestsCard quoteId={quote.id} L={L} />
+      <SignatureRequestsCard quoteId={quote.id} L={L} locale={locale} />
 
       <Card className="p-6">
         <ShareTokenManager
@@ -199,10 +201,13 @@ export default async function QuoteDetailPage({
 async function SignatureRequestsCard({
   quoteId,
   L,
+  locale,
 }: {
   quoteId: string;
   L: (path: string) => string;
+  locale: string;
 }) {
+  const dateLocale = localeDateTag(locale);
   const session = await getSession();
   if (!session?.user?.businessId) return null;
   const businessId = session.user.businessId;
@@ -250,11 +255,11 @@ async function SignatureRequestsCard({
               <div className="flex items-center gap-2">
                 <StatusBadge status={STATUS_LABELS[req.status] ?? req.status} />
                 <span className="text-xs text-zinc-500">
-                  {formatDateShort(req.createdAt)}
+                  {formatDateShort(req.createdAt, dateLocale)}
                 </span>
                 {req.signedAt && (
                   <span className="text-xs text-zinc-500">
-                    · {L('esign.statusSigned')} {formatDateShort(req.signedAt)}
+                    · {L('esign.statusSigned')} {formatDateShort(req.signedAt, dateLocale)}
                   </span>
                 )}
                 {req.signerName && (

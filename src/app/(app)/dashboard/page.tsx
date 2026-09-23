@@ -15,19 +15,24 @@ import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getDashboardStats } from "@/lib/dashboard";
 import { generateDueJobs } from "@/lib/recurring";
-import { formatDateLabel, hasJobTime } from "@/lib/utils";
+import { formatDateLabel, hasJobTime, localeDateTag, localeMoneyTag } from "@/lib/utils";
 import { formatMoney } from "@/lib/money";
+import { getLocale } from "@/lib/i18n/server";
+import { t } from "@/lib/i18n";
 import { PageHeader, Card, StatCard, StatusBadge, EmptyState } from "@/components/ui";
-
-const QUICK_ACTIONS = [
-  { label: "New job", href: "/jobs/new", icon: Plus },
-  { label: "New customer", href: "/customers/new", icon: Plus },
-  { label: "New quote", href: "/quotes/new", icon: Plus },
-  { label: "New invoice", href: "/invoices/new", icon: Plus },
-];
 
 export default async function DashboardPage() {
   const { businessId } = await requireAuth();
+  const locale = await getLocale();
+  const L = (path: string) => t(locale, path);
+  const moneyLocale = localeMoneyTag(locale);
+  const dateLocale = localeDateTag(locale);
+  const QUICK_ACTIONS = [
+    { label: L("dashboard.newJob"), href: "/jobs/new", icon: Plus },
+    { label: L("dashboard.newCustomer"), href: "/customers/new", icon: Plus },
+    { label: L("dashboard.newQuote"), href: "/quotes/new", icon: Plus },
+    { label: L("dashboard.newInvoice"), href: "/invoices/new", icon: Plus },
+  ];
 
   // Lazy auto-generation: create jobs for any due recurring plans before
   // rendering, so jobs appear without the user tapping "Generate due jobs".
@@ -41,19 +46,19 @@ export default async function DashboardPage() {
   const business = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } });
   const currency = business?.currency;
   const stats = await getDashboardStats(businessId);
-  const todayLabel = formatDateLabel(new Date());
+  const todayLabel = formatDateLabel(new Date(), dateLocale);
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Dashboard"
+        title={L("dashboard.title")}
         subtitle={todayLabel}
         actions={
           <Link
             href="/jobs/new"
             className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
           >
-            <Plus size={14} /> New job
+            <Plus size={14} /> {L("dashboard.newJob")}
           </Link>
         }
       />
@@ -61,30 +66,30 @@ export default async function DashboardPage() {
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          label="Booked today"
-          value={formatMoney(stats.bookedToday, currency)}
-          sub={`${stats.jobsLeftToday} job${stats.jobsLeftToday === 1 ? "" : "s"} still open`}
+          label={L("dashboard.bookedToday")}
+          value={formatMoney(stats.bookedToday, currency, moneyLocale)}
+          sub={L(stats.jobsLeftToday === 1 ? "dashboard.jobStillOpen" : "dashboard.jobsStillOpen").replace("{count}", String(stats.jobsLeftToday))}
           icon={<Calendar size={16} />}
           accent="bg-smoke text-ink"
         />
         <StatCard
-          label="Collected · 7 days"
-          value={formatMoney(stats.collectedThisWeek, currency)}
-          sub="Payments received"
+          label={L("dashboard.collected7")}
+          value={formatMoney(stats.collectedThisWeek, currency, moneyLocale)}
+          sub={L("dashboard.paymentsReceived")}
           icon={<Banknote size={16} />}
           accent="bg-emerald-100 text-emerald-700"
         />
         <StatCard
-          label="Outstanding"
-          value={formatMoney(stats.outstanding, currency)}
-          sub={`${stats.outstandingCount} unpaid invoice${stats.outstandingCount === 1 ? "" : "s"}`}
+          label={L("dashboard.outstanding")}
+          value={formatMoney(stats.outstanding, currency, moneyLocale)}
+          sub={L(stats.outstandingCount === 1 ? "dashboard.unpaidInvoice" : "dashboard.unpaidInvoices").replace("{count}", String(stats.outstandingCount))}
           icon={<AlertCircle size={16} />}
           accent="bg-amber-100 text-amber-700"
         />
         <StatCard
-          label="New leads"
+          label={L("dashboard.newLeads")}
           value={String(stats.newLeads)}
-          sub={`${stats.totalCustomers} total customers`}
+          sub={L("dashboard.totalCustomers").replace("{count}", String(stats.totalCustomers))}
           icon={<UserPlus size={16} />}
           accent="bg-blue-100 text-blue-700"
         />
@@ -95,26 +100,26 @@ export default async function DashboardPage() {
         <Card>
           <div className="flex items-center justify-between px-5 pt-5 pb-3">
             <h2 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
-              <Clock size={15} className="text-ink" /> Today&apos;s schedule
+              <Clock size={15} className="text-ink" /> {L("dashboard.todaysSchedule")}
             </h2>
             <Link
               href="/schedule"
               className="text-xs font-semibold text-ink hover:underline inline-flex items-center gap-1"
             >
-              Schedule <ChevronRight size={13} />
+              {L("dashboard.schedule")} <ChevronRight size={13} />
             </Link>
           </div>
           {stats.todayJobs.length === 0 ? (
             <EmptyState
               icon={<CalendarDays size={22} />}
-              title="Nothing scheduled today"
-              description="Enjoy the breather — or book a job in under 20 seconds."
+              title={L("dashboard.nothingScheduled")}
+              description={L("dashboard.breather")}
               action={
                 <Link
                   href="/jobs/new"
                   className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs inline-flex items-center gap-2"
                 >
-                  <Plus size={14} /> New job
+                  <Plus size={14} /> {L("dashboard.newJob")}
                 </Link>
               }
             />
@@ -144,20 +149,20 @@ export default async function DashboardPage() {
         <Card>
           <div className="flex items-center justify-between px-5 pt-5 pb-3">
             <h2 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
-              <Receipt size={15} className="text-amber-600" /> Payments due
+              <Receipt size={15} className="text-amber-600" /> {L("dashboard.paymentsDue")}
             </h2>
             <Link
               href="/invoices"
               className="text-xs font-semibold text-ink hover:underline inline-flex items-center gap-1"
             >
-              Invoices <ChevronRight size={13} />
+              {L("dashboard.invoices")} <ChevronRight size={13} />
             </Link>
           </div>
           {stats.dueInvoices.length === 0 ? (
             <EmptyState
               icon={<Banknote size={22} />}
-              title="All caught up"
-              description="No unpaid invoices. Money in the bank, zero chasing."
+              title={L("dashboard.allCaughtUp")}
+              description={L("dashboard.noUnpaid")}
             />
           ) : (
             <ul className="divide-y divide-zinc-100 px-2 pb-2">
@@ -171,9 +176,9 @@ export default async function DashboardPage() {
                       <p className="text-sm font-semibold text-zinc-900 truncate">
                         {inv.number} · {inv.customerName}
                       </p>
-                      <p className="text-xs text-zinc-500">{formatDateLabel(inv.date)}</p>
+                      <p className="text-xs text-zinc-500">{formatDateLabel(inv.date, dateLocale)}</p>
                     </div>
-                    <p className="text-sm font-bold text-zinc-900">{formatMoney(inv.outstanding, currency)}</p>
+                    <p className="text-sm font-bold text-zinc-900">{formatMoney(inv.outstanding, currency, moneyLocale)}</p>
                   </Link>
                 </li>
               ))}
@@ -185,9 +190,9 @@ export default async function DashboardPage() {
       {/* Upcoming + jobs by status + quick actions */}
       <div className="grid lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-2 p-5">
-          <h2 className="text-sm font-bold text-zinc-900 mb-3">Upcoming jobs</h2>
+          <h2 className="text-sm font-bold text-zinc-900 mb-3">{L("dashboard.upcomingJobs")}</h2>
           {stats.upcomingJobs.length === 0 ? (
-            <p className="text-sm text-zinc-500">No upcoming jobs scheduled.</p>
+            <p className="text-sm text-zinc-500">{L("dashboard.noUpcoming")}</p>
           ) : (
             <ul className="divide-y divide-zinc-100">
               {stats.upcomingJobs.map((job) => (
@@ -211,10 +216,10 @@ export default async function DashboardPage() {
           )}
           <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-zinc-100">
             <p className="w-full text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-1">
-              Jobs by status
+              {L("dashboard.jobsByStatus")}
             </p>
             {stats.jobsByStatus.length === 0 ? (
-              <p className="text-sm text-zinc-500">No jobs yet.</p>
+              <p className="text-sm text-zinc-500">{L("dashboard.noJobsYet")}</p>
             ) : (
               stats.jobsByStatus.map((g) => (
                 <Link
@@ -231,7 +236,7 @@ export default async function DashboardPage() {
         </Card>
 
         <Card className="p-5">
-          <h2 className="text-sm font-bold text-zinc-900 mb-3">Quick actions</h2>
+          <h2 className="text-sm font-bold text-zinc-900 mb-3">{L("dashboard.quickActions")}</h2>
           <div className="grid grid-cols-2 gap-2">
             {QUICK_ACTIONS.map((a) => (
               <Link
@@ -250,7 +255,7 @@ export default async function DashboardPage() {
             href="/reports"
             className="mt-4 flex items-center justify-between bg-zinc-900 text-white rounded-2xl px-4 py-3 hover:bg-zinc-800 transition-colors"
           >
-            <span className="text-xs font-semibold">View business reports</span>
+            <span className="text-xs font-semibold">{L("dashboard.viewReports")}</span>
             <ChevronRight size={14} />
           </Link>
         </Card>

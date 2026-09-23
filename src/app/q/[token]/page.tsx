@@ -79,6 +79,8 @@ export default async function QuotePortalPage({
 
   const locale = await getLocale();
   const L = (path: string) => t(locale, path);
+  const moneyLocale = locale === 'fr' ? 'fr' : 'en';
+  const dateLocale = locale === 'fr' ? 'fr-CA' : 'en-CA';
 
   const selectedAddons = quote.addons.filter((a) => a.selected);
   const approvedTotal =
@@ -86,7 +88,9 @@ export default async function QuotePortalPage({
 
   const whatsappHref = waLink(
     quote.business.whatsappNumber || quote.business.phone,
-    `Hi ${quote.business.name}! I have a question about quote ${quote.number}.`,
+    L('quotes.portal.whatsappPrefill')
+      .replace('{business}', quote.business.name)
+      .replace('{number}', quote.number),
     quote.business.regionCode
   );
 
@@ -98,7 +102,7 @@ export default async function QuotePortalPage({
             <FileText className="w-6 h-6 text-white" />
           </div>
           <h1 className="text-xl font-bold text-zinc-900 tracking-tight">{quote.business.name}</h1>
-          <p className="text-sm text-zinc-500 mt-0.5">Quote for {quote.customer.name}</p>
+          <p className="text-sm text-zinc-500 mt-0.5">{L('quotes.portal.quoteFor')} {quote.customer.name}</p>
         </div>
 
         <Card className="p-6">
@@ -107,15 +111,15 @@ export default async function QuotePortalPage({
               <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">{quote.number}</p>
               <h2 className="text-lg font-bold text-zinc-900 mt-0.5">{quote.title}</h2>
               <p className="text-xs text-zinc-400 mt-1">
-                Issued {quote.createdAt.toLocaleDateString('en-CA', { day: 'numeric', month: 'short', year: 'numeric' })}
+                {L('quotes.portal.issued')} {quote.createdAt.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })}
               </p>
             </div>
             <StatusBadge status={quote.status} />
           </div>
 
           <div className="border-t border-zinc-100 pt-4 flex items-center justify-between">
-            <span className="text-sm text-zinc-500">Total</span>
-            <span className="text-2xl font-bold text-zinc-900 tracking-tight">{formatMoney(quote.total, quote.business.currency)}</span>
+            <span className="text-sm text-zinc-500">{L('quotes.portal.total')}</span>
+            <span className="text-2xl font-bold text-zinc-900 tracking-tight">{formatMoney(quote.total, quote.business.currency, moneyLocale)}</span>
           </div>
         </Card>
 
@@ -131,6 +135,12 @@ export default async function QuotePortalPage({
                 addonsHint: L('quotes.portal.addonsHint'),
                 baseTotal: L('quotes.portal.baseTotal'),
                 yourTotal: L('quotes.portal.yourTotal'),
+                waitLabel: L('quotes.portal.waitLabel'),
+                approveLabel: L('quotes.portal.approveLabel'),
+                declineLabel: L('quotes.portal.declineLabel'),
+                responseNote: L('quotes.portal.responseNote'),
+                errorLabel: L('quotes.portal.errorLabel'),
+                locale,
               }}
             />
           </Card>
@@ -139,7 +149,7 @@ export default async function QuotePortalPage({
             {quote.status === 'APPROVED' ? (
               <>
                 <CheckCircle2 size={32} className="mx-auto text-emerald-600 mb-2" />
-                <p className="text-sm font-semibold text-zinc-900">You approved this quote.</p>
+                <p className="text-sm font-semibold text-zinc-900">{L('quotes.portal.approved')}</p>
                 {selectedAddons.length > 0 && (
                   <div className="text-left mt-4 border-t border-smoke pt-4">
                     <p className="text-xs font-bold text-ink mb-2">
@@ -150,7 +160,7 @@ export default async function QuotePortalPage({
                         <li key={a.id} className="flex items-center justify-between text-sm">
                           <span className="text-graphite">{a.title}</span>
                           <span className="font-semibold text-ink">
-                            +{formatMoney(a.price, quote.business.currency)}
+                            +{formatMoney(a.price, quote.business.currency, moneyLocale)}
                           </span>
                         </li>
                       ))}
@@ -158,24 +168,24 @@ export default async function QuotePortalPage({
                     <div className="flex items-center justify-between border-t border-smoke mt-3 pt-3">
                       <span className="text-sm font-bold text-ink">{L('quotes.portal.yourTotal')}</span>
                       <span className="text-lg font-bold text-ink tracking-tight">
-                        {formatMoney(approvedTotal, quote.business.currency)}
+                        {formatMoney(approvedTotal, quote.business.currency, moneyLocale)}
                       </span>
                     </div>
                   </div>
                 )}
-                <p className="text-xs text-zinc-500 mt-3">The business will be in touch to schedule the work.</p>
+                <p className="text-xs text-zinc-500 mt-3">{L('quotes.portal.approvedNote')}</p>
               </>
             ) : quote.status === 'DECLINED' ? (
               <>
                 <XCircle size={32} className="mx-auto text-zinc-400 mb-2" />
-                <p className="text-sm font-semibold text-zinc-900">You declined this quote.</p>
-                <p className="text-xs text-zinc-500 mt-1">No problem — contact the business if you change your mind.</p>
+                <p className="text-sm font-semibold text-zinc-900">{L('quotes.portal.declined')}</p>
+                <p className="text-xs text-zinc-500 mt-1">{L('quotes.portal.declinedNote')}</p>
               </>
             ) : (
               <>
                 <Clock size={32} className="mx-auto text-zinc-400 mb-2" />
-                <p className="text-sm font-semibold text-zinc-900">This quote isn&apos;t ready yet.</p>
-                <p className="text-xs text-zinc-500 mt-1">Please check back once the business sends it.</p>
+                <p className="text-sm font-semibold text-zinc-900">{L('quotes.portal.notReady')}</p>
+                <p className="text-xs text-zinc-500 mt-1">{L('quotes.portal.notReadyNote')}</p>
               </>
             )}
           </Card>
@@ -188,7 +198,7 @@ export default async function QuotePortalPage({
             rel="noreferrer"
             className="flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#1fb857] text-white font-bold text-sm py-3 rounded-2xl transition-colors"
           >
-            <MessageCircle size={16} /> Questions? Chat on WhatsApp
+            <MessageCircle size={16} /> {L('quotes.portal.whatsappCta')}
           </a>
         )}
 

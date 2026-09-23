@@ -8,7 +8,7 @@ import {
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card, StatusBadge } from '@/components/ui';
-import { formatDateLabel, toISODateLocal, hasJobTime } from '@/lib/utils';
+import { formatDateLabel, toISODateLocal, hasJobTime, localeDateTag, localeMoneyTag } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import { entryMinutes } from '@/lib/timesheets';
 import { sumLaborMinutes } from '@/lib/costing';
@@ -28,6 +28,8 @@ export default async function JobDetailPage({
   const { id } = await params;
   const { businessId } = await requireAuth();
   const locale = await getLocale();
+  const dateLocale = localeDateTag(locale);
+  const moneyLocale = localeMoneyTag(locale);
   const business = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true, name: true, regionCode: true, defaultHourlyRate: true } });
   const currency = business?.currency;
 
@@ -73,7 +75,7 @@ export default async function JobDetailPage({
     {
       icon: <Calendar size={14} className="text-zinc-400" />,
       label: 'Date',
-      value: formatDateLabel(jobDateKey),
+      value: formatDateLabel(jobDateKey, dateLocale),
     },
     {
       icon: <Clock size={14} className="text-zinc-400" />,
@@ -83,7 +85,7 @@ export default async function JobDetailPage({
     {
       icon: <DollarSign size={14} className="text-zinc-400" />,
       label: 'Price',
-      value: <span className="font-bold text-zinc-900">{formatMoney(job.price, currency)}</span>,
+      value: <span className="font-bold text-zinc-900">{formatMoney(job.price, currency, moneyLocale)}</span>,
     },
     {
       icon: <User size={14} className="text-zinc-400" />,
@@ -140,7 +142,7 @@ export default async function JobDetailPage({
             <WhatsAppButton
               phone={job.customer.phone}
               regionCode={business?.regionCode}
-              message={`Hi ${job.customer.name}! ${business?.name ?? 'We'} have your "${job.title}" booking scheduled for ${formatDateLabel(jobDateKey)}${hasJobTime(job.time) ? ` at ${job.time}` : ''}.`}
+              message={`Hi ${job.customer.name}! ${business?.name ?? 'We'} have your "${job.title}" booking scheduled for ${formatDateLabel(jobDateKey, dateLocale)}${hasJobTime(job.time) ? ` at ${job.time}` : ''}.`}
               label="WhatsApp"
             />
             <Link
@@ -156,7 +158,7 @@ export default async function JobDetailPage({
       <div className="flex items-center gap-3">
         <StatusBadge status={job.status} />
         <span className="text-xs text-zinc-400">
-          Created {formatDateLabel(job.createdAt)}
+          Created {formatDateLabel(job.createdAt, dateLocale)}
         </span>
       </div>
 
@@ -211,7 +213,7 @@ export default async function JobDetailPage({
           description: e.description,
           amount: e.amount,
           category: e.category,
-          spentAt: formatDateLabel(e.spentAt),
+          spentAt: formatDateLabel(e.spentAt, dateLocale),
         }))}
       />
 
@@ -227,7 +229,7 @@ export default async function JobDetailPage({
         expenses={job.expenses.map((e) => ({ category: e.category, amount: e.amount }))}
         entries={job.timeEntries.slice(0, 8).map((e) => ({
           name: e.user.name || e.user.email,
-          dateLabel: formatDateLabel(e.clockIn),
+          dateLabel: formatDateLabel(e.clockIn, dateLocale),
           active: !e.clockOut,
           minutes: entryMinutes(e.clockIn, e.clockOut),
         }))}
@@ -254,7 +256,7 @@ export default async function JobDetailPage({
                 noteId={note.id}
                 content={note.content}
                 authorName={note.author.name || note.author.email}
-                createdAt={formatDateLabel(note.createdAt)}
+                createdAt={formatDateLabel(note.createdAt, dateLocale)}
               />
             ))}
           </div>

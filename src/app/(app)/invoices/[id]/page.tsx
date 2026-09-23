@@ -4,7 +4,7 @@ import { ArrowLeft, Printer, User } from 'lucide-react';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { PageHeader, Card, StatusBadge } from '@/components/ui';
-import { formatDateShort } from '@/lib/utils';
+import { formatDateShort, localeDateTag, localeMoneyTag } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import { splitStoredTax, taxIdLabelForRegion } from '@/lib/tax';
 import { displayNotes } from '@/lib/invoice-notes';
@@ -54,7 +54,8 @@ export default async function InvoiceDetailPage({
   // French (fr) locale renders invoice labels in French and formats CAD
   // amounts in fr-CA style (e.g. "1 234,56 $").
   const locale = await getLocale();
-  const moneyLocale = locale === 'fr' ? 'fr' : 'en';
+  const dateLocale = localeDateTag(locale);
+  const moneyLocale = localeMoneyTag(locale);
   const L = (path: string) => t(locale, path);
 
   // Per-line tax breakdown from the stored tax type + rate. Lines are
@@ -86,7 +87,7 @@ export default async function InvoiceDetailPage({
           <WhatsAppButton
             phone={invoice.customer.phone}
             regionCode={invoice.business.regionCode}
-            message={`Hi ${invoice.customer.name}! Here is invoice ${invoice.number} from ${invoice.business.name} (${formatMoney(invoice.total, currency)}).`}
+            message={`Hi ${invoice.customer.name}! Here is invoice ${invoice.number} from ${invoice.business.name} (${formatMoney(invoice.total, currency, moneyLocale)}).`}
             label="WhatsApp"
           />
           <PrintButton />
@@ -95,7 +96,7 @@ export default async function InvoiceDetailPage({
 
       <PageHeader
         title={`${L('invoices.invoice')} ${invoice.number}`}
-        subtitle={`${L('invoices.dated')} ${formatDateShort(invoice.date)}`}
+        subtitle={`${L('invoices.dated')} ${formatDateShort(invoice.date, dateLocale)}`}
         actions={<StatusBadge status={invoice.status} />}
       />
 
@@ -207,11 +208,11 @@ export default async function InvoiceDetailPage({
             {invoice.payments.map((p) => (
               <li key={p.id} className="flex items-center justify-between py-2.5 text-sm">
                 <div>
-                  <p className="font-semibold text-zinc-900">{formatMoney(p.amount, currency)}</p>
+                  <p className="font-semibold text-zinc-900">{formatMoney(p.amount, currency, moneyLocale)}</p>
                   <p className="text-xs text-zinc-500">
                     {p.provider}
                     {p.transactionId ? ` · Ref ${p.transactionId}` : ''} ·{' '}
-                    {formatDateShort(p.createdAt)}
+                    {formatDateShort(p.createdAt, dateLocale)}
                   </p>
                 </div>
                 <StatusBadge status={p.status} />

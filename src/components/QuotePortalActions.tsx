@@ -19,6 +19,13 @@ export interface QuotePortalStrings {
   addonsHint: string;
   baseTotal: string;
   yourTotal: string;
+  waitLabel: string;
+  approveLabel: string;
+  declineLabel: string;
+  responseNote: string;
+  errorLabel: string;
+  /** Locale for money formatting, e.g. 'en' or 'fr'. Defaults to 'en'. */
+  locale?: string;
 }
 
 /**
@@ -41,6 +48,7 @@ export default function QuotePortalActions({
 }) {
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
+  const moneyLocale = strings.locale === 'fr' ? 'fr' : 'en';
   const [selectedIds, setSelectedIds] = useState<string[]>(() =>
     addons.filter((a) => a.selected).map((a) => a.id)
   );
@@ -70,7 +78,7 @@ export default function QuotePortalActions({
       if (res.ok) {
         router.refresh();
       } else {
-        setMessage(res.error ?? 'Something went wrong. Please try again.');
+        setMessage(res.error ?? strings.errorLabel);
         if (res.status) router.refresh();
       }
     });
@@ -113,7 +121,7 @@ export default function QuotePortalActions({
                       </span>
                     </span>
                     <span className="text-sm font-bold text-zinc-900 shrink-0">
-                      +{formatMoney(a.price, currency)}
+                      +{formatMoney(a.price, currency, moneyLocale)}
                     </span>
                   </label>
                 </li>
@@ -128,13 +136,13 @@ export default function QuotePortalActions({
           <div className="flex items-center justify-between text-sm">
             <span className="text-graphite">{strings.baseTotal}</span>
             <span className="font-semibold text-ink">
-              {formatMoney(baseTotal, currency)}
+              {formatMoney(baseTotal, currency, moneyLocale)}
             </span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm font-bold text-ink">{strings.yourTotal}</span>
             <span className="text-xl font-bold text-ink tracking-tight">
-              {formatMoney(liveTotal, currency)}
+              {formatMoney(liveTotal, currency, moneyLocale)}
             </span>
           </div>
         </div>
@@ -147,7 +155,7 @@ export default function QuotePortalActions({
           onClick={() => decide('APPROVED')}
           className="bg-ink hover:bg-ink/90 text-white justify-center px-4 py-3 rounded-xl font-semibold text-sm transition-colors inline-flex items-center gap-2 shadow-sm disabled:opacity-60"
         >
-          <Check size={16} /> {pending ? 'Please wait…' : 'Approve quote'}
+          <Check size={16} /> {pending ? strings.waitLabel : strings.approveLabel}
         </button>
         <button
           type="button"
@@ -155,11 +163,11 @@ export default function QuotePortalActions({
           onClick={() => decide('DECLINED')}
           className="bg-white hover:bg-paper text-graphite justify-center px-4 py-3 rounded-xl font-semibold text-sm transition-colors inline-flex items-center gap-2 border border-smoke shadow-sm disabled:opacity-60"
         >
-          <X size={16} /> Decline
+          <X size={16} /> {strings.declineLabel}
         </button>
       </div>
       <p className="text-[11px] text-graphite text-center">
-        Your response is sent to the business immediately.
+        {strings.responseNote}
       </p>
     </div>
   );
