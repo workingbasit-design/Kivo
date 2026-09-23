@@ -16,6 +16,7 @@ import {
   setShareTokenExpiry,
   resolveShareToken,
 } from '@/lib/share';
+import { addonQuoteTotal } from '@/lib/quotes';
 
 export type ActionResult = { error?: string; ok?: boolean; id?: string };
 
@@ -224,19 +225,36 @@ export async function convertQuoteToJob(
   }
 
   const id = String(formData.get('id') ?? '');
-  const quote = await ownedQuote(businessId, id);
+  const quote = await prisma.quote.findFirst({
+    where: { id, businessId },
+    include: {
+      customer: true,
+      addons: { select: { title: true, price: true, selected: true } },
+    },
+  });
   if (!quote) return { error: 'Quote not found.' };
   if (quote.status !== 'APPROVED') {
     return { error: 'Only approved quotes can be converted to jobs.' };
   }
 
+  // The client-approved total includes any selected add-ons — the job
+  // price and notes must reflect what was actually agreed.
+  const selectedAddons = quote.addons.filter((a) => a.selected);
+  const jobPrice = addonQuoteTotal(quote.total, quote.addons);
+  const addonNote =
+    selectedAddons.length > 0
+      ? ` Includes add-ons: ${selectedAddons
+          .map((a) => `${a.title} ($${a.price.toFixed(2)})`)
+          .join(', ')}.`
+      : '';
+
   const job = await prisma.job.create({
     data: {
       title: quote.title,
       date: new Date(),
-      price: quote.total,
+      price: jobPrice,
       status: 'SCHEDULED',
-      notes: `Converted from quote ${quote.number}.`,
+      notes: `Converted from quote ${quote.number}.${addonNote}`,
       customerId: quote.customerId,
       businessId,
     },

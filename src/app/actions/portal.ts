@@ -70,12 +70,3 @@ export async function revokePortalLink(
   revalidatePath(`/customers/${customerId}`);
   return { ok: true };
 }
-
-/** Active portal link metadata for the customer page (no token value). */
-export async function getPortalLinkState(customerId: string) {
-  const { businessId } = await requireAuth();
-  const rec = await getActivePortalToken(businessId, customerId);
-  return rec
-    ? { tokenId: rec.id, expiresAt: rec.expiresAt?.toISOString() ?? null, createdAt: rec.createdAt.toISOString() }
-    : null;
-}

@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma';
 import { rateLimit } from '@/lib/rate-limit';
 import { validatePhone, INVALID_PHONE_MESSAGE } from '@/lib/phone';
 import { parseTimeToMinutes } from '@/lib/routes';
-import { dayRange } from '@/lib/utils';
+import { dayRange, todayInTimezone } from '@/lib/utils';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
 import {
@@ -236,7 +236,7 @@ async function runBookingWithTime(
     select: {
       businessId: true,
       enabled: true,
-      business: { select: { regionCode: true, workingHours: true } },
+      business: { select: { regionCode: true, workingHours: true, timezone: true } },
     },
   });
   if (!page || !page.enabled) {
@@ -252,10 +252,12 @@ async function runBookingWithTime(
   if (Number.isNaN(preferred.getTime())) {
     return { error: 'Pick a valid preferred date.' };
   }
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  if (preferred < today) {
-    return { error: 'Preferred date cannot be in the past.' };
+  // Compare against "today" in the business's own timezone — the server
+  // runs on UTC, so a server-local check would wrongly reject same-day
+  // evening bookings in timezones behind UTC.
+  const todayStr = todayInTimezone(page.business.timezone, page.business.regionCode);
+  if (date < todayStr) {
+    return { error: t(locale, 'reminders.booking.datePast') };
   }
 
   // --- Slot validation (the double-booking guard) ---
@@ -335,7 +337,7 @@ async function runBookingWithTime(
       status: 'NEW',
       notes:
         (notes ? `Booked online. Customer notes: ${notes}` : 'Booked online via booking page.') +
-        (validatedTime ? ` Requested time: ${formatSlotLabel(validatedTime, 'en')}.` : ''),
+        (validatedTime ? ` Requested time: ${formatSlotLabel(validatedTime, locale)}.` : ''),
       customerId: customer.id,
       businessId,
     },
