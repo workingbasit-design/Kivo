@@ -38,6 +38,7 @@ const en: Dict = {
     team: 'Team',
     timesheets: 'Timesheets',
     marketing: 'Marketing',
+    reminders: 'Reminders',
     reviews: 'Reviews',
     settings: 'Settings',
     directory: 'Directory',

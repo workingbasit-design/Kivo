@@ -37,6 +37,7 @@ const fr: Dictionary = {
     team: 'Équipe',
     timesheets: 'Feuilles de temps',
     marketing: 'Marketing',
+    reminders: 'Rappels',
     reviews: 'Avis',
     settings: 'Paramètres',
     directory: 'Répertoire',
