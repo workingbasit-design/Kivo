@@ -5,9 +5,10 @@ import { validatePhone } from './phone';
  * Shared helpers for the public EveryJob Directory (customer-discovery layer).
  *
  * Tenant-safety rule: every public query MUST filter `directoryOptIn: true`
- * and select only the fields a stranger is allowed to see. Never expose
- * emails, customer lists, jobs, invoices, or exact addresses of businesses
- * that hid them.
+ * AND `directoryVerifiedAt` (not null). Unverified/unclaimed listings never
+ * go public. Select only the fields a stranger is allowed to see. Never
+ * expose emails, customer lists, jobs, invoices, or exact addresses of
+ * businesses that hid them.
  */
 
 /** Best-effort client IP for public rate limiting. */
@@ -52,8 +53,7 @@ export function isDirectoryAdminEmail(email: string | null | undefined): boolean
   return !!email && allow.includes(email.toLowerCase());
 }
 
-/** Phone-verified badge: business phone or WhatsApp number validates. */
-export function isPhoneVerified(
+/** Phone-verified badge: business phone or WhatsApp number validates. */export function isPhoneVerified(
   phone: string | null | undefined,
   whatsappNumber: string | null | undefined,
   regionCode?: string | null

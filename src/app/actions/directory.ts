@@ -43,8 +43,9 @@ export type DirectoryCandidate = {
 
 /**
  * Find opted-in businesses matching a service keyword + city.
- * Tenant-safe: only directoryOptIn businesses with a booking page (stable
- * public slug) are ever returned; all other business data stays private.
+ * Tenant-safe: only verified directoryOptIn businesses with a booking page
+ * (stable public slug) are ever returned; all other business data stays
+ * private. Unverified/unclaimed listings never go public.
  */
 export async function findDirectoryMatches(
   serviceNeed: string,
@@ -52,7 +53,7 @@ export async function findDirectoryMatches(
   limit = 5
 ): Promise<DirectoryCandidate[]> {
   const businesses = await prisma.business.findMany({
-    where: { directoryOptIn: true, bookingPage: { isNot: null } },
+    where: { directoryOptIn: true, directoryVerifiedAt: { not: null }, bookingPage: { isNot: null } },
     select: {
       id: true,
       name: true,

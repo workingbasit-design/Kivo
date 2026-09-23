@@ -20,6 +20,7 @@ import {
   matchesCity,
   ratingSummary,
 } from '@/lib/directory';
+import { parseServiceAreas } from '@/lib/directory-claim';
 import ReportBusinessForm from '@/components/ReportBusinessForm';
 
 async function getProfile(slug: string) {
@@ -27,7 +28,13 @@ async function getProfile(slug: string) {
     where: { slug },
     select: {
       headline: true,
+      headlineFr: true,
       intro: true,
+      introFr: true,
+      description: true,
+      descriptionFr: true,
+      serviceAreas: true,
+      showPhone: true,
       business: {
         select: {
           id: true,
@@ -39,12 +46,13 @@ async function getProfile(slug: string) {
           regionCode: true,
           currency: true,
           directoryOptIn: true,
+          directoryVerifiedAt: true,
           directoryHideAddress: true,
         },
       },
     },
   });
-  if (!page || !page.business.directoryOptIn) return null;
+  if (!page || !page.business.directoryOptIn || !page.business.directoryVerifiedAt) return null;
 
   const businessId = page.business.id;
   const [services, reviews] = await Promise.all([
@@ -91,8 +99,8 @@ export async function generateMetadata({
 }
 
 /**
- * Public business profile. Tenant-safe: only directoryOptIn businesses are
- * reachable, and only public-safe fields are selected.
+ * Public business profile. Tenant-safe: only verified directoryOptIn
+ * businesses are reachable, and only public-safe fields are selected.
  */
 export default async function PublicProfilePage({
   params,
@@ -115,6 +123,9 @@ export default async function PublicProfilePage({
     b.regionCode
   );
   const showAddress = b.directoryHideAddress ? locality : b.address;
+  const showContact = page.showPhone; // business chose to display phone/WhatsApp publicly
+  const serviceAreas = parseServiceAreas(page.serviceAreas);
+  const aboutText = page.description || page.intro;
 
   // Similar pros nearby: other directory businesses in the same city with
   // overlapping services. Real discovery cross-linking, no fake data.
@@ -122,7 +133,7 @@ export default async function PublicProfilePage({
   let similarPros: { name: string; slug: string; avg: number | null; service: string | null }[] = [];
   if (locality) {
     const others = await prisma.business.findMany({
-      where: { directoryOptIn: true, bookingPage: { isNot: null }, id: { not: b.id } },
+      where: { directoryOptIn: true, directoryVerifiedAt: { not: null }, bookingPage: { isNot: null }, id: { not: b.id } },
       select: {
         name: true,
         address: true,
@@ -212,7 +223,7 @@ export default async function PublicProfilePage({
             >
               <CalendarCheck size={15} /> Book now
             </Link>
-            {wa && (
+            {showContact && wa && (
               <a
                 href={wa}
                 target="_blank"
@@ -222,7 +233,7 @@ export default async function PublicProfilePage({
                 <MessageCircle size={15} /> WhatsApp
               </a>
             )}
-            {b.phone && (
+            {showContact && b.phone && (
               <a
                 href={`tel:${b.phone.replace(/\s/g, '')}`}
                 className="inline-flex items-center gap-1.5 rounded-xl border border-white/25 hover:border-white/60 text-white text-sm font-bold px-5 py-2.5 transition-colors"
@@ -235,10 +246,23 @@ export default async function PublicProfilePage({
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-5">
-        {page.intro && (
+        {aboutText && (
           <section className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-5">
             <h2 className="text-sm font-bold text-zinc-900 mb-1.5">About</h2>
-            <p className="text-sm text-zinc-600 leading-relaxed">{page.intro}</p>
+            <p className="text-sm text-zinc-600 leading-relaxed whitespace-pre-line">{aboutText}</p>
+          </section>
+        )}
+
+        {serviceAreas.length > 0 && (
+          <section className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-5">
+            <h2 className="text-sm font-bold text-zinc-900 mb-3">Areas served</h2>
+            <div className="flex flex-wrap gap-1.5">
+              {serviceAreas.map((a) => (
+                <span key={a} className="inline-flex items-center gap-1 text-xs font-medium text-zinc-700 bg-smoke rounded-full px-2.5 py-1">
+                  <MapPin size={11} className="text-zinc-400" /> {a}
+                </span>
+              ))}
+            </div>
           </section>
         )}
 

@@ -11,7 +11,7 @@ export const JOB_STATUSES = [
 
 export const INVOICE_STATUSES = ["UNPAID", "PARTIALLY PAID", "PAID"] as const;
 export const QUOTE_STATUSES = ["DRAFT", "SENT", "APPROVED", "DECLINED"] as const;
-export const LEAD_STATUSES = ["NEW", "CONTACTED", "CONVERTED"] as const;
+export const LEAD_STATUSES = ["NEW", "CONTACTED", "CONVERTED", "DECLINED"] as const;
 export const RECURRING_FREQUENCIES = ["WEEKLY", "BIWEEKLY", "MONTHLY"] as const;
 
 export const customerSchema = z.object({
@@ -30,6 +30,9 @@ export const customerSchema = z.object({
   province: z.string().trim().max(40).optional().default(""),
   postalCode: z.string().trim().max(20).optional().default(""),
   notes: z.string().trim().max(2000).optional().default(""),
+  // Comma-separated tags; normalized in the action (lowercase, trimmed,
+  // deduped, max 10 tags, 30 chars each).
+  tags: z.string().trim().max(400).optional().default(""),
 });
 
 export const jobSchema = z.object({

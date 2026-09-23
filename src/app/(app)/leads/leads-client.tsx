@@ -95,6 +95,23 @@ function DeleteButton({ leadId }: { leadId: string }) {
   );
 }
 
+function DeclineButton({ lead }: { lead: LeadItem }) {
+  const [, formAction, isPending] = useActionState(updateLeadStatus, {});
+  return (
+    <form action={formAction}>
+      <input type="hidden" name="id" value={lead.id} />
+      <input type="hidden" name="status" value="DECLINED" />
+      <button
+        type="submit"
+        disabled={isPending}
+        className="text-[11px] font-semibold text-zinc-400 hover:text-rose-600 inline-flex items-center gap-1 disabled:opacity-50"
+      >
+        <X size={12} /> {isPending ? 'Declining…' : 'Decline'}
+      </button>
+    </form>
+  );
+}
+
 function LeadCard({ lead }: { lead: LeadItem }) {
   const next = NEXT_STATUS[lead.status] ?? null;
   return (
@@ -119,7 +136,8 @@ function LeadCard({ lead }: { lead: LeadItem }) {
       </div>
       <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2">
         {next && <StatusButton lead={lead} target={next} />}
-        {lead.status !== 'CONVERTED' && <ConvertButton lead={lead} />}
+        {lead.status !== 'CONVERTED' && lead.status !== 'DECLINED' && <ConvertButton lead={lead} />}
+        {(lead.status === 'NEW' || lead.status === 'CONTACTED') && <DeclineButton lead={lead} />}
       </div>
     </div>
   );

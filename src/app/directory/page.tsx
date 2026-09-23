@@ -19,8 +19,9 @@ export const metadata = {
 type SearchParams = { q?: string; city?: string; minRating?: string };
 
 /**
- * Public business directory. Tenant-safe: only directoryOptIn businesses
- * with a booking page are listed, and only public-safe fields are selected.
+ * Public business directory. Tenant-safe: only verified directoryOptIn
+ * businesses with a booking page are listed, and only public-safe fields
+ * are selected. Unverified/unclaimed listings never go public.
  */
 export default async function DirectoryPage({
   searchParams,
@@ -31,7 +32,7 @@ export default async function DirectoryPage({
   const minR = Number(minRating) || 0;
 
   const businesses = await prisma.business.findMany({
-    where: { directoryOptIn: true, bookingPage: { isNot: null } },
+    where: { directoryOptIn: true, directoryVerifiedAt: { not: null }, bookingPage: { isNot: null } },
     select: {
       name: true,
       address: true,

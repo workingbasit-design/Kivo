@@ -158,8 +158,36 @@ export async function updateBusinessSettings(
     },
   });
 
-  // Supply on day one: an opted-in business with no booking page gets one,
-  // so its public directory profile has a stable link (/p/[slug]).
+  // Claim verification: opting into the directory without a verified claim
+  // creates a PENDING claim — the listing stays unpublished until an admin
+  // explicitly approves. Never auto-approved. A previously APPROVED business
+  // that opted out and back in is re-verified (it was already vetted).
+  if (directoryOptIn) {
+    const [biz, claim] = await Promise.all([
+      prisma.business.findUnique({ where: { id: businessId }, select: { directoryVerifiedAt: true } }),
+      prisma.directoryClaim.findUnique({ where: { businessId }, select: { id: true, status: true } }),
+    ]);
+    if (!biz?.directoryVerifiedAt) {
+      if (claim?.status === 'APPROVED') {
+        await prisma.business.update({
+          where: { id: businessId },
+          data: { directoryVerifiedAt: new Date() },
+        });
+      } else if (!claim || claim.status === 'REJECTED') {
+        await prisma.directoryClaim.upsert({
+          where: { businessId },
+          create: { businessId, status: 'PENDING' },
+          update: { status: 'PENDING', decidedBy: null, decidedAt: null },
+        });
+      }
+    }
+  } else {
+    // Opting out unpublishes immediately.
+    await prisma.business.update({
+      where: { id: businessId },
+      data: { directoryVerifiedAt: null },
+    });
+  }
   if (directoryOptIn) {
     const existing = await prisma.bookingPage.findUnique({
       where: { businessId },
