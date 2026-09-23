@@ -7,6 +7,9 @@ import { PageHeader, Card, StatusBadge } from '@/components/ui';
 import { formatDateShort } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import { getTaxConfig, totalTaxRate } from '@/lib/tax';
+import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
+import RevokeSignButton from './RevokeSignButton';
 import {
   getQuoteShareState,
   regenerateQuoteShareLink,
@@ -39,6 +42,9 @@ export default async function QuoteDetailPage({
   if (!quote) notFound();
 
   const shareState = await getQuoteShareState(quote.id);
+
+  const locale = await getLocale();
+  const L = (path: string) => t(locale, path);
 
   const currency = 'CAD';
   const taxConfig = getTaxConfig(
@@ -126,10 +132,18 @@ export default async function QuoteDetailPage({
           </div>
         </dl>
 
-        <div className="border-t border-zinc-100 pt-5">
+        <div className="border-t border-zinc-100 pt-5 space-y-3">
           <QuoteActions id={quote.id} status={quote.status} />
+          <Link
+            href={`/quotes/${quote.id}/sign`}
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-700"
+          >
+            {L('esign.sendForSignature')}
+          </Link>
         </div>
       </Card>
+
+      <SignatureRequestsCard quoteId={quote.id} L={L} />
 
       <Card className="p-6">
         <ShareTokenManager
@@ -147,5 +161,117 @@ export default async function QuoteDetailPage({
         (Settings → Region & tax).
       </p>
     </div>
+  );
+}
+
+/** EveryJob Sign status: signing links for this quote, audit trail included. */
+async function SignatureRequestsCard({
+  quoteId,
+  L,
+}: {
+  quoteId: string;
+  L: (path: string) => string;
+}) {
+  const session = await getSession();
+  if (!session?.user?.businessId) return null;
+  const businessId = session.user.businessId;
+
+  const requests = await prisma.signatureRequest.findMany({
+    where: { quoteId, businessId },
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      status: true,
+      createdAt: true,
+      signedAt: true,
+      signerName: true,
+      auditJson: true,
+    },
+  });
+  if (requests.length === 0) return null;
+
+  const STATUS_LABELS: Record<string, string> = {
+    sent: L('esign.statusSent'),
+    viewed: L('esign.statusViewed'),
+    signed: L('esign.statusSigned'),
+    declined: L('esign.statusDeclined'),
+    expired: L('esign.statusExpired'),
+    revoked: L('esign.statusRevoked'),
+  };
+
+  return (
+    <Card className="p-6 space-y-4">
+      <h3 className="text-sm font-bold text-zinc-900">{L('esign.status')}</h3>
+
+      {requests.map((req) => {
+        const revocable = req.status === 'sent' || req.status === 'viewed';
+        let audit: { event: string; at: string; ip: string }[] = [];
+        try {
+          const parsed: unknown = JSON.parse(req.auditJson);
+          if (Array.isArray(parsed)) audit = parsed;
+        } catch {
+          audit = [];
+        }
+
+        return (
+          <div key={req.id} className="border-t border-zinc-100 pt-4 space-y-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <StatusBadge status={STATUS_LABELS[req.status] ?? req.status} />
+                <span className="text-xs text-zinc-500">
+                  {formatDateShort(req.createdAt)}
+                </span>
+                {req.signedAt && (
+                  <span className="text-xs text-zinc-500">
+                    · {L('esign.statusSigned')} {formatDateShort(req.signedAt)}
+                  </span>
+                )}
+                {req.signerName && (
+                  <span className="text-xs font-semibold text-zinc-700">
+                    · {req.signerName}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-3">
+                {req.status === 'signed' && (
+                  <Link
+                    href={`/quotes/${quoteId}/sign/${req.id}/print`}
+                    className="text-xs font-bold text-indigo-600 hover:text-indigo-700"
+                  >
+                    {L('esign.downloadSigned')}
+                  </Link>
+                )}
+                {revocable && (
+                  <RevokeSignButton
+                    requestId={req.id}
+                    confirmText={L('esign.confirmRevoke')}
+                    revokeText={L('esign.revoke')}
+                    revokedText={L('esign.revoked')}
+                    cancelText={L('common.cancel')}
+                  />
+                )}
+              </div>
+            </div>
+
+            {audit.length > 0 && (
+              <details className="text-xs">
+                <summary className="cursor-pointer font-semibold text-zinc-500 hover:text-zinc-700">
+                  {L('esign.auditTitle')}
+                </summary>
+                <ul className="mt-1.5 space-y-1 text-zinc-500">
+                  {audit.map((a, i) => (
+                    <li key={i} className="font-mono">
+                      {a.event} · {a.at}
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
+          </div>
+        );
+      })}
+
+      <p className="text-[11px] text-zinc-400">{L('esign.legalLine')}</p>
+    </Card>
   );
 }

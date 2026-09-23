@@ -8,7 +8,9 @@ import type { NextRequest } from 'next/server';
 const PUBLIC_PATHS = ['/', '/login', '/register'];
 // Public client-facing routes: online booking + magic-link portals (unguessable ids)
 // + the EveryJob business directory (customer discovery layer).
-const PUBLIC_PREFIXES = ['/book/', '/q/', '/i/', '/r/', '/p/', '/portal/'];
+// '/sign/' must stay public: unauthenticated clients open signing links
+// with no login, and bouncing them to /login would break the feature.
+const PUBLIC_PREFIXES = ['/book/', '/q/', '/i/', '/r/', '/p/', '/portal/', '/sign/'];
 const PUBLIC_EXACT_EXTRA = ['/directory', '/directory/request'];
 
 export function proxy(request: NextRequest) {
