@@ -71,12 +71,12 @@ export async function generateMetadata({
 }) {
   const { slug } = await params;
   const data = await getProfile(slug);
-  if (!data) return { title: 'Business not found | Kivo Directory' };
+  if (!data) return { title: 'Business not found | EveryJob Directory' };
   const { page, services } = data;
   const name = page.business.name;
   const locality = localityFromAddress(page.business.address);
   const serviceWords = services.slice(0, 3).map((s) => s.name).join(', ');
-  const title = `${name}${locality ? ` — ${locality}` : ''} | Kivo Directory`;
+  const title = `${name}${locality ? ` — ${locality}` : ''} | EveryJob Directory`;
   const description = [
     page.headline,
     serviceWords ? `Services: ${serviceWords}.` : '',
@@ -112,7 +112,7 @@ export default async function PublicProfilePage({
   const hoursSummary = formatWorkingHoursSummary(b.workingHours);
   const wa = waLink(
     b.whatsappNumber || b.phone,
-    `Hi ${b.name}! I found you on the Kivo directory and I'd like a quote.`,
+    `Hi ${b.name}! I found you on the EveryJob directory and I'd like a quote.`,
     b.regionCode
   );
   const showAddress = b.directoryHideAddress ? locality : b.address;
@@ -339,7 +339,7 @@ export default async function PublicProfilePage({
         )}
 
         <p className="text-center text-[11px] text-zinc-400 pb-8 flex items-center justify-center gap-1.5">
-          <Sparkles size={11} /> Listed on the Kivo Directory — free for businesses, no commission.
+          <Sparkles size={11} /> Listed on the EveryJob Directory — free for businesses, no commission.
         </p>
       </main>
     </div>

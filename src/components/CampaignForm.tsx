@@ -179,7 +179,7 @@ export default function CampaignForm({
       </div>
 
       <p className="text-[11px] text-zinc-400">
-        Kivo never sends messages itself — after queueing, you copy each message and send it
+        EveryJob never sends messages itself — after queueing, you copy each message and send it
         yourself via WhatsApp or SMS.
       </p>
     </form>

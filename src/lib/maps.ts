@@ -1,5 +1,5 @@
 /**
- * Real map services for Kivo route planning.
+ * Real map services for EveryJob route planning.
  *
  * SERVER-SIDE ONLY — import this module only from server components,
  * server actions, or API routes. It calls third-party free services:
@@ -47,7 +47,7 @@ const OSRM_TABLE_URL = 'https://router.project-osrm.org/table/v1/driving';
 const OSRM_ROUTE_URL = 'https://router.project-osrm.org/route/v1/driving';
 
 // Identifying User-Agent, as required by the Nominatim usage policy.
-const USER_AGENT = 'KivoApp/1.0';
+const USER_AGENT = 'EveryJobApp/1.0';
 const ATTRIBUTION = 'Geocoding by OpenStreetMap (Nominatim), routing by OSRM. © OpenStreetMap contributors.';
 
 const FETCH_TIMEOUT_MS = 12_000;

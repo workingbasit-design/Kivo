@@ -40,7 +40,7 @@ export default async function QuoteDetailPage({
 
   const shareState = await getQuoteShareState(quote.id);
 
-  const currency = quote.business.currency ?? 'INR';
+  const currency = 'CAD';
   const taxConfig = getTaxConfig(
     quote.business.regionCode,
     quote.business.taxRegion
@@ -93,12 +93,12 @@ export default async function QuoteDetailPage({
                 {[quote.customer.phone, quote.customer.address].filter(Boolean).join(' · ') || 'No contact details'}
               </p>
               {/* wa.me chat with the customer — user taps to send from their
-                  own WhatsApp; Kivo never sends anything automatically. */}
+                  own WhatsApp; EveryJob never sends anything automatically. */}
               <div className="mt-2">
                 <WhatsAppButton
                   phone={quote.customer.phone}
                   regionCode={quote.business.regionCode}
-                  message={`Namaste ${quote.customer.name}! ${quote.business.name ?? 'Hum'} ne aapke liye quote ${quote.number} (${quote.title}) banaya hai — kul ${formatMoney(quote.total, currency)}. Koi sawal ho to bas reply karein.`}
+                  message={`Hi ${quote.customer.name}! ${quote.business.name ?? 'We'} prepared quote ${quote.number} (${quote.title}) for you — total ${formatMoney(quote.total, currency)}. Just reply if you have any questions.`}
                   label="WhatsApp"
                 />
               </div>

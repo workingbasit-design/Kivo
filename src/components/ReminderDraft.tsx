@@ -70,7 +70,7 @@ export default function ReminderDraft({
           </div>
           <p className="text-sm text-zinc-700 whitespace-pre-wrap">{text}</p>
           <p className="text-[11px] text-amber-700/70 mt-2">
-            Kivo never sends messages itself — tap the WhatsApp button or copy this
+            EveryJob never sends messages itself — tap the WhatsApp button or copy this
             and send it via WhatsApp or SMS.
           </p>
         </div>

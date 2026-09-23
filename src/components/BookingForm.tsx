@@ -56,10 +56,10 @@ export default function BookingForm({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Field label="Your name *">
-          <input name="name" required minLength={2} maxLength={100} placeholder="e.g. Rahul Sharma" className={inputClass} autoComplete="name" />
+          <input name="name" required minLength={2} maxLength={100} placeholder="e.g. Sarah Miller" className={inputClass} autoComplete="name" />
         </Field>
         <Field label="Phone *">
-          <input name="phone" required maxLength={25} placeholder="e.g. 98765 43210" className={inputClass} autoComplete="tel" inputMode="tel" />
+          <input name="phone" required maxLength={25} placeholder="e.g. 416 555 0100" className={inputClass} autoComplete="tel" inputMode="tel" />
         </Field>
       </div>
 

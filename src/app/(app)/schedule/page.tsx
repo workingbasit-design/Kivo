@@ -75,10 +75,10 @@ export default async function SchedulePage({
     }),
   ]);
 
-  const countryCode: 'IN' | 'CA' = business?.regionCode === 'CA' ? 'CA' : 'IN';
+  const countryCode = 'CA' as const;
   // Province code (e.g. "ON") lets the scheduler badge provincial statutory
   // holidays like Family Day / St-Jean-Baptiste.
-  const provinceCode = countryCode === 'CA' ? business?.taxRegion ?? null : null;
+  const provinceCode = business?.taxRegion ?? null;
 
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 

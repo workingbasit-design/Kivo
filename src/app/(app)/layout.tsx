@@ -2,7 +2,7 @@ import React from 'react';
 import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { dayRange, toISODateLocal } from '@/lib/utils';
+import { dayRange, toISODateLocal, todayInTimezone } from '@/lib/utils';
 import AppSidebar from '@/components/AppSidebar';
 import MobileNav from '@/components/MobileNav';
 import GlobalCopilotWidget from '@/components/GlobalCopilotWidget';
@@ -14,12 +14,17 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const locale = await getLocale();
 
   const businessId = session.user.businessId;
-  const today = toISODateLocal(new Date());
+  const business = await prisma.business.findUnique({
+    where: { id: businessId },
+    select: { currency: true, regionCode: true, timezone: true },
+  });
+
+  // "Today" in the business's own timezone (falls back to America/Toronto).
+  const today = todayInTimezone(business?.timezone);
   const { gte: start, lte: end } = dayRange(today);
 
   // Sidebar stats: booked revenue today + jobs remaining today + new leads
-  const [business, todayJobs, newLeads] = await Promise.all([
-    prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } }),
+  const [todayJobs, newLeads] = await Promise.all([
     prisma.job.findMany({
       where: { businessId, date: { gte: start, lt: end } },
       select: { price: true, status: true },
@@ -50,7 +55,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           {children}
         </main>
       </div>
-      <GlobalCopilotWidget currency={business?.currency} />
+      <GlobalCopilotWidget currency={business?.currency} locale={locale} />
     </div>
   );
 }

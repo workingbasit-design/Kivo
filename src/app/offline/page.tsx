@@ -3,8 +3,8 @@ import { WifiOff, Sparkles } from 'lucide-react';
 import TryAgainButton from './try-again-button';
 
 export const metadata = {
-  title: 'You are offline | Kivo',
-  description: 'Kivo works offline — reconnect to sync your work.',
+  title: 'You are offline | EveryJob',
+  description: 'EveryJob works offline — reconnect to sync your work.',
 };
 
 /**
@@ -34,7 +34,7 @@ export default function OfflinePage() {
             </Link>
           </div>
         </div>
-        <p className="text-[11px] text-zinc-400 mt-4">Kivo works in low-signal areas — your work is safe.</p>
+        <p className="text-[11px] text-zinc-400 mt-4">EveryJob works in low-signal areas — your work is safe.</p>
       </div>
     </div>
   );

@@ -18,7 +18,7 @@ import {
 import { formatDateLabel } from '@/lib/utils';
 
 function formatClockTime(d: Date | string): string {
-  return new Date(d).toLocaleTimeString('en-IN', {
+  return new Date(d).toLocaleTimeString('en-CA', {
     hour: '2-digit',
     minute: '2-digit',
   });

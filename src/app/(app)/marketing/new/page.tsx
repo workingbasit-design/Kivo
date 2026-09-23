@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { PageHeader } from '@/components/ui';
 import CampaignForm from '@/components/CampaignForm';
 
-export const metadata = { title: 'New campaign | Kivo' };
+export const metadata = { title: 'New campaign | EveryJob' };
 
 export default async function NewCampaignPage() {
   const { businessId } = await requireAuth();

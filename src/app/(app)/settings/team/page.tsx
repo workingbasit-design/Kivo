@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { PageHeader } from '@/components/ui';
 import TeamClient from '@/components/TeamClient';
 
-export const metadata = { title: 'Team | Kivo' };
+export const metadata = { title: 'Team | EveryJob' };
 
 export default async function TeamPage() {
   const { user, businessId } = await requireAuth();

@@ -7,6 +7,7 @@ import { waLink } from '@/lib/whatsapp';
 import { displayNotes } from '@/lib/invoice-notes';
 import { Card, StatusBadge } from '@/components/ui';
 import { formatMoney } from '@/lib/money';
+import { taxIdLabelForRegion } from '@/lib/tax';
 import CopyButton from '@/components/CopyButton';
 import PortalNotice from '@/components/PortalNotice';
 
@@ -71,8 +72,8 @@ export default async function InvoicePortalPage({
           phone: true,
           whatsappNumber: true,
           address: true,
-          upiId: true,
-          gstin: true,
+          interacEmail: true,
+          taxId: true,
           regionCode: true,
           currency: true,
         },
@@ -181,20 +182,21 @@ export default async function InvoicePortalPage({
           )}
         </Card>
 
-        {balance > 0 && invoice.business.upiId && (
+        {balance > 0 && invoice.business.interacEmail && (
           <Card className="p-6">
-            <h2 className="text-sm font-bold text-zinc-900 mb-1">Pay via UPI</h2>
+            <h2 className="text-sm font-bold text-zinc-900 mb-1">Pay via Interac e-Transfer</h2>
             <p className="text-xs text-zinc-500 mb-3">
-              Pay to the business&apos;s UPI ID from any UPI app, then share the screenshot on WhatsApp.
+              Send an Interac e-Transfer to this email from your banking app, then share the
+              confirmation on WhatsApp.
             </p>
             <div className="flex items-center gap-2">
               <code className="flex-1 text-sm bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 truncate text-zinc-800 font-mono">
-                {invoice.business.upiId}
+                {invoice.business.interacEmail}
               </code>
-              <CopyButton text={invoice.business.upiId} />
+              <CopyButton text={invoice.business.interacEmail} />
             </div>
             <p className="text-[11px] text-zinc-400 mt-2">
-              Kivo never handles your money — payment happens directly between you and the business.
+              EveryJob never handles your money — payment happens directly between you and the business.
             </p>
           </Card>
         )}
@@ -227,7 +229,11 @@ export default async function InvoicePortalPage({
                 <MapPin size={12} /> {invoice.business.address}
               </p>
             )}
-            {invoice.business.gstin && <p>GSTIN: {invoice.business.gstin}</p>}
+            {invoice.business.taxId && (
+              <p>
+                {taxIdLabelForRegion(invoice.business.regionCode)}: {invoice.business.taxId}
+              </p>
+            )}
           </div>
         )}
       </main>

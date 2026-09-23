@@ -9,6 +9,7 @@ import { tryAnthropicReply } from '@/lib/copilot/anthropic';
 import { formatDateShort } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
+import { getLocale } from '@/lib/i18n/server';
 
 export const maxDuration = 30;
 
@@ -30,7 +31,7 @@ const confirmSchema = z.object({
     date: strictDate,
     time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).nullable().optional(),
     customerName: z.string().min(1).max(80),
-    phone: z.string().regex(/^[6-9]\d{9}$/).nullable().optional(),
+    phone: z.string().regex(/^[2-9]\d{9}$/).nullable().optional(), // NANP 10-digit
     address: z.string().max(200).nullable().optional(),
     price: z.number().int().min(0).max(10000000).nullable().optional(),
   }),
@@ -41,7 +42,7 @@ const confirmSchema = z.object({
 
 const messageSchema = z.object({
   message: z.string().min(1).max(2000),
-  // Recent conversation turns for pronoun follow-ups ("usko kal kar do").
+  // Recent conversation turns for pronoun follow-ups ("move it to tomorrow").
   // Minimal context: the last few messages only.
   history: z
     .array(
@@ -64,12 +65,14 @@ export async function POST(req: Request) {
   if (!session || !businessId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+  const fr = (await getLocale()) === 'fr';
+  const tr = (en: string, frText: string) => (fr ? frText : en);
 
   // Rate limit: 30 copilot calls/min per user
   const rl = rateLimit(`copilot:${session.user.id}`, { limit: 30, windowMs: 60_000 });
   if (!rl.ok) {
     return NextResponse.json(
-      { error: 'Bahut saare requests — thoda ruk kar dobara try karein.' },
+      { error: tr('Too many requests — please wait a moment and try again.', 'Trop de requêtes — attendez un moment et réessayez.') },
       { status: 429 }
     );
   }
@@ -91,28 +94,30 @@ export async function POST(req: Request) {
     });
     if (!rlConfirm.ok) {
       return NextResponse.json(
-        { error: 'Bahut saare confirm requests — thoda ruk kar dobara try karein.' },
+        { error: tr('Too many confirm requests — please wait a moment and try again.', 'Trop de confirmations — attendez un moment et réessayez.') },
         { status: 429 }
       );
     }
     return handleConfirm(
       businessId,
       asConfirm.data.preview,
-      asConfirm.data.idempotencyKey
+      asConfirm.data.idempotencyKey,
+      fr
     );
   }
 
   // --- Normal chat message --------------------------------------------------
   const asMessage = messageSchema.safeParse(body);
   if (!asMessage.success) {
-    return NextResponse.json({ error: 'Message bhejo — khaali message nahi chalega.' }, { status: 400 });
+    return NextResponse.json({ error: tr('Send a message — an empty message won\'t work.', 'Envoyez un message — un message vide ne fonctionne pas.') }, { status: 400 });
   }
 
   const result = await runCopilot(
     businessId,
     session.user.id,
     asMessage.data.message,
-    (asMessage.data.history ?? []) as CopilotHistoryItem[]
+    (asMessage.data.history ?? []) as CopilotHistoryItem[],
+    { locale: fr ? 'fr' : 'en' }
   );
 
   // Optional LLM polish: grounded on the engine's real data. Falls back silently.
@@ -219,8 +224,10 @@ function confirmResponse(outcome: ConfirmOutcome, key: string) {
 async function handleConfirm(
   businessId: string,
   draft: z.infer<typeof confirmSchema>['preview'],
-  clientKey: string | undefined
+  clientKey: string | undefined,
+  fr: boolean
 ) {
+  const tr = (en: string, frText: string) => (fr ? frText : en);
   const key = clientKey?.trim() ? `cli:${clientKey.trim()}` : deterministicKey(businessId, draft);
 
   // Replay of an in-flight or recently completed confirm → original job.
@@ -248,7 +255,7 @@ async function handleConfirm(
     expiresAt: Date.now() + CONFIRM_RESULT_TTL_MS,
   });
 
-  const outcome = await runConfirm(businessId, draft);
+  const outcome = await runConfirm(businessId, draft, fr);
   if (outcome.ok) {
     confirmStore.set(key, {
       promise: null,
@@ -266,17 +273,19 @@ async function handleConfirm(
 /** The actual confirm work: validate, find/create customer, create the job. */
 async function runConfirm(
   businessId: string,
-  draft: z.infer<typeof confirmSchema>['preview']
+  draft: z.infer<typeof confirmSchema>['preview'],
+  fr: boolean
 ): Promise<ConfirmOutcome> {
+  const tr = (en: string, frText: string) => (fr ? frText : en);
   // Re-validate the date is a real calendar date
   const [y, m, d] = draft.date.split('-').map(Number);
   const date = new Date(y, m - 1, d, 9, 0, 0, 0);
   if (Number.isNaN(date.getTime())) {
-    return { ok: false, status: 400, error: 'Date samajh nahi aayi — dobara try karein.' };
+    return { ok: false, status: 400, error: tr('Couldn\'t understand the date — please try again.', 'Date non comprise — veuillez réessayer.') };
   }
 
   const biz = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } });
-  const currency = biz?.currency ?? 'INR';
+  const currency = 'CAD';
 
   // Find or create the customer (tenant-scoped)
   let customer = null as null | { id: string; name: string };
@@ -304,7 +313,7 @@ async function runConfirm(
         name: draft.customerName,
         phone: draft.phone ?? undefined,
         address: draft.address ?? undefined,
-        notes: 'Copilot se banaya gaya',
+        notes: 'Created via EveryJob Copilot',
       },
       select: { id: true, name: true },
     });
@@ -313,7 +322,7 @@ async function runConfirm(
   // Defensive: creation must have succeeded by now.
   const bookedCustomer: { id: string; name: string } | null = customer;
   if (!bookedCustomer) {
-    return { ok: false, status: 500, error: 'Customer save nahi ho paya — dobara try karein.' };
+    return { ok: false, status: 500, error: tr('Couldn\'t save the customer — please try again.', 'Impossible d\'enregistrer le client — veuillez réessayer.') };
   }
 
   // Idempotency DB fallback: an identical copilot booking created moments ago
@@ -328,7 +337,7 @@ async function runConfirm(
       // A missing time is stored as NULL (never the display string "TBD").
       time: draft.time ?? null,
       price: draft.price ?? 0,
-      notes: 'Copilot se book kiya gaya',
+      notes: 'Created via EveryJob Copilot',
       createdAt: { gte: new Date(Date.now() - DUPLICATE_WINDOW_MS) },
     },
     orderBy: { createdAt: 'desc' },
@@ -354,7 +363,7 @@ async function runConfirm(
       address: draft.address ?? undefined,
       price: draft.price ?? 0,
       status: 'SCHEDULED',
-      notes: 'Copilot se book kiya gaya',
+      notes: 'Created via EveryJob Copilot',
     },
   });
 

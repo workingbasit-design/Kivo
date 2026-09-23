@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: { params: Promise<{ businessI
     where: { id: businessId },
     select: { name: true },
   });
-  return { title: business ? `Review ${business.name} | Kivo` : 'Leave a review | Kivo' };
+  return { title: business ? `Review ${business.name} | EveryJob` : 'Leave a review | EveryJob' };
 }
 
 export default async function PublicReviewPage({
@@ -51,7 +51,7 @@ export default async function PublicReviewPage({
         <PublicReviewForm businessId={businessId} />
 
         <p className="text-center text-[11px] text-zinc-400">
-          Powered by Kivo — every job, one place.
+          Powered by EveryJob — every job, one place.
         </p>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Users, Clock3, Briefcase, IndianRupee, Trophy } from 'lucide-react';
+import { ArrowLeft, Users, Clock3, Briefcase, DollarSign, Trophy } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card, StatCard, EmptyState } from '@/components/ui';
@@ -39,7 +39,7 @@ function getRange(period: string): { start: Date; end: Date; label: string } {
     return {
       start,
       end,
-      label: start.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' }),
+      label: start.toLocaleDateString('en-CA', { month: 'long', year: 'numeric' }),
     };
   }
   // This week (Monday start)
@@ -146,7 +146,7 @@ export default async function TeamPerformancePage({
           label="Revenue handled"
           value={formatMoney(totalRevenue, currency)}
           sub="Completed job value"
-          icon={<IndianRupee size={16} />}
+          icon={<DollarSign size={16} />}
           accent="bg-amber-100 text-amber-700"
         />
         <StatCard

@@ -7,16 +7,13 @@ import { requireAuth } from '@/lib/auth';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { customerSchema } from '@/lib/validations';
 import { validatePhone, INVALID_PHONE_MESSAGE } from '@/lib/phone';
+import { validatePostalCode, INVALID_POSTAL_MESSAGE } from '@/lib/postal';
 
 export type ActionResult = { error?: string; ok?: boolean };
 
-/** Region code of the current business (drives phone validation). */
-async function businessRegion(businessId: string): Promise<string> {
-  const b = await prisma.business.findUnique({
-    where: { id: businessId },
-    select: { regionCode: true },
-  });
-  return b?.regionCode ?? 'IN';
+/** Region code of the current business (drives phone validation). Always CA. */
+async function businessRegion(_businessId: string): Promise<string> {
+  return 'CA';
 }
 
 /** Validate an optional phone; returns the E.164 digit form or an error. */
@@ -27,6 +24,30 @@ function checkPhone(
   const result = validatePhone(phone, region);
   if (!result.ok) return { error: INVALID_PHONE_MESSAGE };
   return { digits: result.digits };
+}
+
+/** Validate an optional postal code; returns the canonical form or an error. */
+function checkPostalCode(
+  postalCode: string,
+  region: string
+): { formatted: string | null } | { error: string } {
+  const result = validatePostalCode(postalCode, region);
+  if (!result.ok) {
+    return { error: INVALID_POSTAL_MESSAGE };
+  }
+  return { formatted: result.formatted };
+}
+
+function parseCustomerForm(formData: FormData) {
+  return customerSchema.safeParse({
+    name: formData.get('name'),
+    phone: formData.get('phone'),
+    email: formData.get('email'),
+    address: formData.get('address'),
+    province: formData.get('province'),
+    postalCode: formData.get('postalCode'),
+    notes: formData.get('notes'),
+  });
 }
 
 async function checkLimit(userId: string): Promise<ActionResult | null> {
@@ -51,21 +72,17 @@ export async function createCustomer(
   const limited = await checkLimit(user.id);
   if (limited) return limited;
 
-  const parsed = customerSchema.safeParse({
-    name: formData.get('name'),
-    phone: formData.get('phone'),
-    email: formData.get('email'),
-    address: formData.get('address'),
-    notes: formData.get('notes'),
-  });
+  const parsed = parseCustomerForm(formData);
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? 'Invalid details.' };
   }
-  const { name, phone, email, address, notes } = parsed.data;
+  const { name, phone, email, address, province, postalCode, notes } = parsed.data;
 
   const region = await businessRegion(businessId);
   const phoneCheck = checkPhone(phone, region);
   if ('error' in phoneCheck) return { error: phoneCheck.error };
+  const postalCheck = checkPostalCode(postalCode, region);
+  if ('error' in postalCheck) return { error: postalCheck.error };
 
   await prisma.customer.create({
     data: {
@@ -74,6 +91,8 @@ export async function createCustomer(
       phoneNorm: phoneCheck.digits,
       email: nullIfEmpty(email),
       address: nullIfEmpty(address),
+      province: nullIfEmpty(province)?.toUpperCase() ?? null,
+      postalCode: postalCheck.formatted,
       notes: nullIfEmpty(notes),
       businessId,
     },
@@ -99,21 +118,17 @@ export async function updateCustomer(
   });
   if (!existing) return { error: 'Customer not found.' };
 
-  const parsed = customerSchema.safeParse({
-    name: formData.get('name'),
-    phone: formData.get('phone'),
-    email: formData.get('email'),
-    address: formData.get('address'),
-    notes: formData.get('notes'),
-  });
+  const parsed = parseCustomerForm(formData);
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? 'Invalid details.' };
   }
-  const { name, phone, email, address, notes } = parsed.data;
+  const { name, phone, email, address, province, postalCode, notes } = parsed.data;
 
   const region = await businessRegion(businessId);
   const phoneCheck = checkPhone(phone, region);
   if ('error' in phoneCheck) return { error: phoneCheck.error };
+  const postalCheck = checkPostalCode(postalCode, region);
+  if ('error' in postalCheck) return { error: postalCheck.error };
 
   await prisma.customer.update({
     where: { id },
@@ -123,6 +138,8 @@ export async function updateCustomer(
       phoneNorm: phoneCheck.digits,
       email: nullIfEmpty(email),
       address: nullIfEmpty(address),
+      province: nullIfEmpty(province)?.toUpperCase() ?? null,
+      postalCode: postalCheck.formatted,
       notes: nullIfEmpty(notes),
     },
   });

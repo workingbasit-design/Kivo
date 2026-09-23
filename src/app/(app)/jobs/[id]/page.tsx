@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import {
   ArrowLeft, Calendar, Clock, MapPin, User, Phone, Pencil,
-  IndianRupee, FileText, StickyNote, Timer,
+  DollarSign, FileText, StickyNote, Timer,
 } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
@@ -64,7 +64,7 @@ export default async function JobDetailPage({
       value: hasJobTime(job.time) ? job.time : '—',
     },
     {
-      icon: <IndianRupee size={14} className="text-zinc-400" />,
+      icon: <DollarSign size={14} className="text-zinc-400" />,
       label: 'Price',
       value: <span className="font-bold text-zinc-900">{formatMoney(job.price, currency)}</span>,
     },
@@ -119,11 +119,11 @@ export default async function JobDetailPage({
         actions={
           <div className="flex items-center gap-2">
             {/* wa.me chat with the customer — user taps to send from their own
-                WhatsApp; Kivo never sends anything automatically. */}
+                WhatsApp; EveryJob never sends anything automatically. */}
             <WhatsAppButton
               phone={job.customer.phone}
               regionCode={business?.regionCode}
-              message={`Namaste ${job.customer.name}! ${business?.name ?? 'Hum'}: aapki "${job.title}" booking ${formatDateLabel(jobDateKey)}${hasJobTime(job.time) ? `, ${job.time}` : ''} ke liye scheduled hai.`}
+              message={`Hi ${job.customer.name}! ${business?.name ?? 'We'} have your "${job.title}" booking scheduled for ${formatDateLabel(jobDateKey)}${hasJobTime(job.time) ? ` at ${job.time}` : ''}.`}
               label="WhatsApp"
             />
             <Link

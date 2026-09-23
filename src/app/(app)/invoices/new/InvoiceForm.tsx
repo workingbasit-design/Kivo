@@ -18,13 +18,6 @@ import {
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
 function taxTypeOptions(config: TaxConfig): { value: string; label: string }[] {
-  if (config.regionCode === 'IN') {
-    return [
-      { value: 'GST', label: 'GST (single rate)' },
-      { value: 'CGST', label: 'CGST + SGST (intra-state)' },
-      { value: 'IGST', label: 'IGST (inter-state)' },
-    ];
-  }
   const options: { value: string; label: string }[] = [];
   if (config.taxes.length > 1) {
     const composite = `${config.taxes[0].name}+${config.taxes[1].name}`;
@@ -63,8 +56,7 @@ export default function InvoiceForm({
   const taxAmount = round2(lines.reduce((s, l) => s + l.amount, 0));
   const total = round2(subtotal + taxAmount);
 
-  const quickRates =
-    taxConfig.regionCode === 'IN' ? [0, 5, 12, 18, 28] : [0, totalTaxRate(taxConfig)];
+  const quickRates = [0, totalTaxRate(taxConfig)];
 
   return (
     <form action={formAction} className="space-y-6 max-w-2xl">

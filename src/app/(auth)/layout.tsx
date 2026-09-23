@@ -1,14 +1,14 @@
 import React from 'react';
 import Link from 'next/link';
-import KivoLogo from '@/components/KivoLogo';
+import EveryJobLogo from '@/components/EveryJobLogo';
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-[#fafafa] flex flex-col">
       <nav className="px-6 py-4">
         <Link href="/" className="inline-flex items-center gap-2">
-          <KivoLogo size={32} />
-          <span className="text-xl font-bold tracking-tight text-zinc-900">Kivo</span>
+          <EveryJobLogo size={32} />
+          <span className="text-xl font-bold tracking-tight text-zinc-900">EveryJob</span>
         </Link>
       </nav>
       <div className="flex-1 flex items-center justify-center px-4 pb-16">

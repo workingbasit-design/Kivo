@@ -15,9 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 const SITE_URL = "https://kivo-nine-silk.vercel.app";
-const SITE_TITLE = "Kivo — Every job. One place.";
+const SITE_TITLE = "EveryJob — Every job. One place.";
 const SITE_DESCRIPTION =
-  "Kivo is a free field-service platform for service businesses in India and Canada: jobs, schedule, customers, quotes, invoices and a Hinglish AI assistant — all in one place.";
+  "EveryJob is a free field-service platform for service businesses in India and Canada: jobs, schedule, customers, quotes, invoices and a Hinglish AI assistant — all in one place.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
     url: SITE_URL,
-    siteName: "Kivo",
+    siteName: "EveryJob",
     locale: "en_US",
     type: "website",
   },
@@ -51,7 +51,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "SoftwareApplication",
-              name: "Kivo",
+              name: "EveryJob",
               applicationCategory: "BusinessApplication",
               operatingSystem: "Web",
               description: SITE_DESCRIPTION,
@@ -59,11 +59,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               offers: {
                 "@type": "Offer",
                 price: "0",
-                priceCurrency: "INR",
+                priceCurrency: "CAD",
               },
               publisher: {
                 "@type": "Organization",
-                name: "Kivo",
+                name: "EveryJob",
                 url: SITE_URL,
               },
             }),

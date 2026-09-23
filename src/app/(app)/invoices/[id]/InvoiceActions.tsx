@@ -11,7 +11,16 @@ import {
 import { Field, inputClass, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
 import { currencySymbol, formatMoney } from '@/lib/money';
 
-const PROVIDERS = ['CASH', 'UPI', 'CHEQUE', 'STRIPE', 'RAZORPAY'] as const;
+const PROVIDERS = ['CASH', 'INTERAC', 'CHEQUE', 'STRIPE', 'RAZORPAY'] as const;
+
+/** Human labels for payment providers (record-only — EveryJob never processes payments). */
+const PROVIDER_LABELS: Record<string, string> = {
+  CASH: 'Cash',
+  INTERAC: 'Interac e-Transfer',
+  CHEQUE: 'Cheque',
+  STRIPE: 'Stripe',
+  RAZORPAY: 'Razorpay',
+};
 
 export default function InvoiceActions({
   id,
@@ -80,16 +89,16 @@ export default function InvoiceActions({
               <select name="provider" className={inputClass} defaultValue="CASH">
                 {PROVIDERS.map((p) => (
                   <option key={p} value={p}>
-                    {p}
+                    {PROVIDER_LABELS[p] ?? p}
                   </option>
                 ))}
               </select>
             </Field>
-            <Field label="Txn / UPI ref (optional)">
+            <Field label="Txn ref (optional)">
               <input
                 name="transactionId"
                 maxLength={200}
-                placeholder="e.g. UPI ref no."
+                placeholder="e.g. Interac confirmation no."
                 className={inputClass}
               />
             </Field>
@@ -98,7 +107,7 @@ export default function InvoiceActions({
             {payPending ? 'Recording…' : 'Record payment'}
           </button>
           <p className="text-[11px] text-zinc-400">
-            Kivo only records payments you received — it never moves money itself.
+            EveryJob only records payments you received — it never moves money itself.
           </p>
         </form>
       )}

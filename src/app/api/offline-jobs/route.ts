@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
     });
     let phoneNorm: string | null = null;
     if (p.newCustomerPhone.trim()) {
-      const phoneCheck = validatePhone(p.newCustomerPhone.trim(), business?.regionCode ?? 'IN');
+      const phoneCheck = validatePhone(p.newCustomerPhone.trim(), business?.regionCode ?? 'CA');
       if (!phoneCheck.ok) return NextResponse.json({ error: INVALID_PHONE_MESSAGE }, { status: 400 });
       phoneNorm = phoneCheck.digits;
     }

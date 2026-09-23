@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { PageHeader } from '@/components/ui';
 import ReviewsClient from '@/components/ReviewsClient';
 
-export const metadata = { title: 'Reviews | Kivo' };
+export const metadata = { title: 'Reviews | EveryJob' };
 
 export default async function ReviewsPage() {
   const { businessId } = await requireAuth();

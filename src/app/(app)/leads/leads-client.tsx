@@ -150,8 +150,8 @@ export function AddLeadForm() {
         <Field label="Name *">
           <input name="name" required placeholder="e.g. Priya Nair" className={inputClass} />
         </Field>
-        <Field label="Phone" hint="e.g. +91 98765 43210">
-          <input name="phone" type="tel" placeholder="+91 98765 43210" className={inputClass} />
+        <Field label="Phone" hint="e.g. +1 416 555 0100">
+          <input name="phone" type="tel" placeholder="+1 416 555 0100" className={inputClass} />
         </Field>
       </div>
 

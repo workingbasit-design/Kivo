@@ -38,7 +38,7 @@ export async function GET(req: Request) {
   return new NextResponse(csvText, {
     headers: {
       'Content-Type': 'text/csv; charset=utf-8',
-      'Content-Disposition': `attachment; filename="kivo-${type}-${date}.csv"`,
+      'Content-Disposition': `attachment; filename="everyjob-${type}-${date}.csv"`,
       'Cache-Control': 'no-store',
     },
   });

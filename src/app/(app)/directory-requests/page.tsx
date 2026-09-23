@@ -6,7 +6,7 @@ import { PageHeader, Card, EmptyState } from '@/components/ui';
 import { isDirectoryAdminEmail } from '@/lib/directory';
 import DemandRow from './demand-row';
 
-export const metadata = { title: 'Directory demand | Kivo' };
+export const metadata = { title: 'Directory demand | EveryJob' };
 
 /**
  * Unmatched directory demand queue. Every public quote request that matched
@@ -26,7 +26,7 @@ export default async function DirectoryRequestsPage() {
           <EmptyState
             icon={<Inbox size={24} />}
             title="Not authorized"
-            description="This page is only visible to Kivo directory admins."
+            description="This page is only visible to EveryJob directory admins."
           />
         </Card>
       </div>

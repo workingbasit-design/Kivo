@@ -228,7 +228,7 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
                   className="w-full bg-zinc-100 text-zinc-800 hover:bg-zinc-200 font-semibold py-3 rounded-2xl transition-colors text-xs flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Sparkles size={14} className="text-[#ff7a59]" />
-                  Auto-Finish with KivoBrain AI
+                  Auto-Finish with EveryJobBrain AI
                 </button>
               </div>
             </>

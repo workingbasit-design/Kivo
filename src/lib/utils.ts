@@ -19,14 +19,16 @@ export function hasJobTime(time: string | null | undefined): time is string {
   return t !== "" && t.toUpperCase() !== "TBD";
 }
 
-/** Format a number as Indian Rupees, e.g. 6350 -> "Rs 6,350" */
-export function formatINR(n: number | null | undefined): string {
-  if (n === null || n === undefined || Number.isNaN(n)) return "Rs 0";
-  return "Rs " + Number(n).toLocaleString("en-IN", { maximumFractionDigits: 0 });
+/** Date locale for a business region: en-CA (Canada-only). */
+export function dateLocaleForRegion(_regionCode?: string | null): string {
+  return 'en-CA';
 }
 
 /** Format a Date/string as "Mon, Jan 5, 2026" */
-export function formatDateLabel(dateInput: Date | string | null | undefined): string {
+export function formatDateLabel(
+  dateInput: Date | string | null | undefined,
+  locale: string = 'en-CA'
+): string {
   if (!dateInput) return "—";
   let d: Date;
   if (typeof dateInput === "string" && /^\d{4}-\d{2}-\d{2}/.test(dateInput)) {
@@ -38,7 +40,7 @@ export function formatDateLabel(dateInput: Date | string | null | undefined): st
     d = new Date(dateInput);
   }
   if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleDateString("en-IN", {
+  return d.toLocaleDateString(locale, {
     weekday: "short",
     month: "short",
     day: "numeric",
@@ -47,7 +49,10 @@ export function formatDateLabel(dateInput: Date | string | null | undefined): st
 }
 
 /** Format a Date/string as "5 Jan 2026" */
-export function formatDateShort(dateInput: Date | string | null | undefined): string {
+export function formatDateShort(
+  dateInput: Date | string | null | undefined,
+  locale: string = 'en-CA'
+): string {
   if (!dateInput) return "—";
   let d: Date;
   if (typeof dateInput === "string" && /^\d{4}-\d{2}-\d{2}/.test(dateInput)) {
@@ -59,11 +64,37 @@ export function formatDateShort(dateInput: Date | string | null | undefined): st
     d = new Date(dateInput);
   }
   if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleDateString("en-IN", {
+  return d.toLocaleDateString(locale, {
     day: "numeric",
     month: "short",
     year: "numeric",
   });
+}
+
+/** "YYYY-MM-DD" in a specific IANA timezone (e.g. "America/Toronto"). */
+export function toISODateInTimezone(d: Date, timeZone: string): string {
+  try {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).formatToParts(d);
+    const get = (t: string) => parts.find((p) => p.type === t)?.value ?? '';
+    return `${get('year')}-${get('month')}-${get('day')}`;
+  } catch {
+    return toISODateLocal(d);
+  }
+}
+
+/** Default IANA timezone for a region (used when the business has none set). */
+export function defaultTimezoneForRegion(_regionCode?: string | null): string {
+  return 'America/Toronto';
+}
+
+/** "YYYY-MM-DD" for "today" in the business's timezone. */
+export function todayInTimezone(timeZone?: string | null, regionCode?: string | null): string {
+  return toISODateInTimezone(new Date(), timeZone || defaultTimezoneForRegion(regionCode));
 }
 
 /** "YYYY-MM-DD" in local time (safe for <input type="date"> and day comparisons) */

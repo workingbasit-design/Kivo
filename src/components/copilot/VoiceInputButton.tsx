@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Mic button for the Kivo AI copilot — drop it next to the chat input:
+ * Mic button for the EveryJob AI copilot — drop it next to the chat input:
  *
  *   <VoiceInputButton onTranscript={(text) => setInput((p) => p ? `${p} ${text}` : text)} />
  *

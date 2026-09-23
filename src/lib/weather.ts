@@ -27,7 +27,7 @@ const WEATHER_TTL_MS = 60 * 60 * 1000; // ~1h
 const geoCache = new Map<string, CacheEntry<GeoResult | null>>();
 const GEO_TTL_MS = 24 * 60 * 60 * 1000; // 24h (locations rarely change)
 
-const UA = 'KivoApp/1.0 (schedule weather)';
+const UA = 'EveryJobApp/1.0 (schedule weather)';
 
 function withTimeout(ms: number): AbortSignal {
   return AbortSignal.timeout(ms);

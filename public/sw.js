@@ -1,5 +1,5 @@
 /**
- * Kivo service worker — offline-first for field workers.
+ * EveryJob service worker — offline-first for field workers.
  *
  * Strategy:
  *  - Navigations: network-first, fall back to the cached app shell, then

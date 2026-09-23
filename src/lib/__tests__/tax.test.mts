@@ -1,5 +1,5 @@
 /**
- * Unit tests for the Canadian/Indian tax engine (src/lib/tax.ts).
+ * Unit tests for the Canadian tax engine (src/lib/tax.ts).
  * Run: node --test src/lib/__tests__/tax.test.mts
  */
 import test from 'node:test';
@@ -10,14 +10,15 @@ import {
   totalTaxRate,
   defaultTaxType,
   splitStoredTax,
+  taxIdLabelForRegion,
   CA_PROVINCES,
-  IN_GST_SLABS,
 } from '../tax.ts';
 
 test('HST provinces get a single HST line at the right rate', () => {
   for (const [code, rate] of [['ON', 13], ['NB', 15], ['NL', 15], ['NS', 15], ['PE', 15]] as const) {
     const c = getTaxConfig('CA', code);
     assert.equal(c.currency, 'CAD');
+    assert.equal(c.regionCode, 'CA');
     assert.deepEqual(c.taxes, [{ name: 'HST', rate }]);
     assert.equal(c.label, `HST ${rate}%`);
   }
@@ -62,22 +63,6 @@ test('all 13 provinces/territories are listed', () => {
   assert.equal(CA_PROVINCES.length, 13);
 });
 
-test('India: GST slab from taxRegion, invalid slab falls back to 18', () => {
-  assert.deepEqual(getTaxConfig('IN', '12').taxes, [{ name: 'GST', rate: 12 }]);
-  assert.deepEqual(getTaxConfig('IN', '').taxes, [{ name: 'GST', rate: 18 }]);
-  assert.deepEqual(getTaxConfig('IN', '99').taxes, [{ name: 'GST', rate: 18 }]);
-  assert.deepEqual(getTaxConfig('IN', null).taxes, [{ name: 'GST', rate: 18 }]);
-  for (const s of IN_GST_SLABS) {
-    assert.deepEqual(getTaxConfig('IN', String(s)).taxes, [{ name: 'GST', rate: s }]);
-  }
-});
-
-test('unknown region falls back to India defaults', () => {
-  const c = getTaxConfig('XX', null);
-  assert.equal(c.regionCode, 'IN');
-  assert.equal(c.currency, 'INR');
-});
-
 test('calcTax rounds each line to the cent then sums (QC example)', () => {
   const c = getTaxConfig('CA', 'QC');
   const { taxAmount, breakdown } = calcTax(100, c);
@@ -96,7 +81,6 @@ test('defaultTaxType: single vs composite', () => {
   assert.equal(defaultTaxType(getTaxConfig('CA', 'ON')), 'HST');
   assert.equal(defaultTaxType(getTaxConfig('CA', 'QC')), 'GST+QST');
   assert.equal(defaultTaxType(getTaxConfig('CA', 'BC')), 'GST+PST');
-  assert.equal(defaultTaxType(getTaxConfig('IN', '18')), 'GST');
 });
 
 test('splitStoredTax round-trips composites', () => {
@@ -109,9 +93,9 @@ test('splitStoredTax round-trips composites', () => {
     { name: 'PST', rate: 7 },
   ]);
   assert.deepEqual(splitStoredTax('HST', 13), [{ name: 'HST', rate: 13 }]);
-  assert.deepEqual(splitStoredTax('CGST', 18), [
-    { name: 'CGST', rate: 9 },
-    { name: 'SGST', rate: 9 },
-  ]);
-  assert.deepEqual(splitStoredTax('IGST', 18), [{ name: 'IGST', rate: 18 }]);
+});
+
+test('tax ID label is GST/HST in English, TPS/TVQ in French', () => {
+  assert.equal(taxIdLabelForRegion('CA', 'en'), 'GST/HST number');
+  assert.equal(taxIdLabelForRegion('CA', 'fr'), 'N° TPS/TVQ');
 });

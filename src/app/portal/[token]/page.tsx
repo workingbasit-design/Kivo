@@ -1,0 +1,215 @@
+import { headers } from 'next/headers';
+import { Briefcase, FileText, Phone, ReceiptText, Wallet } from 'lucide-react';
+import { prisma } from '@/lib/prisma';
+import { rateLimit } from '@/lib/rate-limit';
+import { resolveCustomerPortalToken } from '@/lib/portal';
+import { Card, StatusBadge } from '@/components/ui';
+import { formatMoney } from '@/lib/money';
+import { formatDateShort } from '@/lib/utils';
+import PortalNotice from '@/components/PortalNotice';
+
+/**
+ * Public customer portal. No authentication — the magic-link token in the
+ * URL is the only capability. The page loads exactly one customer and
+ * their own jobs/quotes/invoices, always scoped to the token's
+ * (businessId, customerId). Nothing else from any business is reachable.
+ */
+
+const PORTAL_LIMIT = { limit: 30, windowMs: 60 * 1000 };
+
+async function clientIp(): Promise<string> {
+  const h = await headers();
+  return (
+    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    h.get('x-real-ip') ||
+    'unknown'
+  );
+}
+
+export default async function CustomerPortalPage({
+  params,
+}: {
+  params: Promise<{ token: string }>;
+}) {
+  const { token } = await params;
+
+  const rl = rateLimit(`portal:customer:${await clientIp()}`, PORTAL_LIMIT);
+  if (!rl.ok) return <PortalNotice variant="rate-limited" />;
+
+  const resolved = await resolveCustomerPortalToken(token);
+  if (!resolved) return <PortalNotice variant="expired" />;
+
+  const { businessId, customerId } = resolved;
+
+  const customer = await prisma.customer.findFirst({
+    where: { id: customerId, businessId },
+    select: {
+      id: true,
+      name: true,
+      phone: true,
+      business: {
+        select: { name: true, phone: true, currency: true, regionCode: true },
+      },
+    },
+  });
+  if (!customer) return <PortalNotice variant="expired" />;
+
+  const [jobs, quotes, invoices] = await Promise.all([
+    prisma.job.findMany({
+      where: { customerId, businessId },
+      select: { id: true, title: true, date: true, time: true, price: true, status: true },
+      orderBy: { date: 'desc' },
+      take: 10,
+    }),
+    prisma.quote.findMany({
+      where: { customerId, businessId },
+      select: { id: true, number: true, title: true, total: true, status: true },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+    }),
+    prisma.invoice.findMany({
+      where: { customerId, businessId },
+      select: {
+        id: true,
+        number: true,
+        date: true,
+        total: true,
+        status: true,
+        payments: { select: { amount: true } },
+      },
+      orderBy: { date: 'desc' },
+      take: 10,
+    }),
+  ]);
+
+  const currency = customer.business.currency;
+  const balances = invoices.map((inv) => {
+    const paid = inv.payments.reduce((s, p) => s + p.amount, 0);
+    return { ...inv, balance: Math.max(0, inv.total - paid) };
+  });
+  const totalOwed = balances.reduce((s, i) => s + i.balance, 0);
+
+  return (
+    <div className="min-h-screen bg-[#fafafa] font-sans">
+      <header className="bg-[#17122b] text-white">
+        <div className="max-w-lg mx-auto px-4 py-8">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#b8b0c9] mb-1">
+            {customer.business.name}
+          </p>
+          <h1 className="text-2xl font-bold tracking-tight">Hi, {customer.name}</h1>
+          <p className="text-[#b8b0c9] mt-1 text-sm">
+            Your jobs, quotes and invoices — all in one place.
+          </p>
+        </div>
+      </header>
+
+      <main className="max-w-lg mx-auto px-4 py-6 space-y-5 pb-12">
+        {totalOwed > 0 && (
+          <Card className="p-5 bg-amber-50/60 border-amber-200">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold text-zinc-700 flex items-center gap-2">
+                <Wallet size={15} className="text-amber-600" /> Balance due
+              </p>
+              <p className="text-xl font-bold text-zinc-900">{formatMoney(totalOwed, currency)}</p>
+            </div>
+            {customer.business.phone && (
+              <p className="text-xs text-zinc-500 mt-2 flex items-center gap-1.5">
+                <Phone size={12} /> Questions? Call {customer.business.name} at {customer.business.phone}
+              </p>
+            )}
+          </Card>
+        )}
+
+        <section>
+          <h2 className="text-sm font-bold text-zinc-900 mb-2 flex items-center gap-2">
+            <Briefcase size={14} className="text-zinc-400" /> Jobs
+          </h2>
+          <Card>
+            {jobs.length === 0 ? (
+              <p className="px-5 py-6 text-sm text-zinc-500 text-center">No jobs yet.</p>
+            ) : (
+              <ul className="divide-y divide-zinc-100">
+                {jobs.map((j) => (
+                  <li key={j.id} className="flex items-center gap-3 px-5 py-3.5">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-zinc-900 truncate">{j.title}</p>
+                      <p className="text-xs text-zinc-500">
+                        {formatDateShort(j.date)}{j.time ? ` · ${j.time}` : ''}
+                      </p>
+                    </div>
+                    <StatusBadge status={j.status} />
+                    <span className="text-sm font-bold text-zinc-900 shrink-0">
+                      {formatMoney(j.price, currency)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+        </section>
+
+        <section>
+          <h2 className="text-sm font-bold text-zinc-900 mb-2 flex items-center gap-2">
+            <FileText size={14} className="text-zinc-400" /> Quotes
+          </h2>
+          <Card>
+            {quotes.length === 0 ? (
+              <p className="px-5 py-6 text-sm text-zinc-500 text-center">No quotes yet.</p>
+            ) : (
+              <ul className="divide-y divide-zinc-100">
+                {quotes.map((q) => (
+                  <li key={q.id} className="flex items-center gap-3 px-5 py-3.5">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-zinc-900 truncate">{q.title}</p>
+                      <p className="text-xs text-zinc-500">{q.number}</p>
+                    </div>
+                    <StatusBadge status={q.status} />
+                    <span className="text-sm font-bold text-zinc-900 shrink-0">
+                      {formatMoney(q.total, currency)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+        </section>
+
+        <section>
+          <h2 className="text-sm font-bold text-zinc-900 mb-2 flex items-center gap-2">
+            <ReceiptText size={14} className="text-zinc-400" /> Invoices
+          </h2>
+          <Card>
+            {balances.length === 0 ? (
+              <p className="px-5 py-6 text-sm text-zinc-500 text-center">No invoices yet.</p>
+            ) : (
+              <ul className="divide-y divide-zinc-100">
+                {balances.map((inv) => (
+                  <li key={inv.id} className="flex items-center gap-3 px-5 py-3.5">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-zinc-900">{inv.number}</p>
+                      <p className="text-xs text-zinc-500">{formatDateShort(inv.date)}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-sm font-bold text-zinc-900">{formatMoney(inv.total, currency)}</p>
+                      {inv.balance > 0 ? (
+                        <p className="text-[11px] font-semibold text-amber-700">
+                          {formatMoney(inv.balance, currency)} due
+                        </p>
+                      ) : (
+                        <p className="text-[11px] font-semibold text-emerald-700">Paid</p>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+        </section>
+
+        <p className="text-center text-[11px] text-zinc-400 pt-2">
+          Shared privately by {customer.business.name} · Powered by EveryJob
+        </p>
+      </main>
+    </div>
+  );
+}

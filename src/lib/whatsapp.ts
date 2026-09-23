@@ -6,21 +6,15 @@
  * WhatsApp app.
  */
 
-const COUNTRY_CODES: Record<string, string> = {
-  IN: '91',
-  CA: '1',
-};
-
-/** Default country calling code for a business region code. */
-export function countryCodeForRegion(regionCode?: string | null): string {
-  const code = (regionCode ?? 'IN').toUpperCase();
-  return COUNTRY_CODES[code] ?? '91';
+/** Default country calling code — Canada-only (NANP). */
+export function countryCodeForRegion(_regionCode?: string | null): string {
+  return '1';
 }
 
 /**
  * Normalize a phone number for wa.me: strip every non-digit, and if the
  * number looks local (10 digits without a country code), prepend the
- * default country code for the business region (91 for IN, 1 for CA).
+ * default country code for Canada (1).
  */
 export function normalizePhone(phone: string, regionCode?: string | null): string {
   const digits = (phone ?? '').replace(/\D/g, '');

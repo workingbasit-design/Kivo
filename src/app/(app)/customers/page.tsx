@@ -1,42 +1,67 @@
 import React from 'react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { Plus } from 'lucide-react';
+import { AlertCircle, Plus } from 'lucide-react';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { PageHeader, primaryBtnClass } from '@/components/ui';
+import { PageHeader, Card, primaryBtnClass } from '@/components/ui';
 import CustomersClient from '@/components/CustomersClient';
+import type { CustomerRow } from '@/components/CustomersClient';
 
+/**
+ * Customers list — defensive by design (production incident 2026-09-23:
+ * /customers 500'd deterministically). Minimal selects, null-safe mapping,
+ * and a DB failure renders an inline error card instead of a 500 page.
+ */
 export default async function CustomersPage() {
   const session = await getSession();
   if (!session?.user?.businessId) redirect('/login');
   const businessId = session.user.businessId;
 
-  const business = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } });
-  const currency = business?.currency;
-  const rows = await prisma.customer.findMany({
-    where: { businessId },
-    select: {
-      id: true,
-      name: true,
-      phone: true,
-      email: true,
-      address: true,
-      _count: { select: { jobs: true } },
-      jobs: { select: { price: true } },
-    },
-    orderBy: { name: 'asc' },
-  });
+  let customers: CustomerRow[] = [];
+  let currency: string | undefined;
+  let loadError: string | null = null;
 
-  const customers = rows.map((c) => ({
-    id: c.id,
-    name: c.name,
-    phone: c.phone,
-    email: c.email,
-    address: c.address,
-    jobCount: c._count.jobs,
-    revenue: c.jobs.reduce((s, j) => s + (j.price ?? 0), 0),
-  }));
+  try {
+    const business = await prisma.business.findUnique({
+      where: { id: businessId },
+      select: { currency: true },
+    });
+    currency = business?.currency ?? undefined;
+
+    const rows = await prisma.customer.findMany({
+      where: { businessId },
+      select: {
+        id: true,
+        name: true,
+        phone: true,
+        email: true,
+        address: true,
+        _count: { select: { jobs: true } },
+        jobs: { select: { price: true } },
+      },
+      orderBy: { name: 'asc' },
+    });
+
+    customers = rows.map((c) => ({
+      id: c.id ?? '',
+      // Never assume the row is well-formed — a bad row renders as
+      // "Unnamed customer" instead of crashing the whole page.
+      name: c.name ?? 'Unnamed customer',
+      phone: c.phone ?? null,
+      email: c.email ?? null,
+      address: c.address ?? null,
+      jobCount: c._count?.jobs ?? 0,
+      revenue: (c.jobs ?? []).reduce(
+        (s, j) => s + (typeof j?.price === 'number' ? j.price : 0),
+        0
+      ),
+    }));
+  } catch (e) {
+    console.error('[customers] failed to load customer list:', e);
+    loadError =
+      'We couldn\u2019t load your customers just now. Your data is safe — please try again.';
+  }
 
   return (
     <div className="space-y-6">
@@ -50,7 +75,27 @@ export default async function CustomersPage() {
         }
       />
 
-      <CustomersClient customers={customers} currency={currency} />
+      {loadError ? (
+        <Card className="p-8 text-center">
+          <div className="mx-auto w-11 h-11 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mb-4">
+            <AlertCircle size={22} />
+          </div>
+          <h2 className="text-base font-semibold text-zinc-900 mb-1">
+            Couldn&apos;t load customers
+          </h2>
+          <p className="text-sm text-zinc-600 mb-5">{loadError}</p>
+          <div className="flex items-center justify-center gap-3">
+            <Link href="/customers" className={primaryBtnClass}>
+              Try again
+            </Link>
+            <Link href="/customers/new" className="text-sm font-medium text-[#6329d4] hover:underline">
+              Add a customer
+            </Link>
+          </div>
+        </Card>
+      ) : (
+        <CustomersClient customers={customers} currency={currency} />
+      )}
     </div>
   );
 }

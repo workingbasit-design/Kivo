@@ -7,7 +7,7 @@ import { PageHeader } from '@/components/ui';
 import CampaignForm from '@/components/CampaignForm';
 import type { Audience } from '@/lib/marketing';
 
-export const metadata = { title: 'Edit campaign | Kivo' };
+export const metadata = { title: 'Edit campaign | EveryJob' };
 
 export default async function EditCampaignPage({
   params,

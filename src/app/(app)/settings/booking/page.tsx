@@ -5,7 +5,7 @@ import { formatWorkingHoursSummary } from '@/lib/working-hours';
 import BookingSettingsForm from '@/components/BookingSettingsForm';
 import { slugify } from '@/lib/slug';
 
-export const metadata = { title: 'Online booking | Kivo' };
+export const metadata = { title: 'Online booking | EveryJob' };
 
 export default async function BookingSettingsPage() {
   const { businessId } = await requireAuth();

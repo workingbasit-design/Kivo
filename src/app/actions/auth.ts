@@ -58,7 +58,10 @@ export async function register(
   const business = await prisma.business.create({
     data: {
       name: businessName,
-      regionCode: 'IN',
+      regionCode: 'CA',
+      // Canada-only defaults.
+      currency: 'CAD',
+      timezone: 'America/Toronto',
       users: {
         create: { name, email, passwordHash, role: 'ADMIN' },
       },

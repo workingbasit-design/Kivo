@@ -1,6 +1,6 @@
 /**
  * Copilot parser regression tests — pure functions from src/lib/copilot/parse.ts.
- * Covers the real-world Hinglish/English prompts flagged by production QA.
+ * English + Canadian French (Canada-only).
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -9,43 +9,92 @@ import {
   extractCustomerName,
   extractDate,
   extractMoney,
+  extractPhone,
   extractServiceTitle,
+  extractTime,
 } from '../copilot/parse.ts';
 
 // --- Intent: service + date + price is a booking, not a schedule query ---
-test('detectIntent: "25 ko bijli ka kaam 2000 me" is create_job', () => {
-  assert.equal(detectIntent('25 ko bijli ka kaam 2000 me'), 'create_job');
+test('detectIntent: "plumbing for Sarah tomorrow 800" is create_job', () => {
+  assert.equal(detectIntent('plumbing for Sarah tomorrow 800'), 'create_job');
 });
 
 test('detectIntent: service + date without question is create_job', () => {
-  assert.equal(detectIntent('kal AC service'), 'create_job');
+  assert.equal(detectIntent('AC service tomorrow'), 'create_job');
 });
 
 test('detectIntent: service + date WITH question stays a query', () => {
-  const i = detectIntent('kal bijli ka kaam hai?');
+  const i = detectIntent('is there plumbing work tomorrow?');
   assert.notEqual(i, 'create_job');
 });
 
 test('detectIntent: bare schedule query still works', () => {
-  assert.equal(detectIntent('kal ke jobs?'), 'ask_schedule');
+  assert.equal(detectIntent("what's on tomorrow?"), 'ask_schedule');
 });
 
 test('detectIntent: cancellation never books', () => {
-  assert.notEqual(detectIntent('kal ka job cancel karo'), 'create_job');
+  assert.notEqual(detectIntent("cancel tomorrow's job"), 'create_job');
 });
 
-// --- Entities for the date+price prompt ---
-test('extractDate: "25 ko" resolves to the 25th', () => {
-  const d = extractDate('25 ko bijli ka kaam 2000 me');
-  assert.ok(d && d.endsWith('-25'), `got ${d}`);
+// --- French booking ---
+test('detectIntent: "plomberie pour Sarah demain 800$" is create_job', () => {
+  assert.equal(detectIntent('plomberie pour Sarah demain 800$'), 'create_job');
 });
 
-test('extractMoney: "2000 me" is a price', () => {
-  assert.equal(extractMoney('25 ko bijli ka kaam 2000 me'), 2000);
+test('detectIntent: French cancellation never books', () => {
+  assert.notEqual(detectIntent('annuler le travail de demain'), 'create_job');
 });
 
-test('extractServiceTitle: "bijli" maps to Electrical Work', () => {
-  assert.equal(extractServiceTitle('25 ko bijli ka kaam 2000 me'), 'Electrical Work');
+// --- Entities ---
+test('extractDate: "25 oct" resolves to Oct 25', () => {
+  const d = extractDate('plumbing on 25 oct for Sarah');
+  assert.ok(d && d.endsWith('-10-25'), `got ${d}`);
+});
+
+test('extractDate: "demain" is tomorrow', () => {
+  const d = extractDate('plomberie demain');
+  const t = new Date();
+  t.setDate(t.getDate() + 1);
+  const y = t.getFullYear();
+  const m = String(t.getMonth() + 1).padStart(2, '0');
+  const day = String(t.getDate()).padStart(2, '0');
+  assert.equal(d, `${y}-${m}-${day}`);
+});
+
+test('extractMoney: "$2,000" is a price', () => {
+  assert.equal(extractMoney('AC repair for Sarah tomorrow $2,000'), 2000);
+});
+
+test('extractMoney: "800$" is a price', () => {
+  assert.equal(extractMoney('plomberie demain 800$'), 800);
+});
+
+test('extractMoney: bare "800" in booking context is a price', () => {
+  assert.equal(extractMoney('plumbing for Sarah tomorrow 800'), 800);
+});
+
+test('extractServiceTitle: "plumbing" maps to Plumbing Work', () => {
+  assert.equal(extractServiceTitle('plumbing for Sarah tomorrow 800'), 'Plumbing Work');
+});
+
+test('extractServiceTitle: "plomberie" maps to Plumbing Work', () => {
+  assert.equal(extractServiceTitle('plomberie pour Sarah demain'), 'Plumbing Work');
+});
+
+test('extractPhone: NANP 10-digit number', () => {
+  assert.equal(extractPhone('call me at 416-555-0100'), '4165550100');
+});
+
+test('extractPhone: +1 prefix is stripped', () => {
+  assert.equal(extractPhone('+1 416 555 0100'), '4165550100');
+});
+
+test('extractTime: "3pm" is 15:00', () => {
+  assert.equal(extractTime('plumbing tomorrow 3pm'), '15:00');
+});
+
+test('extractTime: French "15h30" is 15:30', () => {
+  assert.equal(extractTime('plomberie demain 15h30'), '15:30');
 });
 
 // --- Customer names: never truncate, never invent ---
@@ -59,18 +108,35 @@ test('extractCustomerName: "for the guy" is rejected', () => {
   assert.equal(extractCustomerName('fix the thing for the guy'), null);
 });
 
-test('extractCustomerName: "for Priya tomorrow morning" keeps Priya', () => {
-  assert.equal(extractCustomerName('book a plumbing repair for Priya tomorrow morning'), 'Priya');
-});
-
-test('extractCustomerName: three-word real name is kept whole', () => {
-  assert.equal(extractCustomerName('book AC service for Ramesh Kumar Singh'), 'Ramesh Kumar Singh');
-});
-
-test('extractCustomerName: honorific pattern still works', () => {
-  assert.equal(extractCustomerName('Sharma ji ke liye kal AC service book karo'), 'Sharma');
-});
-
 test('extractCustomerName: service words are never names', () => {
-  assert.equal(extractCustomerName('25 ko bijli ka kaam 2000 me'), null);
+  assert.equal(extractCustomerName('plumbing work tomorrow 800'), null);
+});
+
+test('extractCustomerName: "pour Sarah Tremblay" works', () => {
+  assert.equal(extractCustomerName('plomberie pour Sarah Tremblay demain'), 'Sarah Tremblay');
+});
+
+// --- Other intents ---
+test('detectIntent: payment reminder draft', () => {
+  assert.equal(detectIntent('draft a payment reminder for Sarah'), 'draft_reminder');
+});
+
+test('detectIntent: French payment reminder draft', () => {
+  assert.equal(detectIntent('prépare un rappel de paiement pour Sarah'), 'draft_reminder');
+});
+
+test('detectIntent: revenue question', () => {
+  assert.equal(detectIntent('what was my revenue this week?'), 'ask_revenue');
+});
+
+test('detectIntent: unpaid question', () => {
+  assert.equal(detectIntent('who has unpaid invoices?'), 'ask_unpaid');
+});
+
+test('detectIntent: customer count', () => {
+  assert.equal(detectIntent('how many customers do I have?'), 'ask_customers');
+});
+
+test('detectIntent: help', () => {
+  assert.equal(detectIntent('help, what can you do?'), 'help');
 });

@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { currencySymbol } from '@/lib/money';
+import en from '@/lib/i18n/en';
+import fr from '@/lib/i18n/fr';
 import type { JobDraft } from '@/lib/copilot/engine';
 import VoiceInputButton from '@/components/copilot/VoiceInputButton';
 
@@ -20,11 +22,18 @@ type Message = {
   idempotencyKey?: string | null;
 };
 
-const QUICK_PROMPTS = [
-  'Aaj ke jobs?',
-  'Kitna outstanding hai?',
-  'Aaj kitna kamaya?',
-  'Kal ke jobs?',
+const QUICK_PROMPTS_EN = [
+  "Today's jobs?",
+  "What's outstanding?",
+  'How much did I earn today?',
+  "Tomorrow's jobs?",
+];
+
+const QUICK_PROMPTS_FR = [
+  "Les tâches d'aujourd'hui?",
+  'Combien me doit-on?',
+  "Combien ai-je gagné aujourd'hui?",
+  'Les tâches de demain?',
 ];
 
 function PreviewCard({
@@ -33,18 +42,20 @@ function PreviewCard({
   onDiscard,
   confirming,
   currency,
+  lang,
 }: {
   preview: JobDraft;
   onConfirm: (draft: JobDraft) => void;
   onDiscard: () => void;
   confirming: boolean;
   currency?: string;
+  lang: 'en' | 'fr';
 }) {
   const [draft, setDraft] = useState<JobDraft>(preview);
   const set = (patch: Partial<JobDraft>) => setDraft((d) => ({ ...d, ...patch }));
 
   const phoneDigits = (draft.phone ?? '').replace(/\D/g, '');
-  const phoneOk = phoneDigits === '' || /^[6-9]\d{9}$/.test(phoneDigits);
+  const phoneOk = phoneDigits === '' || /^[2-9]\d{9}$/.test(phoneDigits);
   const priceOk = draft.price == null || (Number.isFinite(draft.price) && draft.price >= 0);
   const canConfirm = !confirming && draft.customerName.trim().length > 0 && phoneOk && priceOk;
 
@@ -54,19 +65,19 @@ function PreviewCard({
         <div className="w-6 h-6 rounded-full bg-[#6329d4]/10 flex items-center justify-center">
           <Briefcase size={14} />
         </div>
-        Job preview — edit karke confirm karein
+        {lang === 'fr' ? 'Aperçu du travail — modifiez puis confirmez' : 'Job preview — edit, then confirm'}
       </div>
       <div className="p-4 space-y-2.5 text-sm">
-        <Row icon={<Briefcase size={15} />} label="Service" value={preview.title} />
-        <EditRow icon={<User size={15} />} label="Customer">
+        <Row icon={<Briefcase size={15} />} label={lang === 'fr' ? 'Service' : 'Service'} value={preview.title} />
+        <EditRow icon={<User size={15} />} label={lang === 'fr' ? 'Client' : 'Customer'}>
           <input
             value={draft.customerName}
             onChange={(e) => set({ customerName: e.target.value })}
-            placeholder="Customer ka naam"
+            placeholder={lang === 'fr' ? 'Nom du client' : 'Customer name'}
             className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-2.5 py-1.5 text-sm text-zinc-800 font-medium focus:outline-none focus:ring-2 focus:ring-[#6329d4]/30"
           />
         </EditRow>
-        <EditRow icon={<Calendar size={15} />} label="Date">
+        <EditRow icon={<Calendar size={15} />} label={lang === 'fr' ? 'Date' : 'Date'}>
           <input
             type="date"
             value={draft.date}
@@ -74,7 +85,7 @@ function PreviewCard({
             className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-2.5 py-1.5 text-sm text-zinc-800 font-medium focus:outline-none focus:ring-2 focus:ring-[#6329d4]/30"
           />
         </EditRow>
-        <EditRow icon={<Clock size={15} />} label="Time">
+        <EditRow icon={<Clock size={15} />} label={lang === 'fr' ? 'Heure' : 'Time'}>
           <input
             type="time"
             value={draft.time ?? ''}
@@ -82,17 +93,17 @@ function PreviewCard({
             className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-2.5 py-1.5 text-sm text-zinc-800 font-medium focus:outline-none focus:ring-2 focus:ring-[#6329d4]/30"
           />
         </EditRow>
-        <EditRow icon={<Phone size={15} />} label="Phone">
+        <EditRow icon={<Phone size={15} />} label={lang === 'fr' ? 'Téléphone' : 'Phone'}>
           <input
             inputMode="numeric"
             value={draft.phone ?? ''}
             onChange={(e) => set({ phone: e.target.value.replace(/\D/g, '').slice(0, 10) || null })}
-            placeholder="10-digit mobile"
+            placeholder={lang === 'fr' ? 'Mobile à 10 chiffres' : '10-digit mobile'}
             className={`w-full bg-zinc-50 border rounded-lg px-2.5 py-1.5 text-sm text-zinc-800 font-medium focus:outline-none focus:ring-2 focus:ring-[#6329d4]/30 ${phoneOk ? 'border-zinc-200' : 'border-red-400'}`}
           />
         </EditRow>
         {preview.address && <Row icon={<MapPin size={15} />} label="Address" value={preview.address} />}
-        <EditRow icon={<Wallet size={15} />} label="Price">
+        <EditRow icon={<Wallet size={15} />} label={lang === 'fr' ? 'Prix' : 'Price'}>
           <input
             inputMode="numeric"
             value={draft.price ?? ''}
@@ -112,7 +123,7 @@ function PreviewCard({
           className="flex-1 bg-[#6329d4] hover:bg-[#5221b3] disabled:opacity-50 text-white text-xs font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-colors"
         >
           <Check size={14} />
-          {confirming ? 'Booking…' : 'Confirm & book'}
+          {confirming ? (lang === 'fr' ? 'Réservation…' : 'Booking…') : (lang === 'fr' ? 'Confirmer et réserver' : 'Confirm & book')}
         </button>
         <button
           onClick={onDiscard}
@@ -125,7 +136,9 @@ function PreviewCard({
       </div>
       {!draft.customerName.trim() && (
         <p className="px-4 pb-3 text-[11px] text-amber-600">
-          Customer ka naam zaroori hai — upar naam likh dein ya naya message bhejein, jaise "Ramesh Kumar ka AC repair kal".
+{lang === 'fr'
+            ? 'Le nom du client est requis — écrivez-le ci-dessus ou envoyez un nouveau message, par ex. « Réparation de clim pour Sarah demain ».'
+            : 'Customer name is required — type it above or send a new message, e.g. "AC repair for Sarah tomorrow".'}
         </p>
       )}
     </div>
@@ -152,14 +165,22 @@ function EditRow({ icon, label, children }: { icon: React.ReactNode; label: stri
   );
 }
 
-export default function GlobalCopilotWidget({ currency }: { currency?: string }) {
+export default function GlobalCopilotWidget({
+  currency,
+  locale,
+}: {
+  currency?: string;
+  locale?: string;
+}) {
+  const lang = (locale === 'fr' ? 'fr' : 'en') as 'en' | 'fr';
+  const L = (lang === 'fr' ? fr : en).copilot as Record<string, string>;
+  const quickPrompts = lang === 'fr' ? QUICK_PROMPTS_FR : QUICK_PROMPTS_EN;
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
       role: 'assistant',
-      content:
-        'Namaste! Main Kivo hoon — aapka AI assistant.\n\nJob book karna ho, schedule dekhna ho, ya payment ka hisaab — bas yahan likho. Main aapke asli business data se jawab dunga, aur job hamesha aapke confirm karne par hi book hogi.',
+      content: L.greeting,
     },
   ]);
   const [input, setInput] = useState('');
@@ -321,7 +342,7 @@ export default function GlobalCopilotWidget({ currency }: { currency?: string })
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsOpen(true)}
             className="fixed bottom-6 right-6 md:bottom-10 md:right-10 w-14 h-14 bg-[#6329d4] rounded-full flex items-center justify-center shadow-2xl z-50 hover:bg-[#5221b3] transition-colors"
-            aria-label="Open Kivo AI assistant"
+            aria-label="Open EveryJob AI assistant"
           >
             <Sparkles className="w-6 h-6 text-white" />
           </motion.button>
@@ -345,7 +366,7 @@ export default function GlobalCopilotWidget({ currency }: { currency?: string })
                   <Sparkles className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold tracking-tight text-zinc-900">Kivo AI</h3>
+                  <h3 className="text-sm font-semibold tracking-tight text-zinc-900">EveryJob AI</h3>
                   <div className="flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                     <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">
@@ -391,7 +412,7 @@ export default function GlobalCopilotWidget({ currency }: { currency?: string })
                     </div>
                     {msg.preview && (
                       <div className="ml-8 mt-1">
-                        <PreviewCard currency={currency}
+                        <PreviewCard lang={lang} currency={currency}
                           preview={msg.preview}
                           confirming={confirmingId === msg.id}
                           onConfirm={(draft) => handleConfirm(msg.id, draft)}
@@ -423,7 +444,7 @@ export default function GlobalCopilotWidget({ currency }: { currency?: string })
 
             {/* Quick prompts */}
             <div className="px-4 pt-2 flex gap-2 overflow-x-auto shrink-0 bg-[#fbfbfd]">
-              {QUICK_PROMPTS.map((q) => (
+              {quickPrompts.map((q) => (
                 <button
                   key={q}
                   onClick={() => sendMessage(q)}
@@ -448,8 +469,8 @@ export default function GlobalCopilotWidget({ currency }: { currency?: string })
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Jaise: Ramesh ka AC repair kal 3 baje…"
-                  aria-label="Ask Kivo AI"
+                  placeholder={L.inputPlaceholder}
+                  aria-label="Ask EveryJob AI"
                   className="w-full pl-4 pr-12 py-3 rounded-xl border border-zinc-200 bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-[#6329d4]/40 focus:border-transparent text-sm text-zinc-900 placeholder:text-zinc-400 transition-shadow"
                 />
                 <button

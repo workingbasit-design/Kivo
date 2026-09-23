@@ -2,7 +2,7 @@ import { headers } from 'next/headers';
 import { validatePhone } from './phone';
 
 /**
- * Shared helpers for the public Kivo Directory (customer-discovery layer).
+ * Shared helpers for the public EveryJob Directory (customer-discovery layer).
  *
  * Tenant-safety rule: every public query MUST filter `directoryOptIn: true`
  * and select only the fields a stranger is allowed to see. Never expose
@@ -21,15 +21,22 @@ export async function publicClientIp(): Promise<string> {
 }
 
 /**
- * Extract a displayable locality ("Andheri West, Mumbai") from a free-text
- * address ("Shop 12, MG Road, Andheri West, Mumbai 400053").
- * Heuristic: last two comma-separated segments, minus any trailing pincode.
+ * Extract a displayable locality ("Andheri West, Mumbai" / "Liberty Village, Toronto")
+ * from a free-text address ("Shop 12, MG Road, Andheri West, Mumbai 400053").
+ * Heuristic: last two comma-separated segments, minus any trailing pincode
+ * (Indian 5–6 digits) or Canadian postal code (A1A 1A1).
  */
 export function localityFromAddress(address: string | null | undefined): string | null {
   if (!address) return null;
   const parts = address
     .split(',')
-    .map((p) => p.trim().replace(/\b\d{5,6}\b/g, '').trim())
+    .map((p) =>
+      p
+        .trim()
+        .replace(/\b\d{5,6}\b/g, '')
+        .replace(/\b[A-Z]\d[A-Z]\s?\d[A-Z]\d\b/gi, '')
+        .trim()
+    )
     .filter(Boolean);
   if (parts.length === 0) return null;
   return parts.slice(-2).join(', ');

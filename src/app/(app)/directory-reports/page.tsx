@@ -6,7 +6,7 @@ import { PageHeader, Card, EmptyState } from '@/components/ui';
 import { isDirectoryAdminEmail } from '@/lib/directory';
 import ReportRow from './report-row';
 
-export const metadata = { title: 'Directory reports | Kivo' };
+export const metadata = { title: 'Directory reports | EveryJob' };
 
 const REASON_LABELS: Record<string, string> = {
   spam: 'Spam / scam',
@@ -32,7 +32,7 @@ export default async function DirectoryReportsPage() {
           <EmptyState
             icon={<Flag size={24} />}
             title="Not authorized"
-            description="This page is only visible to Kivo directory admins."
+            description="This page is only visible to EveryJob directory admins."
           />
         </Card>
       </div>

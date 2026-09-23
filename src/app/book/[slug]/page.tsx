@@ -13,8 +13,8 @@ export async function generateMetadata({
     where: { slug },
     select: { headline: true, business: { select: { name: true } } },
   });
-  if (!page) return { title: 'Book a service | Kivo' };
-  return { title: `Book ${page.business.name} | Kivo` };
+  if (!page) return { title: 'Book a service | EveryJob' };
+  return { title: `Book ${page.business.name} | EveryJob` };
 }
 
 /**
@@ -36,7 +36,7 @@ export default async function PublicBookingPage({
       headline: true,
       intro: true,
       businessId: true,
-      business: { select: { name: true, phone: true, address: true, currency: true } },
+      business: { select: { name: true, phone: true, address: true, currency: true, regionCode: true } },
     },
   });
 

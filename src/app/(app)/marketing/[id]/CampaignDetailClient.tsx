@@ -126,7 +126,7 @@ export default function CampaignDetailClient({
 
       <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3">
         <p className="text-xs text-amber-800 font-medium">
-          Kivo doesn&apos;t send messages itself — tap Send via WhatsApp on a
+          EveryJob doesn&apos;t send messages itself — tap Send via WhatsApp on a
           message, or copy it and send it via WhatsApp or SMS yourself.{' '}
           {recipients.length} recipient{recipients.length === 1 ? '' : 's'}.
         </p>

@@ -7,7 +7,7 @@ import { waLink } from '@/lib/whatsapp';
 /**
  * "Send via WhatsApp" button. Opens a wa.me deep link with the message
  * prefilled — the user taps it and sends from their own WhatsApp app.
- * Kivo never sends anything automatically. Renders nothing without a phone.
+ * EveryJob never sends anything automatically. Renders nothing without a phone.
  */
 export default function WhatsAppButton({
   phone,

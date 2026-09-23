@@ -1,19 +1,15 @@
 /**
- * Unit tests for money formatting incl. fr-CA (src/lib/money.ts).
+ * Unit tests for CAD money formatting incl. fr-CA (src/lib/money.ts).
  * Run: node --test src/lib/__tests__/money.test.mts
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { formatMoney, normalizeCurrency, currencySymbol } from '../money.ts';
+import { formatMoney, normalizeCurrency, currencySymbol, currencyLabel } from '../money.ts';
 
-test('INR default formatting', () => {
-  assert.equal(formatMoney(1499, 'INR'), '₹1,499');
-  assert.equal(formatMoney(null, 'INR'), '₹0');
-});
-
-test('CAD en-CA formatting', () => {
-  assert.equal(formatMoney(149, 'CAD'), '$149.00');
-  assert.equal(formatMoney(1234.5, 'CAD'), '$1,234.50');
+test('CAD en formatting', () => {
+  assert.equal(formatMoney(149, 'CAD', 'en'), '$149.00');
+  assert.equal(formatMoney(1234.5, 'CAD', 'en'), '$1,234.50');
+  assert.equal(formatMoney(null, 'CAD', 'en'), '$0.00');
 });
 
 test('CAD fr-CA formatting uses comma decimals and trailing $', () => {
@@ -23,9 +19,10 @@ test('CAD fr-CA formatting uses comma decimals and trailing $', () => {
   assert.notEqual(s, formatMoney(1234.5, 'CAD', 'en'));
 });
 
-test('currency helpers', () => {
+test('currency helpers are always CAD', () => {
   assert.equal(normalizeCurrency('cad'), 'CAD');
-  assert.equal(normalizeCurrency('xyz'), 'INR');
+  assert.equal(normalizeCurrency('xyz'), 'CAD');
+  assert.equal(normalizeCurrency(null), 'CAD');
   assert.equal(currencySymbol('CAD'), '$');
-  assert.equal(currencySymbol('INR'), '₹');
+  assert.equal(currencyLabel('CAD'), 'Canadian Dollar (CAD)');
 });

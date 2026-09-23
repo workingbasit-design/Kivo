@@ -168,7 +168,7 @@ export async function submitQuoteRequest(
       `Directory quote request — ${serviceNeed}`,
       `City: ${city}${area ? ` (${area})` : ''}`,
       details ? `Details: ${details}` : '',
-      'The customer asked via the Kivo directory. Reply only if you want the work — nothing was sent automatically.',
+      'The customer asked via the EveryJob directory. Reply only if you want the work — nothing was sent automatically.',
     ]
       .filter(Boolean)
       .join('\n');

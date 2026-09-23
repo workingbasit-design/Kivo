@@ -36,7 +36,7 @@ export default async function NewRecurringPage() {
 
       <PageHeader
         title="New recurring plan"
-        subtitle="Set it once — Kivo creates a job every week, fortnight, or month."
+        subtitle="Set it once — EveryJob creates a job every week, fortnight, or month."
       />
 
       <Card className="p-6">

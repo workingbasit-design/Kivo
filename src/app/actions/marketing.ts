@@ -143,7 +143,7 @@ export async function deleteCampaign(id: string): Promise<MarketingResult> {
 
 /**
  * Move a campaign DRAFT -> QUEUED or QUEUED -> SENT.
- * QUEUED means "ready for you to copy and send manually" — Kivo never
+ * QUEUED means "ready for you to copy and send manually" — EveryJob never
  * sends messages itself. There is no sending infrastructure by design.
  */
 export async function advanceCampaignStatus(id: string): Promise<MarketingResult> {
@@ -190,7 +190,7 @@ export async function draftPaymentReminder(
     include: {
       customer: { select: { name: true } },
       payments: { select: { amount: true } },
-      business: { select: { name: true, upiId: true, phone: true, currency: true } },
+      business: { select: { name: true, interacEmail: true, phone: true, currency: true } },
     },
   });
   if (!invoice) return { error: 'Invoice not found.' };
@@ -199,12 +199,12 @@ export async function draftPaymentReminder(
   const remaining = Math.round((invoice.total - paid) * 100) / 100;
   if (remaining <= 0) return { error: 'This invoice is already fully paid.' };
 
-  const upiLine = invoice.business.upiId
-    ? ` You can pay via UPI to ${invoice.business.upiId}.`
+  const interacLine = invoice.business.interacEmail
+    ? ` You can pay by Interac e-Transfer to ${invoice.business.interacEmail}.`
     : '';
   const text =
-    `Namaste ${invoice.customer.name}, this is a gentle reminder from ${invoice.business.name} ` +
-    `that invoice ${invoice.number} for ${formatMoney(remaining, invoice.business.currency)} is still pending.${upiLine} ` +
+    `Hi ${invoice.customer.name}, this is a gentle reminder from ${invoice.business.name} ` +
+    `that invoice ${invoice.number} for ${formatMoney(remaining, invoice.business.currency)} is still pending.${interacLine} ` +
     `Thank you!`;
   return { text };
 }

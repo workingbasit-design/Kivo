@@ -93,7 +93,7 @@ export default async function RecurringPage({
             }
             description={
               activeFilter === 'ALL'
-                ? "Set up weekly, fortnightly, or monthly visits once — Kivo creates the jobs for you when they're due."
+                ? "Set up weekly, fortnightly, or monthly visits once — EveryJob creates the jobs for you when they're due."
                 : 'No plans match this filter. Try a different filter, or create a new plan.'
             }
             action={

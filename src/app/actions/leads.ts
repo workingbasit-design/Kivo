@@ -48,7 +48,7 @@ export async function createLead(
     where: { id: businessId },
     select: { regionCode: true },
   });
-  const phoneCheck = validatePhone(phone, business?.regionCode ?? 'IN');
+  const phoneCheck = validatePhone(phone, business?.regionCode ?? 'CA');
   if (!phoneCheck.ok) return { error: INVALID_PHONE_MESSAGE };
 
   await prisma.lead.create({

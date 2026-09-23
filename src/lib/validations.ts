@@ -27,6 +27,8 @@ export const customerSchema = z.object({
     .optional()
     .default(""),
   address: z.string().trim().max(500).optional().default(""),
+  province: z.string().trim().max(40).optional().default(""),
+  postalCode: z.string().trim().max(20).optional().default(""),
   notes: z.string().trim().max(2000).optional().default(""),
 });
 
@@ -67,7 +69,7 @@ export const invoiceSchema = z.object({
 export const paymentSchema = z.object({
   invoiceId: z.string().min(1),
   amount: z.coerce.number().positive("Amount must be positive").max(10_000_000),
-  provider: z.enum(["CASH", "UPI", "CHEQUE", "STRIPE", "RAZORPAY"]).default("CASH"),
+  provider: z.enum(["CASH", "INTERAC", "CHEQUE", "STRIPE", "RAZORPAY"]).default("CASH"),
   transactionId: z.string().trim().max(200).optional().default(""),
 });
 
@@ -90,7 +92,7 @@ export const leadSchema = z.object({
 
 export const businessSchema = z.object({
   name: z.string().trim().min(2, "Business name is required").max(200),
-  regionCode: z.string().trim().max(10).optional().default("IN"),
+  regionCode: z.string().trim().max(10).optional().default("CA"),
 });
 
 export const recurringSchema = z.object({

@@ -62,7 +62,7 @@ export async function createJob(
     });
     let phoneNorm: string | null = null;
     if (phone) {
-      const phoneCheck = validatePhone(phone, business?.regionCode ?? 'IN');
+      const phoneCheck = validatePhone(phone, business?.regionCode ?? 'CA');
       if (!phoneCheck.ok) return { error: INVALID_PHONE_MESSAGE };
       phoneNorm = phoneCheck.digits;
     }
@@ -319,7 +319,7 @@ export async function seedSampleJobs(): Promise<JobActionResult> {
     customer = await prisma.customer.create({
       data: {
         name: 'Aarav Sharma',
-        phone: '+91 98200 12345',
+        phone: '+1 416 555 0100',
         address: 'Andheri West, Mumbai',
         businessId,
       },

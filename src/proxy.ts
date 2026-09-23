@@ -7,8 +7,8 @@ import type { NextRequest } from 'next/server';
 
 const PUBLIC_PATHS = ['/', '/login', '/register'];
 // Public client-facing routes: online booking + magic-link portals (unguessable ids)
-// + the Kivo business directory (customer discovery layer).
-const PUBLIC_PREFIXES = ['/book/', '/q/', '/i/', '/r/', '/p/'];
+// + the EveryJob business directory (customer discovery layer).
+const PUBLIC_PREFIXES = ['/book/', '/q/', '/i/', '/r/', '/p/', '/portal/'];
 const PUBLIC_EXACT_EXTRA = ['/directory', '/directory/request'];
 
 export function proxy(request: NextRequest) {

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import KivoLogo from '@/components/KivoLogo';
+import EveryJobLogo from '@/components/EveryJobLogo';
 import {
   ArrowRight,
   Bell,
@@ -24,9 +24,9 @@ import {
 } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Kivo — Every job. One place.',
+  title: 'EveryJob — Every job. One place.',
   description:
-    'Kivo is a free field-service platform for service businesses: jobs, schedule, customers, quotes, invoices, payments, reminders and an AI assistant — all in one place. Free forever.',
+    'EveryJob is a free field-service platform for service businesses: jobs, schedule, customers, quotes, invoices, payments, reminders and an AI assistant — all in one place. Free forever.',
 };
 
 const APPLE_FONT =
@@ -69,32 +69,18 @@ const FEATURE_GRID = [
 const STATS = [
   { value: 'Free', label: 'Cost', desc: 'Free forever. No credit card, no commissions, no locked features.' },
   { value: '12', label: 'Modules', desc: 'Jobs to reports — every module works for every business.' },
-  { value: '2', label: 'Countries', desc: 'Local taxes, currencies and languages for India and Canada.' },
-  { value: '3', label: 'Languages', desc: 'English, Français and हिन्दी across the app.' },
+  { value: '13', label: 'Provinces & territories', desc: 'Correct GST, HST, PST and QST for every province.' },
+  { value: '2', label: 'Languages', desc: 'Full English and Canadian French across the app.' },
 ];
 
-/** Local where it matters — India and Canada side by side. */
-const REGIONS = [
-  {
-    icon: MapPin,
-    title: 'India',
-    points: [
-      'GST-ready quotes and invoices',
-      'INR, paise-accurate money math',
-      'UPI ID on invoices — get paid directly',
-      'Share on WhatsApp in one tap',
-    ],
-  },
-  {
-    icon: MapPin,
-    title: 'Canada',
-    points: [
-      'Province-correct taxes: GST, HST, PST, QST',
-      'CAD with cents-accurate math',
-      'Full French interface — Français partout',
-      'Canada-specific holidays in the schedule',
-    ],
-  },
+/** Local where it matters — built for Canada, province by province. */
+const CANADA_POINTS = [
+  'Province-correct taxes: GST, HST, PST, QST',
+  'CAD with cents-accurate math',
+  'Interac e-Transfer on invoices — get paid directly',
+  'Full French interface — Français partout',
+  'Canadian statutory holidays in the schedule',
+  'Share on WhatsApp in one tap',
 ];
 
 const STEPS = [
@@ -121,8 +107,8 @@ const STEPS = [
 function Logo() {
   return (
     <span className="flex items-center gap-2">
-      <KivoLogo size={32} />
-      <span className="text-[21px] font-semibold tracking-tight text-zinc-900">Kivo</span>
+      <EveryJobLogo size={32} />
+      <span className="text-[21px] font-semibold tracking-tight text-zinc-900">EveryJob</span>
     </span>
   );
 }
@@ -137,7 +123,7 @@ export default function LandingPage() {
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-zinc-200/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-[68px]">
-            <Link href="/" aria-label="Kivo home">
+            <Link href="/" aria-label="EveryJob home">
               <Logo />
             </Link>
             <nav className="hidden md:flex items-center gap-8" aria-label="Primary">
@@ -175,7 +161,7 @@ export default function LandingPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 md:pt-28 md:pb-24 text-center">
             <p className="inline-flex items-center gap-2 text-[13px] font-medium text-zinc-500 border border-zinc-200 rounded-full px-4 py-1.5 mb-8">
               <Sparkles size={14} className="text-[#6329d4]" />
-              Free forever · No credit card · India &amp; Canada
+              Free forever · No credit card · Made for Canada
             </p>
             <h1 className="text-[44px] leading-[1.04] sm:text-6xl md:text-7xl lg:text-[84px] font-bold tracking-[-0.03em] mb-6">
               Every job.
@@ -210,13 +196,13 @@ export default function LandingPage() {
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 md:pb-28">
             <div
               className="rounded-[24px] border border-zinc-200 bg-white shadow-[0_24px_80px_-24px_rgba(0,0,0,0.18)] overflow-hidden"
-              aria-label="Preview of the Kivo app"
+              aria-label="Preview of the EveryJob app"
             >
               <div className="flex items-center gap-2 px-5 py-3.5 border-b border-zinc-100">
                 <span className="w-3 h-3 rounded-full bg-[#ff5f57]" />
                 <span className="w-3 h-3 rounded-full bg-[#febc2e]" />
                 <span className="w-3 h-3 rounded-full bg-[#28c840]" />
-                <span className="ml-3 text-[13px] text-zinc-400">Today&apos;s schedule — Kivo</span>
+                <span className="ml-3 text-[13px] text-zinc-400">Today&apos;s schedule — EveryJob</span>
               </div>
               <div className="grid sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-zinc-100">
                 {[
@@ -269,7 +255,7 @@ export default function LandingPage() {
               <h2 className="text-4xl md:text-[56px] leading-[1.05] font-bold tracking-[-0.025em] mb-4">
                 Everything runs
                 <br />
-                <span className="text-zinc-400">on Kivo.</span>
+                <span className="text-zinc-400">on EveryJob.</span>
               </h2>
               <p className="text-lg md:text-[19px] text-zinc-600">
                 Twelve modules, one login. No add-ons, no locked features — it all just works.
@@ -300,7 +286,7 @@ export default function LandingPage() {
                     <span className="w-8 h-8 rounded-full bg-[#6329d4] flex items-center justify-center">
                       <Sparkles size={16} className="text-white" />
                     </span>
-                    <span className="font-semibold text-[15px]">Kivo Copilot</span>
+                    <span className="font-semibold text-[15px]">EveryJob Copilot</span>
                     <span className="ml-auto text-[11px] font-medium uppercase tracking-widest text-white/40">
                       English · Français · हिन्दी
                     </span>
@@ -334,7 +320,7 @@ export default function LandingPage() {
                     </div>
                   </div>
                   <div className="mt-6 bg-white/5 border border-white/10 rounded-full px-5 py-3 flex items-center gap-3">
-                    <span className="text-[#a78bfa] text-[13px] font-medium">Kivo AI</span>
+                    <span className="text-[#a78bfa] text-[13px] font-medium">EveryJob AI</span>
                     <span className="w-px h-4 bg-white/15" />
                     <span className="text-white/30 text-[14px]">Type the way you talk…</span>
                   </div>
@@ -343,7 +329,7 @@ export default function LandingPage() {
               {/* Copy */}
               <div className="order-1 lg:order-2">
                 <p className="text-[13px] font-semibold tracking-[0.18em] text-[#a78bfa] uppercase mb-5">
-                  Kivo Copilot
+                  EveryJob Copilot
                 </p>
                 <h2 className="text-4xl md:text-[56px] leading-[1.05] font-bold tracking-[-0.025em] mb-6">
                   AI that works where
@@ -421,7 +407,7 @@ export default function LandingPage() {
                 <span className="text-zinc-400">in three steps.</span>
               </h2>
               <p className="text-lg text-zinc-600">
-                No training needed. If you can send a text, you can use Kivo.
+                No training needed. If you can send a text, you can use EveryJob.
               </p>
             </div>
             <div className="grid md:grid-cols-3 gap-5">
@@ -441,7 +427,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Local where it matters — India + Canada */}
+        {/* Local where it matters — built for Canada */}
         <section id="regions" className="py-20 md:py-28 scroll-mt-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-2xl mx-auto mb-14">
@@ -451,34 +437,32 @@ export default function LandingPage() {
               <h2 className="text-4xl md:text-[52px] leading-[1.05] font-bold tracking-[-0.025em] mb-4">
                 One app, at home
                 <br />
-                <span className="text-zinc-400">in two countries.</span>
+                <span className="text-zinc-400">in Canada.</span>
               </h2>
               <p className="text-lg text-zinc-600">
                 Not a generic tool with a sticker on it — taxes, money and language
-                are built in for each region from day one.
+                are built in for Canada from day one.
               </p>
             </div>
-            <div className="grid md:grid-cols-2 gap-5 max-w-4xl mx-auto">
-              {REGIONS.map((r) => (
-                <div key={r.title} className="bg-white rounded-[24px] border border-zinc-200/80 p-8 hover:shadow-[0_16px_48px_-16px_rgba(0,0,0,0.12)] transition">
-                  <div className="flex items-center gap-3 mb-5">
-                    <div className="w-11 h-11 rounded-2xl bg-[#6329d4]/10 text-[#6329d4] flex items-center justify-center">
-                      <r.icon size={22} strokeWidth={1.6} />
-                    </div>
-                    <h3 className="text-[22px] font-semibold tracking-tight text-zinc-900">{r.title}</h3>
+            <div className="max-w-4xl mx-auto">
+              <div className="bg-white rounded-[24px] border border-zinc-200/80 p-8 hover:shadow-[0_16px_48px_-16px_rgba(0,0,0,0.12)] transition">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-11 h-11 rounded-2xl bg-[#6329d4]/10 text-[#6329d4] flex items-center justify-center">
+                    <MapPin size={22} strokeWidth={1.6} />
                   </div>
-                  <ul className="space-y-3">
-                    {r.points.map((p) => (
-                      <li key={p} className="flex items-start gap-3 text-[15px] text-zinc-600">
-                        <span className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
-                          <Check size={12} className="text-emerald-700" />
-                        </span>
-                        {p}
-                      </li>
-                    ))}
-                  </ul>
+                  <h3 className="text-[22px] font-semibold tracking-tight text-zinc-900">Canada</h3>
                 </div>
-              ))}
+                <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-3">
+                  {CANADA_POINTS.map((p) => (
+                    <li key={p} className="flex items-start gap-3 text-[15px] text-zinc-600">
+                      <span className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
+                        <Check size={12} className="text-emerald-700" />
+                      </span>
+                      {p}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
             <p className="text-center text-[14px] text-zinc-400 mt-10 flex items-center justify-center gap-2">
               <Languages size={15} /> Switch the whole app to Français anytime, from Settings.
@@ -492,13 +476,13 @@ export default function LandingPage() {
             <div className="grid lg:grid-cols-2 gap-10 items-center bg-zinc-50 rounded-[32px] border border-zinc-200/70 p-8 md:p-14">
               <div>
                 <p className="text-[13px] font-semibold tracking-[0.18em] text-[#6329d4] uppercase mb-5">
-                  Kivo Directory
+                  EveryJob Directory
                 </p>
                 <h2 className="text-3xl md:text-[40px] leading-[1.08] font-bold tracking-[-0.02em] mb-4">
                   Customers can find you, too.
                 </h2>
                 <p className="text-[17px] text-zinc-600 mb-8 leading-relaxed">
-                  List your business on the public Kivo Directory. Customers search by
+                  List your business on the public EveryJob Directory. Customers search by
                   service and city — their requests land in your inbox as lead drafts.
                   Listing is free, like everything else.
                 </p>
@@ -537,7 +521,7 @@ export default function LandingPage() {
                   <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-[#6329d4]/[0.06] border border-[#6329d4]/20">
                     <Bell size={18} className="text-[#6329d4] shrink-0" />
                     <p className="text-zinc-600">
-                      It arrives in your Kivo inbox as a <span className="font-semibold text-zinc-900">lead draft</span>
+                      It arrives in your EveryJob inbox as a <span className="font-semibold text-zinc-900">lead draft</span>
                     </p>
                   </div>
                 </div>
@@ -569,7 +553,7 @@ export default function LandingPage() {
       <footer className="border-t border-zinc-200 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <Link href="/" aria-label="Kivo home">
+            <Link href="/" aria-label="EveryJob home">
               <Logo />
             </Link>
             <nav className="flex flex-wrap justify-center gap-x-8 gap-y-3" aria-label="Footer">
@@ -580,16 +564,16 @@ export default function LandingPage() {
                 Create free account
               </Link>
               <Link href="/directory" className="text-[14px] text-zinc-500 hover:text-zinc-900 transition">
-                Kivo Directory
+                EveryJob Directory
               </Link>
             </nav>
           </div>
           <div className="mt-8 pt-8 border-t border-zinc-100 text-center">
             <p className="text-[14px] text-zinc-500">
-              &copy; {new Date().getFullYear()} Kivo. Every job. One place.
+              &copy; {new Date().getFullYear()} EveryJob. Every job. One place.
             </p>
             <p className="text-[13px] text-zinc-400 mt-1">
-              Free forever. Made for India &amp; Canada.
+              Free forever. Made for Canada.
             </p>
           </div>
         </div>

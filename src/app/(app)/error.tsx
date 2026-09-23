@@ -19,7 +19,7 @@ export default function AppError({
   useEffect(() => {
     // Surface the digest in the console for support/debugging; nothing
     // sensitive is rendered into the page itself.
-    console.error('[kivo] app segment error:', error.digest ?? '(no digest)', error.message);
+    console.error('[everyjob] app segment error:', error.digest ?? '(no digest)', error.message);
   }, [error]);
 
   return (

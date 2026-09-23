@@ -5,6 +5,7 @@ import { AlertCircle, CheckCircle2, Pencil, Trash2, X } from 'lucide-react';
 import { updateCustomer, deleteCustomer } from '@/app/actions/customers';
 import { Field, inputClass, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
+import { CA_PROVINCES } from '@/lib/tax';
 
 export type CustomerFormData = {
   id: string;
@@ -12,6 +13,8 @@ export type CustomerFormData = {
   phone: string | null;
   email: string | null;
   address: string | null;
+  province: string | null;
+  postalCode: string | null;
   notes: string | null;
 };
 
@@ -36,12 +39,12 @@ export function EditCustomerForm({ customer }: { customer: CustomerFormData }) {
       </Field>
 
       <div className="grid sm:grid-cols-2 gap-4">
-        <Field label="Phone" hint="e.g. +91 98765 43210">
+        <Field label="Phone" hint="e.g. +1 416 555 0100">
           <input
             name="phone"
             type="tel"
             defaultValue={customer.phone ?? ''}
-            placeholder="+91 98765 43210"
+            placeholder="+1 416 555 0100"
             className={inputClass}
           />
         </Field>
@@ -64,6 +67,28 @@ export function EditCustomerForm({ customer }: { customer: CustomerFormData }) {
           className={inputClass}
         />
       </Field>
+
+      <div className="grid sm:grid-cols-2 gap-4">
+        <Field label="Province">
+          <select name="province" defaultValue={customer.province ?? ''} className={inputClass}>
+            <option value="">—</option>
+            {CA_PROVINCES.map((p) => (
+              <option key={p.code} value={p.code}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Postal code" hint="e.g. M5V 2T6">
+          <input
+            name="postalCode"
+            defaultValue={customer.postalCode ?? ''}
+            placeholder="M5V 2T6"
+            maxLength={7}
+            className={inputClass + ' uppercase'}
+          />
+        </Field>
+      </div>
 
       <Field label="Notes">
         <textarea name="notes" rows={3} defaultValue={customer.notes ?? ''} className={inputClass} />

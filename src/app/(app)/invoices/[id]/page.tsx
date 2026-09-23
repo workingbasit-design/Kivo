@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma';
 import { PageHeader, Card, StatusBadge } from '@/components/ui';
 import { formatDateShort } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
-import { splitStoredTax } from '@/lib/tax';
+import { splitStoredTax, taxIdLabelForRegion } from '@/lib/tax';
 import { displayNotes } from '@/lib/invoice-notes';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
@@ -50,7 +50,7 @@ export default async function InvoiceDetailPage({
   const paid = Math.round(invoice.payments.reduce((s, p) => s + p.amount, 0) * 100) / 100;
   const remaining = Math.round((invoice.total - paid) * 100) / 100;
   const userNotes = displayNotes(invoice.notes, invoice.lineItems.length > 0);
-  const currency = invoice.business.currency ?? 'INR';
+  const currency = 'CAD';
   // French (fr) locale renders invoice labels in French and formats CAD
   // amounts in fr-CA style (e.g. "1 234,56 $").
   const locale = await getLocale();
@@ -82,11 +82,11 @@ export default async function InvoiceDetailPage({
         </Link>
         <div className="flex items-center gap-2 print:hidden">
           {/* wa.me chat with the customer — user taps to send from their own
-              WhatsApp; Kivo never sends anything automatically. */}
+              WhatsApp; EveryJob never sends anything automatically. */}
           <WhatsAppButton
             phone={invoice.customer.phone}
             regionCode={invoice.business.regionCode}
-            message={`Namaste ${invoice.customer.name}! ${invoice.business.name} se invoice ${invoice.number} (${formatMoney(invoice.total, currency)}) bheja gaya hai.`}
+            message={`Hi ${invoice.customer.name}! Here is invoice ${invoice.number} from ${invoice.business.name} (${formatMoney(invoice.total, currency)}).`}
             label="WhatsApp"
           />
           <PrintButton />
@@ -110,8 +110,8 @@ export default async function InvoiceDetailPage({
             {invoice.business.phone && (
               <p className="text-xs text-zinc-500">{invoice.business.phone}</p>
             )}
-            {invoice.business.gstin && (
-              <p className="text-xs text-zinc-500">{L('invoices.taxIdLabel')}: {invoice.business.gstin}</p>
+            {invoice.business.taxId && (
+              <p className="text-xs text-zinc-500">{taxIdLabelForRegion(invoice.business.regionCode, locale)}: {invoice.business.taxId}</p>
             )}
           </div>
           <div className="md:text-right">
@@ -180,13 +180,13 @@ export default async function InvoiceDetailPage({
           </div>
         </dl>
 
-        {invoice.business.upiId && remaining > 0 && (
+        {invoice.business.interacEmail && remaining > 0 && (
           <div className="mt-6 bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3">
             <p className="text-xs text-zinc-600">
-              {L('invoices.payViaUpi')} <span className="font-bold text-zinc-900">{invoice.business.upiId}</span>
+              {L('invoices.payViaInterac')} <span className="font-bold text-zinc-900">{invoice.business.interacEmail}</span>
             </p>
             <p className="text-[11px] text-zinc-400 mt-0.5">
-              {L('invoices.upiDisclaimer')}
+              {L('invoices.interacDisclaimer')}
             </p>
           </div>
         )}

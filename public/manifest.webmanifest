@@ -1,1 +1,39 @@
-{"background_color":"#fafafa","categories":["business","productivity","utilities"],"description":"Free field-service software: jobs, schedule, customers, GST quotes, invoices and a Hinglish AI assistant.","dir":"ltr","display":"standalone","icons":[{"purpose":"any","sizes":"192x192","src":"/icons/icon-192.png","type":"image/png"},{"purpose":"any","sizes":"512x512","src":"/icons/icon-512.png","type":"image/png"},{"purpose":"maskable","sizes":"512x512","src":"/icons/maskable-512.png","type":"image/png"}],"id":"/","lang":"en","name":"Kivo — Every job. One place.","orientation":"portrait","scope":"/","short_name":"Kivo","start_url":"/dashboard","theme_color":"#6329d4"}
+{
+  "background_color": "#fafafa",
+  "categories": [
+    "business",
+    "productivity",
+    "utilities"
+  ],
+  "description": "Free field-service software for Canadian home-service pros: jobs, schedule, customers, quotes, invoices and an AI assistant.",
+  "dir": "ltr",
+  "display": "standalone",
+  "icons": [
+    {
+      "purpose": "any",
+      "sizes": "192x192",
+      "src": "/icons/icon-192.png",
+      "type": "image/png"
+    },
+    {
+      "purpose": "any",
+      "sizes": "512x512",
+      "src": "/icons/icon-512.png",
+      "type": "image/png"
+    },
+    {
+      "purpose": "maskable",
+      "sizes": "512x512",
+      "src": "/icons/maskable-512.png",
+      "type": "image/png"
+    }
+  ],
+  "id": "/",
+  "lang": "en",
+  "name": "EveryJob \u2014 Every job. One place.",
+  "orientation": "portrait",
+  "scope": "/",
+  "short_name": "EveryJob",
+  "start_url": "/dashboard",
+  "theme_color": "#6329d4"
+}

@@ -8,7 +8,7 @@ import {
   Settings, ClipboardList,
   Tag, Star, PieChart, UserPlus, LogOut, Timer, Megaphone, Repeat, Route, CalendarCheck
 } from 'lucide-react';
-import KivoLogo from '@/components/KivoLogo';
+import EveryJobLogo from '@/components/EveryJobLogo';
 import { logout } from '@/app/actions/auth';
 import { formatMoney } from '@/lib/money';
 import { t, type Locale } from '@/lib/i18n';
@@ -56,8 +56,8 @@ export default function AppSidebar({
       {/* Header / Logo */}
       <div className="p-6 pb-2">
         <Link href="/dashboard" className="flex items-center gap-3 mb-8">
-          <KivoLogo size={32} />
-          <span className="text-xl font-bold tracking-tight text-white">Kivo</span>
+          <EveryJobLogo size={32} />
+          <span className="text-xl font-bold tracking-tight text-white">EveryJob</span>
         </Link>
 
         <div className="mb-4">

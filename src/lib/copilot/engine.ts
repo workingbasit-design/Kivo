@@ -1,7 +1,7 @@
 /**
- * Kivo copilot — rule-based engine (offline fallback).
+ * EveryJob copilot — rule-based engine (offline fallback).
  *
- * Deterministic, no-network intent detection + Hinglish entity extraction
+ * Deterministic, no-network intent detection + multilingual entity extraction
  * (see ./parse.ts — DB-free and unit-testable) + real business-data fetchers
  * (always scoped by businessId).
  *
@@ -9,6 +9,10 @@
  * NEVER sends messages: reminders are returned as draft text only.
  * NEVER creates jobs: create_job intent always returns a preview for
  * explicit user confirmation (handled in the API route).
+ *
+ * Replies are bilingual (English / Canadian French), chosen from the
+ * business's UI locale. English replies are written in plain professional
+ * English that works for both Canadian and Indian businesses.
  */
 
 import { prisma } from '@/lib/prisma';
@@ -49,6 +53,22 @@ export {
   type CopilotResult,
   type JobDraft,
 };
+
+export type CopilotLang = 'en' | 'fr';
+
+export interface RunCopilotOptions {
+  /** UI locale of the business ('en' | 'fr'); defaults to 'en'. */
+  locale?: string;
+}
+
+function langOf(locale?: string): CopilotLang {
+  return locale === 'fr' ? 'fr' : 'en';
+}
+
+/** Pick the reply-language string. */
+function pick(lang: CopilotLang, en: string, fr: string): string {
+  return lang === 'fr' ? fr : en;
+}
 
 // ---------------------------------------------------------------------------
 // Data fetchers (always businessId-scoped)
@@ -137,7 +157,7 @@ async function findCustomers(businessId: string, query: string, limit = 5): Prom
 }
 
 // ---------------------------------------------------------------------------
-// Reply formatters (rule-based)
+// Reply formatters (rule-based, bilingual)
 // ---------------------------------------------------------------------------
 
 function formatJobList(
@@ -149,43 +169,68 @@ function formatJobList(
     .join('\n');
 }
 
-const HELP_TEXT = `Main aapki madad kar sakta hoon:
-
-• Job book karna — bas WhatsApp jaisa message bhejo, jaise "Ramesh ka AC repair kal 3 baje, 9876543210, ₹800". Main confirm karke hi book karunga.
-• Schedule dekhna — "Aaj ke jobs?" ya "Kal ke jobs?"
-• Kamai — "Is hafte kitna kamaya?"
-• Baki payment — "Kitna outstanding hai?"
-• Customer dhundna — "Ramesh ka number"
-• Payment reminder — "Ramesh ko reminder banao"
-
-Kuch bhi poochho — main aapke asli business data se jawab dunga.`;
+function helpText(lang: CopilotLang, example: string): string {
+  return pick(
+    lang,
+    `I can help with:\n\n` +
+      `• Booking a job — write WhatsApp-style, e.g. "${example}". I'll confirm before booking.\n` +
+      `• Checking the schedule — "Today's jobs?" or "Tomorrow's jobs?"\n` +
+      `• Earnings — "How much did I earn this week?"\n` +
+      `• Outstanding payments — "What's outstanding?"\n` +
+      `• Finding a customer — "Sarah's number"\n` +
+      `• Payment reminders — "Draft a reminder for Sarah"\n\n` +
+      `Ask anything — I answer from your real business data.`,
+    `Je peux vous aider avec :\n\n` +
+      `• Réserver une tâche — écrivez comme sur WhatsApp, par ex. « ${example} ». Je confirmerai avant de réserver.\n` +
+      `• Voir l'horaire — « Les tâches d'aujourd'hui? » ou « Celles de demain? »\n` +
+      `• Les revenus — « Combien ai-je gagné cette semaine? »\n` +
+      `• Les paiements impayés — « Combien me doit-on? »\n` +
+      `• Trouver un client — « Le numéro de Sarah »\n` +
+      `• Les rappels de paiement — « Prépare un rappel pour Sarah »\n\n` +
+      `Posez votre question — je réponds à partir de vos vraies données d'affaires.`
+  );
+}
 
 /** Short greeting — kept separate from help so "hi" doesn't dump the manual. */
-const GREETING_TEXT = `Namaste! 🙏 Main aapka Kivo assistant hoon.
-
-• Job book karni hai? Jaise likho: "Ramesh ka AC repair kal 3 baje, ₹800"
-• Schedule dekhna hai? "Aaj ke jobs?" ya "Kal ke jobs?"
-• "Kitna outstanding hai?" — baki payments ka hisaab
-
-Bas aise hi message bhejo — job hamesha aapke confirm karne par hi book hogi.`;
+function greetingText(lang: CopilotLang, example: string): string {
+  return pick(
+    lang,
+    `Hi! 👋 I'm your EveryJob assistant.\n\n` +
+      `• Need to book a job? Just write, e.g.: "${example}"\n` +
+      `• Check the schedule? "Today's jobs?" or "Tomorrow's jobs?"\n` +
+      `• "What's outstanding?" — for unpaid payments\n\n` +
+      `Just message here — a job is only booked after you confirm.`,
+    `Bonjour! 👋 Je suis votre assistant EveryJob.\n\n` +
+      `• Vous voulez réserver une tâche? Écrivez par ex. : « ${example} »\n` +
+      `• Voir l'horaire? « Les tâches d'aujourd'hui? » ou « Celles de demain? »\n` +
+      `• « Combien me doit-on? » — pour les paiements impayés\n\n` +
+      `Écrivez simplement ici — une tâche n'est réservée qu'après votre confirmation.`
+  );
+}
 
 /** Asked when the message carries no recognizable intent — never silence,
  *  never a wrong guess. */
-const CLARIFY_TEXT = `Samajh nahi aaya — thoda detail mein bataoge? 🙂
+function clarifyText(lang: CopilotLang, example: string): string {
+  return pick(
+    lang,
+    `I didn't quite catch that — could you say a bit more? 🙂\n\n` +
+      `To book a job, write something like:\n"${example}"\n\n` +
+      `Or just tell me — what's the work, who is it for, and when?`,
+    `Je n'ai pas bien compris — pouvez-vous préciser? 🙂\n\n` +
+      `Pour réserver une tâche, écrivez par exemple :\n« ${example} »\n\n` +
+      `Ou dites-moi simplement — c'est quoi le travail, pour qui, et quand?`
+  );
+}
 
-Job book karni hai to aise likho:
-"Ramesh ka AC repair kal 3 baje, ₹800"
-
-Ya bas batao — kaunsa kaam hai, kiske liye hai, aur kab karna hai?`;
-
-/** True for bare greetings ("hi", "namaste") — longer sentences that happen
- *  to contain "hi" (e.g. "Ramesh hi karega") are NOT greetings. */
+/** True for bare greetings ("hi", "bonjour") — longer sentences that happen
+ *  to contain "hi" (e.g. "Sarah is doing it") are NOT greetings. */
 function isGreeting(raw: string): boolean {
   const text = norm(raw);
   if (text.split(' ').length > 3) return false;
   return hasAny(' ' + text + ' ', [
     ' namaste ', ' namaskar ', ' hello ', ' hi ', ' hey ', ' salaam ',
     ' good morning ', ' good evening ', ' ram ram ',
+    ' bonjour ', ' bonsoir ', ' salut ', ' allo ',
   ]);
 }
 
@@ -197,10 +242,17 @@ export async function runCopilot(
   businessId: string,
   _userId: string,
   message: string,
-  history: CopilotHistoryItem[] = []
+  history: CopilotHistoryItem[] = [],
+  opts: RunCopilotOptions = {}
 ): Promise<CopilotResult> {
-  const biz = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } });
-  const currency = biz?.currency ?? 'INR';
+  const lang = langOf(opts.locale);
+  // Locale-appropriate booking example for help/greeting/clarify.
+  const example =
+    lang === 'fr'
+      ? 'Réparation de clim pour Sarah demain à 15h, 800 $'
+      : 'AC repair for Sarah tomorrow at 3pm, $800';
+
+  const currency = 'CAD';
   // Pronoun follow-ups ("usko kal kar do") resolve against recent turns.
   const followUpName = resolveFollowUpName(message, history);
   const intent = detectIntent(message, followUpName);
@@ -264,34 +316,66 @@ export async function runCopilot(
         }
       }
 
+      const L = {
+        title: pick(lang, "Here's the job I understood — please confirm?", 'Voici la tâche que j’ai comprise — confirmez-vous?'),
+        service: pick(lang, 'Service', 'Service'),
+        date: pick(lang, 'Date', 'Date'),
+        time: pick(lang, 'Time', 'Heure'),
+        customer: pick(lang, 'Customer', 'Client'),
+        phone: pick(lang, 'Phone', 'Téléphone'),
+        address: pick(lang, 'Address', 'Adresse'),
+        price: pick(lang, 'Price', 'Prix'),
+        tbd: pick(lang, 'TBD', 'À déterminer'),
+        noName: pick(lang, '(no name found)', '(nom introuvable)'),
+        notSet: pick(lang, '(not set)', '(non défini)'),
+        dateNote: pick(
+          lang,
+          'Note: the date wasn’t clear, so I used today — set the right date in the preview.',
+          'Note : la date n’était pas claire, j’ai donc pris aujourd’hui — corrigez la date dans l’aperçu.'
+        ),
+        matchedNote: (name: string) =>
+          pick(lang, `Note: ${name} is already in your customers.`, `Note : ${name} est déjà dans vos clients.`),
+        newCustomerNote: (name: string) =>
+          pick(
+            lang,
+            `Note: "${name}" isn’t in your customers — confirming will add them as a new customer.`,
+            `Note : « ${name} » ne figure pas dans vos clients — en confirmant, je l’ajouterai comme nouveau client.`
+          ),
+        similarNote: (name: string) =>
+          pick(lang, `Did you mean "${name}"?`, `Vouliez-vous dire « ${name} »?`),
+        nameMissingNote: pick(
+          lang,
+          'Note: I couldn’t find the customer name — add it in the preview, it’s required to book.',
+          'Note : je n’ai pas trouvé le nom du client — ajoutez-le dans l’aperçu, c’est requis pour réserver.'
+        ),
+        confirmNote: pick(lang, 'The job is only booked when you confirm.', 'La tâche ne sera réservée qu’après votre confirmation.'),
+      };
+
       const lines = [
-        'Maine yeh job samjha hai — confirm karein?',
+        L.title,
         '',
-        `Service: ${draft.title}`,
-        `Date: ${formatDateShort(draft.date)}`,
-        `Time: ${draft.time ?? 'TBD'}`,
-        `Customer: ${draft.customerName || '(naam nahi mila)'}`,
-        `Phone: ${draft.phone ?? '—'}`,
-        `Address: ${draft.address ?? '—'}`,
-        `Price: ${draft.price !== null ? formatMoney(draft.price, currency) : '(set nahi)'}`,
+        `${L.service}: ${draft.title}`,
+        `${L.date}: ${formatDateShort(draft.date)}`,
+        `${L.time}: ${draft.time ?? L.tbd}`,
+        `${L.customer}: ${draft.customerName || L.noName}`,
+        `${L.phone}: ${draft.phone ?? '—'}`,
+        `${L.address}: ${draft.address ?? '—'}`,
+        `${L.price}: ${draft.price !== null ? formatMoney(draft.price, currency) : L.notSet}`,
       ];
       if (!explicitDate) {
-        lines.push('', 'Note: date saaf nahi thi, isliye aaj ki date li hai — preview mein sahi date set kar lena.');
+        lines.push('', L.dateNote);
       }
       if (matched) {
-        lines.push('', `Note: ${matched.name} aapke customers mein pehle se hai.`);
+        lines.push('', L.matchedNote(matched.name));
       } else if (draft.customerName && !customerExists) {
-        lines.push(
-          '',
-          `Note: "${draft.customerName}" aapke customers mein nahi mila — confirm karne par main inhe naye customer ke roop mein add kar dunga.`
-        );
+        lines.push('', L.newCustomerNote(draft.customerName));
         if (similarCustomer) {
-          lines.push(`Kya aapka matlab "${similarCustomer}" tha?`);
+          lines.push(L.similarNote(similarCustomer));
         }
       } else if (!draft.customerName) {
-        lines.push('', 'Note: customer ka naam nahi mila — preview mein naam zaroor likh dein, tabhi booking hogi.');
+        lines.push('', L.nameMissingNote);
       }
-      lines.push('', 'Confirm karne par hi job book hogi.');
+      lines.push('', L.confirmNote);
 
       return { intent, reply: lines.join('\n'), preview: draft };
     }
@@ -299,13 +383,25 @@ export async function runCopilot(
     case 'ask_schedule': {
       const dateStr = extractDate(message) ?? todayStr;
       const jobs = await jobsOn(businessId, dateStr);
-      const label = dateStr === todayStr ? 'aaj' : formatDateShort(dateStr);
+      const isToday = dateStr === todayStr;
+      const dateLabel = isToday ? pick(lang, 'Today', 'Aujourd’hui') : formatDateShort(dateStr);
       if (jobs.length === 0) {
-        return { intent, reply: `${label === 'aaj' ? 'Aaj' : formatDateShort(dateStr)} ke liye koi job scheduled nahi hai. Koi nayi booking aaye to bas yahan message bhej dijiye!` };
+        return {
+          intent,
+          reply: pick(
+            lang,
+            `No jobs scheduled for ${dateLabel.toLowerCase() === 'today' ? 'today' : dateLabel}. When a new booking comes in, just message me here!`,
+            `Aucune tâche prévue pour ${isToday ? 'aujourd’hui' : 'le ' + dateLabel}. Quand une nouvelle réservation arrive, écrivez-moi ici!`
+          ),
+        };
       }
       return {
         intent,
-        reply: `${label === 'aaj' ? 'Aaj' : formatDateShort(dateStr)} ke ${jobs.length} job(s):\n\n${formatJobList(jobs)}`,
+        reply: pick(
+          lang,
+          `${dateLabel}: ${jobs.length} job(s):\n\n${formatJobList(jobs)}`,
+          `${dateLabel} : ${jobs.length} tâche(s) :\n\n${formatJobList(jobs)}`
+        ),
         data: { date: dateStr, count: jobs.length },
       };
     }
@@ -314,21 +410,31 @@ export async function runCopilot(
       const text = norm(message);
       let start: Date, end: Date, label: string;
       const now = new Date();
-      if (hasAny(' ' + text + ' ', [' aaj ', ' ajj ', ' today '])) {
+      if (hasAny(' ' + text + ' ', [' aaj ', ' ajj ', ' today ', ' aujourd hui '])) {
         const { gte, lte } = dayRange(todayStr);
-        start = gte; end = lte; label = 'aaj';
-      } else if (hasAny(' ' + text + ' ', [' hafte ', ' week ', ' iss week '])) {
-        start = new Date(now); start.setDate(now.getDate() - 7); end = now; label = 'pichhle 7 dinon mein';
-      } else if (hasAny(' ' + text + ' ', [' mahine ', ' month ', ' iss month '])) {
-        start = new Date(now); start.setDate(now.getDate() - 30); end = now; label = 'pichhle 30 dinon mein';
+        start = gte; end = lte; label = pick(lang, 'Today', 'Aujourd’hui');
+      } else if (hasAny(' ' + text + ' ', [' hafte ', ' week ', ' iss week ', ' semaine '])) {
+        start = new Date(now); start.setDate(now.getDate() - 7); end = now;
+        label = pick(lang, 'the last 7 days', 'les 7 derniers jours');
+      } else if (hasAny(' ' + text + ' ', [' mahine ', ' month ', ' iss month ', ' mois '])) {
+        start = new Date(now); start.setDate(now.getDate() - 30); end = now;
+        label = pick(lang, 'the last 30 days', 'les 30 derniers jours');
       } else {
         const { gte, lte } = dayRange(todayStr);
-        start = gte; end = lte; label = 'aaj';
+        start = gte; end = lte; label = pick(lang, 'Today', 'Aujourd’hui');
       }
       const total = await revenueBetween(businessId, start, end);
       return {
         intent,
-        reply: `${label === 'aaj' ? 'Aaj' : label} ki collection: ${formatMoney(total, currency)} (received payments ke hisaab se).`,
+        reply: pick(
+          lang,
+          label === 'Today'
+            ? `Today's collection: ${formatMoney(total, currency)} (based on received payments).`
+            : `Collection over ${label}: ${formatMoney(total, currency)} (based on received payments).`,
+          label === 'Aujourd’hui'
+            ? `Collecte d’aujourd’hui : ${formatMoney(total, currency)} (selon les paiements reçus).`
+            : `Collecte sur ${label} : ${formatMoney(total, currency)} (selon les paiements reçus).`
+        ),
         data: { total, label },
       };
     }
@@ -336,18 +442,34 @@ export async function runCopilot(
     case 'ask_unpaid': {
       const invoices = await unpaidInvoices(businessId);
       if (invoices.length === 0) {
-        return { intent, reply: 'Badhiya! Koi baki (unpaid) payment nahi hai. Sab clear hai.' };
+        return {
+          intent,
+          reply: pick(
+            lang,
+            'All clear! No unpaid invoices — everything’s settled.',
+            'Parfait! Aucune facture impayée — tout est réglé.'
+          ),
+        };
       }
       const withBalance = invoices.map((i) => ({ ...i, balance: invoiceBalance(i) }));
       const total = withBalance.reduce((s, i) => s + i.balance, 0);
       const lines = withBalance.slice(0, 10).map(
-        (i, idx) => `${idx + 1}. ${i.customer.name} — ${i.number} — ${formatMoney(i.balance, currency)} baki [${i.status}]`
+        (i, idx) =>
+          `${idx + 1}. ${i.customer.name} — ${i.number} — ${formatMoney(i.balance, currency)} ${
+            lang === 'fr' ? 'dû' : 'due'
+          } [${i.status}]`
       );
       return {
         intent,
-        reply: `Kul outstanding: ${formatMoney(total, currency)} (${invoices.length} invoice${invoices.length > 1 ? 's' : ''}):\n\n${lines.join('\n')}${
-          invoices.length > 10 ? `\n\n...aur ${invoices.length - 10} aur.` : ''
-        }\n\nKisi customer ke liye payment reminder draft chahiye to bolo, jaise "Ramesh ko reminder banao".`,
+        reply: pick(
+          lang,
+          `Total outstanding: ${formatMoney(total, currency)} (${invoices.length} invoice${invoices.length > 1 ? 's' : ''}):\n\n${lines.join('\n')}${
+            invoices.length > 10 ? `\n\n...and ${invoices.length - 10} more.` : ''
+          }\n\nWant a payment reminder draft for a customer? Just say, e.g. "Draft a reminder for Sarah".`,
+          `Total impayé : ${formatMoney(total, currency)} (${invoices.length} facture${invoices.length > 1 ? 's' : ''}) :\n\n${lines.join('\n')}${
+            invoices.length > 10 ? `\n\n...et ${invoices.length - 10} de plus.` : ''
+          }\n\nVoulez-vous un rappel de paiement pour un client? Dites par exemple « Prépare un rappel pour Sarah ».`
+        ),
         data: { total, count: invoices.length },
       };
     }
@@ -361,13 +483,24 @@ export async function runCopilot(
       });
       const total = await prisma.customer.count({ where: { businessId } });
       if (total === 0) {
-        return { intent, reply: 'Abhi aapke paas koi customer nahi hai. Pehla customer add karne ke liye "Customers" page par jayein.' };
+        return {
+          intent,
+          reply: pick(
+            lang,
+            'You don’t have any customers yet. Head to the "Customers" page to add your first one.',
+            'Vous n’avez aucun client pour l’instant. Allez à la page « Clients » pour ajouter le premier.'
+          ),
+        };
       }
       const shown = all.slice(0, 10).map((c, i) => `${i + 1}. ${c.name}${c.phone ? ` — ${c.phone}` : ''}`);
-      const more = total > 10 ? `\n\n...aur ${total - 10} aur.` : '';
+      const more = total > 10 ? (lang === 'fr' ? `\n\n...et ${total - 10} de plus.` : `\n\n...and ${total - 10} more.`) : '';
       return {
         intent,
-        reply: `Aapke kul ${total} customer${total === 1 ? '' : 's'} hain:\n\n${shown.join('\n')}${more}`,
+        reply: pick(
+          lang,
+          `You have ${total} customer${total === 1 ? '' : 's'}:\n\n${shown.join('\n')}${more}`,
+          `Vous avez ${total} client${total === 1 ? '' : 's'} :\n\n${shown.join('\n')}${more}`
+        ),
         data: { count: total },
       };
     }
@@ -376,20 +509,38 @@ export async function runCopilot(
       const phone = extractPhone(message);
       const name = extractCustomerName(message);
       // strip the "ka number" style suffix and search the raw words
-      const query = phone ?? name ?? norm(message).replace(/\b(ka|ke|ki|number|no|mobile|customer|client|grahak|find|karo|do|batao|dikhao)\b/g, ' ').trim();
+      const query = phone ?? name ?? norm(message).replace(/\b(ka|ke|ki|number|no|mobile|customer|client|grahak|find|karo|do|batao|dikhao|numéro|téléphone|chercher|trouve)\b/g, ' ').trim();
       if (!query) {
-        return { intent, reply: 'Kaunsa customer dhundna hai? Naam ya mobile number batao, jaise "Ramesh ka number".' };
+        return {
+          intent,
+          reply: pick(
+            lang,
+            'Which customer should I look up? Give me a name or mobile number, e.g. "Sarah’s number".',
+            'Quel client dois-je chercher? Donnez-moi un nom ou un numéro de mobile, par exemple « le numéro de Ramesh ».'
+          ),
+        };
       }
       const customers = await findCustomers(businessId, query);
       if (customers.length === 0) {
-        return { intent, reply: `"${query}" naam se koi customer nahi mila. Spelling check karke dobara try karein.` };
+        return {
+          intent,
+          reply: pick(
+            lang,
+            `No customer found matching "${query}". Check the spelling and try again.`,
+            `Aucun client trouvé pour « ${query} ». Vérifiez l’orthographe et réessayez.`
+          ),
+        };
       }
       const lines = customers.map(
         (c, i) => `${i + 1}. ${c.name}${c.phone ? ` — ${c.phone}` : ''}${c._count.jobs ? ` (${c._count.jobs} jobs)` : ''}`
       );
       return {
         intent,
-        reply: `${customers.length} customer mile:\n\n${lines.join('\n')}`,
+        reply: pick(
+          lang,
+          `${customers.length === 1 ? 'Found 1 customer' : `Found ${customers.length} customers`}:\n\n${lines.join('\n')}`,
+          `${customers.length} client${customers.length === 1 ? '' : 's'} trouvé${customers.length === 1 ? '' : 's'} :\n\n${lines.join('\n')}`
+        ),
         data: { count: customers.length },
       };
     }
@@ -409,36 +560,56 @@ export async function runCopilot(
         return {
           intent,
           reply: query
-            ? `"${query}" ke liye koi unpaid invoice nahi mili.`
-            : 'Koi unpaid invoice nahi hai — reminder ki zaroorat nahi!',
+            ? pick(
+                lang,
+                `No unpaid invoice found for "${query}".`,
+                `Aucune facture impayée trouvée pour « ${query} ».`
+              )
+            : pick(
+                lang,
+                'No unpaid invoices — no reminder needed!',
+                'Aucune facture impayée — aucun rappel nécessaire!'
+              ),
         };
       }
       const inv = invoices[0];
       const balance = invoiceBalance(inv);
       const cname = inv.customer.name.split(' ')[0];
-      const draft =
-        `Namaste ${cname} ji, ${inv.number} (${formatMoney(balance, currency)}) ka payment abhi baki hai. ` +
-        `Kripya jald se jald clear kar dein. Koi dikkat ho to batayein. Dhanyavaad!`;
+      const draft = pick(
+        lang,
+        `Hi ${cname}, invoice ${inv.number} (${formatMoney(balance, currency)}) is still unpaid. ` +
+          `Please clear it at your earliest. Let me know if there’s an issue. Thank you!`,
+        `Bonjour ${cname}, la facture ${inv.number} (${formatMoney(balance, currency)}) est toujours impayée. ` +
+          `Veuillez la régler dès que possible. N’hésitez pas s’il y a un problème. Merci!`
+      );
       const note = invoices.length > 1
-        ? `\n\n(Note: ${invoices.length} unpaid invoices hain — yeh draft sabse recent ke liye hai.)`
+        ? pick(
+            lang,
+            `\n\n(Note: there are ${invoices.length} unpaid invoices — this draft is for the most recent one.)`,
+            `\n\n(Note : il y a ${invoices.length} factures impayées — ce brouillon concerne la plus récente.)`
+          )
         : '';
       return {
         intent,
-        reply: `Yeh raha reminder draft (maine kuch bheja NAHI hai — aap copy karke khud bhej sakte ho):\n\n"${draft}"${note}`,
+        reply: pick(
+          lang,
+          `Here’s a reminder draft (I have NOT sent anything — copy it and send it yourself):\n\n"${draft}"${note}`,
+          `Voici un brouillon de rappel (je n’ai RIEN envoyé — copiez-le et envoyez-le vous-même) :\n\n« ${draft} »${note}`
+        ),
         data: { invoiceId: inv.id, customer: inv.customer.name, amount: balance },
       };
     }
 
     case 'help':
-      return { intent: 'help', reply: HELP_TEXT };
+      return { intent: 'help', reply: helpText(lang, example) };
 
     case 'unknown':
     default: {
       // Ambiguous input ("fix the thing for the guy") previously fell
       // through to the generic help dump — and in one case produced no
       // useful reply at all. Always answer, and ask what you need.
-      if (isGreeting(message)) return { intent: 'unknown', reply: GREETING_TEXT };
-      return { intent: 'unknown', reply: CLARIFY_TEXT };
+      if (isGreeting(message)) return { intent: 'unknown', reply: greetingText(lang, example) };
+      return { intent: 'unknown', reply: clarifyText(lang, example) };
     }
   }
 }

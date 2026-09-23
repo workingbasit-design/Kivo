@@ -83,7 +83,7 @@ export async function GET(req: NextRequest) {
     const res = await fetch(url, {
       headers: {
         // Nominatim usage policy requires a descriptive User-Agent.
-        'User-Agent': 'KivoApp/1.0 (address autocomplete)',
+        'User-Agent': 'EveryJobApp/1.0 (address autocomplete)',
         Accept: 'application/json',
       },
       signal: AbortSignal.timeout(8000),

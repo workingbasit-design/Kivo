@@ -6,7 +6,7 @@ import { PageHeader, Card, StatusBadge, EmptyState } from '@/components/ui';
 import { AUDIENCE_LABELS, type Audience } from '@/lib/marketing';
 import { formatDateShort } from '@/lib/utils';
 
-export const metadata = { title: 'Marketing | Kivo' };
+export const metadata = { title: 'Marketing | EveryJob' };
 
 export default async function MarketingPage() {
   const { businessId } = await requireAuth();
@@ -20,7 +20,7 @@ export default async function MarketingPage() {
     <div className="space-y-6">
       <PageHeader
         title="Marketing"
-        subtitle="Campaigns and review requests. Kivo never sends messages itself — you copy and send via WhatsApp or SMS."
+        subtitle="Campaigns and review requests. EveryJob never sends messages itself — you copy and send via WhatsApp or SMS."
         actions={
           <>
             <Link

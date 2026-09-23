@@ -34,7 +34,7 @@ export default function QuoteRequestForm() {
           ))}
         </ul>
         <p className="text-xs text-zinc-400 mt-4">
-          They&apos;ll contact you directly if they can take the work. Kivo never charges you anything.
+          They&apos;ll contact you directly if they can take the work. EveryJob never charges you anything.
         </p>
         <Link href="/directory" className="inline-block mt-4 text-sm font-bold text-[#6329d4] hover:underline">
           ← Back to directory

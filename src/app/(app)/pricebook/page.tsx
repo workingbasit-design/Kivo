@@ -2,7 +2,7 @@ import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import PriceBookClient from '@/components/PriceBookClient';
 
-export const metadata = { title: 'Price Book | Kivo' };
+export const metadata = { title: 'Price Book | EveryJob' };
 
 export default async function PriceBookPage() {
   const { businessId } = await requireAuth();

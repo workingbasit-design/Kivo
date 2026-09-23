@@ -10,6 +10,44 @@ import { PageHeader, Card, StatusBadge } from '@/components/ui';
 import { secondaryBtnClass } from '@/components/ui';
 import { EditCustomerForm, DeleteCustomerButton } from './customer-forms';
 import WhatsAppButton from '@/components/WhatsAppButton';
+import PortalLinkManager from '@/components/PortalLinkManager';
+import { CA_PROVINCES } from '@/lib/tax';
+
+/**
+ * Minimal, null-tolerant customer load for the detail page. Selects only
+ * what the page renders; the caller maps defensively.
+ */
+async function loadCustomer(id: string, businessId: string) {
+  return prisma.customer.findFirst({
+    where: { id, businessId },
+    select: {
+      id: true,
+      name: true,
+      phone: true,
+      email: true,
+      address: true,
+      province: true,
+      postalCode: true,
+      notes: true,
+      createdAt: true,
+      jobs: {
+        orderBy: { date: 'desc' },
+        take: 10,
+        select: { id: true, title: true, date: true, time: true, price: true, status: true },
+      },
+      invoices: {
+        orderBy: { date: 'desc' },
+        take: 10,
+        select: { id: true, number: true, total: true, status: true, date: true },
+      },
+      reviews: {
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+        select: { id: true, rating: true, comment: true, source: true, createdAt: true },
+      },
+    },
+  });
+}
 
 export default async function CustomerDetailPage({
   params,
@@ -20,26 +58,52 @@ export default async function CustomerDetailPage({
   if (!session?.user?.businessId) redirect('/login');
   const businessId = session.user.businessId;
 
-  const business = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true, name: true, regionCode: true } });
-  const currency = business?.currency;
-  const { id } = await params;
-  const customer = await prisma.customer.findFirst({
-    where: { id, businessId },
-    include: {
-      jobs: { orderBy: { date: 'desc' }, take: 10 },
-      invoices: { orderBy: { date: 'desc' }, take: 10 },
-      reviews: { orderBy: { createdAt: 'desc' }, take: 5 },
-    },
-  });
-  if (!customer) notFound();
+  // Defensive: any DB failure (bad row, schema drift) renders the friendly
+  // error boundary instead of a raw 500 — see the 2026-09-23 /customers incident.
+  let business: { currency: string | null; name: string | null } | null = null;
+  let customer: Awaited<ReturnType<typeof loadCustomer>> = null;
+  let activePortalToken: { id: string; createdAt: Date } | null = null;
+  try {
+    const { id } = await params;
+    business = await prisma.business.findUnique({
+      where: { id: businessId },
+      select: { currency: true, name: true },
+    });
+    customer = await loadCustomer(id, businessId);
+    if (!customer) notFound();
+    activePortalToken = await prisma.customerPortalToken.findFirst({
+      where: {
+        customerId: customer.id,
+        businessId,
+        revokedAt: null,
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+      },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, createdAt: true },
+    });
+  } catch (e) {
+    // notFound() throws a NEXT_NOT_FOUND sentinel — let it through.
+    if (e instanceof Error && (e as { digest?: string }).digest === 'NEXT_NOT_FOUND') throw e;
+    console.error('[customers] failed to load customer detail:', e);
+    throw new Error('Could not load this customer. Your data is safe — please try again.');
+  }
 
-  const totalRevenue = customer.jobs.reduce((s, j) => s + (j.price ?? 0), 0);
-  const initial = (customer.name || '?').charAt(0).toUpperCase();
+  const currency = business?.currency ?? 'CAD';
+  const customerName = customer.name ?? 'Unnamed customer';
+  const totalRevenue = (customer.jobs ?? []).reduce(
+    (s, j) => s + (typeof j?.price === 'number' ? j.price : 0),
+    0
+  );
+  const initial = (customerName || '?').charAt(0).toUpperCase();
+  const regionCode = 'CA' as const;
+  const provinceLabel = customer.province
+    ? (CA_PROVINCES.find((p) => p.code === customer.province)?.name ?? customer.province)
+    : '';
 
   return (
     <div className="space-y-6 max-w-4xl">
       <PageHeader
-        title={customer.name}
+        title={customerName}
         subtitle="Customer details, history and notes."
         actions={
           <Link href="/customers" className={secondaryBtnClass}>
@@ -55,7 +119,7 @@ export default async function CustomerDetailPage({
             {initial}
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-lg font-bold text-zinc-900">{customer.name}</h2>
+            <h2 className="text-lg font-bold text-zinc-900">{customerName}</h2>
             <p className="text-xs text-zinc-500">
               Customer since {formatDateShort(customer.createdAt)} · {formatMoney(totalRevenue, currency)} lifetime
             </p>
@@ -82,6 +146,11 @@ export default async function CustomerDetailPage({
             <div>
               <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Address</p>
               <p className="text-zinc-800 whitespace-pre-line">{customer.address ?? '—'}</p>
+              {(provinceLabel || customer.postalCode) && (
+                <p className="text-xs text-zinc-500 mt-1">
+                  {[provinceLabel, customer.postalCode].filter(Boolean).join(' · ')}
+                </p>
+              )}
             </div>
           </div>
           {customer.notes && (
@@ -97,25 +166,39 @@ export default async function CustomerDetailPage({
 
         <div className="flex flex-wrap gap-2 pt-4 border-t border-zinc-100">
           {/* Opens a wa.me chat with the customer — user taps to send from
-              their own WhatsApp; Kivo never sends anything automatically. */}
+              their own WhatsApp; EveryJob never sends anything automatically. */}
           <WhatsAppButton
             phone={customer.phone}
-            regionCode={business?.regionCode}
-            message={`Namaste ${customer.name}! ${business?.name ?? 'Hum'} se bol rahe hain.`}
+            regionCode={regionCode}
+            message={`Hi ${customerName}! This is ${business?.name ?? 'us'}.`}
             label="WhatsApp"
           />
           <EditCustomerForm
             customer={{
               id: customer.id,
-              name: customer.name,
+              name: customerName,
               phone: customer.phone,
               email: customer.email,
               address: customer.address,
+              province: customer.province,
+              postalCode: customer.postalCode,
               notes: customer.notes,
             }}
           />
-          <DeleteCustomerButton customerId={customer.id} customerName={customer.name} />
+          <DeleteCustomerButton customerId={customer.id} customerName={customerName} />
         </div>
+      </Card>
+
+      {/* Customer portal link — magic link on WhatsApp */}
+      <Card className="p-6 md:p-8">
+        <PortalLinkManager
+          customerId={customer.id}
+          customerName={customerName}
+          customerPhone={customer.phone}
+          businessName={business?.name ?? 'us'}
+          regionCode={regionCode}
+          initialTokenId={activePortalToken?.id ?? null}
+        />
       </Card>
 
       {/* Job history */}

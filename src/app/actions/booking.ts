@@ -235,7 +235,7 @@ async function runBookingRequest({
   const businessId = page.businessId;
 
   // Real phone validation for the business's region (friendly inline error).
-  const phoneCheck = validatePhone(phone, page.business.regionCode ?? 'IN');
+  const phoneCheck = validatePhone(phone, page.business.regionCode ?? 'CA');
   if (!phoneCheck.ok) return { error: INVALID_PHONE_MESSAGE };
   const phoneNorm = phoneCheck.digits;
 

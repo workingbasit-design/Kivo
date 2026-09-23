@@ -4,6 +4,7 @@ import { requireAuth } from '@/lib/auth';
 import { rateLimit } from '@/lib/rate-limit';
 import { runCopilot, type CopilotHistoryItem, type CopilotIntent, type JobDraft } from '@/lib/copilot/engine';
 import { tryAnthropicReply } from '@/lib/copilot/anthropic';
+import { getLocale } from '@/lib/i18n/server';
 
 export interface CopilotActionResult {
   reply: string;
@@ -26,11 +27,15 @@ export async function chatWithCopilot(
   history: CopilotHistoryItem[] = []
 ): Promise<CopilotActionResult> {
   const { user, businessId } = await requireAuth();
+  const locale = await getLocale();
+  const isFr = locale === 'fr';
 
   const rl = rateLimit(`copilot:${user.id}`, { limit: 30, windowMs: 60_000 });
   if (!rl.ok) {
     return {
-      reply: 'Bahut saare requests — thoda ruk kar dobara try karein.',
+      reply: isFr
+        ? 'Trop de requêtes — attendez un moment et réessayez.'
+        : 'Too many requests — please wait a moment and try again.',
       intent: 'unknown',
       needsConfirm: false,
       preview: null,
@@ -41,14 +46,18 @@ export async function chatWithCopilot(
   const clean = message.slice(0, 2000).trim();
   if (!clean) {
     return {
-      reply: 'Kuch likho to sahi — main kaise madad karoon?',
+      reply: isFr
+        ? 'Écrivez quelque chose — comment puis-je vous aider?'
+        : 'Type something first — how can I help?',
       intent: 'unknown',
       needsConfirm: false,
       preview: null,
     };
   }
 
-  const result = await runCopilot(businessId, user.id, clean, history.slice(-6));
+  const result = await runCopilot(businessId, user.id, clean, history.slice(-6), {
+    locale,
+  });
 
   let reply = result.reply;
   if (process.env.ANTHROPIC_API_KEY) {

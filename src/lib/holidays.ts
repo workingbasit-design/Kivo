@@ -1,12 +1,12 @@
 /**
- * Public-holiday helpers (server-only).
+ * Public-holiday helpers (server-only) — Canada only.
  *
  * Data: Nager.Date public holidays API (free, no key).
- * https://date.nager.at/api/v3/publicholidays/{year}/{countryCode}
+ * https://date.nager.at/api/v3/publicholidays/{year}/CA
  *
- * Note: Nager.Date does not publish Indian holidays, so for region IN we fall
- * back to India's three fixed-date national holidays. Everything else comes
- * from the API. Failures are silent: callers get [] and simply show no badges.
+ * Offline / API-failure fallback: computed Canadian statutory lists
+ * (see ./holidays/ca). Failures are silent: callers get [] and simply
+ * show no badges.
  */
 
 export type Holiday = { date: string; name: string }; // date: YYYY-MM-DD
@@ -15,24 +15,16 @@ type CacheEntry = { at: number; value: Holiday[] };
 const cache = new Map<string, CacheEntry>();
 const TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days — holidays barely change
 
-const UA = 'KivoApp/1.0 (schedule holidays)';
+const UA = 'EveryJobApp/1.0 (schedule holidays)';
 
 import { getCaHolidays } from './holidays/ca';
 
-/** India's fixed-date national holidays (no API coverage for IN). */
-function indiaFixedHolidays(year: number): Holiday[] {
-  return [
-    { date: `${year}-01-26`, name: 'Republic Day' },
-    { date: `${year}-08-15`, name: 'Independence Day' },
-    { date: `${year}-10-02`, name: 'Gandhi Jayanti' },
-  ];
-}
-
 export async function getHolidays(
   year: number,
-  countryCode: 'IN' | 'CA',
+  _countryCode?: string | null,
   provinceCode?: string | null
 ): Promise<Holiday[]> {
+  const countryCode = 'CA';
   const key = `${countryCode}:${provinceCode ?? ''}:${year}`;
   const hit = cache.get(key);
   if (hit && Date.now() - hit.at < TTL_MS) return hit.value;
@@ -63,14 +55,9 @@ export async function getHolidays(
     value = [];
   }
 
-  // Offline / API-failure fallbacks: computed statutory lists, no network needed.
+  // Offline / API-failure fallback: computed Canadian statutory list, no network needed.
   if (value.length === 0) {
-    if (countryCode === 'CA') {
-      value = getCaHolidays(year, provinceCode);
-    } else {
-      // Nager.Date has no India data — use the fixed national holidays instead.
-      value = indiaFixedHolidays(year);
-    }
+    value = getCaHolidays(year, provinceCode);
   }
 
   cache.set(key, { at: Date.now(), value });

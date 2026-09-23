@@ -9,7 +9,7 @@ import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { EXPORT_TYPES } from '@/lib/export';
 
-export const metadata = { title: 'Settings | Kivo' };
+export const metadata = { title: 'Settings | EveryJob' };
 
 export default async function SettingsPage() {
   const { businessId } = await requireAuth();
@@ -22,9 +22,9 @@ export default async function SettingsPage() {
       whatsappNumber: true,
       workingHours: true,
       address: true,
-      gstin: true,
-      upiId: true,
-      regionCode: true,
+      taxId: true,
+      interacEmail: true,
+      timezone: true,
       currency: true,
       taxRegion: true,
       directoryOptIn: true,
@@ -63,10 +63,10 @@ export default async function SettingsPage() {
           whatsappNumber: business.whatsappNumber ?? '',
           workingHours: business.workingHours ?? '',
           address: business.address ?? '',
-          gstin: business.gstin ?? '',
-          upiId: business.upiId ?? '',
-          regionCode: business.regionCode === 'CA' ? 'CA' : 'IN',
-          currency: business.currency ?? 'INR',
+          taxId: business.taxId ?? '',
+          interacEmail: business.interacEmail ?? '',
+          timezone: business.timezone ?? '',
+          currency: 'CAD',
           taxRegion: business.taxRegion ?? '',
           directoryOptIn: business.directoryOptIn,
           directoryHideAddress: business.directoryHideAddress,

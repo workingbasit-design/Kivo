@@ -1,19 +1,14 @@
 /**
- * Kivo tax engine — region-aware sales tax configuration and math.
+ * EveryJob tax engine — Canadian sales tax configuration and math.
  *
- * India: single GST slab (configurable 0/5/12/18/28, default 18).
- * Canada: province-based rules (GST / HST / PST / QST combos).
- *
- * NOTE on storage: the Business model has no dedicated "default GST slab"
- * column, so for India businesses the `taxRegion` field carries the GST slab
- * as a string (e.g. "18"). For Canada businesses `taxRegion` carries the
- * province code (e.g. "ON"). This keeps the schema untouched.
+ * Canada-only: province-based rules (GST / HST / PST / QST combos).
+ * The Business `taxRegion` field carries the province code (e.g. "ON").
  */
 
-export type RegionCode = 'IN' | 'CA';
+export type RegionCode = 'CA';
 
 export interface TaxLine {
-  /** e.g. "GST", "HST", "PST", "QST", "CGST", "SGST", "IGST" */
+  /** e.g. "GST", "HST", "PST", "QST" */
   name: string;
   /** Percent, e.g. 13 or 9.975 */
   rate: number;
@@ -21,9 +16,9 @@ export interface TaxLine {
 
 export interface TaxConfig {
   regionCode: RegionCode;
-  /** Province code for CA, GST slab string for IN */
+  /** Province code, e.g. "ON" */
   taxRegion: string | null;
-  currency: 'INR' | 'CAD';
+  currency: 'CAD';
   symbol: string;
   taxes: TaxLine[];
   /** Human label, e.g. "HST 13%" or "GST 5% + QST 9.975%" */
@@ -50,10 +45,6 @@ export const CA_PROVINCES: { code: string; name: string }[] = [
   { code: 'YT', name: 'Yukon' },
 ];
 
-/** Allowed GST slabs for India (percent). */
-export const IN_GST_SLABS = [0, 5, 12, 18, 28] as const;
-
-export const DEFAULT_IN_GST_SLAB = 18;
 export const DEFAULT_CA_PROVINCE = 'ON';
 
 /** Canonical Canadian provincial tax rules. */
@@ -98,42 +89,22 @@ export function totalTaxRate(config: Pick<TaxConfig, 'taxes'>): number {
 }
 
 /**
- * Build the tax configuration for a business from its region settings.
- * Unknown regions fall back to India defaults (backwards compatible).
+ * Build the tax configuration for a business from its province setting.
+ * Unknown provinces fall back to Ontario (HST 13%).
  */
 export function getTaxConfig(
-  regionCode: string | null | undefined,
+  _regionCode: string | null | undefined,
   taxRegion: string | null | undefined
 ): TaxConfig {
-  const region: RegionCode = regionCode === 'CA' ? 'CA' : 'IN';
-
-  if (region === 'CA') {
-    const province = (taxRegion || DEFAULT_CA_PROVINCE).toUpperCase();
-    const taxes = CA_TAXES[province] ?? CA_TAXES[DEFAULT_CA_PROVINCE];
-    return {
-      regionCode: 'CA',
-      taxRegion: CA_TAXES[province] ? province : DEFAULT_CA_PROVINCE,
-      currency: 'CAD',
-      symbol: '$',
-      taxes,
-      label: taxes.map((t) => `${t.name} ${t.rate}%`).join(' + '),
-    };
-  }
-
-  // An empty/missing taxRegion means "never configured" -> default slab.
-  // (Number('') is 0, which is a valid slab, so check emptiness first.)
-  const rawSlab = (taxRegion ?? '').trim();
-  const slab = rawSlab === '' ? DEFAULT_IN_GST_SLAB : Number(rawSlab);
-  const rate = (IN_GST_SLABS as readonly number[]).includes(slab)
-    ? slab
-    : DEFAULT_IN_GST_SLAB;
+  const province = (taxRegion || DEFAULT_CA_PROVINCE).toUpperCase();
+  const taxes = CA_TAXES[province] ?? CA_TAXES[DEFAULT_CA_PROVINCE];
   return {
-    regionCode: 'IN',
-    taxRegion: String(rate),
-    currency: 'INR',
-    symbol: '₹',
-    taxes: [{ name: 'GST', rate }],
-    label: `GST ${rate}%`,
+    regionCode: 'CA',
+    taxRegion: CA_TAXES[province] ? province : DEFAULT_CA_PROVINCE,
+    currency: 'CAD',
+    symbol: '$',
+    taxes,
+    label: taxes.map((t) => `${t.name} ${t.rate}%`).join(' + '),
   };
 }
 
@@ -147,7 +118,7 @@ export function taxConfigFromBusiness(b: {
 
 /**
  * Compute tax on a subtotal. Each tax line is applied to the subtotal and
- * rounded to the paisa/cent, then summed — the standard way multi-tax
+ * rounded to the cent, then summed — the standard way multi-tax
  * provinces (QC/BC/SK/MB) are quoted on a simple invoice.
  */
 export function calcTax(
@@ -163,6 +134,16 @@ export function calcTax(
 }
 
 /**
+ * Tax ID label for documents: "GST/HST number" ("N° TPS/TVQ" in French).
+ */
+export function taxIdLabelForRegion(
+  _regionCode: string | null | undefined,
+  locale: 'en' | 'fr' = 'en'
+): string {
+  return locale === 'fr' ? 'N° TPS/TVQ' : 'GST/HST number';
+}
+
+/**
  * Default `taxType` value to store on a new invoice for this config.
  * Single-tax regions use the tax name ("HST", "GST"); dual-tax provinces
  * use the composite ("GST+QST", "GST+PST").
@@ -174,8 +155,7 @@ export function defaultTaxType(config: Pick<TaxConfig, 'taxes'>): string {
 
 /**
  * Split a stored invoice tax (taxType + total rate) back into its
- * component lines for display. Backwards compatible with the old
- * India-only values (GST/CGST/SGST/IGST).
+ * component lines for display.
  *
  * For the Canadian composites the federal GST portion is always 5%, so the
  * provincial portion is derived as (total - 5) — this stays correct even if
@@ -184,13 +164,6 @@ export function defaultTaxType(config: Pick<TaxConfig, 'taxes'>): string {
 export function splitStoredTax(taxType: string, taxRate: number): TaxLine[] {
   const r = round3(taxRate);
   switch (taxType) {
-    case 'CGST':
-      return [
-        { name: 'CGST', rate: round2(r / 2) },
-        { name: 'SGST', rate: round2(r / 2) },
-      ];
-    case 'IGST':
-      return [{ name: 'IGST', rate: r }];
     case 'HST':
       return [{ name: 'HST', rate: r }];
     case 'PST':

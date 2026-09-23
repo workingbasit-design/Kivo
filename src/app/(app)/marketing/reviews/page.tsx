@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { PageHeader } from '@/components/ui';
 import ReviewRequestsClient from '@/components/ReviewRequestsClient';
 
-export const metadata = { title: 'Review requests | Kivo' };
+export const metadata = { title: 'Review requests | EveryJob' };
 
 export default async function ReviewRequestsPage() {
   const { businessId } = await requireAuth();
@@ -64,7 +64,7 @@ export default async function ReviewRequestsPage() {
       </Link>
       <PageHeader
         title="Review requests"
-        subtitle="Ask happy customers for reviews. Copy a message and send it via WhatsApp — Kivo never sends anything itself."
+        subtitle="Ask happy customers for reviews. Copy a message and send it via WhatsApp — EveryJob never sends anything itself."
       />
       <ReviewRequestsClient
         businessId={businessId}

@@ -10,9 +10,9 @@ import {
 } from '@/lib/directory';
 
 export const metadata = {
-  title: 'Find trusted local pros | Kivo Directory',
+  title: 'Find trusted local pros | EveryJob Directory',
   description:
-    'Search the Kivo directory for plumbers, electricians, cleaners, AC repair and more near you. Free quotes, verified phone numbers, real reviews.',
+    'Search the EveryJob directory for plumbers, electricians, cleaners, AC repair and more near you. Free quotes, verified phone numbers, real reviews.',
 };
 
 type SearchParams = { q?: string; city?: string; minRating?: string };
@@ -79,7 +79,7 @@ export default async function DirectoryPage({
             <div className="w-9 h-9 rounded-xl bg-[#6329d4] flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
-            <p className="text-sm font-bold tracking-tight">Kivo Directory</p>
+            <p className="text-sm font-bold tracking-tight">EveryJob Directory</p>
           </div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
             Find a trusted local pro
@@ -159,7 +159,7 @@ export default async function DirectoryPage({
             <p className="text-sm text-zinc-500 mt-1 max-w-sm mx-auto">
               {searching
                 ? 'Try a different service or a nearby city — new businesses join every day.'
-                : 'Be the first pro in your city: list your business on Kivo free and start getting quote requests.'}
+                : 'Be the first pro in your city: list your business on EveryJob free and start getting quote requests.'}
             </p>
             {!searching && (
               <Link

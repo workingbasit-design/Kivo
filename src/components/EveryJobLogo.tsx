@@ -3,22 +3,22 @@
 import { useId } from 'react';
 
 /**
- * The Kivo brand mark — Apple-style gradient tile with a twin-sparkle glyph.
+ * The EveryJob brand mark — Apple-style gradient tile with a twin-sparkle glyph.
  * Use everywhere the logo appears (sidebar, mobile nav, auth pages, landing)
  * so the brand stays consistent.
  */
-export default function KivoLogo({
+export default function EveryJobLogo({
   size = 32,
   className,
-  label = 'Kivo',
+  label = 'EveryJob',
 }: {
   size?: number;
   className?: string;
   label?: string;
 }) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
-  const bgId = `kivo-bg-${uid}`;
-  const glossId = `kivo-gloss-${uid}`;
+  const bgId = `everyjob-bg-${uid}`;
+  const glossId = `everyjob-gloss-${uid}`;
 
   return (
     <svg

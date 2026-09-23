@@ -4,7 +4,7 @@ import React, { useActionState, useState } from 'react';
 import { AlertCircle, CheckCircle2, Globe, Save } from 'lucide-react';
 import { updateBusinessSettings, type SettingsResult } from '@/app/actions/settings';
 import { Card, Field, inputClass, primaryBtnClass } from '@/components/ui';
-import { CA_PROVINCES, IN_GST_SLABS } from '@/lib/tax';
+import { CA_PROVINCES } from '@/lib/tax';
 import { currencyLabel, currencySymbol } from '@/lib/money';
 import { WEEK_DAYS, parseWorkingHours, type DayKey } from '@/lib/working-hours';
 
@@ -12,16 +12,27 @@ export type BusinessFormData = {
   name: string;
   phone: string;
   address: string;
-  gstin: string;
-  upiId: string;
+  taxId: string;
+  interacEmail: string;
+  timezone: string;
   whatsappNumber: string;
   workingHours: string; // JSON string, '' when not configured
-  regionCode: 'IN' | 'CA';
   currency: string;
   taxRegion: string;
   directoryOptIn: boolean;
   directoryHideAddress: boolean;
 };
+
+/** Curated IANA timezones — the business's "today" for schedule + dashboard. */
+const TIMEZONES = [
+  { value: 'America/Toronto', label: 'Toronto (ET)' },
+  { value: 'America/Halifax', label: 'Halifax (AT)' },
+  { value: 'America/St_Johns', label: "St. John's (NT)" },
+  { value: 'America/Winnipeg', label: 'Winnipeg (CT)' },
+  { value: 'America/Regina', label: 'Regina (CT, no DST)' },
+  { value: 'America/Edmonton', label: 'Edmonton (MT)' },
+  { value: 'America/Vancouver', label: 'Vancouver (PT)' },
+];
 
 type DayState = { open: string; close: string } | null;
 
@@ -105,8 +116,6 @@ export default function SettingsForm({ business }: { business: BusinessFormData 
     updateBusinessSettings,
     {}
   );
-  const [region, setRegion] = useState<'IN' | 'CA'>(business.regionCode);
-  const isCanada = region === 'CA';
 
   return (
     <Card className="p-6 max-w-2xl">
@@ -115,37 +124,14 @@ export default function SettingsForm({ business }: { business: BusinessFormData 
           <input name="name" type="text" required defaultValue={business.name} maxLength={200} className={inputClass} />
         </Field>
 
-        {/* Region & tax settings */}
+        {/* Tax settings — Canada only */}
         <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 space-y-4">
           <div className="flex items-center gap-2">
             <Globe size={14} className="text-zinc-500" />
-            <p className="text-sm font-bold text-zinc-900">Region & tax</p>
+            <p className="text-sm font-bold text-zinc-900">Tax</p>
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4">
-            <Field label="Country / region">
-              <select
-                name="regionCode"
-                value={region}
-                onChange={(e) => setRegion(e.target.value as 'IN' | 'CA')}
-                className={inputClass}
-              >
-                <option value="IN">India</option>
-                <option value="CA">Canada</option>
-              </select>
-            </Field>
-            <Field label="Currency">
-              <div className={`${inputClass} bg-zinc-100 text-zinc-600 flex items-center`}>
-                {currencySymbol(isCanada ? 'CAD' : 'INR')}{' '}
-                {currencyLabel(isCanada ? 'CAD' : 'INR')}
-              </div>
-              <p className="text-[11px] text-zinc-400 mt-1">
-                Currency follows your region — amounts are display only.
-              </p>
-            </Field>
-          </div>
-
-          {isCanada ? (
             <Field
               label="Province / territory"
               hint="Sets your GST / HST / PST / QST rates on new invoices and quotes."
@@ -158,29 +144,25 @@ export default function SettingsForm({ business }: { business: BusinessFormData 
                 ))}
               </select>
             </Field>
-          ) : (
             <Field
-              label="Default GST rate"
-              hint="Applied to new invoices and quotes. You can still change it per invoice."
+              label="GST/HST number"
+              hint="Your CRA business number, shown on invoices. Optional."
             >
-              <select
-                name="taxRegion"
-                defaultValue={business.taxRegion || '18'}
+              <input
+                name="taxId"
+                type="text"
+                defaultValue={business.taxId}
+                maxLength={15}
+                placeholder="123456789RT0001"
                 className={inputClass}
-              >
-                {IN_GST_SLABS.map((s) => (
-                  <option key={s} value={String(s)}>
-                    GST {s}%
-                  </option>
-                ))}
-              </select>
+              />
             </Field>
-          )}
+          </div>
         </div>
 
         <div className="grid sm:grid-cols-2 gap-4">
           <Field label="Phone">
-            <input name="phone" type="tel" defaultValue={business.phone} maxLength={25} placeholder={isCanada ? '+1 416 555 0100' : '+91 98765 43210'} className={inputClass} />
+            <input name="phone" type="tel" defaultValue={business.phone} maxLength={25} placeholder="+1 416 555 0100" className={inputClass} />
           </Field>
           <Field
             label="WhatsApp number"
@@ -191,15 +173,9 @@ export default function SettingsForm({ business }: { business: BusinessFormData 
               type="tel"
               defaultValue={business.whatsappNumber}
               maxLength={25}
-              placeholder={isCanada ? '+1 416 555 0100' : '+91 98765 43210'}
+              placeholder="+1 416 555 0100"
               className={inputClass}
             />
-          </Field>
-          <Field
-            label={isCanada ? 'GST/HST number' : 'GSTIN'}
-            hint={isCanada ? 'Your CRA business number, shown on invoices' : '15-character GST number, shown on invoices'}
-          >
-            <input name="gstin" type="text" defaultValue={business.gstin} maxLength={15} placeholder={isCanada ? '123456789RT0001' : '27ABCDE1234F1Z5'} className={inputClass + ' uppercase'} />
           </Field>
         </div>
 
@@ -207,13 +183,13 @@ export default function SettingsForm({ business }: { business: BusinessFormData 
           <WorkingHoursEditor initial={business.workingHours} />
         </Field>
 
-        <Field label="Address" hint="Include your city — it powers the weather strip on your Schedule page and the Kivo directory.">
+        <Field label="Address" hint="Include your city — it powers the weather strip on your Schedule page and the EveryJob directory.">
           <textarea name="address" rows={2} defaultValue={business.address} maxLength={500} placeholder="Shop/office address" className={inputClass} />
         </Field>
 
-        {/* Kivo directory (customer discovery) */}
+        {/* EveryJob directory (customer discovery) */}
         <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 space-y-3">
-          <p className="text-sm font-bold text-zinc-900">Kivo directory</p>
+          <p className="text-sm font-bold text-zinc-900">EveryJob directory</p>
           <p className="text-xs text-zinc-500 -mt-2">
             Your public profile helps new customers find you — free, no commission. It uses your booking-page link.
           </p>
@@ -225,7 +201,7 @@ export default function SettingsForm({ business }: { business: BusinessFormData 
               className="mt-0.5 h-4 w-4 rounded accent-[#6329d4]"
             />
             <span className="text-xs text-zinc-700">
-              <span className="font-semibold">Show my business in the Kivo directory</span>
+              <span className="font-semibold">Show my business in the EveryJob directory</span>
               <span className="block text-zinc-500 mt-0.5">Customers can find your profile, services, reviews and send you quote requests.</span>
             </span>
           </label>
@@ -243,14 +219,30 @@ export default function SettingsForm({ business }: { business: BusinessFormData 
           </label>
         </div>
 
-        {!isCanada && (
-          <Field label="UPI ID" hint="Shown on invoices so customers can pay you directly. Kivo never touches the money.">
-            <input name="upiId" type="text" defaultValue={business.upiId} maxLength={100} placeholder="yourname@upi" className={inputClass} />
-          </Field>
-        )}
-        {isCanada && (
-          <input type="hidden" name="upiId" value={business.upiId} />
-        )}
+        <Field
+          label="Interac e-Transfer email"
+          hint="Shown on invoices so customers can pay you directly. EveryJob never touches the money."
+        >
+          <input
+            name="interacEmail"
+            type="email"
+            defaultValue={business.interacEmail}
+            maxLength={255}
+            placeholder="payments@yourbusiness.ca"
+            className={inputClass}
+            autoComplete="email"
+          />
+        </Field>
+
+        <Field label="Business timezone" hint="Used for “today” on your schedule and dashboard.">
+          <select name="timezone" defaultValue={business.timezone || 'America/Toronto'} className={inputClass}>
+            {TIMEZONES.map((tz) => (
+              <option key={tz.value} value={tz.value}>
+                {tz.label}
+              </option>
+            ))}
+          </select>
+        </Field>
 
         {state?.error && (
           <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">

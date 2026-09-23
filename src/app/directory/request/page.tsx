@@ -4,7 +4,7 @@ import { Sparkles } from 'lucide-react';
 import QuoteRequestForm from '@/components/QuoteRequestForm';
 
 export const metadata = {
-  title: 'Request free quotes | Kivo Directory',
+  title: 'Request free quotes | EveryJob Directory',
   description:
     'Tell us what you need and your city — up to 5 matching local pros get your request. Free, no commission.',
 };
@@ -21,7 +21,7 @@ export default function QuoteRequestPage() {
             <div className="w-9 h-9 rounded-xl bg-[#6329d4] flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-white" />
             </div>
-            <p className="text-sm font-bold tracking-tight">Kivo Directory</p>
+            <p className="text-sm font-bold tracking-tight">EveryJob Directory</p>
           </div>
         </div>
       </header>

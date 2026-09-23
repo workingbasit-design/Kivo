@@ -30,7 +30,7 @@ export default function RegisterPage() {
             type="text"
             required
             autoComplete="name"
-            placeholder="Ravi Kumar"
+            placeholder="Sarah Miller"
             className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#6329d4]/30 focus:border-[#6329d4]"
           />
         </div>
@@ -45,7 +45,7 @@ export default function RegisterPage() {
             type="text"
             required
             autoComplete="organization"
-            placeholder="Ravi Electricals"
+            placeholder="Maple Leaf Plumbing"
             className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#6329d4]/30 focus:border-[#6329d4]"
           />
         </div>
@@ -60,7 +60,7 @@ export default function RegisterPage() {
             type="email"
             required
             autoComplete="email"
-            placeholder="you@yourbusiness.in"
+            placeholder="you@yourbusiness.ca"
             className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#6329d4]/30 focus:border-[#6329d4]"
           />
         </div>

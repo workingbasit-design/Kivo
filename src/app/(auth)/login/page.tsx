@@ -65,7 +65,7 @@ export default function LoginPage() {
       </form>
 
       <p className="text-center text-xs text-zinc-500 mt-6">
-        New to Kivo?{' '}
+        New to EveryJob?{' '}
         <Link href="/register" className="font-semibold text-[#6329d4] hover:underline">
           Create your free workspace
         </Link>

@@ -6,12 +6,7 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
-import {
-  CA_PROVINCES,
-  IN_GST_SLABS,
-  DEFAULT_CA_PROVINCE,
-  DEFAULT_IN_GST_SLAB,
-} from '@/lib/tax';
+import { CA_PROVINCES, DEFAULT_CA_PROVINCE } from '@/lib/tax';
 import {
   WEEK_DAYS,
   isValidTime,
@@ -25,14 +20,21 @@ const businessSettingsSchema = z.object({
   name: z.string().trim().min(2, 'Business name is required').max(200),
   phone: z.string().trim().max(25).optional().default(''),
   address: z.string().trim().max(500).optional().default(''),
-  gstin: z
+  taxId: z
     .string()
     .trim()
-    .max(15, 'GSTIN is 15 characters')
-    .refine((v) => v === '' || /^[0-9A-Z]{15}$/i.test(v), 'GSTIN must be 15 letters/digits')
+    .max(15, 'GST/HST number is 15 characters (e.g. 123456789RT0001)')
+    .refine((v) => v === '' || /^[0-9]{9}RT[0-9]{4}$/i.test(v), 'Enter a valid GST/HST number (e.g. 123456789RT0001)')
     .optional()
     .default(''),
-  upiId: z.string().trim().max(100).optional().default(''),
+  interacEmail: z
+    .string()
+    .trim()
+    .max(255)
+    .refine((v) => v === '' || z.string().email().safeParse(v).success, 'Enter a valid email')
+    .optional()
+    .default(''),
+  timezone: z.string().trim().max(60).optional().default(''),
   whatsappNumber: z
     .string()
     .trim()
@@ -43,7 +45,6 @@ const businessSettingsSchema = z.object({
     )
     .optional()
     .default(''),
-  regionCode: z.enum(['IN', 'CA']).default('IN'),
   directoryOptIn: z.coerce.boolean().default(true),
   directoryHideAddress: z.coerce.boolean().default(true),
   // For IN: GST slab as a string ("18"). For CA: province code ("ON").
@@ -95,7 +96,7 @@ function parseWorkingHoursForm(formData: FormData): string | null | 'invalid' {
   return any ? serializeWorkingHours(hours) : null;
 }
 
-/** Update business profile: name, phone, address, GSTIN, UPI ID, region + tax settings. */
+/** Update business profile: name, phone, address, TAXID, UPI ID, region + tax settings. */
 export async function updateBusinessSettings(
   _prev: SettingsResult,
   formData: FormData
@@ -108,10 +109,10 @@ export async function updateBusinessSettings(
     name: formData.get('name'),
     phone: formData.get('phone'),
     address: formData.get('address'),
-    gstin: formData.get('gstin'),
-    upiId: formData.get('upiId'),
+    taxId: formData.get('taxId'),
+    interacEmail: formData.get('interacEmail'),
+    timezone: formData.get('timezone'),
     whatsappNumber: formData.get('whatsappNumber'),
-    regionCode: formData.get('regionCode'),
     taxRegion: formData.get('taxRegion'),
     // Checkbox semantics: checked -> 'on' -> true; unchecked -> absent (null) -> false.
     // New businesses default to opted-in via the DB column default.
@@ -121,7 +122,7 @@ export async function updateBusinessSettings(
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? 'Invalid business details.' };
   }
-  const { name, phone, address, gstin, upiId, whatsappNumber, regionCode, directoryOptIn, directoryHideAddress } = parsed.data;
+  const { name, phone, address, taxId, interacEmail, timezone, whatsappNumber, directoryOptIn, directoryHideAddress } = parsed.data;
 
   // Per-day working hours from the wh_<day>_open / wh_<day>_close inputs.
   // A day with both fields empty is closed; any half-filled or invalid day
@@ -131,24 +132,13 @@ export async function updateBusinessSettings(
     return { error: 'Working hours must be valid open/close times (open before close).' };
   }
 
-  // Normalize the region-specific tax setting and derive the currency.
-  // Invalid values fall back to safe defaults instead of erroring.
-  let taxRegion: string;
-  let currency: string;
-  if (regionCode === 'CA') {
-    currency = 'CAD';
-    const province = parsed.data.taxRegion.toUpperCase();
-    taxRegion = CA_PROVINCES.some((p) => p.code === province)
-      ? province
-      : DEFAULT_CA_PROVINCE;
-  } else {
-    currency = 'INR';
-    const rawSlab = parsed.data.taxRegion.trim();
-    const slab = rawSlab === '' ? DEFAULT_IN_GST_SLAB : Number(rawSlab);
-    taxRegion = (IN_GST_SLABS as readonly number[]).includes(slab)
-      ? String(slab)
-      : String(DEFAULT_IN_GST_SLAB);
-  }
+  // Canada-only: province code for GST/HST/PST/QST; invalid values fall
+  // back to Ontario instead of erroring.
+  const province = parsed.data.taxRegion.toUpperCase();
+  const taxRegion = CA_PROVINCES.some((p) => p.code === province)
+    ? province
+    : DEFAULT_CA_PROVINCE;
+  const currency = 'CAD';
 
   await prisma.business.update({
     where: { id: businessId },
@@ -156,11 +146,11 @@ export async function updateBusinessSettings(
       name,
       phone: phone || null,
       address: address || null,
-      gstin: gstin ? gstin.toUpperCase() : null,
-      upiId: upiId || null,
+      taxId: taxId ? taxId.toUpperCase() : null,
+      interacEmail: interacEmail ? interacEmail.toLowerCase() : null,
+      timezone: timezone || null,
       whatsappNumber: whatsappNumber || null,
       workingHours: hours,
-      regionCode,
       currency,
       taxRegion,
       directoryOptIn,

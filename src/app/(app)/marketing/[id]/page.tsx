@@ -9,7 +9,7 @@ import { AUDIENCE_LABELS, type Audience } from '@/lib/marketing';
 import { formatDateShort } from '@/lib/utils';
 import CampaignDetailClient from './CampaignDetailClient';
 
-export const metadata = { title: 'Campaign | Kivo' };
+export const metadata = { title: 'Campaign | EveryJob' };
 
 export default async function CampaignDetailPage({
   params,
