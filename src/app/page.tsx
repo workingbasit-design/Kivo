@@ -6,7 +6,7 @@ import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import Reveal from '@/components/home/Reveal';
 import TradesMarquee from '@/components/home/TradesMarquee';
-import ScheduleMock from '@/components/home/ScheduleMock';
+import HeroVisual from '@/components/home/HeroVisual';
 import CopilotDemo from '@/components/home/CopilotDemo';
 import {
   ArrowRight,
@@ -51,6 +51,7 @@ function Logo() {
 export default async function LandingPage() {
   const locale = await getLocale();
   const h = (path: string) => t(locale, `home.${path}`);
+  const hh = (path: string) => t(locale, `homehero.${path}`);
 
   const NAV_LINKS = [
     { label: h('nav.features'), href: '#features' },
@@ -153,36 +154,38 @@ export default async function LandingPage() {
       </header>
 
       <main>
-        {/* Hero — Apple-style statement headline, staggered entrance */}
+        {/* Hero — editorial scattered-work headline, staggered entrance */}
         <section className="relative overflow-hidden">
           <div aria-hidden className="pointer-events-none absolute inset-0">
             <div className="absolute -top-48 left-1/2 -translate-x-1/2 h-[520px] w-[880px] rounded-full bg-[#6329d4]/[0.09] blur-3xl" />
             <div className="absolute top-48 -left-48 h-[340px] w-[340px] rounded-full bg-[#a78bfa]/[0.12] blur-3xl" />
             <div className="absolute top-72 -right-48 h-[340px] w-[340px] rounded-full bg-[#6329d4]/[0.07] blur-3xl" />
           </div>
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 md:pt-28 md:pb-24 text-center">
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-12 md:pt-28 md:pb-16 text-center">
             <p
               className="ej-hero-anim inline-flex items-center gap-2 text-[13px] font-medium text-zinc-500 border border-zinc-200 bg-white/70 backdrop-blur rounded-full px-4 py-1.5 mb-8"
               style={heroDelay(0)}
             >
               <Sparkles size={14} className="text-[#6329d4]" />
-              {h('hero.badge')}
+              {hh('eyebrow')}
             </p>
             <h1
-              className="ej-hero-anim text-[44px] leading-[1.04] sm:text-6xl md:text-7xl lg:text-[84px] font-bold tracking-[-0.03em] mb-6"
+              className="ej-hero-anim text-[46px] leading-[1.02] sm:text-7xl md:text-8xl lg:text-[96px] font-bold tracking-[-0.035em] mb-6"
               style={heroDelay(110)}
             >
-              {h('hero.title1')}
+              {hh('title1')}
+              <br />
+              {hh('title2')}
               <br />
               <span className="bg-gradient-to-b from-[#6329d4] via-[#7c3aed] to-[#a855f7] bg-clip-text text-transparent">
-                {h('hero.title2')}
+                {hh('title3')}
               </span>
             </h1>
             <p
-              className="ej-hero-anim text-lg md:text-[21px] leading-relaxed text-zinc-600 mb-10 max-w-2xl mx-auto"
+              className="ej-hero-anim text-lg md:text-[21px] leading-relaxed text-zinc-500 mb-10 max-w-3xl mx-auto"
               style={heroDelay(220)}
             >
-              {h('hero.subtitle')}
+              {hh('subtitle')}
             </p>
             <div
               className="ej-hero-anim flex flex-col sm:flex-row gap-3 justify-center mb-6"
@@ -207,25 +210,18 @@ export default async function LandingPage() {
             </p>
           </div>
 
-          {/* Product visual — animated stylized mock of the real app */}
+          {/* Scattered-context visual — wavy timeline + floating work chips converging to EveryJob */}
           <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 md:pb-28">
-            <Reveal delay={150}>
-              <ScheduleMock
-                strings={{
-                  title: h('mock.title'),
-                  jobs: [1, 2, 3].map((n) => ({
-                    name: h(`mock.job${n}Name`),
-                    service: h(`mock.job${n}Service`),
-                    time: h(`mock.job${n}Time`),
-                    amt: h(`mock.job${n}Amt`),
-                    status: h(`mock.job${n}Status`),
-                  })),
-                  footerBefore: h('mock.footerBefore'),
-                  footerInv: h('mock.footerInv'),
-                  footerAfter: h('mock.footerAfter'),
-                }}
-              />
-            </Reveal>
+            <HeroVisual
+              strings={{
+                visualLabel: hh('visualLabel'),
+                pillInvoice: hh('pillInvoice'),
+                chipMessage: hh('chipMessage'),
+                chipCalendar: hh('chipCalendar'),
+                chipQuote: hh('chipQuote'),
+                onePlace: hh('onePlace'),
+              }}
+            />
           </div>
         </section>
 
