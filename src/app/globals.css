@@ -1,9 +1,18 @@
 @import "tailwindcss";
 
+/* ---------- EveryJob Vector design tokens ---------- */
+@theme {
+  --color-ink: #161616; /* primary text, dark surfaces */
+  --color-lime: #c8f04a; /* signature accent — lime on charcoal/dark only */
+  --color-paper: #fafaf7; /* page background */
+  --color-smoke: #e8e8e3; /* borders, dividers */
+  --color-graphite: #55554e; /* secondary text */
+}
+
 :root {
   color-scheme: light;
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fafaf7;
+  --foreground: #161616;
 }
 
 @theme inline {
@@ -29,8 +38,8 @@ body {
   }
 
   ::selection {
-    background: #6329d4;
-    color: #fff;
+    background: #c8f04a;
+    color: #161616;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -44,7 +53,7 @@ body {
   /* Visible keyboard focus for landing-page links/buttons (scoped so it never
      doubles up with the app's own Tailwind focus rings). */
   .landing-focus :is(a, button):focus-visible {
-    outline: 2px solid #6329d4;
+    outline: 2px solid #161616;
     outline-offset: 3px;
   }
 
@@ -154,9 +163,9 @@ body {
     background-image: linear-gradient(
       100deg,
       transparent 30%,
-      rgba(99, 41, 212, 0.1) 46%,
-      rgba(99, 41, 212, 0.18) 50%,
-      rgba(99, 41, 212, 0.1) 54%,
+      rgba(22, 22, 22, 0.06) 46%,
+      rgba(22, 22, 22, 0.12) 50%,
+      rgba(22, 22, 22, 0.06) 54%,
       transparent 70%
     );
     background-size: 200% 100%;

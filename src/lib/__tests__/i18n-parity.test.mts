@@ -1,11 +1,15 @@
 /**
  * i18n key-parity test: every key in the English dictionary must exist in
  * the French dictionary (recursively). Catches untranslated UI strings.
+ * Uses the merged dictionaries (base + fragments) so fragment strings are
+ * covered too.
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import en from '../i18n/en.ts';
-import fr from '../i18n/fr.ts';
+import { getDictionary } from '../i18n/index.ts';
+
+const en = getDictionary('en');
+const fr = getDictionary('fr');
 
 function keysOf(obj: Record<string, unknown>, prefix = ''): string[] {
   const out: string[] = [];

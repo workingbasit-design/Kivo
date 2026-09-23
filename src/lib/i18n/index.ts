@@ -2,8 +2,9 @@
  * Lightweight i18n: a dictionary + React context, no framework migration.
  * English is the default; French (fr) is opt-in via the `kivo-locale` cookie.
  */
-import en, { type Dictionary } from './en';
-import fr from './fr';
+import en, { type Dictionary } from './en.ts';
+import fr from './fr.ts';
+import { applyFragments } from './fragments.ts';
 
 export type Locale = 'en' | 'fr';
 export const LOCALE_COOKIE = 'kivo-locale';
@@ -12,7 +13,10 @@ export const LOCALES: { code: Locale; label: string }[] = [
   { code: 'fr', label: 'Français' },
 ];
 
-const dicts: Record<Locale, Dictionary> = { en, fr };
+const dicts: Record<Locale, Dictionary> = {
+  en: applyFragments(en, 'en'),
+  fr: applyFragments(fr, 'fr'),
+};
 
 export function getDictionary(locale: Locale): Dictionary {
   return dicts[locale] ?? en;
