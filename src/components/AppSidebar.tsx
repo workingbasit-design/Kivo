@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Calendar, Users, Briefcase, FileText,
   Settings, ClipboardList, UserCog, Bell,
-  Tag, Star, PieChart, UserPlus, LogOut, Timer, Megaphone, Repeat, Route, CalendarCheck, BellRing
+  Tag, Star, PieChart, UserPlus, LogOut, Timer, Megaphone, Repeat, Route, CalendarCheck, BellRing, Import
 } from 'lucide-react';
 import EveryJobLogo from '@/components/EveryJobLogo';
 import { logout } from '@/app/actions/auth';
@@ -53,6 +53,7 @@ const navSections = [
     labelKey: 'nav.sections.manage',
     items: [
       { nameKey: 'nav.reports', href: '/reports', icon: PieChart },
+      { nameKey: 'nav.imports', href: '/imports', icon: Import },
       { nameKey: 'nav.team', href: '/settings/team', icon: UserCog },
       { nameKey: 'nav.settings', href: '/settings', icon: Settings },
     ],

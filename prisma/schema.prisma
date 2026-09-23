@@ -73,6 +73,7 @@ model Business {
   notificationSettings String? // JSON: { job_tomorrow: bool, job_soon: bool, ... }; null = all types on
   notifications      Notification[]
   messagingSettings    MessagingSettings?
+  attachments          Attachment[]
   messagingConnections MessagingConnection[]
   messageQuotas        MessageQuota[]
   consentLogs          ConsentLog[]
@@ -512,6 +513,27 @@ model GoogleConnection {
   connectedAt     DateTime  @default(now())
   lastSyncAt      DateTime?
   updatedAt       DateTime  @updatedAt
+}
+
+// ── Universal attachments (Track 6): files on jobs, customers, quotes,
+// invoices, reviews and leads. Blob bytes live in Vercel Blob; this table is
+// the tenant-scoped access control — raw blob URLs are never served
+// cross-tenant (see /api/attachments/[id]).
+model Attachment {
+  id           String   @id @default(cuid())
+  businessId   String
+  business     Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  entityType   String // job | customer | quote | invoice | review | lead
+  entityId     String
+  fileName     String
+  mimeType     String
+  sizeBytes    Int
+  blobUrl      String
+  blobPathname String
+  uploadedById String?
+  createdAt    DateTime @default(now())
+
+  @@index([businessId, entityType, entityId])
 }
 
 // ── Jobber-parity additions (all free) ──

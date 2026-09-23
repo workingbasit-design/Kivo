@@ -44,6 +44,7 @@ const fr: Dictionary = {
     recurring: 'Récurrents',
     routes: 'Itinéraires',
     onlineBooking: 'Réservation en ligne',
+    imports: 'Importations',
     logout: 'Déconnexion',
     sections: {
       work: 'Travail',

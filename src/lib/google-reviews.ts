@@ -26,7 +26,10 @@ export const SCOPE_CALENDAR_READONLY = 'https://www.googleapis.com/auth/calendar
 
 /** Scopes requested when a business connects Google. Extend here, not ad hoc. */
 export function googleScopes(): string[] {
-  return [SCOPE_BUSINESS_MANAGE];
+  // Calendar readonly is included from Track 6 so calendar import never needs
+  // a second consent screen. Connections made before Track 6 lack it — the
+  // calendar import action detects the missing scope and asks to reconnect.
+  return [SCOPE_BUSINESS_MANAGE, SCOPE_CALENDAR_READONLY];
 }
 
 export function googleOAuthConfigured(): boolean {

@@ -18,6 +18,7 @@ import { JobChecklist } from '@/components/JobChecklist';
 import { JobExpenses } from '@/components/JobExpenses';
 import { JobCostingCard } from '@/components/JobCostingCard';
 import WhatsAppButton from '@/components/WhatsAppButton';
+import Attachments from '@/components/Attachments';
 import { getLocale } from '@/lib/i18n/server';
 
 export default async function JobDetailPage({
@@ -234,6 +235,10 @@ export default async function JobDetailPage({
           minutes: entryMinutes(e.clockIn, e.clockOut),
         }))}
       />
+
+      {/* Job photos & files — the deferred job-photo decision resolves to
+          universal Attachments (Vercel Blob, Track 6A). */}
+      <Attachments entityType="job" entityId={job.id} locale={locale} />
 
       {/* Job notes */}
       <Card className="p-5 md:p-6">

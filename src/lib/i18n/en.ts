@@ -45,6 +45,7 @@ const en: Dict = {
     recurring: 'Recurring',
     routes: 'Routes',
     onlineBooking: 'Online booking',
+    imports: 'Imports',
     logout: 'Log out',
     sections: {
       work: 'Work',
