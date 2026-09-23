@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useActionState } from 'react';
 import { LogIn, AlertCircle } from 'lucide-react';
 import { login } from '@/app/actions/auth';
+import GoogleAuthSection from '@/components/GoogleAuthSection';
 
 export default function LoginPage() {
   const [state, formAction, isPending] = useActionState(login, {});
@@ -15,6 +16,8 @@ export default function LoginPage() {
       <p className="text-sm text-zinc-500 mt-1 mb-6">
         Log in to run your field service business.
       </p>
+
+      <GoogleAuthSection />
 
       <form action={formAction} className="space-y-4">
         <div>

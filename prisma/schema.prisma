@@ -13,6 +13,9 @@ model User {
   passwordHash String
   name         String?
   role         String      @default("ADMIN")
+  googleId     String?     @unique // Google OIDC `sub` for "Continue with Google" linking
+  phone        String?     // Canadian contact number (NANP), user-editable
+  phonePrompted Boolean    @default(false) // onboarding contact-number prompt shown/skipped
   business     Business?   @relation(fields: [businessId], references: [id])
   businessId   String?
   sessions     Session[]

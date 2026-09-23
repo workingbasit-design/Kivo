@@ -4,9 +4,13 @@ import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
-import { createSession, destroySession } from '@/lib/auth';
+import { createSession, destroySession, getSession, requireAuth } from '@/lib/auth';
 import { loginSchema, registerSchema } from '@/lib/validations';
 import { rateLimit, AUTH_LIMIT } from '@/lib/rate-limit';
+import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
+import { validateCanadianPhone } from '@/lib/google-auth';
+import { revalidatePath } from 'next/cache';
 
 export type AuthResult = { error?: string; ok?: boolean };
 
@@ -110,4 +114,75 @@ export async function login(
 export async function logout(): Promise<void> {
   await destroySession();
   redirect('/login');
+}
+
+/* ------------------------------------------------------------------ */
+/* Track 7 — Google sign-in onboarding + profile.                      */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Save the Canadian contact number from the post-Google-signup welcome
+ * prompt. Phone is required here — the form has a separate "Skip for now".
+ */
+export async function saveWelcomePhone(
+  _prev: AuthResult,
+  formData: FormData
+): Promise<AuthResult> {
+  const session = await getSession();
+  if (!session?.user) redirect('/login');
+  const locale = await getLocale();
+
+  const raw = String(formData.get('phone') ?? '').trim();
+  if (!raw) {
+    return { error: t(locale, 'googleAuth.phoneRequired') };
+  }
+  const check = validateCanadianPhone(raw);
+  if (!check.ok) {
+    return { error: t(locale, `googleAuth.${check.errorKey}`) };
+  }
+
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: { phone: check.digits, phonePrompted: true },
+  });
+  redirect('/dashboard');
+}
+
+/** Skip the welcome contact-number prompt (still marked as prompted). */
+export async function skipWelcomePhone(): Promise<void> {
+  const session = await getSession();
+  if (!session?.user) redirect('/login');
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: { phonePrompted: true },
+  });
+  redirect('/dashboard');
+}
+
+/** Update the signed-in user's own name + Canadian contact number. */
+export async function updateProfile(
+  _prev: AuthResult,
+  formData: FormData
+): Promise<AuthResult> {
+  const { user } = await requireAuth();
+  const locale = await getLocale();
+
+  const name = String(formData.get('name') ?? '').trim().slice(0, 100);
+  const rawPhone = String(formData.get('phone') ?? '').trim();
+
+  let phone: string | null = null;
+  if (rawPhone) {
+    const check = validateCanadianPhone(rawPhone);
+    if (!check.ok) {
+      return { error: t(locale, `googleAuth.${check.errorKey}`) };
+    }
+    phone = check.digits;
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { name: name || null, phone },
+  });
+  revalidatePath('/settings');
+  return { ok: true };
 }

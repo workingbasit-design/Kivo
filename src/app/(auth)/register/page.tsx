@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useActionState } from 'react';
 import { BadgeCheck, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { register } from '@/app/actions/auth';
+import GoogleAuthSection from '@/components/GoogleAuthSection';
 
 export default function RegisterPage() {
   const [state, formAction, isPending] = useActionState(register, {});
@@ -18,6 +19,8 @@ export default function RegisterPage() {
       <p className="text-sm text-zinc-500 mt-1 mb-6">
         Takes 60 seconds. No credit card, no commission.
       </p>
+
+      <GoogleAuthSection />
 
       <form action={formAction} className="space-y-4">
         <div>

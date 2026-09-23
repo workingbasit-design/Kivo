@@ -4,6 +4,7 @@ import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { PageHeader, Card, secondaryBtnClass } from '@/components/ui';
 import SettingsForm from '@/components/SettingsForm';
+import ProfileForm from '@/components/ProfileForm';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
@@ -14,7 +15,7 @@ import { EXPORT_TYPES } from '@/lib/export';
 export const metadata = { title: 'Settings | EveryJob' };
 
 export default async function SettingsPage() {
-  const { businessId } = await requireAuth();
+  const { businessId, user } = await requireAuth();
 
   const business = await prisma.business.findUnique({
     where: { id: businessId },
@@ -94,6 +95,19 @@ export default async function SettingsPage() {
         <Link href="/settings/checklists" className={secondaryBtnClass}>
           <ListChecks size={14} /> {t(locale, 'jobops.checklist.manageTemplates')}
         </Link>
+      </Card>
+      <Card className="p-5 md:p-6">
+        <h2 className="text-sm font-bold text-zinc-900 mb-1">{t(locale, 'googleAuth.profileTitle')}</h2>
+        <p className="text-xs text-zinc-500 mb-4">{t(locale, 'googleAuth.profileSubtitle')}</p>
+        <ProfileForm
+          locale={locale}
+          initial={{
+            name: user.name ?? '',
+            email: user.email,
+            phone: user.phone ?? '',
+            googleLinked: !!user.googleId,
+          }}
+        />
       </Card>
       <SettingsForm
         business={{

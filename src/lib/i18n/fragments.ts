@@ -23,8 +23,9 @@ import track9 from './fragments/track9.ts';
 import googleReviews from './fragments/google-reviews.ts';
 import attachments from './fragments/attachments.ts';
 import imports from './fragments/imports.ts';
+import googleAuth from './fragments/google-auth.ts';
 
-const FRAGMENTS: I18nFragment[] = [reminders, jobops, quotes, homehero, homefaq, notifications, track9, googleReviews, attachments, imports];
+const FRAGMENTS: I18nFragment[] = [reminders, jobops, quotes, homehero, homefaq, notifications, track9, googleReviews, attachments, imports, googleAuth];
 
 function deepMerge(target: Dictionary, src: Dictionary): Dictionary {
   for (const [k, v] of Object.entries(src)) {
