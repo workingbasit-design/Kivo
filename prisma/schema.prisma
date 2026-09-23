@@ -67,6 +67,8 @@ model Business {
   expenses             JobExpense[]
   directoryOptIn       Boolean               @default(true) // show business in the public EveryJob directory
   directoryHideAddress Boolean               @default(true) // show area/city only, not the exact address
+  notificationSettings String? // JSON: { job_tomorrow: bool, job_soon: bool, ... }; null = all types on
+  notifications      Notification[]
   directoryReports     DirectoryReport[]
   campaigns            Campaign[]
   createdAt            DateTime              @default(now())
@@ -476,4 +478,25 @@ model JobChecklistItem {
   done      Boolean  @default(false)
   sortOrder Int      @default(0)
   createdAt DateTime @default(now())
+}
+
+// In-app notification center (Track 3). Notifications are GENERATED from real
+// records (jobs, invoices, quotes, bookings, payments) — never seeded — and
+// deduped by (businessId, dedupeKey) so a dismissed notification never
+// reappears for the same underlying record. Read state is per business
+// (1–5 person shops share one inbox). In-app only: nothing here ever sends
+// WhatsApp/SMS/email.
+model Notification {
+  id         String    @id @default(cuid())
+  businessId String
+  business   Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  type       String // job_tomorrow | job_soon | invoice_overdue | quote_expiring | booking_new | payment_recorded
+  data       String? // JSON display params (job title, customer name, amount...); titles render at read time in the viewer's locale
+  href       String? // click-through, e.g. /jobs/<id>
+  dedupeKey  String // stable per (business, type, source record)
+  readAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@unique([businessId, dedupeKey])
+  @@index([businessId, readAt, createdAt])
 }

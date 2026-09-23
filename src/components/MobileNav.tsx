@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Calendar, Users, Briefcase, FileText,
   Settings, ClipboardList, Tag, Star, PieChart,
-  UserPlus, Menu, X, LogOut, Timer, Megaphone, Repeat, Route, CalendarCheck, BellRing
+  UserPlus, Menu, X, LogOut, Timer, Megaphone, Repeat, Route, CalendarCheck, BellRing, Bell
 } from 'lucide-react';
 import EveryJobLogo from '@/components/EveryJobLogo';
 import { logout } from '@/app/actions/auth';
@@ -57,7 +57,7 @@ const navSections = [
   },
 ];
 
-export default function MobileNav({ user, locale = 'en' }: { user: { name?: string | null; email: string }; locale?: Locale }) {
+export default function MobileNav({ user, locale = 'en', unreadCount = 0 }: { user: { name?: string | null; email: string }; locale?: Locale; unreadCount?: number }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -68,14 +68,35 @@ export default function MobileNav({ user, locale = 'en' }: { user: { name?: stri
           <EveryJobLogo size={28} />
           <span className="text-lg font-bold tracking-tight">EveryJob</span>
         </Link>
-        <button
-          onClick={() => setOpen(!open)}
-          className="p-2 rounded-lg hover:bg-white/10 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70"
-          aria-label={open ? 'Close menu' : 'Open menu'}
-          aria-expanded={open}
-        >
-          {open ? <X size={20} /> : <Menu size={20} />}
-        </button>
+        <div className="flex items-center gap-1">
+          <Link
+            href="/notifications"
+            aria-label={
+              unreadCount > 0
+                ? `${t(locale, 'notifications.title')} (${unreadCount} ${t(locale, 'notifications.unread')})`
+                : t(locale, 'notifications.title')
+            }
+            className="relative p-2 rounded-lg hover:bg-white/10 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70"
+          >
+            <Bell size={20} />
+            {unreadCount > 0 && (
+              <span
+                aria-hidden
+                className="absolute top-0.5 right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-lime px-1 text-[9px] font-bold text-ink"
+              >
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
+          </Link>
+          <button
+            onClick={() => setOpen(!open)}
+            className="p-2 rounded-lg hover:bg-white/10 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70"
+            aria-label={open ? 'Close menu' : 'Open menu'}
+            aria-expanded={open}
+          >
+            {open ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
       </div>
 
       {open && (

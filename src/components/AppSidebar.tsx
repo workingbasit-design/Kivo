@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Calendar, Users, Briefcase, FileText,
-  Settings, ClipboardList, UserCog,
+  Settings, ClipboardList, UserCog, Bell,
   Tag, Star, PieChart, UserPlus, LogOut, Timer, Megaphone, Repeat, Route, CalendarCheck, BellRing
 } from 'lucide-react';
 import EveryJobLogo from '@/components/EveryJobLogo';
@@ -70,10 +70,12 @@ export default function AppSidebar({
   user,
   stats,
   locale = 'en',
+  unreadCount = 0,
 }: {
   user: { name?: string | null; email: string };
   stats: SidebarStats;
   locale?: Locale;
+  unreadCount?: number;
 }) {
   const pathname = usePathname();
 
@@ -81,10 +83,31 @@ export default function AppSidebar({
     <aside className="hidden md:flex flex-col w-64 bg-ink text-white min-h-screen sticky top-0 font-sans shrink-0">
       {/* Header / Logo */}
       <div className="p-6 pb-2">
-        <Link href="/dashboard" className="flex items-center gap-3 mb-8">
-          <EveryJobLogo size={32} />
-          <span className="text-xl font-bold tracking-tight text-white">EveryJob</span>
-        </Link>
+        <div className="flex items-center justify-between mb-8">
+          <Link href="/dashboard" className="flex items-center gap-3">
+            <EveryJobLogo size={32} />
+            <span className="text-xl font-bold tracking-tight text-white">EveryJob</span>
+          </Link>
+          <Link
+            href="/notifications"
+            aria-label={
+              unreadCount > 0
+                ? `${t(locale, 'notifications.title')} (${unreadCount} ${t(locale, 'notifications.unread')})`
+                : t(locale, 'notifications.title')
+            }
+            className="relative rounded-xl p-2.5 text-white/60 hover:bg-white/10 hover:text-white transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70"
+          >
+            <Bell size={19} />
+            {unreadCount > 0 && (
+              <span
+                aria-hidden
+                className="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-lime px-1 text-[10px] font-bold text-ink"
+              >
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
+          </Link>
+        </div>
 
         <div className="mb-4">
           <p className="text-[10px] uppercase tracking-wider text-white/50 font-semibold mb-1">

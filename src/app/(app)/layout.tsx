@@ -7,6 +7,7 @@ import AppSidebar from '@/components/AppSidebar';
 import MobileNav from '@/components/MobileNav';
 import GlobalCopilotWidget from '@/components/GlobalCopilotWidget';
 import { getLocale } from '@/lib/i18n/server';
+import { syncNotifications, getUnreadCount } from '@/lib/notifications';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
@@ -37,6 +38,17 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     (j) => !['COMPLETED', 'PAID', 'CANCELLED'].includes(j.status)
   ).length;
 
+  // Notification center: generate from real records (never seeded), then
+  // count unread for the bell badge. Best-effort — a sync failure must never
+  // break the app shell.
+  let unreadCount = 0;
+  try {
+    await syncNotifications(businessId);
+    unreadCount = await getUnreadCount(businessId);
+  } catch (err) {
+    console.error('[notifications] sync failed', err);
+  }
+
   const user = {
     name: session.user.name ?? null,
     email: session.user.email,
@@ -48,9 +60,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         user={user}
         locale={locale}
         stats={{ bookedToday, jobsLeftToday, newLeads, currency: business?.currency }}
+        unreadCount={unreadCount}
       />
       <div className="flex-1 min-w-0 flex flex-col">
-        <MobileNav user={user} locale={locale} />
+        <MobileNav user={user} locale={locale} unreadCount={unreadCount} />
         <main className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-8">
           {children}
         </main>

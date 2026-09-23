@@ -7,6 +7,8 @@ import SettingsForm from '@/components/SettingsForm';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
+import NotificationSettingsForm from '@/components/NotificationSettingsForm';
+import { parseSettings } from '@/lib/notifications';
 import { EXPORT_TYPES } from '@/lib/export';
 
 export const metadata = { title: 'Settings | EveryJob' };
@@ -29,6 +31,7 @@ export default async function SettingsPage() {
       taxRegion: true,
       directoryOptIn: true,
       directoryHideAddress: true,
+      notificationSettings: true,
     },
   });
 
@@ -80,6 +83,11 @@ export default async function SettingsPage() {
           directoryOptIn: business.directoryOptIn,
           directoryHideAddress: business.directoryHideAddress,
         }}
+      />
+      <NotificationSettingsForm
+        initial={parseSettings(business.notificationSettings)}
+        locale={locale}
+        savedMessage={t(locale, 'notifications.settingsSaved')}
       />
       <Card className="p-5 md:p-6">
         <h2 className="text-sm font-bold text-zinc-900 mb-1 flex items-center gap-2">
