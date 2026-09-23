@@ -1,7 +1,10 @@
 import { notFound } from 'next/navigation';
 import { MapPin, Phone, Sparkles } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
-import BookingForm from '@/components/BookingForm';
+import BookingForm, { type BookingSlotStrings } from '@/components/BookingForm';
+import { formatWorkingHoursSummary } from '@/lib/working-hours';
+import { getLocale } from '@/lib/i18n/server';
+import { t, type Locale } from '@/lib/i18n';
 
 export async function generateMetadata({
   params,
@@ -28,6 +31,7 @@ export default async function PublicBookingPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const locale: Locale = await getLocale();
 
   const page = await prisma.bookingPage.findUnique({
     where: { slug },
@@ -36,7 +40,7 @@ export default async function PublicBookingPage({
       headline: true,
       intro: true,
       businessId: true,
-      business: { select: { name: true, phone: true, address: true, currency: true, regionCode: true } },
+      business: { select: { name: true, phone: true, address: true, currency: true, regionCode: true, workingHours: true } },
     },
   });
 
@@ -50,16 +54,26 @@ export default async function PublicBookingPage({
 
   const { business } = page;
 
+  const slotStrings: BookingSlotStrings = {
+    preferredTime: t(locale, 'reminders.booking.preferredTime'),
+    loadingSlots: t(locale, 'reminders.booking.loadingSlots'),
+    slotsError: t(locale, 'reminders.booking.slotsError'),
+    dayClosed: t(locale, 'reminders.booking.dayClosed'),
+    hoursNotSetNote: t(locale, 'reminders.booking.hoursNotSetNote'),
+    someUnscheduledNote: t(locale, 'reminders.booking.someUnscheduledNote'),
+    noSlotsLeft: t(locale, 'reminders.booking.noSlotsLeft'),
+  };
+
   return (
-    <div className="min-h-screen bg-[#fafafa] font-sans">
-      <header className="bg-[#17122b] text-white">
+    <div className="min-h-screen bg-paper font-sans">
+      <header className="bg-ink text-white">
         <div className="max-w-lg mx-auto px-4 py-8 text-center">
-          <div className="w-11 h-11 rounded-xl bg-[#6329d4] flex items-center justify-center mx-auto mb-3">
-            <Sparkles className="w-6 h-6 text-white" />
+          <div className="w-11 h-11 rounded-xl bg-lime flex items-center justify-center mx-auto mb-3">
+            <Sparkles className="w-6 h-6 text-ink" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight">{business.name}</h1>
           {page.headline && (
-            <p className="text-[#b8b0c9] mt-1 text-sm">{page.headline}</p>
+            <p className="text-white/70 mt-1 text-sm">{page.headline}</p>
           )}
         </div>
       </header>
@@ -71,7 +85,14 @@ export default async function PublicBookingPage({
           </p>
         )}
 
-        <BookingForm slug={slug} services={services} businessPhone={business.phone} currency={business.currency} />
+        <BookingForm
+          slug={slug}
+          services={services}
+          businessPhone={business.phone}
+          currency={business.currency}
+          hoursSummary={formatWorkingHoursSummary(business.workingHours)}
+          strings={slotStrings}
+        />
 
         {(business.phone || business.address) && (
           <div className="text-center text-xs text-zinc-500 space-y-1 pb-8">
