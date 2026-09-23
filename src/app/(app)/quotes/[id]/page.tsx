@@ -17,6 +17,7 @@ import {
   setQuoteShareLinkExpiry,
 } from '@/app/actions/quotes';
 import QuoteActions from './QuoteActions';
+import QuoteAddons from './QuoteAddons';
 import ShareTokenManager from '@/components/ShareTokenManager';
 import WhatsAppButton from '@/components/WhatsAppButton';
 
@@ -37,6 +38,7 @@ export default async function QuoteDetailPage({
     include: {
       customer: true,
       business: { select: { regionCode: true, taxRegion: true, currency: true, name: true } },
+      addons: { orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }] },
     },
   });
   if (!quote) notFound();
@@ -141,6 +143,35 @@ export default async function QuoteDetailPage({
             {L('esign.sendForSignature')}
           </Link>
         </div>
+      </Card>
+
+      <Card className="p-6">
+        <QuoteAddons
+          quoteId={quote.id}
+          status={quote.status}
+          currency={currency}
+          addons={quote.addons.map((a) => ({
+            id: a.id,
+            title: a.title,
+            price: a.price,
+            selected: a.selected,
+          }))}
+          strings={{
+            title: L('quotes.addons.title'),
+            hint: L('quotes.addons.hint'),
+            add: L('quotes.addons.add'),
+            nameLabel: L('quotes.addons.nameLabel'),
+            priceLabel: L('quotes.addons.priceLabel'),
+            edit: L('quotes.addons.edit'),
+            save: L('quotes.addons.save'),
+            cancel: L('quotes.addons.cancel'),
+            delete: L('quotes.addons.delete'),
+            deleteConfirm: L('quotes.addons.deleteConfirm'),
+            empty: L('quotes.addons.empty'),
+            locked: L('quotes.addons.locked'),
+            errorInvalid: L('quotes.addons.errorInvalid'),
+          }}
+        />
       </Card>
 
       <SignatureRequestsCard quoteId={quote.id} L={L} />

@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { Card, StatusBadge, primaryBtnClass, secondaryBtnClass, inputClass } from '@/components/ui';
 import type { RouteStop } from '@/lib/routes';
+import { googleMapsRouteUrl } from '@/lib/routes';
 import { hasJobTime } from '@/lib/utils';
 import { optimizeDayRoute } from '@/app/actions/routes';
 import { updateJobStatus } from '@/app/actions/jobs';
@@ -29,10 +30,12 @@ export default function RoutesClient({
   initialStops,
   dateStr,
   currency,
+  fullRouteLabel,
 }: {
   initialStops: RouteStop[];
   dateStr: string;
   currency?: string;
+  fullRouteLabel: string;
 }) {
   const [stops, setStops] = useState<RouteStop[]>(initialStops);
   const [optimized, setOptimized] = useState(false);
@@ -114,6 +117,10 @@ export default function RoutesClient({
 
   const remaining = stops.filter((s) => s.status !== 'COMPLETED');
 
+  // One tap to open the whole day's route (current stop order) in Google
+  // Maps. Follows re-orders and optimization because it reads live state.
+  const fullRouteUrl = googleMapsRouteUrl(stops);
+
   const legLine = (stop: RouteStop) =>
     stop.legKm != null || stop.legMinutes != null ? (
       <p className="flex items-center gap-1.5 text-[11px] font-semibold text-[#6329d4]">
@@ -154,6 +161,16 @@ export default function RoutesClient({
           <button type="button" onClick={startRoute} className={primaryBtnClass}>
             <Play size={14} /> Start route
           </button>
+          {fullRouteUrl && (
+            <a
+              href={fullRouteUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={secondaryBtnClass}
+            >
+              <Navigation size={14} /> {fullRouteLabel}
+            </a>
+          )}
         </div>
       </div>
 

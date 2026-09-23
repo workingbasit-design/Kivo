@@ -37,3 +37,35 @@ export function parseTimeToMinutes(time: string | null): number | null {
   if (h > 23 || min > 59) return null;
   return h * 60 + min;
 }
+
+/**
+ * Build a Google Maps directions URL covering every stop that has an
+ * address, in the given visit order. Stops with blank/missing addresses
+ * are skipped. Returns null when no stop has an address (nothing to map).
+ *
+ * Single addressed stop → a plain destination link. Multiple →
+ * origin = first stop, destination = last stop, the rest as waypoints.
+ * Pure and unit-tested; the Routes page passes the current stop order
+ * straight in, so the link always matches what the user sees.
+ */
+export function googleMapsRouteUrl(
+  stops: { address: string | null | undefined }[]
+): string | null {
+  const addrs = stops
+    .map((s) => (s.address ?? '').trim())
+    .filter((a) => a.length > 0);
+  if (addrs.length === 0) return null;
+
+  const enc = (a: string) => encodeURIComponent(a);
+  if (addrs.length === 1) {
+    return `https://www.google.com/maps/dir/?api=1&destination=${enc(addrs[0])}`;
+  }
+  const origin = enc(addrs[0]);
+  const destination = enc(addrs[addrs.length - 1]);
+  const waypoints = addrs
+    .slice(1, -1)
+    .map(enc)
+    .join('|');
+  const wp = waypoints ? `&waypoints=${waypoints}` : '';
+  return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}${wp}`;
+}

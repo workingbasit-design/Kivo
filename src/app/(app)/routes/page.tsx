@@ -7,6 +7,8 @@ import { MapPinned } from 'lucide-react';
 import RoutesClient from '@/components/RoutesClient';
 import { inputClass } from '@/components/ui';
 import type { RouteStop } from '@/lib/routes';
+import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
 
 const ROUTE_STATUSES = ['SCHEDULED', 'IN PROGRESS'];
 
@@ -16,6 +18,7 @@ export default async function RoutesPage({
   searchParams: Promise<{ date?: string }>;
 }) {
   const { businessId } = await requireAuth();
+  const locale = await getLocale();
   const __biz = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } });
   const currency = __biz?.currency;
   const { date } = await searchParams;
@@ -87,7 +90,7 @@ export default async function RoutesPage({
           />
         </Card>
       ) : (
-        <RoutesClient key={dateStr} initialStops={stops} dateStr={dateStr} currency={currency} />
+        <RoutesClient key={dateStr} initialStops={stops} dateStr={dateStr} currency={currency} fullRouteLabel={t(locale, 'quotes.route.openFullRoute')} />
       )}
     </div>
   );

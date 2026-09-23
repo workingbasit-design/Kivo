@@ -14,7 +14,8 @@
  * link works.
  *
  * Tamper evidence: at send time we hash a canonical JSON snapshot of the
- * quote (id, number, title, total, customerId, businessId). verifyDocHash()
+ * quote (id, number, title, total, customerId, businessId, plus the titles
+ * and prices of any selected add-ons). verifyDocHash()
  * recomputes that hash against the current quote — a mismatch means the
  * quote was edited after the link went out.
  */
@@ -76,6 +77,12 @@ export function appendAudit(auditJson: string, event: AuditEvent, ip: string): s
  * Canonical snapshot of a quote for tamper evidence. Keys are fixed in this
  * order so the JSON (and therefore the hash) is stable regardless of how
  * the quote object was constructed.
+ *
+ * Selected add-ons (title + price) are appended when the quote has any —
+ * a client approves a specific bundle, so editing an add-on after a signing
+ * link goes out must change the hash. Quotes WITHOUT selected add-ons
+ * produce byte-identical output to the pre-add-on format, so every
+ * signature issued before add-ons existed still verifies.
  */
 export function signatureDocPayload(quote: {
   id: string;
@@ -84,8 +91,17 @@ export function signatureDocPayload(quote: {
   total: number;
   customerId: string;
   businessId: string;
-}): { quoteId: string; number: string; title: string; total: number; customerId: string; businessId: string } {
-  return {
+  addons?: { title: string; price: number; selected: boolean }[];
+}): {
+  quoteId: string;
+  number: string;
+  title: string;
+  total: number;
+  customerId: string;
+  businessId: string;
+  addons?: { title: string; price: number }[];
+} {
+  const base = {
     quoteId: quote.id,
     number: quote.number,
     title: quote.title,
@@ -93,6 +109,15 @@ export function signatureDocPayload(quote: {
     customerId: quote.customerId,
     businessId: quote.businessId,
   };
+  const selected = (quote.addons ?? [])
+    .filter((a) => a.selected)
+    // Canonical order: title then price, so the hash never depends on how
+    // the add-ons were queried or toggled.
+    .map((a) => ({ title: a.title, price: a.price }))
+    .sort((a, b) =>
+      a.title < b.title ? -1 : a.title > b.title ? 1 : a.price - b.price
+    );
+  return selected.length > 0 ? { ...base, addons: selected } : base;
 }
 
 /** SHA-256 of the canonical quote snapshot. Same quote → same hash, always. */
@@ -103,6 +128,7 @@ export function signatureDocHash(quote: {
   total: number;
   customerId: string;
   businessId: string;
+  addons?: { title: string; price: number; selected: boolean }[];
 }): string {
   return createHash('sha256')
     .update(JSON.stringify(signatureDocPayload(quote)), 'utf8')
@@ -146,6 +172,7 @@ export type ResolvedSignatureRequest = {
     total: number;
     customerId: string;
     businessId: string;
+    addons: { title: string; price: number; selected: boolean }[];
     customer: { id: string; name: string; phone: string | null } | null;
   };
   business: { id: string; name: string };
@@ -174,6 +201,11 @@ export async function issueSignatureRequest(
       total: true,
       customerId: true,
       businessId: true,
+      // Selected add-ons are part of the signed snapshot (tamper evidence).
+      addons: {
+        select: { title: true, price: true, selected: true },
+        orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+      },
     },
   });
   if (!quote) throw new Error('Quote not found.');
@@ -237,6 +269,11 @@ export async function resolveSignatureRequest(
           total: true,
           customerId: true,
           businessId: true,
+          // Same add-on snapshot the hash was computed from at send time.
+          addons: {
+            select: { title: true, price: true, selected: true },
+            orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+          },
           customer: { select: { id: true, name: true, phone: true } },
         },
       },
@@ -375,6 +412,7 @@ export function verifyDocHash(request: {
     total: number;
     customerId: string;
     businessId: string;
+    addons?: { title: string; price: number; selected: boolean }[];
   };
 }): boolean {
   return signatureDocHash(request.quote) === request.docHash;

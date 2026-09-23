@@ -6,6 +6,9 @@ import { isLegacyCuid, resolveShareToken } from '@/lib/share';
 import { waLink } from '@/lib/whatsapp';
 import { Card, StatusBadge } from '@/components/ui';
 import { formatMoney } from '@/lib/money';
+import { addonQuoteTotal } from '@/lib/quotes';
+import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
 import QuotePortalActions from '@/components/QuotePortalActions';
 import PortalNotice from '@/components/PortalNotice';
 
@@ -55,6 +58,10 @@ export default async function QuotePortalPage({
       status: true,
       createdAt: true,
       customer: { select: { name: true } },
+      addons: {
+        select: { id: true, title: true, price: true, selected: true },
+        orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+      },
       business: {
         select: {
           name: true,
@@ -69,6 +76,13 @@ export default async function QuotePortalPage({
   });
 
   if (!quote) return <PortalNotice variant="expired" />;
+
+  const locale = await getLocale();
+  const L = (path: string) => t(locale, path);
+
+  const selectedAddons = quote.addons.filter((a) => a.selected);
+  const approvedTotal =
+    selectedAddons.length > 0 ? addonQuoteTotal(quote.total, quote.addons) : quote.total;
 
   const whatsappHref = waLink(
     quote.business.whatsappNumber || quote.business.phone,
@@ -107,7 +121,18 @@ export default async function QuotePortalPage({
 
         {quote.status === 'SENT' ? (
           <Card className="p-6">
-            <QuotePortalActions token={token} />
+            <QuotePortalActions
+              token={token}
+              addons={quote.addons}
+              baseTotal={quote.total}
+              currency={quote.business.currency}
+              strings={{
+                addonsTitle: L('quotes.portal.addonsTitle'),
+                addonsHint: L('quotes.portal.addonsHint'),
+                baseTotal: L('quotes.portal.baseTotal'),
+                yourTotal: L('quotes.portal.yourTotal'),
+              }}
+            />
           </Card>
         ) : (
           <Card className="p-6 text-center">
@@ -115,7 +140,30 @@ export default async function QuotePortalPage({
               <>
                 <CheckCircle2 size={32} className="mx-auto text-emerald-600 mb-2" />
                 <p className="text-sm font-semibold text-zinc-900">You approved this quote.</p>
-                <p className="text-xs text-zinc-500 mt-1">The business will be in touch to schedule the work.</p>
+                {selectedAddons.length > 0 && (
+                  <div className="text-left mt-4 border-t border-smoke pt-4">
+                    <p className="text-xs font-bold text-ink mb-2">
+                      {L('quotes.portal.includedAddons')}
+                    </p>
+                    <ul className="space-y-1.5">
+                      {selectedAddons.map((a) => (
+                        <li key={a.id} className="flex items-center justify-between text-sm">
+                          <span className="text-graphite">{a.title}</span>
+                          <span className="font-semibold text-ink">
+                            +{formatMoney(a.price, quote.business.currency)}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="flex items-center justify-between border-t border-smoke mt-3 pt-3">
+                      <span className="text-sm font-bold text-ink">{L('quotes.portal.yourTotal')}</span>
+                      <span className="text-lg font-bold text-ink tracking-tight">
+                        {formatMoney(approvedTotal, quote.business.currency)}
+                      </span>
+                    </div>
+                  </div>
+                )}
+                <p className="text-xs text-zinc-500 mt-3">The business will be in touch to schedule the work.</p>
               </>
             ) : quote.status === 'DECLINED' ? (
               <>

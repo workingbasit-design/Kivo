@@ -275,6 +275,143 @@ export async function deleteQuote(
 }
 
 /* ------------------------------------------------------------------ */
+/* Quote add-ons (optional extras the client can toggle on the portal) */
+/* ------------------------------------------------------------------ */
+
+const addonSchema = z.object({
+  title: z.string().trim().min(1, 'Add-on name is required').max(200),
+  price: z.coerce.number().min(0, "Price can't be negative").max(10_000_000),
+});
+
+/** The quote plus an editability check for add-ons. Approved quotes are records. */
+async function editableQuote(businessId: string, quoteId: string) {
+  const quote = await prisma.quote.findFirst({
+    where: { id: quoteId, businessId },
+    select: { id: true, status: true },
+  });
+  if (!quote) return { error: 'Quote not found.' } as const;
+  if (quote.status === 'APPROVED') {
+    return { error: "Add-ons can't be changed after a quote is approved." } as const;
+  }
+  return { quote } as const;
+}
+
+async function ownedAddon(businessId: string, id: string) {
+  return prisma.quoteAddon.findFirst({
+    where: { id, quote: { businessId } },
+    include: { quote: { select: { id: true, status: true } } },
+  });
+}
+
+/** Add an optional extra (title + price ≥ 0) to a quote. Draft/sent/declined only. */
+export async function createQuoteAddon(
+  _prev: ActionResult,
+  formData: FormData
+): Promise<ActionResult> {
+  const limited = checkLimit(await clientKey('quote:addon'));
+  if (limited) return limited;
+
+  let businessId: string;
+  try {
+    ({ businessId } = await requireAuth());
+  } catch {
+    return { error: 'Please log in again.' };
+  }
+
+  const quoteId = String(formData.get('quoteId') ?? '');
+  const parsed = addonSchema.safeParse({
+    title: formData.get('title'),
+    price: formData.get('price'),
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? 'Invalid add-on.' };
+  }
+
+  const editable = await editableQuote(businessId, quoteId);
+  if ('error' in editable) return { error: editable.error };
+
+  const sortOrder = await prisma.quoteAddon.count({ where: { quoteId } });
+  await prisma.quoteAddon.create({
+    data: {
+      quoteId,
+      title: parsed.data.title,
+      price: parsed.data.price,
+      selected: false,
+      sortOrder,
+    },
+  });
+
+  revalidatePath(`/quotes/${quoteId}`);
+  return { ok: true };
+}
+
+/** Edit an add-on's title/price. Draft/sent/declined quotes only. */
+export async function updateQuoteAddon(
+  _prev: ActionResult,
+  formData: FormData
+): Promise<ActionResult> {
+  const limited = checkLimit(await clientKey('quote:addon'));
+  if (limited) return limited;
+
+  let businessId: string;
+  try {
+    ({ businessId } = await requireAuth());
+  } catch {
+    return { error: 'Please log in again.' };
+  }
+
+  const id = String(formData.get('id') ?? '');
+  const parsed = addonSchema.safeParse({
+    title: formData.get('title'),
+    price: formData.get('price'),
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? 'Invalid add-on.' };
+  }
+
+  const addon = await ownedAddon(businessId, id);
+  if (!addon) return { error: 'Add-on not found.' };
+  if (addon.quote.status === 'APPROVED') {
+    return { error: "Add-ons can't be changed after a quote is approved." };
+  }
+
+  await prisma.quoteAddon.update({
+    where: { id },
+    data: { title: parsed.data.title, price: parsed.data.price },
+  });
+
+  revalidatePath(`/quotes/${addon.quote.id}`);
+  return { ok: true };
+}
+
+/** Delete an add-on. Draft/sent/declined quotes only. */
+export async function deleteQuoteAddon(
+  _prev: ActionResult,
+  formData: FormData
+): Promise<ActionResult> {
+  const limited = checkLimit(await clientKey('quote:addon'));
+  if (limited) return limited;
+
+  let businessId: string;
+  try {
+    ({ businessId } = await requireAuth());
+  } catch {
+    return { error: 'Please log in again.' };
+  }
+
+  const id = String(formData.get('id') ?? '');
+  const addon = await ownedAddon(businessId, id);
+  if (!addon) return { error: 'Add-on not found.' };
+  if (addon.quote.status === 'APPROVED') {
+    return { error: "Add-ons can't be changed after a quote is approved." };
+  }
+
+  await prisma.quoteAddon.delete({ where: { id } });
+  revalidatePath(`/quotes/${addon.quote.id}`);
+  return { ok: true };
+}
+
+/* ------------------------------------------------------------------ */
 /* Public share links (revocable, expirable tokens)                    */
 /* ------------------------------------------------------------------ */
 
@@ -423,10 +560,15 @@ function checkPortalLimit(key: string): PortalDecisionResult | null {
 /**
  * Approve/decline a quote from the public portal using its share token.
  * Same transition rules as the in-app action; the token stands in for auth.
+ *
+ * On APPROVED, the client's add-on choices are persisted (chosen add-ons
+ * become selected, everything else is deselected) so the stored quote
+ * records exactly what the client agreed to. Status flow is unchanged.
  */
 export async function portalQuoteDecisionByToken(
   token: string,
-  decision: 'APPROVED' | 'DECLINED'
+  decision: 'APPROVED' | 'DECLINED',
+  addonIds: string[] = []
 ): Promise<PortalDecisionResult> {
   const hit = checkPortalLimit(await clientKey('portal-quote-token'));
   if (hit) return hit;
@@ -448,6 +590,28 @@ export async function portalQuoteDecisionByToken(
   }
   if (quote.status !== 'SENT') {
     return { error: 'This quote is not ready for approval yet.' };
+  }
+
+  if (decision === 'APPROVED') {
+    // Scope the choice to this quote's own add-ons only; the token already
+    // proves the caller may act on this quote.
+    const chosen = [
+      ...new Set(
+        addonIds.filter(
+          (id) => typeof id === 'string' && id.length > 0 && id.length <= 64
+        )
+      ),
+    ];
+    await prisma.$transaction([
+      prisma.quoteAddon.updateMany({
+        where: { quoteId, id: { in: chosen } },
+        data: { selected: true },
+      }),
+      prisma.quoteAddon.updateMany({
+        where: { quoteId, id: { notIn: chosen } },
+        data: { selected: false },
+      }),
+    ]);
   }
 
   const updated = await prisma.quote.update({
