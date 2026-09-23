@@ -9,12 +9,13 @@ import {
   CalendarClock,
   Check,
   FileText,
-  IndianRupee,
+  Globe2,
+  Languages,
   MapPin,
-  MessageCircle,
   PieChart,
   ReceiptText,
   Search,
+  Share2,
   Sparkles,
   Tag,
   UserCog,
@@ -25,7 +26,7 @@ import {
 export const metadata: Metadata = {
   title: 'Kivo — Every job. One place.',
   description:
-    'Kivo is a free field-service platform for Indian service businesses: jobs, schedule, customers, GST quotes, invoices, UPI-ready payments, WhatsApp sharing and a Hinglish AI assistant — all in one place.',
+    'Kivo is a free field-service platform for service businesses: jobs, schedule, customers, quotes, invoices, payments, reminders and an AI assistant — all in one place. Free forever.',
 };
 
 const APPLE_FONT =
@@ -41,7 +42,7 @@ const NAV_LINKS = [
 const TRADES = [
   'Plumbers',
   'Electricians',
-  'AC repair',
+  'AC & heating',
   'Salons',
   'Pest control',
   'Carpenters',
@@ -55,54 +56,45 @@ const FEATURE_GRID = [
   { icon: CalendarClock, label: 'Schedule' },
   { icon: Briefcase, label: 'Jobs' },
   { icon: Users, label: 'Customers' },
-  { icon: ReceiptText, label: 'GST Quotes' },
+  { icon: ReceiptText, label: 'Quotes' },
   { icon: FileText, label: 'Invoices' },
-  { icon: MessageCircle, label: 'WhatsApp' },
-  { icon: Wallet, label: 'UPI Payments' },
-  { icon: IndianRupee, label: 'GST & Tax' },
+  { icon: Wallet, label: 'Payments' },
+  { icon: Share2, label: 'Sharing' },
+  { icon: Tag, label: 'Price Book' },
   { icon: Bell, label: 'Reminders' },
   { icon: PieChart, label: 'Reports' },
-  { icon: Tag, label: 'Price Book' },
+  { icon: UserCog, label: 'Team' },
 ];
 
 /** Honest stats only — every number here is verifiably true. */
 const STATS = [
-  { value: '₹0', label: 'Cost', desc: 'Free forever. No credit card, no commissions, no locked features.' },
+  { value: 'Free', label: 'Cost', desc: 'Free forever. No credit card, no commissions, no locked features.' },
   { value: '12', label: 'Modules', desc: 'Jobs to reports — every module works for every business.' },
-  { value: '2', label: 'Countries', desc: 'India-first, with Canadian taxes and French built in.' },
-  { value: '3', label: 'Languages', desc: 'English, Hindi and French across the app.' },
+  { value: '2', label: 'Countries', desc: 'Local taxes, currencies and languages for India and Canada.' },
+  { value: '3', label: 'Languages', desc: 'English, Français and हिन्दी across the app.' },
 ];
 
-const INDIA_FIRST = [
+/** Local where it matters — India and Canada side by side. */
+const REGIONS = [
   {
-    icon: ReceiptText,
-    title: 'GST-ready paperwork',
-    desc: 'Quotes and invoices with GST calculated the way Indian businesses expect.',
-  },
-  {
-    icon: IndianRupee,
-    title: 'INR, paise-accurate',
-    desc: 'Rupees everywhere it matters, with CAD and provincial taxes for Canada.',
-  },
-  {
-    icon: Wallet,
-    title: 'UPI on every invoice',
-    desc: 'Put your UPI ID on invoices so customers can pay you directly. Kivo never touches your money.',
-  },
-  {
-    icon: MessageCircle,
-    title: 'WhatsApp-native',
-    desc: 'Share quotes, invoices and updates on the app India already uses.',
-  },
-  {
-    icon: Sparkles,
-    title: 'Hinglish AI',
-    desc: 'Type the way you talk — “kal AC service book karo” just works.',
+    icon: MapPin,
+    title: 'India',
+    points: [
+      'GST-ready quotes and invoices',
+      'INR, paise-accurate money math',
+      'UPI ID on invoices — get paid directly',
+      'Share on WhatsApp in one tap',
+    ],
   },
   {
     icon: MapPin,
-    title: 'Get discovered',
-    desc: 'List your business on the Kivo Directory so nearby customers can find you.',
+    title: 'Canada',
+    points: [
+      'Province-correct taxes: GST, HST, PST, QST',
+      'CAD with cents-accurate math',
+      'Full French interface — Français partout',
+      'Canada-specific holidays in the schedule',
+    ],
   },
 ];
 
@@ -117,13 +109,13 @@ const STEPS = [
     n: '2',
     icon: Calendar,
     title: 'Schedule the job',
-    desc: 'Pick a customer, a service and a time — or let the AI copilot do it from one Hinglish message.',
+    desc: 'Pick a customer, a service and a time — or let the AI copilot draft it from one message.',
   },
   {
     n: '3',
-    icon: MessageCircle,
-    title: 'Invoice on WhatsApp, get paid on UPI',
-    desc: 'Send a GST invoice straight to WhatsApp. Add your UPI ID and record the payment when it lands.',
+    icon: FileText,
+    title: 'Invoice and get paid',
+    desc: 'Send a clean invoice, share it anywhere, and record the payment when it lands.',
   },
 ];
 
@@ -184,19 +176,18 @@ export default function LandingPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16 md:pt-28 md:pb-24 text-center">
             <p className="inline-flex items-center gap-2 text-[13px] font-medium text-zinc-500 border border-zinc-200 rounded-full px-4 py-1.5 mb-8">
               <Sparkles size={14} className="text-[#6329d4]" />
-              Free forever · No credit card · Made for India
+              Free forever · No credit card · India &amp; Canada
             </p>
             <h1 className="text-[44px] leading-[1.04] sm:text-6xl md:text-7xl lg:text-[84px] font-bold tracking-[-0.03em] mb-6">
               Every job.
               <br />
               <span className="text-zinc-400">One place.</span>
             </h1>
-            <p className="text-lg md:text-[21px] leading-relaxed text-zinc-600 mb-3 max-w-2xl mx-auto">
-              The free field-service app for India&apos;s service businesses — plumbers,
-              electricians, AC repair, salons and more. Jobs, schedule, GST quotes,
-              invoices and a Hinglish AI assistant.
+            <p className="text-lg md:text-[21px] leading-relaxed text-zinc-600 mb-10 max-w-2xl mx-auto">
+              The free field-service app for independent service businesses — plumbers,
+              electricians, HVAC, salons and more. Jobs, schedule, quotes, invoices
+              and an AI assistant that speaks your language.
             </p>
-            <p className="text-[15px] text-zinc-400 mb-10">Kaam ki har cheez, ek jagah.</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center mb-6">
               <Link
                 href="/register"
@@ -230,9 +221,9 @@ export default function LandingPage() {
               </div>
               <div className="grid sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-zinc-100">
                 {[
-                  { name: 'Sharma Ji', job: 'AC service', time: '10:00 AM', amt: '₹1,200', status: 'Confirmed', tone: 'text-emerald-600 bg-emerald-50' },
-                  { name: 'Priya S.', job: 'Plumbing repair', time: '1:30 PM', amt: '₹850', status: 'On the way', tone: 'text-amber-600 bg-amber-50' },
-                  { name: 'Amit K.', job: 'Fan install', time: '4:00 PM', amt: '₹600', status: 'Scheduled', tone: 'text-sky-600 bg-sky-50' },
+                  { name: 'Sharma Residence', job: 'AC service', time: '10:00 AM', amt: '$120', status: 'Confirmed', tone: 'text-emerald-600 bg-emerald-50' },
+                  { name: 'Priya S.', job: 'Plumbing repair', time: '1:30 PM', amt: '$85', status: 'On the way', tone: 'text-amber-600 bg-amber-50' },
+                  { name: 'Amit K.', job: 'Fan install', time: '4:00 PM', amt: '$60', status: 'Scheduled', tone: 'text-sky-600 bg-sky-50' },
                 ].map((j) => (
                   <div key={j.name} className="p-5">
                     <div className="flex items-center justify-between mb-3">
@@ -248,10 +239,10 @@ export default function LandingPage() {
                 ))}
               </div>
               <div className="flex items-center gap-3 px-5 py-4 bg-zinc-50 border-t border-zinc-100">
-                <MessageCircle size={17} className="text-[#6329d4] shrink-0" />
+                <Share2 size={17} className="text-[#6329d4] shrink-0" />
                 <p className="text-[13px] text-zinc-600">
-                  Invoice <span className="font-semibold text-zinc-900">INV-0001</span> shared on
-                  WhatsApp — paid via UPI
+                  Invoice <span className="font-semibold text-zinc-900">INV-0001</span> shared with
+                  customer — payment recorded
                 </p>
                 <Check size={16} className="ml-auto text-emerald-600 shrink-0" />
               </div>
@@ -312,24 +303,24 @@ export default function LandingPage() {
                     </span>
                     <span className="font-semibold text-[15px]">Kivo Copilot</span>
                     <span className="ml-auto text-[11px] font-medium uppercase tracking-widest text-white/40">
-                      Hinglish · English
+                      English · Français · हिन्दी
                     </span>
                   </div>
                   <div className="space-y-4 text-[14px]">
                     <div className="flex justify-end">
                       <p className="bg-[#6329d4] text-white px-4 py-2.5 rounded-2xl rounded-br-md max-w-[85%]">
-                        Sharma ji ke liye kal AC service book karo
+                        Book an AC service for Sharma tomorrow morning
                       </p>
                     </div>
                     <div className="flex">
                       <p className="bg-white/10 text-zinc-200 px-4 py-2.5 rounded-2xl rounded-bl-md max-w-[85%]">
-                        Mil gaya — <span className="font-semibold text-white">Sharma Ji</span>.
-                        Kal AC service, subah 10 baje, lagbhag ₹1,200. Confirm kar du?
+                        Found <span className="font-semibold text-white">Sharma Residence</span>.
+                        AC service, tomorrow 10:00 AM, about $120. Shall I confirm?
                       </p>
                     </div>
                     <div className="flex justify-end">
                       <p className="bg-[#6329d4] text-white px-4 py-2.5 rounded-2xl rounded-br-md max-w-[85%]">
-                        Haan, confirm
+                        Yes, confirm
                       </p>
                     </div>
                     <div className="flex">
@@ -338,7 +329,7 @@ export default function LandingPage() {
                           <Check size={15} /> Job created
                         </p>
                         <p className="text-zinc-400 text-[13px]">
-                          AC service · Sharma Ji · Kal 10:00 AM · ₹1,200
+                          AC service · Sharma Residence · Tomorrow 10:00 AM · $120
                         </p>
                       </div>
                     </div>
@@ -346,7 +337,7 @@ export default function LandingPage() {
                   <div className="mt-6 bg-white/5 border border-white/10 rounded-full px-5 py-3 flex items-center gap-3">
                     <span className="text-[#a78bfa] text-[13px] font-medium">Kivo AI</span>
                     <span className="w-px h-4 bg-white/15" />
-                    <span className="text-white/30 text-[14px]">Type in Hinglish or English…</span>
+                    <span className="text-white/30 text-[14px]">Type the way you talk…</span>
                   </div>
                 </div>
               </div>
@@ -361,12 +352,12 @@ export default function LandingPage() {
                   you work.
                 </h2>
                 <p className="text-lg md:text-[19px] text-white/55 mb-8 leading-relaxed max-w-lg">
-                  Tell the copilot what you need — in Hinglish or English — and it drafts
-                  the job, quote or reminder for you.
+                  Tell the copilot what you need — in your own words and language —
+                  and it drafts the job, quote or reminder for you.
                 </p>
                 <ul className="space-y-4 mb-10">
                   {[
-                    'Understands dates, prices, names and time-of-day in Hinglish',
+                    'Understands dates, prices, names and time-of-day naturally',
                     'Warns you if a customer does not exist yet',
                     'Always asks first — nothing is created or sent without your OK',
                   ].map((t) => (
@@ -431,7 +422,7 @@ export default function LandingPage() {
                 <span className="text-zinc-400">in three steps.</span>
               </h2>
               <p className="text-lg text-zinc-600">
-                No training needed. If you can use WhatsApp, you can use Kivo.
+                No training needed. If you can send a text, you can use Kivo.
               </p>
             </div>
             <div className="grid md:grid-cols-3 gap-5">
@@ -451,34 +442,48 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* India-first */}
-        <section id="india" className="py-20 md:py-28 scroll-mt-16">
+        {/* Local where it matters — India + Canada */}
+        <section id="regions" className="py-20 md:py-28 scroll-mt-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-2xl mx-auto mb-14">
-              <p className="text-[13px] font-semibold tracking-[0.18em] text-[#6329d4] uppercase mb-5">
-                India-first
+              <p className="text-[13px] font-semibold tracking-[0.18em] text-[#6329d4] uppercase mb-5 flex items-center justify-center gap-2">
+                <Globe2 size={15} /> Local where it matters
               </p>
               <h2 className="text-4xl md:text-[52px] leading-[1.05] font-bold tracking-[-0.025em] mb-4">
-                Built for how India
+                One app, at home
                 <br />
-                <span className="text-zinc-400">does business.</span>
+                <span className="text-zinc-400">in two countries.</span>
               </h2>
               <p className="text-lg text-zinc-600">
-                Not a Western tool with an India sticker — the money, tax and messaging
-                habits are built in from day one.
+                Not a generic tool with a sticker on it — taxes, money and language
+                are built in for each region from day one.
               </p>
             </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {INDIA_FIRST.map((f) => (
-                <div key={f.title} className="bg-white rounded-[24px] border border-zinc-200/80 p-7 hover:shadow-[0_16px_48px_-16px_rgba(0,0,0,0.12)] transition">
-                  <div className="w-11 h-11 rounded-2xl bg-[#6329d4]/10 text-[#6329d4] flex items-center justify-center mb-4">
-                    <f.icon size={22} strokeWidth={1.6} />
+            <div className="grid md:grid-cols-2 gap-5 max-w-4xl mx-auto">
+              {REGIONS.map((r) => (
+                <div key={r.title} className="bg-white rounded-[24px] border border-zinc-200/80 p-8 hover:shadow-[0_16px_48px_-16px_rgba(0,0,0,0.12)] transition">
+                  <div className="flex items-center gap-3 mb-5">
+                    <div className="w-11 h-11 rounded-2xl bg-[#6329d4]/10 text-[#6329d4] flex items-center justify-center">
+                      <r.icon size={22} strokeWidth={1.6} />
+                    </div>
+                    <h3 className="text-[22px] font-semibold tracking-tight text-zinc-900">{r.title}</h3>
                   </div>
-                  <h3 className="text-[17px] font-semibold tracking-tight text-zinc-900 mb-1.5">{f.title}</h3>
-                  <p className="text-[15px] text-zinc-600 leading-relaxed">{f.desc}</p>
+                  <ul className="space-y-3">
+                    {r.points.map((p) => (
+                      <li key={p} className="flex items-start gap-3 text-[15px] text-zinc-600">
+                        <span className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
+                          <Check size={12} className="text-emerald-700" />
+                        </span>
+                        {p}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               ))}
             </div>
+            <p className="text-center text-[14px] text-zinc-400 mt-10 flex items-center justify-center gap-2">
+              <Languages size={15} /> Switch the whole app to Français anytime, from Settings.
+            </p>
           </div>
         </section>
 
@@ -554,7 +559,7 @@ export default function LandingPage() {
                   <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-zinc-50 border border-zinc-100">
                     <Search size={18} className="text-zinc-700 shrink-0" />
                     <p className="text-zinc-600">
-                      Customer searches <span className="font-semibold text-zinc-900">“AC repair in Pune”</span>
+                      Customer searches <span className="font-semibold text-zinc-900">&ldquo;Plumber in Toronto&rdquo;</span>
                     </p>
                   </div>
                   <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-zinc-50 border border-zinc-100">
