@@ -3,17 +3,22 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import {
   ArrowLeft, Calendar, Clock, MapPin, User, Phone, Pencil,
-  DollarSign, FileText, StickyNote, Timer,
+  DollarSign, FileText, StickyNote,
 } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card, StatusBadge } from '@/components/ui';
 import { formatDateLabel, toISODateLocal, hasJobTime } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
-import { entryMinutes, formatDuration } from '@/lib/timesheets';
+import { entryMinutes } from '@/lib/timesheets';
+import { sumLaborMinutes } from '@/lib/costing';
 import JobStatusButtons from '@/components/JobStatusButtons';
 import { JobNoteForm, JobNoteItem } from '@/components/JobNoteForm';
+import { JobChecklist } from '@/components/JobChecklist';
+import { JobExpenses } from '@/components/JobExpenses';
+import { JobCostingCard } from '@/components/JobCostingCard';
 import WhatsAppButton from '@/components/WhatsAppButton';
+import { getLocale } from '@/lib/i18n/server';
 
 export default async function JobDetailPage({
   params,
@@ -22,7 +27,8 @@ export default async function JobDetailPage({
 }) {
   const { id } = await params;
   const { businessId } = await requireAuth();
-  const business = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true, name: true, regionCode: true } });
+  const locale = await getLocale();
+  const business = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true, name: true, regionCode: true, defaultHourlyRate: true } });
   const currency = business?.currency;
 
   const job = await prisma.job.findFirst({
@@ -38,14 +44,25 @@ export default async function JobDetailPage({
         include: { user: { select: { name: true, email: true } } },
         orderBy: { clockIn: 'desc' },
       },
+      checklistItems: {
+        orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+      },
+      expenses: {
+        orderBy: { spentAt: 'desc' },
+      },
     },
   });
   if (!job) notFound();
 
-  const laborMinutes = job.timeEntries.reduce(
-    (s, e) => s + entryMinutes(e.clockIn, e.clockOut),
-    0
-  );
+  const templates = await prisma.checklistTemplate.findMany({
+    where: { businessId },
+    select: { id: true, name: true },
+    orderBy: { createdAt: 'asc' },
+  });
+
+  // Labor minutes for costing exclude still-running sessions (null clockOut);
+  // the entry list below still shows live elapsed time for transparency.
+  const laborMinutes = sumLaborMinutes(job.timeEntries);
 
   // job.date is a date-only DB value (midnight): format its calendar-day
   // key, never the Date instant, so the label can't shift a day when the
@@ -74,7 +91,7 @@ export default async function JobDetailPage({
       value: (
         <Link
           href={`/customers/${job.customer.id}`}
-          className="font-semibold text-[#6329d4] hover:underline"
+          className="font-semibold text-ink hover:underline"
         >
           {job.customer.name}
         </Link>
@@ -176,45 +193,45 @@ export default async function JobDetailPage({
         )}
       </Card>
 
-      {/* Job costing — labor hours */}
-      <Card className="p-5 md:p-6">
-        <h2 className="text-sm font-bold text-zinc-900 mb-4 flex items-center gap-2">
-          <Timer size={14} /> Job costing
-          <span className="text-[11px] font-semibold text-zinc-400">
-            ({job.timeEntries.length} {job.timeEntries.length === 1 ? 'entry' : 'entries'})
-          </span>
-        </h2>
-        <div className="flex items-baseline gap-2 mb-3">
-          <p className="text-2xl font-bold text-zinc-900 tracking-tight tabular-nums">
-            {formatDuration(laborMinutes)}
-          </p>
-          <p className="text-xs text-zinc-500">total labor logged</p>
-        </div>
-        {job.timeEntries.length === 0 ? (
-          <p className="text-xs text-zinc-400">
-            No time logged yet. Clock in from the Timesheets page and pick this job.
-          </p>
-        ) : (
-          <ul className="divide-y divide-zinc-100 border-t border-zinc-100">
-            {job.timeEntries.slice(0, 8).map((e) => (
-              <li key={e.id} className="py-2.5 flex items-center justify-between gap-3 text-sm">
-                <div className="min-w-0">
-                  <p className="font-semibold text-zinc-800 truncate">
-                    {e.user.name || e.user.email}
-                  </p>
-                  <p className="text-[11px] text-zinc-400">
-                    {formatDateLabel(e.clockIn)}
-                    {!e.clockOut && ' · active now'}
-                  </p>
-                </div>
-                <span className="text-sm font-bold text-zinc-900 tabular-nums shrink-0">
-                  {formatDuration(entryMinutes(e.clockIn, e.clockOut))}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Card>
+      {/* Checklist */}
+      <JobChecklist
+        jobId={job.id}
+        locale={locale}
+        items={job.checklistItems.map((i) => ({ id: i.id, label: i.label, done: i.done }))}
+        templates={templates}
+      />
+
+      {/* Expenses */}
+      <JobExpenses
+        jobId={job.id}
+        locale={locale}
+        currency={currency}
+        expenses={job.expenses.map((e) => ({
+          id: e.id,
+          description: e.description,
+          amount: e.amount,
+          category: e.category,
+          spentAt: formatDateLabel(e.spentAt),
+        }))}
+      />
+
+      {/* Job costing — quoted price vs labor + expenses */}
+      <JobCostingCard
+        jobId={job.id}
+        locale={locale}
+        currency={currency}
+        price={job.price ?? 0}
+        laborMinutes={laborMinutes}
+        timeEntryCount={job.timeEntries.length}
+        hourlyRate={business?.defaultHourlyRate ?? null}
+        expenses={job.expenses.map((e) => ({ category: e.category, amount: e.amount }))}
+        entries={job.timeEntries.slice(0, 8).map((e) => ({
+          name: e.user.name || e.user.email,
+          dateLabel: formatDateLabel(e.clockIn),
+          active: !e.clockOut,
+          minutes: entryMinutes(e.clockIn, e.clockOut),
+        }))}
+      />
 
       {/* Job notes */}
       <Card className="p-5 md:p-6">

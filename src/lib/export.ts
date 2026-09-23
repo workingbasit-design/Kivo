@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { escapeCsvCell, summarizeLineItems } from './costing';
 
 export type ExportType =
   | 'customers'
@@ -21,13 +22,8 @@ export const EXPORT_TYPES: { value: ExportType; label: string }[] = [
   { value: 'reviews', label: 'Reviews' },
 ];
 
-function esc(v: unknown): string {
-  const s = v === null || v === undefined ? '' : String(v);
-  return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-}
-
 function csv(headers: string[], rows: (string | number | null | undefined | Date)[][]): string {
-  const line = (cells: unknown[]) => cells.map(esc).join(',');
+  const line = (cells: unknown[]) => cells.map(escapeCsvCell).join(',');
   return [line(headers), ...rows.map(line)].join('\r\n');
 }
 
@@ -85,13 +81,21 @@ export async function buildExportCsv(businessId: string, type: ExportType): Prom
     case 'invoices': {
       const rows = await prisma.invoice.findMany({
         where: { businessId },
-        include: { customer: { select: { name: true } } },
+        include: {
+          customer: { select: { name: true } },
+          lineItems: { orderBy: { position: 'asc' } },
+          payments: { where: { status: 'COMPLETED' }, select: { amount: true } },
+        },
         orderBy: { createdAt: 'asc' },
       });
       return csv(
-        ['number', 'customer', 'status', 'subtotal', 'tax', 'total', 'taxType', 'taxRate', 'date', 'created'],
+        // Existing columns keep their order for CSV consumers; accountant
+        // columns (lineItems summary, amount paid) are appended.
+        ['number', 'customer', 'status', 'subtotal', 'tax', 'total', 'taxType', 'taxRate', 'date', 'created', 'lineItems', 'amountPaid'],
         rows.map((i) => [
           i.number, i.customer.name, i.status, i.subtotal, i.taxAmount, i.total, i.taxType, i.taxRate, d(i.date), d(i.createdAt),
+          summarizeLineItems(i.lineItems),
+          Math.round(i.payments.reduce((s, p) => s + p.amount, 0) * 100) / 100,
         ])
       );
     }

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Download, Languages, Users } from 'lucide-react';
+import { Download, Languages, ListChecks, Users } from 'lucide-react';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { PageHeader, Card, secondaryBtnClass } from '@/components/ui';
@@ -55,6 +55,15 @@ export default async function SettingsPage() {
         </h2>
         <p className="text-xs text-zinc-500 mb-4">{t(locale, 'settings.languageHint')}</p>
         <LanguageToggle current={locale} />
+      </Card>
+      <Card className="p-5 md:p-6">
+        <h2 className="text-sm font-bold text-zinc-900 mb-1 flex items-center gap-2">
+          <ListChecks size={14} /> {t(locale, 'jobops.templates.title')}
+        </h2>
+        <p className="text-xs text-zinc-500 mb-4">{t(locale, 'jobops.templates.subtitle')}</p>
+        <Link href="/settings/checklists" className={secondaryBtnClass}>
+          <ListChecks size={14} /> {t(locale, 'jobops.checklist.manageTemplates')}
+        </Link>
       </Card>
       <SettingsForm
         business={{
