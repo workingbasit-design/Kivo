@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Bell, LogOut } from 'lucide-react';
 import EveryJobLogo from '@/components/EveryJobLogo';
+import PaletteTrigger from '@/components/PaletteTrigger';
 import { logout } from '@/app/actions/auth';
 import { formatMoney } from '@/lib/money';
 import { t, type Locale } from '@/lib/i18n';
@@ -79,6 +80,9 @@ export default function AppSidebar({
 
       {/* Navigation */}
       <nav className="flex-1 px-3 space-y-4 overflow-y-auto pb-6">
+        <div className="px-0">
+          <PaletteTrigger locale={locale} />
+        </div>
         {navSections.map((section) => (
           <div key={section.labelKey}>
             <p className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white/35">

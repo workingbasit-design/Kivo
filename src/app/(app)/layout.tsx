@@ -6,7 +6,7 @@ import { dayRange, toISODateLocal, todayInTimezone } from '@/lib/utils';
 import AppSidebar from '@/components/AppSidebar';
 import MobileNav from '@/components/MobileNav';
 import BottomNav from '@/components/BottomNav';
-import GlobalCopilotWidget from '@/components/GlobalCopilotWidget';
+import LazyOverlays from '@/components/LazyOverlays';
 import { getLocale } from '@/lib/i18n/server';
 import { syncNotifications, getUnreadCount } from '@/lib/notifications';
 
@@ -70,7 +70,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </main>
         <BottomNav user={user} locale={locale} />
       </div>
-      <GlobalCopilotWidget currency={business?.currency} locale={locale} />
+      <LazyOverlays currency={business?.currency} locale={locale} />
     </div>
   );
 }

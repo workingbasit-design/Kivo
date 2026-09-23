@@ -33,6 +33,7 @@ const fr: Dictionary = {
     invoices: 'Factures',
     leads: 'Pistes',
     reports: 'Rapports',
+    insights: 'Perspectives',
     pricebook: 'Catalogue de prix',
     team: 'Équipe',
     timesheets: 'Feuilles de temps',

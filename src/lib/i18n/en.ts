@@ -34,6 +34,7 @@ const en: Dict = {
     invoices: 'Invoices',
     leads: 'Leads',
     reports: 'Reports',
+    insights: 'Insights',
     pricebook: 'Price book',
     team: 'Team',
     timesheets: 'Timesheets',

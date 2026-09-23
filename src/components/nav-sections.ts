@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, Calendar, Users, Briefcase, FileText,
-  Settings, ClipboardList, Tag, Star, PieChart,
+  Settings, ClipboardList, Tag, Star, PieChart, Sparkles,
   UserPlus, Megaphone, Repeat, Route, CalendarCheck, BellRing, Timer,
   UserCog, Import,
 } from 'lucide-react';
@@ -45,6 +45,7 @@ export const navSections = [
     labelKey: 'nav.sections.manage',
     items: [
       { nameKey: 'nav.reports', href: '/reports', icon: PieChart },
+      { nameKey: 'nav.insights', href: '/insights', icon: Sparkles },
       { nameKey: 'nav.imports', href: '/imports', icon: Import },
       { nameKey: 'nav.team', href: '/settings/team', icon: UserCog },
       { nameKey: 'nav.settings', href: '/settings', icon: Settings },
