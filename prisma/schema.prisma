@@ -67,6 +67,8 @@ model Business {
   expenses             JobExpense[]
   directoryOptIn       Boolean               @default(true) // show business in the public EveryJob directory
   directoryHideAddress Boolean               @default(true) // show area/city only, not the exact address
+  directoryVerifiedAt  DateTime? // set when a directory claim is approved (or self-verified by the account holder). Public directory requires this + directoryOptIn.
+  directoryClaim       DirectoryClaim?
   notificationSettings String? // JSON: { job_tomorrow: bool, job_soon: bool, ... }; null = all types on
   notifications      Notification[]
   directoryReports     DirectoryReport[]
@@ -85,6 +87,7 @@ model Customer {
   province      String? // Province/state code or name (e.g. "ON" for Ontario)
   postalCode    String? // Validated + formatted: "A1A 1A1" (CA) or 6-digit PIN (IN)
   notes         String?
+  tags          String? // comma-separated customer tags, e.g. "vip,senior,dog-friendly"
   businessId    String
   business      Business              @relation(fields: [businessId], references: [id], onDelete: Cascade)
   jobs          Job[]
@@ -98,13 +101,16 @@ model Customer {
 }
 
 model Service {
-  id         String   @id @default(cuid())
-  name       String
-  price      Float
-  businessId String
-  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id          String   @id @default(cuid())
+  name        String
+  price       Float
+  durationMin Int? // typical job duration in minutes; pre-fills scheduling estimates
+  description String? // short plain-language description shown on quotes/booking
+  businessId  String
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  jobs        Job[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Job {
@@ -125,6 +131,8 @@ model Job {
   business       Business           @relation(fields: [businessId], references: [id], onDelete: Cascade)
   recurringJobId String?
   recurringJob   RecurringJob?      @relation(fields: [recurringJobId], references: [id], onDelete: SetNull)
+  serviceId      String? // optional link to the price-book service this job was created from
+  service        Service?           @relation(fields: [serviceId], references: [id], onDelete: SetNull)
   timeEntries    TimeEntry[]
   jobNotes       JobNote[]
   jobPhotos      JobPhoto[]
@@ -367,15 +375,21 @@ model TimeEntry {
 }
 
 model BookingPage {
-  id         String   @id @default(cuid())
-  slug       String   @unique
-  enabled    Boolean  @default(true)
-  headline   String?
-  intro      String?
-  businessId String   @unique
-  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  enabled      Boolean  @default(true)
+  headline     String?
+  headlineFr   String? // Canadian French headline; falls back to headline
+  intro        String?
+  introFr      String? // Canadian French intro; falls back to intro
+  description  String? // longer public "about" text (EN)
+  descriptionFr String? // longer public "about" text (FR); falls back to description
+  serviceAreas String? // JSON array of city/area strings the business serves
+  showPhone    Boolean  @default(true) // display phone/WhatsApp on the public profile
+  businessId   String   @unique
+  business     Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model Campaign {
@@ -427,6 +441,23 @@ model DirectoryRequest {
   @@index([city])
 }
 
+// Directory claim / verification (Track 4A). A business with an EveryJob app
+// account requests verification of its public directory listing; an admin
+// (KIVO_ADMIN_EMAILS) explicitly approves or rejects. No auto-approval, no
+// auto-sent messages. Unverified/unclaimed listings never go public.
+model DirectoryClaim {
+  id         String    @id @default(cuid())
+  businessId String    @unique
+  business   Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  status     String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  note       String? // business's note on request, or admin's note on decision
+  decidedBy  String? // admin email that approved/rejected
+  createdAt  DateTime  @default(now())
+  decidedAt  DateTime?
+
+  @@index([status])
+}
+
 // ── Jobber-parity additions (all free) ──
 
 model JobExpense {
@@ -454,12 +485,15 @@ model QuoteAddon {
 }
 
 model ChecklistTemplate {
-  id         String                  @id @default(cuid())
-  businessId String
-  business   Business                @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  name       String
-  items      ChecklistTemplateItem[]
-  createdAt  DateTime                @default(now())
+  id          String                  @id @default(cuid())
+  businessId  String
+  business    Business                @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  name        String
+  price       Float? // optional default price when used as a job template
+  durationMin Int? // optional default duration (minutes) when used as a job template
+  notes       String? // optional default job notes when used as a job template
+  items       ChecklistTemplateItem[]
+  createdAt   DateTime                @default(now())
 }
 
 model ChecklistTemplateItem {
