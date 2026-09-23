@@ -16,15 +16,32 @@ const blankRow = (): LineItemRow => ({ desc: '', qty: '1', rate: '' });
 /**
  * Dynamic line-item rows. Serializes valid rows into a hidden `itemsJson`
  * input; the server recomputes all money math from it.
+ *
+ * Discount controls emit hidden `discountType` / `discountValue` fields in
+ * the same form — the server validates and recomputes them too.
  */
 export default function LineItemsEditor({
   onSubtotal,
+  onDiscount,
   currency,
+  initialItems,
+  initialDiscount,
 }: {
   onSubtotal?: (subtotal: number) => void;
+  onDiscount?: (discount: { type: 'PERCENT' | 'AMOUNT' | null; value: number }) => void;
   currency?: string;
+  initialItems?: { desc: string; qty: string; rate: string }[];
+  initialDiscount?: { type: 'PERCENT' | 'AMOUNT' | null; value: string };
 }) {
-  const [rows, setRows] = useState<LineItemRow[]>([blankRow()]);
+  const [rows, setRows] = useState<LineItemRow[]>(
+    initialItems && initialItems.length > 0 ? initialItems : [blankRow()]
+  );
+  const [discountType, setDiscountType] = useState<'' | 'PERCENT' | 'AMOUNT'>(
+    initialDiscount?.type === 'PERCENT' || initialDiscount?.type === 'AMOUNT'
+      ? initialDiscount.type
+      : ''
+  );
+  const [discountValue, setDiscountValue] = useState(initialDiscount?.value ?? '');
 
   const validRows = useMemo(
     () =>
@@ -49,6 +66,24 @@ export default function LineItemsEditor({
     onSubtotal?.(subtotal);
   }, [subtotal, onSubtotal]);
 
+  // Live discount preview — the server re-validates and recomputes this.
+  const discount = useMemo(() => {
+    const raw = Number(discountValue);
+    if (!discountType || !Number.isFinite(raw) || raw <= 0) {
+      return { type: null as 'PERCENT' | 'AMOUNT' | null, value: 0, amount: 0 };
+    }
+    const value = raw;
+    const amount =
+      discountType === 'PERCENT'
+        ? Math.round((subtotal * Math.min(100, value)) / 100 * 100) / 100
+        : Math.round(Math.min(subtotal, value) * 100) / 100;
+    return { type: discountType, value, amount };
+  }, [subtotal, discountType, discountValue]);
+
+  useEffect(() => {
+    onDiscount?.({ type: discount.type, value: discount.value });
+  }, [discount, onDiscount]);
+
   const setRow = (i: number, patch: Partial<LineItemRow>) =>
     setRows((prev) => prev.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
 
@@ -58,6 +93,8 @@ export default function LineItemsEditor({
   return (
     <div>
       <input type="hidden" name="itemsJson" value={JSON.stringify(validRows)} />
+      <input type="hidden" name="discountType" value={discount.type ?? ''} />
+      <input type="hidden" name="discountValue" value={discount.type ? String(discount.value) : ''} />
       <div className="space-y-2">
         {rows.map((row, i) => (
           <div key={i} className="grid grid-cols-[1fr_72px_96px_36px] gap-2 items-center">
@@ -102,6 +139,41 @@ export default function LineItemsEditor({
         <p className="text-sm text-zinc-600">
           Subtotal: <span className="font-bold text-zinc-900">{formatMoney(subtotal, currency)}</span>
         </p>
+      </div>
+
+      <div className="flex items-center gap-2 mt-3">
+        <label htmlFor="discountType" className="text-xs font-semibold text-zinc-500 shrink-0">
+          Discount
+        </label>
+        <select
+          id="discountType"
+          value={discountType}
+          onChange={(e) => {
+            const v = e.target.value as '' | 'PERCENT' | 'AMOUNT';
+            setDiscountType(v);
+            if (!v) setDiscountValue('');
+          }}
+          className={`${inputClass} w-auto`}
+        >
+          <option value="">None</option>
+          <option value="PERCENT">% off</option>
+          <option value="AMOUNT">$ off</option>
+        </select>
+        {discountType && (
+          <input
+            value={discountValue}
+            onChange={(e) => setDiscountValue(e.target.value)}
+            placeholder={discountType === 'PERCENT' ? 'e.g. 10' : `e.g. 25`}
+            inputMode="decimal"
+            aria-label="Discount value"
+            className={`${inputClass} w-28`}
+          />
+        )}
+        {discount.amount > 0 && (
+          <span className="text-xs font-semibold text-emerald-700">
+            −{formatMoney(discount.amount, currency)}
+          </span>
+        )}
       </div>
     </div>
   );

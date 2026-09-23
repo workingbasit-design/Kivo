@@ -85,6 +85,10 @@ model Business {
   quoteDeposits        QuoteDeposit[]
   directoryReports     DirectoryReport[]
   campaigns            Campaign[]
+  automationLogs       AutomationLog[]
+  customerProperties   CustomerProperty[]
+  customFieldDefs      CustomFieldDef[]
+  workflowRules        WorkflowRule[]
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
 }
@@ -106,6 +110,8 @@ model Customer {
   preferredLocale      String? // "en" | "fr"; null = business default
   consentLogs          ConsentLog[]
   messageLogs          MessageLog[]
+  properties           CustomerProperty[]
+  fieldValues          CustomerFieldValue[]
   businessId    String
   business      Business              @relation(fields: [businessId], references: [id], onDelete: Cascade)
   jobs          Job[]
@@ -156,6 +162,7 @@ model Job {
   jobPhotos      JobPhoto[]
   expenses       JobExpense[]
   checklistItems JobChecklistItem[]
+  invoices       Invoice[]
   idempotencyKey String?            @unique // booking-confirm dedupe key (UUID); null for jobs not created via booking
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
@@ -180,6 +187,9 @@ model Invoice {
   customer    Customer          @relation(fields: [customerId], references: [id], onDelete: Cascade)
   businessId  String
   business    Business          @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  jobId       String? // set for progress/milestone invoices linked to a job
+  job         Job?              @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  milestoneLabel String? // e.g. "Deposit", "Milestone 2 — rough-in", "Final"
   payments    Payment[]
   lineItems   InvoiceLineItem[]
   shareTokens ShareToken[]
@@ -334,7 +344,10 @@ model Quote {
   shareTokens       ShareToken[]
   signatureRequests SignatureRequest[]
   addons            QuoteAddon[]
+  lineItems         QuoteLineItem[]
   depositAmount     Float? // requested deposit (CAD); null = no deposit requested
+  discountType      String? // "PERCENT" | "AMOUNT"; null = no discount
+  discountValue     Float? // percent (0-100) or CAD amount, per discountType
   deposits          QuoteDeposit[]
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
@@ -762,4 +775,111 @@ model QuoteDeposit {
 
   @@index([quoteId])
   @@index([businessId])
+}
+
+// ---------------------------------------------------------------------------
+// TRACK 8 — safe automation + operational gaps.
+// ---------------------------------------------------------------------------
+
+// Durable log of automated runs (recurring generation, workflow engine,
+// batch invoicing). The user can audit what the automation did and when.
+model AutomationLog {
+  id         String   @id @default(cuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  kind       String // "RECURRING" | "WORKFLOW" | "BATCH_INVOICE"
+  summary    String
+  metaJson   String?
+  createdAt  DateTime @default(now())
+
+  @@index([businessId, createdAt])
+}
+
+// A customer can have several service addresses (home, cottage, rental…).
+model CustomerProperty {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  label      String // "Home", "Cottage", …
+  address    String
+  notes      String?
+  isPrimary  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([customerId])
+  @@index([businessId])
+}
+
+// Business-defined custom fields for customers ("Gate code", "Dog name"…).
+model CustomFieldDef {
+  id         String               @id @default(cuid())
+  businessId String
+  business   Business             @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  name       String
+  values     CustomerFieldValue[]
+  createdAt  DateTime             @default(now())
+
+  @@unique([businessId, name])
+}
+
+model CustomerFieldValue {
+  id         String         @id @default(cuid())
+  fieldId    String
+  field      CustomFieldDef @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  customerId String
+  customer   Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  value      String
+  updatedAt  DateTime       @updatedAt
+
+  @@unique([fieldId, customerId])
+  @@index([customerId])
+}
+
+// Persisted quote line items (previously only the total was stored).
+model QuoteLineItem {
+  id          String   @id @default(cuid())
+  quoteId     String
+  quote       Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  description String
+  qty         Float
+  unitPrice   Float
+  position    Int // display order
+  createdAt   DateTime @default(now())
+
+  @@index([quoteId])
+}
+
+// Safe workflow engine: triggers are evaluated on a schedule; actions are
+// LIMITED to in-app notifications and draft creation. There is deliberately
+// no external-send path here — Track 9's consented messaging system remains
+// the only way a message can leave the platform.
+model WorkflowRule {
+  id         String          @id @default(cuid())
+  businessId String
+  business   Business        @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  name       String
+  trigger    String // "JOB_COMPLETED" | "QUOTE_AWAITING" | "INVOICE_OVERDUE"
+  enabled    Boolean         @default(true)
+  configJson String? // { followUpDays, graceDays, reviewDraft }
+  events     WorkflowEvent[]
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  @@index([businessId])
+}
+
+// Idempotency markers: one row per (rule, entity) that already fired, so a
+// re-run never notifies twice about the same job/quote/invoice.
+model WorkflowEvent {
+  id         String       @id @default(cuid())
+  ruleId     String
+  rule       WorkflowRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  entityType String // "JOB" | "QUOTE" | "INVOICE"
+  entityId   String
+  createdAt  DateTime     @default(now())
+
+  @@unique([ruleId, entityType, entityId])
 }

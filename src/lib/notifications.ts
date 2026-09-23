@@ -257,11 +257,13 @@ export function buildPaymentRecorded(
 }
 
 // ---------------------------------------------------------------------------
-// Rendering (locale-aware, at read time)
-// ---------------------------------------------------------------------------
+// Rendering (locale-aware, at read time).
+// The type is a plain string (not the NotificationType union) so the safe
+// workflow engine's types (review_request_draft, workflow_*) render too —
+// unknown types fall back to the key path via t().
 
 export function renderNotificationTitle(
-  type: NotificationType,
+  type: string,
   data: Record<string, string>,
   locale: Locale
 ): string {
@@ -269,11 +271,19 @@ export function renderNotificationTitle(
 }
 
 export function renderNotificationBody(
-  type: NotificationType,
+  type: string,
   data: Record<string, string>,
   locale: Locale
 ): string {
   const withTime = { ...data };
+  // Review-request drafts carry both languages (the engine runs without a
+  // viewer); pick the viewer's locale at read time.
+  if (type === 'review_request_draft') {
+    withTime.draft =
+      locale === 'fr'
+        ? (data.draftFr ?? data.draftEn ?? '')
+        : (data.draftEn ?? data.draftFr ?? '');
+  }
   if (!withTime.time) withTime.time = t(locale, 'notifications.noTime');
   return fill(t(locale, `notifications.b_${type}`), withTime);
 }

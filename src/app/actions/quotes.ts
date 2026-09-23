@@ -8,7 +8,8 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { quoteSchema, QUOTE_STATUSES } from '@/lib/validations';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
-import { getTaxConfig, calcTax } from '@/lib/tax';
+import { getTaxConfig, totalTaxRate } from '@/lib/tax';
+import { computeQuoteTotals, type DiscountType } from '@/lib/quote-totals';
 import {
   getActiveShareToken,
   issueShareToken,
@@ -27,6 +28,28 @@ const lineItemSchema = z.object({
 });
 
 type LineItem = z.infer<typeof lineItemSchema>;
+
+/** Parse an optional discount: type in PERCENT/AMOUNT/empty, value ≥ 0, PERCENT ≤ 100. */
+function parseDiscount(formData: FormData): {
+  type: DiscountType;
+  value: number | null;
+  error?: string;
+} {
+  const rawType = String(formData.get('discountType') ?? '').trim().toUpperCase();
+  if (!rawType) return { type: null, value: null };
+  if (rawType !== 'PERCENT' && rawType !== 'AMOUNT') {
+    return { type: null, value: null, error: 'Invalid discount type.' };
+  }
+  const value = Number(formData.get('discountValue'));
+  if (!Number.isFinite(value) || value < 0) {
+    return { type: null, value: null, error: 'Discount must be 0 or more.' };
+  }
+  if (rawType === 'PERCENT' && value > 100) {
+    return { type: null, value: null, error: 'Percentage discounts max out at 100%.' };
+  }
+  if (value === 0) return { type: null, value: null };
+  return { type: rawType as DiscountType, value: Math.round(value * 100) / 100 };
+}
 
 async function clientKey(prefix: string): Promise<string> {
   const h = await headers();
@@ -121,17 +144,24 @@ export async function createQuote(
   );
   if (itemsError || !items) return { error: itemsError ?? 'Invalid line items.' };
 
-  // Server-side money math — the single source of truth. Tax comes from the
-  // business's region settings, so the quote total is tax-inclusive.
-  const round2 = (n: number) => Math.round(n * 100) / 100;
+  // Discount comes from the form; anything invalid is a hard error.
+  const discount = parseDiscount(formData);
+  if (discount.error) return { error: discount.error };
+
+  // Server-side money math — the single source of truth. Discount applies
+  // before tax (tax comes from the business's region settings), so the
+  // stored total is tax-inclusive on the discounted amount.
   const business = await prisma.business.findUnique({
     where: { id: businessId },
     select: { regionCode: true, taxRegion: true },
   });
   const taxConfig = getTaxConfig(business?.regionCode, business?.taxRegion);
-  const subtotal = round2(items.reduce((s, i) => s + i.qty * i.rate, 0));
-  const { taxAmount } = calcTax(subtotal, taxConfig);
-  const total = round2(subtotal + taxAmount);
+  const totals = computeQuoteTotals(
+    items.map((i) => ({ qty: i.qty, unitPrice: i.rate })),
+    discount,
+    totalTaxRate(taxConfig)
+  );
+  const total = totals.total;
 
   const parsed = quoteSchema.safeParse({
     title: formData.get('title'),
@@ -152,19 +182,164 @@ export async function createQuote(
 
   const number = await nextQuoteNumber(businessId);
 
-  const quote = await prisma.quote.create({
-    data: {
-      number,
-      title: parsed.data.title,
-      total,
-      status: 'DRAFT',
-      customerId: customer.id,
-      businessId,
-    },
+  // The quote and its line items are created atomically; `position` is the
+  // display order on the detail page.
+  const quote = await prisma.$transaction(async (tx) => {
+    const q = await tx.quote.create({
+      data: {
+        number,
+        title: parsed.data.title,
+        total,
+        discountType: discount.type,
+        discountValue: discount.value,
+        status: 'DRAFT',
+        customerId: customer.id,
+        businessId,
+      },
+    });
+    await tx.quoteLineItem.createMany({
+      data: items.map((item, index) => ({
+        quoteId: q.id,
+        description: item.desc,
+        qty: item.qty,
+        unitPrice: item.rate,
+        position: index,
+      })),
+    });
+    return q;
   });
 
   revalidatePath('/quotes');
   redirect(`/quotes/${quote.id}`);
+}
+
+/**
+ * Replace a DRAFT quote's line items and discount. Only drafts are editable —
+ * once a quote moves (SENT/APPROVED/…), its items are a record of what was
+ * quoted. The total is recomputed server-side from the new items.
+ */
+export async function updateQuoteItems(
+  _prev: ActionResult,
+  formData: FormData
+): Promise<ActionResult> {
+  const limited = checkLimit(await clientKey('quote:items'));
+  if (limited) return limited;
+
+  let businessId: string;
+  try {
+    ({ businessId } = await requireAuth());
+  } catch {
+    return { error: 'Please log in again.' };
+  }
+
+  const id = String(formData.get('id') ?? '');
+  const quote = await ownedQuote(businessId, id);
+  if (!quote) return { error: 'Quote not found.' };
+  if (quote.status !== 'DRAFT') {
+    return { error: 'Only draft quotes can be edited.' };
+  }
+
+  const { items, error: itemsError } = parseLineItems(
+    formData.get('itemsJson') as string | null
+  );
+  if (itemsError || !items) return { error: itemsError ?? 'Invalid line items.' };
+
+  const discount = parseDiscount(formData);
+  if (discount.error) return { error: discount.error };
+
+  const business = await prisma.business.findUnique({
+    where: { id: businessId },
+    select: { regionCode: true, taxRegion: true },
+  });
+  const taxConfig = getTaxConfig(business?.regionCode, business?.taxRegion);
+  const totals = computeQuoteTotals(
+    items.map((i) => ({ qty: i.qty, unitPrice: i.rate })),
+    discount,
+    totalTaxRate(taxConfig)
+  );
+
+  await prisma.$transaction([
+    prisma.quoteLineItem.deleteMany({ where: { quoteId: id } }),
+    prisma.quoteLineItem.createMany({
+      data: items.map((item, index) => ({
+        quoteId: id,
+        description: item.desc,
+        qty: item.qty,
+        unitPrice: item.rate,
+        position: index,
+      })),
+    }),
+    prisma.quote.update({
+      where: { id },
+      data: {
+        discountType: discount.type,
+        discountValue: discount.value,
+        total: totals.total,
+      },
+    }),
+  ]);
+
+  revalidatePath(`/quotes/${id}`);
+  return { ok: true };
+}
+
+const MANUAL_DEPOSIT_PROVIDERS = ['INTERAC', 'CASH', 'CHEQUE'] as const;
+
+/**
+ * Record a deposit the owner collected outside EveryJob (Interac e-Transfer,
+ * cash, cheque). This is record-keeping only — no money moves through
+ * EveryJob. STRIPE can never be used here; Stripe card collection lives in
+ * Track 9's flow and records COMPLETED rows via its own action.
+ */
+export async function recordQuoteDeposit(
+  _prev: ActionResult,
+  formData: FormData
+): Promise<ActionResult> {
+  const limited = checkLimit(await clientKey('quote:deposit-record'));
+  if (limited) return limited;
+
+  let businessId: string;
+  try {
+    ({ businessId } = await requireAuth());
+  } catch {
+    return { error: 'Please log in again.' };
+  }
+
+  const quoteId = String(formData.get('quoteId') ?? '');
+  const quote = await ownedQuote(businessId, quoteId);
+  if (!quote) return { error: 'Quote not found.' };
+
+  const amount = Math.round(Number(formData.get('amount')) * 100) / 100;
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return { error: 'Enter an amount greater than 0.' };
+  }
+  if (amount > quote.total) {
+    return { error: "The deposit can't exceed the quote total." };
+  }
+
+  const provider = String(formData.get('provider') ?? '').trim().toUpperCase();
+  if (!(MANUAL_DEPOSIT_PROVIDERS as readonly string[]).includes(provider)) {
+    return { error: 'Choose a valid payment method.' };
+  }
+
+  const noteRaw = String(formData.get('note') ?? '').trim();
+  if (noteRaw.length > 500) {
+    return { error: 'Notes are too long (max 500 characters).' };
+  }
+
+  await prisma.quoteDeposit.create({
+    data: {
+      quoteId,
+      businessId,
+      amount,
+      provider,
+      status: 'COMPLETED',
+      note: noteRaw ? noteRaw : null,
+    },
+  });
+
+  revalidatePath(`/quotes/${quoteId}`);
+  return { ok: true };
 }
 
 const QUOTE_TRANSITIONS: Record<string, string[]> = {

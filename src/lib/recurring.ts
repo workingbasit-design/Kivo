@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { RECURRING_FREQUENCIES } from '@/lib/validations';
+import { toISODateInTimezone, defaultTimezoneForRegion } from '@/lib/utils';
 
 export type RecurringFrequency = (typeof RECURRING_FREQUENCIES)[number];
 
@@ -28,6 +29,22 @@ export function advanceNextRun(from: Date, frequency: string): Date {
     d.setMonth(d.getMonth() + 1);
   }
   return d;
+}
+
+/**
+ * Business-local day window [gte, lt) containing an occurrence instant.
+ * Pure and unit-testable; used by the generation dedupe check so a plan
+ * occurrence near midnight buckets to the day the owner sees.
+ */
+export function occurrenceDayWindow(
+  occurredAt: Date,
+  timeZone: string
+): { gte: Date; lt: Date } {
+  const dayStr = toISODateInTimezone(occurredAt, timeZone);
+  const gte = new Date(`${dayStr}T00:00:00`);
+  const lt = new Date(gte);
+  lt.setDate(lt.getDate() + 1);
+  return { gte, lt };
 }
 
 /**
@@ -104,6 +121,14 @@ async function generateDueJobsInner(
   businessId: string
 ): Promise<{ created: number }> {
   const now = new Date();
+  const business = await prisma.business.findUnique({
+    where: { id: businessId },
+    select: { timezone: true, regionCode: true },
+  });
+  // Business-timezone aware: the dedupe day-window below is computed in the
+  // business's own timezone so a plan occurrence near midnight buckets to
+  // the day the owner actually sees on their schedule.
+  const timeZone = business?.timezone || defaultTimezoneForRegion(business?.regionCode);
   const due = await prisma.recurringJob.findMany({
     where: { businessId, active: true, nextRun: { lte: now } },
     orderBy: { nextRun: 'asc' },
@@ -120,11 +145,9 @@ async function generateDueJobsInner(
       if (!fresh) return false;
 
       // Skip if a job already exists for this plan on the nextRun day
-      // (prevents duplicates if generation runs twice).
-      const dayStart = new Date(fresh.nextRun);
-      dayStart.setHours(0, 0, 0, 0);
-      const dayEnd = new Date(dayStart);
-      dayEnd.setDate(dayEnd.getDate() + 1);
+      // (prevents duplicates if generation runs twice). The window is the
+      // business-local day of the occurrence.
+      const { gte: dayStart, lt: dayEnd } = occurrenceDayWindow(fresh.nextRun, timeZone);
 
       const exists = await tx.job.findFirst({
         where: {

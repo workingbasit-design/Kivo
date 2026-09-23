@@ -21,6 +21,8 @@ import QuoteAddons from './QuoteAddons';
 import ShareTokenManager from '@/components/ShareTokenManager';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import QuoteDepositCard from '@/components/QuoteDepositCard';
+import QuoteItemsEditor from './QuoteItemsEditor';
+import RecordDepositForm from '@/components/RecordDepositForm';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -40,6 +42,7 @@ export default async function QuoteDetailPage({
       customer: true,
       business: { select: { regionCode: true, taxRegion: true, currency: true, name: true } },
       addons: { orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }] },
+      lineItems: { orderBy: { position: 'asc' } },
       deposits: { orderBy: { createdAt: 'desc' } },
     },
   });
@@ -62,13 +65,29 @@ export default async function QuoteDetailPage({
   // The stored total is tax-inclusive (see createQuote). Back out the tax
   // lines so they sum exactly to the total.
   const taxAmount = rate > 0 ? round2((quote.total * rate) / (100 + rate)) : 0;
-  const subtotal = round2(quote.total - taxAmount);
+  const taxable = round2(quote.total - taxAmount);
+  // Track 8D quotes persist their line items; older quotes only have a total.
+  const hasLineItems = quote.lineItems.length > 0;
+  const itemsSubtotal = round2(
+    quote.lineItems.reduce((s, i) => s + i.qty * i.unitPrice, 0)
+  );
+  const subtotal = hasLineItems ? itemsSubtotal : taxable;
+  const discountAmount = hasLineItems
+    ? round2(Math.max(0, itemsSubtotal - taxable))
+    : 0;
+  const showDiscount =
+    hasLineItems && quote.discountType != null && discountAmount > 0;
+  const discountLabel =
+    L('quoteItems.discount') +
+    (quote.discountType === 'PERCENT' && quote.discountValue != null
+      ? ` (${quote.discountValue}%)`
+      : '');
   const taxLines = taxConfig.taxes.map((t) => ({
     ...t,
     amount:
       taxConfig.taxes.length === 1
         ? taxAmount
-        : round2((subtotal * t.rate) / 100),
+        : round2((taxable * t.rate) / 100),
   }));
   // Fix rounding drift on multi-tax configs so lines sum to taxAmount.
   if (taxLines.length > 1) {
@@ -119,11 +138,47 @@ export default async function QuoteDetailPage({
           <p className="text-2xl font-bold text-zinc-900">{formatMoney(quote.total, currency, moneyLocale)}</p>
         </div>
 
+        {hasLineItems && (
+          <div className="border-t border-zinc-100 pt-4">
+            <h2 className="text-sm font-bold text-zinc-900 mb-1">{L('quoteItems.title')}</h2>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-[11px] uppercase tracking-wider text-zinc-400 text-left">
+                  <th className="py-1.5 pr-2 font-bold">{L('quoteItems.desc')}</th>
+                  <th className="py-1.5 px-2 font-bold text-right">{L('quoteItems.qty')}</th>
+                  <th className="py-1.5 px-2 font-bold text-right">{L('quoteItems.rate')}</th>
+                  <th className="py-1.5 pl-2 font-bold text-right">{L('quoteItems.amount')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {quote.lineItems.map((item) => (
+                  <tr key={item.id} className="border-t border-zinc-50 text-zinc-700">
+                    <td className="py-2 pr-2">{item.description}</td>
+                    <td className="py-2 px-2 text-right">{item.qty}</td>
+                    <td className="py-2 px-2 text-right">
+                      {formatMoney(item.unitPrice, currency, moneyLocale)}
+                    </td>
+                    <td className="py-2 pl-2 text-right font-semibold text-zinc-900">
+                      {formatMoney(round2(item.qty * item.unitPrice), currency, moneyLocale)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
         <dl className="border-t border-zinc-100 pt-4 space-y-1.5 text-sm">
           <div className="flex justify-between text-zinc-600">
             <dt>Subtotal</dt>
             <dd className="font-semibold">{formatMoney(subtotal, currency, moneyLocale)}</dd>
           </div>
+          {showDiscount && (
+            <div className="flex justify-between text-emerald-700">
+              <dt>{discountLabel}</dt>
+              <dd className="font-semibold">−{formatMoney(discountAmount, currency, moneyLocale)}</dd>
+            </div>
+          )}
           {taxLines.map((l) => (
             <div key={l.name} className="flex justify-between text-zinc-600">
               <dt>
@@ -148,6 +203,26 @@ export default async function QuoteDetailPage({
           </Link>
         </div>
       </Card>
+
+      {/* Draft-only: edit line items + discount; the server recomputes the total. */}
+      {quote.status === 'DRAFT' && (
+        <QuoteItemsEditor
+          quoteId={quote.id}
+          locale={locale}
+          initial={{
+            items: quote.lineItems.map((item) => ({
+              desc: item.description,
+              qty: String(item.qty),
+              rate: String(item.unitPrice),
+            })),
+            discountType:
+              quote.discountType === 'PERCENT' || quote.discountType === 'AMOUNT'
+                ? quote.discountType
+                : null,
+            discountValue: quote.discountValue,
+          }}
+        />
+      )}
 
       <Card className="p-6">
         <QuoteAddons
@@ -194,6 +269,9 @@ export default async function QuoteDetailPage({
         }))}
         locale={locale}
       />
+
+      {/* Record-only deposits: Interac/cash/cheque collected outside EveryJob. */}
+      <RecordDepositForm quoteId={quote.id} locale={locale} maxAmount={quote.total} />
 
       <Card className="p-6">
         <ShareTokenManager

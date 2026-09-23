@@ -12,6 +12,8 @@ import { EditCustomerForm, DeleteCustomerButton } from './customer-forms';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import PortalLinkManager from '@/components/PortalLinkManager';
 import CustomerConsentCard from '@/components/CustomerConsentCard';
+import CustomerProperties from '@/components/CustomerProperties';
+import CustomerCustomFields from '@/components/CustomerCustomFields';
 import { getLocale } from '@/lib/i18n/server';
 import { CA_PROVINCES } from '@/lib/tax';
 
@@ -51,6 +53,13 @@ async function loadCustomer(id: string, businessId: string) {
         take: 5,
         select: { id: true, rating: true, comment: true, source: true, createdAt: true },
       },
+      properties: {
+        orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }],
+        select: { id: true, label: true, address: true, notes: true, isPrimary: true },
+      },
+      fieldValues: {
+        select: { fieldId: true, value: true },
+      },
     },
   });
 }
@@ -69,6 +78,7 @@ export default async function CustomerDetailPage({
   let business: { currency: string | null; name: string | null } | null = null;
   let customer: Awaited<ReturnType<typeof loadCustomer>> = null;
   let activePortalToken: { id: string; createdAt: Date } | null = null;
+  let fieldDefs: { id: string; name: string }[] = [];
   try {
     const { id } = await params;
     business = await prisma.business.findUnique({
@@ -86,6 +96,11 @@ export default async function CustomerDetailPage({
       },
       orderBy: { createdAt: 'desc' },
       select: { id: true, createdAt: true },
+    });
+    fieldDefs = await prisma.customFieldDef.findMany({
+      where: { businessId },
+      orderBy: { createdAt: 'asc' },
+      select: { id: true, name: true },
     });
   } catch (e) {
     // notFound() throws a NEXT_NOT_FOUND sentinel — let it through.
@@ -230,6 +245,32 @@ export default async function CustomerDetailPage({
         consentAt={customer.messageConsentAt?.toISOString() ?? null}
         preferredLocale={customer.preferredLocale}
         locale={await getLocale()}
+      />
+
+      {/* Properties (home, cottage, job sites) */}
+      <CustomerProperties
+        customerId={customer.id}
+        locale={await getLocale()}
+        initial={customer.properties.map((p) => ({
+          id: p.id,
+          label: p.label,
+          address: p.address,
+          notes: p.notes,
+          isPrimary: p.isPrimary,
+        }))}
+      />
+
+      {/* Business-defined custom fields */}
+      <CustomerCustomFields
+        customerId={customer.id}
+        locale={await getLocale()}
+        initial={{
+          defs: fieldDefs,
+          values: customer.fieldValues.map((v) => ({
+            fieldId: v.fieldId,
+            value: v.value,
+          })),
+        }}
       />
 
       {/* Job history */}

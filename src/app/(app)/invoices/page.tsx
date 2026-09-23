@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { Plus, FileText, Wallet } from 'lucide-react';
+import { Plus, FileText, Wallet, Receipt } from 'lucide-react';
 import { getSession } from '@/lib/auth';
+import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
 import { prisma } from '@/lib/prisma';
 import { PageHeader, Card, StatusBadge, EmptyState, StatCard } from '@/components/ui';
 import { formatDateShort, cn } from '@/lib/utils';
@@ -23,6 +25,7 @@ export default async function InvoicesPage({
   const activeFilter = FILTERS.includes(status as (typeof FILTERS)[number])
     ? (status as (typeof FILTERS)[number])
     : 'ALL';
+  const locale = await getLocale();
 
   const [business, invoices, aggregates] = await Promise.all([
     prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } }),
@@ -60,12 +63,20 @@ export default async function InvoicesPage({
         title="Invoices"
         subtitle="Every payment, accounted for."
         actions={
-          <Link
-            href="/invoices/new"
-            className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
-          >
-            <Plus size={14} /> New invoice
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/invoices/batch"
+              className="bg-white hover:bg-zinc-50 text-zinc-700 px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 border border-zinc-200 shadow-sm"
+            >
+              <Receipt size={14} /> {t(locale, 'billing.batchTitle')}
+            </Link>
+            <Link
+              href="/invoices/new"
+              className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
+            >
+              <Plus size={14} /> New invoice
+            </Link>
+          </div>
         }
       />
 

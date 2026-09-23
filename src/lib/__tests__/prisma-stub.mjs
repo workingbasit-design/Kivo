@@ -56,6 +56,11 @@ export const prisma = new Proxy(
   {},
   {
     get(_t, model) {
+      if (model === '$transaction') {
+        // Run the transactional callback against the stub itself. Writes
+        // inside are recorded like any other write.
+        return async (fn) => fn(prisma);
+      }
       return delegate(String(model));
     },
   }

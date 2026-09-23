@@ -14,6 +14,8 @@ import { entryMinutes } from '@/lib/timesheets';
 import { sumLaborMinutes } from '@/lib/costing';
 import JobStatusButtons from '@/components/JobStatusButtons';
 import { JobNoteForm, JobNoteItem } from '@/components/JobNoteForm';
+import MilestoneInvoiceForm from '@/components/MilestoneInvoiceForm';
+import { t } from '@/lib/i18n';
 import { JobChecklist } from '@/components/JobChecklist';
 import { JobExpenses } from '@/components/JobExpenses';
 import { JobCostingCard } from '@/components/JobCostingCard';
@@ -52,6 +54,16 @@ export default async function JobDetailPage({
       },
       expenses: {
         orderBy: { spentAt: 'desc' },
+      },
+      invoices: {
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          number: true,
+          total: true,
+          status: true,
+          milestoneLabel: true,
+        },
       },
     },
   });
@@ -239,6 +251,48 @@ export default async function JobDetailPage({
       {/* Job photos & files — the deferred job-photo decision resolves to
           universal Attachments (Vercel Blob, Track 6A). */}
       <Attachments entityType="job" entityId={job.id} locale={locale} />
+
+      {/* Progress invoicing — milestone invoices linked to this job */}
+      <Card className="p-5 md:p-6">
+        <h2 className="text-sm font-bold text-zinc-900 mb-1 flex items-center gap-2">
+          <DollarSign size={14} /> {t(locale, 'billing.progressTitle')}
+        </h2>
+        <p className="text-xs text-zinc-500 mb-4">
+          {t(locale, 'billing.progressDesc')}
+        </p>
+        {job.invoices.length > 0 ? (
+          <ul className="divide-y divide-zinc-100 mb-2">
+            {job.invoices.map((inv) => (
+              <li key={inv.id}>
+                <Link
+                  href={`/invoices/${inv.id}`}
+                  className="flex items-center justify-between gap-3 py-2.5 hover:bg-zinc-50 rounded-lg px-2 -mx-2"
+                >
+                  <div className="min-w-0 flex items-center gap-2">
+                    <span className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-semibold text-zinc-600 shrink-0">
+                      {t(locale, 'billing.milestoneBadge')}
+                    </span>
+                    <span className="text-sm font-semibold text-zinc-900 truncate">
+                      {inv.milestoneLabel || inv.number}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span className="text-sm font-bold text-zinc-900">
+                      {formatMoney(inv.total, currency, moneyLocale)}
+                    </span>
+                    <StatusBadge status={inv.status} />
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-xs text-zinc-400 py-2">
+            {t(locale, 'billing.noProgressInvoices')}
+          </p>
+        )}
+        <MilestoneInvoiceForm jobId={job.id} locale={locale} />
+      </Card>
 
       {/* Job notes */}
       <Card className="p-5 md:p-6">
