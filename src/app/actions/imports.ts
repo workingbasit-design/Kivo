@@ -265,37 +265,85 @@ export async function commitCsvImport(type: CsvType, records: CsvRecord[]): Prom
     // Re-validate server-side: never trust the client preview.
     const { valid, errors } = validateCsvRows(type, [headerRowFor(type), ...recordsToRows(type, records)], fr);
     if (errors.length > 0) return { ok: false, errors };
+
+    // Duplicate-import guard: importing the same file twice must not create
+    // duplicates. Customers match on normalized name+phone; services on name.
+    const norm = (s: string) => s.trim().toLowerCase();
+    let skipped = 0;
+    let toCreate: typeof valid = valid;
+
     if (type === 'customers') {
-      await prisma.customer.createMany({
-        data: (valid as typeof records).map((r) => {
-          const c = r as CustomerRecord;
-          return {
-            businessId,
-            name: c.name.slice(0, 200),
-            phone: c.phone?.slice(0, 50) ?? null,
-            email: c.email?.slice(0, 200) ?? null,
-            address: c.address?.slice(0, 500) ?? null,
-            notes: c.notes?.slice(0, 2000) ?? null,
-          };
-        }),
+      const existingCustomers = await prisma.customer.findMany({
+        where: { businessId },
+        select: { name: true, phone: true },
       });
+      const seen = new Set(existingCustomers.map((c) => `${norm(c.name)}|${digits(c.phone ?? '')}`));
+      toCreate = [];
+      for (const r of valid) {
+        const c = r as CustomerRecord;
+        const key = `${norm(c.name)}|${digits(c.phone ?? '')}`;
+        if (seen.has(key)) {
+          skipped += 1;
+          continue;
+        }
+        seen.add(key);
+        toCreate.push(r);
+      }
+      // Also dedupe within the file itself.
     } else {
-      await prisma.service.createMany({
-        data: (valid as typeof records).map((r) => {
-          const s = r as ServiceRecord;
-          return {
-            businessId,
-            name: s.name.slice(0, 200),
-            price: s.price,
-            durationMin: s.durationMin,
-            description: s.description?.slice(0, 500) ?? null,
-          };
-        }),
+      const existingServices = await prisma.service.findMany({
+        where: { businessId },
+        select: { name: true },
       });
+      const seen = new Set(existingServices.map((s) => norm(s.name)));
+      toCreate = [];
+      for (const r of valid) {
+        const s = r as ServiceRecord;
+        const key = norm(s.name);
+        if (seen.has(key)) {
+          skipped += 1;
+          continue;
+        }
+        seen.add(key);
+        toCreate.push(r);
+      }
+    }
+
+    if (type === 'customers') {
+      if (toCreate.length > 0) {
+        await prisma.customer.createMany({
+          data: toCreate.map((r) => {
+            const c = r as CustomerRecord;
+            return {
+              businessId,
+              name: c.name.slice(0, 200),
+              phone: c.phone?.slice(0, 50) ?? null,
+              email: c.email?.slice(0, 200) ?? null,
+              address: c.address?.slice(0, 500) ?? null,
+              notes: c.notes?.slice(0, 2000) ?? null,
+            };
+          }),
+        });
+      }
+    } else {
+      if (toCreate.length > 0) {
+        await prisma.service.createMany({
+          data: toCreate.map((r) => {
+            const s = r as ServiceRecord;
+            return {
+              businessId,
+              name: s.name.slice(0, 200),
+              price: s.price,
+              durationMin: s.durationMin,
+              description: s.description?.slice(0, 500) ?? null,
+            };
+          }),
+        });
+      }
     }
     revalidatePath('/imports');
     revalidatePath(type === 'customers' ? '/customers' : '/pricebook');
-    return { ok: true, imported: valid.length };
+    return { ok: true, imported: toCreate.length, skipped };
   }
 
   // Jobs: resolve customerMatch → exactly one customer, else row-level error.
