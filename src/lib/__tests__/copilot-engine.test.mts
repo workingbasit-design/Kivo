@@ -155,3 +155,29 @@ test('engine: unpaid question with no invoices', async () => {
   assert.equal(res.intent, 'ask_unpaid');
   assert.ok(res.reply.length > 10);
 });
+
+// --- Bare "job" booking noun: preview-only, zero writes ---
+test('engine: "job on 1st jan for Sarah" previews Sarah on Jan 1', async () => {
+  const res = await convo('job on 1st jan for Sarah');
+  assert.equal(res.intent, 'create_job');
+  assert.ok(res.preview, 'expected a booking preview');
+  assert.equal(res.preview.customerName, 'Sarah');
+  assert.ok(res.preview.date.endsWith('-01-01'), `got ${res.preview.date}`);
+  assert.match(res.reply, /please confirm/i);
+});
+
+test('engine: "job for Sarah at 9:30 am" previews today 09:30 with the date-unclear note', async () => {
+  const res = await convo('job for Sarah at 9:30 am');
+  assert.equal(res.intent, 'create_job');
+  assert.equal(res.preview?.customerName, 'Sarah');
+  assert.equal(res.preview?.time, '09:30');
+  assert.match(res.reply, /wasn.t clear/, 'should show the date-unclear note');
+  assert.match(res.reply, /please confirm/i);
+});
+
+test('engine: "travail pour Sarah demain" previews in French', async () => {
+  const res = await convo('travail pour Sarah demain', 'fr');
+  assert.equal(res.intent, 'create_job');
+  assert.equal(res.preview?.customerName, 'Sarah');
+  assert.match(res.reply, /confirmez/i);
+});

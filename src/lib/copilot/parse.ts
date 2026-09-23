@@ -552,6 +552,12 @@ export function detectIntent(raw: string, followUpName: string | null = null): C
   const hasService = extractServiceTitle(raw) !== null;
   const hasWho = extractCustomerName(raw) !== null || extractPhone(raw) !== null || !!followUpName;
   const hasWhen = extractDate(raw) !== null;
+  // Bare "job" / "travail" as the booking noun ("job on 1st jan for Sarah",
+  // "job for Sarah at 9:30 am", "travail pour Sarah demain"): with a customer
+  // or a date and no question, this is a booking preview, not a query.
+  // Cancellations are already excluded above; plural "jobs" stays a schedule
+  // query ("jobs tomorrow" -> ask_schedule, unchanged).
+  const hasJobNoun = hasAny(text, [' job ', ' travail ']);
   // Pronoun follow-up to an earlier booking discussion ("move it to tomorrow").
   const followUpBooking =
     !!followUpName &&
@@ -567,7 +573,11 @@ export function detectIntent(raw: string, followUpName: string | null = null): C
       // "plumbing for Sarah tomorrow" — a service + a date with no question
       // is a booking, not a schedule query. Confirmation is always required,
       // so a wrong guess here is cheap and correctable.
-      (hasService && hasWhen && !isQuestion))
+      (hasService && hasWhen && !isQuestion) ||
+      // "job on 1st jan for Sarah" — the bare job noun + a customer or a date
+      // (time-only counts via the engine's "used today" date note) is a
+      // booking preview with confirmation, never a silent guess.
+      (hasJobNoun && (hasWho || hasWhen) && !isQuestion))
   ) {
     return 'create_job';
   }

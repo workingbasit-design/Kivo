@@ -275,3 +275,32 @@ test('extractMoney: "2 thousand" is 2000', () => {
 test('extractMoney: "800 cad" is 800', () => {
   assert.equal(extractMoney('book Mike for Friday, 800 cad'), 800);
 });
+
+// --- Bare "job" / "travail" booking noun (Track 1 hardening follow-up) ---
+test('detectIntent: "job on 1st jan for Sarah" is create_job', () => {
+  assert.equal(detectIntent('job on 1st jan for Sarah'), 'create_job');
+});
+
+test('detectIntent: "job for Sarah at 9:30 am" is create_job (time-only)', () => {
+  assert.equal(detectIntent('job for Sarah at 9:30 am'), 'create_job');
+});
+
+test('detectIntent: "travail pour Sarah demain" is create_job', () => {
+  assert.equal(detectIntent('travail pour Sarah demain'), 'create_job');
+});
+
+test('detectIntent: plural "jobs tomorrow" stays a schedule query', () => {
+  assert.equal(detectIntent('jobs tomorrow'), 'ask_schedule');
+});
+
+test('detectIntent: "cancel the job" never books', () => {
+  assert.notEqual(detectIntent('cancel the job'), 'create_job');
+});
+
+test('detectIntent: "how much was the job?" never books', () => {
+  assert.notEqual(detectIntent('how much was the job?'), 'create_job');
+});
+
+test('detectIntent: "great job" alone never books', () => {
+  assert.notEqual(detectIntent('great job'), 'create_job');
+});
