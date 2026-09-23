@@ -3,6 +3,7 @@
 import React, { useActionState, useTransition } from 'react';
 import { AlertCircle, CheckCircle2, Trash2, UserPlus, ShieldCheck, User } from 'lucide-react';
 import { inviteTeamMember, removeTeamMember, type SettingsResult } from '@/app/actions/settings';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import { Card, EmptyState, Field, StatusBadge, inputClass, primaryBtnClass } from '@/components/ui';
 
 export type TeamMember = {
@@ -80,43 +81,61 @@ function InviteForm() {
 
 function MemberRow({ member, isSelf }: { member: TeamMember; isSelf: boolean }) {
   const [isPending, startTransition] = useTransition();
+  const [confirming, setConfirming] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
-  const handleRemove = () => {
-    if (confirm(`Remove ${member.name || member.email} from the team?`)) {
-      startTransition(async () => {
-        const res = await removeTeamMember(member.id);
-        if (res.error) alert(res.error);
-      });
-    }
+  const runRemove = () => {
+    setConfirming(false);
+    startTransition(async () => {
+      setError(null);
+      const res = await removeTeamMember(member.id);
+      if (res.error) setError(res.error);
+    });
   };
 
   return (
-    <div className="flex items-center justify-between gap-4 px-5 py-4 border-b border-zinc-100 last:border-0">
-      <div className="flex items-center gap-3 min-w-0">
-        <div className="w-10 h-10 rounded-full bg-[#f5f1fa] text-[#6329d4] flex items-center justify-center shrink-0">
-          {member.role === 'ADMIN' ? <ShieldCheck size={18} /> : <User size={18} />}
+    <div className="px-5 py-4 border-b border-zinc-100 last:border-0">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-full bg-[#f5f1fa] text-[#6329d4] flex items-center justify-center shrink-0">
+            {member.role === 'ADMIN' ? <ShieldCheck size={18} /> : <User size={18} />}
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-bold text-zinc-900 truncate">
+              {member.name || member.email}
+              {isSelf && <span className="ml-2 text-[10px] font-bold uppercase tracking-wider text-zinc-400">(you)</span>}
+            </p>
+            <p className="text-xs text-zinc-500 truncate">{member.email}</p>
+          </div>
         </div>
-        <div className="min-w-0">
-          <p className="text-sm font-bold text-zinc-900 truncate">
-            {member.name || member.email}
-            {isSelf && <span className="ml-2 text-[10px] font-bold uppercase tracking-wider text-zinc-400">(you)</span>}
-          </p>
-          <p className="text-xs text-zinc-500 truncate">{member.email}</p>
+        <div className="flex items-center gap-2 shrink-0">
+          <StatusBadge status={member.role} />
+          {!isSelf && (
+            <button
+              onClick={() => setConfirming(true)}
+              disabled={isPending}
+              className="text-zinc-300 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors"
+              title="Remove member"
+              aria-label={`Remove ${member.name || member.email}`}
+            >
+              <Trash2 size={16} />
+            </button>
+          )}
         </div>
       </div>
-      <div className="flex items-center gap-2 shrink-0">
-        <StatusBadge status={member.role} />
-        {!isSelf && (
-          <button
-            onClick={handleRemove}
-            disabled={isPending}
-            className="text-zinc-300 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors"
-            title="Remove member"
-          >
-            <Trash2 size={16} />
-          </button>
-        )}
-      </div>
+      {error && (
+        <p className="text-[11px] text-rose-600 mt-2 font-medium">{error}</p>
+      )}
+      <ConfirmDialog
+        open={confirming}
+        title={`Remove ${member.name || member.email}?`}
+        message="They will lose access to this business immediately. This cannot be undone."
+        confirmLabel="Yes, remove"
+        cancelLabel="Keep"
+        busy={isPending}
+        onConfirm={runRemove}
+        onClose={() => setConfirming(false)}
+      />
     </div>
   );
 }

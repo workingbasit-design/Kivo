@@ -21,9 +21,12 @@ const LANGS: { code: VoiceLang; label: string }[] = [
 
 export default function VoiceInputButton({
   onTranscript,
+  compact = false,
 }: {
   /** Called with the final transcript when the user finishes speaking. */
   onTranscript: (text: string) => void;
+  /** Compact mode: just the round mic button, for tight input rows. */
+  compact?: boolean;
 }) {
   const { state, lang, setLang, transcript, interim, toggle, reset } = useVoiceInput('hi-IN');
 
@@ -52,11 +55,52 @@ export default function VoiceInputButton({
     return (
       <span
         title="Voice input isn't supported in this browser — try Chrome."
-        className="inline-flex items-center justify-center w-10 h-10 rounded-full text-zinc-300"
+        className={`inline-flex items-center justify-center rounded-full text-zinc-300 ${
+          compact ? 'w-9 h-9' : 'w-10 h-10'
+        }`}
         aria-label="Voice input not supported"
       >
         <MicOff size={18} />
       </span>
+    );
+  }
+
+  const micButton = (
+    <button
+      type="button"
+      onClick={handleToggle}
+      aria-label={listening ? 'Stop listening' : 'Speak your message'}
+      aria-pressed={listening}
+      className={`inline-flex items-center justify-center rounded-full transition-all shrink-0 ${
+        compact ? 'w-9 h-9' : 'w-10 h-10'
+      } ${
+        listening
+          ? 'bg-red-500 text-white shadow-lg shadow-red-500/30 scale-105'
+          : 'bg-[#6329d4]/10 text-[#6329d4] hover:bg-[#6329d4]/20'
+      }`}
+    >
+      {listening ? <Square size={15} /> : <Mic size={17} />}
+    </button>
+  );
+
+  if (compact) {
+    return (
+      <div className="relative flex items-center">
+        {micButton}
+        {(listening || interim) && (
+          <p
+            className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 whitespace-nowrap max-w-[200px] truncate text-[11px] text-zinc-500 italic bg-white border border-zinc-200 rounded-lg px-2 py-1 shadow-sm"
+            aria-live="polite"
+          >
+            {interim || transcript || 'Listening…'}
+          </p>
+        )}
+        {state === 'denied' && (
+          <p className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 whitespace-nowrap text-[11px] text-rose-600 bg-rose-50 border border-rose-200 rounded-lg px-2 py-1 shadow-sm">
+            Mic blocked — allow access in browser settings.
+          </p>
+        )}
+      </div>
     );
   }
 
@@ -103,19 +147,7 @@ export default function VoiceInputButton({
             </button>
           ))}
         </div>
-        <button
-          type="button"
-          onClick={handleToggle}
-          aria-label={listening ? 'Stop listening' : 'Speak your message'}
-          aria-pressed={listening}
-          className={`inline-flex items-center justify-center w-10 h-10 rounded-full transition-all ${
-            listening
-              ? 'bg-red-500 text-white shadow-lg shadow-red-500/30 scale-105'
-              : 'bg-[#6329d4]/10 text-[#6329d4] hover:bg-[#6329d4]/20'
-          }`}
-        >
-          {listening ? <Square size={16} /> : <Mic size={18} />}
-        </button>
+        {micButton}
       </div>
     </div>
   );

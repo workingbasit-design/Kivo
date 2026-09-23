@@ -3,6 +3,7 @@
 import React, { useActionState, useTransition } from 'react';
 import { Star, Trash2, AlertCircle, CheckCircle2, Plus } from 'lucide-react';
 import { createReview, deleteReview, type ReviewResult } from '@/app/actions/reviews';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import { Card, StatCard, EmptyState, Field, inputClass, primaryBtnClass } from '@/components/ui';
 import { formatDateShort } from '@/lib/utils';
 
@@ -110,15 +111,15 @@ function AddReviewForm({ customers }: { customers: CustomerOption[] }) {
 function ReviewRow({ review }: { review: ReviewItem }) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = React.useState<string | null>(null);
+  const [confirming, setConfirming] = React.useState(false);
 
-  const handleDelete = () => {
-    if (confirm('Delete this review?')) {
-      startTransition(async () => {
-        setError(null);
-        const res = await deleteReview(review.id);
-        if (res.error) setError(res.error);
-      });
-    }
+  const runDelete = () => {
+    setConfirming(false);
+    startTransition(async () => {
+      setError(null);
+      const res = await deleteReview(review.id);
+      if (res.error) setError(res.error);
+    });
   };
 
   return (
@@ -144,14 +145,23 @@ function ReviewRow({ review }: { review: ReviewItem }) {
           </p>
         </div>
         <button
-          onClick={handleDelete}
+          onClick={() => setConfirming(true)}
           disabled={isPending}
           className="text-zinc-300 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors shrink-0 disabled:opacity-50"
           title="Delete review"
+          aria-label="Delete review"
         >
           <Trash2 size={16} />
         </button>
       </div>
+      <ConfirmDialog
+        open={confirming}
+        title="Delete this review?"
+        message="The review will be permanently removed. This cannot be undone."
+        busy={isPending}
+        onConfirm={runDelete}
+        onClose={() => setConfirming(false)}
+      />
     </div>
   );
 }

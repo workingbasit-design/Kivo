@@ -8,6 +8,7 @@ import {
 import { AnimatePresence, motion } from 'motion/react';
 import { currencySymbol } from '@/lib/money';
 import type { JobDraft } from '@/lib/copilot/engine';
+import VoiceInputButton from '@/components/copilot/VoiceInputButton';
 
 type Message = {
   id: string;
@@ -436,12 +437,19 @@ export default function GlobalCopilotWidget({ currency }: { currency?: string })
 
             {/* Input Area */}
             <div className="p-4 bg-white border-t border-zinc-200 shrink-0">
-              <form onSubmit={handleSend} className="relative flex items-center">
+              <form onSubmit={handleSend} className="relative flex items-center gap-2">
+                <VoiceInputButton
+                  compact
+                  onTranscript={(text) =>
+                    setInput((prev) => (prev ? `${prev} ${text}` : text))
+                  }
+                />
                 <input
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Jaise: Ramesh ka AC repair kal 3 baje…"
+                  aria-label="Ask Kivo AI"
                   className="w-full pl-4 pr-12 py-3 rounded-xl border border-zinc-200 bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-[#6329d4]/40 focus:border-transparent text-sm text-zinc-900 placeholder:text-zinc-400 transition-shadow"
                 />
                 <button

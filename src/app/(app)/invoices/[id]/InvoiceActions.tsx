@@ -72,7 +72,7 @@ export default function InvoiceActions({
                 max={remaining}
                 step="0.01"
                 required
-                placeholder={String(remaining)}
+                defaultValue={remaining}
                 className={inputClass}
               />
             </Field>

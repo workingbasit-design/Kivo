@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useActionState, useState } from 'react';
+import React, { useActionState, useEffect, useState } from 'react';
 import { AlertCircle, CloudOff, Save } from 'lucide-react';
 import { Field, inputClass, primaryBtnClass } from '@/components/ui';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
@@ -40,6 +40,24 @@ export default function JobForm({
   submitLabel: string;
 }) {
   const [state, formAction, isPending] = useActionState(action, {});
+  // Freshness: the SSR `customers` prop can be stale (client-side navigation
+  // reuses cached RSC). Refresh on mount so a customer created moments ago
+  // always appears in the combobox.
+  const [liveCustomers, setLiveCustomers] = useState<JobFormCustomer[]>(customers);
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/customers/options', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!cancelled && Array.isArray(data?.customers)) {
+          setLiveCustomers(data.customers);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const [customerChoice, setCustomerChoice] = useState<string>(
     initial?.customerId ?? (customers[0]?.id ?? '__NEW__')
   );
@@ -68,7 +86,7 @@ export default function JobForm({
           onChange={(e) => setCustomerChoice(e.target.value)}
           className={inputClass}
         >
-          {customers.map((c) => (
+          {liveCustomers.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}
             </option>

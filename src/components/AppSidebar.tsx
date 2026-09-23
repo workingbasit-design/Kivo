@@ -5,9 +5,10 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Calendar, Users, Briefcase, FileText,
-  Settings, Sparkles, ClipboardList,
+  Settings, ClipboardList,
   Tag, Star, PieChart, UserPlus, LogOut, Timer, Megaphone, Repeat, Route, CalendarCheck
 } from 'lucide-react';
+import KivoLogo from '@/components/KivoLogo';
 import { logout } from '@/app/actions/auth';
 import { formatMoney } from '@/lib/money';
 import { t, type Locale } from '@/lib/i18n';
@@ -55,9 +56,7 @@ export default function AppSidebar({
       {/* Header / Logo */}
       <div className="p-6 pb-2">
         <Link href="/dashboard" className="flex items-center gap-3 mb-8">
-          <div className="w-8 h-8 rounded-lg bg-[#6329d4] flex items-center justify-center">
-            <Sparkles className="w-5 h-5 text-white" />
-          </div>
+          <KivoLogo size={32} />
           <span className="text-xl font-bold tracking-tight text-white">Kivo</span>
         </Link>
 

@@ -7,6 +7,10 @@ import { PageHeader, Card } from '@/components/ui';
 import JobForm from '@/components/JobForm';
 import { createJobWithOfflineFallback } from '@/lib/offline/job-action';
 
+// Always render fresh: the customer list must include customers created
+// moments ago (client-side navigation can otherwise reuse a cached render).
+export const dynamic = 'force-dynamic';
+
 export default async function NewJobPage() {
   const { businessId } = await requireAuth();
 

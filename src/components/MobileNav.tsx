@@ -5,9 +5,10 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Calendar, Users, Briefcase, FileText,
-  Settings, Sparkles, ClipboardList, Tag, Star, PieChart,
+  Settings, ClipboardList, Tag, Star, PieChart,
   UserPlus, Menu, X, LogOut, Timer, Megaphone, Repeat, Route, CalendarCheck
 } from 'lucide-react';
+import KivoLogo from '@/components/KivoLogo';
 import { logout } from '@/app/actions/auth';
 import { t, type Locale } from '@/lib/i18n';
 
@@ -38,9 +39,7 @@ export default function MobileNav({ user, locale = 'en' }: { user: { name?: stri
     <header className="md:hidden sticky top-0 z-40 bg-[#17122b] text-white">
       <div className="flex items-center justify-between px-4 py-3">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-[#6329d4] flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-white" />
-          </div>
+          <KivoLogo size={28} />
           <span className="text-lg font-bold tracking-tight">Kivo</span>
         </Link>
         <button

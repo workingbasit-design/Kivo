@@ -4,6 +4,7 @@ import React, { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { Pause, Play, Pencil, Trash2 } from 'lucide-react';
 import { toggleRecurringActive, deleteRecurring } from '@/app/actions/recurring';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 /**
  * Pause/resume, edit and delete buttons for one recurring job plan.
@@ -18,6 +19,7 @@ export default function RecurringRowActions({
 }) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
 
   const run = (fn: () => Promise<{ error?: string }>) => {
     setError(null);
@@ -27,14 +29,9 @@ export default function RecurringRowActions({
     });
   };
 
-  const confirmDelete = () => {
-    if (
-      window.confirm(
-        'Delete this recurring plan? Jobs already created from it will be kept.'
-      )
-    ) {
-      run(() => deleteRecurring(id));
-    }
+  const runDelete = () => {
+    setConfirming(false);
+    run(() => deleteRecurring(id));
   };
 
   return (
@@ -58,13 +55,24 @@ export default function RecurringRowActions({
       <button
         type="button"
         disabled={isPending}
-        onClick={confirmDelete}
+        onClick={() => setConfirming(true)}
         title="Delete plan"
+        aria-label="Delete recurring plan"
         className="p-2 rounded-lg text-zinc-500 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-50"
       >
         <Trash2 size={15} />
       </button>
       {error && <span className="text-[11px] text-red-600 font-medium ml-1">{error}</span>}
+      <ConfirmDialog
+        open={confirming}
+        title="Delete this recurring plan?"
+        message="Jobs already created from it will be kept. This cannot be undone."
+        confirmLabel="Yes, delete plan"
+        cancelLabel="Keep"
+        busy={isPending}
+        onConfirm={runDelete}
+        onClose={() => setConfirming(false)}
+      />
     </div>
   );
 }

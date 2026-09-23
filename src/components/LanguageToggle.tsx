@@ -7,11 +7,10 @@
  *   const { t } = useT();
  *   t('invoices.total') // "Total" / "Total"
  *
- * The toggle below persists to the `kivo-locale` cookie and refreshes so
- * server components (e.g. invoices) re-render in the chosen language.
+ * The toggle below persists to the `kivo-locale` cookie and reloads the page so
+ * server components (e.g. the sidebar, invoices) re-render in the chosen language.
  */
 import { createContext, useContext, type ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
 import { getDictionary, LOCALE_COOKIE, LOCALES, t as lookup, type Locale } from '@/lib/i18n';
 
 const LocaleContext = createContext<Locale>('en');
@@ -31,13 +30,15 @@ export function useT(): { t: (path: string) => string; locale: Locale } {
 
 /** EN / FR segmented toggle. Renders nothing interactive until hydrated. */
 export function LanguageToggle({ current }: { current: Locale }) {
-  const router = useRouter();
-
   const setLocale = (code: Locale) => {
     if (code === current) return;
     // 1-year cookie, readable by server components via getLocale().
     document.cookie = `${LOCALE_COOKIE}=${code}; path=/; max-age=31536000; SameSite=Lax`;
-    router.refresh();
+    // Full reload (not router.refresh()): the sidebar/mobile nav labels are
+    // rendered server-side from this cookie, and router.refresh() did not
+    // reliably re-render them — labels stayed in the old language until a
+    // manual reload. A settings-page language switch may reload the page.
+    window.location.reload();
   };
 
   return (

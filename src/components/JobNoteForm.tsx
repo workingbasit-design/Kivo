@@ -4,6 +4,7 @@ import React, { useActionState, useEffect, useRef, useState, useTransition } fro
 import { AlertCircle, Send, Trash2 } from 'lucide-react';
 import { addJobNote, deleteJobNote, type JobActionResult } from '@/app/actions/jobs';
 import { inputClass, primaryBtnClass } from '@/components/ui';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 /** Add-a-note form for the job detail page. Resets after a successful save. */
 export function JobNoteForm({ jobId }: { jobId: string }) {
@@ -58,9 +59,10 @@ export function JobNoteItem({
 }) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
 
   const runDelete = () => {
-    if (!confirm('Delete this note?')) return;
+    setConfirming(false);
     setError(null);
     startTransition(async () => {
       const res = await deleteJobNote(jobId, noteId);
@@ -78,13 +80,22 @@ export function JobNoteItem({
         {error && <p className="text-[11px] text-rose-600 mt-1 font-medium">{error}</p>}
       </div>
       <button
-        onClick={runDelete}
+        onClick={() => setConfirming(true)}
         disabled={isPending}
         className="p-1.5 text-zinc-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors shrink-0"
         title="Delete note"
+        aria-label="Delete note"
       >
         <Trash2 size={14} />
       </button>
+      <ConfirmDialog
+        open={confirming}
+        title="Delete this note?"
+        message="The note will be permanently removed. This cannot be undone."
+        busy={isPending}
+        onConfirm={runDelete}
+        onClose={() => setConfirming(false)}
+      />
     </div>
   );
 }

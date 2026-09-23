@@ -4,6 +4,7 @@ import React, { useState, useTransition } from 'react';
 import { Plus, Search, Tag, Trash2, X, Sparkles } from 'lucide-react';
 import { createService, deleteService, seedDefaultServices } from '@/app/actions/services';
 import { currencySymbol, formatMoney } from '@/lib/money';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 type Service = {
   id: string;
@@ -18,6 +19,7 @@ export default function PriceBookClient({ initialServices, currency }: { initial
   const [price, setPrice] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   const filteredServices = initialServices.filter(s => 
     s.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -44,14 +46,15 @@ export default function PriceBookClient({ initialServices, currency }: { initial
     });
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to remove this service from the price book?")) {
-      startTransition(async () => {
-        setError(null);
-        const res = await deleteService(id);
-        if (res.error) setError(res.error);
-      });
-    }
+  const runDelete = () => {
+    const id = pendingDeleteId;
+    setPendingDeleteId(null);
+    if (!id) return;
+    startTransition(async () => {
+      setError(null);
+      const res = await deleteService(id);
+      if (res.error) setError(res.error);
+    });
   };
 
   const handleSeed = () => {
@@ -131,10 +134,11 @@ export default function PriceBookClient({ initialServices, currency }: { initial
 
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-lg text-zinc-900">{formatMoney(service.price, currency)}</span>
-                  <button 
-                    onClick={() => handleDelete(service.id)}
+                  <button
+                    onClick={() => setPendingDeleteId(service.id)}
                     className="opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 text-rose-500 hover:text-rose-700 p-1.5 hover:bg-rose-50 rounded-lg transition-all"
                     title="Delete service"
+                    aria-label={`Delete ${service.name}`}
                   >
                     <Trash2 size={16} />
                   </button>
@@ -238,6 +242,17 @@ export default function PriceBookClient({ initialServices, currency }: { initial
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={pendingDeleteId !== null}
+        title="Remove this service?"
+        message="The service will be removed from your price book. This cannot be undone."
+        confirmLabel="Yes, remove"
+        cancelLabel="Keep"
+        busy={isPending}
+        onConfirm={runDelete}
+        onClose={() => setPendingDeleteId(null)}
+      />
     </div>
   );
 }
