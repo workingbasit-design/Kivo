@@ -132,3 +132,46 @@ deployed URL → confirm share-token links work publicly.
 - **No automated cron for recurring catch-up** beyond dashboard-load lazy
   generation; a plan months overdue catches up one occurrence per dashboard
   visit (manual Generate button available).
+
+---
+
+## Sprint additions (2026-09-23)
+
+**AI Insights dashboard (`/insights`).** Forward-looking analytics computed
+strictly from the business's own records — no benchmarks, no fake data. Revenue
+momentum (last complete month vs previous), margins by service (job revenue
+minus recorded expenses, best/worst highlighted), customer lifetime value +
+repeat-customer rate, seasonal demand (avg jobs/month across all history), smart
+scheduling suggestions (busiest day, highest-value day, quiet windows), quote
+win-rate with stale-quote follow-up list (SENT 7+ days), and team utilization.
+Every figure is labeled "computed from your own data" with the backing record
+counts; empty states explain what to do. EN/fr-CA, loading skeleton, sidebar
+nav item. Pure computation (`src/lib/insights-compute.ts`) covered by 9 unit
+tests; DB entry point (`getInsights`) is tenant-scoped via `requireAuth`.
+
+**Command palette (⌘K / Ctrl+K).** Bilingual, keyboard-operable (arrows/enter/
+esc), covering all nav destinations plus quick actions (new job/customer/quote/
+invoice). Lazy-loaded client-side (`ssr: false`) via a new `LazyOverlays`
+wrapper so it costs nothing on first paint; trigger buttons in the desktop
+sidebar and mobile top bar.
+
+**Perf.** `GlobalCopilotWidget` and the command palette moved behind the lazy
+overlay wrapper — neither ships in the first-paint bundle anymore. Dashboard
+and insights data layers use batched queries (`Promise.all`, `groupBy`); no
+N+1 patterns found on dashboard/reports/insights paths.
+
+**Import hardening.** CSV customer/service imports now dedupe against existing
+records (customers: normalized name+phone; services: name) and within the file
+itself — re-importing the same file reports "skipped" counts instead of
+creating duplicates. The import UI already surfaced skipped counts.
+
+**Docs.** New `docs/USER_SETUP_CHECKLIST.md`: consolidated setup checklist with
+exact env vars, provider accounts, Google OAuth redirect URIs
+(`/api/auth/google/callback`, `/api/google/callback`), Stripe Connect redirect
+(`/api/stripe/callback`), Stripe webhook (`/api/stripe/webhook`,
+`checkout.session.completed` + `checkout.session.expired`) and WhatsApp webhook
+URIs, cron routes and `CRON_SECRET` auth, per-business in-app setup, and the
+graceful-degradation behavior of every integration.
+
+Verification on the final tree: `npx tsc --noEmit` clean, `npm test` 442/442,
+`npm run build` green.
