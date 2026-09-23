@@ -7,22 +7,21 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model User {
-  id             String     @id @default(cuid())
-  email          String     @unique
-  passwordHash   String
-  name           String?
-  role           String     @default("ADMIN")
-  business       Business?  @relation(fields: [businessId], references: [id])
-  businessId     String?
-  sessions       Session[]
-  assignedJobs   Job[]      @relation("JobAssignedTo")
-  jobNotes       JobNote[]  @relation("JobNoteAuthor")
-  jobPhotos      JobPhoto[] @relation("JobPhotoUploadedBy")
-  timeEntries    TimeEntry[]
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
+  id           String      @id @default(cuid())
+  email        String      @unique
+  passwordHash String
+  name         String?
+  role         String      @default("ADMIN")
+  business     Business?   @relation(fields: [businessId], references: [id])
+  businessId   String?
+  sessions     Session[]
+  assignedJobs Job[]       @relation("JobAssignedTo")
+  jobNotes     JobNote[]   @relation("JobNoteAuthor")
+  jobPhotos    JobPhoto[]  @relation("JobPhotoUploadedBy")
+  timeEntries  TimeEntry[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
 }
 
 model Session {
@@ -33,64 +32,67 @@ model Session {
 }
 
 model Business {
-  id         String       @id @default(cuid())
-  name       String
-  regionCode String       @default("CA")
-  currency   String       @default("CAD")
-  taxRegion  String?
-  phone      String?
-  whatsappNumber String?  // Preferred number for WhatsApp wa.me links; falls back to phone
-  workingHours   String?  // JSON string: {"mon":["09:00","18:00"],"tue":[...],...}; null = not configured
-  address    String?
-  taxId      String?  @map("gstin") // Canadian GST/HST number (CRA business number); DB column kept as gstin
-  upiId      String?
-  interacEmail String?  // Interac e-Transfer email for CA businesses; shown on invoices (record-only, EveryJob never processes payments)
-  timezone   String?    // IANA timezone, e.g. "America/Toronto"; null = region default
-  logoUrl    String?
-  portalTokens CustomerPortalToken[]
-  users      User[]
-  customers  Customer[]
-  jobs       Job[]
-  services   Service[]
-  invoices   Invoice[]
-  shareTokens ShareToken[]
-  messageLogs MessageLog[]
-  communications Communication[]
-  leads      Lead[]
-  quotes     Quote[]
-  signatureRequests SignatureRequest[]
-  reviews    Review[]
-  recurringJobs RecurringJob[]
-  timeEntries TimeEntry[]
-  bookingPage BookingPage?
-  directoryOptIn       Boolean @default(true)  // show business in the public EveryJob directory
-  directoryHideAddress Boolean @default(true)  // show area/city only, not the exact address
+  id                   String                @id @default(cuid())
+  name                 String
+  regionCode           String                @default("CA")
+  currency             String                @default("CAD")
+  taxRegion            String?
+  phone                String?
+  whatsappNumber       String? // Preferred number for WhatsApp wa.me links; falls back to phone
+  workingHours         String? // JSON string: {"mon":["09:00","18:00"],"tue":[...],...}; null = not configured
+  address              String?
+  taxId                String?               @map("gstin") // Canadian GST/HST number (CRA business number); DB column kept as gstin
+  upiId                String?
+  interacEmail         String? // Interac e-Transfer email for CA businesses; shown on invoices (record-only, EveryJob never processes payments)
+  timezone             String? // IANA timezone, e.g. "America/Toronto"; null = region default
+  defaultHourlyRate    Float? // default labor rate (CAD/hr) for job costing; null = not set
+  logoUrl              String?
+  portalTokens         CustomerPortalToken[]
+  users                User[]
+  customers            Customer[]
+  jobs                 Job[]
+  services             Service[]
+  invoices             Invoice[]
+  shareTokens          ShareToken[]
+  messageLogs          MessageLog[]
+  communications       Communication[]
+  leads                Lead[]
+  quotes               Quote[]
+  signatureRequests    SignatureRequest[]
+  reviews              Review[]
+  recurringJobs        RecurringJob[]
+  timeEntries          TimeEntry[]
+  bookingPage          BookingPage?
+  checklistTemplates   ChecklistTemplate[]
+  expenses             JobExpense[]
+  directoryOptIn       Boolean               @default(true) // show business in the public EveryJob directory
+  directoryHideAddress Boolean               @default(true) // show area/city only, not the exact address
   directoryReports     DirectoryReport[]
-  campaigns  Campaign[]
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
+  campaigns            Campaign[]
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
 }
 
 model Customer {
-  id         String   @id @default(cuid())
-  name       String
-  phone      String?
-  phoneNorm  String?  // E.164 digits (no "+") for matching + WhatsApp links; `phone` keeps the user's formatting
-  email      String?
-  address    String?
-  province   String?    // Province/state code or name (e.g. "ON" for Ontario)
-  postalCode String?    // Validated + formatted: "A1A 1A1" (CA) or 6-digit PIN (IN)
-  notes      String?
-  businessId String
-  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  jobs       Job[]
-  invoices   Invoice[]
-  quotes     Quote[]
-  reviews    Review[]
+  id            String                @id @default(cuid())
+  name          String
+  phone         String?
+  phoneNorm     String? // E.164 digits (no "+") for matching + WhatsApp links; `phone` keeps the user's formatting
+  email         String?
+  address       String?
+  province      String? // Province/state code or name (e.g. "ON" for Ontario)
+  postalCode    String? // Validated + formatted: "A1A 1A1" (CA) or 6-digit PIN (IN)
+  notes         String?
+  businessId    String
+  business      Business              @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  jobs          Job[]
+  invoices      Invoice[]
+  quotes        Quote[]
+  reviews       Review[]
   recurringJobs RecurringJob[]
-  portalTokens CustomerPortalToken[]
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  portalTokens  CustomerPortalToken[]
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
 }
 
 model Service {
@@ -104,29 +106,31 @@ model Service {
 }
 
 model Job {
-  id           String     @id @default(cuid())
-  title        String
-  date         DateTime
-  time         String?
-  address      String?
-  price        Float
-  status       String     // NEW, SCHEDULED, IN PROGRESS, COMPLETED, PAID, CANCELLED
-  notes        String?
-  technician   String?
-  assignedToId String?
-  assignedTo   User?      @relation("JobAssignedTo", fields: [assignedToId], references: [id])
-  customerId   String
-  customer     Customer   @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  businessId   String
-  business     Business   @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  id             String             @id @default(cuid())
+  title          String
+  date           DateTime
+  time           String?
+  address        String?
+  price          Float
+  status         String // NEW, SCHEDULED, IN PROGRESS, COMPLETED, PAID, CANCELLED
+  notes          String?
+  technician     String?
+  assignedToId   String?
+  assignedTo     User?              @relation("JobAssignedTo", fields: [assignedToId], references: [id])
+  customerId     String
+  customer       Customer           @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  businessId     String
+  business       Business           @relation(fields: [businessId], references: [id], onDelete: Cascade)
   recurringJobId String?
-  recurringJob RecurringJob? @relation(fields: [recurringJobId], references: [id], onDelete: SetNull)
-  timeEntries  TimeEntry[]
-  jobNotes     JobNote[]
-  jobPhotos    JobPhoto[]
-  idempotencyKey String? @unique // booking-confirm dedupe key (UUID); null for jobs not created via booking
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  recurringJob   RecurringJob?      @relation(fields: [recurringJobId], references: [id], onDelete: SetNull)
+  timeEntries    TimeEntry[]
+  jobNotes       JobNote[]
+  jobPhotos      JobPhoto[]
+  expenses       JobExpense[]
+  checklistItems JobChecklistItem[]
+  idempotencyKey String?            @unique // booking-confirm dedupe key (UUID); null for jobs not created via booking
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
 
   // Backstop for recurring auto-generation idempotency: one job per plan per day.
   // NULL recurringJobId values never conflict, so manual jobs are unaffected.
@@ -134,25 +138,25 @@ model Job {
 }
 
 model Invoice {
-  id           String    @id @default(cuid())
-  number       String
-  date         DateTime
-  subtotal     Float     @default(0)
-  taxRate      Float     @default(0)
-  taxType      String?   // "GST", "HST", "PST", "CGST", "SGST", "IGST"
-  taxAmount    Float     @default(0)
-  total        Float
-  status       String    // UNPAID, PARTIALLY PAID, PAID
-  notes        String?
-  customerId   String
-  customer     Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  businessId   String
-  business     Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  payments     Payment[]
-  lineItems    InvoiceLineItem[]
-  shareTokens  ShareToken[]
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id          String            @id @default(cuid())
+  number      String
+  date        DateTime
+  subtotal    Float             @default(0)
+  taxRate     Float             @default(0)
+  taxType     String? // "GST", "HST", "PST", "CGST", "SGST", "IGST"
+  taxAmount   Float             @default(0)
+  total       Float
+  status      String // UNPAID, PARTIALLY PAID, PAID
+  notes       String?
+  customerId  String
+  customer    Customer          @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  businessId  String
+  business    Business          @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  payments    Payment[]
+  lineItems   InvoiceLineItem[]
+  shareTokens ShareToken[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
 }
 
 // Structured line items for an invoice. Items were previously stored as
@@ -165,7 +169,7 @@ model InvoiceLineItem {
   description String
   qty         Float
   unitPrice   Float
-  position    Int      // display order
+  position    Int // display order
   createdAt   DateTime @default(now())
 }
 
@@ -176,7 +180,7 @@ model InvoiceLineItem {
 model ShareToken {
   id         String    @id @default(cuid())
   token      String    @unique
-  type       String    // "QUOTE" | "INVOICE"
+  type       String // "QUOTE" | "INVOICE"
   quoteId    String?
   quote      Quote?    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
   invoiceId  String?
@@ -201,23 +205,23 @@ model CustomerPortalToken {
 }
 
 model Payment {
-  id            String    @id @default(cuid())
+  id            String   @id @default(cuid())
   amount        Float
-  provider      String    // "STRIPE", "INTERAC", "CASH", "CHEQUE"
+  provider      String // "STRIPE", "INTERAC", "CASH", "CHEQUE"
   transactionId String?
-  status        String    // "PENDING", "COMPLETED", "FAILED"
+  status        String // "PENDING", "COMPLETED", "FAILED"
   invoiceId     String
-  invoice       Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  invoice       Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model MessageLog {
   id         String   @id @default(cuid())
-  type       String   // "SMS", "WHATSAPP", "EMAIL"
+  type       String // "SMS", "WHATSAPP", "EMAIL"
   recipient  String
   content    String
-  status     String   // "SENT", "FAILED", "DELIVERED"
+  status     String // "SENT", "FAILED", "DELIVERED"
   businessId String
   business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
   createdAt  DateTime @default(now())
@@ -225,14 +229,14 @@ model MessageLog {
 
 model Communication {
   id           String   @id @default(cuid())
-  type         String   // "CALL", "WHATSAPP", "SMS"
+  type         String // "CALL", "WHATSAPP", "SMS"
   contactName  String
   contactPhone String
-  status       String   // "WAITING", "REPLIED", "RESOLVED"
+  status       String // "WAITING", "REPLIED", "RESOLVED"
   waitingSince DateTime @default(now())
-  content      String?  // Message body or call summary
-  jobCategory  String?  // e.g. "AC repair"
-  estValue     Float?   // Estimated value
+  content      String? // Message body or call summary
+  jobCategory  String? // e.g. "AC repair"
+  estValue     Float? // Estimated value
   businessId   String
   business     Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
   createdAt    DateTime @default(now())
@@ -264,11 +268,11 @@ model Lead {
   id         String   @id @default(cuid())
   name       String
   phone      String?
-  phoneNorm  String?  // E.164 digits (no "+") for matching + WhatsApp links; `phone` keeps the user's formatting
+  phoneNorm  String? // E.164 digits (no "+") for matching + WhatsApp links; `phone` keeps the user's formatting
   email      String?
   details    String?
-  status     String   // "NEW", "CONTACTED", "CONVERTED"
-  source     String?  // e.g., "WhatsApp", "Phone", "Website"
+  status     String // "NEW", "CONTACTED", "CONVERTED"
+  source     String? // e.g., "WhatsApp", "Phone", "Website"
   businessId String
   business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
   createdAt  DateTime @default(now())
@@ -276,31 +280,32 @@ model Lead {
 }
 
 model Quote {
-  id         String   @id @default(cuid())
-  number     String
-  title      String
-  total      Float
-  status     String   // "DRAFT", "SENT", "APPROVED", "DECLINED"
-  customerId String
-  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  businessId String
-  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  shareTokens ShareToken[]
+  id                String             @id @default(cuid())
+  number            String
+  title             String
+  total             Float
+  status            String // "DRAFT", "SENT", "APPROVED", "DECLINED"
+  customerId        String
+  customer          Customer           @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  businessId        String
+  business          Business           @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  shareTokens       ShareToken[]
   signatureRequests SignatureRequest[]
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  addons            QuoteAddon[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 }
 
 model SignatureRequest {
   id            String    @id @default(cuid())
   tokenHash     String    @unique // SHA-256 of the signing-link token; raw token never stored
-  status        String    // "sent" | "viewed" | "signed" | "declined" | "expired" | "revoked"
-  fieldsJson    String    // JSON array of placed fields: {type: "signature"|"date"|"initials", x: number, y: number, page: number}
+  status        String // "sent" | "viewed" | "signed" | "declined" | "expired" | "revoked"
+  fieldsJson    String // JSON array of placed fields: {type: "signature"|"date"|"initials", x: number, y: number, page: number}
   signerName    String?
-  signerContact String?   // phone or email the link was shared to
-  docHash       String    // SHA-256 of canonical quote JSON at send time (tamper evidence)
-  signatureData String?   // data URL of drawn signature image, or typed name
-  auditJson     String    // JSON array of {event, at, ip}
+  signerContact String? // phone or email the link was shared to
+  docHash       String // SHA-256 of canonical quote JSON at send time (tamper evidence)
+  signatureData String? // data URL of drawn signature image, or typed name
+  auditJson     String // JSON array of {event, at, ip}
   expiresAt     DateTime?
   revokedAt     DateTime?
   signedAt      DateTime?
@@ -313,35 +318,35 @@ model SignatureRequest {
 }
 
 model Review {
-  id         String   @id @default(cuid())
-  rating     Int      // 1-5
+  id         String    @id @default(cuid())
+  rating     Int // 1-5
   comment    String?
-  source     String?  // e.g., "Google", "WhatsApp", "Direct"
+  source     String? // e.g., "Google", "WhatsApp", "Direct"
   customerId String?
   customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
   businessId String
-  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  business   Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 }
 
 model RecurringJob {
-  id          String   @id @default(cuid())
-  title       String
-  frequency   String   // WEEKLY, BIWEEKLY, MONTHLY
-  nextRun     DateTime
-  time        String?
-  address     String?
-  price       Float
-  notes       String?
-  active      Boolean  @default(true)
-  customerId  String
-  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  businessId  String
-  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  jobs        Job[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(cuid())
+  title      String
+  frequency  String // WEEKLY, BIWEEKLY, MONTHLY
+  nextRun    DateTime
+  time       String?
+  address    String?
+  price      Float
+  notes      String?
+  active     Boolean  @default(true)
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  jobs       Job[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 model TimeEntry {
@@ -376,8 +381,8 @@ model Campaign {
   name       String
   subject    String
   body       String
-  audience   String   // ALL_CUSTOMERS, WITH_UNPAID, RECENT_JOBS
-  status     String   // DRAFT, QUEUED, SENT
+  audience   String // ALL_CUSTOMERS, WITH_UNPAID, RECENT_JOBS
+  status     String // DRAFT, QUEUED, SENT
   businessId String
   business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
   createdAt  DateTime @default(now())
@@ -388,7 +393,7 @@ model DirectoryReport {
   id              String   @id @default(cuid())
   businessId      String
   business        Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  reason          String   // e.g. "spam", "fake", "wrong-info", "other"
+  reason          String // e.g. "spam", "fake", "wrong-info", "other"
   details         String?
   reporterContact String?
   status          String   @default("OPEN") // OPEN, REVIEWED, DISMISSED
@@ -418,4 +423,57 @@ model DirectoryRequest {
 
   @@index([status])
   @@index([city])
+}
+
+// ── Jobber-parity additions (all free) ──
+
+model JobExpense {
+  id          String   @id @default(cuid())
+  jobId       String
+  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  businessId  String
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  description String
+  amount      Float
+  category    String   @default("MATERIALS") // MATERIALS, TRAVEL, OTHER
+  spentAt     DateTime @default(now())
+  createdAt   DateTime @default(now())
+}
+
+model QuoteAddon {
+  id        String   @id @default(cuid())
+  quoteId   String
+  quote     Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  title     String
+  price     Float
+  selected  Boolean  @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model ChecklistTemplate {
+  id         String                  @id @default(cuid())
+  businessId String
+  business   Business                @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  name       String
+  items      ChecklistTemplateItem[]
+  createdAt  DateTime                @default(now())
+}
+
+model ChecklistTemplateItem {
+  id         String            @id @default(cuid())
+  templateId String
+  template   ChecklistTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  label      String
+  sortOrder  Int               @default(0)
+}
+
+model JobChecklistItem {
+  id        String   @id @default(cuid())
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  label     String
+  done      Boolean  @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
 }
