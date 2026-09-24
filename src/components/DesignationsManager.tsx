@@ -6,7 +6,9 @@ import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import {
   Badge,
+  Dialog,
   Field,
+  dangerBtnClass,
   inputClass,
   primaryBtnClass,
   secondaryBtnClass,
@@ -50,8 +52,11 @@ function toInputDate(d: Date | null): string {
 function fmtDate(d: Date | null, locale: Locale): string {
   if (!d) return '';
   try {
+    // Dates are stored as UTC midnight; format in UTC so the calendar date
+    // shown matches the date entered, whatever the viewer's timezone is.
     return new Date(d).toLocaleDateString(locale === 'fr' ? 'fr-CA' : 'en-CA', {
       dateStyle: 'medium',
+      timeZone: 'UTC',
     });
   } catch {
     return '';
@@ -71,6 +76,8 @@ export default function DesignationsManager({
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [pending, startTransition] = useTransition();
+  /** Id of the credential awaiting delete confirmation (in-app dialog). */
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const openAdd = () => {
     setEditingId(null);
@@ -107,10 +114,14 @@ export default function DesignationsManager({
       setItems(await listDesignations());
     });
 
-  const remove = (id: string) => {
-    if (!window.confirm(tr('credentials.deleteConfirm'))) return;
+  const askRemove = (id: string) => setDeleteId(id);
+
+  const confirmRemove = () => {
+    const id = deleteId;
+    if (!id) return;
     startTransition(async () => {
       const res = await deleteDesignation(id);
+      setDeleteId(null);
       if (res.error) {
         toast.error(res.error);
         return;
@@ -161,7 +172,7 @@ export default function DesignationsManager({
               </button>
               <button
                 type="button"
-                onClick={() => remove(d.id)}
+                onClick={() => askRemove(d.id)}
                 disabled={pending}
                 className="p-1.5 rounded-lg text-zinc-500 hover:bg-red-50 hover:text-red-600"
                 aria-label={tr('credentials.deleteBtn')}
@@ -244,6 +255,34 @@ export default function DesignationsManager({
           </div>
         </div>
       )}
+
+      <Dialog
+        open={deleteId !== null}
+        onClose={() => setDeleteId(null)}
+        title={tr('credentials.deleteConfirm')}
+        locale={locale}
+      >
+        <p className="text-sm text-zinc-600">
+          {items.find((x) => x.id === deleteId)?.title}
+        </p>
+        <div className="mt-5 flex gap-2 justify-end">
+          <button
+            type="button"
+            onClick={() => setDeleteId(null)}
+            className={secondaryBtnClass}
+          >
+            {tr('credentials.cancel')}
+          </button>
+          <button
+            type="button"
+            onClick={confirmRemove}
+            disabled={pending}
+            className={dangerBtnClass}
+          >
+            {tr('credentials.deleteBtn')}
+          </button>
+        </div>
+      </Dialog>
     </div>
   );
 }
