@@ -160,8 +160,9 @@ export function detectMessageLang(raw: string): 'fr' | 'en' | null {
     ' merci ', ' bonjour ', ' bonsoir ', ' salut ', ' veuillez ', ' quel ', ' quelle ', ' quels ', ' quelles ',
     ' quand ', ' pourquoi ', ' comment ', " s il ", ' etes ', ' suis ', ' aujourd hui ', ' tache ', ' taches ',
     ' devis ', ' paiement ', ' paiements ', ' horaire ', ' revenu ', ' revenus ', ' gagne ', ' dois ',
-    ' rendez vous ', ' plomberie ', ' plombier ', ' fournaise ', ' rappel ', ' rappelle ', ' tache ',
-    ' client ', ' clients ', ' entreprise ', ' travail ',
+    ' rendez vous ', ' plomberie ', ' plombier ', ' fournaise ', ' rappel ', ' rappelle ',
+    // NOTE: 'client'/'clients' deliberately excluded — English speakers use
+    // them too, so they are not reliable French signals.
   ];
   const enMarkers = [
     ' the ', ' what ', ' how ', ' my ', ' your ', ' today ', ' tomorrow ', ' schedule ',
