@@ -14,9 +14,6 @@ import {
 
 export type DesignationResult = { error?: string; ok?: boolean; id?: string };
 
-// Re-exported for the settings UI.
-export { DESIGNATION_TYPES };
-
 function limited(key: string): DesignationResult | null {
   const rl = rateLimit(key, ACTION_LIMIT);
   if (!rl.ok) return { error: 'Too many requests. Please slow down.' };

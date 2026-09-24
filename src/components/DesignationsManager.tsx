@@ -13,12 +13,11 @@ import {
   selectClass,
 } from '@/components/ui';
 import {
-  DESIGNATION_TYPES,
   createDesignation,
   deleteDesignation,
   updateDesignation,
 } from '@/app/actions/designations';
-import type { DesignationType } from '@/lib/designations';
+import { DESIGNATION_TYPES, type DesignationType } from '@/lib/designations';
 
 export type DesignationRow = {
   id: string;
