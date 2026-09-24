@@ -64,6 +64,26 @@ interface StatusCount {
 }
 
 const OPEN_JOB_STATUSES = ["NEW", "SCHEDULED", "IN PROGRESS"];
+
+/**
+ * "Booked today" summary from a list of today's jobs.
+ *
+ * Cancelled jobs never count as booked revenue and never count as jobs left
+ * (2026-09-24 defect: cancelling a job left its amount in the sidebar total
+ * until a manual reload). Pure function — unit-tested in
+ * `__tests__/dashboard.test.mts`. Shared by the dashboard stats and the app
+ * shell (sidebar) so both surfaces always agree.
+ */
+export function summarizeTodayJobs(jobs: { status: string; price: number | null }[]): {
+  bookedToday: number;
+  jobsLeftToday: number;
+} {
+  const bookedToday = jobs
+    .filter((j) => j.status !== 'CANCELLED')
+    .reduce((s, j) => s + (j.price ?? 0), 0);
+  const jobsLeftToday = jobs.filter((j) => OPEN_JOB_STATUSES.includes(j.status)).length;
+  return { bookedToday, jobsLeftToday };
+}
 const DONE_JOB_STATUSES = ["COMPLETED", "PAID"];
 const OPEN_INVOICE_STATUSES = ["UNPAID", "PARTIALLY PAID"];
 
@@ -153,10 +173,8 @@ export async function getDashboardStats(businessId: string): Promise<DashboardSt
   });
 
   const todayJobs = todayJobsRaw.map(mapJob);
-  const bookedToday = todayJobs.reduce((s: number, j: TodayJob) => s + j.price, 0);
-  const jobsLeftToday = todayJobs.filter((j: TodayJob) =>
-    OPEN_JOB_STATUSES.includes(j.status)
-  ).length;
+  // Shared with the app shell so the dashboard and sidebar always agree.
+  const { bookedToday, jobsLeftToday } = summarizeTodayJobs(todayJobs);
 
   const allOutstanding: DueInvoice[] = openInvoices.map((inv: InvoiceWithPayments) => {
     const paid = inv.payments.reduce((s: number, p: { amount: number }) => s + p.amount, 0);

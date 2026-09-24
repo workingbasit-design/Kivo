@@ -112,7 +112,7 @@ export async function createJob(
       date: parseDateInput(parsed.data.date),
       time: parsed.data.time || null,
       address: parsed.data.address || null,
-      price: parsed.data.price,
+      price: Math.round(parsed.data.price * 100) / 100, // cents (2026-09-24)
       status: 'SCHEDULED',
       notes: parsed.data.notes || null,
       technician: parsed.data.technician || null,
@@ -186,7 +186,7 @@ export async function updateJob(
       date: parseDateInput(parsed.data.date),
       time: parsed.data.time || null,
       address: parsed.data.address || null,
-      price: parsed.data.price,
+      price: Math.round(parsed.data.price * 100) / 100, // cents (2026-09-24)
       notes: parsed.data.notes || null,
       technician: parsed.data.technician || null,
     },
@@ -217,7 +217,14 @@ export async function updateJobStatus(
     return { error: `Cannot move job from ${job.status} to ${newStatus}.` };
   }
 
-  await prisma.job.update({ where: { id: jobId }, data: { status: newStatus } });
+  // 2026-09-24: never throw on the write path — an unhandled throw renders a
+  // full server-error page instead of the inline error + toast the UI shows.
+  try {
+    await prisma.job.update({ where: { id: jobId }, data: { status: newStatus } });
+  } catch (e) {
+    console.error('[jobs] updateJobStatus failed', e);
+    return { error: 'Could not update the job. Please try again.' };
+  }
   revalidateJobPaths(jobId);
   return { ok: true };
 }

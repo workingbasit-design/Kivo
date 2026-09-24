@@ -72,7 +72,7 @@ export async function createRecurring(
       nextRun: parseDateInput(parsed.data.startDate),
       time: parsed.data.time || null,
       address: parsed.data.address || null,
-      price: parsed.data.price,
+      price: Math.round(parsed.data.price * 100) / 100, // cents (2026-09-24)
       notes: parsed.data.notes || null,
       customerId: parsed.data.customerId,
       businessId,
@@ -121,7 +121,7 @@ export async function updateRecurring(
       nextRun: parseDateInput(parsed.data.startDate),
       time: parsed.data.time || null,
       address: parsed.data.address || null,
-      price: parsed.data.price,
+      price: Math.round(parsed.data.price * 100) / 100, // cents (2026-09-24)
       notes: parsed.data.notes || null,
       customerId: parsed.data.customerId,
     },

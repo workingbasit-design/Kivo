@@ -10,12 +10,14 @@ import {
   confirmCalendarImport,
   listImportCustomers,
   validateCsvImport,
+  validateRowsImport,
   commitCsvImport,
   type CalendarImportItem,
 } from '@/app/actions/imports';
 import type { getGoogleStatus } from '@/app/actions/google-reviews';
 import type { CalendarDraft } from '@/lib/google-calendar';
 import type { CsvType, CsvRecord } from '@/lib/csv';
+import { excelRowsToStrings } from '@/lib/csv';
 
 type GoogleStatus = Awaited<ReturnType<typeof getGoogleStatus>>;
 type Customer = { id: string; name: string };
@@ -55,9 +57,12 @@ function SectionTitle({ icon: Icon, title, desc }: { icon: ElementType; title: s
 export default function ImportsClient({
   locale,
   googleStatus,
+  initialType = 'customers',
 }: {
   locale: Locale;
   googleStatus: GoogleStatus;
+  /** Preselect the import type (e.g. when linked from the Customers page). */
+  initialType?: CsvType;
 }) {
   /* ---------------- Google Calendar ---------------- */
   const [from, setFrom] = useState(isoDay(0));
@@ -128,8 +133,8 @@ export default function ImportsClient({
 
   const selectableCount = drafts.filter((d) => checked[d.googleEventId] && pickedCustomer[d.googleEventId]).length;
 
-  /* ---------------- CSV ---------------- */
-  const [csvType, setCsvType] = useState<CsvType>('customers');
+  /* ---------------- CSV / Excel ---------------- */
+  const [csvType, setCsvType] = useState<CsvType>(initialType);
   const [csvValid, setCsvValid] = useState<CsvRecord[]>([]);
   const [csvErrors, setCsvErrors] = useState<{ row: number; message: string }[]>([]);
   const [csvMsg, setCsvMsg] = useState<string | null>(null);
@@ -137,28 +142,68 @@ export default function ImportsClient({
   const [csvBusy, startCsv] = useTransition();
   const fileRef = useRef<HTMLInputElement>(null);
 
+  function applyValidationResult(res: {
+    ok?: boolean;
+    error?: string;
+    valid?: CsvRecord[];
+    errors?: { row: number; message: string }[];
+  }) {
+    if (!res.ok) {
+      setCsvErrors([{ row: 0, message: res.error ?? t(locale, 'imports.failedToRead') }]);
+      return;
+    }
+    setCsvValid(res.valid ?? []);
+    setCsvErrors(res.errors ?? []);
+  }
+
+  async function validateExcelFile(file: File) {
+    try {
+      // SheetJS is code-split: only downloaded when the user imports Excel.
+      const XLSX = await import('xlsx');
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { type: 'array' });
+      const firstSheet = wb.SheetNames[0];
+      if (!firstSheet) throw new Error('empty');
+      const aoa = XLSX.utils.sheet_to_json<unknown[]>(
+        wb.Sheets[firstSheet],
+        { header: 1, raw: false, defval: '' }
+      );
+      // Normalize to trimmed string cells; drop fully-blank rows.
+      const rows = excelRowsToStrings(aoa);
+      if (rows.length === 0) throw new Error('empty');
+      const res = await validateRowsImport(csvType, rows);
+      applyValidationResult(res);
+    } catch {
+      setCsvErrors([{ row: 0, message: t(locale, 'imports.failedToRead') }]);
+    }
+  }
+
   function handleFile(file: File | undefined) {
     setCsvMsg(null);
     setCsvValid([]);
     setCsvErrors([]);
     setCsvFileName(null);
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const text = String(reader.result ?? '');
-      setCsvFileName(file.name);
-      startCsv(async () => {
-        const res = await validateCsvImport(csvType, text);
-        if (!res.ok) {
-          setCsvErrors([{ row: 0, message: res.error ?? t(locale, 'imports.failedToRead') }]);
-          return;
-        }
-        setCsvValid(res.valid ?? []);
-        setCsvErrors(res.errors ?? []);
-      });
-    };
-    reader.onerror = () => setCsvErrors([{ row: 0, message: t(locale, 'imports.failedToRead') }]);
-    reader.readAsText(file);
+    setCsvFileName(file.name);
+    const isExcel = /\.(xlsx|xls)$/i.test(file.name);
+    startCsv(async () => {
+      if (isExcel) {
+        await validateExcelFile(file);
+        return;
+      }
+      const reader = new FileReader();
+      const text = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => resolve(String(reader.result ?? ''));
+        reader.onerror = () => reject(new Error('read'));
+        reader.readAsText(file);
+      }).catch(() => null);
+      if (text === null) {
+        setCsvErrors([{ row: 0, message: t(locale, 'imports.failedToRead') }]);
+        return;
+      }
+      const res = await validateCsvImport(csvType, text);
+      applyValidationResult(res);
+    });
   }
 
   async function importCsv() {
@@ -170,7 +215,10 @@ export default function ImportsClient({
         toast.error(t(locale, 'imports.importFailed'));
         return;
       }
-      const done = t(locale, 'imports.importComplete').replace('{imported}', String(res.imported ?? 0));
+      // Summary: created + skipped (duplicates) + failed (shown above).
+      const done = t(locale, 'imports.importSummary')
+        .replace('{imported}', String(res.imported ?? 0))
+        .replace('{skipped}', String(res.skipped ?? 0));
       setCsvMsg(done);
       toast.success(done);
       setCsvValid([]);
@@ -314,7 +362,7 @@ export default function ImportsClient({
         )}
       </Card>
 
-      {/* ============ CSV ============ */}
+      {/* ============ CSV / Excel ============ */}
       <Card className="p-6 space-y-5">
         <SectionTitle icon={Upload} title={t(locale, 'imports.csvTitle')} desc={t(locale, 'imports.csvDesc')} />
 
@@ -346,7 +394,7 @@ export default function ImportsClient({
             <input
               ref={fileRef}
               type="file"
-              accept=".csv,text/csv"
+              accept=".csv,.xlsx,.xls,text/csv"
               onChange={(e) => handleFile(e.target.files?.[0])}
               className="text-sm text-zinc-600 file:mr-3 file:rounded-lg file:border-0 file:bg-zinc-100 file:px-3 file:py-2 file:text-sm file:font-semibold hover:file:bg-zinc-200"
             />

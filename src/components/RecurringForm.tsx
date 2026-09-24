@@ -176,7 +176,7 @@ export default function RecurringForm({
             name="price"
             required
             min={0}
-            step="1"
+            step="0.01"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
             placeholder={T('recurFormPricePlaceholder')}

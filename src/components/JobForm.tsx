@@ -175,7 +175,7 @@ export default function JobForm({
             name="price"
             required
             min={0}
-            step="1"
+            step="0.01"
             defaultValue={initial?.price ?? ''}
             placeholder="0"
             inputMode="decimal"

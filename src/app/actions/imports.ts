@@ -18,7 +18,7 @@ import {
   localMidnight,
   type CalendarDraft,
 } from '@/lib/google-calendar';
-import { parseCsv, validateCsvRows, type CsvType, type CsvRecord, type CustomerRecord, type ServiceRecord, type JobRecord } from '@/lib/csv';
+import { parseCsv, validateCsvRows, excelRowsToStrings, customerDedupeKey, type CsvType, type CsvRecord, type CustomerRecord, type ServiceRecord, type JobRecord } from '@/lib/csv';
 import { toISODateLocal, defaultTimezoneForRegion } from '@/lib/utils';
 
 export type ImportActionResult = {
@@ -233,12 +233,20 @@ export async function confirmCalendarImport(items: CalendarImportItem[]): Promis
 
 /** Parse + validate an uploaded CSV file server-side. Nothing is committed. */
 export async function validateCsvImport(type: CsvType, text: string): Promise<ImportActionResult> {
+  return validateRowsImport(type, parseCsv(text));
+}
+
+/**
+ * Validate pre-parsed rows server-side (2026-09-24: Excel files are parsed
+ * client-side with SheetJS into the same string[][] shape, then validated
+ * through this shared path). Nothing is committed.
+ */
+export async function validateRowsImport(type: CsvType, rows: string[][]): Promise<ImportActionResult> {
   const { user } = await requireAuth();
   const limited = await checkLimit(user.id);
   if (limited) return limited;
   if (!['customers', 'services', 'jobs'].includes(type)) return { error: 'Invalid type.' };
   const locale = await getLocale();
-  const rows = parseCsv(text);
   const { valid, errors } = validateCsvRows(type, rows, locale === 'fr');
   return { ok: true, valid, errors };
 }
@@ -267,21 +275,28 @@ export async function commitCsvImport(type: CsvType, records: CsvRecord[]): Prom
     if (errors.length > 0) return { ok: false, errors };
 
     // Duplicate-import guard: importing the same file twice must not create
-    // duplicates. Customers match on normalized name+phone; services on name.
+    // duplicates. Customers match on email when present (else name+phone);
+    // services on name.
     const norm = (s: string) => s.trim().toLowerCase();
     let skipped = 0;
     let toCreate: typeof valid = valid;
 
     if (type === 'customers') {
+      // 2026-09-24: duplicates are skipped by email when the row has one;
+      // rows without an email fall back to normalized name+phone. The `seen`
+      // set also covers rows already in this file, so importing the same
+      // file twice (or a file with internal dupes) never double-creates.
       const existingCustomers = await prisma.customer.findMany({
         where: { businessId },
-        select: { name: true, phone: true },
+        select: { name: true, phone: true, email: true },
       });
-      const seen = new Set(existingCustomers.map((c) => `${norm(c.name)}|${digits(c.phone ?? '')}`));
+      const seen = new Set(
+        existingCustomers.map((c) => customerDedupeKey(c.name, c.phone, c.email))
+      );
       toCreate = [];
       for (const r of valid) {
         const c = r as CustomerRecord;
-        const key = `${norm(c.name)}|${digits(c.phone ?? '')}`;
+        const key = customerDedupeKey(c.name, c.phone, c.email);
         if (seen.has(key)) {
           skipped += 1;
           continue;
@@ -289,7 +304,6 @@ export async function commitCsvImport(type: CsvType, records: CsvRecord[]): Prom
         seen.add(key);
         toCreate.push(r);
       }
-      // Also dedupe within the file itself.
     } else {
       const existingServices = await prisma.service.findMany({
         where: { businessId },

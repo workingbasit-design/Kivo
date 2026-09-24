@@ -21,12 +21,12 @@ const fragment = {
       deleted: 'Attachment deleted.',
       confirmDeleteTitle: 'Delete attachment?',
       confirmDelete: 'Delete “{name}”? This cannot be undone.',
-      blobSetupTitle: 'File storage isn’t set up yet',
-      blobSetupStep1: 'Create a Blob store in the Vercel dashboard (Storage → Create → Blob).',
-      blobSetupStep2: 'Set BLOB_READ_WRITE_TOKEN as an environment variable and redeploy.',
+      blobSetupTitle: 'Attachments aren’t available yet',
+      blobSetupBody:
+        'File uploads will show up here once file storage is turned on for your account. If you’re the account owner, connect file storage in your website dashboard (Vercel → Storage → Blob), save the token it gives you as an environment variable, and redeploy your site.',
       errors: {
         rateLimited: 'Too many requests. Please wait a moment and try again.',
-        notConfigured: 'File storage is not configured on this server yet.',
+        notConfigured: 'File uploads aren’t available yet. Please try again later.',
         invalidEntity: 'Invalid attachment target.',
         entityNotFound: 'That record could not be found.',
         noFile: 'Please choose a file to upload.',
@@ -56,12 +56,12 @@ const fragment = {
       deleted: 'Pièce jointe supprimée.',
       confirmDeleteTitle: 'Supprimer la pièce jointe?',
       confirmDelete: 'Supprimer « {name} »? Cette action est irréversible.',
-      blobSetupTitle: 'Le stockage de fichiers n’est pas configuré',
-      blobSetupStep1: 'Créez un magasin Blob dans le tableau de bord Vercel (Stockage → Créer → Blob).',
-      blobSetupStep2: 'Définissez BLOB_READ_WRITE_TOKEN comme variable d’environnement, puis redéployez.',
+      blobSetupTitle: 'Les pièces jointes ne sont pas encore disponibles',
+      blobSetupBody:
+        'Le téléversement de fichiers apparaîtra ici une fois le stockage de fichiers activé pour votre compte. Si vous êtes le propriétaire du compte, connectez le stockage de fichiers dans votre tableau de bord (Vercel → Storage → Blob), enregistrez le jeton fourni comme variable d’environnement, puis redéployez votre site.',
       errors: {
         rateLimited: 'Trop de requêtes. Veuillez patienter un instant et réessayer.',
-        notConfigured: 'Le stockage de fichiers n’est pas encore configuré sur ce serveur.',
+        notConfigured: 'Le téléversement de fichiers n’est pas encore disponible. Veuillez réessayer plus tard.',
         invalidEntity: 'Cible de pièce jointe invalide.',
         entityNotFound: 'Cet enregistrement est introuvable.',
         noFile: 'Veuillez choisir un fichier à téléverser.',

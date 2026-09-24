@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Users, Plus, Search, Phone } from 'lucide-react';
+import { Users, Plus, Search, Phone, Upload } from 'lucide-react';
 import { t, type Locale } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
 import {
@@ -12,7 +12,9 @@ import {
   EmptyState,
   inputClass,
   primaryBtnClass,
+  secondaryBtnClass,
 } from '@/components/ui';
+import ExportButtons, { type ExportColumn, type ExportRow } from '@/components/ExportButtons';
 
 /** Replace `{name}` tokens in a template string (minimal inline fill helper). */
 function fill(template: string, vars: Record<string, string | number>): string {
@@ -82,6 +84,37 @@ export default function CustomersClient({
     { count: filtered.length }
   );
 
+  // Export the *currently filtered* list (2026-09-24).
+  const exportColumns: ExportColumn[] = useMemo(
+    () => [
+      { key: 'name', label: t(locale, 'exports.colName') },
+      { key: 'phone', label: t(locale, 'exports.colPhone') },
+      { key: 'email', label: t(locale, 'exports.colEmail') },
+      { key: 'address', label: t(locale, 'exports.colAddress') },
+      { key: 'tags', label: t(locale, 'exports.colTags') },
+      { key: 'jobs', label: t(locale, 'exports.colJobs') },
+      { key: 'revenue', label: t(locale, 'exports.colRevenue'), kind: 'money' },
+    ],
+    [locale]
+  );
+  const exportRows: ExportRow[] = useMemo(
+    () =>
+      filtered.map((c) => ({
+        name: c.name,
+        phone: c.phone,
+        email: c.email,
+        address: c.address,
+        tags: (c.tags ?? []).join(', '),
+        jobs: c.jobCount,
+        revenue: c.revenue,
+      })),
+    [filtered]
+  );
+  const exportFileBase = useMemo(
+    () => `everyjob-customers-${new Date().toISOString().slice(0, 10)}`,
+    []
+  );
+
   const chipClass = (active: boolean) =>
     `min-h-[44px] inline-flex items-center text-xs font-bold rounded-full px-4 transition-colors ${
       active ? 'bg-ink text-white' : 'bg-white text-zinc-600 border border-zinc-200 hover:border-zinc-300'
@@ -102,6 +135,20 @@ export default function CustomersClient({
           aria-label={t(locale, 'customers.searchPlaceholder')}
           className={`${inputClass} !pl-11 !rounded-full !bg-white shadow-sm`}
         />
+      </div>
+
+      {/* Export the currently filtered list + jump to the importer */}
+      <div className="flex flex-wrap items-center gap-2">
+        <ExportButtons
+          columns={exportColumns}
+          rows={exportRows}
+          fileBase={exportFileBase}
+          currency={currency}
+          locale={locale}
+        />
+        <Link href="/imports?type=customers" className={secondaryBtnClass}>
+          <Upload size={14} /> {t(locale, 'exports.importBtn')}
+        </Link>
       </div>
 
       {/* Tag filter chips */}

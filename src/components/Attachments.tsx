@@ -133,10 +133,9 @@ export default function Attachments({
           <p className="text-sm font-bold text-amber-900 flex items-center gap-2">
             <AlertTriangle size={14} /> {t(locale, 'attachments.blobSetupTitle')}
           </p>
-          <ol className="mt-2 space-y-1.5 text-xs text-amber-800 list-decimal list-inside">
-            <li>{t(locale, 'attachments.blobSetupStep1')}</li>
-            <li>{t(locale, 'attachments.blobSetupStep2')}</li>
-          </ol>
+          <p className="mt-2 text-xs text-amber-800 leading-relaxed">
+            {t(locale, 'attachments.blobSetupBody')}
+          </p>
         </div>
       )}
 

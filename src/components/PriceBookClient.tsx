@@ -290,7 +290,7 @@ export default function PriceBookClient({
                 required
                 placeholder={tr('t10misc.pricebook.flatRatePlaceholder')}
                 min={0}
-                step="1"
+                step="0.01"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 className={inputClass}

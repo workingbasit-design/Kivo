@@ -31,3 +31,6 @@ Thumbs.db
 
 # test evidence (large screenshots live outside the repo)
 /kivo-shots/
+
+# local Vercel CLI link state — never commit
+/.vercel/

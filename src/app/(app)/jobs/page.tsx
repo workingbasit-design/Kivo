@@ -9,6 +9,7 @@ import { formatMoney } from '@/lib/money';
 import { JOB_STATUSES } from '@/lib/validations';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
+import ExportButtons, { type ExportColumn, type ExportRow } from '@/components/ExportButtons';
 
 export default async function JobsPage({
   searchParams,
@@ -60,15 +61,45 @@ export default async function JobsPage({
       ? T('jobsCountOne').replace('{count}', '1')
       : T('jobsCountMany').replace('{count}', String(filtered.length));
 
+  // Export the *currently filtered* list (2026-09-24).
+  const exportColumns: ExportColumn[] = [
+    { key: 'title', label: t(locale, 'exports.colTitle') },
+    { key: 'customer', label: t(locale, 'exports.colCustomer') },
+    { key: 'date', label: t(locale, 'exports.colDate') },
+    { key: 'time', label: t(locale, 'exports.colTime') },
+    { key: 'status', label: t(locale, 'exports.colStatus') },
+    { key: 'price', label: t(locale, 'exports.colPrice'), kind: 'money' },
+    { key: 'address', label: t(locale, 'exports.colAddress') },
+  ];
+  const exportRows: ExportRow[] = filtered.map((j) => ({
+    title: j.title,
+    customer: j.customer.name,
+    date: formatDateShort(j.date),
+    time: j.time ?? '',
+    status: j.status,
+    price: j.price,
+    address: j.address ?? '',
+  }));
+  const exportFileBase = `everyjob-jobs-${new Date().toISOString().slice(0, 10)}`;
+
   return (
     <div className="space-y-5">
       <PageHeader
         title={jobsL('title')}
         subtitle={countLabel}
         actions={
-          <Link href="/jobs/new" className={limeBtnClass}>
-            <Plus size={16} /> {jobsL('newJob')}
-          </Link>
+          <>
+            <ExportButtons
+              columns={exportColumns}
+              rows={exportRows}
+              fileBase={exportFileBase}
+              currency={currency}
+              locale={locale}
+            />
+            <Link href="/jobs/new" className={limeBtnClass}>
+              <Plus size={16} /> {jobsL('newJob')}
+            </Link>
+          </>
         }
       />
 

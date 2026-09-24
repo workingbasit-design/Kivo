@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { dayRange, toISODateLocal, todayInTimezone } from '@/lib/utils';
+import { summarizeTodayJobs } from '@/lib/dashboard';
 import AppSidebar from '@/components/AppSidebar';
 import MobileNav from '@/components/MobileNav';
 import BottomNav from '@/components/BottomNav';
@@ -34,10 +35,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     prisma.lead.count({ where: { businessId, status: 'NEW' } }),
   ]);
 
-  const bookedToday = todayJobs.reduce((s, j) => s + (j.price ?? 0), 0);
-  const jobsLeftToday = todayJobs.filter(
-    (j) => !['COMPLETED', 'PAID', 'CANCELLED'].includes(j.status)
-  ).length;
+  // Shared with the dashboard stats (2026-09-24: cancelled jobs no longer
+  // count as booked revenue here either — same helper, same totals).
+  const { bookedToday, jobsLeftToday } = summarizeTodayJobs(todayJobs);
 
   // Notification center: generate from real records (never seeded), then
   // count unread for the bell badge. Best-effort — a sync failure must never

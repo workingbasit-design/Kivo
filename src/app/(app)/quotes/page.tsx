@@ -8,6 +8,9 @@ import { PageHeader, Card, StatusBadge, EmptyState, primaryBtnClass } from '@/co
 import { formatDateShort, cn } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import { QUOTE_STATUSES } from '@/lib/validations';
+import { getLocale } from '@/lib/i18n/server';
+import { t, type Locale } from '@/lib/i18n';
+import ExportButtons, { type ExportColumn, type ExportRow } from '@/components/ExportButtons';
 
 const FILTERS = ['ALL', ...QUOTE_STATUSES] as const;
 
@@ -24,6 +27,7 @@ export default async function QuotesPage({
   const activeFilter = FILTERS.includes(status as (typeof FILTERS)[number])
     ? (status as (typeof FILTERS)[number])
     : 'ALL';
+  const locale: Locale = await getLocale();
 
   const [business, quotes] = await Promise.all([
     prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } }),
@@ -41,15 +45,43 @@ export default async function QuotesPage({
     .filter((q) => q.status === 'SENT' || q.status === 'APPROVED')
     .reduce((s, q) => s + q.total, 0);
 
+  // Export the *currently filtered* list (2026-09-24).
+  const exportColumns: ExportColumn[] = [
+    { key: 'number', label: t(locale, 'exports.colNumber') },
+    { key: 'title', label: t(locale, 'exports.colTitle') },
+    { key: 'customer', label: t(locale, 'exports.colCustomer') },
+    { key: 'date', label: t(locale, 'exports.colDate') },
+    { key: 'status', label: t(locale, 'exports.colStatus') },
+    { key: 'total', label: t(locale, 'exports.colTotal'), kind: 'money' },
+  ];
+  const exportRows: ExportRow[] = quotes.map((q) => ({
+    number: q.number,
+    title: q.title,
+    customer: q.customer.name,
+    date: formatDateShort(q.createdAt),
+    status: q.status,
+    total: q.total,
+  }));
+  const exportFileBase = `everyjob-quotes-${new Date().toISOString().slice(0, 10)}`;
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Quotes"
         subtitle={`${quotes.length} quote${quotes.length === 1 ? '' : 's'} · ${formatMoney(pipelineTotal, business?.currency)} in open pipeline`}
         actions={
-          <Link href="/quotes/new" className={primaryBtnClass}>
-            <Plus size={14} /> New quote
-          </Link>
+          <>
+            <ExportButtons
+              columns={exportColumns}
+              rows={exportRows}
+              fileBase={exportFileBase}
+              currency={business?.currency}
+              locale={locale}
+            />
+            <Link href="/quotes/new" className={primaryBtnClass}>
+              <Plus size={14} /> New quote
+            </Link>
+          </>
         }
       />
 

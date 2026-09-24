@@ -239,7 +239,7 @@ function TemplateEditor({
               name="price"
               type="number"
               min={0}
-              step="1"
+              step="0.01"
               defaultValue={template?.price ?? ''}
               placeholder={bundle('priceHint')}
               className={jInputClass}

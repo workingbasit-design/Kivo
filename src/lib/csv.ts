@@ -260,3 +260,34 @@ export function csvTemplate(type: CsvType): string {
   const example = TEMPLATE_EXAMPLES[type].map(escapeCsvCell).join(',');
   return `${header}\n${example}\n`;
 }
+
+/**
+ * Normalize SheetJS `sheet_to_json(header: 1)` output (array of arrays of
+ * whatever cell values Excel held) to trimmed string rows for the shared
+ * import validation pipeline. Fully-blank rows are dropped.
+ */
+export function excelRowsToStrings(aoa: unknown[][]): string[][] {
+  const rows: string[][] = [];
+  for (const r of aoa) {
+    const cells = (Array.isArray(r) ? r : []).map((c) => String(c ?? '').trim());
+    if (cells.some((c) => c !== '')) rows.push(cells);
+  }
+  return rows;
+}
+
+/**
+ * Dedupe key for customer imports: the normalized email when the row (or the
+ * existing record) has one, otherwise normalized name + digits-of-phone.
+ * Shared by the server commit path so the "skip duplicates by email" rule is
+ * unit-testable here.
+ */
+export function customerDedupeKey(
+  name: string,
+  phone: string | null,
+  email: string | null
+): string {
+  const em = (email ?? '').trim().toLowerCase();
+  if (em) return `email:${em}`;
+  const digitsOnly = (phone ?? '').replace(/\D/g, '');
+  return `np:${name.trim().toLowerCase()}|${digitsOnly}`;
+}

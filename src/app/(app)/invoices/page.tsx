@@ -9,6 +9,7 @@ import { PageHeader, Card, StatusBadge, EmptyState, StatCard, Badge, primaryBtnC
 import { formatDateShort, cn } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import { INVOICE_STATUSES } from '@/lib/validations';
+import ExportButtons, { type ExportColumn, type ExportRow } from '@/components/ExportButtons';
 
 const FILTERS = ['ALL', ...INVOICE_STATUSES] as const;
 
@@ -57,13 +58,37 @@ export default async function InvoicesPage({
     0
   );
 
+  // Export the *currently filtered* list (2026-09-24).
+  const exportColumns: ExportColumn[] = [
+    { key: 'number', label: t(locale, 'exports.colNumber') },
+    { key: 'customer', label: t(locale, 'exports.colCustomer') },
+    { key: 'date', label: t(locale, 'exports.colDate') },
+    { key: 'status', label: t(locale, 'exports.colStatus') },
+    { key: 'total', label: t(locale, 'exports.colTotal'), kind: 'money' },
+  ];
+  const exportRows: ExportRow[] = invoices.map((inv) => ({
+    number: inv.number,
+    customer: inv.customer.name,
+    date: formatDateShort(inv.date),
+    status: inv.status,
+    total: inv.total,
+  }));
+  const exportFileBase = `everyjob-invoices-${new Date().toISOString().slice(0, 10)}`;
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Invoices"
         subtitle="Every payment, accounted for."
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <ExportButtons
+              columns={exportColumns}
+              rows={exportRows}
+              fileBase={exportFileBase}
+              currency={business?.currency}
+              locale={locale}
+            />
             <Link
               href="/invoices/batch"
               className="bg-white hover:bg-zinc-50 text-zinc-700 px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 border border-zinc-200 shadow-sm min-h-[44px]"
