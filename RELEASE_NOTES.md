@@ -175,3 +175,7 @@ graceful-degradation behavior of every integration.
 
 Verification on the final tree: `npx tsc --noEmit` clean, `npm test` 442/442,
 `npm run build` green.
+
+## Deploy note (2026-09-24)
+Production (Vercel) was still serving the pre-release build because the release push did not trigger a Vercel build. This commit re-triggers the production deployment of the release.
+
