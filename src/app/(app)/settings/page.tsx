@@ -1,10 +1,12 @@
 import Link from 'next/link';
-import { Download, Languages, ListChecks, Users } from 'lucide-react';
+import { Award, Download, Languages, ListChecks, Users } from 'lucide-react';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { PageHeader, Card, secondaryBtnClass } from '@/components/ui';
 import SettingsForm from '@/components/SettingsForm';
 import ProfileForm from '@/components/ProfileForm';
+import DesignationsManager from '@/components/DesignationsManager';
+import TradeProfileForm from '@/components/TradeProfileForm';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
@@ -33,6 +35,9 @@ export default async function SettingsPage() {
       directoryOptIn: true,
       directoryHideAddress: true,
       notificationSettings: true,
+      trade: true,
+      yearsInBusiness: true,
+      specialties: true,
     },
   });
 
@@ -42,6 +47,28 @@ export default async function SettingsPage() {
 
   const locale = await getLocale();
   const tr = (path: string) => t(locale, path);
+
+  const designations = await prisma.designation.findMany({
+    where: { businessId },
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      type: true,
+      title: true,
+      issuer: true,
+      number: true,
+      issuedAt: true,
+      expiresAt: true,
+    },
+  });
+
+  let specialtiesText = '';
+  try {
+    const parsed = JSON.parse(business.specialties ?? '[]');
+    if (Array.isArray(parsed)) specialtiesText = parsed.filter((s) => typeof s === 'string').join(', ');
+  } catch {
+    specialtiesText = '';
+  }
 
   return (
     <div className="space-y-6">
@@ -94,6 +121,25 @@ export default async function SettingsPage() {
         <Link href="/reviews" className={secondaryBtnClass}>
           {tr('t10misc.settingsMain.manageGoogle')}
         </Link>
+      </Card>
+      <Card className="p-5 md:p-6">
+        <h2 className="text-sm font-bold text-zinc-900 mb-1 flex items-center gap-2">
+          <Award size={14} /> {tr('credentials.cardTitle')}
+        </h2>
+        <p className="text-xs text-zinc-500 mb-4">{tr('credentials.cardDesc')}</p>
+        <DesignationsManager locale={locale} initial={designations} />
+        <div className="mt-6 pt-5 border-t border-zinc-100">
+          <h3 className="text-sm font-bold text-zinc-900 mb-1">{tr('credentials.tradeTitle')}</h3>
+          <p className="text-xs text-zinc-500 mb-4">{tr('credentials.tradeDesc')}</p>
+          <TradeProfileForm
+            locale={locale}
+            initial={{
+              trade: business.trade ?? '',
+              yearsInBusiness: business.yearsInBusiness ?? null,
+              specialties: specialtiesText,
+            }}
+          />
+        </div>
       </Card>
       <Card className="p-5 md:p-6">
         <h2 className="text-sm font-bold text-zinc-900 mb-1 flex items-center gap-2">

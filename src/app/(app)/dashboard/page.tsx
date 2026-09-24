@@ -14,6 +14,7 @@ import {
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getDashboardStats } from "@/lib/dashboard";
+import { getGrowthData } from "@/lib/growth";
 import { generateDueJobs } from "@/lib/recurring";
 import { formatDateLabel, hasJobTime, localeDateTag, localeMoneyTag } from "@/lib/utils";
 import { formatMoney } from "@/lib/money";
@@ -54,6 +55,13 @@ export default async function DashboardPage() {
   const business = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } });
   const currency = business?.currency;
   const stats = await getDashboardStats(businessId);
+  // Best-effort: profile strength must never break the dashboard.
+  let growth: Awaited<ReturnType<typeof getGrowthData>> | null = null;
+  try {
+    growth = await getGrowthData(businessId);
+  } catch (err) {
+    console.error('[dashboard] growth data failed:', err);
+  }
   const todayLabel = formatDateLabel(new Date(), dateLocale);
   const rowDelay = (i: number) => ({ ["--row-delay" as string]: `${Math.min(i, 8) * 45}ms` });
 
@@ -114,6 +122,45 @@ export default async function DashboardPage() {
           </div>
         ))}
       </div>
+
+      {/* Profile strength — computed from the business's own data only */}
+      {growth && growth.score < 100 && (
+        <Link href="/insights#growth" className="block">
+          <Card className="p-5 hover:border-ink/30 transition-colors">
+            <div className="flex items-center gap-4">
+              <div className="relative w-14 h-14 shrink-0">
+                <svg viewBox="0 0 36 36" className="w-14 h-14 -rotate-90">
+                  <circle cx="18" cy="18" r="15.5" fill="none" stroke="#e4e4e7" strokeWidth="4" />
+                  <circle
+                    cx="18"
+                    cy="18"
+                    r="15.5"
+                    fill="none"
+                    stroke="#1a1a1a"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    strokeDasharray={`${growth.score}, 100`}
+                  />
+                </svg>
+                <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-zinc-900">
+                  {growth.score}
+                </span>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold text-zinc-900">
+                  {L("growth.scoreLabel")} · {growth.score} {L("growth.scoreOf")}
+                </p>
+                {growth.nextActions[0] && (
+                  <p className="text-xs text-zinc-500 mt-1 truncate">
+                    {L("growth.nextUp")}: {L(`growth.checkActions.${growth.nextActions[0].key}`)}
+                  </p>
+                )}
+              </div>
+              <ChevronRight size={16} className="text-zinc-400 shrink-0" />
+            </div>
+          </Card>
+        </Link>
+      )}
 
       {/* Today's schedule + payments due */}
       <div className="grid lg:grid-cols-2 gap-4">

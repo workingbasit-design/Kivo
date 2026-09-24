@@ -8,23 +8,23 @@ datasource db {
 }
 
 model User {
-  id           String      @id @default(cuid())
-  email        String      @unique
-  passwordHash String
-  name         String?
-  role         String      @default("ADMIN")
-  googleId     String?     @unique // Google OIDC `sub` for "Continue with Google" linking
-  phone        String?     // Canadian contact number (NANP), user-editable
-  phonePrompted Boolean    @default(false) // onboarding contact-number prompt shown/skipped
-  business     Business?   @relation(fields: [businessId], references: [id])
-  businessId   String?
-  sessions     Session[]
-  assignedJobs Job[]       @relation("JobAssignedTo")
-  jobNotes     JobNote[]   @relation("JobNoteAuthor")
-  jobPhotos    JobPhoto[]  @relation("JobPhotoUploadedBy")
-  timeEntries  TimeEntry[]
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  id            String      @id @default(cuid())
+  email         String      @unique
+  passwordHash  String
+  name          String?
+  role          String      @default("ADMIN")
+  googleId      String?     @unique // Google OIDC `sub` for "Continue with Google" linking
+  phone         String? // Canadian contact number (NANP), user-editable
+  phonePrompted Boolean     @default(false) // onboarding contact-number prompt shown/skipped
+  business      Business?   @relation(fields: [businessId], references: [id])
+  businessId    String?
+  sessions      Session[]
+  assignedJobs  Job[]       @relation("JobAssignedTo")
+  jobNotes      JobNote[]   @relation("JobNoteAuthor")
+  jobPhotos     JobPhoto[]  @relation("JobPhotoUploadedBy")
+  timeEntries   TimeEntry[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 }
 
 model Session {
@@ -68,13 +68,17 @@ model Business {
   bookingPage          BookingPage?
   checklistTemplates   ChecklistTemplate[]
   expenses             JobExpense[]
+  trade                String? // primary trade: plumbing|electrical|hvac|carpentry|painting|landscaping|cleaning|renovation|other
+  yearsInBusiness      Int? // self-declared years operating; null = not set
+  specialties          String? // JSON array of specialty strings; null = not set
+  designations         Designation[]
   directoryOptIn       Boolean               @default(true) // show business in the public EveryJob directory
   directoryHideAddress Boolean               @default(true) // show area/city only, not the exact address
   directoryVerifiedAt  DateTime? // set when a directory claim is approved (or self-verified by the account holder). Public directory requires this + directoryOptIn.
   directoryClaim       DirectoryClaim?
-  googleConnection   GoogleConnection?
+  googleConnection     GoogleConnection?
   notificationSettings String? // JSON: { job_tomorrow: bool, job_soon: bool, ... }; null = all types on
-  notifications      Notification[]
+  notifications        Notification[]
   messagingSettings    MessagingSettings?
   attachments          Attachment[]
   messagingConnections MessagingConnection[]
@@ -94,17 +98,17 @@ model Business {
 }
 
 model Customer {
-  id            String                @id @default(cuid())
-  name          String
-  phone         String?
-  phoneNorm     String? // E.164 digits (no "+") for matching + WhatsApp links; `phone` keeps the user's formatting
-  email         String?
-  address       String?
-  province      String? // Province/state code or name (e.g. "ON" for Ontario)
-  postalCode    String? // Validated + formatted: "A1A 1A1" (CA) or 6-digit PIN (IN)
-  notes         String?
-  tags          String? // comma-separated customer tags, e.g. "vip,senior,dog-friendly"
-  messageConsent       Boolean   @default(false) // CASL express consent for automated messages; required before any auto-send
+  id                   String                @id @default(cuid())
+  name                 String
+  phone                String?
+  phoneNorm            String? // E.164 digits (no "+") for matching + WhatsApp links; `phone` keeps the user's formatting
+  email                String?
+  address              String?
+  province             String? // Province/state code or name (e.g. "ON" for Ontario)
+  postalCode           String? // Validated + formatted: "A1A 1A1" (CA) or 6-digit PIN (IN)
+  notes                String?
+  tags                 String? // comma-separated customer tags, e.g. "vip,senior,dog-friendly"
+  messageConsent       Boolean               @default(false) // CASL express consent for automated messages; required before any auto-send
   messageConsentAt     DateTime? // when consent was given/withdrawn
   messageConsentSource String? // "settings-ui" | "whatsapp-inbound" | "customer-import"
   preferredLocale      String? // "en" | "fr"; null = business default
@@ -112,16 +116,19 @@ model Customer {
   messageLogs          MessageLog[]
   properties           CustomerProperty[]
   fieldValues          CustomerFieldValue[]
-  businessId    String
-  business      Business              @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  jobs          Job[]
-  invoices      Invoice[]
-  quotes        Quote[]
-  reviews       Review[]
-  recurringJobs RecurringJob[]
-  portalTokens  CustomerPortalToken[]
-  createdAt     DateTime              @default(now())
-  updatedAt     DateTime              @updatedAt
+  businessId           String
+  business             Business              @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  jobs                 Job[]
+  invoices             Invoice[]
+  quotes               Quote[]
+  reviews              Review[]
+  recurringJobs        RecurringJob[]
+  portalTokens         CustomerPortalToken[]
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+
+  @@index([businessId])
+  @@index([businessId, createdAt])
 }
 
 model Service {
@@ -170,31 +177,36 @@ model Job {
   // Backstop for recurring auto-generation idempotency: one job per plan per day.
   // NULL recurringJobId values never conflict, so manual jobs are unaffected.
   @@unique([recurringJobId, date])
+  @@index([businessId, status, date])
+  @@index([businessId, date])
 }
 
 model Invoice {
-  id          String            @id @default(cuid())
-  number      String
-  date        DateTime
-  subtotal    Float             @default(0)
-  taxRate     Float             @default(0)
-  taxType     String? // "GST", "HST", "PST", "CGST", "SGST", "IGST"
-  taxAmount   Float             @default(0)
-  total       Float
-  status      String // UNPAID, PARTIALLY PAID, PAID
-  notes       String?
-  customerId  String
-  customer    Customer          @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  businessId  String
-  business    Business          @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  jobId       String? // set for progress/milestone invoices linked to a job
-  job         Job?              @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  id             String            @id @default(cuid())
+  number         String
+  date           DateTime
+  subtotal       Float             @default(0)
+  taxRate        Float             @default(0)
+  taxType        String? // "GST", "HST", "PST", "CGST", "SGST", "IGST"
+  taxAmount      Float             @default(0)
+  total          Float
+  status         String // UNPAID, PARTIALLY PAID, PAID
+  notes          String?
+  customerId     String
+  customer       Customer          @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  businessId     String
+  business       Business          @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  jobId          String? // set for progress/milestone invoices linked to a job
+  job            Job?              @relation(fields: [jobId], references: [id], onDelete: SetNull)
   milestoneLabel String? // e.g. "Deposit", "Milestone 2 — rough-in", "Final"
-  payments    Payment[]
-  lineItems   InvoiceLineItem[]
-  shareTokens ShareToken[]
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  payments       Payment[]
+  lineItems      InvoiceLineItem[]
+  shareTokens    ShareToken[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@index([businessId, status])
+  @@index([businessId, createdAt])
 }
 
 // Structured line items for an invoice. Items were previously stored as
@@ -243,37 +255,37 @@ model CustomerPortalToken {
 }
 
 model Payment {
-  id            String   @id @default(cuid())
-  amount        Float
-  provider      String // "STRIPE", "INTERAC", "CASH", "CHEQUE"
-  transactionId String?
-  status        String // "PENDING", "COMPLETED", "FAILED"
-  stripePaymentIntentId   String? @unique // pi_...; set for Stripe card payments
-  stripeCheckoutSessionId String? @unique // cs_...; set for Stripe Checkout payments
-  receiptUrl    String? // Stripe receipt URL, when available
-  invoiceId     String
-  invoice       Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id                      String   @id @default(cuid())
+  amount                  Float
+  provider                String // "STRIPE", "INTERAC", "CASH", "CHEQUE"
+  transactionId           String?
+  status                  String // "PENDING", "COMPLETED", "FAILED"
+  stripePaymentIntentId   String?  @unique // pi_...; set for Stripe card payments
+  stripeCheckoutSessionId String?  @unique // cs_...; set for Stripe Checkout payments
+  receiptUrl              String? // Stripe receipt URL, when available
+  invoiceId               String
+  invoice                 Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
 }
 
 model MessageLog {
-  id         String   @id @default(cuid())
-  type       String // "SMS", "WHATSAPP", "EMAIL"
-  recipient  String
-  content    String
-  status     String // "SENT", "FAILED", "DELIVERED", "BLOCKED_QUOTA", "BLOCKED_NO_CONSENT", "BLOCKED_QUIET_HOURS", "DRY_RUN", "DEFERRED"
-  direction  String   @default("OUT") // "OUT" (we sent) | "IN" (customer replied, e.g. STOP/HELP)
-  customerId String?
-  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
-  template   String? // MessageTemplateId, e.g. "reminder_24h"; null for manual/ad-hoc
-  locale     String? // "en" | "fr"
-  eventKey   String? // idempotency key for automated sends; null for manual
-  error      String? // failure reason, when status is FAILED/BLOCKED_*
+  id                String    @id @default(cuid())
+  type              String // "SMS", "WHATSAPP", "EMAIL"
+  recipient         String
+  content           String
+  status            String // "SENT", "FAILED", "DELIVERED", "BLOCKED_QUOTA", "BLOCKED_NO_CONSENT", "BLOCKED_QUIET_HOURS", "DRY_RUN", "DEFERRED"
+  direction         String    @default("OUT") // "OUT" (we sent) | "IN" (customer replied, e.g. STOP/HELP)
+  customerId        String?
+  customer          Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  template          String? // MessageTemplateId, e.g. "reminder_24h"; null for manual/ad-hoc
+  locale            String? // "en" | "fr"
+  eventKey          String? // idempotency key for automated sends; null for manual
+  error             String? // failure reason, when status is FAILED/BLOCKED_*
   providerMessageId String? // WhatsApp wamid / Resend id
-  businessId String
-  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  createdAt  DateTime @default(now())
+  businessId        String
+  business          Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  createdAt         DateTime  @default(now())
 
   @@index([businessId, eventKey])
   @@index([businessId, createdAt])
@@ -351,6 +363,9 @@ model Quote {
   deposits          QuoteDeposit[]
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
+
+  @@index([businessId, status])
+  @@index([businessId, createdAt])
 }
 
 model SignatureRequest {
@@ -427,21 +442,21 @@ model TimeEntry {
 }
 
 model BookingPage {
-  id           String   @id @default(cuid())
-  slug         String   @unique
-  enabled      Boolean  @default(true)
-  headline     String?
-  headlineFr   String? // Canadian French headline; falls back to headline
-  intro        String?
-  introFr      String? // Canadian French intro; falls back to intro
-  description  String? // longer public "about" text (EN)
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  enabled       Boolean  @default(true)
+  headline      String?
+  headlineFr    String? // Canadian French headline; falls back to headline
+  intro         String?
+  introFr       String? // Canadian French intro; falls back to intro
+  description   String? // longer public "about" text (EN)
   descriptionFr String? // longer public "about" text (FR); falls back to description
-  serviceAreas String? // JSON array of city/area strings the business serves
-  showPhone    Boolean  @default(true) // display phone/WhatsApp on the public profile
-  businessId   String   @unique
-  business     Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  serviceAreas  String? // JSON array of city/area strings the business serves
+  showPhone     Boolean  @default(true) // display phone/WhatsApp on the public profile
+  businessId    String   @unique
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model Campaign {
@@ -643,28 +658,28 @@ model Notification {
 // default OFF; the owner opts in per trigger. dryRun defaults ON so the
 // owner previews exactly what would send before anything goes out.
 model MessagingSettings {
-  id                String   @id @default(cuid())
-  businessId        String   @unique
-  business          Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  reminder24h       Boolean  @default(false)
-  reminderDayOf     Boolean  @default(false)
-  invoiceDue        Boolean  @default(false)
-  invoiceOverdue    Boolean  @default(false)
-  quoteFollowup     Boolean  @default(false)
-  reviewRequest     Boolean  @default(false)
-  quietStartHour    Int      @default(21) // no automated messages 21:00–08:00 business tz
-  quietEndHour      Int      @default(8)
-  dryRun            Boolean  @default(true) // preview mode: log candidates, send nothing
+  id              String    @id @default(cuid())
+  businessId      String    @unique
+  business        Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  reminder24h     Boolean   @default(false)
+  reminderDayOf   Boolean   @default(false)
+  invoiceDue      Boolean   @default(false)
+  invoiceOverdue  Boolean   @default(false)
+  quoteFollowup   Boolean   @default(false)
+  reviewRequest   Boolean   @default(false)
+  quietStartHour  Int       @default(21) // no automated messages 21:00–08:00 business tz
+  quietEndHour    Int       @default(8)
+  dryRun          Boolean   @default(true) // preview mode: log candidates, send nothing
   // Free-quota hard caps — verified 2026-09-23:
   // - whatsappLimit: Meta's 1,000 free service messages / calendar month / number
   // - emailLimit: Resend free tier 3,000 / month
   // - emailDailyLimit: Resend free tier 100 / day (binding constraint)
-  whatsappLimit     Int      @default(1000)
-  emailLimit        Int      @default(3000)
-  emailDailyLimit   Int      @default(100)
-  quotaNotifiedAt   DateTime? // last in-app quota-exhausted notice (avoid spam)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  whatsappLimit   Int       @default(1000)
+  emailLimit      Int       @default(3000)
+  emailDailyLimit Int       @default(100)
+  quotaNotifiedAt DateTime? // last in-app quota-exhausted notice (avoid spam)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }
 
 // A business's own messaging provider connections. Secrets (tokens/keys)
@@ -742,14 +757,14 @@ model StripeConnection {
 
 // Processed Stripe webhook events (idempotency: each event handled once).
 model StripeEvent {
-  id            String   @id @default(cuid())
+  id            String    @id @default(cuid())
   businessId    String
-  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  stripeEventId String   @unique // evt_...
+  business      Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  stripeEventId String    @unique // evt_...
   type          String // e.g. "checkout.session.completed"
-  livemode      Boolean  @default(false)
+  livemode      Boolean   @default(false)
   processedAt   DateTime? // set only after the handler succeeded; absent → Stripe retries
-  createdAt     DateTime @default(now())
+  createdAt     DateTime  @default(now())
 
   @@index([businessId])
 }
@@ -758,20 +773,20 @@ model StripeEvent {
 // manual deposits (Interac/cash/cheque) are recorded by the owner.
 // EveryJob never holds money — Stripe settles to the business's account.
 model QuoteDeposit {
-  id                      String    @id @default(cuid())
+  id                      String   @id @default(cuid())
   quoteId                 String
-  quote                   Quote     @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  quote                   Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
   businessId              String
-  business                Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  business                Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
   amount                  Float
-  provider                String    @default("STRIPE") // "STRIPE" | "INTERAC" | "CASH" | "CHEQUE"
-  status                  String    @default("PENDING") // "PENDING" | "COMPLETED" | "FAILED"
-  stripePaymentIntentId   String?   @unique
-  stripeCheckoutSessionId String?   @unique
+  provider                String   @default("STRIPE") // "STRIPE" | "INTERAC" | "CASH" | "CHEQUE"
+  status                  String   @default("PENDING") // "PENDING" | "COMPLETED" | "FAILED"
+  stripePaymentIntentId   String?  @unique
+  stripeCheckoutSessionId String?  @unique
   receiptUrl              String?
   note                    String?
-  createdAt               DateTime  @default(now())
-  updatedAt               DateTime  @updatedAt
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
 
   @@index([quoteId])
   @@index([businessId])
@@ -882,4 +897,23 @@ model WorkflowEvent {
   createdAt  DateTime     @default(now())
 
   @@unique([ruleId, entityType, entityId])
+}
+
+// Business credentials & designations (trade licences, Red Seal, provincial
+// certifications, BBB, insurance/bonding, manufacturer certs). Self-declared
+// by the business; never scraped or invented.
+model Designation {
+  id         String    @id @default(cuid())
+  businessId String
+  business   Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  type       String // LICENSE | RED_SEAL | PROVINCIAL_CERT | BBB | INSURANCE | BONDING | MANUFACTURER | OTHER
+  title      String // e.g. "Red Seal Endorsement — Plumber"
+  issuer     String? // issuing body, e.g. "Skilled Trades Ontario"
+  number     String? // licence / certificate number
+  issuedAt   DateTime?
+  expiresAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([businessId])
 }

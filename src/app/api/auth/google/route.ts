@@ -5,8 +5,16 @@ import {
   randomOAuthValue,
   safeRedirectPath,
 } from '@/lib/google-auth';
+import { rateLimit, AUTH_LIMIT } from '@/lib/rate-limit';
 
 const STATE_COOKIE = 'google_oauth_state';
+
+function clientIp(req: Request): string {
+  const h = (req as unknown as { headers: Headers }).headers;
+  return (
+    h.get('x-forwarded-for')?.split(',')[0]?.trim() || h.get('x-real-ip') || 'unknown'
+  );
+}
 
 /**
  * Start "Continue with Google": generate a secure random state + nonce,
@@ -16,6 +24,12 @@ const STATE_COOKIE = 'google_oauth_state';
 export async function GET(req: Request) {
   if (!googleOAuthConfigured()) {
     return NextResponse.redirect(new URL('/login?google=not-configured', req.url));
+  }
+
+  // Rate-limit OAuth initiations per IP — prevents state-cookie churn attacks.
+  const rl = rateLimit(`google-oauth-init:${clientIp(req)}`, AUTH_LIMIT);
+  if (!rl.ok) {
+    return NextResponse.redirect(new URL('/login?google=rate-limited', req.url));
   }
 
   const url = new URL(req.url);
