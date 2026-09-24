@@ -16,6 +16,7 @@ export type CopilotIntent =
   | 'find_customer'
   | 'ask_customers'
   | 'ask_revenue'
+  | 'ask_booked_revenue'
   | 'ask_unpaid'
   | 'ask_certification'
   | 'ask_compare'
@@ -687,8 +688,12 @@ export function detectIntent(raw: string, followUpName: string | null = null): C
     return 'draft_reminder';
   }
 
-  // 2. Revenue questions
+  // 2. Revenue questions — "booked revenue" is its own metric (scheduled
+  //    job value, excluding cancelled) distinct from cash collections.
   if (hasAny(text, [' revenue ', ' earning ', ' earnings ', ' earn ', ' earned ', ' income ', ' collection ', ' revenu ', ' revenus ', ' gains ', ' chiffre '])) {
+    if (hasAny(text, [' booked ', ' reserve ', ' scheduled ', ' planifie '])) {
+      return 'ask_booked_revenue';
+    }
     return 'ask_revenue';
   }
 

@@ -418,3 +418,15 @@ test('detectProvince: Québec', () => {
 test('detectTrade: unknown trade returns null', () => {
   assert.equal(detectTrade("What's the weather like?"), null);
 });
+
+test('detectIntent: "What is my total booked revenue this month?" is ask_booked_revenue', () => {
+  assert.equal(detectIntent('What is my total booked revenue this month?'), 'ask_booked_revenue');
+});
+
+test('detectIntent: "Quel est mon revenu réservé ce mois-ci ?" is ask_booked_revenue', () => {
+  assert.equal(detectIntent('Quel est mon revenu réservé ce mois-ci ?'), 'ask_booked_revenue');
+});
+
+test('detectIntent: "how much did I earn today?" stays ask_revenue (collections)', () => {
+  assert.equal(detectIntent('how much did I earn today?'), 'ask_revenue');
+});

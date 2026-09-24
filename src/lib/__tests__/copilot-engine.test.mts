@@ -247,3 +247,16 @@ test('engine: "tell me about the customer named Nonexistent McFake" reports not 
   assert.equal(res.intent, 'find_customer');
   assert.match(res.reply, /No customer found matching "Nonexistent McFake"/);
 });
+
+test('engine: booked revenue question reports scheduled (not collected) revenue', async () => {
+  const res = await convo('What is my total booked revenue this month?');
+  assert.equal(res.intent, 'ask_booked_revenue');
+  assert.match(res.reply, /Booked revenue/i);
+  assert.match(res.reply, /excluding cancelled/i);
+});
+
+test('engine: booked revenue question in French answers in French', async () => {
+  const res = await convo('Quel est mon revenu réservé ce mois-ci ?');
+  assert.equal(res.intent, 'ask_booked_revenue');
+  assert.match(res.reply, /Revenu réservé/i);
+});

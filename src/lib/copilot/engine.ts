@@ -137,6 +137,30 @@ async function revenueBetween(businessId: string, start: Date, end: Date): Promi
   return agg._sum.amount ?? 0;
 }
 
+/**
+ * Booked revenue: the scheduled value of jobs in a period, excluding
+ * cancelled jobs. Mirrors the dashboard's "booked" definition (price sum,
+ * cancelled never counts). Distinct from collections (cash received).
+ */
+async function bookedRevenueBetween(businessId: string, start: Date, end: Date): Promise<number> {
+  const agg = await prisma.job.aggregate({
+    where: {
+      businessId,
+      date: { gte: start, lte: end },
+      status: { not: 'CANCELLED' },
+    },
+    _sum: { price: true },
+  });
+  return agg._sum.price ?? 0;
+}
+
+/** Calendar-month range (local time) containing `now`. */
+function monthRange(now: Date): { gte: Date; lte: Date } {
+  const gte = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+  const lte = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+  return { gte, lte };
+}
+
 async function unpaidInvoices(businessId: string, limit = 20): Promise<UnpaidInvoiceRow[]> {
   return prisma.invoice.findMany({
     where: { businessId, status: { in: ['UNPAID', 'PARTIALLY PAID'] } },
@@ -589,6 +613,38 @@ export async function runCopilot(
           label === 'Aujourd’hui'
             ? `Collecte d’aujourd’hui : ${formatMoney(total, currency)} (selon les paiements reçus).`
             : `Collecte sur ${label} : ${formatMoney(total, currency)} (selon les paiements reçus).`
+        ),
+        data: { total, label },
+      };
+    }
+
+    case 'ask_booked_revenue': {
+      // Booked (scheduled) revenue for the current calendar month — the
+      // value of non-cancelled jobs, not cash collected.
+      const text = norm(message);
+      let start: Date, end: Date, label: string;
+      const now = new Date();
+      const monthName = now.toLocaleDateString(lang === 'fr' ? 'fr-CA' : 'en-CA', {
+        month: 'long',
+        year: 'numeric',
+      });
+      if (hasAny(' ' + text + ' ', [' today ', ' aujourd hui '])) {
+        const { gte, lte } = dayRange(todayStr);
+        start = gte; end = lte;
+        label = pick(lang, 'today', 'aujourd’hui');
+      } else {
+        // "this month" (or no period given): the calendar month.
+        const { gte, lte } = monthRange(now);
+        start = gte; end = lte;
+        label = monthName;
+      }
+      const total = await bookedRevenueBetween(businessId, start, end);
+      return {
+        intent,
+        reply: pick(
+          lang,
+          `Booked revenue for ${label}: ${formatMoney(total, currency)} (scheduled jobs, excluding cancelled).`,
+          `Revenu réservé pour ${label} : ${formatMoney(total, currency)} (tâches planifiées, excluant les annulées).`
         ),
         data: { total, label },
       };
