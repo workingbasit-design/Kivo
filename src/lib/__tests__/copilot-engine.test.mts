@@ -181,3 +181,69 @@ test('engine: "travail pour Sarah demain" previews in French', async () => {
   assert.equal(res.preview?.customerName, 'Sarah');
   assert.match(res.reply, /confirmez/i);
 });
+
+// --- create_customer: the reported misclassification ---
+test('engine: "Add a new customer named Testy McTestface with phone 416-555-0100" previews a customer, not a job', async () => {
+  const res = await convo('Add a new customer named Testy McTestface with phone 416-555-0100');
+  assert.equal(res.intent, 'create_customer');
+  assert.equal(res.previewKind, 'customer');
+  assert.ok(res.preview, 'expected a customer preview');
+  assert.equal((res.preview as { name: string }).name, 'Testy McTestface');
+  assert.equal((res.preview as { phone: string | null }).phone, '4165550100');
+  assert.match(res.reply, /confirm/i);
+  assert.doesNotMatch(res.reply, /AC Service/i, 'must not invent a service');
+  assert.doesNotMatch(res.reply, /\$416/, 'must not derive a price from the phone number');
+});
+
+test('engine: create_customer with an existing name reports already-exists, no preview', async () => {
+  resetWriteCalls();
+  clearFixtures();
+  setFixture('customer', 'findMany', [{ name: 'Testy McTestface' }]);
+  const { runCopilot: run } = await import('../copilot/engine.ts');
+  const res = await run('biz-test', 'user-test', 'Add a new customer named Testy McTestface', [], {});
+  assert.equal(writeCalls.length, 0, 'copilot must not write');
+  assert.equal(res.intent, 'create_customer');
+  assert.equal(res.preview, undefined);
+  assert.match(res.reply, /already in your customers/i);
+});
+
+// --- ask_certification: real programs, official links ---
+test('engine: plumber in Ontario gets Red Seal + Skilled Trades Ontario with official URLs', async () => {
+  const res = await convo("I'm a plumber in Ontario. Which certification should I pursue next to advance my career?");
+  assert.equal(res.intent, 'ask_certification');
+  assert.match(res.reply, /Red Seal/);
+  assert.match(res.reply, /red-seal\.ca/);
+  assert.match(res.reply, /skilledtradesontario\.ca/);
+  assert.match(res.reply, /nothing here is invented/i);
+});
+
+// --- ask_compare: honest, no invented numbers ---
+test('engine: comparison question is honest about missing peer data', async () => {
+  const res = await convo('How does my business compare to the average plumbing business in Toronto?');
+  assert.equal(res.intent, 'ask_compare');
+  assert.match(res.reply, /don.t have real peer data/i);
+  assert.match(res.reply, /won.t invent averages/i);
+  assert.match(res.reply, /benchmark/i);
+  assert.match(res.reply, /NOT peer data/);
+});
+
+// --- out_of_scope: weather gets a boundary, not a jobs dump ---
+test('engine: weather question gets an out-of-scope boundary', async () => {
+  const res = await convo("What's the weather like in Toronto right now?");
+  assert.equal(res.intent, 'out_of_scope');
+  assert.match(res.reply, /outside what I can help with/i);
+});
+
+// --- French unpaid question is answered in French even with an English locale ---
+test('engine: "Combien de factures impayées ai-je ?" is answered in French', async () => {
+  const res = await convo('Combien de factures impayées ai-je ?'); // no locale — message language wins
+  assert.equal(res.intent, 'ask_unpaid');
+  assert.match(res.reply, /impayée/i);
+});
+
+// --- find_customer: clean name, no mangled echo ---
+test('engine: "tell me about the customer named Nonexistent McFake" reports not found cleanly', async () => {
+  const res = await convo('tell me about the customer named Nonexistent McFake');
+  assert.equal(res.intent, 'find_customer');
+  assert.match(res.reply, /No customer found matching "Nonexistent McFake"/);
+});

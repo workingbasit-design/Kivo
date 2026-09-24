@@ -4,7 +4,7 @@ import crypto from 'crypto';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { rateLimit } from '@/lib/rate-limit';
-import { runCopilot, type JobDraft, type CopilotHistoryItem } from '@/lib/copilot/engine';
+import { runCopilot, type JobDraft, type CustomerDraft, type CopilotHistoryItem } from '@/lib/copilot/engine';
 import { tryAnthropicReply } from '@/lib/copilot/anthropic';
 import { formatDateShort } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
@@ -26,6 +26,7 @@ const strictDate = z
 
 const confirmSchema = z.object({
   confirm: z.literal(true),
+  previewType: z.literal('job').optional(), // default for older clients
   preview: z.object({
     title: z.string().min(1).max(120),
     date: strictDate,
@@ -37,6 +38,18 @@ const confirmSchema = z.object({
   }),
   // Client-generated idempotency key (one per booking preview). Optional —
   // when absent the server derives a deterministic key from the draft.
+  idempotencyKey: z.string().trim().min(8).max(128).optional(),
+});
+
+/** Confirming a previewed NEW CUSTOMER — same explicit-confirm boundary as jobs. */
+const customerConfirmSchema = z.object({
+  confirm: z.literal(true),
+  previewType: z.literal('customer'),
+  preview: z.object({
+    name: z.string().min(1).max(80),
+    phone: z.string().regex(/^[2-9]\d{9}$/).nullable().optional(), // NANP 10-digit
+    address: z.string().max(200).nullable().optional(),
+  }),
   idempotencyKey: z.string().trim().min(8).max(128).optional(),
 });
 
@@ -84,7 +97,28 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
   }
 
-  // --- Confirm a previously previewed job ---------------------------------
+  // --- Confirm a previously previewed job or customer -----------------------
+  // Customer confirm carries previewType: 'customer'; try it first.
+  const asCustomerConfirm = customerConfirmSchema.safeParse(body);
+  if (asCustomerConfirm.success) {
+    const rlConfirm = rateLimit(`copilot-confirm:${session.user.id}`, {
+      limit: 10,
+      windowMs: 60_000,
+    });
+    if (!rlConfirm.ok) {
+      return NextResponse.json(
+        { error: tr('Too many confirm requests — please wait a moment and try again.', 'Trop de confirmations — attendez un moment et réessayez.') },
+        { status: 429 }
+      );
+    }
+    return handleCustomerConfirm(
+      businessId,
+      asCustomerConfirm.data.preview,
+      asCustomerConfirm.data.idempotencyKey,
+      fr
+    );
+  }
+
   const asConfirm = confirmSchema.safeParse(body);
   if (asConfirm.success) {
     // Job creation is higher-stakes than chat: tighter per-user budget.
@@ -134,12 +168,13 @@ export async function POST(req: Request) {
   return NextResponse.json({
     reply,
     intent: result.intent,
-    needsConfirm: result.intent === 'create_job' && !!result.preview,
+    needsConfirm: (result.intent === 'create_job' || result.intent === 'create_customer') && !!result.preview,
+    previewKind: result.previewKind ?? (result.intent === 'create_job' ? 'job' : null),
     preview: result.preview ?? null,
   });
 }
 
-function summarizeResult(result: { intent: string; reply: string; data?: Record<string, unknown>; preview?: JobDraft }): string {
+function summarizeResult(result: { intent: string; reply: string; data?: Record<string, unknown>; preview?: JobDraft | CustomerDraft }): string {
   // The engine reply already contains only real data; pass it through as grounding.
   return result.reply;
 }
@@ -268,6 +303,122 @@ async function handleConfirm(
   }
   resolveOutcome(outcome);
   return confirmResponse(outcome, key);
+}
+
+/** Confirm a previewed new customer — same idempotency guarantees as jobs. */
+async function handleCustomerConfirm(
+  businessId: string,
+  draft: z.infer<typeof customerConfirmSchema>['preview'],
+  clientKey: string | undefined,
+  fr: boolean
+) {
+  const tr = (en: string, frText: string) => (fr ? frText : en);
+  const canonical = [
+    'cust',
+    businessId,
+    draft.name.trim().toLowerCase(),
+    draft.phone ?? '',
+  ].join('|');
+  const key = clientKey?.trim()
+    ? `cli:${clientKey.trim()}`
+    : `det:${crypto.createHash('sha256').update(canonical).digest('hex')}`;
+
+  const existing = getConfirmEntry(key);
+  if (existing?.promise) {
+    return confirmResponse(await existing.promise, key);
+  }
+  if (existing?.outcome?.ok) {
+    return confirmResponse({ ...existing.outcome, duplicate: true }, key);
+  }
+  if (existing?.outcome && !existing.outcome.ok) {
+    confirmStore.delete(key);
+  }
+
+  let resolveOutcome!: (o: ConfirmOutcome) => void;
+  const promise = new Promise<ConfirmOutcome>((resolve) => {
+    resolveOutcome = resolve;
+  });
+  confirmStore.set(key, {
+    promise,
+    outcome: null,
+    expiresAt: Date.now() + CONFIRM_RESULT_TTL_MS,
+  });
+
+  const outcome = await runCustomerConfirm(businessId, draft, fr);
+  if (outcome.ok) {
+    confirmStore.set(key, { promise: null, outcome, expiresAt: Date.now() + CONFIRM_RESULT_TTL_MS });
+  } else {
+    confirmStore.delete(key);
+  }
+  resolveOutcome(outcome);
+  return confirmResponse(outcome, key);
+}
+
+async function runCustomerConfirm(
+  businessId: string,
+  draft: z.infer<typeof customerConfirmSchema>['preview'],
+  fr: boolean
+): Promise<ConfirmOutcome> {
+  const tr = (en: string, frText: string) => (fr ? frText : en);
+  const name = draft.name.trim();
+
+  // Re-check duplicates at confirm time (tenant-scoped): an exact name or
+  // phone match resolves to the existing customer — never a duplicate.
+  if (draft.phone) {
+    const byPhone = await prisma.customer.findFirst({
+      where: { businessId, phone: { contains: draft.phone } },
+      select: { id: true, name: true },
+    });
+    if (byPhone) {
+      return {
+        ok: true,
+        jobId: byPhone.id,
+        reply: tr(
+          `"${byPhone.name}" is already in your customers — no duplicate added.`,
+          `« ${byPhone.name} » est déjà dans vos clients — aucun doublon ajouté.`
+        ),
+        duplicate: true,
+      };
+    }
+  }
+  const candidates = await prisma.customer.findMany({
+    where: { businessId, name: { contains: name } },
+    select: { id: true, name: true },
+    take: 5,
+  });
+  const exact = candidates.find((c) => c.name.trim().toLowerCase() === name.toLowerCase());
+  if (exact) {
+    return {
+      ok: true,
+      jobId: exact.id,
+      reply: tr(
+        `"${exact.name}" is already in your customers — no duplicate added.`,
+        `« ${exact.name} » est déjà dans vos clients — aucun doublon ajouté.`
+      ),
+      duplicate: true,
+    };
+  }
+
+  const customer = await prisma.customer.create({
+    data: {
+      businessId,
+      name,
+      phone: draft.phone ?? undefined,
+      address: draft.address ?? undefined,
+      notes: 'Created via EveryJob Copilot',
+    },
+    select: { id: true, name: true },
+  });
+
+  return {
+    ok: true,
+    jobId: customer.id,
+    reply: tr(
+      `Customer added ✓\n\n${customer.name}${draft.phone ? ` — ${draft.phone}` : ''}\n\nYou’ll find them on the Customers page.`,
+      `Client ajouté ✓\n\n${customer.name}${draft.phone ? ` — ${draft.phone}` : ''}\n\nVous le trouverez sur la page Clients.`
+    ),
+    duplicate: false,
+  };
 }
 
 /** The actual confirm work: validate, find/create customer, create the job. */

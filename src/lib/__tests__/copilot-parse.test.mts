@@ -6,6 +6,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   detectIntent,
+  detectMessageLang,
+  detectProvince,
+  detectTrade,
   extractCustomerName,
   extractDate,
   extractMoney,
@@ -303,4 +306,115 @@ test('detectIntent: "how much was the job?" never books', () => {
 
 test('detectIntent: "great job" alone never books', () => {
   assert.notEqual(detectIntent('great job'), 'create_job');
+});
+
+// --- Intent: customer creation is never a job booking (reported defect) ---
+test('detectIntent: "Add a new customer named Testy McTestface with phone 416-555-0100" is create_customer', () => {
+  assert.equal(detectIntent('Add a new customer named Testy McTestface with phone 416-555-0100'), 'create_customer');
+});
+
+test('detectIntent: "add a customer" is create_customer, not create_job', () => {
+  assert.equal(detectIntent('add a customer'), 'create_customer');
+});
+
+test('detectIntent: French "ajouter un nouveau client" is create_customer', () => {
+  assert.equal(detectIntent('ajouter un nouveau client nommé Sarah Tremblay'), 'create_customer');
+});
+
+test('detectIntent: "add job for Sarah tomorrow" is still create_job', () => {
+  assert.equal(detectIntent('add job for Sarah tomorrow'), 'create_job');
+});
+
+// --- Intent: certification advice (reported defect) ---
+test('detectIntent: plumber certification question is ask_certification', () => {
+  assert.equal(
+    detectIntent("I'm a plumber in Ontario. Which certification should I pursue next to advance my career?"),
+    'ask_certification'
+  );
+});
+
+test('detectIntent: French licence question is ask_certification', () => {
+  assert.equal(detectIntent('Quelle licence me faut-il comme électricien au Québec?'), 'ask_certification');
+});
+
+// --- Intent: honest comparison (reported defect) ---
+test('detectIntent: peer-comparison question is ask_compare', () => {
+  assert.equal(
+    detectIntent('How does my business compare to the average plumbing business in Toronto?'),
+    'ask_compare'
+  );
+});
+
+// --- Intent: out-of-scope boundary (reported defect) ---
+test('detectIntent: weather question is out_of_scope', () => {
+  assert.equal(detectIntent("What's the weather like in Toronto right now?"), 'out_of_scope');
+});
+
+test('detectIntent: "what\'s on tomorrow?" still asks the schedule', () => {
+  assert.equal(detectIntent("what's on tomorrow?"), 'ask_schedule');
+});
+
+// --- Intent: French feminine forms (reported defect) ---
+test('detectIntent: "Combien de factures impayées ai-je ?" is ask_unpaid', () => {
+  assert.equal(detectIntent('Combien de factures impayées ai-je ?'), 'ask_unpaid');
+});
+
+// --- Language detection ---
+test('detectMessageLang: French question detected', () => {
+  assert.equal(detectMessageLang('Combien de factures impayées ai-je ?'), 'fr');
+});
+
+test('detectMessageLang: English question detected', () => {
+  assert.equal(detectMessageLang('How many customers do I have?'), 'en');
+});
+
+test('detectMessageLang: no signal returns null', () => {
+  assert.equal(detectMessageLang('Sarah'), null);
+});
+
+// --- extractServiceTitle: short keys need word boundaries (reported defect) ---
+test('extractServiceTitle: "McTestface" is not AC Service', () => {
+  assert.equal(extractServiceTitle('Add a new customer named Testy McTestface with phone 416-555-0100'), null);
+});
+
+test('extractServiceTitle: "AC repair" still maps to AC Service', () => {
+  assert.equal(extractServiceTitle('AC repair for Sarah tomorrow'), 'AC Service');
+});
+
+// --- extractMoney: phone digits are never a price (reported defect) ---
+test('extractMoney: phone-number digits are not a price', () => {
+  assert.equal(extractMoney('Add a new customer named Testy McTestface with phone 416-555-0100'), null);
+});
+
+test('extractMoney: real price alongside a phone still parses', () => {
+  assert.equal(extractMoney('plumbing for Sarah tomorrow 800, phone 416-555-0100'), 800);
+});
+
+// --- extractCustomerName: "named" pattern (reported defect) ---
+test('extractCustomerName: "named Testy McTestface" works', () => {
+  assert.equal(
+    extractCustomerName('Add a new customer named Testy McTestface with phone 416-555-0100'),
+    'Testy McTestface'
+  );
+});
+
+test('extractCustomerName: "tell me about the customer named Nonexistent McFake" finds the name', () => {
+  assert.equal(
+    extractCustomerName('tell me about the customer named Nonexistent McFake'),
+    'Nonexistent McFake'
+  );
+});
+
+// --- detectTrade / detectProvince ---
+test('detectTrade + detectProvince: "plumber in Ontario"', () => {
+  assert.equal(detectTrade("I'm a plumber in Ontario"), 'plumbing');
+  assert.equal(detectProvince("I'm a plumber in Ontario"), 'ON');
+});
+
+test('detectProvince: Québec', () => {
+  assert.equal(detectProvince('plombier au Québec'), 'QC');
+});
+
+test('detectTrade: unknown trade returns null', () => {
+  assert.equal(detectTrade("What's the weather like?"), null);
 });

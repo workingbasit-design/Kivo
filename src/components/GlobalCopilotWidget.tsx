@@ -9,16 +9,18 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { currencySymbol } from '@/lib/money';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
-import type { JobDraft } from '@/lib/copilot/engine';
+import type { JobDraft, CustomerDraft } from '@/lib/copilot/engine';
 import VoiceInputButton from '@/components/copilot/VoiceInputButton';
 
 type Message = {
   id: string;
   role: 'user' | 'assistant';
   content: string;
-  preview?: JobDraft | null;
+  preview?: (JobDraft | CustomerDraft) | null;
+  /** Which kind of record the preview would create. */
+  previewKind?: 'job' | 'customer' | null;
   created?: boolean;
-  /** Client-generated idempotency key for this preview — replayed confirms collapse onto one job. */
+  /** Client-generated idempotency key for this preview — replayed confirms collapse onto one record. */
   idempotencyKey?: string | null;
 };
 
@@ -143,6 +145,91 @@ function PreviewCard({
         </button>
       </div>
       {!draft.customerName.trim() && (
+        <p className="px-4 pb-3 text-[11px] text-amber-600">{t(locale, 'copilot.nameRequired')}</p>
+      )}
+    </div>
+  );
+}
+
+/** Preview card for adding a brand-new customer — explicit confirm, never silent. */
+function CustomerPreviewCard({
+  preview,
+  onConfirm,
+  onDiscard,
+  confirming,
+  locale,
+}: {
+  preview: CustomerDraft;
+  onConfirm: (draft: CustomerDraft) => void;
+  onDiscard: () => void;
+  confirming: boolean;
+  locale: Locale;
+}) {
+  const [draft, setDraft] = React.useState<CustomerDraft>(preview);
+  const set = (patch: Partial<CustomerDraft>) => setDraft((d) => ({ ...d, ...patch }));
+
+  const phoneDigits = (draft.phone ?? '').replace(/\D/g, '');
+  const phoneOk = phoneDigits === '' || /^[2-9]\d{9}$/.test(phoneDigits);
+  const canConfirm = !confirming && draft.name.trim().length > 0 && phoneOk;
+  const fieldClass =
+    'w-full bg-zinc-50 border border-zinc-200 rounded-lg px-2.5 py-2 min-h-[44px] text-sm text-zinc-800 font-medium focus:outline-none focus:ring-2 focus:ring-ink/30';
+
+  return (
+    <div className="mt-2 bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-sm">
+      <div className="bg-ink/5 border-b border-smoke px-4 py-3 flex items-center gap-2 text-ink font-semibold text-sm">
+        <div className="w-6 h-6 rounded-full bg-ink/10 flex items-center justify-center">
+          <User size={14} />
+        </div>
+        {t(locale, 't10misc.copilot.customerPreviewTitle')}
+      </div>
+      <div className="p-4 space-y-2.5 text-sm">
+        <EditRow icon={<User size={15} />} label={t(locale, 'copilot.fieldCustomer')}>
+          <input
+            value={draft.name}
+            onChange={(e) => set({ name: e.target.value })}
+            placeholder={t(locale, 'copilot.namePlaceholder')}
+            aria-label={t(locale, 'copilot.fieldCustomer')}
+            className={fieldClass}
+          />
+        </EditRow>
+        <EditRow icon={<Phone size={15} />} label={t(locale, 'copilot.fieldPhone')}>
+          <input
+            inputMode="numeric"
+            value={draft.phone ?? ''}
+            onChange={(e) => set({ phone: e.target.value.replace(/\D/g, '').slice(0, 10) || null })}
+            placeholder={t(locale, 'copilot.phonePlaceholder')}
+            aria-label={t(locale, 'copilot.fieldPhone')}
+            className={`${fieldClass} ${phoneOk ? '' : '!border-red-400'}`}
+          />
+        </EditRow>
+        <EditRow icon={<MapPin size={15} />} label={t(locale, 'copilot.fieldAddress')}>
+          <input
+            value={draft.address ?? ''}
+            onChange={(e) => set({ address: e.target.value || null })}
+            aria-label={t(locale, 'copilot.fieldAddress')}
+            className={fieldClass}
+          />
+        </EditRow>
+      </div>
+      <div className="px-4 pb-4 flex gap-2">
+        <button
+          onClick={() => onConfirm({ ...draft, name: draft.name.trim(), phone: phoneDigits || null })}
+          disabled={!canConfirm}
+          className="flex-1 min-h-[44px] bg-ink hover:bg-graphite disabled:opacity-50 text-white text-xs font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-colors"
+        >
+          <Check size={14} />
+          {confirming ? t(locale, 't10misc.copilot.adding') : t(locale, 't10misc.copilot.confirmAdd')}
+        </button>
+        <button
+          onClick={onDiscard}
+          disabled={confirming}
+          className="flex-1 min-h-[44px] bg-zinc-100 hover:bg-zinc-200 disabled:opacity-50 text-zinc-700 text-xs font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-colors"
+        >
+          <PencilLine size={14} />
+          {t(locale, 't10misc.copilot.discard')}
+        </button>
+      </div>
+      {!draft.name.trim() && (
         <p className="px-4 pb-3 text-[11px] text-amber-600">{t(locale, 'copilot.nameRequired')}</p>
       )}
     </div>
@@ -302,10 +389,11 @@ export default function GlobalCopilotWidget({
       pushMessage({
         role: 'assistant',
         content: json.reply as string,
-        preview: json.needsConfirm ? (json.preview as JobDraft) : null,
+        preview: json.needsConfirm ? ((json.preview as JobDraft | CustomerDraft) ?? null) : null,
+        previewKind: json.needsConfirm ? ((json.previewKind as string) === 'customer' ? 'customer' : 'job') : null,
         created: !!json.created,
-        // One key per booking preview: double-taps / retries of the confirm
-        // carry the same key, so the server creates the job exactly once.
+        // One key per preview: double-taps / retries of the confirm
+        // carry the same key, so the server creates the record exactly once.
         idempotencyKey: json.needsConfirm ? crypto.randomUUID() : null,
       });
     } catch {
@@ -329,7 +417,7 @@ export default function GlobalCopilotWidget({
   // client would push two success messages. The ref stops the second tap.
   const confirmingRef = useRef<string | null>(null);
 
-  const handleConfirm = async (msgId: string, preview: JobDraft) => {
+  const handleConfirm = async (msgId: string, preview: JobDraft | CustomerDraft, kind: 'job' | 'customer' = 'job') => {
     if (confirmingRef.current === msgId) return;
     confirmingRef.current = msgId;
     setConfirmingId(msgId);
@@ -340,6 +428,7 @@ export default function GlobalCopilotWidget({
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           confirm: true,
+          previewType: kind,
           preview,
           idempotencyKey: msg?.idempotencyKey ?? undefined,
         }),
@@ -361,13 +450,13 @@ export default function GlobalCopilotWidget({
     }
   };
 
-  const handleDiscard = (msgId: string) => {
+  const handleDiscard = (msgId: string, kind: 'job' | 'customer' = 'job') => {
     // Only act if the preview is still pending — a double-click before
     // re-render must not push the reply twice.
     const msg = messagesRef.current.find((m) => m.id === msgId);
     if (!msg?.preview) return;
     setMessages((prev) => prev.map((m) => (m.id === msgId ? { ...m, preview: null } : m)));
-    pushMessage({ role: 'assistant', content: t(lang, 'copilot.bookingCancelled') });
+    pushMessage({ role: 'assistant', content: kind === 'customer' ? t(lang, 't10misc.copilot.customerCancelled') : t(lang, 'copilot.bookingCancelled') });
   };
 
   const handleSend = async (e: React.FormEvent) => {
@@ -468,12 +557,21 @@ export default function GlobalCopilotWidget({
                     </div>
                     {msg.preview && (
                       <div className="ml-8 mt-1">
-                        <PreviewCard locale={lang} currency={currency}
-                          preview={msg.preview}
-                          confirming={confirmingId === msg.id}
-                          onConfirm={(draft) => handleConfirm(msg.id, draft)}
-                          onDiscard={() => handleDiscard(msg.id)}
-                        />
+                        {msg.previewKind === 'customer' ? (
+                          <CustomerPreviewCard locale={lang}
+                            preview={msg.preview as CustomerDraft}
+                            confirming={confirmingId === msg.id}
+                            onConfirm={(draft) => handleConfirm(msg.id, draft, 'customer')}
+                            onDiscard={() => handleDiscard(msg.id, 'customer')}
+                          />
+                        ) : (
+                          <PreviewCard locale={lang} currency={currency}
+                            preview={msg.preview as JobDraft}
+                            confirming={confirmingId === msg.id}
+                            onConfirm={(draft) => handleConfirm(msg.id, draft, 'job')}
+                            onDiscard={() => handleDiscard(msg.id, 'job')}
+                          />
+                        )}
                       </div>
                     )}
                   </div>

@@ -18,8 +18,12 @@
 import { prisma } from '@/lib/prisma';
 import { formatDateShort, toISODateLocal, dayRange } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
+import { getCertificationRoadmap, type TradeKey } from '@/lib/certifications';
 import {
   detectIntent,
+  detectMessageLang,
+  detectProvince,
+  detectTrade,
   extractAddress,
   extractCustomerName,
   extractDate,
@@ -33,6 +37,7 @@ import {
   type CopilotHistoryItem,
   type CopilotIntent,
   type CopilotResult,
+  type CustomerDraft,
   type JobDraft,
 } from './parse';
 
@@ -40,6 +45,9 @@ import {
 // widgets and tests.
 export {
   detectIntent,
+  detectMessageLang,
+  detectProvince,
+  detectTrade,
   extractAddress,
   extractCustomerName,
   extractDate,
@@ -51,6 +59,7 @@ export {
   type CopilotHistoryItem,
   type CopilotIntent,
   type CopilotResult,
+  type CustomerDraft,
   type JobDraft,
 };
 
@@ -174,18 +183,22 @@ function helpText(lang: CopilotLang, example: string): string {
     lang,
     `I can help with:\n\n` +
       `• Booking a job — write WhatsApp-style, e.g. "${example}". I'll confirm before booking.\n` +
+      `• Adding a customer — "Add a new customer named Priya, 416-555-0100". I confirm before adding.\n` +
       `• Checking the schedule — "Today's jobs?" or "Tomorrow's jobs?"\n` +
       `• Earnings — "How much did I earn this week?"\n` +
       `• Outstanding payments — "What's outstanding?"\n` +
       `• Finding a customer — "Sarah's number"\n` +
+      `• Career credentials — "Which certification should I pursue as a plumber in Ontario?"\n` +
       `• Payment reminders — "Draft a reminder for Sarah"\n\n` +
       `Ask anything — I answer from your real business data.`,
     `Je peux vous aider avec :\n\n` +
       `• Réserver une tâche — écrivez comme sur WhatsApp, par ex. « ${example} ». Je confirmerai avant de réserver.\n` +
+      `• Ajouter un client — « Ajouter un nouveau client nommé Priya, 416-555-0100 ». Je confirmerai avant d’ajouter.\n` +
       `• Voir l'horaire — « Les tâches d'aujourd'hui? » ou « Celles de demain? »\n` +
       `• Les revenus — « Combien ai-je gagné cette semaine? »\n` +
       `• Les paiements impayés — « Combien me doit-on? »\n` +
       `• Trouver un client — « Le numéro de Sarah »\n` +
+      `• Les titres de compétence — « Quelle certification viser comme plombier en Ontario? »\n` +
       `• Les rappels de paiement — « Prépare un rappel pour Sarah »\n\n` +
       `Posez votre question — je réponds à partir de vos vraies données d'affaires.`
   );
@@ -245,7 +258,7 @@ export async function runCopilot(
   history: CopilotHistoryItem[] = [],
   opts: RunCopilotOptions = {}
 ): Promise<CopilotResult> {
-  const lang = langOf(opts.locale);
+  const lang = detectMessageLang(message) ?? langOf(opts.locale);
   // Locale-appropriate booking example for help/greeting/clarify.
   const example =
     lang === 'fr'
@@ -380,6 +393,148 @@ export async function runCopilot(
       return { intent, reply: lines.join('\n'), preview: draft };
     }
 
+    case 'create_customer': {
+      // Brand-new customer — always previewed, never created silently.
+      const name = extractCustomerName(message) ?? '';
+      const phone = extractPhone(message);
+      const address = extractAddress(message);
+
+      // Duplicate check: an exact name or phone match means the customer
+      // is already there — say so instead of offering a duplicate.
+      const alreadyMsg = (existing: string) =>
+        pick(
+          lang,
+          `"${existing}" is already in your customers — no duplicate added. Want to book a job for them instead?`,
+          `« ${existing} » est déjà dans vos clients — aucun doublon ajouté. Voulez-vous plutôt réserver une tâche pour ce client?`
+        );
+      if (phone) {
+        const byPhone = await prisma.customer.findFirst({
+          where: { businessId, phone: { contains: phone } },
+          select: { name: true },
+        });
+        if (byPhone) return { intent, reply: alreadyMsg(byPhone.name) };
+      }
+      if (name) {
+        const candidates = await prisma.customer.findMany({
+          where: { businessId, name: { contains: name } },
+          select: { name: true },
+          take: 5,
+        });
+        const exact = candidates.find(
+          (c) => c.name.trim().toLowerCase() === name.trim().toLowerCase()
+        );
+        if (exact) return { intent, reply: alreadyMsg(exact.name) };
+      }
+      if (!name) {
+        return {
+          intent,
+          reply: pick(
+            lang,
+            'What’s the customer’s name? Send e.g. "Add a new customer named Priya Sharma, 416-555-0100".',
+            'Quel est le nom du client? Envoyez par ex. « Ajouter un nouveau client nommé Priya Sharma, 416-555-0100 ».'
+          ),
+        };
+      }
+
+      const draft: CustomerDraft = { name, phone, address };
+      const lines = [
+        pick(lang, 'Here’s the customer I understood — please confirm?', 'Voici le client que j’ai compris — confirmez-vous?'),
+        '',
+        `${pick(lang, 'Name', 'Nom')}: ${draft.name}`,
+        `${pick(lang, 'Phone', 'Téléphone')}: ${draft.phone ?? '—'}`,
+        `${pick(lang, 'Address', 'Adresse')}: ${draft.address ?? '—'}`,
+        '',
+        pick(
+          lang,
+          'Nothing has been added yet — review the details in the panel and confirm to add this customer.',
+          'Rien n’a encore été ajouté — vérifiez les détails dans le panneau et confirmez pour ajouter ce client.'
+        ),
+      ];
+      return { intent, reply: lines.join('\n'), preview: draft, previewKind: 'customer' };
+    }
+
+    case 'ask_certification': {
+      // Real Canadian credential advice: the roadmap in certifications.ts
+      // lists only verifiably-existing official programs. Never invent.
+      const biz = await prisma.business.findUnique({
+        where: { id: businessId },
+        select: { trade: true, taxRegion: true },
+      });
+      const trade = detectTrade(message) ?? (biz?.trade as TradeKey | null) ?? null;
+      const province = detectProvince(message) ?? biz?.taxRegion ?? null;
+      const roadmap = getCertificationRoadmap(trade, province);
+
+      const tradeLabel: Record<string, { en: string; fr: string }> = {
+        plumbing: { en: 'plumbing', fr: 'plomberie' },
+        electrical: { en: 'electrical', fr: 'électricité' },
+        hvac: { en: 'HVAC', fr: 'CVCA' },
+        carpentry: { en: 'carpentry', fr: 'menuiserie' },
+        painting: { en: 'painting', fr: 'peinture' },
+        landscaping: { en: 'landscaping', fr: 'aménagement paysager' },
+        cleaning: { en: 'cleaning', fr: 'nettoyage' },
+        renovation: { en: 'renovation', fr: 'rénovation' },
+        other: { en: 'home services', fr: 'services à domicile' },
+      };
+      const provinceNames: Record<string, string> = {
+        ON: 'Ontario', BC: 'British Columbia', AB: 'Alberta', SK: 'Saskatchewan',
+        MB: 'Manitoba', NS: 'Nova Scotia', QC: 'Québec', NB: 'New Brunswick',
+        NL: 'Newfoundland and Labrador', PE: 'Prince Edward Island',
+      };
+      const tLabel = pick(lang, (tradeLabel[trade ?? 'other'] ?? tradeLabel.other).en, (tradeLabel[trade ?? 'other'] ?? tradeLabel.other).fr);
+      const pLabel = province && provinceNames[province] ? provinceNames[province] : null;
+      const intro = pick(
+        lang,
+        `Real credentials worth pursuing for ${tLabel}${pLabel ? ` in ${pLabel}` : ''}:`,
+        `Vrais titres de compétence à envisager pour ${tLabel}${pLabel ? ` ${pLabel === 'Québec' ? 'au' : 'en'} ${pLabel}` : ''} :`
+      );
+      const items = roadmap.map(
+        (c, i) =>
+          `${i + 1}. ${c.name}\n   ${c.issuer}\n   ${c.url}\n   ${lang === 'fr' ? c.why.fr : c.why.en}`
+      );
+      const outro = pick(
+        lang,
+        '\n\nEvery program above is real and links to its official body — nothing here is invented. You can also see this roadmap in Insights.',
+        '\n\nChaque programme ci-dessus est réel et mène à son organisme officiel — rien n’est inventé. Vous pouvez aussi voir cette feuille de route dans Aperçus.'
+      );
+      return { intent, reply: `${intro}\n\n${items.join('\n\n')}${outro}`, data: { trade, province, count: roadmap.length } };
+    }
+
+    case 'ask_compare': {
+      // Honest comparison: there is no real peer data yet (the directory is
+      // consent-only and has no participating businesses), so inventing
+      // averages would be lying. Offer clearly-labelled best-practice
+      // benchmarks instead.
+      return {
+        intent,
+        reply: pick(
+          lang,
+          'I don’t have real peer data to compare you against — EveryJob only compares businesses that opt into the directory, and there are no participants yet. I won’t invent averages.\n\n' +
+            'Best-practice benchmarks (industry guidance, NOT peer data):\n' +
+            '• Strong profiles list 3+ credentials and keep contact info, hours and service area complete.\n' +
+            '• Businesses that win repeat work enable online booking and follow up on quotes within one business day.\n' +
+            '• Collecting a review after every finished job builds the trust signal most homeowners check first.\n\n' +
+            'For a personalised checklist, see your profile strength score in Insights.',
+          'Je n’ai pas de vraies données de pairs pour vous comparer — EveryJob ne compare que les entreprises inscrites au répertoire, et il n’y a encore aucun participant. Je n’inventerai pas de moyennes.\n\n' +
+            'Repères de bonnes pratiques (conseils du secteur, PAS des données de pairs) :\n' +
+            '• Les profils solides affichent 3+ titres de compétence et gardent coordonnées, heures et zone de service complètes.\n' +
+            '• Les entreprises qui fidélisent activent la réservation en ligne et relancent les soumissions sous un jour ouvrable.\n' +
+            '• Recueillir un avis après chaque tâche bâtit le signal de confiance que la plupart des propriétaires vérifient en premier.\n\n' +
+            'Pour une liste personnalisée, voyez votre score de profil dans Aperçus.'
+        ),
+      };
+    }
+
+    case 'out_of_scope': {
+      return {
+        intent,
+        reply: pick(
+          lang,
+          'That’s outside what I can help with — I answer questions about your EveryJob business: jobs, customers, quotes, invoices, earnings and certifications. What would you like to know about your business?',
+          'C’est en dehors de ce que je peux faire — je réponds aux questions sur votre entreprise EveryJob : tâches, clients, soumissions, factures, revenus et certifications. Que voulez-vous savoir sur votre entreprise?'
+        ),
+      };
+    }
+
     case 'ask_schedule': {
       const dateStr = extractDate(message) ?? todayStr;
       const jobs = await jobsOn(businessId, dateStr);
@@ -508,9 +663,10 @@ export async function runCopilot(
     case 'find_customer': {
       const phone = extractPhone(message);
       const name = extractCustomerName(message);
-      // strip the "ka number" style suffix and search the raw words
-      const query = phone ?? name ?? norm(message).replace(/\b(ka|ke|ki|number|no|mobile|customer|client|grahak|find|karo|do|batao|dikhao|numéro|téléphone|chercher|trouve)\b/g, ' ').trim();
-      if (!query) {
+      // Only ever search with a clean extracted phone or name. Echoing the
+      // raw message ("tell me about the named nonexistent mcfake") was a
+      // real bug — if no name was understood, ask for one instead.
+      if (!phone && !name) {
         return {
           intent,
           reply: pick(
@@ -520,6 +676,7 @@ export async function runCopilot(
           ),
         };
       }
+      const query = (phone ?? name) as string;
       const customers = await findCustomers(businessId, query);
       if (customers.length === 0) {
         return {

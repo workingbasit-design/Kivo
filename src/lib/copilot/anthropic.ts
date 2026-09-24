@@ -9,12 +9,12 @@
  * Dependency-free: uses global fetch.
  */
 
-import type { CopilotIntent, JobDraft } from './engine';
+import type { CopilotIntent, JobDraft, CustomerDraft } from './engine';
 
 export interface LlmContext {
   intent: CopilotIntent;
   dataSummary: string; // plain-text summary of real fetched data (never invented)
-  preview?: JobDraft;
+  preview?: JobDraft | CustomerDraft;
 }
 
 const SYSTEM_PROMPT = `You are "EveryJob", the AI assistant inside the EveryJob field-service app for small Canadian home-service businesses (plumbers, electricians, HVAC, cleaners, etc.).
@@ -39,7 +39,7 @@ export async function tryAnthropicReply(
     `INTENT: ${ctx.intent}`,
     `REAL DATA (from database, use only this):`,
     ctx.dataSummary || '(no data fetched)',
-    ctx.preview ? `JOB PREVIEW (awaiting user confirmation, NOT yet created): ${JSON.stringify(ctx.preview)}` : '',
+    ctx.preview ? `PREVIEW (awaiting user confirmation, NOT yet created): ${JSON.stringify(ctx.preview)}` : '',
   ]
     .filter(Boolean)
     .join('\n');

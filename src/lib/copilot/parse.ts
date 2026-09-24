@@ -7,14 +7,19 @@
  */
 
 import { toISODateLocal } from '@/lib/utils';
+import type { TradeKey } from '../certifications';
 
 export type CopilotIntent =
   | 'create_job'
+  | 'create_customer'
   | 'ask_schedule'
   | 'find_customer'
   | 'ask_customers'
   | 'ask_revenue'
   | 'ask_unpaid'
+  | 'ask_certification'
+  | 'ask_compare'
+  | 'out_of_scope'
   | 'draft_reminder'
   | 'help'
   | 'unknown';
@@ -29,10 +34,19 @@ export interface JobDraft {
   price: number | null;
 }
 
+/** Draft for adding a brand-new customer — always previewed, never silent. */
+export interface CustomerDraft {
+  name: string;
+  phone: string | null;
+  address: string | null;
+}
+
 export interface CopilotResult {
   intent: CopilotIntent;
   reply: string;
-  preview?: JobDraft;
+  preview?: JobDraft | CustomerDraft;
+  /** Which kind of record the preview would create. */
+  previewKind?: 'job' | 'customer';
   data?: Record<string, unknown>;
 }
 
@@ -133,6 +147,39 @@ export function extractDate(raw: string): string | null {
   return null;
 }
 
+/**
+ * Detect the language of the user's message itself. The app is EN + Canadian
+ * French: when the user writes French, the reply should be French even if the
+ * business's UI locale is English (and vice versa). Returns null when the
+ * message gives no clear signal — the caller then falls back to the locale.
+ */
+export function detectMessageLang(raw: string): 'fr' | 'en' | null {
+  const text = ' ' + norm(raw) + ' ';
+  const frMarkers = [
+    ' combien ', ' facture ', ' factures ', ' impaye ', ' impayee ', ' impayes ', ' impayees ',
+    ' merci ', ' bonjour ', ' bonsoir ', ' salut ', ' veuillez ', ' quel ', ' quelle ', ' quels ', ' quelles ',
+    ' quand ', ' pourquoi ', ' comment ', " s il ", ' etes ', ' suis ', ' aujourd hui ', ' tache ', ' taches ',
+    ' devis ', ' paiement ', ' paiements ', ' horaire ', ' revenu ', ' revenus ', ' gagne ', ' dois ',
+    ' rendez vous ', ' plomberie ', ' plombier ', ' fournaise ', ' rappel ', ' rappelle ', ' tache ',
+    ' client ', ' clients ', ' entreprise ', ' travail ',
+  ];
+  const enMarkers = [
+    ' the ', ' what ', ' how ', ' my ', ' your ', ' today ', ' tomorrow ', ' schedule ',
+    ' jobs ', ' customer ', ' customers ', ' invoice ', ' invoices ', ' payment ', ' payments ',
+    ' revenue ', ' thanks ', ' please ', ' can you ', ' do i ', ' does ',
+  ];
+  let fr = 0;
+  let en = 0;
+  for (const m of frMarkers) if (text.includes(m)) fr++;
+  for (const m of enMarkers) if (text.includes(m)) en++;
+  if (fr > 0 && fr >= en) return 'fr';
+  if (en > 0) return 'en';
+  return null;
+}
+
+/** Phone-number-shaped digit runs — never a price ("416-555-0100" ≠ $416). */
+const PHONE_LIKE_RE = /(\+?1[\s\-.]?)?\(?\d{3}\)?[\s\-.]?\d{3}[\s\-.]?\d{4}/g;
+
 /** Extract a CAD amount: "$1,500", "1500$", "1500 dollars", "800 cad". */
 export function extractMoney(raw: string): number | null {
   const text = raw.replace(/,/g, '');
@@ -157,9 +204,11 @@ export function extractMoney(raw: string): number | null {
   }
   // Bare 3-5 digit number in a booking context is a price ("plumbing for
   // Sarah tomorrow 800"). 1-2 digit numbers are dates, 10-digit numbers
-  // are phones — neither can match this shape. The booking preview always
-  // asks for confirmation, so a wrong guess is cheap and correctable.
-  const bare = text.match(/\b(\d{3,5})\b/);
+  // are phones — neither can match this shape. Phone-number runs are
+  // stripped first so "416-555-0100" can never yield a $416 price.
+  // The booking preview always asks for confirmation, so a wrong guess is
+  // cheap and correctable.
+  const bare = text.replace(PHONE_LIKE_RE, ' ').match(/\b(\d{3,5})\b/);
   if (bare) {
     const v = Number(bare[1]);
     if (v > 0 && v < 10000000) return Math.round(v);
@@ -262,7 +311,15 @@ const SERVICE_KEYWORDS: Array<{ keys: string[]; title: string }> = [
 export function extractServiceTitle(raw: string): string | null {
   const text = norm(raw);
   for (const s of SERVICE_KEYWORDS) {
-    if (hasAny(text, s.keys)) return s.title;
+    for (const k of s.keys) {
+      if (k.length <= 2) {
+        // Short keys ("ac", "tv") must match whole words — "McTestface"
+        // contains "ac" but is not an air conditioner.
+        if (new RegExp(`\\b${k}\\b`).test(text)) return s.title;
+      } else if (text.includes(k)) {
+        return s.title;
+      }
+    }
   }
   return null;
 }
@@ -296,6 +353,8 @@ const NAME_STOPWORDS = new Set([
   'and', 'et', 'or', 'ou', 'for', 'pour',
   // gerunds / trade nouns that are never a person's name
   'cleaning', 'painting', 'plumbing', 'wiring', 'roofing', 'mowing', 'entretien', 'reparation',
+  // name-cue verbs — never part of a name ("named Testy" -> "Testy")
+  'named', 'nomme', 'nommee', 'appele', 'appelle',
 ]);
 
 /** Month names can never be a customer name ("book Sarah for dec 5"). */
@@ -325,7 +384,10 @@ const BOOKING_VERBS = new Set([
 ]);
 
 function capitalizeWord(w: string): string {
-  return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+  // All-caps input is title-cased ("SARAH" -> "Sarah"); otherwise the user's
+  // own capitalization is preserved ("McTestface" stays "McTestface").
+  if (w === w.toUpperCase()) return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+  return w.charAt(0).toUpperCase() + w.slice(1);
 }
 
 /**
@@ -374,6 +436,7 @@ function leadingName(rawToks: string[]): string | null {
 /**
  * Guess a customer name from English/French booking text:
  *  - "for Sarah" / "for Martin Roy" / "pour Sarah Tremblay"
+ *  - "named Testy McTestface" / "nommé Sarah Tremblay"
  *  - "schedule a Jon for 29th October" / "book Sarah for tomorrow" (name
  *    BEFORE the "for"/"pour" cue, anchored on a booking verb)
  *  - "customer: Liam" / "client: Sarah"
@@ -395,6 +458,17 @@ export function extractCustomerName(raw: string): string | null {
   );
   if (mFor) {
     const name = leadingName(mFor[1].split(/\s+/));
+    if (name) return name;
+  }
+
+  // "named Testy McTestface" / "nommé Sarah Tremblay" / "s'appelle Jon".
+  // The name-cue verbs are stopwords themselves, so a trailing "named"
+  // never leaks into the result.
+  const mNamed = text.match(
+    /\b(?:named|nomme|nommee|appele|appelle|s\s*appelle)\s+([A-Za-z]{2,25}(?:\s+[A-Za-z]{2,25}){0,2})/i
+  );
+  if (mNamed) {
+    const name = leadingName(mNamed[1].split(/\s+/));
     if (name) return name;
   }
 
@@ -508,6 +582,85 @@ function isCancellation(text: string): boolean {
   ]);
 }
 
+/** Map free-text trade mentions to our certification roadmap trade keys. */
+const TRADE_WORDS: Array<{ keys: string[]; trade: TradeKey }> = [
+  { keys: ['plumber', 'plumbing', 'plombier', 'plomberie', 'pipefitter', 'tuyau'], trade: 'plumbing' },
+  { keys: ['electrician', 'electricien', 'electrical', 'electricite'], trade: 'electrical' },
+  { keys: ['hvac', 'furnace', 'fournaise', 'heat pump', 'thermopompe', 'clim'], trade: 'hvac' },
+  { keys: ['carpenter', 'carpentry', 'menuisier', 'ebeniste'], trade: 'carpentry' },
+  { keys: ['painter', 'painting', 'peintre', 'peinture'], trade: 'painting' },
+  { keys: ['landscap', 'paysagiste', 'lawn', 'gazon'], trade: 'landscaping' },
+  { keys: ['cleaner', 'cleaning', 'nettoyage', 'menage'], trade: 'cleaning' },
+  { keys: ['renovat'], trade: 'renovation' },
+];
+
+export function detectTrade(raw: string): TradeKey | null {
+  const text = ' ' + norm(raw) + ' ';
+  for (const t of TRADE_WORDS) {
+    if (t.keys.some((k) => text.includes(k))) return t.trade;
+  }
+  return null;
+}
+
+/** Map free-text province mentions to two-letter CA province codes. */
+const PROVINCE_WORDS: Array<{ keys: string[]; code: string }> = [
+  { keys: ['ontario', 'ontarien'], code: 'ON' },
+  { keys: ['quebec', 'quebecois'], code: 'QC' },
+  { keys: ['british columbia', 'colombie britannique'], code: 'BC' },
+  { keys: ['alberta', 'albertain'], code: 'AB' },
+  { keys: ['saskatchewan'], code: 'SK' },
+  { keys: ['manitoba'], code: 'MB' },
+  { keys: ['nova scotia', 'nouvelle ecosse'], code: 'NS' },
+  { keys: ['new brunswick', 'nouveau brunswick'], code: 'NB' },
+  { keys: ['newfoundland', 'terre neuve', 'labrador'], code: 'NL' },
+  { keys: ['prince edward', 'ile du prince'], code: 'PE' },
+];
+
+export function detectProvince(raw: string): string | null {
+  const text = ' ' + norm(raw) + ' ';
+  for (const p of PROVINCE_WORDS) {
+    if (p.keys.some((k) => text.includes(k))) return p.code;
+  }
+  return null;
+}
+
+/**
+ * Explicit customer-creation language ("add a new customer", "ajouter un
+ * client") — must NEVER be treated as a job booking.
+ */
+const CREATE_CUSTOMER_RES = [
+  /\badd\s+(?:(?:a|an|new)\s+)*customers?\b/,
+  /\bcreate\s+(?:(?:a|new)\s+)*customers?\b/,
+  /\bnew\s+customers?\b/,
+  /\bajouter\s+(?:(?:un|une|nouveau|nouvelle)\s+)*clients?\b/,
+  /\bcreer\s+(?:un\s+)?clients?\b/,
+  /\bnouveau\s+clients?\b/,
+  /\bnouvelle\s+cliente\b/,
+];
+
+/** Words that mark a question as being about the business's own domain. */
+const DOMAIN_WORDS = [
+  ' customer ', ' customers ', ' client ', ' clients ', ' clientele ',
+  ' job ', ' jobs ', ' travail ', ' tache ', ' taches ',
+  ' schedule ', ' horaire ', ' appointment ', ' rendez vous ',
+  ' invoice ', ' invoices ', ' facture ', ' factures ',
+  ' quote ', ' quotes ', ' devis ', ' soumission ', ' soumissions ',
+  ' payment ', ' payments ', ' paiement ', ' paiements ',
+  ' revenue ', ' revenu ', ' revenus ', ' earning ', ' earnings ', ' money ', ' argent ',
+  ' reminder ', ' rappel ', ' booking ', ' bookings ', ' reservation ',
+  ' business ', ' entreprise ', ' affaires ',
+  ' certification ', ' licence ', ' license ', ' compare ', ' average ', ' benchmark ',
+];
+
+/** True when the message is a question about something the copilot covers. */
+function hasDomainWords(raw: string): boolean {
+  const text = ' ' + norm(raw) + ' ';
+  if (DOMAIN_WORDS.some((w) => text.includes(w))) return true;
+  if (extractServiceTitle(raw) !== null) return true;
+  if (extractDate(raw) !== null || extractTime(raw) !== null) return true;
+  return false;
+}
+
 export function detectIntent(raw: string, followUpName: string | null = null): CopilotIntent {
   const text = ' ' + norm(raw) + ' ';
 
@@ -522,6 +675,12 @@ export function detectIntent(raw: string, followUpName: string | null = null): C
     ' affiche ', ' afficher ', ' liste ',
   ]);
 
+  // 0. Customer creation — BEFORE job creation, so "add a new customer"
+  //    is never misread as a booking. Explicit creation language only.
+  if (CREATE_CUSTOMER_RES.some((re) => re.test(norm(raw)))) {
+    return 'create_customer';
+  }
+
   // 1. Payment reminder drafting
   if (hasAny(text, [' reminder ', ' remind ', ' payment reminder ', ' rappel ', ' rappelle ', ' rappeler ', ' relance '])) {
     return 'draft_reminder';
@@ -532,9 +691,34 @@ export function detectIntent(raw: string, followUpName: string | null = null): C
     return 'ask_revenue';
   }
 
-  // 3. Unpaid / outstanding questions
-  if (hasAny(text, [' unpaid ', ' outstanding ', ' pending payment ', ' dues ', ' impaye ', ' impayes ', ' non paye ', ' en retard '])) {
+  // 3. Unpaid / outstanding questions (masculine + feminine French forms)
+  if (hasAny(text, [' unpaid ', ' outstanding ', ' pending payment ', ' dues ', ' impaye ', ' impayee ', ' impayes ', ' impayees ', ' non paye ', ' en retard '])) {
     return 'ask_unpaid';
+  }
+
+  // 3b. Certification / career-credential questions — answered from the
+  // real certification roadmap (official programs only, never invented).
+  if (hasAny(text, [
+    ' certification ', ' certifications ', ' certify ', ' certified ', ' certifie ',
+    ' licence ', ' license ', ' licensed ', ' permis ',
+    ' red seal ', ' sceau rouge ',
+    ' apprenticeship ', ' apprentissage ', ' apprentice ',
+    ' ticket ', ' journeyman ', ' compagnon ',
+    ' qualification ', ' credential ', ' designation ',
+    ' cmmtq ', ' rbq ',
+  ])) {
+    return 'ask_certification';
+  }
+
+  // 3c. "How do I compare?" — answered honestly: no real peer data exists
+  // yet, so offer clearly-labelled best-practice benchmarks instead.
+  if (hasAny(text, [
+    ' compare ', ' comparison ', ' comparaison ', ' comparer ',
+    ' average ', ' moyenne ', ' benchmark ',
+    ' other businesses ', ' autres entreprises ',
+    ' how am i doing ', ' how is my business ',
+  ])) {
+    return 'ask_compare';
   }
 
   // 4. Job creation — BEFORE schedule queries, so "AC repair for Sarah
@@ -610,8 +794,10 @@ export function detectIntent(raw: string, followUpName: string | null = null): C
     return 'help';
   }
 
-  // Default: question-ish -> schedule overview, otherwise unknown (the
-  // caller asks a clarifying question — never silence, never a wrong guess).
-  if (isQuestion) return 'ask_schedule';
+  // Default: a question about the business domain with no recognized
+  // intent gets the schedule overview (previous behaviour); a question
+  // about anything else gets an honest out-of-scope boundary instead of
+  // an irrelevant jobs dump. Non-questions stay unknown (clarify).
+  if (isQuestion) return hasDomainWords(raw) ? 'ask_schedule' : 'out_of_scope';
   return 'unknown';
 }
