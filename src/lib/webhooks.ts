@@ -10,12 +10,10 @@
  * Signing/verification are pure (node:crypto only) and run under plain
  * node:test with no network. Enqueue + dispatch touch Prisma.
  *
- * The retry dispatcher is NOT wired to a cron by this module — add one line
- * to the cron entry point:
- *
- *   // src/app/api/cron/workflows/route.ts, inside GET after the workflow loop:
- *   const { dispatchWebhookRetries } = await import('@/lib/webhooks');
- *   const webhookStats = await dispatchWebhookRetries();
+ * Delivery model: `emitWebhookEvent` attempts immediate delivery inline (so
+ * receivers like Zapier/Make get events in seconds even on hosting plans
+ * whose crons run infrequently), and `dispatchWebhookRetries` — wired into
+ * the workflows cron — sweeps pending deliveries with exponential backoff.
  */
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { prisma } from '@/lib/prisma';
@@ -85,7 +83,10 @@ function parseSubscribedEvents(raw: string): string[] {
 }
 
 /**
- * Enqueue one delivery per active endpoint subscribed to `event`.
+ * Enqueue one delivery per active endpoint subscribed to `event`, then
+ * attempt immediate delivery inline. The immediate attempt is what makes
+ * webhooks near-real-time on hosting plans whose crons run infrequently;
+ * anything not delivered immediately stays `pending` for the retry sweep.
  * Returns the number of deliveries enqueued. Never throws — webhook
  * fan-out must never fail the business operation that triggered it.
  */
@@ -97,7 +98,7 @@ export async function emitWebhookEvent(
   try {
     const endpoints = await prisma.webhookEndpoint.findMany({
       where: { businessId, active: true },
-      select: { id: true, events: true },
+      select: { id: true, events: true, url: true, secret: true },
     });
     const targets = endpoints.filter((e) => {
       const evts = parseSubscribedEvents(e.events);
@@ -128,10 +129,38 @@ export async function emitWebhookEvent(
         occurred_at: occurredAt,
         data,
       };
+      const rawPayload = JSON.stringify(payload);
       await prisma.webhookDelivery.update({
         where: { id: delivery.id },
-        data: { payload: JSON.stringify(payload) },
+        data: { payload: rawPayload },
       });
+
+      // Best-effort immediate delivery (short timeout — this runs inside the
+      // request that triggered the event). Failures stay pending for the
+      // cron retry sweep. Never throws.
+      try {
+        const r = await postDelivery(
+          t.url,
+          rawPayload,
+          t.secret,
+          event,
+          delivery.id,
+          IMMEDIATE_TIMEOUT_MS
+        );
+        await prisma.webhookDelivery.update({
+          where: { id: delivery.id },
+          data: r.ok
+            ? { status: 'delivered', attempts: 1, lastError: null }
+            : {
+                status: 'pending',
+                attempts: 1,
+                lastError: r.error,
+                nextRetry: new Date(Date.now() + WEBHOOK_RETRY_DELAYS_MS[0]),
+              },
+        });
+      } catch {
+        // Row stays pending; the retry sweep will pick it up.
+      }
     }
     return targets.length;
   } catch {
@@ -148,6 +177,8 @@ export const WEBHOOK_RETRY_DELAYS_MS = [
   12 * 3_600_000, // 12 h
 ];
 const DELIVERY_TIMEOUT_MS = 15_000;
+/** Tighter timeout for the immediate attempt inside a user request. */
+const IMMEDIATE_TIMEOUT_MS = 8_000;
 
 async function postWithTimeout(
   url: string,
@@ -160,6 +191,46 @@ async function postWithTimeout(
     return await fetch(url, { ...init, signal: ctrl.signal });
   } finally {
     clearTimeout(t);
+  }
+}
+
+/**
+ * POST one signed delivery to its receiver. Shared by the immediate attempt
+ * in `emitWebhookEvent` and the cron retry sweep. Never throws — returns
+ * `{ ok: false, error }` on any failure (network, timeout, non-2xx).
+ */
+async function postDelivery(
+  url: string,
+  rawPayload: string,
+  secret: string,
+  event: WebhookEvent,
+  deliveryId: string,
+  timeoutMs: number
+): Promise<{ ok: boolean; error?: string }> {
+  const signature = signWebhookPayload(secret, rawPayload);
+  try {
+    const res = await postWithTimeout(
+      url,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          [WEBHOOK_SIGNATURE_HEADER]: signature,
+          [WEBHOOK_EVENT_HEADER]: event,
+          [WEBHOOK_DELIVERY_HEADER]: deliveryId,
+          'User-Agent': 'EveryJob-Webhooks/1.0',
+        },
+        body: rawPayload,
+      },
+      timeoutMs
+    );
+    if (!res.ok) return { ok: false, error: `Receiver returned HTTP ${res.status}` };
+    return { ok: true };
+  } catch (err) {
+    return {
+      ok: false,
+      error: (err instanceof Error ? err.message : 'Network error').slice(0, 500),
+    };
   }
 }
 
@@ -198,49 +269,37 @@ export async function dispatchWebhookRetries(
       continue;
     }
     attempted++;
-    const signature = signWebhookPayload(d.endpoint.secret, d.payload);
-    try {
-      const res = await postWithTimeout(
-        d.endpoint.url,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            [WEBHOOK_SIGNATURE_HEADER]: signature,
-            [WEBHOOK_EVENT_HEADER]: d.event,
-            [WEBHOOK_DELIVERY_HEADER]: d.id,
-            'User-Agent': 'EveryJob-Webhooks/1.0',
-          },
-          body: d.payload,
-        },
-        DELIVERY_TIMEOUT_MS
-      );
-      if (!res.ok) throw new Error(`Receiver returned HTTP ${res.status}`);
+    const r = await postDelivery(
+      d.endpoint.url,
+      d.payload,
+      d.endpoint.secret,
+      d.event as WebhookEvent,
+      d.id,
+      DELIVERY_TIMEOUT_MS
+    );
+    const attempts = d.attempts + 1;
+    if (r.ok) {
       await prisma.webhookDelivery.update({
         where: { id: d.id },
-        data: { status: 'delivered', attempts: d.attempts + 1, lastError: null },
+        data: { status: 'delivered', attempts, lastError: null },
       });
       delivered++;
-    } catch (err) {
-      const attempts = d.attempts + 1;
-      const msg = (err instanceof Error ? err.message : 'Network error').slice(0, 500);
-      if (attempts > WEBHOOK_RETRY_DELAYS_MS.length) {
-        await prisma.webhookDelivery.update({
-          where: { id: d.id },
-          data: { status: 'failed', attempts, lastError: msg },
-        });
-        failed++;
-      } else {
-        await prisma.webhookDelivery.update({
-          where: { id: d.id },
-          data: {
-            status: 'pending',
-            attempts,
-            lastError: msg,
-            nextRetry: new Date(Date.now() + WEBHOOK_RETRY_DELAYS_MS[attempts - 1]),
-          },
-        });
-      }
+    } else if (attempts > WEBHOOK_RETRY_DELAYS_MS.length) {
+      await prisma.webhookDelivery.update({
+        where: { id: d.id },
+        data: { status: 'failed', attempts, lastError: r.error },
+      });
+      failed++;
+    } else {
+      await prisma.webhookDelivery.update({
+        where: { id: d.id },
+        data: {
+          status: 'pending',
+          attempts,
+          lastError: r.error,
+          nextRetry: new Date(Date.now() + WEBHOOK_RETRY_DELAYS_MS[attempts - 1]),
+        },
+      });
     }
   }
 
