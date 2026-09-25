@@ -47,6 +47,7 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
   const [noticeKind, setNoticeKind] = useState<'info' | 'error'>('info');
   const [lastPingAt, setLastPingAt] = useState<Date | null>(null);
   const [linkUrl, setLinkUrl] = useState<string | null>(null);
+  const [linkExpiresAt, setLinkExpiresAt] = useState<string | null>(null);
   const [linkBusy, setLinkBusy] = useState(false);
 
   const timerRef = useRef<number | null>(null);
@@ -198,9 +199,61 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
         body: JSON.stringify({ jobId: jobIdRef.current }),
       });
       if (!res.ok) throw new Error(`share ${res.status}`);
-      const data = (await res.json()) as { url: string };
+      const data = (await res.json()) as { url: string; expiresAt?: string };
       setLinkUrl(`${window.location.origin}${data.url}`);
+      setLinkExpiresAt(data.expiresAt ?? null);
       setNotice(null);
+    } catch {
+      say('error', tr('gps.pingFailed'));
+    } finally {
+      setLinkBusy(false);
+    }
+  }, [linkBusy, say, tr]);
+
+  // Load the existing active link for the selected job (if any) so a page
+  // reload doesn't hide a link that's still valid.
+  useEffect(() => {
+    if (!jobId) {
+      setLinkUrl(null);
+      setLinkExpiresAt(null);
+      return;
+    }
+    let cancelled = false;
+    setLinkBusy(true);
+    fetch(`/api/tracking/share?jobId=${encodeURIComponent(jobId)}`)
+      .then((res) => (res.ok ? res.json() : { url: null }))
+      .then((data: { url: string | null; expiresAt?: string }) => {
+        if (cancelled) return;
+        setLinkUrl(data.url ? `${window.location.origin}${data.url}` : null);
+        setLinkExpiresAt(data.expiresAt ?? null);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setLinkUrl(null);
+          setLinkExpiresAt(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLinkBusy(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [jobId]);
+
+  const revokeLink = useCallback(async () => {
+    if (!jobIdRef.current || linkBusy) return;
+    if (!window.confirm(tr('gps.confirmRevoke'))) return;
+    setLinkBusy(true);
+    try {
+      const res = await fetch(
+        `/api/tracking/share?jobId=${encodeURIComponent(jobIdRef.current)}`,
+        { method: 'DELETE' }
+      );
+      if (!res.ok) throw new Error(`revoke ${res.status}`);
+      setLinkUrl(null);
+      setLinkExpiresAt(null);
+      say('info', tr('gps.revoked'));
     } catch {
       say('error', tr('gps.pingFailed'));
     } finally {
@@ -318,13 +371,34 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
                 {linkUrl ? tr('gps.refreshLink') : tr('gps.createLink')}
               </button>
               {linkUrl && (
-                <button type="button" onClick={copyLink} className={secondaryBtnClass}>
-                  {tr('gps.copyLink')}
-                </button>
+                <>
+                  <button type="button" onClick={copyLink} className={secondaryBtnClass}>
+                    {tr('gps.copyLink')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={revokeLink}
+                    disabled={linkBusy}
+                    className={dangerBtnClass}
+                  >
+                    {tr('gps.revokeLink')}
+                  </button>
+                </>
               )}
             </div>
             {linkUrl && (
-              <p className="mt-2 text-xs break-all text-zinc-600 select-all">{linkUrl}</p>
+              <>
+                <p className="mt-2 text-xs break-all text-zinc-600 select-all">{linkUrl}</p>
+                {linkExpiresAt && (
+                  <p className="mt-1 text-xs text-zinc-500">
+                    {tr('gps.linkExpires')}:{' '}
+                    {new Date(linkExpiresAt).toLocaleString(
+                      locale === 'fr' ? 'fr-CA' : 'en-CA',
+                      { dateStyle: 'medium', timeStyle: 'short' }
+                    )}
+                  </p>
+                )}
+              </>
             )}
           </div>
 

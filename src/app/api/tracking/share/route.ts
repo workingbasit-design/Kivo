@@ -91,3 +91,53 @@ export async function POST(req: Request) {
     expiresAt: share.expiresAt,
   });
 }
+
+/**
+ * GET /api/tracking/share?jobId=... — return the current active tracking
+ * link for a job, if any. Lets the UI show the existing link after a page
+ * reload instead of forcing the tech to create a new one.
+ */
+export async function GET(req: Request) {
+  const session = await getSession();
+  const businessId = session?.user?.businessId;
+  if (!session || !businessId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  const { searchParams } = new URL(req.url);
+  const jobId = searchParams.get('jobId');
+  if (!jobId) {
+    return NextResponse.json({ error: 'Missing jobId.' }, { status: 400 });
+  }
+  const share = await prisma.trackingShare.findFirst({
+    where: { jobId, businessId, expiresAt: { gt: new Date() } },
+    select: { token: true, expiresAt: true },
+  });
+  if (!share) return NextResponse.json({ ok: true, url: null });
+  return NextResponse.json({
+    ok: true,
+    url: `/track/${share.token}`,
+    expiresAt: share.expiresAt,
+  });
+}
+
+/**
+ * DELETE /api/tracking/share?jobId=... — revoke the tracking link for a job.
+ * The customer link stops working immediately.
+ */
+export async function DELETE(req: Request) {
+  const originCheck = checkSameOrigin(req);
+  if (!originCheck.ok) return originForbidden(originCheck.reason);
+
+  const session = await getSession();
+  const businessId = session?.user?.businessId;
+  if (!session || !businessId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  const { searchParams } = new URL(req.url);
+  const jobId = searchParams.get('jobId');
+  if (!jobId) {
+    return NextResponse.json({ error: 'Missing jobId.' }, { status: 400 });
+  }
+  await prisma.trackingShare.deleteMany({ where: { jobId, businessId } });
+  return NextResponse.json({ ok: true });
+}
