@@ -10,7 +10,9 @@ const PUBLIC_PATHS = ['/', '/login', '/register'];
 // + the EveryJob business directory (customer discovery layer).
 // '/sign/' must stay public: unauthenticated clients open signing links
 // with no login, and bouncing them to /login would break the feature.
-const PUBLIC_PREFIXES = ['/book/', '/q/', '/i/', '/r/', '/p/', '/portal/', '/sign/'];
+// '/track/' must stay public: customers open technician tracking links
+// with no account — the unguessable token is the only capability.
+const PUBLIC_PREFIXES = ['/book/', '/q/', '/i/', '/r/', '/p/', '/portal/', '/sign/', '/track/'];
 const PUBLIC_EXACT_EXTRA = ['/directory', '/directory/request'];
 
 export function proxy(request: NextRequest) {
