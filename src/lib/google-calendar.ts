@@ -12,6 +12,8 @@ export const GOOGLE_CALENDAR_EVENTS_URL =
   'https://www.googleapis.com/calendar/v3/calendars/primary/events';
 
 export const SCOPE_CALENDAR_READONLY = 'https://www.googleapis.com/auth/calendar.readonly';
+/** Full calendar scope: needed for one-way EveryJob → Google Calendar sync (create/update/delete). */
+export const SCOPE_CALENDAR = 'https://www.googleapis.com/auth/calendar';
 
 export type GoogleApiCalendarEvent = {
   id?: string;

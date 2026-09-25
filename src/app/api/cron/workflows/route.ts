@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { runWorkflowsForBusiness } from '@/lib/workflows';
+import { dispatchWebhookRetries } from '@/lib/webhooks';
+import { pruneStaleLocationPings } from '@/lib/geofence';
+import { syncJobsToGoogleCalendar } from '@/lib/googleCalendarSync';
 
 /**
  * Cron entry point for the safe workflow engine. Configure in the Vercel
@@ -55,10 +58,50 @@ export async function GET(req: Request) {
     }
   }
 
+  // Ecosystem maintenance (all best-effort — a failure here must never break
+  // the workflow run): retry due webhook deliveries, prune stale GPS pings,
+  // and sync jobs to Google Calendar for businesses that granted write scope.
+  let webhookStats = { attempted: 0, delivered: 0, failed: 0 };
+  try {
+    webhookStats = await dispatchWebhookRetries(50);
+  } catch (err) {
+    console.error('[cron] webhook retries failed:', err);
+  }
+
+  let pingsPruned = 0;
+  try {
+    pingsPruned = await pruneStaleLocationPings();
+  } catch (err) {
+    console.error('[cron] GPS ping pruning failed:', err);
+  }
+
+  let calendarSyncs = { ok: 0, skipped: 0 };
+  try {
+    const calBusinesses = await prisma.googleConnection.findMany({
+      where: { scopes: { contains: 'calendar' } },
+      select: { businessId: true },
+    });
+    for (const c of calBusinesses) {
+      try {
+        const r = await syncJobsToGoogleCalendar(c.businessId);
+        if (r.ok) calendarSyncs.ok++;
+        else calendarSyncs.skipped++;
+      } catch (err) {
+        console.error(`[cron] calendar sync failed for ${c.businessId}:`, err);
+        calendarSyncs.skipped++;
+      }
+    }
+  } catch (err) {
+    console.error('[cron] calendar sync sweep failed:', err);
+  }
+
   return NextResponse.json({
     ok: true,
     businesses: businesses.length,
     actionsFired: totalFired,
     perBusiness,
+    webhooks: webhookStats,
+    pingsPruned,
+    calendarSyncs,
   });
 }

@@ -29,6 +29,7 @@ import {
   limeBtnClass,
   secondaryBtnClass,
 } from "@/components/ui";
+import OnboardingChecklist from "@/components/OnboardingChecklist";
 
 export default async function DashboardPage() {
   const { businessId } = await requireAuth();
@@ -52,9 +53,26 @@ export default async function DashboardPage() {
     console.error('[dashboard] recurring generation failed:', err);
   }
 
-  const business = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } });
+  const business = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true, logoUrl: true } });
   const currency = business?.currency;
   const stats = await getDashboardStats(businessId);
+  // Onboarding checklist — completion from the business's real records.
+  const [customerCount, jobCount, quoteCount, invoiceCount, teamCount, googleConn] = await Promise.all([
+    prisma.customer.count({ where: { businessId } }),
+    prisma.job.count({ where: { businessId } }),
+    prisma.quote.count({ where: { businessId } }),
+    prisma.invoice.count({ where: { businessId } }),
+    prisma.user.count({ where: { businessId } }),
+    prisma.googleConnection.findUnique({ where: { businessId }, select: { id: true } }),
+  ]);
+  const onboardingCompleted = {
+    logo: !!business?.logoUrl,
+    customer: customerCount > 0,
+    job: jobCount > 0,
+    quote: quoteCount > 0 || invoiceCount > 0,
+    google: !!googleConn,
+    team: teamCount > 1,
+  };
   // Best-effort: profile strength must never break the dashboard.
   let growth: Awaited<ReturnType<typeof getGrowthData>> | null = null;
   try {
@@ -77,9 +95,11 @@ export default async function DashboardPage() {
         }
       />
 
+      {/* New-business setup checklist (real completion state, dismissable) */}
+      <OnboardingChecklist locale={locale} businessId={businessId} completed={onboardingCompleted} />
+
       {/* Stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {(
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">        {(
           [
             {
               label: L("dashboard.bookedToday"),

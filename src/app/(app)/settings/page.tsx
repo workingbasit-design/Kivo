@@ -11,6 +11,7 @@ import { LanguageToggle } from '@/components/LanguageToggle';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import NotificationSettingsForm from '@/components/NotificationSettingsForm';
+import PushSettingsCard from '@/components/PushSettingsCard';
 import { parseSettings } from '@/lib/notifications';
 import { EXPORT_TYPES } from '@/lib/export';
 
@@ -113,6 +114,21 @@ export default async function SettingsPage() {
           {t(locale, 'track8.automationsTitle')}
         </Link>
       </Card>
+      <Card className="p-5 md:p-6">
+        <h2 className="text-sm font-bold text-zinc-900 mb-1">{t(locale, 'integrations.title')}</h2>
+        <p className="text-xs text-zinc-500 mb-4">{t(locale, 'integrations.subtitle')}</p>
+        <Link href="/settings/integrations" className={secondaryBtnClass}>
+          {t(locale, 'integrations.title')}
+        </Link>
+      </Card>
+      <Card className="p-5 md:p-6">
+        <h2 className="text-sm font-bold text-zinc-900 mb-1">{t(locale, 'support.inboxTitle')}</h2>
+        <p className="text-xs text-zinc-500 mb-4">{t(locale, 'support.inboxSub')}</p>
+        <Link href="/settings/support" className={secondaryBtnClass}>
+          {t(locale, 'support.inboxTitle')}
+        </Link>
+      </Card>
+      <PushSettingsCard locale={locale} />
       <Card className="p-5 md:p-6">
         <h2 className="text-sm font-bold text-zinc-900 mb-1">{tr('t10misc.settingsMain.accountsTitle')}</h2>
         <p className="text-xs text-zinc-500 mb-4">

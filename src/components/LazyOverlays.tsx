@@ -10,6 +10,9 @@ const CommandPalette = dynamic(() => import("@/components/CommandPalette"), { ss
 const GlobalCopilotWidget = dynamic(() => import("@/components/GlobalCopilotWidget"), {
   ssr: false,
 });
+const PwaInstallPrompt = dynamic(() => import("@/components/PwaInstallPrompt"), {
+  ssr: false,
+});
 
 export default function LazyOverlays({
   locale = "en",
@@ -22,6 +25,7 @@ export default function LazyOverlays({
     <>
       <GlobalCopilotWidget currency={currency} locale={locale} />
       <CommandPalette locale={locale} />
+      <PwaInstallPrompt locale={locale} />
     </>
   );
 }

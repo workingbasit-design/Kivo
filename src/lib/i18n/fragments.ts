@@ -33,8 +33,14 @@ import track10money from './fragments/track10-money.ts';
 import track10misc from './fragments/track10-misc.ts';
 import exportsFrag from './fragments/exports.ts';
 import credentials from './fragments/credentials.ts';
+import gps from './fragments/gps.ts';
+import support from './fragments/support.ts';
+import quickbooks from './fragments/quickbooks.ts';
+import paymentsFrag from './fragments/payments.ts';
+import pwa from './fragments/pwa.ts';
+import integrations from './fragments/integrations.ts';
 
-const FRAGMENTS: I18nFragment[] = [reminders, jobops, quotes, homehero, homefaq, notifications, track9, googleReviews, attachments, imports, googleAuth, track8, billing, customerExtras, quoteItems, track10work, track10money, track10misc, exportsFrag, credentials];
+const FRAGMENTS: I18nFragment[] = [reminders, jobops, quotes, homehero, homefaq, notifications, track9, googleReviews, attachments, imports, googleAuth, track8, billing, customerExtras, quoteItems, track10work, track10money, track10misc, exportsFrag, credentials, gps, support, quickbooks, paymentsFrag, pwa, integrations];
 
 function deepMerge(target: Dictionary, src: Dictionary): Dictionary {
   for (const [k, v] of Object.entries(src)) {

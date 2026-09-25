@@ -221,6 +221,17 @@ export async function createInvoice(
 
   revalidatePath('/invoices');
   revalidatePath('/dashboard');
+  // Outgoing webhook: invoice created. Best-effort — never fails creation.
+  try {
+    const { emitWebhookEvent } = await import('@/lib/webhooks');
+    await emitWebhookEvent(businessId, 'invoice.created', {
+      invoice_id: invoice.id,
+      number: invoice.number,
+      total: invoice.total,
+    });
+  } catch (err) {
+    console.error('[invoices] invoice.created webhook failed', err);
+  }
   redirect(`/invoices/${invoice.id}`);
 }
 
@@ -356,10 +367,40 @@ export async function recordPayment(
   });
 
   const newPaid = round2(alreadyPaid + payment.amount);
+  const newStatus = deriveStatus(invoice.total, newPaid);
   await prisma.invoice.update({
     where: { id: invoice.id },
-    data: { status: deriveStatus(invoice.total, newPaid) },
+    data: { status: newStatus },
   });
+
+  // Outgoing webhooks: payment recorded (+ invoice paid when fully paid).
+  // Best-effort — never fails the payment recording.
+  try {
+    const { emitWebhookEvent } = await import('@/lib/webhooks');
+    await emitWebhookEvent(businessId, 'payment.recorded', {
+      payment_id: payment.id,
+      invoice_id: invoice.id,
+      amount: payment.amount,
+      provider: payment.provider,
+    });
+    if (newStatus === 'PAID') {
+      await emitWebhookEvent(businessId, 'invoice.paid', {
+        invoice_id: invoice.id,
+        number: invoice.number,
+        total: invoice.total,
+      });
+    }
+    // Push notification: money in. Best-effort, bilingual copy.
+    const { pushToBusiness } = await import('@/lib/webpush');
+    await pushToBusiness(businessId, {
+      title: 'Payment received · Paiement reçu',
+      body: `${formatMoney(payment.amount, invoice.business.currency)} — ${invoice.number}`,
+      url: `/invoices/${invoice.id}`,
+      tag: `payment-${payment.id}`,
+    });
+  } catch (err) {
+    console.error('[invoices] payment webhooks failed', err);
+  }
 
   revalidatePath('/invoices');
   revalidatePath(`/invoices/${invoice.id}`);

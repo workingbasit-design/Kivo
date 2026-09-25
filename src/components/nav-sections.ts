@@ -2,7 +2,7 @@ import {
   LayoutDashboard, Calendar, Users, Briefcase, FileText,
   Settings, ClipboardList, Tag, Star, PieChart, Sparkles,
   UserPlus, Megaphone, Repeat, Route, CalendarCheck, BellRing, Timer,
-  UserCog, Import,
+  UserCog, Import, MapPin,
 } from 'lucide-react';
 
 export const navSections = [
@@ -14,6 +14,7 @@ export const navSections = [
       { nameKey: 'nav.jobs', href: '/jobs', icon: Briefcase },
       { nameKey: 'nav.recurring', href: '/recurring', icon: Repeat },
       { nameKey: 'nav.routes', href: '/routes', icon: Route },
+      { nameKey: 'nav.tracking', href: '/tracking', icon: MapPin },
       { nameKey: 'nav.timesheets', href: '/timesheets', icon: Timer },
     ],
   },

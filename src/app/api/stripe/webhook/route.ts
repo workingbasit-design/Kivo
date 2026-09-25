@@ -1,14 +1,12 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { verifyWebhookSignature, retrieveCompletedPayment } from '@/lib/stripe';
+import {
+  verifyWebhookSignature,
+  retrieveCompletedPayment,
+  deriveInvoiceStatus,
+} from '@/lib/stripe';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
-
-function deriveInvoiceStatus(total: number, paid: number): string {
-  if (paid >= total - 0.009) return 'PAID';
-  if (paid > 0) return 'PARTIALLY PAID';
-  return 'UNPAID';
-}
 
 interface StripeEventPayload {
   id: string;
@@ -172,9 +170,21 @@ async function handleCheckoutCompleted(
       invoice.payments.reduce((s, p) => s + p.amount, 0) +
         round2((info.amountCents ?? 0) / 100)
     );
+    const status = deriveInvoiceStatus(invoice.total, paid);
     await prisma.invoice.update({
       where: { id: invoice.id },
-      data: { status: deriveInvoiceStatus(invoice.total, paid) },
+      data: {
+        status,
+        // paidAt marks FULL payment honestly: set only when the invoice just
+        // became PAID and has no timestamp yet. Partials keep it null; an
+        // already-paid invoice keeps its original timestamp.
+        ...(status === 'PAID' && !invoice.paidAt ? { paidAt: new Date() } : {}),
+        // First completed payment intent wins as the invoice-level
+        // idempotency reference.
+        ...(!invoice.stripePaymentIntentId && info.paymentIntentId
+          ? { stripePaymentIntentId: info.paymentIntentId }
+          : {}),
+      },
     });
 
     // In-app receipt notice to the owner.
@@ -194,6 +204,37 @@ async function handleCheckoutCompleted(
           },
         })
         .catch(() => undefined);
+      // Outgoing webhooks for the online payment. Best-effort.
+      try {
+        const { emitWebhookEvent } = await import('@/lib/webhooks');
+        await emitWebhookEvent(businessId, 'payment.recorded', {
+          payment_id: paymentId,
+          invoice_id: invoice.id,
+          amount: round2((info.amountCents ?? 0) / 100),
+          provider: 'STRIPE',
+        });
+        if (status === 'PAID') {
+          await emitWebhookEvent(businessId, 'invoice.paid', {
+            invoice_id: invoice.id,
+            number: invoice.number,
+            total: invoice.total,
+          });
+        }
+      } catch (err) {
+        console.error('[stripe-webhook] payment webhooks failed', err);
+      }
+      // Push notification: money in. Best-effort, bilingual copy.
+      try {
+        const { pushToBusiness } = await import('@/lib/webpush');
+        await pushToBusiness(businessId, {
+          title: 'Payment received · Paiement reçu',
+          body: `${round2((info.amountCents ?? 0) / 100).toFixed(2)} CAD — ${invoice.number}`,
+          url: `/invoices/${invoice.id}`,
+          tag: `payment-${paymentId}`,
+        });
+      } catch (err) {
+        console.error('[stripe-webhook] payment push failed', err);
+      }
     }
     return;
   }

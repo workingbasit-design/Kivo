@@ -9,6 +9,7 @@ import { t } from '@/lib/i18n';
 import {
   refreshAccessToken,
   SCOPE_CALENDAR_READONLY,
+  SCOPE_CALENDAR,
   type GoogleErrorKind,
 } from '@/lib/google-reviews';
 import {
@@ -63,7 +64,7 @@ async function getCalendarAccessToken(businessId: string): Promise<string> {
   if (!conn) throw Object.assign(new Error('Not connected'), { kind: 'reauth' as GoogleErrorKind });
 
   const granted = (conn.scopes ?? '').split(/\s+/).filter(Boolean);
-  if (!granted.includes(SCOPE_CALENDAR_READONLY)) {
+  if (!granted.includes(SCOPE_CALENDAR_READONLY) && !granted.includes(SCOPE_CALENDAR)) {
     const locale = await getLocale();
     throw Object.assign(new Error(t(locale, 'imports.reauthNeeded')), {
       kind: 'reauth' as GoogleErrorKind,

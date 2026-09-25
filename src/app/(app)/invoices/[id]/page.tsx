@@ -17,6 +17,7 @@ import {
   setInvoiceShareLinkExpiry,
 } from '@/app/actions/invoices';
 import InvoiceActions from './InvoiceActions';
+import InvoicePayButton from '@/components/InvoicePayButton';
 import ShareTokenManager from '@/components/ShareTokenManager';
 import PrintButton from './PrintButton';
 import ReminderDraft from '@/components/ReminderDraft';
@@ -39,7 +40,13 @@ export default async function InvoiceDetailPage({
     include: {
       customer: true,
       payments: { orderBy: { createdAt: 'desc' } },
-      business: true,
+      business: {
+        include: {
+          stripeConnection: {
+            select: { chargesEnabled: true, livemode: true, liveConfirmedAt: true },
+          },
+        },
+      },
       lineItems: { orderBy: { position: 'asc' } },
     },
   });
@@ -57,6 +64,12 @@ export default async function InvoiceDetailPage({
     new Date(invoice.date).getTime() < Date.now() - 30 * 24 * 60 * 60 * 1000;
   const userNotes = displayNotes(invoice.notes, invoice.lineItems.length > 0);
   const currency = 'CAD';
+  // Online card collection: mirror the customer portal logic — charges must
+  // be enabled, and live accounts need the owner's explicit live confirmation
+  // (the /api/stripe/invoice-checkout endpoint enforces this server-side too).
+  const stripeConn = invoice.business.stripeConnection;
+  const stripeConnected =
+    stripeConn?.chargesEnabled === true && (stripeConn?.livemode !== true || !!stripeConn?.liveConfirmedAt);
   // French (fr) locale renders invoice labels in French and formats CAD
   // amounts in fr-CA style (e.g. "1 234,56 $").
   const locale = await getLocale();
@@ -261,6 +274,18 @@ export default async function InvoiceDetailPage({
           setExpiryAction={setInvoiceShareLinkExpiry}
         />
       </Card>
+
+      {remaining > 0 && (
+        <Card className="p-6 print:hidden">
+          <InvoicePayButton
+            invoiceId={invoice.id}
+            balance={remaining}
+            currency={currency}
+            stripeConnected={stripeConnected}
+            locale={locale}
+          />
+        </Card>
+      )}
 
       {remaining > 0 && (
         <Card className="p-6 print:hidden">

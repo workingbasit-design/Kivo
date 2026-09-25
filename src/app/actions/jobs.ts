@@ -141,6 +141,18 @@ export async function createJob(
   }
 
   revalidateJobPaths(job.id);
+  // Outgoing webhook: job created. Best-effort — never fails creation.
+  try {
+    const { emitWebhookEvent } = await import('@/lib/webhooks');
+    await emitWebhookEvent(businessId, 'job.created', {
+      job_id: job.id,
+      title: job.title,
+      customer_id: job.customerId,
+      status: job.status,
+    });
+  } catch (err) {
+    console.error('[jobs] job.created webhook failed', err);
+  }
   redirect(`/jobs/${job.id}`);
 }
 
@@ -226,6 +238,19 @@ export async function updateJobStatus(
     return { error: 'Could not update the job. Please try again.' };
   }
   revalidateJobPaths(jobId);
+  // Outgoing webhook: job completed. Best-effort — never fails the update.
+  if (newStatus === 'COMPLETED') {
+    try {
+      const { emitWebhookEvent } = await import('@/lib/webhooks');
+      await emitWebhookEvent(businessId, 'job.completed', {
+        job_id: jobId,
+        title: job.title,
+        customer_id: job.customerId ?? null,
+      });
+    } catch (err) {
+      console.error('[jobs] job.completed webhook failed', err);
+    }
+  }
   return { ok: true };
 }
 
@@ -261,6 +286,18 @@ export async function updateJobSchedule(
     },
   });
   revalidateJobPaths(jobId);
+  if (status === 'COMPLETED') {
+    try {
+      const { emitWebhookEvent } = await import('@/lib/webhooks');
+      await emitWebhookEvent(businessId, 'job.completed', {
+        job_id: jobId,
+        title: job.title,
+        customer_id: job.customerId ?? null,
+      });
+    } catch (err) {
+      console.error('[jobs] job.completed webhook failed', err);
+    }
+  }
   return { ok: true };
 }
 

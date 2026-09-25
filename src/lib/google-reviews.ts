@@ -23,13 +23,16 @@ export const GOOGLE_REVIEWS_URL = 'https://mybusiness.googleapis.com/v4';
 export const SCOPE_BUSINESS_MANAGE = 'https://www.googleapis.com/auth/business.manage';
 /** Extra scope for the Track 6 calendar import; requested together at connect time. */
 export const SCOPE_CALENDAR_READONLY = 'https://www.googleapis.com/auth/calendar.readonly';
+/** Full write scope for the one-way EveryJob → Google Calendar sync. */
+export const SCOPE_CALENDAR = 'https://www.googleapis.com/auth/calendar';
 
 /** Scopes requested when a business connects Google. Extend here, not ad hoc. */
 export function googleScopes(): string[] {
   // Calendar readonly is included from Track 6 so calendar import never needs
-  // a second consent screen. Connections made before Track 6 lack it — the
-  // calendar import action detects the missing scope and asks to reconnect.
-  return [SCOPE_BUSINESS_MANAGE, SCOPE_CALENDAR_READONLY];
+  // a second consent screen. The full calendar scope powers the one-way
+  // EveryJob → Google Calendar sync. Connections made before this change lack
+  // the write scope — the sync UI detects it and asks to reconnect.
+  return [SCOPE_BUSINESS_MANAGE, SCOPE_CALENDAR_READONLY, SCOPE_CALENDAR];
 }
 
 export function googleOAuthConfigured(): boolean {

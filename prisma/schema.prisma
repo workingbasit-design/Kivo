@@ -93,6 +93,14 @@ model Business {
   customerProperties   CustomerProperty[]
   customFieldDefs      CustomFieldDef[]
   workflowRules        WorkflowRule[]
+  pushSubscriptions    PushSubscription[]
+  technicianLocations  TechnicianLocation[]
+  trackingShares       TrackingShare[]
+  quickBooksConnection QuickBooksConnection?
+  quickBooksSyncLogs   QuickBooksSyncLog[]
+  apiKeys              ApiKey[]
+  webhookEndpoints     WebhookEndpoint[]
+  supportTickets       SupportTicket[]
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
 }
@@ -171,6 +179,8 @@ model Job {
   checklistItems JobChecklistItem[]
   invoices       Invoice[]
   idempotencyKey String?            @unique // booking-confirm dedupe key (UUID); null for jobs not created via booking
+  technicianLocations TechnicianLocation[]
+  trackingShare       TrackingShare?
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
 
@@ -202,6 +212,9 @@ model Invoice {
   payments       Payment[]
   lineItems      InvoiceLineItem[]
   shareTokens    ShareToken[]
+  stripeCheckoutSessionId String? // latest Checkout session for online payment
+  stripePaymentIntentId   String? // completed payment intent (idempotency)
+  paidAt         DateTime? // set when fully paid (any channel)
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
 
@@ -916,4 +929,145 @@ model Designation {
   updatedAt  DateTime  @updatedAt
 
   @@index([businessId])
+}
+
+// ── Ecosystem release: PWA push, GPS tracking, QuickBooks, integrations
+// platform, support. All tenant-scoped; $0 infra (VAPID web push, Leaflet/OSM,
+// Stripe Connect already in use).
+
+// Web Push subscriptions (PWA). One row per device per business.
+model PushSubscription {
+  id         String   @id @default(cuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  userId     String? // team member who owns the device; null = unknown
+  endpoint   String   @unique
+  p256dh     String
+  auth       String
+  createdAt  DateTime @default(now())
+
+  @@index([businessId])
+}
+
+// GPS pings from a technician's device. Written ONLY while the tech has an
+// active job and location sharing enabled (privacy-first: no background
+// tracking outside jobs). Old pings are pruned by a daily cron.
+model TechnicianLocation {
+  id         String   @id @default(cuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  userId     String // team member sharing location
+  jobId      String?
+  job        Job?     @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  lat        Float
+  lng        Float
+  accuracy   Float?
+  recordedAt DateTime @default(now())
+
+  @@index([businessId, recordedAt])
+  @@index([jobId])
+}
+
+// Customer-facing live-tracking link for a job ("tech is on the way").
+// Resolved by unguessable token; expires automatically.
+model TrackingShare {
+  id         String   @id @default(cuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  jobId      String   @unique
+  job        Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  token      String   @unique
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+}
+
+// QuickBooks Online connection (OAuth2). Tokens are tenant-scoped.
+model QuickBooksConnection {
+  id           String    @id @default(cuid())
+  businessId   String    @unique
+  business     Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  realmId      String // QuickBooks company id
+  accessToken  String
+  refreshToken String
+  expiresAt    DateTime
+  connectedAt  DateTime  @default(now())
+  lastSyncAt   DateTime?
+  updatedAt    DateTime  @updatedAt
+}
+
+// Item-level QuickBooks sync results — every entity accounted for, nothing
+// silently dropped.
+model QuickBooksSyncLog {
+  id         String   @id @default(cuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  entityType String // customer | invoice | payment
+  entityId   String // EveryJob id
+  qbId       String? // QuickBooks id once synced
+  status     String // synced | failed | skipped
+  detail     String?
+  createdAt  DateTime @default(now())
+
+  @@index([businessId, createdAt])
+}
+
+// Tenant API keys for the public REST API (hashed at rest).
+model ApiKey {
+  id         String    @id @default(cuid())
+  businessId String
+  business   Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  name       String
+  keyHash    String    @unique // sha256 hex of the full key
+  keyPrefix  String // first 8 chars, for identification in UI
+  scopes     String    @default("read") // comma-separated: read, write
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([businessId])
+}
+
+// Outgoing webhooks (Zapier/Make-compatible).
+model WebhookEndpoint {
+  id         String            @id @default(cuid())
+  businessId String
+  business   Business          @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  url        String
+  secret     String // HMAC-SHA256 signing secret
+  events     String // JSON array of subscribed event names
+  active     Boolean           @default(true)
+  createdAt  DateTime          @default(now())
+  deliveries WebhookDelivery[]
+
+  @@index([businessId])
+}
+
+model WebhookDelivery {
+  id         String          @id @default(cuid())
+  endpointId String
+  endpoint   WebhookEndpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+  event      String
+  payload    String // JSON
+  status     String          @default("pending") // pending | delivered | failed
+  attempts   Int             @default(0)
+  nextRetry  DateTime?
+  lastError  String?
+  createdAt  DateTime        @default(now())
+
+  @@index([endpointId, createdAt])
+}
+
+// Support tickets from EveryJob users (routed to the app owner by email).
+model SupportTicket {
+  id         String    @id @default(cuid())
+  businessId String?
+  business   Business? @relation(fields: [businessId], references: [id], onDelete: SetNull)
+  name       String
+  email      String
+  subject    String
+  message    String
+  status     String    @default("open") // open | answered | closed
+  createdAt  DateTime  @default(now())
+
+  @@index([businessId, createdAt])
 }

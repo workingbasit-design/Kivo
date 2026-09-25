@@ -145,6 +145,13 @@ export interface CheckoutSessionOptions {
   customerEmail?: string;
   checkoutLocale?: 'en' | 'fr';
   metadata: Record<string, string>; // kind=invoice|quote_deposit, invoice_id/quote_id, business_id
+  /**
+   * Platform fee in cents, passed as payment_intent_data[application_fee_amount]
+   * (supported for direct charges on the connected account). EveryJob always
+   * passes 0 — we take no cut; card processing fees are between the business
+   * and Stripe, shown transparently to the owner.
+   */
+  applicationFeeCents?: number;
 }
 
 export interface CheckoutSessionResult {
@@ -175,6 +182,12 @@ export async function createCheckoutSession(
   for (const [k, v] of Object.entries(opts.metadata)) {
     form.set(`metadata[${k}]`, v);
     form.set(`payment_intent_data[metadata][${k}]`, v);
+  }
+  if (opts.applicationFeeCents !== undefined) {
+    form.set(
+      'payment_intent_data[application_fee_amount]',
+      String(Math.max(0, Math.round(opts.applicationFeeCents)))
+    );
   }
 
   let res: Response;
@@ -310,4 +323,73 @@ export function verifyWebhookSignature(
 /** CAD dollars -> integer cents. */
 export function toCents(amount: number): number {
   return Math.round(amount * 100);
+}
+
+/**
+ * Honest invoice status derivation after a payment is recorded: PAID only
+ * when the paid total covers the invoice (1¢ tolerance for float
+ * rounding); PARTIALLY PAID for any positive partial; UNPAID otherwise.
+ * Pure — unit-testable; used by the Stripe webhook.
+ */
+export function deriveInvoiceStatus(total: number, paid: number): string {
+  if (paid >= total - 0.009) return 'PAID';
+  if (paid > 0) return 'PARTIALLY PAID';
+  return 'UNPAID';
+}
+
+/* ------------------------------------------------------------------ */
+/* Invoice checkout (owner-initiated "Collect payment" links)            */
+/* ------------------------------------------------------------------ */
+
+export interface InvoiceCheckoutInput {
+  platformSecret: string;
+  stripeAccountId: string;
+  invoice: { id: string; number: string };
+  business: { id: string; name: string; currency?: string | null };
+  /** Amount to collect in integer cents — the caller passes the remaining balance. */
+  amountCents: number;
+  successUrl: string;
+  cancelUrl: string;
+  customerEmail?: string;
+  checkoutLocale?: 'en' | 'fr';
+}
+
+/**
+ * Build the Checkout Session options for an invoice payment link. Pure —
+ * no network — so it is unit-testable. Direct charge on the business's
+ * connected account; application_fee_amount is explicitly 0 because
+ * EveryJob takes no platform fee.
+ */
+export function buildInvoiceCheckoutOptions(
+  input: InvoiceCheckoutInput
+): CheckoutSessionOptions {
+  return {
+    platformSecret: input.platformSecret,
+    stripeAccountId: input.stripeAccountId,
+    amountCents: Math.round(input.amountCents),
+    currency: (input.business.currency || 'CAD').toLowerCase(),
+    productName: `Invoice ${input.invoice.number} — ${input.business.name}`,
+    successUrl: input.successUrl,
+    cancelUrl: input.cancelUrl,
+    customerEmail: input.customerEmail,
+    checkoutLocale: input.checkoutLocale,
+    applicationFeeCents: 0,
+    metadata: {
+      kind: 'invoice',
+      invoice_id: input.invoice.id,
+      business_id: input.business.id,
+    },
+  };
+}
+
+/**
+ * Create the Stripe Checkout Session for an invoice payment link.
+ * Thin wrapper over createCheckoutSession — same idempotency/metadata
+ * contract the webhook expects (metadata.kind === 'invoice').
+ */
+export async function createInvoiceCheckout(
+  input: InvoiceCheckoutInput,
+  fetchFn: FetchFn = fetch
+): Promise<CheckoutSessionResult> {
+  return createCheckoutSession(buildInvoiceCheckoutOptions(input), fetchFn);
 }

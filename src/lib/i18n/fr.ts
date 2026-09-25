@@ -44,6 +44,7 @@ const fr: Dictionary = {
     directory: 'Répertoire',
     recurring: 'Récurrents',
     routes: 'Itinéraires',
+    tracking: 'Suivi en direct',
     onlineBooking: 'Réservation en ligne',
     imports: 'Importations',
     logout: 'Déconnexion',

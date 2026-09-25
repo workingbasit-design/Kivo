@@ -86,7 +86,7 @@ export async function createCustomer(
   const postalCheck = checkPostalCode(postalCode, region);
   if ('error' in postalCheck) return { error: postalCheck.error };
 
-  await prisma.customer.create({
+  const customer = await prisma.customer.create({
     data: {
       name,
       phone: nullIfEmpty(phone),
@@ -100,6 +100,17 @@ export async function createCustomer(
       businessId,
     },
   });
+
+  // Outgoing webhook: customer created. Best-effort.
+  try {
+    const { emitWebhookEvent } = await import('@/lib/webhooks');
+    await emitWebhookEvent(businessId, 'customer.created', {
+      customer_id: customer.id,
+      name: customer.name,
+    });
+  } catch (err) {
+    console.error('[customers] customer.created webhook failed', err);
+  }
 
   revalidatePath('/customers');
   redirect('/customers');
