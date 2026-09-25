@@ -53,8 +53,9 @@ export default async function TrackPage({
   if (!rl.ok) return <PortalNotice variant="rate-limited" />;
 
   const share = await prisma.trackingShare.findFirst({
-    where: { token, expiresAt: { gt: new Date() } },
+    where: { token },
     select: {
+      expiresAt: true,
       job: {
         select: {
           id: true,
@@ -70,7 +71,25 @@ export default async function TrackPage({
       business: { select: { name: true } },
     },
   });
-  if (!share) return <PortalNotice variant="expired" />;
+  // Token lookup without the DB-side expiry filter (moved to JS below).
+  // Emits a hidden diagnostic marker so we can distinguish "token not found"
+  // from "token found but expired" when debugging the tracking-link issue.
+  if (!share) {
+    return (
+      <>
+        {/* diag: tracking token not found in DB */}
+        <PortalNotice variant="expired" />
+      </>
+    );
+  }
+  if (share.expiresAt.getTime() <= Date.now()) {
+    return (
+      <>
+        {/* diag: tracking token found but expired */}
+        <PortalNotice variant="expired" />
+      </>
+    );
+  }
 
   const latest = await prisma.technicianLocation.findFirst({
     where: { jobId: share.job.id },
