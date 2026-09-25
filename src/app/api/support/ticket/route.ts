@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { rateLimit } from '@/lib/rate-limit';
 import { publicClientIp } from '@/lib/directory';
-import { requireAuth } from '@/lib/auth';
+import { getSession } from '@/lib/auth';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 import { isProductOwner } from '@/lib/owner';
 
@@ -84,13 +84,8 @@ export async function POST(req: Request) {
   }
 
   // Optional tenant context — the form is public, so never require auth.
-  let businessId: string | null = null;
-  try {
-    const auth = await requireAuth();
-    businessId = auth.businessId;
-  } catch {
-    businessId = null;
-  }
+  const session = await getSession();
+  const businessId: string | null = session?.user?.businessId ?? null;
 
   const d = parsed.data;
   await prisma.supportTicket.create({
@@ -121,11 +116,11 @@ export async function PATCH(req: Request) {
   const originCheck = checkSameOrigin(req);
   if (!originCheck.ok) return originForbidden();
   let email: string | null = null;
-  try {
-    ({ user: { email } } = await requireAuth());
-  } catch {
+  const patchSession = await getSession();
+  if (!patchSession?.user) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
+  email = patchSession.user.email;
   // Only the product owner may change ticket statuses. Tickets are about the
   // EveryJob product itself, not tenant data — fail closed until OWNER_EMAILS
   // is configured.

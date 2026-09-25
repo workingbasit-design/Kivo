@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
-import { requireAuth } from '@/lib/auth';
+import { getSession } from '@/lib/auth';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { createInvoiceCheckout, toCents } from '@/lib/stripe';
 import { getLocale } from '@/lib/i18n/server';
@@ -26,7 +26,11 @@ async function rateLimited(businessId: string): Promise<boolean> {
  * money and takes no fee (application_fee_amount = 0).
  */
 export async function POST(req: Request) {
-  const { businessId } = await requireAuth();
+  const session = await getSession();
+  const businessId = session?.user?.businessId;
+  if (!session || !businessId) {
+    return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
+  }
   if (await rateLimited(businessId)) {
     return NextResponse.json({ error: 'Too many requests. Try again shortly.' }, { status: 429 });
   }

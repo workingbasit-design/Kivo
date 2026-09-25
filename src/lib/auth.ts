@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { prisma } from './prisma';
 import crypto from 'crypto';
 
@@ -68,7 +69,10 @@ export async function getSession() {
 export async function requireAuth() {
   const session = await getSession();
   if (!session || !session.user.businessId) {
-    throw new Error('Unauthorized');
+    // Pages and server actions: send the visitor to sign in instead of
+    // rendering the generic error page. (API routes must NOT use this —
+    // they need a 401 JSON response, so they call getSession() directly.)
+    redirect('/login');
   }
   return {
     user: session.user,

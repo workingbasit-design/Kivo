@@ -1,11 +1,14 @@
-import { requireAuth } from '@/lib/auth';
+import { getSession } from '@/lib/auth';
 import { csvTemplate, type CsvType } from '@/lib/csv';
 
 const TYPES: CsvType[] = ['customers', 'services', 'jobs'];
 
 /** Download a CSV import template: GET /api/imports/template?type=customers */
 export async function GET(req: Request) {
-  await requireAuth();
+  const session = await getSession();
+  if (!session?.user?.businessId) {
+    return new Response('Not signed in.', { status: 401 });
+  }
   const { searchParams } = new URL(req.url);
   const type = (searchParams.get('type') ?? 'customers') as CsvType;
   if (!TYPES.includes(type)) {
