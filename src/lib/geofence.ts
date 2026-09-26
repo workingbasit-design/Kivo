@@ -8,17 +8,16 @@
  * - Nominatim (OpenStreetMap) is free with no API key. Its usage policy
  *   requires a descriptive User-Agent; results are cached in memory to stay
  *   well under the rate limits.
- * - `pruneStaleLocationPings` is imported lazily so this module stays
- *   side-effect free for unit tests (no Prisma client at import time).
+ * - `pruneStaleLocationPings` lives in ./ping-retention.ts (server-only):
+ *   this module is imported by client components (via ./eta.ts) and must
+ *   stay free of server-only imports — tenant-guard pulls in
+ *   node:async_hooks, which Turbopack cannot place in a browser chunk.
  */
 
 export const EARTH_RADIUS_M = 6_371_000;
 
 /** Arrival is declared when the tech is within ~150 m of the job address. */
 export const ARRIVAL_RADIUS_M = 150;
-
-/** Pings older than this are pruned by the nightly cron. */
-export const PING_RETENTION_HOURS = 24;
 
 const NOMINATIM_BASE = 'https://nominatim.openstreetmap.org';
 const USER_AGENT = 'EveryJobApp/1.0 (gps arrival detection)';
@@ -216,19 +215,4 @@ export async function checkArrival(
   const dest = await geocodeAddress(jobAddress);
   if (!dest) return null;
   return detectArrival({ lat: techLat, lng: techLng }, dest, radiusMeters);
-}
-
-/**
- * Delete TechnicianLocation pings older than `maxAgeHours` (default 24h).
- * Called from the nightly cron. Returns the number of rows removed.
- */
-export async function pruneStaleLocationPings(
-  maxAgeHours: number = PING_RETENTION_HOURS
-): Promise<number> {
-  const { prisma } = await import('@/lib/prisma');
-  const cutoff = new Date(Date.now() - maxAgeHours * 60 * 60 * 1000);
-  const res = await prisma.technicianLocation.deleteMany({
-    where: { recordedAt: { lt: cutoff } },
-  });
-  return res.count;
 }

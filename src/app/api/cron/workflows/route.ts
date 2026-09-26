@@ -2,14 +2,16 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { runWorkflowsForBusiness } from '@/lib/workflows';
 import { dispatchWebhookRetries } from '@/lib/webhooks';
-import { pruneStaleLocationPings } from '@/lib/geofence';
+import { pruneStaleLocationPings } from '@/lib/ping-retention';
 import { syncJobsToGoogleCalendar } from '@/lib/googleCalendarSync';
+import { unsafeUnscoped } from '@/lib/tenant-guard';
 
 /**
- * Cron entry point for the safe workflow engine. Configure in the Vercel
- * dashboard (Cron Jobs) as a daily GET to:
- *
- *   /api/cron/workflows?secret=<CRON_SECRET>
+ * Cron entry point for the safe workflow engine. Scheduled in vercel.json
+ * as a daily GET to /api/cron/workflows. Vercel automatically sends
+ * `Authorization: Bearer $CRON_SECRET` when the CRON_SECRET env var is
+ * set, so no secret appears in vercel.json or the repo; the `?secret=`
+ * query parameter also works for manual runs.
  *
  * The secret is required — without it the route refuses to run. Actions are
  * limited to in-app notifications and draft creation (never external sends),
@@ -77,10 +79,15 @@ export async function GET(req: Request) {
 
   let calendarSyncs = { ok: 0, skipped: 0 };
   try {
-    const calBusinesses = await prisma.googleConnection.findMany({
-      where: { scopes: { contains: 'calendar' } },
-      select: { businessId: true },
-    });
+    // Cron fan-out (CRON_SECRET at route entry): enumerate calendar
+    // connections. Each sync runs inside its own tenant scope in
+    // syncJobsToGoogleCalendar(c.businessId).
+    const calBusinesses = await unsafeUnscoped('cron:workflows:calendarFanout', () =>
+      prisma.googleConnection.findMany({
+        where: { scopes: { contains: 'calendar' } },
+        select: { businessId: true },
+      })
+    );
     for (const c of calBusinesses) {
       try {
         const r = await syncJobsToGoogleCalendar(c.businessId);

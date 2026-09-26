@@ -2,6 +2,25 @@ import { prisma } from '@/lib/prisma';
 import { todayInTimezone, dayRange, toISODateLocal } from '@/lib/utils';
 import { t, type Locale } from '@/lib/i18n/index';
 
+// Client-safe preference types/helpers live in ./notification-prefs.ts
+// (no server-only imports there — client components import it directly).
+// Imported here for internal use and re-exported so existing server
+// imports keep working.
+import {
+  NOTIFICATION_TYPES,
+  defaultSettings,
+  parseSettings,
+  serializeSettings,
+} from './notification-prefs.ts';
+import type { NotificationType, NotificationSettings } from './notification-prefs.ts';
+export {
+  NOTIFICATION_TYPES,
+  defaultSettings,
+  parseSettings,
+  serializeSettings,
+};
+export type { NotificationType, NotificationSettings };
+
 /**
  * In-app notification center (Track 3).
  *
@@ -13,52 +32,6 @@ import { t, type Locale } from '@/lib/i18n/index';
  * In-app ONLY. Nothing in this module sends WhatsApp, SMS, email, or any
  * other external message — it only writes Notification rows.
  */
-
-export const NOTIFICATION_TYPES = [
-  'job_tomorrow',
-  'job_soon',
-  'invoice_overdue',
-  'quote_expiring',
-  'booking_new',
-  'payment_recorded',
-  'messaging_quota',
-] as const;
-export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
-
-export type NotificationSettings = Record<NotificationType, boolean>;
-
-export function defaultSettings(): NotificationSettings {
-  return {
-    job_tomorrow: true,
-    job_soon: true,
-    invoice_overdue: true,
-    quote_expiring: true,
-    booking_new: true,
-    payment_recorded: true,
-    messaging_quota: true,
-  };
-}
-
-/** Parse the Business.notificationSettings JSON; unknown/missing keys default ON. */
-export function parseSettings(raw: string | null | undefined): NotificationSettings {
-  const out = defaultSettings();
-  if (!raw) return out;
-  try {
-    const parsed = JSON.parse(raw) as Partial<Record<NotificationType, unknown>>;
-    for (const key of NOTIFICATION_TYPES) {
-      if (typeof parsed[key] === 'boolean') out[key] = parsed[key];
-    }
-  } catch {
-    // Corrupt JSON -> safe default: everything on.
-  }
-  return out;
-}
-
-export function serializeSettings(s: NotificationSettings): string {
-  const out: Record<string, boolean> = {};
-  for (const key of NOTIFICATION_TYPES) out[key] = !!s[key];
-  return JSON.stringify(out);
-}
 
 /** Fill a "{param}" template. Missing params render as "". */
 export function fill(template: string, params: Record<string, string>): string {

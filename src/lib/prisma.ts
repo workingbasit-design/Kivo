@@ -28,6 +28,7 @@ export function pooledDatabaseUrl(fromEnv = process.env.DATABASE_URL): string | 
 }
 
 import { withDbRetry } from './db-retry.ts';
+import { assertTenantScope } from './tenant-guard.ts';
 
 const cached = globalForPrisma.prisma;
 export const prisma =
@@ -55,5 +56,17 @@ if (!cached) {
    * above guarantees one registration per serverless instance, never
    * stacked retries on re-evaluation.
    */
+  // Tenant-isolation guard (registered FIRST / outermost): a missing
+  // where.businessId on a business-owned model is a programming error, not
+  // a transient failure — it throws TenantScopeError immediately and is
+  // never retried. Registered only for a freshly created client, like the
+  // retry middleware below, so it never stacks on re-evaluation.
+  // (Inline rather than via tenantGuardMiddleware() so Prisma's own
+  // MiddlewareParams typing flows through untouched; the pure decision
+  // function assertTenantScope is what the tests exercise directly.)
+  prisma.$use(async (params, next) => {
+    assertTenantScope(params);
+    return next(params);
+  });
   prisma.$use(async (params, next) => withDbRetry(() => next(params)));
 }

@@ -9,7 +9,7 @@ import {
   NOTIFICATION_TYPES,
   type NotificationSettings,
   type NotificationType,
-} from '@/lib/notifications';
+} from '@/lib/notification-prefs';
 import { saveNotificationSettingsAction } from '@/app/actions/notifications';
 
 /**
