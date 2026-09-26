@@ -40,13 +40,15 @@ const ALL_GUARDED_ACTIONS = [
   'count',
   'aggregate',
   'groupBy',
+  'create',
+  'createMany',
 ];
 
-function expectBlocked(model: string, action: string, args?: { where?: unknown }) {
+function expectBlocked(model: string, action: string, args?: { where?: unknown; data?: unknown }) {
   assert.throws(() => assertTenantScope({ model, action, args }), TenantScopeError, `${model}.${action} must be blocked`);
 }
 
-function expectAllowed(model: string, action: string, args?: { where?: unknown }) {
+function expectAllowed(model: string, action: string, args?: { where?: unknown; data?: unknown }) {
   assert.doesNotThrow(() => assertTenantScope({ model, action, args }), `${model}.${action} must be allowed`);
 }
 
@@ -54,13 +56,21 @@ describe('tenant guard blocks unscoped cross-tenant access', () => {
   it('blocks unscoped reads, writes and deletes on core business models', () => {
     for (const model of ['Job', 'Customer', 'Quote', 'Invoice']) {
       for (const action of ALL_GUARDED_ACTIONS) {
-        expectBlocked(model, action, { where: { id: 'row_1' } }); // id-only: cross-tenant!
-        expectBlocked(model, action); // no args at all
-        expectBlocked(model, action, { where: {} }); // empty where
-        expectBlocked(model, action, { where: { businessId: '' } }); // empty string
-        expectBlocked(model, action, { where: { businessId: null } }); // null
-        expectBlocked(model, action, { where: { businessId: undefined } }); // undefined
-        expectBlocked(model, action, { where: { businessId: 42 } }); // non-string
+        if (action === 'create' || action === 'createMany') {
+          expectBlocked(model, action, { data: { name: 'x' } }); // no businessId
+          expectBlocked(model, action, { data: {} }); // empty data
+          expectBlocked(model, action, { data: { businessId: '' } }); // empty string
+          expectBlocked(model, action, { data: { businessId: null } }); // null
+          expectBlocked(model, action); // no args at all
+        } else {
+          expectBlocked(model, action, { where: { id: 'row_1' } }); // id-only: cross-tenant!
+          expectBlocked(model, action); // no args at all
+          expectBlocked(model, action, { where: {} }); // empty where
+          expectBlocked(model, action, { where: { businessId: '' } }); // empty string
+          expectBlocked(model, action, { where: { businessId: null } }); // null
+          expectBlocked(model, action, { where: { businessId: undefined } }); // undefined
+          expectBlocked(model, action, { where: { businessId: 42 } }); // non-string
+        }
       }
     }
   });
@@ -92,7 +102,10 @@ describe('tenant guard blocks unscoped cross-tenant access', () => {
   it('rejects every action with a TenantScopeError carrying model and action', () => {
     for (const action of ALL_GUARDED_ACTIONS) {
       try {
-        assertTenantScope({ model: 'Quote', action, args: { where: { id: 'q_1' } } });
+        const args = (action === 'create' || action === 'createMany')
+          ? { data: { title: 'x' } } // creates check data, not where
+          : { where: { id: 'q_1' } };
+        assertTenantScope({ model: 'Quote', action, args });
         assert.fail(`${action} should have thrown`);
       } catch (err) {
         assert.ok(err instanceof TenantScopeError);
@@ -107,7 +120,10 @@ describe('tenant guard allows legitimate queries', () => {
   it('allows scoped reads/writes/deletes on business models', () => {
     for (const model of ['Job', 'Customer', 'Quote', 'Invoice']) {
       for (const action of ALL_GUARDED_ACTIONS) {
-        expectAllowed(model, action, { where: { id: 'row_1', businessId: BIZ_A } });
+        const args = (action === 'create' || action === 'createMany')
+          ? { data: { businessId: BIZ_A, name: 'x' } }
+          : { where: { id: 'row_1', businessId: BIZ_A } };
+        expectAllowed(model, action, args);
       }
     }
   });
@@ -120,7 +136,7 @@ describe('tenant guard allows legitimate queries', () => {
   });
 
   it('ignores non-tenant models entirely', () => {
-    for (const model of ['User', 'Payment', 'InvoiceLineItem', 'Session', 'JobNote']) {
+    for (const model of ['User', 'InvoiceLineItem', 'Session', 'JobNote']) {
       for (const action of ALL_GUARDED_ACTIONS) {
         expectAllowed(model, action, { where: { id: 'row_1' } });
         expectAllowed(model, action);
@@ -131,10 +147,14 @@ describe('tenant guard allows legitimate queries', () => {
   it('ignores unknown models and non-guarded actions', () => {
     expectAllowed('SomeFutureModel', 'findMany', { where: {} });
     expectAllowed(undefined as unknown as string, 'findMany', { where: {} });
-    // create/createMany are not guarded by design (NOT NULL constraints
-    // catch missing businessId; creates cannot leak other tenants' rows).
-    expectAllowed('Job', 'create', { data: { businessId: BIZ_A } } as never);
-    expectAllowed('Job', 'createMany', {} as never);
+    // Creates ARE guarded: missing businessId in data throws.
+    expectBlocked('Job', 'create', { data: { name: 'x' } });
+    expectBlocked('Job', 'createMany', { data: [{ name: 'x' }] });
+    expectAllowed('Job', 'create', { data: { businessId: BIZ_A, name: 'x' } });
+    // SupportTicket allows null businessId (public form).
+    expectAllowed('SupportTicket', 'create', { data: { businessId: null, name: 'x' } });
+    // Payment allows undefined businessId during backfill.
+    expectAllowed('Payment', 'create', { data: { amount: 10, invoiceId: 'i1' } });
   });
 });
 

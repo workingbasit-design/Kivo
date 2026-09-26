@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { rateLimit } from '@/lib/rate-limit';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
+import { logPiiAccess } from '@/lib/pii-audit';
 import { buildExportCsv, EXPORT_TYPES, type ExportType } from '@/lib/export';
 
 const VALID = new Set<string>(EXPORT_TYPES.map((t) => t.value));
@@ -34,6 +35,16 @@ export async function GET(req: Request) {
   }
 
   const csvText = await buildExportCsv(businessId, type as ExportType);
+  // PIPEDA accountability: log PII export (fire-and-forget).
+  if (type === 'customers' || type === 'leads') {
+    logPiiAccess({
+      businessId,
+      userId: session.user.id,
+      action: 'export',
+      entityType: type === 'customers' ? 'customer' : 'lead',
+      metadata: { format: 'csv' },
+    });
+  }
   const date = new Date().toISOString().slice(0, 10);
   return new NextResponse(csvText, {
     headers: {

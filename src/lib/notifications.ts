@@ -421,7 +421,7 @@ export async function syncNotifications(businessId: string): Promise<number> {
       where: {
         status: 'COMPLETED',
         createdAt: { gte: recentSince },
-        invoice: { businessId },
+        businessId,
       },
       select: {
         id: true,

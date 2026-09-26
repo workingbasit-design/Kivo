@@ -142,7 +142,7 @@ export async function POST(req: Request) {
     // 3. Completed payments not yet recorded in QuickBooks.
     const payments = (
       await prisma.payment.findMany({
-        where: { status: 'COMPLETED', invoice: { businessId } },
+        where: { status: 'COMPLETED', businessId },
         orderBy: { createdAt: 'asc' },
         take: PER_TYPE_LIMIT * 2,
         select: {

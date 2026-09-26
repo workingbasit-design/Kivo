@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { runWorkflowsForBusiness } from '@/lib/workflows';
 import { dispatchWebhookRetries } from '@/lib/webhooks';
 import { pruneStaleLocationPings } from '@/lib/ping-retention';
+import { pruneRateLimits } from '@/lib/rate-limit-durable';
+import { expireOldLeads } from '@/lib/lead-expiry';
 import { syncJobsToGoogleCalendar } from '@/lib/googleCalendarSync';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
 
@@ -77,6 +79,20 @@ export async function GET(req: Request) {
     console.error('[cron] GPS ping pruning failed:', err);
   }
 
+  let rateLimitsPruned = 0;
+  try {
+    rateLimitsPruned = await pruneRateLimits();
+  } catch (err) {
+    console.error('[cron] Rate-limit pruning failed:', err);
+  }
+
+  let leadsExpired = 0;
+  try {
+    leadsExpired = await expireOldLeads();
+  } catch (err) {
+    console.error('[cron] Lead expiry failed:', err);
+  }
+
   let calendarSyncs = { ok: 0, skipped: 0 };
   try {
     // Cron fan-out (CRON_SECRET at route entry): enumerate calendar
@@ -109,6 +125,8 @@ export async function GET(req: Request) {
     perBusiness,
     webhooks: webhookStats,
     pingsPruned,
+    rateLimitsPruned,
+    leadsExpired,
     calendarSyncs,
   });
 }

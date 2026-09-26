@@ -101,7 +101,7 @@ export async function buildExportCsv(businessId: string, type: ExportType): Prom
     }
     case 'payments': {
       const rows = await prisma.payment.findMany({
-        where: { invoice: { businessId } },
+        where: { businessId },
         include: { invoice: { select: { number: true, customer: { select: { name: true } } } } },
         orderBy: { createdAt: 'asc' },
       });

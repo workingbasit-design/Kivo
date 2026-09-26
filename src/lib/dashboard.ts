@@ -148,7 +148,7 @@ export async function getDashboardStats(businessId: string): Promise<DashboardSt
       where: {
         status: "COMPLETED",
         createdAt: { gte: weekStart },
-        invoice: { businessId },
+        businessId,
       },
       _sum: { amount: true },
     }),
@@ -298,7 +298,7 @@ export async function getReportStats(
       where: {
         status: "COMPLETED",
         createdAt: { gte: rangeStart },
-        invoice: { businessId },
+        businessId,
       },
       select: { amount: true, createdAt: true },
     }),

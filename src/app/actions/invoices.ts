@@ -365,6 +365,7 @@ export async function recordPayment(
       transactionId: parsed.data.transactionId || null,
       status: 'COMPLETED',
       invoiceId: invoice.id,
+      businessId,
     },
   });
 

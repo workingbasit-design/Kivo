@@ -141,7 +141,7 @@ async function handleCheckoutCompleted(
     // Stripe returns no payment intent id.
     if (session.id) {
       const existing = await prisma.payment.findFirst({
-        where: { stripeCheckoutSessionId: session.id, invoiceId: invoice.id },
+        where: { stripeCheckoutSessionId: session.id, invoiceId: invoice.id, businessId: invoice.businessId },
         select: { id: true },
       });
       if (existing) return;
@@ -159,6 +159,7 @@ async function handleCheckoutCompleted(
           stripeCheckoutSessionId: session.id,
           receiptUrl: info.receiptUrl ?? undefined,
           invoiceId: invoice.id,
+          businessId: invoice.businessId,
         },
       });
       paymentId = payment.id;

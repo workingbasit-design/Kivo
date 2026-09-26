@@ -29,7 +29,7 @@ export async function getStripeDashboard() {
   const { businessId } = await requireAuth();
   const connection = await prisma.stripeConnection.findUnique({ where: { businessId } });
   const payments = await prisma.payment.findMany({
-    where: { invoice: { businessId }, provider: 'STRIPE' },
+    where: { businessId, provider: 'STRIPE' },
     orderBy: { createdAt: 'desc' },
     take: 25,
     select: {

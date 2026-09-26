@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
 import { rateLimit, QUOTE_REQUEST_LIMIT, REPORT_LIMIT } from '@/lib/rate-limit';
+import { leadExpiryDate } from '@/lib/lead-expiry';
 import { validatePhone, INVALID_PHONE_MESSAGE } from '@/lib/phone';
 import {
   publicClientIp,
@@ -197,6 +198,7 @@ export async function submitQuoteRequest(
             status: 'NEW',
             source: 'Directory',
             businessId: m.id,
+            expiresAt: leadExpiryDate(),
           },
         })
       )

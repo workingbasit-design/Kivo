@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { AlertCircle, Plus } from 'lucide-react';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { logPiiAccess } from '@/lib/pii-audit';
 import { PageHeader, Card, primaryBtnClass } from '@/components/ui';
 import CustomersClient from '@/components/CustomersClient';
 import type { CustomerRow } from '@/components/CustomersClient';
@@ -43,6 +44,15 @@ export default async function CustomersPage() {
         jobs: { select: { price: true } },
       },
       orderBy: { name: 'asc' },
+    });
+
+    // PIPEDA accountability: log PII list access (fire-and-forget).
+    logPiiAccess({
+      businessId,
+      userId: session.user.id,
+      action: 'view',
+      entityType: 'customer',
+      metadata: { count: rows.length, view: 'list' },
     });
 
     customers = rows.map((c) => ({

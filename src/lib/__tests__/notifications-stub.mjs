@@ -92,7 +92,7 @@ export const prisma = {
   payment: {
     findMany: async ({ where }) => {
       calls.push(['payment.findMany', where]);
-      return where?.invoice?.businessId === 'biz-test' ? FIXTURES.payments : [];
+      return where?.businessId === 'biz-test' ? FIXTURES.payments : [];
     },
   },
   notification: {

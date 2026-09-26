@@ -130,7 +130,7 @@ async function revenueBetween(businessId: string, start: Date, end: Date): Promi
     where: {
       status: 'COMPLETED',
       createdAt: { gte: start, lte: end },
-      invoice: { businessId },
+      businessId,
     },
     _sum: { amount: true },
   });

@@ -35,7 +35,7 @@ export async function getInsights(businessId: string, locale: 'en' | 'fr' = 'en'
 
   const [payments, jobs, quotes] = await Promise.all([
     prisma.payment.findMany({
-      where: { status: 'COMPLETED', createdAt: { gte: rangeStart }, invoice: { businessId } },
+      where: { status: 'COMPLETED', createdAt: { gte: rangeStart }, businessId },
       select: { amount: true, createdAt: true },
     }),
     prisma.job.findMany({

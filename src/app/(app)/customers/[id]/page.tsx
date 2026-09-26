@@ -4,6 +4,7 @@ import { notFound, redirect } from 'next/navigation';
 import { ArrowLeft, Phone, Mail, MapPin, StickyNote, Briefcase, FileText, Star } from 'lucide-react';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { logPiiAccess } from '@/lib/pii-audit';
 import { formatDateShort, jobDisplayStatus } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import { PageHeader, Card, StatusBadge, Badge } from '@/components/ui';
@@ -88,6 +89,15 @@ export default async function CustomerDetailPage({
     });
     customer = await loadCustomer(id, businessId);
     if (!customer) notFound();
+    // PIPEDA accountability: log PII detail access (fire-and-forget).
+    logPiiAccess({
+      businessId,
+      userId: session.user.id,
+      action: 'view',
+      entityType: 'customer',
+      entityId: customer.id,
+      metadata: { view: 'detail' },
+    });
     activePortalToken = await prisma.customerPortalToken.findFirst({
       where: {
         customerId: customer.id,

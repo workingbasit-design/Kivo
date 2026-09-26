@@ -25,8 +25,9 @@
  *   email/googleId before any tenant is known, and businessId is null
  *   during onboarding. User isolation rides the session → user →
  *   businessId chain in getSession().
- * - `Payment` has no businessId column (it hangs off Invoice). Payment
- *   reads must go through invoice ownership checks in app code.
+ * - `$queryRaw` / `$executeRaw` bypass Prisma middleware entirely; raw SQL
+ *   touching tenant tables must scope manually (grep for $queryRaw before
+ *   adding any). Currently no raw SQL exists in the codebase.
  * - `$queryRaw` / `$executeRaw` bypass Prisma middleware entirely; raw SQL
  *   touching tenant tables must scope manually (grep for $queryRaw before
  *   adding any).
@@ -96,6 +97,8 @@ export const TENANT_MODELS: ReadonlySet<string> = new Set([
   'MessagingConnection',
   'MessagingSettings',
   'Notification',
+  'Payment',
+  'PiaAuditLog',
   'PushSubscription',
   'QuickBooksConnection',
   'QuickBooksSyncLog',
@@ -136,6 +139,8 @@ const GUARDED_ACTIONS: ReadonlySet<string> = new Set([
   'count',
   'aggregate',
   'groupBy',
+  'create',
+  'createMany',
 ]);
 
 const unscopedStore = new AsyncLocalStorage<boolean>();
@@ -143,18 +148,48 @@ const unscopedStore = new AsyncLocalStorage<boolean>();
 export interface GuardParams {
   model?: string;
   action: string;
-  args?: { where?: unknown };
+  args?: { where?: unknown; data?: unknown };
 }
 
 /**
  * Pure decision function — no Prisma import, directly unit-tested.
  * Throws TenantScopeError for unscoped tenant queries; returns void otherwise.
+ *
+ * For read/write-by-where operations, requires args.where.businessId.
+ * For create/createMany, requires args.data.businessId (or every element's
+ * businessId for createMany arrays). Creates cannot leak another tenant's
+ * rows, but an unscoped create is a programming error that would orphan
+ * data or attach it to the wrong tenant — fail closed here too.
  */
 export function assertTenantScope(params: GuardParams): void {
   const { model, action } = params;
   if (!model || !TENANT_MODELS.has(model)) return;
   if (!GUARDED_ACTIONS.has(action)) return;
   if (unscopedStore.getStore() === true) return;
+
+  if (action === 'create' || action === 'createMany') {
+    const data = params.args?.data as Record<string, unknown> | Record<string, unknown>[] | undefined;
+    const rows = Array.isArray(data) ? data : data ? [data] : [];
+    // Fail closed: a create with no data is a programming error.
+    if (rows.length === 0) {
+      throw new TenantScopeError(model, action);
+    }
+    // Nested creates (e.g. invoice with nested payments) carry businessId
+    // on the parent; child rows inherit it via the relation. Only check
+    // top-level data here.
+    for (const row of rows) {
+      const businessId = row?.businessId;
+      // Allow undefined businessId only for models where it's optional
+      // in the schema: Payment (nullable during backfill, then required)
+      // and SupportTicket (public form allows unauthenticated submissions).
+      if ((model === 'Payment' || model === 'SupportTicket') && (businessId === undefined || businessId === null)) continue;
+      if (typeof businessId !== 'string' || businessId.length === 0) {
+        throw new TenantScopeError(model, action);
+      }
+    }
+    return;
+  }
+
   const where = params.args?.where as Record<string, unknown> | undefined;
   const businessId = where?.businessId;
   if (typeof businessId !== 'string' || businessId.length === 0) {

@@ -108,6 +108,8 @@ model Business {
   automationLogs       AutomationLog[]
   customerProperties   CustomerProperty[]
   customFieldDefs      CustomFieldDef[]
+  payments             Payment[]
+  piaAuditLogs         PiaAuditLog[]
   workflowRules        WorkflowRule[]
   pushSubscriptions    PushSubscription[]
   technicianLocations  TechnicianLocation[]
@@ -298,8 +300,12 @@ model Payment {
   receiptUrl              String? // Stripe receipt URL, when available
   invoiceId               String
   invoice                 Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  businessId              String? // tenant scope; nullable during backfill, then required
+  business                Business? @relation(fields: [businessId], references: [id], onDelete: Cascade)
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
+
+  @@index([businessId])
 }
 
 model MessageLog {
@@ -368,12 +374,16 @@ model Lead {
   phoneNorm  String? // E.164 digits (no "+") for matching + WhatsApp links; `phone` keeps the user's formatting
   email      String?
   details    String?
-  status     String // "NEW", "CONTACTED", "CONVERTED"
+  status     String // "NEW", "CONTACTED", "CONVERTED", "EXPIRED"
   source     String? // e.g., "WhatsApp", "Phone", "Website"
   businessId String
   business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  expiresAt  DateTime? // directory quote-request leads expire after 30 days if not contacted
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+
+  @@index([businessId, status])
+  @@index([expiresAt])
 }
 
 model Quote {
@@ -1126,4 +1136,34 @@ model SupportTicket {
   createdAt  DateTime  @default(now())
 
   @@index([businessId, createdAt])
+}
+
+// Durable rate-limit buckets. Replaces the in-memory limiter so limits
+// hold across Vercel serverless instances and cold starts. Key is
+// "scope:identifier" (e.g. "auth:1.2.3.4"). Not tenant-scoped by design.
+model RateLimit {
+  key       String   @id
+  count     Int      @default(1)
+  resetAt   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([resetAt])
+}
+
+// PII access audit log. Records when authenticated users view/export
+// customer PII (names, phones, emails, addresses). PIPEDA accountability.
+model PiaAuditLog {
+  id         String   @id @default(cuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  userId     String
+  action     String // "view" | "export" | "search"
+  entityType String // "customer" | "job" | "invoice" | etc.
+  entityId   String?
+  metadata   String? // JSON: e.g. {"count": 25} for exports
+  createdAt  DateTime @default(now())
+
+  @@index([businessId, createdAt])
+  @@index([userId, createdAt])
 }
