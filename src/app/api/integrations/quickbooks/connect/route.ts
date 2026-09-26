@@ -3,6 +3,7 @@ import { getSession } from '@/lib/auth';
 import { rateLimit, AUTH_LIMIT } from '@/lib/rate-limit';
 import { buildAuthorizeUrl } from '@/lib/quickbooks';
 import crypto from 'crypto';
+import { clientIpFromHeaders } from '@/lib/client-ip';
 
 export const QB_STATE_COOKIE = 'qb_oauth_state';
 
@@ -27,10 +28,7 @@ export async function GET(req: Request) {
     return NextResponse.redirect(new URL('/login', req.url));
   }
 
-  const ip =
-    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    req.headers.get('x-real-ip') ||
-    'unknown';
+  const ip = clientIpFromHeaders(req.headers);
   const rl = rateLimit(`qb-connect:${ip}`, AUTH_LIMIT);
   if (!rl.ok) {
     return NextResponse.redirect(new URL('/settings?quickbooks=rate-limited', req.url));

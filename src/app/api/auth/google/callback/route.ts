@@ -12,6 +12,7 @@ import {
   safeRedirectPath,
 } from '@/lib/google-auth';
 import { rateLimit, AUTH_LIMIT } from '@/lib/rate-limit';
+import { clientIpFromHeaders } from '@/lib/client-ip';
 
 const STATE_COOKIE = 'google_oauth_state';
 
@@ -33,10 +34,7 @@ export async function GET(req: Request) {
   const origin = url.origin;
 
   // Rate-limit the callback per IP — same budget as password auth.
-  const ip =
-    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    req.headers.get('x-real-ip') ||
-    'unknown';
+  const ip = clientIpFromHeaders(req.headers);
   const rl = rateLimit(`google-callback:${ip}`, AUTH_LIMIT);
   if (!rl.ok) return loginRedirect(req, 'rate-limited');
 

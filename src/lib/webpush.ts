@@ -144,7 +144,7 @@ export async function pushToBusiness(
       );
       if (r.ok) out.sent++;
       else if ('expired' in r && r.expired) {
-        await prisma.pushSubscription.delete({ where: { id: s.id } }).catch(() => undefined);
+        await prisma.pushSubscription.delete({ where: { id: s.id, businessId } }).catch(() => undefined);
         out.pruned++;
       }
     }

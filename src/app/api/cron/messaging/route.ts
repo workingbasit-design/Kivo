@@ -1,16 +1,19 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { runMessagingCycle } from '@/lib/messaging/engine';
+import { unsafeUnscoped } from '@/lib/tenant-guard';
 
 /**
- * Cron entry point for automated messaging. Configure in the Vercel dashboard
- * (Cron Jobs) as an hourly GET to:
+ * Cron entry point for automated messaging.
  *
- *   /api/cron/messaging?secret=<CRON_SECRET>
+ * Auth: Vercel's scheduler automatically sends
+ * `Authorization: Bearer $CRON_SECRET` when the CRON_SECRET env var is set,
+ * so no secret appears in vercel.json or the repo. The `?secret=` query
+ * parameter (or Bearer header) also works for manual runs.
  *
- * The secret is required — without it the route refuses to run. Each cycle
- * respects the business's dryRun flag: businesses still in preview mode only
- * get DRY_RUN log rows, so nothing can send before the owner opts in.
+ * Each cycle respects the business's dryRun flag: businesses still in
+ * preview mode only get DRY_RUN log rows, so nothing can send before the
+ * owner opts in.
  */
 export const maxDuration = 120;
 
@@ -30,20 +33,25 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
   }
 
-  const businesses = await prisma.messagingSettings.findMany({
-    where: {
-      OR: [
-        { reminder24h: true },
-        { reminderDayOf: true },
-        { invoiceDue: true },
-        { invoiceOverdue: true },
-        { quoteFollowup: true },
-        { reviewRequest: true },
-      ],
-    },
-    select: { businessId: true },
-    take: 200,
-  });
+  // Cron fan-out (CRON_SECRET at route entry): enumerate opted-in
+  // businesses. Each business's sends run inside its own tenant scope
+  // with per-business quota checks in runMessagingCycle.
+  const businesses = await unsafeUnscoped('cron:messaging:fanout', () =>
+    prisma.messagingSettings.findMany({
+      where: {
+        OR: [
+          { reminder24h: true },
+          { reminderDayOf: true },
+          { invoiceDue: true },
+          { invoiceOverdue: true },
+          { quoteFollowup: true },
+          { reviewRequest: true },
+        ],
+      },
+      select: { businessId: true },
+      take: 200,
+    })
+  );
 
   const results: Array<{ businessId: string; ok: boolean; sent?: number; error?: string }> = [];
   for (const { businessId } of businesses) {

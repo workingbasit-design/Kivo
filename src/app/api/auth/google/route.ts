@@ -6,14 +6,13 @@ import {
   safeRedirectPath,
 } from '@/lib/google-auth';
 import { rateLimit, AUTH_LIMIT } from '@/lib/rate-limit';
+import { clientIpFromHeaders } from '@/lib/client-ip';
 
 const STATE_COOKIE = 'google_oauth_state';
 
 function clientIp(req: Request): string {
   const h = (req as unknown as { headers: Headers }).headers;
-  return (
-    h.get('x-forwarded-for')?.split(',')[0]?.trim() || h.get('x-real-ip') || 'unknown'
-  );
+  return clientIpFromHeaders(h);
 }
 
 /**

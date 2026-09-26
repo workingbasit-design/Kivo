@@ -6,6 +6,7 @@ import { publicClientIp } from '@/lib/directory';
 import { getSession } from '@/lib/auth';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 import { isProductOwner } from '@/lib/owner';
+import { unsafeUnscoped } from '@/lib/tenant-guard';
 
 /**
  * Public support ticket intake.
@@ -138,10 +139,14 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: 'invalid' }, { status: 400 });
   }
   // Tickets may be global (no businessId) — the owner inbox sees all of them.
-  const ticket = await prisma.supportTicket.update({
-    where: { id: parsed.data.id },
-    data: { status: parsed.data.status },
-    select: { id: true },
-  });
+  // isProductOwner() above is the authorization: only the product owner
+  // reaches this line.
+  const ticket = await unsafeUnscoped('support:ownerUpdateTicket', () =>
+    prisma.supportTicket.update({
+      where: { id: parsed.data.id },
+      data: { status: parsed.data.status },
+      select: { id: true },
+    })
+  );
   return NextResponse.json({ ok: true, id: ticket.id });
 }

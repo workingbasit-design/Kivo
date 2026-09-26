@@ -15,6 +15,7 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { prisma } from '@/lib/prisma';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { unsafeUnscoped } from './tenant-guard.ts';
 
 export const API_KEY_PREFIX = 'ejk_live_';
 /** 32 random bytes → 43 base64url chars. Brute force is infeasible. */
@@ -58,14 +59,20 @@ export type VerifiedApiKey = {
  */
 export async function verifyApiKey(key: string): Promise<VerifiedApiKey | null> {
   if (!key || !key.startsWith(API_KEY_PREFIX)) return null;
-  const rec = await prisma.apiKey.findUnique({
-    where: { keyHash: hashApiKey(key) },
-    select: { id: true, businessId: true, scopes: true, revokedAt: true },
-  });
+  // Identity-root lookup: the presented key (hashed) IS the credential and
+  // resolves the tenant — no business scope can exist before this query.
+  // Revoked keys are rejected and unknown keys resolve to null, so there
+  // is no enumeration vector.
+  const rec = await unsafeUnscoped('apiKeys:verifyApiKey', () =>
+    prisma.apiKey.findUnique({
+      where: { keyHash: hashApiKey(key) },
+      select: { id: true, businessId: true, scopes: true, revokedAt: true },
+    })
+  );
   if (!rec || rec.revokedAt) return null;
   try {
     await prisma.apiKey.update({
-      where: { id: rec.id },
+      where: { id: rec.id, businessId: rec.businessId },
       data: { lastUsedAt: new Date() },
     });
   } catch {

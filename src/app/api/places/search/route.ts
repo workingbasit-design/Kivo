@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit } from '@/lib/rate-limit';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
+import { clientIpFromHeaders } from '@/lib/client-ip';
 
 /**
  * Free address autocomplete proxy — OpenStreetMap Nominatim (no API key).
@@ -30,9 +31,7 @@ function pruneCache() {
 
 function clientIp(req: NextRequest): string {
   return (
-    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    req.headers.get('x-real-ip') ||
-    'unknown'
+    clientIpFromHeaders(req.headers)
   );
 }
 

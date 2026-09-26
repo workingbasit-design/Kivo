@@ -178,7 +178,7 @@ async function generateDueJobsInner(
       // Always advance — even when a job already existed — so a second run
       // moves on to the next occurrence instead of looping on the same day.
       await tx.recurringJob.update({
-        where: { id: fresh.id },
+        where: { id: fresh.id, businessId },
         data: { nextRun: advanceNextRun(fresh.nextRun, fresh.frequency) },
       });
 

@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { rateLimit, AUTH_LIMIT } from '@/lib/rate-limit';
 import { exchangeCode } from '@/lib/quickbooks';
 import { QB_STATE_COOKIE, quickbooksConfigured, quickbooksRedirectUri } from '../connect/route';
+import { clientIpFromHeaders } from '@/lib/client-ip';
 
 /**
  * GET /api/integrations/quickbooks/callback — Intuit OAuth2 callback.
@@ -20,10 +21,7 @@ export async function GET(req: Request) {
     return NextResponse.redirect(new URL('/login', req.url));
   }
 
-  const ip =
-    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    req.headers.get('x-real-ip') ||
-    'unknown';
+  const ip = clientIpFromHeaders(req.headers);
   const rl = rateLimit(`qb-callback:${ip}`, AUTH_LIMIT);
   if (!rl.ok) {
     return NextResponse.redirect(new URL('/settings?quickbooks=rate-limited', req.url));

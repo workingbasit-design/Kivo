@@ -5,15 +5,13 @@ import { getSession } from '@/lib/auth';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { createInvoiceCheckout, toCents } from '@/lib/stripe';
 import { getLocale } from '@/lib/i18n/server';
+import { clientIpFromHeaders } from '@/lib/client-ip';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
 async function rateLimited(businessId: string): Promise<boolean> {
   const h = await headers();
-  const ip =
-    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    h.get('x-real-ip') ||
-    'unknown';
+  const ip = clientIpFromHeaders(h);
   return !rateLimit(`stripe:invoice-checkout:${businessId}:${ip}`, ACTION_LIMIT).ok;
 }
 
@@ -116,7 +114,7 @@ export async function POST(req: Request) {
   }
 
   await prisma.invoice.update({
-    where: { id: invoice.id },
+    where: { id: invoice.id, businessId },
     data: { stripeCheckoutSessionId: created.sessionId },
   });
 

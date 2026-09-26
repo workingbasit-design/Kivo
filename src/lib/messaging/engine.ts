@@ -124,6 +124,7 @@ function secretOf(stored: string | null | undefined): string | null {
 interface QuotaReservation {
   channel: MessageChannel;
   quotaId: string;
+  businessId: string;
   monthLimit: number;
   /** Email only: business-local day key + daily cap (Resend free tier). */
   dayKey?: string;
@@ -139,7 +140,7 @@ interface QuotaReservation {
 async function reserveQuota(r: QuotaReservation): Promise<boolean> {
   if (r.channel === 'WHATSAPP') {
     const res = await prisma.messageQuota.updateMany({
-      where: { id: r.quotaId, whatsappCount: { lt: r.monthLimit } },
+      where: { id: r.quotaId, businessId: r.businessId, whatsappCount: { lt: r.monthLimit } },
       data: { whatsappCount: { increment: 1 } },
     });
     return res.count === 1;
@@ -147,6 +148,7 @@ async function reserveQuota(r: QuotaReservation): Promise<boolean> {
   const res = await prisma.messageQuota.updateMany({
     where: {
       id: r.quotaId,
+      businessId: r.businessId,
       emailDay: r.dayKey,
       emailDayCount: { lt: r.dayLimit ?? 0 },
       emailCount: { lt: r.monthLimit },
@@ -228,6 +230,7 @@ async function sendOnChannel(
   const reserved = await reserveQuota({
     channel,
     quotaId,
+    businessId,
     monthLimit: channel === 'WHATSAPP' ? settings.whatsappLimit : settings.emailLimit,
     dayKey,
     dayLimit: settings.emailDailyLimit,
@@ -247,7 +250,7 @@ async function sendOnChannel(
       },
     });
     await prisma.messageQuota.update({
-      where: { id: quotaId },
+      where: { id: quotaId, businessId },
       data: { blockedCount: { increment: 1 } },
     });
     if (channel === 'WHATSAPP') report.quota.whatsappUsed++;
@@ -407,11 +410,11 @@ export async function runMessagingCycle(
   // conditional update keeps it idempotent under concurrent cycles.
   if (quotaRow.emailDay !== dayKey) {
     await prisma.messageQuota.updateMany({
-      where: { id: quotaRow.id, emailDay: { not: dayKey } },
+      where: { id: quotaRow.id, businessId, emailDay: { not: dayKey } },
       data: { emailDay: dayKey, emailDayCount: 0 },
     });
   }
-  const quota = await prisma.messageQuota.findUniqueOrThrow({ where: { id: quotaRow.id } });
+  const quota = await prisma.messageQuota.findUniqueOrThrow({ where: { id: quotaRow.id, businessId } });
 
   // Idempotency: keys already terminally handled (SENT, or FAILED with a
   // permanent error kind — transient network/quota failures retry).

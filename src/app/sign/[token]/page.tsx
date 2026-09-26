@@ -14,6 +14,7 @@ import PortalNotice from '@/components/PortalNotice';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
 import SignClient from './SignClient';
+import { clientIpFromHeaders } from '@/lib/client-ip';
 
 /**
  * Public signing page. No authentication — the signing token in the URL
@@ -25,12 +26,7 @@ import SignClient from './SignClient';
 const SIGN_LIMIT = { limit: 30, windowMs: 60 * 1000 };
 
 async function clientIp(): Promise<string> {
-  const h = await headers();
-  return (
-    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    h.get('x-real-ip') ||
-    'unknown'
-  );
+  return clientIpFromHeaders(await headers());
 }
 
 function parseFields(fieldsJson: string): SignField[] {
@@ -102,7 +98,7 @@ export default async function SignPage({
 
   // Best-effort first-view audit event; never blocks rendering.
   try {
-    await recordView(resolved.id, await clientIp());
+    await recordView(resolved.businessId, resolved.id, await clientIp());
   } catch {
     /* ignore */
   }

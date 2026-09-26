@@ -6,6 +6,7 @@ import BookingForm, { type BookingSlotStrings } from '@/components/BookingForm';
 import { formatWorkingHoursSummary } from '@/lib/working-hours';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
+import { unsafeUnscoped } from '@/lib/tenant-guard';
 
 export async function generateMetadata({
   params,
@@ -13,10 +14,15 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const page = await prisma.bookingPage.findUnique({
-    where: { slug },
-    select: { headline: true, business: { select: { name: true } } },
-  });
+  // Public page entry point: the slug is the public address of the page.
+  // A slug can only resolve to the one business that owns it, so no
+  // tenant scope can exist before this lookup.
+  const page = await unsafeUnscoped('book:metadata:findPage', () =>
+    prisma.bookingPage.findUnique({
+      where: { slug },
+      select: { headline: true, business: { select: { name: true } } },
+    })
+  );
   if (!page) return { title: 'Book a service | EveryJob' };
   return { title: `Book ${page.business.name} | EveryJob` };
 }
@@ -34,16 +40,18 @@ export default async function PublicBookingPage({
   const { slug } = await params;
   const locale: Locale = await getLocale();
 
-  const page = await prisma.bookingPage.findUnique({
-    where: { slug },
-    select: {
-      enabled: true,
-      headline: true,
-      intro: true,
-      businessId: true,
-      business: { select: { name: true, phone: true, address: true, currency: true, regionCode: true, workingHours: true } },
-    },
-  });
+  const page = await unsafeUnscoped('book:page:findPage', () =>
+    prisma.bookingPage.findUnique({
+      where: { slug },
+      select: {
+        enabled: true,
+        headline: true,
+        intro: true,
+        businessId: true,
+        business: { select: { name: true, phone: true, address: true, currency: true, regionCode: true, workingHours: true } },
+      },
+    })
+  );
 
   if (!page || !page.enabled) notFound();
 

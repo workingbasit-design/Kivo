@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { unsafeUnscoped } from '@/lib/tenant-guard';
 
 const subscribeSchema = z.object({
   endpoint: z.string().trim().url().max(2000),
@@ -50,17 +51,22 @@ export async function POST(req: NextRequest) {
   }
 
   const { endpoint, keys } = parsed.data;
-  await prisma.pushSubscription.upsert({
-    where: { endpoint },
-    update: { businessId, userId: session.userId ?? null, p256dh: keys.p256dh, auth: keys.auth },
-    create: {
-      businessId,
-      userId: session.userId ?? null,
-      endpoint,
-      p256dh: keys.p256dh,
-      auth: keys.auth,
-    },
-  });
+  // endpoint is the device's unique push URL (unguessable); the upsert
+  // binds it to the authenticated session's business and rewrites keys.
+  // Authenticated route — no other tenant's data is readable here.
+  await unsafeUnscoped('push:subscribe:upsert', () =>
+    prisma.pushSubscription.upsert({
+      where: { endpoint },
+      update: { businessId, userId: session.userId ?? null, p256dh: keys.p256dh, auth: keys.auth },
+      create: {
+        businessId,
+        userId: session.userId ?? null,
+        endpoint,
+        p256dh: keys.p256dh,
+        auth: keys.auth,
+      },
+    })
+  );
 
   return NextResponse.json({ ok: true });
 }

@@ -13,6 +13,7 @@
  */
 import { createHash, randomBytes } from 'crypto';
 import { prisma } from '@/lib/prisma';
+import { unsafeUnscoped } from './tenant-guard.ts';
 
 export function newPortalTokenValue(): string {
   return randomBytes(32).toString('hex');
@@ -106,7 +107,7 @@ export async function revokeCustomerPortalToken(
   });
   if (!rec || rec.revokedAt) return false;
   await prisma.customerPortalToken.update({
-    where: { id: rec.id },
+    where: { id: rec.id, businessId },
     data: { revokedAt: new Date() },
   });
   return true;
@@ -121,17 +122,23 @@ export async function resolveCustomerPortalToken(
   token: string
 ): Promise<PortalTokenRecord | null> {
   if (!token || token.length > 128) return null;
-  const rec = await prisma.customerPortalToken.findUnique({
-    where: { tokenHash: hashPortalToken(token) },
-    select: {
-      id: true,
-      customerId: true,
-      businessId: true,
-      revokedAt: true,
-      expiresAt: true,
-      createdAt: true,
-    },
-  });
+  // Public entry point: the 256-bit token hash IS the authorization. The
+  // tenant and customer are learned from the resolved row, so no scope
+  // can exist before this lookup; callers must check active/usability
+  // (revokedAt/expiresAt) before using the result.
+  const rec = await unsafeUnscoped('portal:resolveCustomerPortalToken', () =>
+    prisma.customerPortalToken.findUnique({
+      where: { tokenHash: hashPortalToken(token) },
+      select: {
+        id: true,
+        customerId: true,
+        businessId: true,
+        revokedAt: true,
+        expiresAt: true,
+        createdAt: true,
+      },
+    })
+  );
   if (!rec || !isPortalTokenActive(rec)) return null;
   return rec;
 }

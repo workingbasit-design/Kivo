@@ -1,5 +1,6 @@
 import { randomBytes } from 'crypto';
 import { prisma } from '@/lib/prisma';
+import { unsafeUnscoped } from './tenant-guard.ts';
 
 export type ShareType = 'QUOTE' | 'INVOICE';
 
@@ -124,7 +125,7 @@ export async function setShareTokenExpiry(
   });
   if (!rec) return null;
   return prisma.shareToken.update({
-    where: { id: tokenId },
+    where: { id: tokenId, businessId },
     data: { expiresAt },
     select: { id: true, token: true, expiresAt: true, createdAt: true },
   });
@@ -137,17 +138,23 @@ export async function setShareTokenExpiry(
  */
 export async function resolveShareToken(token: string, type: ShareType) {
   if (!token || token.length > 128) return { ok: false as const };
-  const rec = await prisma.shareToken.findUnique({
-    where: { token, type },
-    select: {
-      id: true,
-      businessId: true,
-      invoiceId: true,
-      quoteId: true,
-      revokedAt: true,
-      expiresAt: true,
-    },
-  });
+  // Public entry point: the 256-bit token IS the authorization. The
+  // business is learned from the resolved row, so no tenant scope can
+  // exist before this lookup; the caller must verify active/usability
+  // (revokedAt/expiresAt) before using the result.
+  const rec = await unsafeUnscoped('share:resolveShareToken', () =>
+    prisma.shareToken.findUnique({
+      where: { token, type },
+      select: {
+        id: true,
+        businessId: true,
+        invoiceId: true,
+        quoteId: true,
+        revokedAt: true,
+        expiresAt: true,
+      },
+    })
+  );
   if (!rec || !isTokenActive(rec)) return { ok: false as const };
   return { ok: true as const, rec };
 }

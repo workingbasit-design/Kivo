@@ -21,6 +21,7 @@
  */
 import { createHash, randomBytes } from 'crypto';
 import { prisma } from '@/lib/prisma';
+import { unsafeUnscoped } from './tenant-guard.ts';
 
 export type SignFieldType = 'signature' | 'date' | 'initials';
 export type SignField = { type: SignFieldType; x: number; y: number; page: number };
@@ -245,41 +246,46 @@ export async function resolveSignatureRequest(
   token: string
 ): Promise<ResolvedSignatureRequest | null> {
   if (!token || token.length > 128) return null;
-  const rec = await prisma.signatureRequest.findUnique({
-    where: { tokenHash: hashSignToken(token) },
-    select: {
-      id: true,
-      status: true,
-      fieldsJson: true,
-      signerName: true,
-      signerContact: true,
-      docHash: true,
-      signatureData: true,
-      auditJson: true,
-      expiresAt: true,
-      revokedAt: true,
-      signedAt: true,
-      quoteId: true,
-      businessId: true,
-      quote: {
-        select: {
-          id: true,
-          number: true,
-          title: true,
-          total: true,
-          customerId: true,
-          businessId: true,
-          // Same add-on snapshot the hash was computed from at send time.
-          addons: {
-            select: { title: true, price: true, selected: true },
-            orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+  // Public signing entry point: the 256-bit token (hashed) IS the
+  // authorization — the business is learned from the resolved request, so
+  // no tenant scope can exist before this lookup.
+  const rec = await unsafeUnscoped('esign:resolveSignatureRequest', () =>
+    prisma.signatureRequest.findUnique({
+      where: { tokenHash: hashSignToken(token) },
+      select: {
+        id: true,
+        status: true,
+        fieldsJson: true,
+        signerName: true,
+        signerContact: true,
+        docHash: true,
+        signatureData: true,
+        auditJson: true,
+        expiresAt: true,
+        revokedAt: true,
+        signedAt: true,
+        quoteId: true,
+        businessId: true,
+        quote: {
+          select: {
+            id: true,
+            number: true,
+            title: true,
+            total: true,
+            customerId: true,
+            businessId: true,
+            // Same add-on snapshot the hash was computed from at send time.
+            addons: {
+              select: { title: true, price: true, selected: true },
+              orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+            },
+            customer: { select: { id: true, name: true, phone: true } },
           },
-          customer: { select: { id: true, name: true, phone: true } },
         },
+        business: { select: { id: true, name: true } },
       },
-      business: { select: { id: true, name: true } },
-    },
-  });
+    })
+  );
   if (!rec || !isSignRequestActive(rec)) return null;
   return rec;
 }
@@ -299,7 +305,7 @@ export async function revokeSignatureRequest(
   });
   if (!rec || rec.revokedAt || rec.status === 'revoked') return false;
   await prisma.signatureRequest.update({
-    where: { id: rec.id },
+    where: { id: rec.id, businessId },
     data: {
       revokedAt: new Date(),
       status: 'revoked',
@@ -316,18 +322,19 @@ export async function revokeSignatureRequest(
  * late "viewed" after "signed" stays logged without reopening the request.
  */
 export async function appendAuditEvent(
+  businessId: string,
   requestId: string,
   event: AuditEvent,
   ip: string
 ): Promise<void> {
   const rec = await prisma.signatureRequest.findUnique({
-    where: { id: requestId },
+    where: { id: requestId, businessId },
     select: { id: true, status: true, auditJson: true },
   });
   if (!rec) return;
   const nextStatus = nextSignStatus(rec.status, event);
   await prisma.signatureRequest.update({
-    where: { id: rec.id },
+    where: { id: rec.id, businessId },
     data: {
       auditJson: appendAudit(rec.auditJson, event, ip),
       ...(nextStatus !== rec.status ? { status: nextStatus } : {}),
@@ -348,13 +355,13 @@ export function nextSignStatus(current: string, event: AuditEvent): string {
  * request is still "sent" — repeat views (or views after signing) are
  * no-ops so the audit trail keeps exactly one first-view.
  */
-export async function recordView(requestId: string, ip: string): Promise<boolean> {
+export async function recordView(businessId: string, requestId: string, ip: string): Promise<boolean> {
   const rec = await prisma.signatureRequest.findUnique({
-    where: { id: requestId },
+    where: { id: requestId, businessId },
     select: { id: true, status: true },
   });
   if (!rec || rec.status !== 'sent') return false;
-  await appendAuditEvent(requestId, 'viewed', ip);
+  await appendAuditEvent(businessId, requestId, 'viewed', ip);
   return true;
 }
 

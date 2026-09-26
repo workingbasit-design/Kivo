@@ -5,6 +5,7 @@ import { getSession } from '@/lib/auth';
 import { rateLimit } from '@/lib/rate-limit';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 import { newShareTokenValue } from '@/lib/share';
+import { unsafeUnscoped } from '@/lib/tenant-guard';
 
 /**
  * POST /api/tracking/share — create (or refresh) the customer-facing live
@@ -69,20 +70,24 @@ export async function POST(req: Request) {
   }
 
   const expiresAt = new Date(Date.now() + SHARE_TTL_HOURS * 60 * 60 * 1000);
-  const share = await prisma.trackingShare.upsert({
-    where: { jobId: job.id },
-    create: {
-      businessId,
-      jobId: job.id,
-      token: newShareTokenValue(),
-      expiresAt,
-    },
-    update: {
-      token: newShareTokenValue(),
-      expiresAt,
-    },
-    select: { token: true, expiresAt: true },
-  });
+  // job.id was business-verified 15 lines above; jobId is this table's
+  // unique key, so the upsert can only ever touch this tenant's row.
+  const share = await unsafeUnscoped('tracking:share:upsert', () =>
+    prisma.trackingShare.upsert({
+      where: { jobId: job.id },
+      create: {
+        businessId,
+        jobId: job.id,
+        token: newShareTokenValue(),
+        expiresAt,
+      },
+      update: {
+        token: newShareTokenValue(),
+        expiresAt,
+      },
+      select: { token: true, expiresAt: true },
+    })
+  );
 
   return NextResponse.json({
     ok: true,

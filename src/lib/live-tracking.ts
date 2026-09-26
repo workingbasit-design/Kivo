@@ -29,11 +29,12 @@ export interface LiveSnapshot {
  * Returns null when no ping has been shared yet.
  */
 export async function getLiveSnapshot(
+  businessId: string,
   jobId: string,
   jobAddress: string | null | undefined
 ): Promise<LiveSnapshot | null> {
   const latest = await prisma.technicianLocation.findFirst({
-    where: { jobId },
+    where: { jobId, businessId },
     orderBy: { recordedAt: 'desc' },
     select: { lat: true, lng: true, recordedAt: true },
   });

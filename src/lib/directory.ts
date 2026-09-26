@@ -1,5 +1,6 @@
 import { headers } from 'next/headers';
 import { validatePhone } from './phone';
+import { clientIpFromHeaders } from './client-ip';
 
 /**
  * Shared helpers for the public EveryJob Directory (customer-discovery layer).
@@ -13,12 +14,7 @@ import { validatePhone } from './phone';
 
 /** Best-effort client IP for public rate limiting. */
 export async function publicClientIp(): Promise<string> {
-  const h = await headers();
-  return (
-    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    h.get('x-real-ip') ||
-    'unknown'
-  );
+  return clientIpFromHeaders(await headers());
 }
 
 /**

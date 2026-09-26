@@ -3,15 +3,14 @@ import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { createCheckoutSession, toCents } from '@/lib/stripe';
+import { clientIpFromHeaders } from '@/lib/client-ip';
+import { unsafeUnscoped } from '@/lib/tenant-guard';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
 async function rateLimited(): Promise<boolean> {
   const h = await headers();
-  const ip =
-    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    h.get('x-real-ip') ||
-    'unknown';
+  const ip = clientIpFromHeaders(h);
   return !rateLimit(`pay:deposit:${ip}`, ACTION_LIMIT).ok;
 }
 
@@ -39,23 +38,29 @@ export async function POST(req: Request) {
   }
   if (!token) return NextResponse.json({ error: 'Bad request.' }, { status: 400 });
 
-  const share = await prisma.shareToken.findFirst({
-    where: {
-      token,
-      type: 'QUOTE',
-      revokedAt: null,
-      OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-    },
-    include: {
-      quote: {
-        include: {
-          business: { include: { stripeConnection: true } },
-          customer: { select: { email: true } },
-          deposits: { where: { status: 'COMPLETED' }, select: { amount: true } },
+  // Public payment entry point: the 256-bit token IS the authorization.
+  // The business is learned from the resolved row, so no tenant scope can
+  // exist before this lookup; the token row is usability-checked
+  // (revokedAt/expiresAt) before anything renders.
+  const share = await unsafeUnscoped('pay:quote-deposit:resolveShare', () =>
+    prisma.shareToken.findFirst({
+      where: {
+        token,
+        type: 'QUOTE',
+        revokedAt: null,
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+      },
+      include: {
+        quote: {
+          include: {
+            business: { include: { stripeConnection: true } },
+            customer: { select: { email: true } },
+            deposits: { where: { status: 'COMPLETED' }, select: { amount: true } },
+          },
         },
       },
-    },
-  });
+    })
+  );
   const quote = share?.quote;
   if (!quote) {
     return NextResponse.json({ error: 'This payment link is invalid or expired.' }, { status: 404 });
@@ -106,13 +111,13 @@ export async function POST(req: Request) {
   });
   if (!created.ok || !created.url) {
     await prisma.quoteDeposit.update({
-      where: { id: deposit.id },
+      where: { id: deposit.id, businessId: quote.businessId },
       data: { status: 'FAILED' },
     });
     return NextResponse.json({ error: created.error ?? 'Could not start checkout.' }, { status: 502 });
   }
   await prisma.quoteDeposit.update({
-    where: { id: deposit.id },
+    where: { id: deposit.id, businessId: quote.businessId },
     data: { stripeCheckoutSessionId: created.sessionId },
   });
   return NextResponse.json({ url: created.url, testMode: !conn.livemode });

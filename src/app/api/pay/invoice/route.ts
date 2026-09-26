@@ -3,15 +3,14 @@ import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { createCheckoutSession, toCents } from '@/lib/stripe';
+import { clientIpFromHeaders } from '@/lib/client-ip';
+import { unsafeUnscoped } from '@/lib/tenant-guard';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
 async function rateLimited(): Promise<boolean> {
   const h = await headers();
-  const ip =
-    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    h.get('x-real-ip') ||
-    'unknown';
+  const ip = clientIpFromHeaders(h);
   return !rateLimit(`pay:invoice:${ip}`, ACTION_LIMIT).ok;
 }
 
@@ -39,23 +38,29 @@ export async function POST(req: Request) {
   }
   if (!token) return NextResponse.json({ error: 'Bad request.' }, { status: 400 });
 
-  const share = await prisma.shareToken.findFirst({
-    where: {
-      token,
-      type: 'INVOICE',
-      revokedAt: null,
-      OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-    },
-    include: {
-      invoice: {
-        include: {
-          business: { include: { stripeConnection: true } },
-          customer: { select: { email: true } },
-          payments: { where: { status: 'COMPLETED' }, select: { amount: true } },
+  // Public payment entry point: the 256-bit token IS the authorization.
+  // The business is learned from the resolved row, so no tenant scope can
+  // exist before this lookup; the token row is usability-checked
+  // (revokedAt/expiresAt) before anything renders.
+  const share = await unsafeUnscoped('pay:invoice:resolveShare', () =>
+    prisma.shareToken.findFirst({
+      where: {
+        token,
+        type: 'INVOICE',
+        revokedAt: null,
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+      },
+      include: {
+        invoice: {
+          include: {
+            business: { include: { stripeConnection: true } },
+            customer: { select: { email: true } },
+            payments: { where: { status: 'COMPLETED' }, select: { amount: true } },
+          },
         },
       },
-    },
-  });
+    })
+  );
   const invoice = share?.invoice;
   if (!invoice) {
     return NextResponse.json({ error: 'This payment link is invalid or expired.' }, { status: 404 });

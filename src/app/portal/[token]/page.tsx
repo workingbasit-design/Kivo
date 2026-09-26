@@ -10,6 +10,7 @@ import { formatDateShort, jobDisplayStatus } from '@/lib/utils';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import PortalNotice from '@/components/PortalNotice';
+import { clientIpFromHeaders } from '@/lib/client-ip';
 
 /**
  * Public customer portal. No authentication — the magic-link token in the
@@ -21,12 +22,7 @@ import PortalNotice from '@/components/PortalNotice';
 const PORTAL_LIMIT = { limit: 30, windowMs: 60 * 1000 };
 
 async function clientIp(): Promise<string> {
-  const h = await headers();
-  return (
-    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    h.get('x-real-ip') ||
-    'unknown'
-  );
+  return clientIpFromHeaders(await headers());
 }
 
 export default async function CustomerPortalPage({

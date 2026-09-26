@@ -77,7 +77,7 @@ export async function POST(req: Request) {
       await handleCheckoutExpired(session);
     }
     await prisma.stripeEvent.update({
-      where: { stripeEventId: event.id },
+      where: { stripeEventId: event.id, businessId },
       data: { processedAt: new Date() },
     });
   } catch (err) {
@@ -172,7 +172,7 @@ async function handleCheckoutCompleted(
     );
     const status = deriveInvoiceStatus(invoice.total, paid);
     await prisma.invoice.update({
-      where: { id: invoice.id },
+      where: { id: invoice.id, businessId: invoice.businessId },
       data: {
         status,
         // paidAt marks FULL payment honestly: set only when the invoice just
@@ -244,7 +244,7 @@ async function handleCheckoutCompleted(
   if (!depositId) return;
   if (session.id) {
     const already = await prisma.quoteDeposit.findFirst({
-      where: { stripeCheckoutSessionId: session.id, status: 'COMPLETED' },
+      where: { stripeCheckoutSessionId: session.id, businessId, status: 'COMPLETED' },
       select: { id: true },
     });
     if (already) return;
@@ -256,7 +256,7 @@ async function handleCheckoutCompleted(
   if (!deposit) return;
   try {
     await prisma.quoteDeposit.update({
-      where: { id: deposit.id },
+      where: { id: deposit.id, businessId },
       data: {
         status: 'COMPLETED',
         stripePaymentIntentId: info.paymentIntentId ?? undefined,
@@ -291,7 +291,10 @@ async function handleCheckoutExpired(session: {
   const metadata = session.metadata ?? {};
   if (metadata.kind !== 'quote_deposit' || !metadata.quote_deposit_id) return;
   await prisma.quoteDeposit.updateMany({
-    where: { id: metadata.quote_deposit_id, status: 'PENDING' },
+    // business_id was minted by us into the Stripe metadata at checkout
+    // creation; the webhook signature is verified at route entry, so a
+    // forged metadata value cannot reach this handler.
+    where: { id: metadata.quote_deposit_id, businessId: metadata.business_id, status: 'PENDING' },
     data: { status: 'FAILED' },
   });
 }

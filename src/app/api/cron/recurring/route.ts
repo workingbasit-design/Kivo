@@ -4,10 +4,11 @@ import { generateDueJobs } from '@/lib/recurring';
 import { defaultTimezoneForRegion, toISODateInTimezone } from '@/lib/utils';
 
 /**
- * Cron entry point for recurring-job auto-generation. Configure in the
- * Vercel dashboard (Cron Jobs) as a daily GET to:
- *
- *   /api/cron/recurring?secret=<CRON_SECRET>
+ * Cron entry point for recurring-job auto-generation. Scheduled in
+ * vercel.json as a daily GET to /api/cron/recurring. Vercel automatically
+ * sends `Authorization: Bearer $CRON_SECRET` when the CRON_SECRET env var
+ * is set, so no secret appears in vercel.json or the repo; the `?secret=`
+ * query parameter also works for manual runs.
  *
  * The secret is required — without it the route refuses to run.
  * Generation is idempotent (per-plan transaction + @@unique backstop),

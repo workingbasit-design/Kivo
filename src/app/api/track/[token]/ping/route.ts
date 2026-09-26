@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { rateLimit } from '@/lib/rate-limit';
 import { headers } from 'next/headers';
 import { getLiveSnapshot } from '@/lib/live-tracking';
+import { clientIpFromHeaders } from '@/lib/client-ip';
+import { unsafeUnscoped } from '@/lib/tenant-guard';
 
 /**
  * GET /api/track/[token]/ping — public live-tracking poll endpoint.
@@ -17,11 +19,7 @@ const PING_LIMIT = { limit: 30, windowMs: 60 * 1000 };
 
 async function clientIp(): Promise<string> {
   const h = await headers();
-  return (
-    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    h.get('x-real-ip') ||
-    'unknown'
-  );
+  return clientIpFromHeaders(h);
 }
 
 export async function GET(
@@ -40,13 +38,19 @@ export async function GET(
 
   let share;
   try {
-    share = await prisma.trackingShare.findFirst({
-      where: { token },
-      select: {
-        expiresAt: true,
-        job: { select: { id: true, address: true } },
-      },
-    });
+    // Public polling endpoint: the 256-bit token IS the authorization. The
+    // business is learned from the resolved row, so no tenant scope can
+    // exist before this lookup.
+    share = await unsafeUnscoped('track:ping:resolveShare', () =>
+      prisma.trackingShare.findFirst({
+        where: { token },
+        select: {
+          businessId: true,
+          expiresAt: true,
+          job: { select: { id: true, address: true } },
+        },
+      })
+    );
   } catch {
     // Our side failed (e.g. database unreachable) — tell the client to keep
     // polling rather than 500ing. Never report a live link as expired.
@@ -59,7 +63,7 @@ export async function GET(
 
   let snap = null;
   try {
-    snap = await getLiveSnapshot(share.job.id, share.job.address);
+    snap = await getLiveSnapshot(share.businessId, share.job.id, share.job.address);
   } catch {
     snap = null;
   }

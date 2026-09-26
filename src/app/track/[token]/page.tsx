@@ -5,6 +5,8 @@ import { getLocale } from '@/lib/i18n/server';
 import PortalNotice from '@/components/PortalNotice';
 import LiveTrackingClient from '@/components/LiveTrackingClient';
 import { getLiveSnapshot, type LiveSnapshot } from '@/lib/live-tracking';
+import { clientIpFromHeaders } from '@/lib/client-ip';
+import { unsafeUnscoped } from '@/lib/tenant-guard';
 
 /**
  * Public live-tracking page: /track/[token].
@@ -19,12 +21,7 @@ import { getLiveSnapshot, type LiveSnapshot } from '@/lib/live-tracking';
 const PORTAL_LIMIT = { limit: 30, windowMs: 60 * 1000 };
 
 async function clientIp(): Promise<string> {
-  const h = await headers();
-  return (
-    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    h.get('x-real-ip') ||
-    'unknown'
-  );
+  return clientIpFromHeaders(await headers());
 }
 
 export default async function TrackPage({
@@ -40,24 +37,30 @@ export default async function TrackPage({
 
   let share;
   try {
-    share = await prisma.trackingShare.findFirst({
-      where: { token },
-      select: {
-        expiresAt: true,
-        job: {
-          select: {
-            id: true,
-            title: true,
-            status: true,
-            address: true,
-            date: true,
-            technician: true,
-            customer: { select: { name: true } },
+    // Public tracking entry point: the 256-bit token IS the authorization.
+    // The business is learned from the resolved row, so no tenant scope
+    // can exist before this lookup.
+    share = await unsafeUnscoped('track:page:resolveShare', () =>
+      prisma.trackingShare.findFirst({
+        where: { token },
+        select: {
+          businessId: true,
+          expiresAt: true,
+          job: {
+            select: {
+              id: true,
+              title: true,
+              status: true,
+              address: true,
+              date: true,
+              technician: true,
+              customer: { select: { name: true } },
           },
         },
         business: { select: { name: true } },
       },
-    });
+      })
+    );
   } catch {
     // Our side failed (e.g. database unreachable) — never label this
     // "expired", or the customer will think their link is dead.
@@ -89,7 +92,7 @@ export default async function TrackPage({
 
   let initial: LiveSnapshot | null = null;
   try {
-    initial = await getLiveSnapshot(share.job.id, share.job.address);
+    initial = await getLiveSnapshot(share.businessId, share.job.id, share.job.address);
   } catch {
     // Snapshot is best-effort; the client keeps polling and will pick up
     // the location as soon as our side recovers.

@@ -5,6 +5,7 @@ import {
   submitSignature,
 } from '@/lib/esign';
 import { rateLimit } from '@/lib/rate-limit';
+import { clientIpFromHeaders } from '@/lib/client-ip';
 
 /**
  * POST /api/sign/[token] — submit a client signature for a signing link.
@@ -16,11 +17,7 @@ const SIGN_LIMIT = { limit: 30, windowMs: 60 * 1000 };
 
 async function clientIp(): Promise<string> {
   const h = await headers();
-  return (
-    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    h.get('x-real-ip') ||
-    'unknown'
-  );
+  return clientIpFromHeaders(h);
 }
 
 export async function POST(
