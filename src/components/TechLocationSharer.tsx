@@ -375,6 +375,16 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
                   <button type="button" onClick={copyLink} className={secondaryBtnClass}>
                     {tr('gps.copyLink')}
                   </button>
+                  <a
+                    href={`https://wa.me/?text=${encodeURIComponent(
+                      `${tr('gps.whatsappMessage')}: ${linkUrl}`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={secondaryBtnClass + ' text-center'}
+                  >
+                    {tr('gps.shareWhatsApp')}
+                  </a>
                   <button
                     type="button"
                     onClick={revokeLink}
