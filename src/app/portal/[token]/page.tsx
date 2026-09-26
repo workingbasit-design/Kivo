@@ -6,7 +6,7 @@ import { rateLimit } from '@/lib/rate-limit';
 import { resolveCustomerPortalToken } from '@/lib/portal';
 import { Card, StatusBadge } from '@/components/ui';
 import { formatMoney } from '@/lib/money';
-import { formatDateShort } from '@/lib/utils';
+import { formatDateShort, jobDisplayStatus } from '@/lib/utils';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import PortalNotice from '@/components/PortalNotice';
@@ -152,7 +152,7 @@ export default async function CustomerPortalPage({
                       <p className="text-xs text-zinc-500">
                         {formatDateShort(j.date, dateLocale)}{j.time ? ` · ${j.time}` : ''}
                       </p>
-                      <StatusBadge status={j.status} />
+                      <StatusBadge status={jobDisplayStatus(j.status, j.date)} />
                     </div>
                   </li>
                 ))}

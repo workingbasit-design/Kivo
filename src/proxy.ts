@@ -36,11 +36,14 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (sessionCookie && (pathname === '/login' || pathname === '/register')) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/dashboard';
-    return NextResponse.redirect(url);
-  }
+  // NOTE (2026-09-26): there used to be a redirect here sending anyone
+  // WITH a kivo_session cookie from /login or /register to /dashboard.
+  // It keyed off the mere PRESENCE of the cookie without validating the
+  // session, so a stale/invalid cookie caused an unbreakable loop:
+  // /login -> /dashboard (proxy) -> /login ((app) layout, session invalid).
+  // The user could never reach the login form to sign in again. Removed.
+  // Authenticated users are bounced to /dashboard by the (auth) layout
+  // below, which only redirects on a fully validated session.
 
   return NextResponse.next();
 }

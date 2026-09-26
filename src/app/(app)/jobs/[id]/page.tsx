@@ -8,7 +8,7 @@ import {
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card, StatusBadge, SectionTitle } from '@/components/ui';
-import { formatDateLabel, toISODateLocal, hasJobTime, localeDateTag, localeMoneyTag } from '@/lib/utils';
+import { formatDateLabel, toISODateLocal, hasJobTime, jobDisplayStatus, localeDateTag, localeMoneyTag } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import { entryMinutes } from '@/lib/timesheets';
 import { sumLaborMinutes } from '@/lib/costing';
@@ -171,7 +171,7 @@ export default async function JobDetailPage({
       />
 
       <div className="flex items-center gap-3 flex-wrap">
-        <StatusBadge status={job.status} />
+        <StatusBadge status={jobDisplayStatus(job.status, job.date)} />
         <span className="text-xs text-zinc-400">
           {T('jobCreatedOn').replace('{date}', formatDateLabel(job.createdAt, dateLocale))}
         </span>

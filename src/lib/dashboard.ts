@@ -10,6 +10,7 @@ export interface TodayJob {
   title: string;
   time: string | null;
   status: string;
+  date: Date;
   price: number;
   customerName: string;
 }
@@ -168,6 +169,7 @@ export async function getDashboardStats(businessId: string): Promise<DashboardSt
     title: j.title,
     time: j.time,
     status: j.status,
+    date: j.date,
     price: j.price ?? 0,
     customerName: j.customer.name,
   });

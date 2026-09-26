@@ -4,7 +4,7 @@ import { Plus, Briefcase, Search } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card, StatusBadge, EmptyState, limeBtnClass, inputClass } from '@/components/ui';
-import { formatDateShort, hasJobTime, cn } from '@/lib/utils';
+import { formatDateShort, hasJobTime, cn, jobDisplayStatus } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import { JOB_STATUSES } from '@/lib/validations';
 import { getLocale } from '@/lib/i18n/server';
@@ -172,7 +172,7 @@ export default async function JobsPage({
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="font-semibold text-zinc-900 text-sm">{job.title}</p>
-                  <StatusBadge status={job.status} />
+                  <StatusBadge status={jobDisplayStatus(job.status, job.date)} />
                 </div>
                 <p className="text-xs text-zinc-500 mt-1 truncate">
                   {job.customer.name}

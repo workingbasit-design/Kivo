@@ -126,6 +126,10 @@ export function dayRange(dateStr: string): { gte: Date; lte: Date } {
 /** Status -> badge color classes */
 export function statusClasses(status: string): string {
   switch (status) {
+    case 'OVERDUE':
+      // Computed display state (see jobDisplayStatus): past-due and still
+      // open. Loud red so it can't be missed on a phone screen.
+      return 'bg-red-100 text-red-800 border-red-300';
     case "IN PROGRESS":
       return "bg-amber-50 text-amber-700 border-amber-200";
     case "SCHEDULED":
@@ -150,4 +154,50 @@ export function statusClasses(status: string): string {
     default:
       return "bg-zinc-100 text-zinc-700 border-zinc-200";
   }
+}
+
+/** Job statuses that count as "still open" for overdue computation. */
+export const OPEN_JOB_STATUSES = ['NEW', 'SCHEDULED', 'IN PROGRESS'] as const;
+
+/**
+ * True when a job's date has passed and it still isn't done/cancelled.
+ * Compares calendar days: a job due today is not overdue; a job due
+ * yesterday or earlier with an open status is.
+ */
+export function isJobOverdue(
+  status: string,
+  date: Date | string | null | undefined,
+  now: Date = new Date(),
+): boolean {
+  if (!date) return false;
+  if (!(OPEN_JOB_STATUSES as readonly string[]).includes(status)) return false;
+  let d: Date;
+  if (date instanceof Date) {
+    d = date;
+  } else if (/^\d{4}-\d{2}-\d{2}/.test(date)) {
+    // "YYYY-MM-DD" (or ISO with time): interpret the calendar day in local
+    // time, not UTC midnight, so "today" isn't off by one in the evening.
+    const [y, m, dd] = date.slice(0, 10).split('-').map(Number);
+    d = new Date(y, m - 1, dd);
+  } else {
+    d = new Date(date);
+  }
+  if (Number.isNaN(d.getTime())) return false;
+  const dayStart = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  return dayStart(d) < dayStart(now);
+}
+
+/**
+ * Display label for a job status badge: 'OVERDUE' when the date has passed
+ * and the job is still open, otherwise the stored status. Display-only —
+ * the stored status is never rewritten, so the badge auto-heals when the
+ * date moves or the job is completed/cancelled. (2026-09-26: users reported
+ * that past-due jobs never changed status.)
+ */
+export function jobDisplayStatus(
+  status: string,
+  date: Date | string | null | undefined,
+  now?: Date,
+): string {
+  return isJobOverdue(status, date, now) ? 'OVERDUE' : status;
 }

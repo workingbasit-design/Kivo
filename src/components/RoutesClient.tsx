@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card, StatusBadge, primaryBtnClass, secondaryBtnClass, inputClass } from '@/components/ui';
-import { hasJobTime, cn } from '@/lib/utils';
+import { hasJobTime, cn, jobDisplayStatus } from '@/lib/utils';
 import type { RouteStop } from '@/lib/routes';
 import { googleMapsRouteUrl } from '@/lib/routes';
 import { optimizeDayRoute } from '@/app/actions/routes';
@@ -369,7 +369,7 @@ export default function RoutesClient({
                 {i > 0 && legLine(stop)}
               </div>
               <div className="hidden sm:block">
-                <StatusBadge status={stop.status} />
+                <StatusBadge status={jobDisplayStatus(stop.status, dateStr)} />
               </div>
               <div className="flex items-center gap-0.5 shrink-0">
                 <button

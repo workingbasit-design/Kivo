@@ -4,6 +4,7 @@ import { rateLimit } from '@/lib/rate-limit';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
 import { checkArrival } from '@/lib/geofence';
+import { jobDisplayStatus } from '@/lib/utils';
 import { Card, StatusBadge } from '@/components/ui';
 import DispatcherMap from '@/components/DispatcherMap';
 import PortalNotice from '@/components/PortalNotice';
@@ -145,7 +146,7 @@ export default async function TrackPage({
                 {tr('gps.customerName')}: {share.job.customer.name}
               </p>
             </div>
-            <StatusBadge status={share.job.status} />
+            <StatusBadge status={jobDisplayStatus(share.job.status, share.job.date)} />
           </div>
 
           {latest ? (

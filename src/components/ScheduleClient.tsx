@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { updateJobStatus, deleteJob, seedSampleJobs, updateJobSchedule } from '@/app/actions/jobs';
 import { validNextStatuses } from '@/lib/job-status';
 import { formatMoney } from '@/lib/money';
-import { toISODateLocal, formatDateLabel, hasJobTime, localeDateTag, cn } from '@/lib/utils';
+import { toISODateLocal, formatDateLabel, hasJobTime, jobDisplayStatus, localeDateTag, cn } from '@/lib/utils';
 import { t, type Locale } from '@/lib/i18n';
 import {
   Card, StatusBadge, EmptyState, Field,
@@ -390,7 +390,7 @@ export default function ScheduleClient({
                   {/* Tap target → job detail */}
                   <Link href={`/jobs/${job.id}`} className="flex-1 min-w-0 space-y-2.5 py-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <StatusBadge status={job.status} />
+                      <StatusBadge status={jobDisplayStatus(job.status, job.date)} />
                       <span className="inline-flex items-center gap-1.5 text-xs font-bold text-ink bg-smoke px-2.5 py-1 rounded-md">
                         <Clock size={12} />
                         {hasJobTime(job.time) ? job.time : T('schedTimeTbd')}

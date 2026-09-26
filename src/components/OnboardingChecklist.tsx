@@ -161,7 +161,7 @@ export default function OnboardingChecklist({
                     {t(locale, stepKey(s.id, 'title'))}
                   </div>
                   {!isDone && (
-                    <div className="truncate text-xs text-zinc-500">
+                    <div className="line-clamp-2 text-xs text-zinc-500">
                       {t(locale, stepKey(s.id, 'desc'))}
                     </div>
                   )}

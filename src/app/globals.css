@@ -43,7 +43,12 @@ body {
   }
 
   html {
-    scroll-behavior: smooth;
+    /* 2026-09-26: was `smooth` — on client-side navigation the browser
+       animated the scroll-reset, so every new page visibly glided up from
+       the previous scroll position ("opens from the bottom"). App page
+       changes must snap to top instantly; components that want animated
+       in-page scrolling set it on their own container. */
+    scroll-behavior: auto;
     -webkit-tap-highlight-color: rgba(22, 22, 22, 0.08);
   }
 

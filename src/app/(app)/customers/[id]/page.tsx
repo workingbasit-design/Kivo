@@ -4,7 +4,7 @@ import { notFound, redirect } from 'next/navigation';
 import { ArrowLeft, Phone, Mail, MapPin, StickyNote, Briefcase, FileText, Star } from 'lucide-react';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { formatDateShort } from '@/lib/utils';
+import { formatDateShort, jobDisplayStatus } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import { PageHeader, Card, StatusBadge, Badge } from '@/components/ui';
 import { secondaryBtnClass } from '@/components/ui';
@@ -324,7 +324,7 @@ export default async function CustomerDetailPage({
                 </div>
                 <div className="flex flex-col items-end gap-1 shrink-0">
                   <span className="text-sm font-bold text-zinc-900">{formatMoney(j.price, currency)}</span>
-                  <StatusBadge status={j.status} />
+                  <StatusBadge status={jobDisplayStatus(j.status, j.date)} />
                 </div>
               </li>
             ))}

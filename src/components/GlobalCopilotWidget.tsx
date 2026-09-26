@@ -480,7 +480,7 @@ export default function GlobalCopilotWidget({
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-6 right-6 md:bottom-10 md:right-10 w-14 h-14 bg-lime rounded-full flex items-center justify-center shadow-2xl shadow-ink/20 z-50 hover:brightness-105 transition-all border border-ink/10"
+            className="fixed bottom-24 right-4 md:bottom-10 md:right-10 w-14 h-14 bg-lime rounded-full flex items-center justify-center shadow-2xl shadow-ink/20 z-50 hover:brightness-105 transition-all border border-ink/10"
             aria-label={t(lang, 'copilot.openLabel')}
           >
             <Bot className="w-6 h-6 text-ink" />

@@ -16,7 +16,7 @@ import { prisma } from "@/lib/prisma";
 import { getDashboardStats } from "@/lib/dashboard";
 import { getGrowthData } from "@/lib/growth";
 import { generateDueJobs } from "@/lib/recurring";
-import { formatDateLabel, hasJobTime, localeDateTag, localeMoneyTag } from "@/lib/utils";
+import { formatDateLabel, hasJobTime, jobDisplayStatus, localeDateTag, localeMoneyTag } from "@/lib/utils";
 import { formatMoney } from "@/lib/money";
 import { getLocale } from "@/lib/i18n/server";
 import { t } from "@/lib/i18n";
@@ -225,7 +225,7 @@ export default async function DashboardPage() {
                       <p className="text-sm font-semibold text-zinc-900 truncate">{job.title}</p>
                       <p className="text-xs text-zinc-500 truncate">{job.customerName}</p>
                     </div>
-                    <StatusBadge status={job.status} />
+                    <StatusBadge status={jobDisplayStatus(job.status, job.date)} />
                   </Link>
                 </li>
               ))}
@@ -295,7 +295,7 @@ export default async function DashboardPage() {
                         {hasJobTime(job.time) ? ` · ${job.time}` : ""}
                       </p>
                     </div>
-                    <StatusBadge status={job.status} />
+                    <StatusBadge status={jobDisplayStatus(job.status, job.date)} />
                   </Link>
                 </li>
               ))}
