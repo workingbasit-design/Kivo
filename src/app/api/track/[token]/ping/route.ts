@@ -38,19 +38,31 @@ export async function GET(
     );
   }
 
-  const share = await prisma.trackingShare.findFirst({
-    where: { token },
-    select: {
-      expiresAt: true,
-      job: { select: { id: true, address: true } },
-    },
-  });
+  let share;
+  try {
+    share = await prisma.trackingShare.findFirst({
+      where: { token },
+      select: {
+        expiresAt: true,
+        job: { select: { id: true, address: true } },
+      },
+    });
+  } catch {
+    // Our side failed (e.g. database unreachable) — tell the client to keep
+    // polling rather than 500ing. Never report a live link as expired.
+    return NextResponse.json({ error: 'unavailable' }, { status: 503 });
+  }
 
   if (!share || share.expiresAt.getTime() <= Date.now()) {
     return NextResponse.json({ error: 'expired' }, { status: 404 });
   }
 
-  const snap = await getLiveSnapshot(share.job.id, share.job.address);
+  let snap = null;
+  try {
+    snap = await getLiveSnapshot(share.job.id, share.job.address);
+  } catch {
+    snap = null;
+  }
   if (!snap) return NextResponse.json({ ok: true, latest: null });
 
   const { lat, lng, recordedAt, ...rest } = snap;

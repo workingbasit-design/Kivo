@@ -169,6 +169,9 @@ const fragment = {
         'Share links have been upgraded for better security. Please ask the business to send you a new link — the document itself is unchanged.',
       noticeRateTitle: 'Too many requests',
       noticeRateBody: 'Please wait a minute and try again.',
+      noticeUnavailableTitle: 'We’re having trouble loading this',
+      noticeUnavailableBody:
+        'Our system hiccuped while opening this page — the link itself is fine. Please wait a moment and try again.',
 
       // Public invoice portal
       invPortalFor: 'Invoice for',
@@ -494,6 +497,9 @@ const fragment = {
         'Les liens de partage ont été renforcés. Demandez à l’entreprise un nouveau lien — le document lui-même est inchangé.',
       noticeRateTitle: 'Trop de requêtes',
       noticeRateBody: 'Veuillez attendre une minute puis réessayer.',
+      noticeUnavailableTitle: 'Difficulté à charger cette page',
+      noticeUnavailableBody:
+        'Notre système a eu un souci en ouvrant cette page — le lien est correct. Veuillez patienter un instant puis réessayer.',
 
       invPortalFor: 'Facture pour',
       invPortalDated: 'Datée du',

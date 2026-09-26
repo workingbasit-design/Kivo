@@ -4,7 +4,7 @@ import { rateLimit } from '@/lib/rate-limit';
 import { getLocale } from '@/lib/i18n/server';
 import PortalNotice from '@/components/PortalNotice';
 import LiveTrackingClient from '@/components/LiveTrackingClient';
-import { getLiveSnapshot } from '@/lib/live-tracking';
+import { getLiveSnapshot, type LiveSnapshot } from '@/lib/live-tracking';
 
 /**
  * Public live-tracking page: /track/[token].
@@ -38,24 +38,35 @@ export default async function TrackPage({
   const rl = rateLimit(`portal:track:${await clientIp()}`, PORTAL_LIMIT);
   if (!rl.ok) return <PortalNotice variant="rate-limited" />;
 
-  const share = await prisma.trackingShare.findFirst({
-    where: { token },
-    select: {
-      expiresAt: true,
-      job: {
-        select: {
-          id: true,
-          title: true,
-          status: true,
-          address: true,
-          date: true,
-          technician: true,
-          customer: { select: { name: true } },
+  let share;
+  try {
+    share = await prisma.trackingShare.findFirst({
+      where: { token },
+      select: {
+        expiresAt: true,
+        job: {
+          select: {
+            id: true,
+            title: true,
+            status: true,
+            address: true,
+            date: true,
+            technician: true,
+            customer: { select: { name: true } },
+          },
         },
+        business: { select: { name: true } },
       },
-      business: { select: { name: true } },
-    },
-  });
+    });
+  } catch {
+    // Our side failed (e.g. database unreachable) — never label this
+    // "expired", or the customer will think their link is dead.
+    return (
+      <div data-track-diag="lookup-failed">
+        <PortalNotice variant="unavailable" />
+      </div>
+    );
+  }
   // Token lookup without the DB-side expiry filter (moved to JS below).
   // The data-track-diag attribute is a real, greppable marker (JSX comments
   // are stripped at compile time and never reach the browser) so we can
@@ -76,7 +87,14 @@ export default async function TrackPage({
     );
   }
 
-  const initial = await getLiveSnapshot(share.job.id, share.job.address);
+  let initial: LiveSnapshot | null = null;
+  try {
+    initial = await getLiveSnapshot(share.job.id, share.job.address);
+  } catch {
+    // Snapshot is best-effort; the client keeps polling and will pick up
+    // the location as soon as our side recovers.
+    initial = null;
+  }
   const techName = share.job.technician?.trim() || null;
 
   return (

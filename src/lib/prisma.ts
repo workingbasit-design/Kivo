@@ -11,15 +11,20 @@ const globalForPrisma = globalThis as unknown as {
  * instances can run concurrently and each PrismaClient otherwise opens
  * (CPUs * 2 + 1) connections by default. Bursts of traffic exhausted the
  * Postgres role's connection limit and took every dynamic route down with
- * PrismaClientInitializationError ("too many connections"). A small fixed
- * pool keeps the total bounded: instances x connection_limit.
- * 3 leaves room for one interactive transaction plus concurrent queries.
+ * PrismaClientInitializationError ("too many connections for role").
+ * A single connection per instance keeps the total bounded by the number
+ * of concurrent instances, which is what serverless demands.
+ *
+ * Deadlock safety: every interactive transaction in this codebase uses
+ * either the callback form with `tx` exclusively inside, or the array
+ * form — no callback ever awaits a query on the global client while
+ * holding the transaction's connection, so a pool of 1 cannot deadlock.
  */
 export function pooledDatabaseUrl(fromEnv = process.env.DATABASE_URL): string | undefined {
   const raw = fromEnv;
   if (!raw) return undefined;
   if (/[?&]connection_limit=/.test(raw)) return raw;
-  return `${raw}${raw.includes('?') ? '&' : '?'}connection_limit=3`;
+  return `${raw}${raw.includes('?') ? '&' : '?'}connection_limit=1`;
 }
 
 export const prisma =

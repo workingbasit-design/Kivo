@@ -1,4 +1,4 @@
-import { FileWarning, Link2Off, Timer } from 'lucide-react';
+import { CloudOff, FileWarning, Link2Off, Timer } from 'lucide-react';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { Card } from '@/components/ui';
@@ -6,12 +6,15 @@ import { Card } from '@/components/ui';
 /**
  * Friendly, data-free notice for the public quote/invoice portals.
  * Never reveals whether a document exists — invalid, expired and revoked
- * tokens all get the same safe message.
+ * tokens all get the same safe message. The 'unavailable' variant is for
+ * OUR side failing (e.g. the database is unreachable): it must never say
+ * "expired", or customers will think their link is dead and ask the
+ * business for a new one.
  */
 export default async function PortalNotice({
   variant,
 }: {
-  variant: 'expired' | 'legacy' | 'rate-limited';
+  variant: 'expired' | 'legacy' | 'rate-limited' | 'unavailable';
 }) {
   const locale = await getLocale();
   const copy = {
@@ -29,6 +32,11 @@ export default async function PortalNotice({
       icon: <Timer size={36} className="mx-auto text-zinc-300 mb-3" />,
       title: t(locale, 't10money.noticeRateTitle'),
       body: t(locale, 't10money.noticeRateBody'),
+    },
+    unavailable: {
+      icon: <CloudOff size={36} className="mx-auto text-zinc-300 mb-3" />,
+      title: t(locale, 't10money.noticeUnavailableTitle'),
+      body: t(locale, 't10money.noticeUnavailableBody'),
     },
   }[variant];
 

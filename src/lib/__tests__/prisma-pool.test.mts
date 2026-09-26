@@ -11,14 +11,14 @@ describe('pooledDatabaseUrl', () => {
   it('appends connection_limit with ? when the URL has no query string', () => {
     assert.equal(
       pooledDatabaseUrl('postgresql://u:p@host:5432/db'),
-      'postgresql://u:p@host:5432/db?connection_limit=3',
+      'postgresql://u:p@host:5432/db?connection_limit=1',
     );
   });
 
   it('appends connection_limit with & when the URL already has a query string', () => {
     assert.equal(
       pooledDatabaseUrl('postgresql://u:p@host:5432/db?sslmode=require'),
-      'postgresql://u:p@host:5432/db?sslmode=require&connection_limit=3',
+      'postgresql://u:p@host:5432/db?sslmode=require&connection_limit=1',
     );
   });
 
