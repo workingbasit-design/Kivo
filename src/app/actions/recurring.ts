@@ -114,7 +114,7 @@ export async function updateRecurring(
   if (!customer) return { error: 'Selected customer not found.' };
 
   await prisma.recurringJob.update({
-    where: { id },
+    where: { id, businessId },
     data: {
       title: parsed.data.title,
       frequency: parsed.data.frequency,
@@ -141,7 +141,7 @@ export async function toggleRecurringActive(id: string): Promise<RecurringAction
   if (!existing) return { error: 'Recurring job not found.' };
 
   await prisma.recurringJob.update({
-    where: { id },
+    where: { id, businessId },
     data: { active: !existing.active },
   });
 
@@ -161,7 +161,7 @@ export async function deleteRecurring(id: string): Promise<RecurringActionResult
   const existing = await getOwnedRecurring(businessId, id);
   if (!existing) return { error: 'Recurring job not found.' };
 
-  await prisma.recurringJob.delete({ where: { id } });
+  await prisma.recurringJob.delete({ where: { id, businessId } });
 
   revalidateRecurringPaths();
   return { ok: true };

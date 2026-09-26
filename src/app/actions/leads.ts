@@ -89,7 +89,7 @@ export async function updateLeadStatus(
   });
   if (!existing) return { error: 'Lead not found.' };
 
-  await prisma.lead.update({ where: { id }, data: { status } });
+  await prisma.lead.update({ where: { id, businessId }, data: { status } });
 
   revalidatePath('/leads');
   return { ok: true };
@@ -111,7 +111,7 @@ export async function deleteLead(
   });
   if (!existing) return { error: 'Lead not found.' };
 
-  await prisma.lead.delete({ where: { id } });
+  await prisma.lead.delete({ where: { id, businessId } });
 
   revalidatePath('/leads');
   return { ok: true };

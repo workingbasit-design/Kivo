@@ -2,6 +2,7 @@
 
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { unsafeUnscoped } from '@/lib/tenant-guard';
 import { rateLimit, QUOTE_REQUEST_LIMIT, REPORT_LIMIT } from '@/lib/rate-limit';
 import { validatePhone, INVALID_PHONE_MESSAGE } from '@/lib/phone';
 import {
@@ -10,6 +11,9 @@ import {
   matchesCity,
   isDirectoryAdminEmail,
 } from '@/lib/directory';
+import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
+import { botCheckFailed } from '@/lib/bot-check';
 
 export type DirectoryActionResult = {
   ok?: boolean;
@@ -108,6 +112,14 @@ export async function submitQuoteRequest(
   _prev: DirectoryActionResult,
   formData: FormData
 ): Promise<DirectoryActionResult> {
+  // Bot check first (cheapest): honeypot + minimum fill time, enforced
+  // server-side before any database work. Generic error, no `values` echo —
+  // the form keeps its state so a human can retry without retyping.
+  if (botCheckFailed(formData)) {
+    const locale = await getLocale();
+    return { error: t(locale, 't10misc.directory.qrBotRetry') };
+  }
+
   const ip = await publicClientIp();
   const rl = rateLimit(`quote-request:${ip}`, QUOTE_REQUEST_LIMIT);
   if (!rl.ok) {
@@ -192,8 +204,9 @@ export async function submitQuoteRequest(
 
     return { ok: true, businessNames: matches.map((m) => m.name) };
   } catch {
+    const locale = await getLocale();
     return {
-      error: 'Kuch gadbad ho gayi — your request could not be saved. Please try again in a minute.',
+      error: t(locale, 't10misc.directory.qrSaveError'),
       values,
     };
   }
@@ -231,10 +244,15 @@ export async function reportBusiness(
     return { error: parsed.error.issues[0]?.message ?? 'Please check the form.' };
   }
 
-  const page = await prisma.bookingPage.findUnique({
-    where: { slug: parsed.data.slug },
-    select: { businessId: true, business: { select: { directoryOptIn: true } } },
-  });
+  // Public report form: the slug IS the identifier and the business is
+  // learned from the resolved row (the report is filed against that
+  // business), so no tenant scope can exist before this lookup.
+  const page = await unsafeUnscoped('directory:reportResolvePage', () =>
+    prisma.bookingPage.findUnique({
+      where: { slug: parsed.data.slug },
+      select: { businessId: true, business: { select: { directoryOptIn: true } } },
+    })
+  );
   if (!page || !page.business.directoryOptIn) {
     return { error: 'Business not found.' };
   }
@@ -270,14 +288,18 @@ export async function updateReportStatus(
   const email = session?.user?.email;
   if (!isDirectoryAdminEmail(email)) return { error: 'Not authorized.' };
 
-  const report = await prisma.directoryReport.findUnique({
-    where: { id: reportId },
-    select: { id: true },
-  });
+  // Admin moderation: directory admins act across tenants by design. The
+  // report's own businessId scopes the status update below.
+  const report = await unsafeUnscoped('directory:adminResolveReport', () =>
+    prisma.directoryReport.findUnique({
+      where: { id: reportId },
+      select: { id: true, businessId: true },
+    })
+  );
   if (!report) return { error: 'Report not found.' };
 
   await prisma.directoryReport.update({
-    where: { id: reportId },
+    where: { id: reportId, businessId: report.businessId },
     data: { status },
   });
   const { revalidatePath } = await import('next/cache');

@@ -5,15 +5,13 @@ import { headers } from 'next/headers';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { clientIpFromHeaders } from '@/lib/client-ip';
 
 export type ActionResult = { error?: string; ok?: boolean };
 
 async function clientKey(prefix: string): Promise<string> {
   const h = await headers();
-  const ip =
-    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    h.get('x-real-ip') ||
-    'unknown';
+  const ip = clientIpFromHeaders(h);
   return `${prefix}:${ip}`;
 }
 
@@ -151,7 +149,7 @@ export async function setQuoteDepositAction(
   });
   if (!quote) return { error: 'Quote not found.' };
   if (raw === '') {
-    await prisma.quote.update({ where: { id: quoteId }, data: { depositAmount: null } });
+    await prisma.quote.update({ where: { id: quoteId, businessId }, data: { depositAmount: null } });
   } else {
     const amount = Math.round(Number(raw) * 100) / 100;
     if (!Number.isFinite(amount) || amount <= 0) {
@@ -160,7 +158,7 @@ export async function setQuoteDepositAction(
     if (amount > quote.total) {
       return { error: 'Deposit cannot exceed the quote total.' };
     }
-    await prisma.quote.update({ where: { id: quoteId }, data: { depositAmount: amount } });
+    await prisma.quote.update({ where: { id: quoteId, businessId }, data: { depositAmount: amount } });
   }
   revalidatePath(`/quotes/${quoteId}`);
   return { ok: true };

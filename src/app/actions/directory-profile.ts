@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { unsafeUnscoped } from '@/lib/tenant-guard';
 import { requireAuth } from '@/lib/auth';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { isDirectoryAdminEmail } from '@/lib/directory';
@@ -134,7 +135,12 @@ export async function updateDirectoryProfile(
     const { slugify } = await import('@/lib/slug');
     let slug = slugify(biz?.name ?? 'business');
     for (let i = 2; i <= 20; i++) {
-      const clash = await prisma.bookingPage.findUnique({ where: { slug }, select: { id: true } });
+      // Global slug uniqueness: slugs live in the public /book/[slug] URL
+      // namespace, so the clash check must span all businesses — scoping it
+      // to the caller's business would let two businesses claim one slug.
+      const clash = await unsafeUnscoped('directory-profile:slugClashCheck', () =>
+        prisma.bookingPage.findUnique({ where: { slug }, select: { id: true } })
+      );
       if (!clash) break;
       slug = `${slugify(biz?.name ?? 'business')}-${i}`;
     }
@@ -180,16 +186,20 @@ export async function approveDirectoryClaim(claimId: string): Promise<DirectoryP
   const admin = await requireDirectoryAdmin();
   if ('error' in admin) return admin;
 
-  const claim = await prisma.directoryClaim.findUnique({
-    where: { id: claimId },
-    select: { id: true, businessId: true, status: true },
-  });
+  // Admin moderation: directory admins act across tenants by design
+  // (requireDirectoryAdmin). The claim's own businessId scopes the update below.
+  const claim = await unsafeUnscoped('directory:adminResolveClaim', () =>
+    prisma.directoryClaim.findUnique({
+      where: { id: claimId },
+      select: { id: true, businessId: true, status: true },
+    })
+  );
   if (!claim) return { error: 'Claim not found.' };
   if (claim.status === 'APPROVED') return { error: 'Claim is already approved.' };
 
   await prisma.$transaction([
     prisma.directoryClaim.update({
-      where: { id: claimId },
+      where: { id: claimId, businessId: claim.businessId },
       data: { status: 'APPROVED', decidedBy: admin.email, decidedAt: new Date() },
     }),
     prisma.business.update({
@@ -213,15 +223,19 @@ export async function rejectDirectoryClaim(
   const claimId = String(formData.get('claimId') ?? '');
   const note = String(formData.get('note') ?? '').trim().slice(0, 500) || null;
 
-  const claim = await prisma.directoryClaim.findUnique({
-    where: { id: claimId },
-    select: { id: true, businessId: true, status: true },
-  });
+  // Admin moderation: directory admins act across tenants by design
+  // (requireDirectoryAdmin). The claim's own businessId scopes the update below.
+  const claim = await unsafeUnscoped('directory:adminResolveClaim', () =>
+    prisma.directoryClaim.findUnique({
+      where: { id: claimId },
+      select: { id: true, businessId: true, status: true },
+    })
+  );
   if (!claim) return { error: 'Claim not found.' };
 
   await prisma.$transaction([
     prisma.directoryClaim.update({
-      where: { id: claimId },
+      where: { id: claimId, businessId: claim.businessId },
       data: { status: 'REJECTED', decidedBy: admin.email, decidedAt: new Date(), note },
     }),
     prisma.business.update({

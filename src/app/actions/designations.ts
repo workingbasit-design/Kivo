@@ -11,6 +11,7 @@ import {
   type DesignationInput,
   type TradeProfileInput,
 } from '@/lib/designations';
+import { clientIpFromHeaders } from '@/lib/client-ip';
 
 export type DesignationResult = { error?: string; ok?: boolean; id?: string };
 
@@ -24,7 +25,7 @@ async function clientKey(suffix: string): Promise<string> {
   // Mirror the pattern used in auth.ts: per-session key when available.
   const { headers } = await import('next/headers');
   const h = await headers();
-  return `${suffix}:${h.get('x-forwarded-for') ?? h.get('x-real-ip') ?? 'local'}`;
+  return `${suffix}:${clientIpFromHeaders(h)}`;
 }
 
 function toDateOrNull(v: string): Date | null {
@@ -94,7 +95,7 @@ export async function updateDesignation(
   });
   if (!existing) return { error: 'Designation not found.' };
   await prisma.designation.update({
-    where: { id: existing.id },
+    where: { id: existing.id, businessId },
     data: {
       type: d.type,
       title: d.title,

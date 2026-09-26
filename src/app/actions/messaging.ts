@@ -11,15 +11,13 @@ import {
   getMessagingOverview,
   listMessageLog,
 } from '@/lib/messaging/engine';
+import { clientIpFromHeaders } from '@/lib/client-ip';
 
 export type ActionResult = { error?: string; ok?: boolean };
 
 async function clientKey(prefix: string): Promise<string> {
   const h = await headers();
-  const ip =
-    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    h.get('x-real-ip') ||
-    'unknown';
+  const ip = clientIpFromHeaders(h);
   return `${prefix}:${ip}`;
 }
 
@@ -251,7 +249,7 @@ export async function setCustomerConsentAction(
   const now = new Date();
   await prisma.$transaction([
     prisma.customer.update({
-      where: { id: customerId },
+      where: { id: customerId, businessId },
       data: {
         messageConsent: consent,
         messageConsentAt: now,

@@ -21,6 +21,8 @@ import {
   revokeShareTokens,
   setShareTokenExpiry,
 } from '@/lib/share';
+import { sendPlatformEmail } from '@/lib/messaging/platform-email';
+import { appBaseUrl } from '@/lib/app-url';
 
 export type ActionResult = { error?: string; ok?: boolean; id?: string };
 
@@ -268,7 +270,7 @@ export async function updateInvoiceStatus(
     return { error: 'This invoice has recorded payments and can\'t go back to UNPAID.' };
   }
 
-  await prisma.invoice.update({ where: { id }, data: { status } });
+  await prisma.invoice.update({ where: { id, businessId }, data: { status } });
   revalidatePath('/invoices');
   revalidatePath(`/invoices/${id}`);
   return { ok: true };
@@ -296,7 +298,7 @@ export async function deleteInvoice(
     return { error: 'Paid invoices are kept as records and can\'t be deleted.' };
   }
 
-  await prisma.invoice.delete({ where: { id } });
+  await prisma.invoice.delete({ where: { id, businessId } });
   revalidatePath('/invoices');
   revalidatePath('/dashboard');
   redirect('/invoices');
@@ -369,7 +371,7 @@ export async function recordPayment(
   const newPaid = round2(alreadyPaid + payment.amount);
   const newStatus = deriveStatus(invoice.total, newPaid);
   await prisma.invoice.update({
-    where: { id: invoice.id },
+    where: { id: invoice.id, businessId },
     data: { status: newStatus },
   });
 
@@ -503,6 +505,98 @@ export async function revokeInvoiceShareLink(
 
   await revokeShareTokens(businessId, 'INVOICE', { invoiceId });
   revalidatePath(`/invoices/${invoiceId}`);
+  return { ok: true };
+}
+
+/**
+ * Pro-initiated "send invoice to customer" via email.
+ *
+ * Ensures the invoice has a usable public payment link (/i/[token]), emails
+ * it to the customer (bilingual body), and stamps sentAt — but ONLY when the
+ * email actually sends. Note: invoice `status` stays payment-oriented
+ * (UNPAID / PARTIALLY PAID / PAID); `sentAt` is the honest "was emailed"
+ * signal, not a fake status.
+ */
+export async function sendInvoiceEmail(
+  _prev: ActionResult,
+  formData: FormData
+): Promise<ActionResult> {
+  const limited = checkLimit(await clientKey('invoice:send-email'));
+  if (limited) return limited;
+
+  let businessId: string;
+  try {
+    ({ businessId } = await requireAuth());
+  } catch {
+    return { error: 'Please log in again.' };
+  }
+
+  const id = String(formData.get('id') ?? '');
+  const invoice = await ownedInvoice(businessId, id);
+  if (!invoice) return { error: 'Invoice not found.' };
+
+  const toEmail = (invoice.customer.email ?? '').trim();
+  if (!toEmail) {
+    return {
+      error:
+        'This customer has no email address. Add one to the customer record first — or use the WhatsApp / SMS buttons on this page instead.',
+    };
+  }
+
+  const business = await prisma.business.findUnique({
+    where: { id: businessId },
+    select: { name: true, currency: true },
+  });
+  const businessName = business?.name ?? 'Your pro';
+  const currency = business?.currency ?? 'CAD';
+
+  // Ensure a usable public payment link for the email.
+  let token = (await getActiveShareToken(businessId, 'INVOICE', { invoiceId: id }))
+    ?.token;
+  if (!token) {
+    const rec = await issueShareToken(businessId, 'INVOICE', { invoiceId: id }, null);
+    token = rec.token;
+  }
+  const base = await appBaseUrl();
+  if (!base) {
+    return { error: 'Could not build the invoice link. Please try again.' };
+  }
+  const link = `${base}/i/${token}`;
+
+  const total = formatMoney(invoice.total, currency);
+  const subject = `Invoice ${invoice.number} from ${businessName} / Facture ${invoice.number} de ${businessName}`;
+  const body = [
+    `Hi ${invoice.customer.name},`,
+    '',
+    `Here is invoice ${invoice.number} from ${businessName} — total ${total}.`,
+    `View it and pay online here: ${link}`,
+    '',
+    'Just reply to this email if you have any questions.',
+    '',
+    '---',
+    '',
+    `Bonjour ${invoice.customer.name},`,
+    '',
+    `Voici la facture ${invoice.number} de ${businessName} — total ${total}.`,
+    `Consultez-la et payez en ligne ici : ${link}`,
+    '',
+    'Répondez simplement à ce courriel si vous avez des questions.',
+  ].join('\n');
+
+  const sent = await sendPlatformEmail(toEmail, subject, body, {
+    fromName: `${businessName} via EveryJob`,
+  });
+  if (!sent.ok) {
+    return {
+      error: sent.notConfigured
+        ? 'Email is not configured yet — the workspace owner needs to add RESEND_API_KEY. The WhatsApp / SMS buttons on this page still work.'
+        : `Email could not be sent (${sent.error ?? 'unknown error'}). Nothing was marked as sent.`,
+    };
+  }
+
+  await prisma.invoice.update({ where: { id, businessId }, data: { sentAt: new Date() } });
+  revalidatePath('/invoices');
+  revalidatePath(`/invoices/${id}`);
   return { ok: true };
 }
 

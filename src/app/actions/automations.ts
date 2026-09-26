@@ -42,7 +42,7 @@ export async function setWorkflowRuleEnabled(
     const locale = await getLocale();
     return { error: t(locale, 'track8.ruleNotFound') };
   }
-  await prisma.workflowRule.update({ where: { id: rule.id }, data: { enabled } });
+  await prisma.workflowRule.update({ where: { id: rule.id, businessId }, data: { enabled } });
   revalidatePath('/settings/automations');
   return { ok: true };
 }
@@ -71,7 +71,7 @@ export async function updateWorkflowRuleConfig(
     clean.reviewDraft = config.reviewDraft;
   }
   await prisma.workflowRule.update({
-    where: { id: rule.id },
+    where: { id: rule.id, businessId },
     data: { configJson: JSON.stringify(clean) },
   });
   revalidatePath('/settings/automations');

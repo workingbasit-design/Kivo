@@ -18,6 +18,7 @@ import {
   validateMilestoneInput,
   type BatchPreviewRow,
 } from '@/lib/billing';
+import { clientIpFromHeaders } from '@/lib/client-ip';
 
 export type BatchPreviewResult = { error?: string; rows?: BatchPreviewRow[] };
 export type ConfirmBatchResult = { error?: string; ok?: boolean; created?: number };
@@ -27,10 +28,7 @@ const round2 = (n: number) => Math.round(n * 100) / 100;
 
 async function clientKey(prefix: string): Promise<string> {
   const h = await headers();
-  const ip =
-    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    h.get('x-real-ip') ||
-    'unknown';
+  const ip = clientIpFromHeaders(h);
   return `${prefix}:${ip}`;
 }
 

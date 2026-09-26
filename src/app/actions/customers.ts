@@ -145,7 +145,7 @@ export async function updateCustomer(
   if ('error' in postalCheck) return { error: postalCheck.error };
 
   await prisma.customer.update({
-    where: { id },
+    where: { id, businessId },
     data: {
       name,
       phone: nullIfEmpty(phone),
@@ -181,7 +181,7 @@ export async function deleteCustomer(
   if (!existing) return { error: 'Customer not found.' };
 
   // Related jobs, invoices, quotes cascade; reviews are set null.
-  await prisma.customer.delete({ where: { id } });
+  await prisma.customer.delete({ where: { id, businessId } });
 
   revalidatePath('/customers');
   redirect('/customers');
@@ -235,7 +235,7 @@ export async function convertLeadToCustomer(
       });
 
   await prisma.lead.update({
-    where: { id: leadId },
+    where: { id: leadId, businessId },
     data: { status: 'CONVERTED' },
   });
 

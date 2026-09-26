@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
+import { unsafeUnscoped } from '@/lib/tenant-guard';
 import { requireAuth } from '@/lib/auth';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { CA_PROVINCES, DEFAULT_CA_PROVINCE } from '@/lib/tax';
@@ -198,10 +199,14 @@ export async function updateBusinessSettings(
       let base = slugify(name);
       let slug = base;
       for (let i = 2; i <= 20; i++) {
-        const clash = await prisma.bookingPage.findUnique({
-          where: { slug },
-          select: { id: true },
-        });
+        // Global slug uniqueness: slugs live in the public /book/[slug] URL
+        // namespace, so the clash check must span all businesses.
+        const clash = await unsafeUnscoped('settings:bookingSlugClashCheck', () =>
+          prisma.bookingPage.findUnique({
+            where: { slug },
+            select: { id: true },
+          })
+        );
         if (!clash) break;
         slug = `${base}-${i}`;
       }
@@ -275,7 +280,7 @@ export async function removeTeamMember(id: string): Promise<SettingsResult> {
     }
   }
 
-  await prisma.user.delete({ where: { id } });
+  await prisma.user.delete({ where: { id, businessId } });
   revalidatePath('/settings/team');
   return { ok: true };
 }
@@ -338,5 +343,92 @@ export async function completeBusinessSetup(opts: {
 
   revalidatePath('/dashboard');
   revalidatePath('/settings');
+  return { ok: true };
+}
+
+/** Allowed logo types — raster images only (no SVG: inline scripts). */
+const LOGO_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const MAX_LOGO_BYTES = 2 * 1024 * 1024; // 2 MB
+
+export type LogoResult = { error?: string; ok?: boolean; logoUrl?: string };
+
+/**
+ * Upload the business logo. Stores the file in Vercel Blob (public, so it
+ * can appear on quotes/invoices/directory) and saves the URL on the
+ * business. Replaces any existing logo (old blob is deleted).
+ */
+export async function uploadBusinessLogo(formData: FormData): Promise<LogoResult> {
+  const { businessId } = await requireAuth();
+  const rl = rateLimit(`logo:${businessId}`, ACTION_LIMIT);
+  if (!rl.ok) return { error: 'Too many requests. Please slow down.' };
+
+  const file = formData.get('logo');
+  if (!(file instanceof File) || file.size === 0) {
+    return { error: 'Choose an image file first.' };
+  }
+  if (!LOGO_MIME_TYPES.includes(file.type)) {
+    return { error: 'Logo must be a JPG, PNG, WebP, or GIF image.' };
+  }
+  if (file.size > MAX_LOGO_BYTES) {
+    return { error: 'Logo must be smaller than 2 MB.' };
+  }
+
+  const token = process.env.BLOB_READ_WRITE_TOKEN;
+  if (!token) return { error: 'File uploads are not configured yet.' };
+
+  try {
+    const { put, del } = await import('@vercel/blob');
+    const ext = file.type === 'image/jpeg' ? 'jpg' : file.type.split('/')[1] ?? 'png';
+    const uid = Math.random().toString(36).slice(2, 10);
+    const pathname = `logos/${businessId}/${uid}.${ext}`;
+    const blob = await put(pathname, file, { access: 'public', token });
+
+    // Delete the previous logo blob so orphaned files don't accumulate.
+    const prev = await prisma.business.findUnique({
+      where: { id: businessId },
+      select: { logoUrl: true },
+    });
+    await prisma.business.update({
+      where: { id: businessId },
+      data: { logoUrl: blob.url },
+    });
+    if (prev?.logoUrl) {
+      await del(prev.logoUrl, { token }).catch(() => {});
+    }
+
+    revalidatePath('/settings');
+    revalidatePath('/dashboard');
+    return { ok: true, logoUrl: blob.url };
+  } catch (e) {
+    console.error('[settings] logo upload failed', e);
+    return { error: 'Upload failed. Please try again.' };
+  }
+}
+
+/** Remove the business logo (deletes the blob and clears the URL). */
+export async function removeBusinessLogo(): Promise<LogoResult> {
+  const { businessId } = await requireAuth();
+  const rl = rateLimit(`logo:${businessId}`, ACTION_LIMIT);
+  if (!rl.ok) return { error: 'Too many requests. Please slow down.' };
+
+  const token = process.env.BLOB_READ_WRITE_TOKEN;
+  const prev = await prisma.business.findUnique({
+    where: { id: businessId },
+    select: { logoUrl: true },
+  });
+  await prisma.business.update({
+    where: { id: businessId },
+    data: { logoUrl: null },
+  });
+  if (token && prev?.logoUrl) {
+    try {
+      const { del } = await import('@vercel/blob');
+      await del(prev.logoUrl, { token });
+    } catch {
+      // Best-effort cleanup; the URL is already cleared.
+    }
+  }
+  revalidatePath('/settings');
+  revalidatePath('/dashboard');
   return { ok: true };
 }

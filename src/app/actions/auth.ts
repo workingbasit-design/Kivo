@@ -9,6 +9,7 @@ import { loginSchema, registerSchema } from '@/lib/validations';
 import { rateLimit, AUTH_LIMIT } from '@/lib/rate-limit';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
+import { sendPlatformEmail } from '@/lib/messaging/platform-email';
 import { validateCanadianPhone } from '@/lib/google-auth';
 import { revalidatePath } from 'next/cache';
 
@@ -75,6 +76,24 @@ export async function register(
 
   const owner = business.users[0];
   await createSession(owner.id);
+
+  // Best-effort welcome email (platform Resend key, free tier). A missing
+  // RESEND_API_KEY only skips the email — signup must never fail because
+  // of it.
+  try {
+    const locale = await getLocale();
+    await sendPlatformEmail(
+      owner.email,
+      t(locale, 't10misc.auth.welcomeEmailSubject'),
+      t(locale, 't10misc.auth.welcomeEmailBody')
+        .replace('{name}', name)
+        .replace('{business}', businessName),
+      { fromName: 'EveryJob' }
+    );
+  } catch {
+    // ignore — the account is already created and the user is signed in
+  }
+
   redirect('/dashboard');
 }
 

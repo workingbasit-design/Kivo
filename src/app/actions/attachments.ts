@@ -213,7 +213,7 @@ export async function deleteAttachment(id: string): Promise<AttachmentResult> {
         console.error('[attachments] blob delete failed', e)
       );
     }
-    await prisma.attachment.delete({ where: { id: row.id } });
+    await prisma.attachment.delete({ where: { id: row.id, businessId } });
     revalidatePath(entityPath(row.entityType as AttachmentEntityType, row.entityId));
     return { ok: true };
   } catch (e) {

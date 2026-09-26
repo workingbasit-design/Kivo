@@ -103,7 +103,7 @@ export async function updateService(id: string, formData: FormData): Promise<Ser
   if (error || !data) return { error: error ?? 'Invalid service details.' };
 
   await prisma.service.update({
-    where: { id },
+    where: { id, businessId },
     data: {
       name: data.name,
       price: data.price,
@@ -124,7 +124,7 @@ export async function deleteService(id: string): Promise<ServiceResult> {
   const existing = await prisma.service.findFirst({ where: { id, businessId } });
   if (!existing) return { error: 'Service not found.' };
 
-  await prisma.service.delete({ where: { id } });
+  await prisma.service.delete({ where: { id, businessId } });
   revalidatePath('/pricebook');
   return { ok: true };
 }

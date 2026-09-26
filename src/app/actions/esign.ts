@@ -11,6 +11,7 @@ import {
   revokeSignatureRequest,
   type SignField,
 } from '@/lib/esign';
+import { clientIpFromHeaders } from '@/lib/client-ip';
 
 export type EsignActionResult = {
   ok?: boolean;
@@ -35,10 +36,7 @@ const createSignRequestSchema = z.object({
 
 async function clientKey(prefix: string): Promise<string> {
   const h = await headers();
-  const ip =
-    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    h.get('x-real-ip') ||
-    'unknown';
+  const ip = clientIpFromHeaders(h);
   return `${prefix}:${ip}`;
 }
 

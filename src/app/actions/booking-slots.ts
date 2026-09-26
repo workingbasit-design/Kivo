@@ -3,12 +3,14 @@
 import { headers } from 'next/headers';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { unsafeUnscoped } from '@/lib/tenant-guard';
 import { rateLimit } from '@/lib/rate-limit';
 import { validatePhone, INVALID_PHONE_MESSAGE } from '@/lib/phone';
 import { parseTimeToMinutes } from '@/lib/routes';
 import { dayRange, todayInTimezone } from '@/lib/utils';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
+import { clientIpFromHeaders } from '@/lib/client-ip';
 import {
   generateDaySlots,
   computeSlotAvailability,
@@ -16,6 +18,7 @@ import {
   formatSlotLabel,
   type SlotWithAvailability,
 } from '@/lib/reminders';
+import { botCheckFailed } from '@/lib/bot-check';
 
 /**
  * Public booking availability for a booking page.
@@ -54,10 +57,7 @@ const PUBLIC_LIMIT = { limit: 30, windowMs: 60 * 1000 };
 
 async function publicClientKey(prefix: string): Promise<string> {
   const h = await headers();
-  const ip =
-    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    h.get('x-real-ip') ||
-    'unknown';
+  const ip = clientIpFromHeaders(h);
   return `${prefix}:${ip}`;
 }
 
@@ -90,14 +90,19 @@ export async function getBookingSlots(
     return { slots: [], closed: false, hoursNotSet: false, unscheduledCount: 0, error: t(locale, 'reminders.booking.slotsError') };
   }
 
-  const page = await prisma.bookingPage.findUnique({
-    where: { slug: cleanSlug },
-    select: {
-      businessId: true,
-      enabled: true,
-      business: { select: { workingHours: true } },
-    },
-  });
+  // Public page resolution: the slug IS the identifier and the business is
+  // learned from the resolved row, so no tenant scope can exist before this
+  // lookup. The page's businessId scopes every query after it.
+  const page = await unsafeUnscoped('booking-slots:resolvePage', () =>
+    prisma.bookingPage.findUnique({
+      where: { slug: cleanSlug },
+      select: {
+        businessId: true,
+        enabled: true,
+        business: { select: { workingHours: true } },
+      },
+    })
+  );
   if (!page || !page.enabled) {
     return { slots: [], closed: false, hoursNotSet: false, unscheduledCount: 0, error: t(locale, 'reminders.booking.slotsError') };
   }
@@ -184,6 +189,12 @@ export async function submitBookingWithTime(
   _prev: BookingResult,
   formData: FormData
 ): Promise<BookingResult> {
+  // Bot check first (cheapest): honeypot + minimum fill time, enforced
+  // server-side before rate limiting or any database work.
+  if (botCheckFailed(formData)) {
+    const botLocale = await getLocale();
+    return { error: t(botLocale, 'reminders.booking.botRetry') };
+  }
   const hit = checkPublicLimit(await publicClientKey('booking-submit-time'));
   if (hit) return hit;
   const locale: Locale = await getLocale();
@@ -231,14 +242,19 @@ async function runBookingWithTime(
   { slug, name, phone, address, date, serviceId, notes, time }: BookingWithTimeData,
   locale: Locale
 ): Promise<BookingResult> {
-  const page = await prisma.bookingPage.findUnique({
-    where: { slug },
-    select: {
-      businessId: true,
-      enabled: true,
-      business: { select: { regionCode: true, workingHours: true, timezone: true } },
-    },
-  });
+  // Public page resolution: the slug IS the identifier and the business is
+  // learned from the resolved row, so no tenant scope can exist before this
+  // lookup. `businessId` below comes from this row and scopes the rest.
+  const page = await unsafeUnscoped('booking-slots:resolvePageForBooking', () =>
+    prisma.bookingPage.findUnique({
+      where: { slug },
+      select: {
+        businessId: true,
+        enabled: true,
+        business: { select: { regionCode: true, workingHours: true, timezone: true } },
+      },
+    })
+  );
   if (!page || !page.enabled) {
     return { error: 'This booking page is not available.' };
   }
@@ -306,7 +322,7 @@ async function runBookingWithTime(
 
   const customer = existingCustomer
     ? await prisma.customer.update({
-        where: { id: existingCustomer.id },
+        where: { id: existingCustomer.id, businessId },
         data: {
           name,
           address: address || undefined,

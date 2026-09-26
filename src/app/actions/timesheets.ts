@@ -88,7 +88,7 @@ export async function clockOut(): Promise<TimesheetResult> {
   }
 
   await prisma.timeEntry.update({
-    where: { id: active.id },
+    where: { id: active.id, businessId },
     data: { clockOut: new Date() },
   });
 
@@ -185,7 +185,7 @@ export async function deleteEntry(entryId: string): Promise<TimesheetResult> {
     return { error: 'You can only delete your own entries.' };
   }
 
-  await prisma.timeEntry.delete({ where: { id: entryId } });
+  await prisma.timeEntry.delete({ where: { id: entryId, businessId } });
 
   revalidateTimesheetPaths();
   if (entry.jobId) revalidatePath(`/jobs/${entry.jobId}`);

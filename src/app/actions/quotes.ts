@@ -18,6 +18,9 @@ import {
   resolveShareToken,
 } from '@/lib/share';
 import { convertedJobDetails } from '@/lib/quotes';
+import { formatMoney } from '@/lib/money';
+import { sendPlatformEmail } from '@/lib/messaging/platform-email';
+import { appBaseUrl } from '@/lib/app-url';
 
 export type ActionResult = { error?: string; ok?: boolean; id?: string };
 
@@ -270,7 +273,7 @@ export async function updateQuoteItems(
       })),
     }),
     prisma.quote.update({
-      where: { id },
+      where: { id, businessId },
       data: {
         discountType: discount.type,
         discountValue: discount.value,
@@ -378,7 +381,103 @@ export async function updateQuoteStatus(
     return { error: `Can't move quote from ${quote.status} to ${status}.` };
   }
 
-  await prisma.quote.update({ where: { id }, data: { status } });
+  await prisma.quote.update({ where: { id, businessId }, data: { status } });
+  revalidatePath('/quotes');
+  revalidatePath(`/quotes/${id}`);
+  return { ok: true };
+}
+
+/**
+ * Pro-initiated "send quote to customer" via email.
+ *
+ * Ensures the quote has a usable public portal link (/q/[token]), emails it
+ * to the customer (bilingual body), and marks the quote SENT — but ONLY when
+ * the email actually sends. A missing RESEND_API_KEY or a failed send
+ * returns an honest error and the quote stays DRAFT.
+ */
+export async function sendQuoteEmail(
+  _prev: ActionResult,
+  formData: FormData
+): Promise<ActionResult> {
+  const limited = checkLimit(await clientKey('quote:send-email'));
+  if (limited) return limited;
+
+  let businessId: string;
+  try {
+    ({ businessId } = await requireAuth());
+  } catch {
+    return { error: 'Please log in again.' };
+  }
+
+  const id = String(formData.get('id') ?? '');
+  const quote = await ownedQuote(businessId, id);
+  if (!quote) return { error: 'Quote not found.' };
+  if (quote.status !== 'DRAFT' && quote.status !== 'SENT') {
+    return { error: 'Only draft or sent quotes can be emailed.' };
+  }
+
+  const toEmail = (quote.customer.email ?? '').trim();
+  if (!toEmail) {
+    return {
+      error:
+        'This customer has no email address. Add one to the customer record first — or use the WhatsApp / SMS buttons on this page instead.',
+    };
+  }
+
+  const business = await prisma.business.findUnique({
+    where: { id: businessId },
+    select: { name: true, currency: true },
+  });
+  const businessName = business?.name ?? 'Your pro';
+  const currency = business?.currency ?? 'CAD';
+
+  // Ensure a usable public portal link for the email.
+  let token = (await getActiveShareToken(businessId, 'QUOTE', { quoteId: id }))
+    ?.token;
+  if (!token) {
+    const rec = await issueShareToken(businessId, 'QUOTE', { quoteId: id }, null);
+    token = rec.token;
+  }
+  const base = await appBaseUrl();
+  if (!base) {
+    return { error: 'Could not build the quote link. Please try again.' };
+  }
+  const link = `${base}/q/${token}`;
+
+  const total = formatMoney(quote.total, currency);
+  const subject = `Quote ${quote.number} from ${businessName} / Devis ${quote.number} de ${businessName}`;
+  const body = [
+    `Hi ${quote.customer.name},`,
+    '',
+    `${businessName} prepared quote ${quote.number} (${quote.title}) for you — total ${total}.`,
+    `View it and approve it here: ${link}`,
+    '',
+    'Just reply to this email if you have any questions.',
+    '',
+    '---',
+    '',
+    `Bonjour ${quote.customer.name},`,
+    '',
+    `${businessName} a préparé le devis ${quote.number} (${quote.title}) pour vous — total ${total}.`,
+    `Consultez-le et approuvez-le ici : ${link}`,
+    '',
+    'Répondez simplement à ce courriel si vous avez des questions.',
+  ].join('\n');
+
+  const sent = await sendPlatformEmail(toEmail, subject, body, {
+    fromName: `${businessName} via EveryJob`,
+  });
+  if (!sent.ok) {
+    return {
+      error: sent.notConfigured
+        ? 'Email is not configured yet — the workspace owner needs to add RESEND_API_KEY. The WhatsApp / SMS buttons on this page still work.'
+        : `Email could not be sent (${sent.error ?? 'unknown error'}). The quote is still a draft.`,
+    };
+  }
+
+  if (quote.status === 'DRAFT') {
+    await prisma.quote.update({ where: { id, businessId }, data: { status: 'SENT' } });
+  }
   revalidatePath('/quotes');
   revalidatePath(`/quotes/${id}`);
   return { ok: true };
@@ -459,7 +558,7 @@ export async function deleteQuote(
     return { error: 'Approved quotes are kept as records and can\'t be deleted.' };
   }
 
-  await prisma.quote.delete({ where: { id } });
+  await prisma.quote.delete({ where: { id, businessId } });
   revalidatePath('/quotes');
   redirect('/quotes');
 }
@@ -805,7 +904,7 @@ export async function portalQuoteDecisionByToken(
   }
 
   const updated = await prisma.quote.update({
-    where: { id: quoteId },
+    where: { id: quoteId, businessId: resolved.rec.businessId },
     data: { status: decision },
     select: { status: true },
   });

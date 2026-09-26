@@ -121,7 +121,7 @@ export async function updateCampaign(
     return { error: 'Only draft campaigns can be edited.' };
   }
 
-  await prisma.campaign.update({ where: { id }, data: parsed.data });
+  await prisma.campaign.update({ where: { id, businessId }, data: parsed.data });
   revalidatePath('/marketing');
   revalidatePath(`/marketing/${id}`);
   return { ok: true, id };
@@ -136,7 +136,7 @@ export async function deleteCampaign(id: string): Promise<MarketingResult> {
   const existing = await prisma.campaign.findFirst({ where: { id, businessId } });
   if (!existing) return { error: 'Campaign not found.' };
 
-  await prisma.campaign.delete({ where: { id } });
+  await prisma.campaign.delete({ where: { id, businessId } });
   revalidatePath('/marketing');
   return { ok: true };
 }
@@ -158,7 +158,7 @@ export async function advanceCampaignStatus(id: string): Promise<MarketingResult
     existing.status === 'DRAFT' ? 'QUEUED' : existing.status === 'QUEUED' ? 'SENT' : null;
   if (!next) return { error: 'Campaign is already sent.' };
 
-  await prisma.campaign.update({ where: { id }, data: { status: next } });
+  await prisma.campaign.update({ where: { id, businessId }, data: { status: next } });
   revalidatePath('/marketing');
   revalidatePath(`/marketing/${id}`);
   return { ok: true };
@@ -208,54 +208,8 @@ export async function draftPaymentReminder(
     `Thank you!`;
   return { text };
 }
-
-const publicReviewSchema = z.object({
-  businessId: z.string().trim().min(1),
-  rating: z.coerce.number().int().min(1).max(5),
-  comment: z.string().trim().max(2000).optional().default(''),
-  customerName: z.string().trim().max(120).optional().default(''),
-});
-
-/**
- * Public review submission — NO auth (used by the /r/[businessId] page).
- * Only ever reveals the business name; never leaks customer/job data.
- */
-export async function createPublicReview(
-  _prev: MarketingResult,
-  formData: FormData
-): Promise<MarketingResult> {
-  const parsed = publicReviewSchema.safeParse({
-    businessId: formData.get('businessId'),
-    rating: formData.get('rating'),
-    comment: formData.get('comment'),
-    customerName: formData.get('customerName'),
-  });
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? 'Please pick a star rating.' };
-  }
-  const { businessId, rating, comment, customerName } = parsed.data;
-
-  const hit = rateLimit(`public-review:${businessId}`, { limit: 10, windowMs: 10 * 60 * 1000 });
-  if (!hit.ok) return { error: 'Too many reviews. Please try again later.' };
-
-  const business = await prisma.business.findUnique({
-    where: { id: businessId },
-    select: { id: true },
-  });
-  if (!business) return { error: 'This review link is not valid.' };
-
-  // Prefix the comment with the reviewer's name if given (no customer linking —
-  // we can't verify identity on a public form).
-  const storedComment =
-    [customerName ? `— ${customerName}` : null, comment || null].filter(Boolean).join('\n') || null;
-
-  await prisma.review.create({
-    data: {
-      rating,
-      comment: storedComment,
-      source: 'Direct',
-      businessId: business.id,
-    },
-  });
-  return { ok: true };
-}
+// NOTE (review moat, 2026-09): the old open public review submission
+// (createPublicReview, used by /r/[businessId]) was deleted. Reviews can now
+// only be created via a single-use review-request token (/rev/[token]) or by
+// the signed-in pro against a completed, paid job. See
+// src/app/actions/review-requests.ts.

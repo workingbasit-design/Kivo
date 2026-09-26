@@ -125,7 +125,7 @@ export async function updateChecklistTemplate(
   await prisma.$transaction([
     prisma.checklistTemplateItem.deleteMany({ where: { templateId: id } }),
     prisma.checklistTemplate.update({
-      where: { id },
+      where: { id, businessId },
       data: {
         name,
         price: fields.price,
@@ -149,7 +149,7 @@ export async function deleteChecklistTemplate(
   const template = await getOwnedTemplate(businessId, templateId);
   if (!template) return err('notFound');
 
-  await prisma.checklistTemplate.delete({ where: { id: templateId } });
+  await prisma.checklistTemplate.delete({ where: { id: templateId, businessId } });
   revalidatePath('/settings/checklists');
   return { ok: true };
 }
@@ -295,7 +295,7 @@ export async function deleteExpense(expenseId: string): Promise<JobOpsActionResu
   });
   if (!expense) return err('notFound');
 
-  await prisma.jobExpense.delete({ where: { id: expense.id } });
+  await prisma.jobExpense.delete({ where: { id: expense.id, businessId } });
   revalidateJob(expense.jobId);
   return { ok: true };
 }

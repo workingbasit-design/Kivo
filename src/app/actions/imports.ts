@@ -82,7 +82,7 @@ async function getCalendarAccessToken(businessId: string): Promise<string> {
     fetch
   );
   await prisma.googleConnection.update({
-    where: { id: conn.id },
+    where: { id: conn.id, businessId },
     data: { accessToken: refreshed.accessToken, expiresAt: refreshed.expiresAt },
   });
   return refreshed.accessToken;

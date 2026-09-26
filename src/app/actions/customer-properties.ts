@@ -5,6 +5,7 @@ import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { clientIpFromHeaders } from '@/lib/client-ip';
 
 export type PropertyErrorCode =
   | 'tooMany'
@@ -34,10 +35,7 @@ const MAX_NOTES = 2000;
 
 async function clientKey(prefix: string): Promise<string> {
   const h = await headers();
-  const ip =
-    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    h.get('x-real-ip') ||
-    'unknown';
+  const ip = clientIpFromHeaders(h);
   return `${prefix}:${ip}`;
 }
 
@@ -165,7 +163,7 @@ export async function updateProperty(
 
   try {
     await prisma.customerProperty.update({
-      where: { id },
+      where: { id, businessId },
       data: { label: valid.label, address: valid.address, notes: valid.notes },
     });
     revalidatePath(`/customers/${existing.customerId}`);
@@ -193,10 +191,10 @@ export async function deleteProperty(id: string): Promise<PropertyResult> {
   try {
     await prisma.$transaction(async (tx) => {
       const was = await tx.customerProperty.findUnique({
-        where: { id },
+        where: { id, businessId },
         select: { isPrimary: true, customerId: true, createdAt: true },
       });
-      await tx.customerProperty.delete({ where: { id } });
+      await tx.customerProperty.delete({ where: { id, businessId } });
       if (was?.isPrimary) {
         const next = await tx.customerProperty.findFirst({
           where: { customerId: was.customerId, businessId },
@@ -205,7 +203,7 @@ export async function deleteProperty(id: string): Promise<PropertyResult> {
         });
         if (next) {
           await tx.customerProperty.update({
-            where: { id: next.id },
+            where: { id: next.id, businessId },
             data: { isPrimary: true },
           });
         }
@@ -240,7 +238,7 @@ export async function setPrimaryProperty(id: string): Promise<PropertyResult> {
         data: { isPrimary: false },
       }),
       prisma.customerProperty.update({
-        where: { id },
+        where: { id, businessId },
         data: { isPrimary: true },
       }),
     ]);

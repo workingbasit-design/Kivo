@@ -86,7 +86,7 @@ async function getValidAccessToken(businessId: string): Promise<{ token: string;
     fetch
   );
   await prisma.googleConnection.update({
-    where: { id: conn.id },
+    where: { id: conn.id, businessId },
     data: { accessToken: refreshed.accessToken, expiresAt: refreshed.expiresAt },
   });
   return { token: refreshed.accessToken, connId: conn.id };
@@ -139,7 +139,7 @@ export async function selectGoogleLocation(
   if (!conn) return { errorKind: 'reauth', error: 'Google is not connected.' };
 
   await prisma.googleConnection.update({
-    where: { id: conn.id },
+    where: { id: conn.id, businessId },
     data: { locationId, locationName: title || null },
   });
 
@@ -159,7 +159,7 @@ export async function syncGoogleReviews(): Promise<GoogleActionResult> {
   try {
     const { token, connId } = await getValidAccessToken(businessId);
     const conn = await prisma.googleConnection.findUnique({
-      where: { id: connId },
+      where: { id: connId, businessId },
       select: { googleAccountId: true, locationId: true },
     });
     if (!conn?.googleAccountId || !conn?.locationId) {
@@ -193,7 +193,7 @@ export async function syncGoogleReviews(): Promise<GoogleActionResult> {
     }
 
     await prisma.googleConnection.update({
-      where: { id: connId },
+      where: { id: connId, businessId },
       data: { lastSyncAt: new Date() },
     });
 
@@ -217,7 +217,7 @@ export async function disconnectGoogle(): Promise<GoogleActionResult> {
   // Best-effort revocation; local deletion always happens.
   await revokeGoogleToken(conn.accessToken, fetch);
   if (conn.refreshToken) await revokeGoogleToken(conn.refreshToken, fetch);
-  await prisma.googleConnection.delete({ where: { id: conn.id } });
+  await prisma.googleConnection.delete({ where: { id: conn.id, businessId } });
 
   revalidatePath('/reviews');
   return { ok: true };

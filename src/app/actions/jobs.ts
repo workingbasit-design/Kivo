@@ -191,7 +191,7 @@ export async function updateJob(
   if (!customer) return { error: 'Selected customer not found.' };
 
   await prisma.job.update({
-    where: { id },
+    where: { id, businessId },
     data: {
       title: parsed.data.title,
       customerId: parsed.data.customerId,
@@ -232,7 +232,7 @@ export async function updateJobStatus(
   // 2026-09-24: never throw on the write path — an unhandled throw renders a
   // full server-error page instead of the inline error + toast the UI shows.
   try {
-    await prisma.job.update({ where: { id: jobId }, data: { status: newStatus } });
+    await prisma.job.update({ where: { id: jobId, businessId }, data: { status: newStatus } });
   } catch (e) {
     console.error('[jobs] updateJobStatus failed', e);
     return { error: 'Could not update the job. Please try again.' };
@@ -278,7 +278,7 @@ export async function updateJobSchedule(
   }
 
   await prisma.job.update({
-    where: { id: jobId },
+    where: { id: jobId, businessId },
     data: {
       date: parseDateInput(dateStr),
       time: time.trim() || null,
@@ -310,7 +310,7 @@ export async function deleteJob(jobId: string): Promise<JobActionResult> {
   const job = await getOwnedJob(businessId, jobId);
   if (!job) return { error: 'Job not found.' };
 
-  await prisma.job.delete({ where: { id: jobId } });
+  await prisma.job.delete({ where: { id: jobId, businessId } });
   revalidateJobPaths();
   return { ok: true };
 }

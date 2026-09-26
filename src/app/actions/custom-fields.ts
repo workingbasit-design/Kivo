@@ -5,6 +5,7 @@ import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { clientIpFromHeaders } from '@/lib/client-ip';
 
 export type CustomFieldErrorCode =
   | 'tooMany'
@@ -27,10 +28,7 @@ const MAX_VALUE = 500;
 
 async function clientKey(prefix: string): Promise<string> {
   const h = await headers();
-  const ip =
-    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    h.get('x-real-ip') ||
-    'unknown';
+  const ip = clientIpFromHeaders(h);
   return `${prefix}:${ip}`;
 }
 
@@ -143,7 +141,7 @@ export async function renameFieldDef(
 
   try {
     await prisma.customFieldDef.update({
-      where: { id },
+      where: { id, businessId },
       data: { name: valid.name },
     });
     revalidatePath('/customers');
@@ -172,7 +170,7 @@ export async function deleteFieldDef(id: string): Promise<CustomFieldResult> {
   if (!def) return { ok: false, error: 'notFound' };
 
   try {
-    await prisma.customFieldDef.delete({ where: { id } });
+    await prisma.customFieldDef.delete({ where: { id, businessId } });
     revalidatePath('/customers');
     return { ok: true };
   } catch {
