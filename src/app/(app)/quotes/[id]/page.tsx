@@ -20,6 +20,7 @@ import QuoteActions from './QuoteActions';
 import QuoteAddons from './QuoteAddons';
 import ShareTokenManager from '@/components/ShareTokenManager';
 import WhatsAppButton from '@/components/WhatsAppButton';
+import SmsButton from '@/components/SmsButton';
 import QuoteDepositCard from '@/components/QuoteDepositCard';
 import QuoteItemsEditor from './QuoteItemsEditor';
 import RecordDepositForm from '@/components/RecordDepositForm';
@@ -131,6 +132,12 @@ export default async function QuoteDetailPage({
                   regionCode={quote.business.regionCode}
                   message={`Hi ${quote.customer.name}! ${quote.business.name ?? 'We'} prepared quote ${quote.number} (${quote.title}) for you — total ${formatMoney(quote.total, currency, moneyLocale)}. Just reply if you have any questions.`}
                   label="WhatsApp"
+                />
+                <SmsButton
+                  phone={quote.customer.phone}
+                  regionCode={quote.business.regionCode}
+                  message={`Hi ${quote.customer.name}! ${quote.business.name ?? 'We'} prepared quote ${quote.number} (${quote.title}) for you — total ${formatMoney(quote.total, currency, moneyLocale)}. Just reply if you have any questions.`}
+                  label="SMS"
                 />
               </div>
             </div>

@@ -10,6 +10,7 @@ import { PageHeader, Card, StatusBadge, Badge } from '@/components/ui';
 import { secondaryBtnClass } from '@/components/ui';
 import { EditCustomerForm, DeleteCustomerButton } from './customer-forms';
 import WhatsAppButton from '@/components/WhatsAppButton';
+import SmsButton from '@/components/SmsButton';
 import PortalLinkManager from '@/components/PortalLinkManager';
 import CustomerConsentCard from '@/components/CustomerConsentCard';
 import CustomerProperties from '@/components/CustomerProperties';
@@ -226,6 +227,12 @@ export default async function CustomerDetailPage({
             regionCode={regionCode}
             message={`Hi ${customerName}! This is ${business?.name ?? 'us'}.`}
             label="WhatsApp"
+          />
+          <SmsButton
+            phone={customer.phone}
+            regionCode={regionCode}
+            message={`Hi ${customerName}! This is ${business?.name ?? 'us'}.`}
+            label="SMS"
           />
           <EditCustomerForm
             locale={await getLocale()}

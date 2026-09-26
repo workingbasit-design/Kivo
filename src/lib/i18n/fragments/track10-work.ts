@@ -64,6 +64,7 @@ const fragment = {
       jobNotesTitle: 'Activity notes',
       jobNotesEmpty: 'No notes yet. Add visit updates, customer requests, or follow-ups here.',
       jobWhatsAppLabel: 'WhatsApp',
+      jobSmsLabel: 'SMS',
 
       // ---- JobForm ----
       formTitleLabel: 'Job title',
@@ -330,6 +331,7 @@ const fragment = {
       jobNotesTitle: 'Notes d\u2019activité',
       jobNotesEmpty: 'Aucune note pour l\u2019instant. Ajoutez ici les mises à jour de visite, les demandes du client ou les suivis.',
       jobWhatsAppLabel: 'WhatsApp',
+      jobSmsLabel: 'SMS',
 
       // ---- JobForm ----
       formTitleLabel: 'Titre du travail',

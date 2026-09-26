@@ -20,6 +20,7 @@ import { JobChecklist } from '@/components/JobChecklist';
 import { JobExpenses } from '@/components/JobExpenses';
 import { JobCostingCard } from '@/components/JobCostingCard';
 import WhatsAppButton from '@/components/WhatsAppButton';
+import SmsButton from '@/components/SmsButton';
 import Attachments from '@/components/Attachments';
 import { getLocale } from '@/lib/i18n/server';
 
@@ -159,6 +160,14 @@ export default async function JobDetailPage({
               regionCode={business?.regionCode}
               message={`Hi ${job.customer.name}! ${business?.name ?? 'We'} have your "${job.title}" booking scheduled for ${formatDateLabel(jobDateKey, dateLocale)}${hasJobTime(job.time) ? ` at ${job.time}` : ''}.`}
               label={T('jobWhatsAppLabel')}
+            />
+            {/* Free SMS: opens the phone's SMS app with the same message
+                prefilled — sent from the user's own mobile plan, $0. */}
+            <SmsButton
+              phone={job.customer.phone}
+              regionCode={business?.regionCode}
+              message={`Hi ${job.customer.name}! ${business?.name ?? 'We'} have your "${job.title}" booking scheduled for ${formatDateLabel(jobDateKey, dateLocale)}${hasJobTime(job.time) ? ` at ${job.time}` : ''}.`}
+              label={T('jobSmsLabel')}
             />
             <Link
               href={`/jobs/${job.id}/edit`}

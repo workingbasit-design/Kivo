@@ -22,6 +22,7 @@ import ShareTokenManager from '@/components/ShareTokenManager';
 import PrintButton from './PrintButton';
 import ReminderDraft from '@/components/ReminderDraft';
 import WhatsAppButton from '@/components/WhatsAppButton';
+import SmsButton from '@/components/SmsButton';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -108,6 +109,12 @@ export default async function InvoiceDetailPage({
             regionCode={invoice.business.regionCode}
             message={`Hi ${invoice.customer.name}! Here is invoice ${invoice.number} from ${invoice.business.name} (${formatMoney(invoice.total, currency, moneyLocale)}).`}
             label="WhatsApp"
+          />
+          <SmsButton
+            phone={invoice.customer.phone}
+            regionCode={invoice.business.regionCode}
+            message={`Hi ${invoice.customer.name}! Here is invoice ${invoice.number} from ${invoice.business.name} (${formatMoney(invoice.total, currency, moneyLocale)}).`}
+            label="SMS"
           />
           <PrintButton />
         </div>
