@@ -19,7 +19,6 @@ export default async function TrackingPage() {
     <div className="space-y-6">
       <PageHeader title={t(locale, 'gps.trackingTitle')} subtitle={t(locale, 'gps.mapDesc')} />
       <Card className="p-5 md:p-6">
-        <h2 className="text-sm font-bold text-zinc-900 mb-1">{t(locale, 'gps.mapTitle')}</h2>
         <LiveTrackingMap locale={locale} />
       </Card>
     </div>

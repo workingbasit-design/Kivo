@@ -193,7 +193,9 @@ export default async function SettingsPage() {
           }}
         />
       </Card>
-      <LogoUploadCard locale={locale} initialLogoUrl={business.logoUrl} />
+      <div id="logo" className="scroll-mt-20">
+        <LogoUploadCard locale={locale} initialLogoUrl={business.logoUrl} />
+      </div>
       <SettingsForm
         business={{
           name: business.name,

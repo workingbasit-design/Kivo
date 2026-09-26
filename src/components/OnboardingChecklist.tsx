@@ -13,10 +13,10 @@ export type OnboardingStepId =
   | 'team';
 
 const STEPS: { id: OnboardingStepId; href: string }[] = [
-  { id: 'logo', href: '/settings' },
-  { id: 'customer', href: '/customers' },
-  { id: 'job', href: '/jobs' },
-  { id: 'quote', href: '/quotes' },
+  { id: 'logo', href: '/settings#logo' },
+  { id: 'customer', href: '/customers/new' },
+  { id: 'job', href: '/jobs/new' },
+  { id: 'quote', href: '/quotes/new' },
   { id: 'google', href: '/settings/integrations' },
   { id: 'team', href: '/settings/team' },
 ];
