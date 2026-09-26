@@ -19,6 +19,7 @@ model User {
   business      Business?   @relation(fields: [businessId], references: [id])
   businessId    String?
   sessions      Session[]
+  passwordResetTokens PasswordResetToken[]
   assignedJobs  Job[]       @relation("JobAssignedTo")
   jobNotes      JobNote[]   @relation("JobNoteAuthor")
   jobPhotos     JobPhoto[]  @relation("JobPhotoUploadedBy")
@@ -32,6 +33,20 @@ model Session {
   userId    String
   expiresAt DateTime
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Single-use password-reset tokens. Only the SHA-256 hash of the raw token
+// is stored — the raw token is emailed once and never persisted.
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
 }
 
 model Business {
@@ -63,6 +78,7 @@ model Business {
   quotes               Quote[]
   signatureRequests    SignatureRequest[]
   reviews              Review[]
+  reviewRequests       ReviewRequest[]
   recurringJobs        RecurringJob[]
   timeEntries          TimeEntry[]
   bookingPage          BookingPage?
@@ -130,6 +146,7 @@ model Customer {
   invoices             Invoice[]
   quotes               Quote[]
   reviews              Review[]
+  reviewRequests       ReviewRequest[]
   recurringJobs        RecurringJob[]
   portalTokens         CustomerPortalToken[]
   createdAt            DateTime              @default(now())
@@ -181,6 +198,8 @@ model Job {
   idempotencyKey String?            @unique // booking-confirm dedupe key (UUID); null for jobs not created via booking
   technicianLocations TechnicianLocation[]
   trackingShare       TrackingShare?
+  reviewRequests      ReviewRequest[]
+  reviews             Review[]
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
 
@@ -201,6 +220,7 @@ model Invoice {
   taxAmount      Float             @default(0)
   total          Float
   status         String // UNPAID, PARTIALLY PAID, PAID
+  sentAt         DateTime? // set when the pro emails the invoice to the customer (not a payment state)
   notes          String?
   customerId     String
   customer       Customer          @relation(fields: [customerId], references: [id], onDelete: Cascade)
@@ -406,18 +426,54 @@ model Review {
   id           String    @id @default(cuid())
   rating       Int // 1-5
   comment      String?
-  source       String? // e.g., "Manual", "Google", "WhatsApp", "Direct"
+  // Provenance vocabulary (review moat, 2026-09): "Verified" = left by a
+  // customer tied to a real completed job with a paid invoice (via a
+  // single-use review-request token, or recorded by the owner against such
+  // a job). "Google" = synced from Google Business Profile. "Legacy" =
+  // recorded before the moat existed — kept for history, never verified.
+  source       String? // "Verified" | "Google" | "Legacy"
   externalId   String? // Google review resource name (accounts/.../reviews/...) — dedupe key for sync; null for manual reviews
   reviewerName String? // Google reviewer display name; null when anonymous
   reviewedAt   DateTime? // Google's createTime; manual reviews use createdAt
   customerId   String?
   customer     Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  jobId        String? // set for Verified reviews: the completed, paid job this review is about
+  job          Job?     @relation(fields: [jobId], references: [id], onDelete: SetNull)
   businessId   String
   business     Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  reviewRequest ReviewRequest?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
   @@unique([businessId, externalId]) // Postgres treats NULLs as distinct: many manual (null) rows allowed
+  @@index([businessId, source])
+}
+
+// Review-request tokens (the review moat).
+//
+// A pro generates a link for ONE completed job that has a paid invoice.
+// The customer opens /rev/[token] and can leave exactly one review, tied
+// to that job + customer + business. Tokens are 256-bit random hex,
+// stored only as SHA-256 hashes — a database leak reveals no usable links.
+// Single-use, 30-day expiry, revocable by the pro.
+model ReviewRequest {
+  id          String    @id @default(cuid())
+  tokenHash   String    @unique
+  status      String    @default("PENDING") // PENDING, USED, REVOKED
+  jobId       String
+  job         Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  customerId  String
+  customer    Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  businessId  String
+  business    Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  expiresAt   DateTime
+  usedAt      DateTime?
+  reviewId    String?   @unique
+  review      Review?   @relation(fields: [reviewId], references: [id], onDelete: SetNull)
+  createdAt   DateTime  @default(now())
+
+  @@index([businessId])
+  @@index([jobId])
 }
 
 model RecurringJob {
