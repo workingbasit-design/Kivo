@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
+import { createHmac, timingSafeEqual } from 'node:crypto';
 import { prisma } from '@/lib/prisma';
 import { isStopText, isHelpText, normalizeInboundText } from '@/lib/messaging/consent';
 import { monthKeyInTimezone, quotaAllows } from '@/lib/messaging/quota';
 import { sendWhatsAppText } from '@/lib/messaging/providers';
+import { unsafeUnscoped } from '@/lib/tenant-guard';
 
 /**
  * WhatsApp Cloud API webhook.
@@ -56,9 +58,28 @@ function stopReply(locale: string | null | undefined, businessName: string): str
 }
 
 export async function POST(req: Request) {
+  // Meta signs every webhook POST with X-Hub-Signature-256
+  // (HMAC-SHA256 of the RAW body using the WhatsApp App Secret). Without
+  // this check anyone could forge inbound "STOP" messages and opt customers
+  // out, or trigger outbound replies to attacker-chosen numbers. Fail
+  // closed: no app secret configured, or bad signature, means no processing.
+  const appSecret = process.env.WHATSAPP_APP_SECRET;
+  const rawBody = await req.text();
+  if (!appSecret) {
+    console.error('[whatsapp:webhook] WHATSAPP_APP_SECRET not configured — rejecting POST');
+    return NextResponse.json({ error: 'Webhook not configured.' }, { status: 403 });
+  }
+  const sigHeader = req.headers.get('x-hub-signature-256') ?? '';
+  const expected = `sha256=${createHmac('sha256', appSecret).update(rawBody, 'utf8').digest('hex')}`;
+  const sigBuf = Buffer.from(sigHeader);
+  const expBuf = Buffer.from(expected);
+  if (sigBuf.length !== expBuf.length || !timingSafeEqual(sigBuf, expBuf)) {
+    return NextResponse.json({ error: 'Invalid signature.' }, { status: 403 });
+  }
+
   let body: unknown;
   try {
-    body = await req.json();
+    body = JSON.parse(rawBody);
   } catch {
     return NextResponse.json({ received: true });
   }
@@ -74,10 +95,16 @@ export async function POST(req: Request) {
       const phoneNumberId = value?.phone_number_id;
       if (!phoneNumberId) continue;
 
-      const connection = await prisma.messagingConnection.findFirst({
-        where: { channel: 'WHATSAPP', waPhoneNumberId: phoneNumberId, enabled: true },
-        include: { business: { select: { id: true, name: true, timezone: true } } },
-      });
+      // Inbound Meta webhook: the phone_number_id (assigned by Meta and
+      // stored on our connection row) IS how the tenant is resolved — no
+      // business scope can exist before this lookup. The signature check
+      // at route entry proves the payload came from Meta.
+      const connection = await unsafeUnscoped('whatsapp:resolveConnection', () =>
+        prisma.messagingConnection.findFirst({
+          where: { channel: 'WHATSAPP', waPhoneNumberId: phoneNumberId, enabled: true },
+          include: { business: { select: { id: true, name: true, timezone: true } } },
+        })
+      );
       if (!connection) continue;
       const business = connection.business;
 
@@ -113,7 +140,7 @@ export async function POST(req: Request) {
         if (customer && isStop) {
           await prisma.$transaction([
             prisma.customer.update({
-              where: { id: customer.id },
+              where: { id: customer.id, businessId: business.id },
               data: {
                 messageConsent: false,
                 messageConsentAt: new Date(),
@@ -179,7 +206,7 @@ export async function POST(req: Request) {
         });
         if (sent.ok) {
           await prisma.messageQuota.update({
-            where: { id: quota.id },
+            where: { id: quota.id, businessId: business.id },
             data: { whatsappCount: { increment: 1 } },
           });
         }

@@ -1,7 +1,17 @@
 /**
  * Tiny in-memory token-bucket rate limiter.
- * Good enough for a single-instance deployment (SQLite-backed app).
- * For multi-instance deployments, replace with Redis/Upstash.
+ *
+ * KNOWN PRE-SCALE GAP: buckets live in this instance's memory. On Vercel
+ * serverless, every concurrent instance (and every cold start) gets its own
+ * bucket map, so a limit of N/hour is really ~N/hour *per instance*. This is
+ * acceptable while traffic is low, but before any public scaling the
+ * limiter MUST move to a shared store (Upstash Redis / Vercel KV —
+ * `@upstash/ratelimit` is the standard choice) or the limits are advisory
+ * only under burst traffic.
+ *
+ * Client-IP keying uses `clientIpFromHeaders` (see src/lib/client-ip.ts):
+ * Vercel overwrites x-forwarded-for to prevent spoofing, so rotating the
+ * header no longer grants a fresh bucket per request on production.
  */
 
 type Bucket = { count: number; resetAt: number };
