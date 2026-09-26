@@ -6,6 +6,7 @@ import { PageHeader, Card } from '@/components/ui';
 import TicketStatusButtons from './TicketStatusButtons';
 import { formatDateShort, localeDateTag } from '@/lib/utils';
 import { isProductOwner } from '@/lib/owner';
+import { unsafeUnscoped } from '@/lib/tenant-guard';
 
 export const metadata = { title: 'Support inbox | EveryJob' };
 
@@ -29,19 +30,23 @@ export default async function SupportInboxPage() {
     );
   }
 
-  const tickets = await prisma.supportTicket.findMany({
-    orderBy: { createdAt: 'desc' },
-    take: 100,
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      subject: true,
-      message: true,
-      status: true,
-      createdAt: true,
-    },
-  });
+  // Owner support inbox (isProductOwner gate above): tickets about the
+  // EveryJob product itself are global by design, not tenant data.
+  const tickets = await unsafeUnscoped('support:ownerInbox', () =>
+    prisma.supportTicket.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        subject: true,
+        message: true,
+        status: true,
+        createdAt: true,
+      },
+    })
+  );
 
   return (
     <div className="space-y-6 max-w-3xl">

@@ -1,9 +1,10 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { AlertCircle, CheckCircle2, Clock, MessageSquareQuote, Send } from 'lucide-react';
 import { submitQuoteRequest, type DirectoryActionResult } from '@/app/actions/directory';
+import { HONEYPOT_FIELD, FORM_STARTED_FIELD } from '@/lib/bot-check';
 import { useResolvedT } from '@/hooks/useResolvedLocale';
 
 const inputClass =
@@ -16,6 +17,14 @@ export default function QuoteRequestForm() {
     {}
   );
   const v = state?.values;
+
+  // Bot protection: hidden timestamp set when the form first renders.
+  // The server rejects submissions that arrive impossibly fast (bots) or
+  // with the honeypot filled. Set in an effect to stay hydration-safe.
+  const [formStartedAt, setFormStartedAt] = useState('');
+  useEffect(() => {
+    setFormStartedAt(String(Date.now()));
+  }, []);
 
   const labelClass = 'block text-xs font-bold text-zinc-700 mb-1';
 
@@ -81,6 +90,23 @@ export default function QuoteRequestForm() {
       action={formAction}
       className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-6 md:p-8 space-y-4"
     >
+      {/* Honeypot: invisible to humans (off-screen + aria-hidden); bots that
+          fill it are rejected server-side. */}
+      <div
+        aria-hidden="true"
+        className="absolute -left-[9999px] top-auto h-px w-px overflow-hidden"
+      >
+        <label htmlFor="qr-website">Website</label>
+        <input
+          id="qr-website"
+          name={HONEYPOT_FIELD}
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          defaultValue=""
+        />
+      </div>
+      <input type="hidden" name={FORM_STARTED_FIELD} value={formStartedAt} />
       <div className="flex items-center gap-2.5 mb-1">
         <div className="w-10 h-10 rounded-xl bg-smoke flex items-center justify-center">
           <MessageSquareQuote className="w-5 h-5 text-ink" />

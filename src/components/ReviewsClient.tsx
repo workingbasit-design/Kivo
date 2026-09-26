@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useActionState, useEffect, useTransition } from 'react';
-import { Star, Trash2, AlertCircle, Plus } from 'lucide-react';
+import { BadgeCheck, Star, Trash2, AlertCircle, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { createReview, deleteReview, type ReviewResult } from '@/app/actions/reviews';
 import ConfirmDialog from '@/components/ConfirmDialog';
@@ -34,14 +34,18 @@ export type ReviewItem = {
   id: string;
   rating: number;
   comment: string | null;
-  source: string | null;
+  /** Classified display source: 'Verified', 'Google', or 'Legacy'. */
+  source: string;
+  /** True only for reviews created through a verified channel. */
+  verified: boolean;
   reviewerName: string | null;
   reviewedAt: string | null;
   customerName: string | null;
   createdAt: string;
 };
 
-export type CustomerOption = { id: string; name: string };
+/** Jobs eligible for a review: completed + paid invoice. */
+export type EligibleJobOption = { id: string; title: string; customerName: string };
 
 function Stars({ rating, size = 14 }: { rating: number; size?: number }) {
   return (
@@ -58,10 +62,10 @@ function Stars({ rating, size = 14 }: { rating: number; size?: number }) {
 }
 
 function AddReviewForm({
-  customers,
+  eligibleJobs,
   locale,
 }: {
-  customers: CustomerOption[];
+  eligibleJobs: EligibleJobOption[];
   locale: Locale;
 }) {
   const [state, formAction, isPending] = useActionState<ReviewResult, FormData>(createReview, {});
@@ -85,6 +89,20 @@ function AddReviewForm({
         <Card className="p-5 mb-6">
           <h3 className="font-bold text-zinc-900 mb-4">{t(locale, 't10money.reviewAddTitle')}</h3>
           <form action={formAction} className="space-y-4">
+            <Field label={t(locale, 't10money.reviewJobLabel')} hint={t(locale, 't10money.reviewJobHint')}>
+              <select name="jobId" required defaultValue="" className={inputClass}>
+                <option value="" disabled>
+                  {eligibleJobs.length === 0
+                    ? t(locale, 't10money.reviewNoEligibleJobs')
+                    : '—'}
+                </option>
+                {eligibleJobs.map((j) => (
+                  <option key={j.id} value={j.id}>
+                    {j.title} · {j.customerName}
+                  </option>
+                ))}
+              </select>
+            </Field>
             <FormGrid>
               <Field label={t(locale, 't10money.reviewRating')}>
                 <select name="rating" required defaultValue="5" className={inputClass}>
@@ -97,20 +115,7 @@ function AddReviewForm({
                   ))}
                 </select>
               </Field>
-              <Field label={t(locale, 't10money.reviewSource')} hint={t(locale, 't10money.reviewSourceHint')}>
-                <input name="source" type="text" maxLength={100} placeholder="Google" className={inputClass} />
-              </Field>
             </FormGrid>
-            <Field label={t(locale, 't10money.reviewCustomerOptional')}>
-              <select name="customerId" defaultValue="" className={inputClass}>
-                <option value="">{t(locale, 't10money.reviewNoCustomer')}</option>
-                {customers.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </Field>
             <Field label={t(locale, 't10money.reviewComment')}>
               <textarea
                 name="comment"
@@ -129,7 +134,7 @@ function AddReviewForm({
             )}
 
             <div className="flex flex-wrap gap-2">
-              <button type="submit" disabled={isPending} className={primaryBtnClass}>
+              <button type="submit" disabled={isPending || eligibleJobs.length === 0} className={primaryBtnClass}>
                 {isPending ? t(locale, 't10money.reviewSaving') : t(locale, 't10money.reviewSave')}
               </button>
               <button type="button" onClick={() => setShow(false)} className={secondaryBtnClass}>
@@ -171,9 +176,14 @@ function ReviewRow({ review, locale }: { review: ReviewItem; locale: Locale }) {
       )}
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex flex-wrap items-center gap-2 mb-1">
             <Stars rating={review.rating} />
-            {review.source && (
+            {review.verified ? (
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
+                <BadgeCheck size={11} />
+                {t(locale, 't10money.reviewVerifiedBadge')}
+              </span>
+            ) : (
               <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
                 via {review.source}
               </span>
@@ -210,13 +220,13 @@ function ReviewRow({ review, locale }: { review: ReviewItem; locale: Locale }) {
 
 export default function ReviewsClient({
   reviews,
-  customers,
+  eligibleJobs,
   average,
   total,
   locale = 'en',
 }: {
   reviews: ReviewItem[];
-  customers: CustomerOption[];
+  eligibleJobs: EligibleJobOption[];
   average: string;
   total: number;
   locale?: Locale;
@@ -244,7 +254,7 @@ export default function ReviewsClient({
         />
       </div>
 
-      <AddReviewForm customers={customers} locale={locale} />
+      <AddReviewForm eligibleJobs={eligibleJobs} locale={locale} />
 
       <Card>
         {reviews.length === 0 ? (

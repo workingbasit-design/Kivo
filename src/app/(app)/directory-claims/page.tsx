@@ -7,6 +7,7 @@ import { isDirectoryAdminEmail } from '@/lib/directory';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import ClaimRow from './claim-row';
+import { unsafeUnscoped } from '@/lib/tenant-guard';
 
 export const metadata = { title: 'Directory claims | EveryJob' };
 export const dynamic = 'force-dynamic';
@@ -37,21 +38,25 @@ export default async function DirectoryClaimsPage() {
     );
   }
 
-  const claims = await prisma.directoryClaim.findMany({
-    orderBy: { createdAt: 'desc' },
-    take: 200,
-    include: {
-      business: {
-        select: {
-          name: true,
-          address: true,
-          phone: true,
-          bookingPage: { select: { slug: true } },
-          services: { select: { name: true }, take: 8 },
+  // Super-admin moderation view (isDirectoryAdminEmail gate above):
+  // listing claims span all businesses by design.
+  const claims = await unsafeUnscoped('directory:adminListClaims', () =>
+    prisma.directoryClaim.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+      include: {
+        business: {
+          select: {
+            name: true,
+            address: true,
+            phone: true,
+            bookingPage: { select: { slug: true } },
+            services: { select: { name: true }, take: 8 },
+          },
         },
       },
-    },
-  });
+    })
+  );
 
   const pendingCount = claims.filter((c) => c.status === 'PENDING').length;
   const subtitle =

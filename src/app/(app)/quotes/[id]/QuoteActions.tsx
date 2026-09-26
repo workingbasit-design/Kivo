@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useActionState, useEffect, useRef, useState } from 'react';
-import { Send, CheckCircle2, XCircle, Undo2, Trash2, Briefcase, AlertCircle } from 'lucide-react';
+import { Send, CheckCircle2, XCircle, Undo2, Trash2, Briefcase, AlertCircle, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import {
   updateQuoteStatus,
+  sendQuoteEmail,
   convertQuoteToJob,
   deleteQuote,
   type ActionResult,
@@ -93,6 +94,10 @@ export default function QuoteActions({
   status: string;
   locale?: Locale;
 }) {
+  const [emailState, emailAction, emailPending] = useActionState<ActionResult, FormData>(
+    sendQuoteEmail,
+    {}
+  );
   const [convertState, convertAction, convertPending] = useActionState<ActionResult, FormData>(
     convertQuoteToJob,
     {}
@@ -103,13 +108,19 @@ export default function QuoteActions({
   );
   const [confirmingDelete, setConfirmingDelete] = useState(false);
 
+  // sendQuoteEmail toasts honestly on both success and failure (the failure
+  // message tells the pro exactly what to do: add a customer email, or that
+  // RESEND_API_KEY is missing).
+  useResultToast(emailState, {
+    success: t(locale, 't10money.quoteEmailSent'),
+  });
   // convertQuoteToJob redirects to the new job page on success; deleteQuote
   // redirects back to the quotes list, so they only toast on failure.
   useResultToast(convertState, {});
   useResultToast(deleteState, {});
 
   const transitions = TRANSITIONS[status] ?? [];
-  const error = convertState?.error || deleteState?.error;
+  const error = emailState?.error || convertState?.error || deleteState?.error;
 
   return (
     <div className="space-y-3">
@@ -124,6 +135,23 @@ export default function QuoteActions({
         {transitions.map((tr) => (
           <StatusForm key={tr.status} id={id} target={tr} locale={locale} />
         ))}
+
+        {(status === 'DRAFT' || status === 'SENT') && (
+          <form action={emailAction}>
+            <input type="hidden" name="id" value={id} />
+            <button
+              type="submit"
+              disabled={emailPending}
+              className={cn(secondaryBtnClass)}
+              title={t(locale, 't10money.quoteEmailHint')}
+            >
+              <Mail size={14} />
+              {emailPending
+                ? t(locale, 't10money.quoteSending')
+                : t(locale, 't10money.quoteEmailButton')}
+            </button>
+          </form>
+        )}
 
         {status === 'APPROVED' && (
           <form action={convertAction}>

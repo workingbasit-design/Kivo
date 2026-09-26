@@ -5,24 +5,29 @@ import { PageHeader } from '@/components/ui';
 import ReviewsClient from '@/components/ReviewsClient';
 import GoogleReviewsPanel from '@/components/GoogleReviewsPanel';
 import { getGoogleStatus } from '@/app/actions/google-reviews';
+import { listEligibleReviewJobs } from '@/lib/review-eligibility';
+import { classifyLegacySource } from '@/lib/review-guards';
 
 export const metadata = { title: 'Reviews | EveryJob' };
+
+// Review-moat: the add dialog offers only eligible jobs (completed + paid
+// invoice). Older sources are shown as "Legacy" — only Verified and Google
+// keep their badge.
 
 export default async function ReviewsPage() {
   const { businessId } = await requireAuth();
   const locale = await getLocale();
 
-  const [reviews, customers, agg, googleStatus] = await Promise.all([
+  const [reviews, eligibleJobs, agg, googleStatus] = await Promise.all([
     prisma.review.findMany({
       where: { businessId },
       orderBy: { createdAt: 'desc' },
       include: { customer: { select: { name: true } } },
     }),
-    prisma.customer.findMany({
-      where: { businessId },
-      orderBy: { name: 'asc' },
-      select: { id: true, name: true },
-    }),
+    listEligibleReviewJobs(
+      businessId,
+      new Date(Date.now() - 60 * 24 * 60 * 60 * 1000)
+    ),
     prisma.review.aggregate({
       where: { businessId },
       _avg: { rating: true },
@@ -57,14 +62,19 @@ export default async function ReviewsPage() {
             id: r.id,
             rating: r.rating,
             comment: r.comment,
-            source: r.source,
+            source: classifyLegacySource(r.source),
+            verified: r.source === 'Verified',
             reviewerName: r.reviewerName,
             reviewedAt: r.reviewedAt ? r.reviewedAt.toISOString() : null,
             customerName: r.customer?.name ?? null,
             createdAt: r.createdAt.toISOString(),
           })
         )}
-        customers={customers}
+        eligibleJobs={eligibleJobs.map((j) => ({
+          id: j.id,
+          title: j.title,
+          customerName: j.customer.name,
+        }))}
         average={average}
         total={total}
       />

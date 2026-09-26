@@ -143,9 +143,11 @@ export default async function DashboardPage() {
         ))}
       </div>
 
-      {/* Profile strength — computed from the business's own data only */}
+      {/* Profile strength — computed from the business's own data only.
+          Every "next up" action lives in Settings, so the card links there
+          (Insights is a deferred feature under More → Advanced). */}
       {growth && growth.score < 100 && (
-        <Link href="/insights#growth" className="block">
+        <Link href="/settings" className="block">
           <Card className="p-5 hover:border-ink/30 transition-colors">
             <div className="flex items-center gap-4">
               <div className="relative w-14 h-14 shrink-0">

@@ -65,6 +65,9 @@ const fragment = {
       jobNotesEmpty: 'No notes yet. Add visit updates, customer requests, or follow-ups here.',
       jobWhatsAppLabel: 'WhatsApp',
       jobSmsLabel: 'SMS',
+      jobRequestReview: 'Request review',
+      jobReviewLinkCopied: 'Review link copied — send it to the customer.',
+      jobReviewLinkFailed: 'Couldn’t create the review link. Try again.',
 
       // ---- JobForm ----
       formTitleLabel: 'Job title',
@@ -332,6 +335,9 @@ const fragment = {
       jobNotesEmpty: 'Aucune note pour l\u2019instant. Ajoutez ici les mises à jour de visite, les demandes du client ou les suivis.',
       jobWhatsAppLabel: 'WhatsApp',
       jobSmsLabel: 'SMS',
+      jobRequestReview: 'Demander un avis',
+      jobReviewLinkCopied: 'Lien d’avis copié — envoyez-le au client.',
+      jobReviewLinkFailed: 'Impossible de créer le lien d’avis. Réessayez.',
 
       // ---- JobForm ----
       formTitleLabel: 'Titre du travail',

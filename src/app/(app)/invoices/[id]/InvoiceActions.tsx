@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useActionState, useEffect, useRef, useState } from 'react';
-import { AlertCircle, Wallet, Trash2 } from 'lucide-react';
+import { AlertCircle, Wallet, Trash2, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import {
   recordPayment,
+  sendInvoiceEmail,
   updateInvoiceStatus,
   deleteInvoice,
   type ActionResult,
@@ -61,6 +62,10 @@ export default function InvoiceActions({
     recordPayment,
     {}
   );
+  const [emailState, emailAction, emailPending] = useActionState<ActionResult, FormData>(
+    sendInvoiceEmail,
+    {}
+  );
   const [statusState, statusAction, statusPending] = useActionState<ActionResult, FormData>(
     updateInvoiceStatus,
     {}
@@ -74,13 +79,19 @@ export default function InvoiceActions({
   useResultToast(payState, {
     success: t(locale, 't10money.paymentRecorded'),
   });
+  // sendInvoiceEmail toasts honestly on both success and failure (the
+  // failure message tells the pro exactly what to do: add a customer
+  // email, or that RESEND_API_KEY is missing).
+  useResultToast(emailState, {
+    success: t(locale, 't10money.invoiceEmailSent'),
+  });
   useResultToast(statusState, {
     success: t(locale, 't10money.invoiceUpdated'),
   });
   // deleteInvoice redirects to the invoices list on success — toast on failure only.
   useResultToast(deleteState, {});
 
-  const error = payState?.error || statusState?.error || deleteState?.error;
+  const error = payState?.error || emailState?.error || statusState?.error || deleteState?.error;
 
   return (
     <div className="space-y-4">
@@ -151,6 +162,21 @@ export default function InvoiceActions({
             </button>
           </form>
         )}
+
+        <form action={emailAction}>
+          <input type="hidden" name="id" value={id} />
+          <button
+            type="submit"
+            disabled={emailPending}
+            className={secondaryBtnClass}
+            title={t(locale, 't10money.invoiceEmailHint')}
+          >
+            <Mail size={14} />
+            {emailPending
+              ? t(locale, 't10money.invSending')
+              : t(locale, 't10money.invoiceEmailButton')}
+          </button>
+        </form>
 
         {status !== 'PAID' && (
           <div className="ml-auto">

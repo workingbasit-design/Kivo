@@ -7,6 +7,7 @@ import { isDirectoryAdminEmail } from '@/lib/directory';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import ReportRow from './report-row';
+import { unsafeUnscoped } from '@/lib/tenant-guard';
 
 export const metadata = { title: 'Directory reports | EveryJob' };
 
@@ -35,11 +36,15 @@ export default async function DirectoryReportsPage() {
     );
   }
 
-  const reports = await prisma.directoryReport.findMany({
-    orderBy: { createdAt: 'desc' },
-    take: 200,
-    include: { business: { select: { name: true } } },
-  });
+  // Super-admin moderation view (isDirectoryAdminEmail gate above):
+  // reports about directory listings span all businesses by design.
+  const reports = await unsafeUnscoped('directory:adminListReports', () =>
+    prisma.directoryReport.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 200,
+      include: { business: { select: { name: true } } },
+    })
+  );
 
   const openCount = reports.filter((r) => r.status === 'OPEN').length;
   const subtitle =

@@ -45,6 +45,15 @@ export default function LoginPage() {
           />
         </Field>
 
+        <div className="flex justify-end -mt-2">
+          <Link
+            href="/forgot-password"
+            className="text-xs font-semibold text-zinc-500 hover:text-ink hover:underline"
+          >
+            {t('t10misc.auth.forgotLink')}
+          </Link>
+        </div>
+
         {state?.error && (
           <div
             role="alert"

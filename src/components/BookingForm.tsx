@@ -4,6 +4,7 @@ import { useActionState, useEffect, useState } from 'react';
 import { CalendarCheck, CheckCircle2, Clock, Phone } from 'lucide-react';
 import { t, type Locale } from '@/lib/i18n';
 import { getBookingSlots, submitBookingWithTime, type SlotsResult } from '@/app/actions/booking-slots';
+import { HONEYPOT_FIELD, FORM_STARTED_FIELD } from '@/lib/bot-check';
 import { Field, inputClass, primaryBtnClass } from '@/components/ui';
 import { formatMoney } from '@/lib/money';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
@@ -46,6 +47,13 @@ export default function BookingForm({
   const [selectedTime, setSelectedTime] = useState('');
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [slotsResult, setSlotsResult] = useState<SlotsResult | null>(null);
+
+  // Bot protection: hidden timestamp set when the form first renders; the
+  // server rejects impossibly fast submissions and filled honeypots.
+  const [formStartedAt, setFormStartedAt] = useState('');
+  useEffect(() => {
+    setFormStartedAt(String(Date.now()));
+  }, []);
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -115,6 +123,23 @@ export default function BookingForm({
       <input type="hidden" name="slug" value={slug} />
       <input type="hidden" name="idempotencyKey" value={idempotencyKey} />
       <input type="hidden" name="time" value={selectedTime} />
+      {/* Honeypot: invisible to humans (off-screen + aria-hidden); bots that
+          fill it are rejected server-side. */}
+      <div
+        aria-hidden="true"
+        className="absolute -left-[9999px] top-auto h-px w-px overflow-hidden"
+      >
+        <label htmlFor="bk-website">Website</label>
+        <input
+          id="bk-website"
+          name={HONEYPOT_FIELD}
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          defaultValue=""
+        />
+      </div>
+      <input type="hidden" name={FORM_STARTED_FIELD} value={formStartedAt} />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Field label={L('t10money.bookingFormYourName')}>

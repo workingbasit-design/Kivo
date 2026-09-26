@@ -9,6 +9,13 @@ import { SCOPE_CALENDAR_WRITE, type SyncOutcome } from '@/lib/googleCalendarSync
 
 export const metadata = { title: 'Integrations | EveryJob' };
 
+/**
+ * Phase 1: QuickBooks is deferred. The card, routes, and sync engine stay
+ * live — only the card is hidden from this page. Set to true when the
+ * integration graduates back into Phase 1.
+ */
+const SHOW_QUICKBOOKS_CARD = false;
+
 const iso = (d: Date | null | undefined) => (d ? d.toISOString() : null);
 
 async function runCalendarSync(): Promise<SyncOutcome> {
@@ -52,14 +59,17 @@ export default async function IntegrationsPage() {
       <Card>
         <GoogleCalendarCard locale={locale} initial={calendarInitial} onSync={runCalendarSync} />
       </Card>
-      <Card>
-        <QuickBooksCard
-          locale={locale}
-          initialConnected={!!qbConn}
-          initialLastSyncAt={iso(qbConn?.lastSyncAt)}
-          sandbox={process.env.QUICKBOOKS_SANDBOX === 'true'}
-        />
-      </Card>
+      {/* Phase 1: QuickBooks card hidden but implementation retained (see SHOW_QUICKBOOKS_CARD). */}
+      {SHOW_QUICKBOOKS_CARD && (
+        <Card>
+          <QuickBooksCard
+            locale={locale}
+            initialConnected={!!qbConn}
+            initialLastSyncAt={iso(qbConn?.lastSyncAt)}
+            sandbox={process.env.QUICKBOOKS_SANDBOX === 'true'}
+          />
+        </Card>
+      )}
     </div>
   );
 }

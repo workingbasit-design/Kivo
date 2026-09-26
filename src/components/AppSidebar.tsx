@@ -1,15 +1,18 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Bell, LogOut } from 'lucide-react';
+import { Bell, LogOut, ChevronDown, SlidersHorizontal } from 'lucide-react';
 import EveryJobLogo from '@/components/EveryJobLogo';
 import PaletteTrigger from '@/components/PaletteTrigger';
 import { logout } from '@/app/actions/auth';
 import { formatMoney } from '@/lib/money';
 import { t, type Locale } from '@/lib/i18n';
-import { navSections, navBadgeKeys } from '@/components/nav-sections';
+import { navSections, navBadgeKeys, advancedNavItems, type NavItem } from '@/components/nav-sections';
+
+/** Shared with the mobile More sheet — one persisted preference per device. */
+const ADVANCED_OPEN_KEY = 'ej-advanced-open';
 
 export interface SidebarStats {
   bookedToday: number;
@@ -30,6 +33,72 @@ export default function AppSidebar({
   unreadCount?: number;
 }) {
   const pathname = usePathname();
+
+  const isActive = (href: string) =>
+    pathname === href ||
+    pathname.startsWith(href + '/') ||
+    (pathname === '/' && href === '/dashboard');
+
+  // Advanced group: collapsed by default, persisted per device (shared with
+  // the mobile More sheet). Auto-expands on an advanced route.
+  const advancedActive = advancedNavItems.some((item) => isActive(item.href));
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  useEffect(() => {
+    let stored = false;
+    try {
+      stored = localStorage.getItem(ADVANCED_OPEN_KEY) === '1';
+    } catch {
+      /* private mode */
+    }
+    setAdvancedOpen(stored || advancedActive);
+  }, [advancedActive]);
+  const toggleAdvanced = () => {
+    setAdvancedOpen((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(ADVANCED_OPEN_KEY, next ? '1' : '0');
+      } catch {
+        /* private mode */
+      }
+      return next;
+    });
+  };
+
+  const navLink = (item: NavItem) => {
+    const active = isActive(item.href);
+    const badge =
+      navBadgeKeys[item.href] === 'leads' && stats.newLeads > 0 ? stats.newLeads : null;
+    const label = t(locale, item.nameKey);
+    return (
+      <Link
+        key={item.nameKey}
+        href={item.href}
+        aria-current={active ? 'page' : undefined}
+        className={`flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70 ${
+          active
+            ? 'bg-lime text-ink shadow-sm'
+            : 'text-white/50 hover:bg-white/10 hover:text-white'
+        }`}
+      >
+        <div className="flex items-center gap-3">
+          <item.icon
+            size={18}
+            strokeWidth={2}
+            className={active ? 'text-ink' : 'text-white/50 group-hover:text-white'}
+          />
+          <span className={`text-[13px] font-medium ${active ? 'font-semibold' : ''}`}>
+            {label}
+          </span>
+        </div>
+
+        {badge !== null && (
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-400 text-zinc-900">
+            {badge}
+          </span>
+        )}
+      </Link>
+    );
+  };
 
   return (
     <aside className="hidden md:flex flex-col w-64 bg-ink text-white min-h-screen sticky top-0 font-sans shrink-0">
@@ -83,53 +152,49 @@ export default function AppSidebar({
         <div className="px-0">
           <PaletteTrigger locale={locale} />
         </div>
-        {navSections.map((section) => (
-          <div key={section.labelKey}>
-            <p className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white/35">
-              {t(locale, section.labelKey)}
-            </p>
-            <div className="space-y-1">
-              {section.items.map((item) => {
-                const isActive =
-                  pathname === item.href ||
-                  pathname.startsWith(item.href + '/') ||
-                  (pathname === '/' && item.href === '/dashboard');
-                const badge =
-                  navBadgeKeys[item.href] === 'leads' && stats.newLeads > 0 ? stats.newLeads : null;
-                const label = t(locale, item.nameKey);
-                return (
-                  <Link
-                    key={item.nameKey}
-                    href={item.href}
-                    aria-current={isActive ? 'page' : undefined}
-                    className={`flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70 ${
-                      isActive
-                        ? 'bg-lime text-ink shadow-sm'
-                        : 'text-white/50 hover:bg-white/10 hover:text-white'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <item.icon
-                        size={18}
-                        strokeWidth={2}
-                        className={isActive ? 'text-ink' : 'text-white/50 group-hover:text-white'}
-                      />
-                      <span className={`text-[13px] font-medium ${isActive ? 'font-semibold' : ''}`}>
-                        {label}
-                      </span>
-                    </div>
-
-                    {badge !== null && (
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-400 text-zinc-900">
-                        {badge}
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
+        {navSections.map((section) => {
+          // Deferred features live under the Advanced group, not in the normal sections.
+          const items = section.items.filter((i) => !i.advanced);
+          if (items.length === 0) return null;
+          return (
+            <div key={section.labelKey}>
+              <p className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white/35">
+                {t(locale, section.labelKey)}
+              </p>
+              <div className="space-y-1">{items.map(navLink)}</div>
             </div>
-          </div>
-        ))}
+          );
+        })}
+        {/* Advanced — deferred Phase-1 features, collapsed by default */}
+        <div>
+          <button
+            type="button"
+            onClick={toggleAdvanced}
+            aria-expanded={advancedOpen}
+            aria-controls="sidebar-advanced-items"
+            aria-label={
+              advancedOpen
+                ? t(locale, 'nav.collapseAdvanced')
+                : t(locale, 'nav.expandAdvanced')
+            }
+            className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-white/50 hover:bg-white/10 hover:text-white transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70"
+          >
+            <span className="flex items-center gap-3">
+              <SlidersHorizontal size={18} className="text-white/50" aria-hidden />
+              <span className="text-[13px] font-medium">{t(locale, 'nav.advanced')}</span>
+            </span>
+            <ChevronDown
+              size={16}
+              aria-hidden
+              className={`transition-transform ${advancedOpen ? 'rotate-180' : ''}`}
+            />
+          </button>
+          {advancedOpen && (
+            <div id="sidebar-advanced-items" className="space-y-1 mt-1">
+              {advancedNavItems.map(navLink)}
+            </div>
+          )}
+        </div>
       </nav>
 
       {/* User profile / Logout */}

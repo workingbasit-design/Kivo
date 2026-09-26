@@ -1,14 +1,17 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, LogOut, X } from 'lucide-react';
+import { Menu, LogOut, X, ChevronDown, SlidersHorizontal } from 'lucide-react';
 import { t, type Locale } from '@/lib/i18n';
-import { navSections, bottomTabs } from '@/components/nav-sections';
+import { navSections, bottomTabs, advancedNavItems, type NavItem } from '@/components/nav-sections';
 import { Dialog, ghostBtnClass } from '@/components/ui';
 import { logout } from '@/app/actions/auth';
 import { cn } from '@/lib/utils';
+
+/** localStorage key for the More-sheet Advanced group's open/closed state. */
+const ADVANCED_OPEN_KEY = 'ej-advanced-open';
 
 /**
  * Thumb-friendly mobile bottom tab bar. The four primary destinations are
@@ -27,6 +30,50 @@ export default function BottomNav({
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
   const anyPrimaryActive = bottomTabs.some((tab) => isActive(tab.href));
+  const advancedActive = advancedNavItems.some((item) => isActive(item.href));
+
+  // Advanced group: collapsed by default, persisted per device. Auto-expands
+  // when the user is on an advanced route so the active item stays visible.
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  useEffect(() => {
+    let stored = false;
+    try {
+      stored = localStorage.getItem(ADVANCED_OPEN_KEY) === '1';
+    } catch {
+      /* private mode — default to collapsed */
+    }
+    setAdvancedOpen(stored || advancedActive);
+  }, [advancedActive]);
+  const toggleAdvanced = () => {
+    setAdvancedOpen((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(ADVANCED_OPEN_KEY, next ? '1' : '0');
+      } catch {
+        /* private mode */
+      }
+      return next;
+    });
+  };
+
+  const renderNavLink = (item: NavItem) => {
+    const active = isActive(item.href);
+    return (
+      <Link
+        key={item.nameKey}
+        href={item.href}
+        onClick={() => setMoreOpen(false)}
+        aria-current={active ? 'page' : undefined}
+        className={cn(
+          'flex items-center gap-3 px-3 min-h-[48px] rounded-xl text-sm font-medium transition-colors',
+          active ? 'bg-ink text-lime' : 'text-zinc-700 hover:bg-zinc-100'
+        )}
+      >
+        <item.icon size={18} className={active ? 'text-lime' : 'text-zinc-400'} />
+        {t(locale, item.nameKey)}
+      </Link>
+    );
+  };
 
   return (
     <>
@@ -79,33 +126,48 @@ export default function BottomNav({
 
       <Dialog open={moreOpen} onClose={() => setMoreOpen(false)} title={t(locale, 'nav.menu') ?? 'Menu'}>
         <div className="space-y-5 max-h-[65vh] overflow-y-auto -mx-1 px-1">
-          {navSections.map((section) => (
-            <div key={section.labelKey}>
-              <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-400">
-                {t(locale, section.labelKey)}
-              </p>
-              <div className="grid grid-cols-1 gap-1">
-                {section.items.map((item) => {
-                  const active = isActive(item.href);
-                  return (
-                    <Link
-                      key={item.nameKey}
-                      href={item.href}
-                      onClick={() => setMoreOpen(false)}
-                      aria-current={active ? 'page' : undefined}
-                      className={cn(
-                        'flex items-center gap-3 px-3 min-h-[48px] rounded-xl text-sm font-medium transition-colors',
-                        active ? 'bg-ink text-lime' : 'text-zinc-700 hover:bg-zinc-100'
-                      )}
-                    >
-                      <item.icon size={18} className={active ? 'text-lime' : 'text-zinc-400'} />
-                      {t(locale, item.nameKey)}
-                    </Link>
-                  );
-                })}
+          {navSections.map((section) => {
+            // Deferred features live under the Advanced group, not in the normal sections.
+            const items = section.items.filter((i) => !i.advanced);
+            if (items.length === 0) return null;
+            return (
+              <div key={section.labelKey}>
+                <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-400">
+                  {t(locale, section.labelKey)}
+                </p>
+                <div className="grid grid-cols-1 gap-1">{items.map(renderNavLink)}</div>
               </div>
-            </div>
-          ))}
+            );
+          })}
+          <div>
+            <button
+              type="button"
+              onClick={toggleAdvanced}
+              aria-expanded={advancedOpen}
+              aria-controls="more-advanced-items"
+              aria-label={
+                advancedOpen
+                  ? t(locale, 'nav.collapseAdvanced')
+                  : t(locale, 'nav.expandAdvanced')
+              }
+              className="flex w-full items-center justify-between px-3 min-h-[48px] rounded-xl text-sm font-medium text-zinc-700 hover:bg-zinc-100"
+            >
+              <span className="flex items-center gap-3">
+                <SlidersHorizontal size={18} className="text-zinc-400" aria-hidden />
+                {t(locale, 'nav.advanced')}
+              </span>
+              <ChevronDown
+                size={18}
+                aria-hidden
+                className={cn('text-zinc-400 transition-transform', advancedOpen && 'rotate-180')}
+              />
+            </button>
+            {advancedOpen && (
+              <div id="more-advanced-items" className="grid grid-cols-1 gap-1 mt-1">
+                {advancedNavItems.map(renderNavLink)}
+              </div>
+            )}
+          </div>
           <form action={logout} className="pt-3 border-t border-zinc-100">
             <button type="submit" className={ghostBtnClass + ' w-full'}>
               <LogOut size={18} />

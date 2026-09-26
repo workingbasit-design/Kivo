@@ -21,7 +21,10 @@ import { JobExpenses } from '@/components/JobExpenses';
 import { JobCostingCard } from '@/components/JobCostingCard';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import SmsButton from '@/components/SmsButton';
+import TechLocationSharer from '@/components/TechLocationSharer';
+import ReviewLinkButton from '@/components/ReviewLinkButton';
 import Attachments from '@/components/Attachments';
+import { getReviewEligibility } from '@/lib/review-eligibility';
 import { getLocale } from '@/lib/i18n/server';
 
 export default async function JobDetailPage({
@@ -71,6 +74,10 @@ export default async function JobDetailPage({
     },
   });
   if (!job) notFound();
+
+  // Review-moat eligibility: show the review-link button only for completed
+  // jobs with a paid invoice. Re-checked server-side at generation time.
+  const reviewEligible = (await getReviewEligibility(businessId, job.id)).ok;
 
   const templates = await prisma.checklistTemplate.findMany({
     where: { businessId },
@@ -169,6 +176,18 @@ export default async function JobDetailPage({
               message={`Hi ${job.customer.name}! ${business?.name ?? 'We'} have your "${job.title}" booking scheduled for ${formatDateLabel(jobDateKey, dateLocale)}${hasJobTime(job.time) ? ` at ${job.time}` : ''}.`}
               label={T('jobSmsLabel')}
             />
+            {/* Review moat: a single-use review link is offered only when the
+                job is complete AND the customer has a paid invoice. The
+                eligibility is re-checked server-side when the link is
+                generated and again at submission time. */}
+            {reviewEligible && (
+              <ReviewLinkButton
+                jobId={job.id}
+                idleLabel={T('jobRequestReview')}
+                copiedLabel={T('jobReviewLinkCopied')}
+                errorLabel={T('jobReviewLinkFailed')}
+              />
+            )}
             <Link
               href={`/jobs/${job.id}/edit`}
               className="bg-white hover:bg-zinc-50 text-zinc-700 min-h-[44px] px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 border border-zinc-200 shadow-sm"
@@ -190,6 +209,24 @@ export default async function JobDetailPage({
       <Card className="p-5">
         <JobStatusButtons jobId={job.id} status={job.status} locale={locale} />
       </Card>
+
+      {/* Live location sharing — per-job controls. Shown only while the job
+          is scheduled or in progress; the server rejects pings for jobs in
+          any other status. */}
+      {(job.status === 'SCHEDULED' || job.status === 'IN PROGRESS') && (
+        <Card className="p-5">
+          <TechLocationSharer
+            jobs={[
+              {
+                id: job.id,
+                title: job.title,
+                customerName: job.customer.name,
+                address: job.customer.address ?? undefined,
+              },
+            ]}
+          />
+        </Card>
+      )}
 
       {/* Details */}
       <Card className="p-5 md:p-6">
