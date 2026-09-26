@@ -30,6 +30,22 @@ export async function createSession(userId: string) {
   return session;
 }
 
+/**
+ * Thrown by getSession() when the session cookie is present but the
+ * database cannot be reached to validate it. This is deliberately NOT
+ * "no session" (null): a DB outage must never look like a logout.
+ * Callers that render pages catch this and show a "try again" notice
+ * instead of bouncing the user to /login (2026-09-26: the old null return
+ * caused a /login <-> /dashboard redirect loop and phantom logouts
+ * whenever the connection pool was exhausted).
+ */
+export class DatabaseUnavailableError extends Error {
+  constructor(message = 'database unavailable during session lookup') {
+    super(message);
+    this.name = 'DatabaseUnavailableError';
+  }
+}
+
 export async function getSession() {
   const cookieStore = await cookies();
   const sessionId = cookieStore.get('kivo_session')?.value;
@@ -42,10 +58,9 @@ export async function getSession() {
       include: { user: { include: { business: true } } },
     });
   } catch {
-    // Database unreachable or query failed: treat as "no valid session"
-    // rather than 500ing the page. Callers either redirect to /login or
-    // return 401 — both are better than a generic error page.
-    return null;
+    // Database unreachable: the session might be perfectly valid, so
+    // report "unknown" loudly instead of the lie "not logged in".
+    throw new DatabaseUnavailableError();
   }
 
   if (!session) {

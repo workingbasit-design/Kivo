@@ -5,12 +5,21 @@ import Logo from '@/components/Logo';
 import { LocaleProvider } from '@/components/LanguageToggle';
 import { getLocale } from '@/lib/i18n/server';
 import { getSession } from '@/lib/auth';
+import { isDatabaseUnavailable } from '@/lib/db-errors';
 
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
   // Already signed in (validated session) -> skip the auth pages. This uses
   // a real session check, unlike the old proxy cookie-presence redirect
   // which caused a redirect loop for stale cookies (2026-09-26).
-  const session = await getSession();
+  // If the database is unreachable we cannot validate anything: render the
+  // login form anyway instead of crashing or bouncing to /dashboard (the
+  // bounce was half of the /login <-> /dashboard refresh loop on outages).
+  let session = null;
+  try {
+    session = await getSession();
+  } catch (err) {
+    if (!isDatabaseUnavailable(err)) throw err;
+  }
   if (session?.user?.businessId) redirect('/dashboard');
 
   const locale = await getLocale();

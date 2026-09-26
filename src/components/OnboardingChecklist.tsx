@@ -17,7 +17,7 @@ const STEPS: { id: OnboardingStepId; href: string }[] = [
   { id: 'customer', href: '/customers' },
   { id: 'job', href: '/jobs' },
   { id: 'quote', href: '/quotes' },
-  { id: 'google', href: '/settings' },
+  { id: 'google', href: '/settings/integrations' },
   { id: 'team', href: '/settings/team' },
 ];
 

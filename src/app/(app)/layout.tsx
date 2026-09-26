@@ -1,6 +1,7 @@
 import React from 'react';
 import { redirect } from 'next/navigation';
 import { getSession } from '@/lib/auth';
+import { isDatabaseUnavailable } from '@/lib/db-errors';
 import { prisma } from '@/lib/prisma';
 import { dayRange, toISODateLocal, todayInTimezone } from '@/lib/utils';
 import { summarizeTodayJobs } from '@/lib/dashboard';
@@ -8,32 +9,57 @@ import AppSidebar from '@/components/AppSidebar';
 import MobileNav from '@/components/MobileNav';
 import BottomNav from '@/components/BottomNav';
 import LazyOverlays from '@/components/LazyOverlays';
+import PortalNotice from '@/components/PortalNotice';
 import { getLocale } from '@/lib/i18n/server';
 import { syncNotifications, getUnreadCount } from '@/lib/notifications';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const session = await getSession();
+  // A database outage must NEVER look like a logout: if we can't validate
+  // the session, show "try again" instead of bouncing to /login (which used
+  // to cause a /login <-> /dashboard redirect loop on pool exhaustion).
+  let session;
+  try {
+    session = await getSession();
+  } catch (err) {
+    if (isDatabaseUnavailable(err)) return <PortalNotice variant="unavailable" />;
+    throw err;
+  }
   if (!session?.user?.businessId) redirect('/login');
   const locale = await getLocale();
 
   const businessId = session.user.businessId;
-  const business = await prisma.business.findUnique({
-    where: { id: businessId },
-    select: { currency: true, regionCode: true, timezone: true },
-  });
 
-  // "Today" in the business's own timezone (falls back to America/Toronto).
-  const today = todayInTimezone(business?.timezone);
-  const { gte: start, lte: end } = dayRange(today);
+  // Shell data for the sidebar/stats. A database outage here renders the
+  // same honest "try again" notice as a failed session lookup — never a
+  // login redirect and never a generic 500.
+  const loadShell = async () => {
+    const business = await prisma.business.findUnique({
+      where: { id: businessId },
+      select: { currency: true, regionCode: true, timezone: true },
+    });
 
-  // Sidebar stats: booked revenue today + jobs remaining today + new leads
-  const [todayJobs, newLeads] = await Promise.all([
-    prisma.job.findMany({
-      where: { businessId, date: { gte: start, lt: end } },
-      select: { price: true, status: true },
-    }),
-    prisma.lead.count({ where: { businessId, status: 'NEW' } }),
-  ]);
+    // "Today" in the business's own timezone (falls back to America/Toronto).
+    const today = todayInTimezone(business?.timezone);
+    const { gte: start, lte: end } = dayRange(today);
+
+    // Sidebar stats: booked revenue today + jobs remaining today + new leads
+    const [todayJobs, newLeads] = await Promise.all([
+      prisma.job.findMany({
+        where: { businessId, date: { gte: start, lt: end } },
+        select: { price: true, status: true },
+      }),
+      prisma.lead.count({ where: { businessId, status: 'NEW' } }),
+    ]);
+    return { business, todayJobs, newLeads };
+  };
+  let shell: Awaited<ReturnType<typeof loadShell>>;
+  try {
+    shell = await loadShell();
+  } catch (err) {
+    if (isDatabaseUnavailable(err)) return <PortalNotice variant="unavailable" />;
+    throw err;
+  }
+  const { business, todayJobs, newLeads } = shell;
 
   // Shared with the dashboard stats (2026-09-24: cancelled jobs no longer
   // count as booked revenue here either — same helper, same totals).
