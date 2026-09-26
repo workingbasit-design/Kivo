@@ -27,8 +27,11 @@ export function pooledDatabaseUrl(fromEnv = process.env.DATABASE_URL): string | 
   return `${raw}${raw.includes('?') ? '&' : '?'}connection_limit=1`;
 }
 
+import { withDbRetry } from './db-retry.ts';
+
+const cached = globalForPrisma.prisma;
 export const prisma =
-  globalForPrisma.prisma ??
+  cached ??
   new PrismaClient({
     log: process.env.NODE_ENV === 'production' ? ['error'] : ['query'],
     datasourceUrl: pooledDatabaseUrl(),
@@ -38,3 +41,19 @@ export const prisma =
 // (or HMR in dev) never creates a second client — and a second pool —
 // inside the same serverless instance.
 globalForPrisma.prisma = prisma;
+
+if (!cached) {
+  /**
+   * Survive transient database outages. The Postgres role the app connects
+   * with has a small connection cap; during bursts (deploy cold starts,
+   * rapid phone taps) Vercel's concurrent instances can momentarily exhaust
+   * it. Every model query is retried with backoff on connection-level
+   * failures instead of immediately 500ing. Only pre-execution failures are
+   * retried, so writes cannot double-apply.
+   *
+   * Registered only for a freshly created client: the globalThis cache
+   * above guarantees one registration per serverless instance, never
+   * stacked retries on re-evaluation.
+   */
+  prisma.$use(async (params, next) => withDbRetry(() => next(params)));
+}

@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { prisma } from './prisma';
+import { DatabaseUnavailableError } from './db-errors';
 import crypto from 'crypto';
 
 export async function createSession(userId: string) {
@@ -28,22 +29,6 @@ export async function createSession(userId: string) {
   });
 
   return session;
-}
-
-/**
- * Thrown by getSession() when the session cookie is present but the
- * database cannot be reached to validate it. This is deliberately NOT
- * "no session" (null): a DB outage must never look like a logout.
- * Callers that render pages catch this and show a "try again" notice
- * instead of bouncing the user to /login (2026-09-26: the old null return
- * caused a /login <-> /dashboard redirect loop and phantom logouts
- * whenever the connection pool was exhausted).
- */
-export class DatabaseUnavailableError extends Error {
-  constructor(message = 'database unavailable during session lookup') {
-    super(message);
-    this.name = 'DatabaseUnavailableError';
-  }
 }
 
 export async function getSession() {
