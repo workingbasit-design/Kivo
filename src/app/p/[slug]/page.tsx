@@ -24,36 +24,44 @@ import {
 } from '@/lib/directory';
 import { parseServiceAreas } from '@/lib/directory-claim';
 import ReportBusinessForm from '@/components/ReportBusinessForm';
+import { unsafeUnscoped } from '@/lib/tenant-guard';
 
 async function getProfile(slug: string) {
-  const page = await prisma.bookingPage.findUnique({
-    where: { slug },
-    select: {
-      headline: true,
-      headlineFr: true,
-      intro: true,
-      introFr: true,
-      description: true,
-      descriptionFr: true,
-      serviceAreas: true,
-      showPhone: true,
-      business: {
-        select: {
-          id: true,
-          name: true,
-          phone: true,
-          whatsappNumber: true,
-          address: true,
-          workingHours: true,
-          regionCode: true,
-          currency: true,
-          directoryOptIn: true,
-          directoryVerifiedAt: true,
-          directoryHideAddress: true,
+  // Public directory entry point: the slug is the public address of the
+  // page. A slug can only resolve to the one business that owns it, so no
+  // tenant scope can exist before this lookup; every follow-up query uses
+  // the resolved business id.
+  const page = await unsafeUnscoped('profile:findPage', () =>
+    prisma.bookingPage.findUnique({
+      where: { slug },
+      select: {
+        headline: true,
+        headlineFr: true,
+        intro: true,
+        introFr: true,
+        description: true,
+        descriptionFr: true,
+        serviceAreas: true,
+        showPhone: true,
+        business: {
+          select: {
+            id: true,
+            name: true,
+            logoUrl: true,
+            phone: true,
+            whatsappNumber: true,
+            address: true,
+            workingHours: true,
+            regionCode: true,
+            currency: true,
+            directoryOptIn: true,
+            directoryVerifiedAt: true,
+            directoryHideAddress: true,
+          },
         },
       },
-    },
-  });
+    })
+  );
   if (!page || !page.business.directoryOptIn || !page.business.directoryVerifiedAt) return null;
 
   const businessId = page.business.id;
@@ -65,7 +73,7 @@ async function getProfile(slug: string) {
     }),
     prisma.review.findMany({
       where: { businessId },
-      select: { rating: true, comment: true, createdAt: true },
+      select: { rating: true, comment: true, createdAt: true, source: true },
       orderBy: { createdAt: 'desc' },
       take: 5,
     }),
@@ -195,9 +203,15 @@ export default async function PublicProfilePage({
             {L('t10money.profileBack')}
           </Link>
           <div className="flex items-start justify-between gap-3 mt-3">
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{b.name}</h1>
-              {headline && <p className="text-white/60 mt-1 text-sm">{headline}</p>}
+            <div className="flex items-center gap-3">
+              {b.logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={b.logoUrl} alt="" className="w-14 h-14 rounded-2xl object-contain bg-white border border-white/20 shrink-0" />
+              ) : null}
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{b.name}</h1>
+                {headline && <p className="text-white/60 mt-1 text-sm">{headline}</p>}
+              </div>
             </div>
             {verified && (
               <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-400/30 rounded-full px-2.5 py-1 shrink-0">
@@ -312,26 +326,28 @@ export default async function PublicProfilePage({
             <ul className="space-y-3">
               {reviews.map((r, i) => (
                 <li key={i} className="border-b border-zinc-100 pb-3 last:border-0 last:pb-0">
-                  <div className="flex items-center gap-1 mb-1">
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <Star
-                        key={n}
-                        size={12}
-                        className={n <= r.rating ? 'fill-amber-400 text-amber-400' : 'text-zinc-300'}
-                      />
-                    ))}
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span className="flex items-center gap-1" aria-hidden="true">
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <Star
+                          key={n}
+                          size={12}
+                          className={n <= r.rating ? 'fill-amber-400 text-amber-400' : 'text-zinc-300'}
+                        />
+                      ))}
+                    </span>
+                    {r.source === 'Verified' && (
+                      <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-700">
+                        <BadgeCheck size={11} />
+                        {L('t10money.reviewVerifiedBadge')}
+                      </span>
+                    )}
                   </div>
                   {r.comment && <p className="text-sm text-zinc-600">{r.comment}</p>}
                 </li>
               ))}
             </ul>
           )}
-          <Link
-            href={`/r/${b.id}`}
-            className="min-h-[44px] inline-flex items-center mt-3 text-xs font-bold text-ink hover:underline"
-          >
-            {L('t10money.profileLeaveReview')}
-          </Link>
         </section>
 
         <section className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">

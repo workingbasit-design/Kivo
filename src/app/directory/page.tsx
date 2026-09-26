@@ -44,6 +44,7 @@ export default async function DirectoryPage({
     where: { directoryOptIn: true, directoryVerifiedAt: { not: null }, bookingPage: { isNot: null } },
     select: {
       name: true,
+      logoUrl: true,
       address: true,
       phone: true,
       whatsappNumber: true,
@@ -62,6 +63,7 @@ export default async function DirectoryPage({
       const { count, avg } = ratingSummary(b.reviews);
       return {
         name: b.name,
+        logoUrl: b.logoUrl,
         slug: b.bookingPage!.slug,
         locality: localityFromAddress(b.address),
         hideAddress: b.directoryHideAddress,
@@ -196,7 +198,13 @@ export default async function DirectoryPage({
                   className="block bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5 hover:border-ink hover:shadow-md transition-all"
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <h2 className="font-bold text-zinc-900 leading-snug">{b.name}</h2>
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      {b.logoUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={b.logoUrl} alt="" className="w-10 h-10 rounded-xl object-contain border border-zinc-200 bg-white shrink-0" />
+                      ) : null}
+                      <h2 className="font-bold text-zinc-900 leading-snug">{b.name}</h2>
+                    </div>
                     {b.verified && (
                       <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5 shrink-0">
                         <BadgeCheck size={12} /> {tr('t10misc.directory.verified')}

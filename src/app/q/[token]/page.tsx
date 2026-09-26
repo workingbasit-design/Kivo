@@ -12,6 +12,7 @@ import { t } from '@/lib/i18n';
 import QuotePortalActions from '@/components/QuotePortalActions';
 import PortalNotice from '@/components/PortalNotice';
 import PayDepositButton from '@/components/PayDepositButton';
+import { clientIpFromHeaders } from '@/lib/client-ip';
 
 /**
  * Public client portal for a quote. No authentication — the share token in
@@ -22,12 +23,7 @@ import PayDepositButton from '@/components/PayDepositButton';
 const PORTAL_LIMIT = { limit: 30, windowMs: 60 * 1000 };
 
 async function clientIp(): Promise<string> {
-  const h = await headers();
-  return (
-    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    h.get('x-real-ip') ||
-    'unknown'
-  );
+  return clientIpFromHeaders(await headers());
 }
 
 export default async function QuotePortalPage({
@@ -74,6 +70,7 @@ export default async function QuotePortalPage({
       business: {
         select: {
           name: true,
+          logoUrl: true,
           phone: true,
           whatsappNumber: true,
           address: true,
@@ -121,9 +118,18 @@ export default async function QuotePortalPage({
     <div className="min-h-screen bg-paper font-sans">
       <main className="max-w-lg mx-auto px-4 py-8 space-y-5">
         <div className="text-center">
-          <div className="w-11 h-11 rounded-xl bg-ink flex items-center justify-center mx-auto mb-3">
-            <FileText className="w-6 h-6 text-white" />
-          </div>
+          {quote.business.logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={quote.business.logoUrl}
+              alt=""
+              className="w-16 h-16 rounded-2xl object-contain mx-auto mb-3 border border-zinc-200 bg-white"
+            />
+          ) : (
+            <div className="w-11 h-11 rounded-xl bg-ink flex items-center justify-center mx-auto mb-3">
+              <FileText className="w-6 h-6 text-white" />
+            </div>
+          )}
           <h1 className="text-xl font-bold text-zinc-900 tracking-tight">{quote.business.name}</h1>
           <p className="text-sm text-zinc-500 mt-0.5">{L('quotes.portal.quoteFor')} {quote.customer.name}</p>
         </div>

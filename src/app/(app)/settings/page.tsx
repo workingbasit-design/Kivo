@@ -4,6 +4,7 @@ import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { PageHeader, Card, secondaryBtnClass } from '@/components/ui';
 import SettingsForm from '@/components/SettingsForm';
+import LogoUploadCard from '@/components/LogoUploadCard';
 import ProfileForm from '@/components/ProfileForm';
 import DesignationsManager from '@/components/DesignationsManager';
 import TradeProfileForm from '@/components/TradeProfileForm';
@@ -16,6 +17,13 @@ import { parseSettings } from '@/lib/notifications';
 import { EXPORT_TYPES } from '@/lib/export';
 
 export const metadata = { title: 'Settings | EveryJob' };
+
+/**
+ * Phase 1: deferred settings surfaces (Automations) are hidden behind this
+ * flag. The routes and code stay live — only the surface links are removed.
+ * Set to true when the feature graduates back into Phase 1.
+ */
+const SHOW_ADVANCED_SETTINGS_LINKS = false;
 
 export default async function SettingsPage() {
   const { businessId, user } = await requireAuth();
@@ -39,6 +47,7 @@ export default async function SettingsPage() {
       trade: true,
       yearsInBusiness: true,
       specialties: true,
+      logoUrl: true,
     },
   });
 
@@ -107,13 +116,18 @@ export default async function SettingsPage() {
           {tr('t10misc.settingsMain.managePayments')}
         </Link>
       </Card>
-      <Card className="p-5 md:p-6">
-        <h2 className="text-sm font-bold text-zinc-900 mb-1">{t(locale, 'track8.automationsTitle')}</h2>
-        <p className="text-xs text-zinc-500 mb-4">{t(locale, 'track8.automationsSubtitle')}</p>
-        <Link href="/settings/automations" className={secondaryBtnClass}>
-          {t(locale, 'track8.automationsTitle')}
-        </Link>
-      </Card>
+      {/* Phase 1: Automations is deferred. The /settings/automations route
+          stays live; only this surface link is hidden. Flip
+          SHOW_ADVANCED_SETTINGS_LINKS to true to restore it. */}
+      {SHOW_ADVANCED_SETTINGS_LINKS && (
+        <Card className="p-5 md:p-6">
+          <h2 className="text-sm font-bold text-zinc-900 mb-1">{t(locale, 'track8.automationsTitle')}</h2>
+          <p className="text-xs text-zinc-500 mb-4">{t(locale, 'track8.automationsSubtitle')}</p>
+          <Link href="/settings/automations" className={secondaryBtnClass}>
+            {t(locale, 'track8.automationsTitle')}
+          </Link>
+        </Card>
+      )}
       <Card className="p-5 md:p-6">
         <h2 className="text-sm font-bold text-zinc-900 mb-1">{t(locale, 'integrations.title')}</h2>
         <p className="text-xs text-zinc-500 mb-4">{t(locale, 'integrations.subtitle')}</p>
@@ -179,6 +193,7 @@ export default async function SettingsPage() {
           }}
         />
       </Card>
+      <LogoUploadCard locale={locale} initialLogoUrl={business.logoUrl} />
       <SettingsForm
         business={{
           name: business.name,

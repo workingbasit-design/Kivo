@@ -13,6 +13,7 @@ import PortalNotice from '@/components/PortalNotice';
 import PayNowButton from '@/components/PayNowButton';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
+import { clientIpFromHeaders } from '@/lib/client-ip';
 
 /**
  * Public client portal for an invoice. No authentication — the share token
@@ -24,12 +25,7 @@ import { t } from '@/lib/i18n';
 const PORTAL_LIMIT = { limit: 30, windowMs: 60 * 1000 };
 
 async function clientIp(): Promise<string> {
-  const h = await headers();
-  return (
-    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    h.get('x-real-ip') ||
-    'unknown'
-  );
+  return clientIpFromHeaders(await headers());
 }
 
 export default async function InvoicePortalPage({
@@ -75,6 +71,7 @@ export default async function InvoicePortalPage({
       business: {
         select: {
           name: true,
+          logoUrl: true,
           phone: true,
           whatsappNumber: true,
           address: true,
@@ -123,9 +120,18 @@ export default async function InvoicePortalPage({
     <div className="min-h-screen bg-paper font-sans">
       <main className="max-w-lg mx-auto px-4 py-8 space-y-5">
         <div className="text-center">
-          <div className="w-11 h-11 rounded-xl bg-ink flex items-center justify-center mx-auto mb-3">
-            <ReceiptText className="w-6 h-6 text-white" />
-          </div>
+          {invoice.business.logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={invoice.business.logoUrl}
+              alt=""
+              className="w-16 h-16 rounded-2xl object-contain mx-auto mb-3 border border-zinc-200 bg-white"
+            />
+          ) : (
+            <div className="w-11 h-11 rounded-xl bg-ink flex items-center justify-center mx-auto mb-3">
+              <ReceiptText className="w-6 h-6 text-white" />
+            </div>
+          )}
           <h1 className="text-xl font-bold text-zinc-900 tracking-tight">{invoice.business.name}</h1>
           <p className="text-sm text-zinc-500 mt-0.5">{t(locale, 't10money.invPortalFor')} {invoice.customer.name}</p>
         </div>
