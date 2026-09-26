@@ -35,10 +35,18 @@ export async function getSession() {
   const sessionId = cookieStore.get('kivo_session')?.value;
   if (!sessionId) return null;
 
-  const session = await prisma.session.findUnique({
-    where: { id: sessionId },
-    include: { user: { include: { business: true } } },
-  });
+  let session;
+  try {
+    session = await prisma.session.findUnique({
+      where: { id: sessionId },
+      include: { user: { include: { business: true } } },
+    });
+  } catch {
+    // Database unreachable or query failed: treat as "no valid session"
+    // rather than 500ing the page. Callers either redirect to /login or
+    // return 401 — both are better than a generic error page.
+    return null;
+  }
 
   if (!session) {
     return null;
