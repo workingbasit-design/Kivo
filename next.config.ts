@@ -22,7 +22,10 @@ const nextConfig: NextConfig = {
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           {
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=(), payment=()",
+            // geolocation=(self): the technician's "share my location" toggle
+            // needs foreground GPS on our own origin. It was previously
+            // geolocation=(), which silently blocked every location ping.
+            value: "camera=(), microphone=(), geolocation=(self), payment=()",
           },
           { key: "X-DNS-Prefetch-Control", value: "on" },
         ],

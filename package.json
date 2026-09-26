@@ -7,7 +7,6 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "prisma skills sync || exit 0",
     "test": "node --test --import ./src/lib/__tests__/register-loader.mjs 'src/lib/__tests__/*.test.mts'"
   },
   "dependencies": {
