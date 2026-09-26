@@ -256,14 +256,14 @@ export default async function PublicProfilePage({
 
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-5">
         {aboutText && (
-          <section className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-5">
+          <section className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
             <h2 className="text-sm font-bold text-zinc-900 mb-1.5">{L('t10money.profileAbout')}</h2>
             <p className="text-sm text-zinc-600 leading-relaxed whitespace-pre-line">{aboutText}</p>
           </section>
         )}
 
         {serviceAreas.length > 0 && (
-          <section className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-5">
+          <section className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
             <h2 className="text-sm font-bold text-zinc-900 mb-3">{L('t10money.profileAreas')}</h2>
             <div className="flex flex-wrap gap-1.5">
               {serviceAreas.map((a) => (
@@ -275,7 +275,7 @@ export default async function PublicProfilePage({
           </section>
         )}
 
-        <section className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-5">
+        <section className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
           <h2 className="text-sm font-bold text-zinc-900 mb-3">{L('t10money.profileServices')}</h2>
           {services.length === 0 ? (
             <p className="text-sm text-zinc-500">{L('t10money.profileServicesEmpty')}</p>
@@ -294,7 +294,7 @@ export default async function PublicProfilePage({
           <p className="text-[11px] text-zinc-400 mt-3">{L('t10money.profilePricesNote')}</p>
         </section>
 
-        <section className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-5">
+        <section className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-bold text-zinc-900">
               {L('t10money.profileReviewsMany')} {count > 0 && <span className="text-zinc-400 font-medium">({count})</span>}
@@ -334,7 +334,7 @@ export default async function PublicProfilePage({
           </Link>
         </section>
 
-        <section className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-5">
+        <section className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
           <h2 className="text-sm font-bold text-zinc-900 mb-1 flex items-center gap-1.5">
             <Flag size={13} /> {L('t10money.profileReportTitle')}
           </h2>
@@ -345,7 +345,7 @@ export default async function PublicProfilePage({
         </section>
 
         {similarPros.length > 0 && (
-          <section className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-5">
+          <section className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
             <h2 className="text-sm font-bold text-zinc-900 mb-3">{L('t10money.profileSimilar')}</h2>
             <ul className="space-y-2">
               {similarPros.map((p) => (

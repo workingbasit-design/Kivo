@@ -110,7 +110,7 @@ export default function ClockWidget({
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-5">
+    <div className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
       <div className="flex items-center gap-2 mb-3">
         <div className="w-8 h-8 rounded-xl bg-smoke text-ink flex items-center justify-center">
           <Timer size={16} />

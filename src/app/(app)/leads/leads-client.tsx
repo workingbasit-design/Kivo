@@ -243,7 +243,7 @@ export function AddLeadForm({ locale = 'en' }: { locale?: Locale }) {
   }
 
   return (
-    <form action={formAction} className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-5 space-y-4">
+    <form action={formAction} className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5 space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="font-bold text-sm text-zinc-900">{t(locale, 't10money.leadNew')}</h3>
         <button

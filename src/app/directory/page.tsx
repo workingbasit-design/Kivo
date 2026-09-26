@@ -170,7 +170,7 @@ export default async function DirectoryPage({
         )}
 
         {results.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-10 text-center">
+          <div className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-10 text-center">
             <div className="w-12 h-12 rounded-2xl bg-smoke flex items-center justify-center mx-auto mb-4">
               <Search className="w-6 h-6 text-ink" />
             </div>
@@ -193,7 +193,7 @@ export default async function DirectoryPage({
               <li key={b.slug}>
                 <Link
                   href={`/p/${b.slug}`}
-                  className="block bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-5 hover:border-ink hover:shadow-md transition-all"
+                  className="block bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5 hover:border-ink hover:shadow-md transition-all"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <h2 className="font-bold text-zinc-900 leading-snug">{b.name}</h2>

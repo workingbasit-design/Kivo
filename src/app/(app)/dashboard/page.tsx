@@ -99,7 +99,7 @@ export default async function DashboardPage() {
       <OnboardingChecklist locale={locale} businessId={businessId} completed={onboardingCompleted} />
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">        {(
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">        {(
           [
             {
               label: L("dashboard.bookedToday"),
@@ -183,7 +183,7 @@ export default async function DashboardPage() {
       )}
 
       {/* Today's schedule + payments due */}
-      <div className="grid lg:grid-cols-2 gap-4">
+      <div className="grid lg:grid-cols-2 gap-3 md:gap-4">
         <Card>
           <div className="flex items-center justify-between px-5 pt-5 pb-3">
             <h2 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
@@ -275,7 +275,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Upcoming + jobs by status + quick actions */}
-      <div className="grid lg:grid-cols-3 gap-4">
+      <div className="grid lg:grid-cols-3 gap-3 md:gap-4">
         <Card className="lg:col-span-2 p-5">
           <h2 className="text-sm font-bold text-zinc-900 mb-3">{L("dashboard.upcomingJobs")}</h2>
           {stats.upcomingJobs.length === 0 ? (

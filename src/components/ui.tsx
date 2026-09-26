@@ -32,7 +32,7 @@ export function Card({
   style?: React.CSSProperties;
 }) {
   return (
-    <div className={cn('bg-white rounded-2xl border border-zinc-200/60 shadow-sm', className)} style={style}>
+    <div className={cn('bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)]', className)} style={style}>
       {children}
     </div>
   );
@@ -65,16 +65,16 @@ export function StatCard({
   accent?: string;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-5">
+    <div className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
       <div className="flex items-center justify-between mb-3">
         <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">{label}</p>
         {icon && (
-          <div className={cn('w-8 h-8 rounded-xl flex items-center justify-center', accent ?? 'bg-zinc-100 text-zinc-600')}>
+          <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center', accent ?? 'bg-zinc-100 text-zinc-600')}>
             {icon}
           </div>
         )}
       </div>
-      <p className="text-2xl font-bold text-zinc-900 tracking-tight">{value}</p>
+      <p className="text-[26px] font-bold text-zinc-900 tracking-tight tabular-nums">{value}</p>
       {sub && <p className="text-xs text-zinc-500 mt-1">{sub}</p>}
     </div>
   );
@@ -156,7 +156,7 @@ export function Skeleton({ className }: { className?: string }) {
 
 export function CardSkeleton({ rows = 3 }: { rows?: number }) {
   return (
-    <div className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-5 space-y-3" aria-hidden>
+    <div className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5 space-y-3" aria-hidden>
       <Skeleton className="h-5 w-1/3" />
       {Array.from({ length: rows }).map((_, i) => (
         <Skeleton key={i} className="h-4 w-full" />
@@ -245,7 +245,7 @@ export function ListRow({
   return (
     <div
       className={cn(
-        'bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-4 flex items-center gap-3',
+        'bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-4 flex items-center gap-3',
         className
       )}
     >

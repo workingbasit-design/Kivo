@@ -22,7 +22,7 @@ export default function QuoteRequestForm() {
   // Matched: request landed in provider inboxes.
   if (state?.ok && !state.unmatched) {
     return (
-      <div className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-6 md:p-8 text-center">
+      <div className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-6 md:p-8 text-center">
         <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center mx-auto mb-4">
           <CheckCircle2 className="w-6 h-6 text-emerald-600" />
         </div>
@@ -49,7 +49,7 @@ export default function QuoteRequestForm() {
   // Unmatched: request saved as an open lead draft — nothing was dropped.
   if (state?.ok && state.unmatched) {
     return (
-      <div className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-6 md:p-8 text-center">
+      <div className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-6 md:p-8 text-center">
         <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center mx-auto mb-4">
           <Clock className="w-6 h-6 text-amber-600" />
         </div>
@@ -79,7 +79,7 @@ export default function QuoteRequestForm() {
     <form
       key={state?.values ? 'retry' : 'fresh'}
       action={formAction}
-      className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-6 md:p-8 space-y-4"
+      className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-6 md:p-8 space-y-4"
     >
       <div className="flex items-center gap-2.5 mb-1">
         <div className="w-10 h-10 rounded-xl bg-smoke flex items-center justify-center">

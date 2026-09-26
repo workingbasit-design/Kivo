@@ -105,7 +105,7 @@ export default function PriceBookClient({
   return (
     <div className="space-y-6">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-zinc-200/60 shadow-sm">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)]">
         <div>
           <h1 className="text-3xl font-bold text-zinc-900 tracking-tight">
             {tr('t10misc.pricebook.title')}

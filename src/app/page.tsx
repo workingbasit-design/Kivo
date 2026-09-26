@@ -169,7 +169,7 @@ export default async function LandingPage() {
             <div className="absolute top-48 -left-48 h-[340px] w-[340px] rounded-full bg-lime/[0.35] blur-3xl" />
             <div className="absolute top-72 -right-48 h-[340px] w-[340px] rounded-full bg-lime/[0.25] blur-3xl" />
           </div>
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-12 md:pt-28 md:pb-16 text-center">
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-12 md:pt-28 md:pb-16 text-center">
             <p
               className="ej-hero-anim inline-flex items-center gap-2 text-[13px] font-medium text-graphite border border-smoke bg-white/70 backdrop-blur rounded-full px-4 py-1.5 mb-8"
               style={heroDelay(0)}
@@ -219,7 +219,7 @@ export default async function LandingPage() {
           </div>
 
           {/* Scattered-context visual — wavy timeline + floating work chips converging to EveryJob */}
-          <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 md:pb-28">
+          <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 md:pb-28">
             <HeroVisual
               strings={{
                 visualLabel: hh('visualLabel'),
@@ -239,7 +239,7 @@ export default async function LandingPage() {
         </section>
 
         {/* Feature grid — hairline dividers, Apple style */}
-        <section id="features" className="py-20 md:py-28 scroll-mt-16">
+        <section id="features" className="py-16 md:py-28 scroll-mt-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <Reveal className="text-center max-w-2xl mx-auto mb-12">
               <h2 className="text-4xl md:text-[56px] leading-[1.05] font-bold tracking-[-0.025em] mb-4">
@@ -272,7 +272,7 @@ export default async function LandingPage() {
         </section>
 
         {/* AI Copilot — dark section */}
-        <section id="copilot" className="relative py-20 md:py-28 bg-zinc-950 text-white scroll-mt-16 overflow-hidden">
+        <section id="copilot" className="relative py-16 md:py-28 bg-zinc-950 text-white scroll-mt-16 overflow-hidden">
           <div aria-hidden className="pointer-events-none absolute inset-0">
             <div className="absolute -top-32 left-1/4 h-[380px] w-[520px] rounded-full bg-lime/10 blur-3xl" />
             <div className="absolute bottom-0 right-0 h-[280px] w-[380px] rounded-full bg-lime/[0.08] blur-3xl" />
@@ -337,7 +337,7 @@ export default async function LandingPage() {
         </section>
 
         {/* Honest stats — Apple rhythm, true numbers only */}
-        <section className="py-20 md:py-28">
+        <section className="py-16 md:py-28">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <Reveal className="text-center mb-14">
               <h2 className="text-4xl md:text-[56px] leading-[1.05] font-bold tracking-[-0.025em]">
@@ -372,7 +372,7 @@ export default async function LandingPage() {
         </section>
 
         {/* How it works */}
-        <section id="how-it-works" className="py-20 md:py-28 bg-paper border-y border-smoke scroll-mt-16">
+        <section id="how-it-works" className="py-16 md:py-28 bg-paper border-y border-smoke scroll-mt-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <Reveal className="text-center max-w-2xl mx-auto mb-14">
               <h2 className="text-4xl md:text-[52px] leading-[1.05] font-bold tracking-[-0.025em] mb-4">
@@ -406,7 +406,7 @@ export default async function LandingPage() {
         </section>
 
         {/* Local where it matters — built for Canada */}
-        <section id="regions" className="py-20 md:py-28 scroll-mt-16">
+        <section id="regions" className="py-16 md:py-28 scroll-mt-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <Reveal className="text-center max-w-2xl mx-auto mb-14">
               <p className="text-[13px] font-semibold tracking-[0.18em] text-ink uppercase mb-5 flex items-center justify-center gap-2">
@@ -452,7 +452,7 @@ export default async function LandingPage() {
         </section>
 
         {/* Directory teaser */}
-        <section id="directory" className="pb-20 md:pb-28 scroll-mt-16">
+        <section id="directory" className="pb-16 md:pb-28 scroll-mt-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <Reveal>
               <div className="grid lg:grid-cols-2 gap-10 items-center bg-paper rounded-[32px] border border-smoke p-8 md:p-14">
@@ -517,7 +517,7 @@ export default async function LandingPage() {
         </section>
 
         {/* FAQ */}
-        <section id="faq" className="py-20 md:py-28 bg-paper border-y border-smoke scroll-mt-16">
+        <section id="faq" className="py-16 md:py-28 bg-paper border-y border-smoke scroll-mt-16">
           <div className="max-w-3xl mx-auto px-4 sm:px-6">
             <Reveal>
               <p className="text-[13px] font-semibold uppercase tracking-[0.14em] text-graphite mb-4">

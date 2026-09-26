@@ -47,7 +47,7 @@ export default function ManualEntryForm({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-5">
+    <div className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
       <button
         onClick={() => setOpen(!open)}
         className="flex items-center gap-2 text-sm font-bold text-zinc-900"

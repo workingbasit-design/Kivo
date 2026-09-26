@@ -81,7 +81,7 @@ export default async function PublicBookingPage({
 
       <main className="max-w-lg mx-auto px-4 py-6 space-y-5">
         {page.intro && (
-          <p className="text-sm text-zinc-600 bg-white rounded-2xl border border-zinc-200/60 shadow-sm p-5">
+          <p className="text-sm text-zinc-600 bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
             {page.intro}
           </p>
         )}

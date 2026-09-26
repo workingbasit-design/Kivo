@@ -165,7 +165,7 @@ export default async function JobsPage({
             <Link
               key={job.id}
               href={`/jobs/${job.id}`}
-              className="ej-row-in flex items-center justify-between gap-4 p-4 md:p-5 bg-white rounded-2xl border border-zinc-200/60 shadow-sm md:rounded-none md:border-0 md:shadow-none hover:bg-zinc-50/70 transition-colors"
+              className="ej-row-in flex items-center justify-between gap-4 p-4 md:p-5 bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] md:rounded-none md:border-0 md:shadow-none hover:bg-zinc-50/70 transition-colors"
               // @ts-expect-error CSS custom property for the stagger animation
               style={{ '--row-delay': `${Math.min(i, 12) * 35}ms` }}
             >
