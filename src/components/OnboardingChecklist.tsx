@@ -106,7 +106,7 @@ export default function OnboardingChecklist({
   const total = STEPS.length;
 
   return (
-    <Card>
+    <Card className="p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-lg font-bold text-zinc-900">

@@ -307,6 +307,36 @@ export default function GlobalCopilotWidget({
   const quickPrompts = QUICK_PROMPTS[lang];
   const reduceMotion = useReducedMotion();
   const [isOpen, setIsOpen] = useState(false);
+  // On mobile the FAB floats over page content; hide it while the user
+  // scrolls down so it never sits on top of buttons they need to tap,
+  // and bring it back when they scroll up. Desktop keeps it always visible.
+  const [fabHidden, setFabHidden] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mq = window.matchMedia('(max-width: 767px)');
+    let lastY = window.scrollY;
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        const y = window.scrollY;
+        if (!mq.matches) {
+          setFabHidden(false);
+        } else if (y < 40) {
+          setFabHidden(false);
+        } else {
+          const dy = y - lastY;
+          if (dy > 6) setFabHidden(true);
+          else if (dy < -6) setFabHidden(false);
+        }
+        lastY = y;
+      });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -475,11 +505,16 @@ export default function GlobalCopilotWidget({
         {!isOpen && (
           <motion.button
             initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
+            animate={{
+              scale: fabHidden ? 0.6 : 1,
+              opacity: fabHidden ? 0 : 1,
+              y: fabHidden ? 16 : 0,
+            }}
             exit={{ scale: 0, opacity: 0 }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsOpen(true)}
+            style={{ pointerEvents: fabHidden ? 'none' : 'auto' }}
             className="fixed bottom-24 right-4 md:bottom-10 md:right-10 w-14 h-14 bg-lime rounded-full flex items-center justify-center shadow-2xl shadow-ink/20 z-50 hover:brightness-105 transition-all border border-ink/10"
             aria-label={t(lang, 'copilot.openLabel')}
           >
