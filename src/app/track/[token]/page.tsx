@@ -73,22 +73,22 @@ export default async function TrackPage({
     },
   });
   // Token lookup without the DB-side expiry filter (moved to JS below).
-  // Emits a hidden diagnostic marker so we can distinguish "token not found"
-  // from "token found but expired" when debugging the tracking-link issue.
+  // The data-track-diag attribute is a real, greppable marker (JSX comments
+  // are stripped at compile time and never reach the browser) so we can
+  // distinguish "token not found" from "token found but expired" when
+  // debugging the tracking-link issue.
   if (!share) {
     return (
-      <>
-        {/* diag: tracking token not found in DB */}
+      <div data-track-diag="token-not-found">
         <PortalNotice variant="expired" />
-      </>
+      </div>
     );
   }
   if (share.expiresAt.getTime() <= Date.now()) {
     return (
-      <>
-        {/* diag: tracking token found but expired */}
+      <div data-track-diag="token-expired">
         <PortalNotice variant="expired" />
-      </>
+      </div>
     );
   }
 
