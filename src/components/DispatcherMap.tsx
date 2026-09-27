@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /**
  * Live map — Leaflet loaded from CDN (no npm dependency, no API key, free
@@ -111,6 +111,7 @@ export default function DispatcherMap({
   const layerRef = useRef<any>(null);
   const pinsRef = useRef<MapPin[]>(pins);
   pinsRef.current = pins;
+  const [mapReady, setMapReady] = useState(false);
 
   // Draw (or redraw) the current pins. Called after init and whenever pins change.
   const drawPins = () => {
@@ -161,6 +162,7 @@ export default function DispatcherMap({
         layerRef.current = L.layerGroup().addTo(map);
         mapRef.current = map;
         drawRef.current();
+        if (!cancelled) setMapReady(true);
       })
       .catch(() => {
         // Graceful degradation: surrounding list views still work without tiles.
@@ -187,12 +189,25 @@ export default function DispatcherMap({
   }, [pins]);
 
   return (
-    <div
-      ref={containerRef}
-      className={className}
-      style={{ height, width: '100%', borderRadius: 16, zIndex: 0 }}
-      role="img"
-      aria-label="Live map of technician locations"
-    />
+    <div className="relative" style={{ height, width: '100%' }}>
+      {!mapReady && (
+        <div
+          className="absolute inset-0 flex items-center justify-center rounded-2xl bg-zinc-100"
+          aria-hidden={mapReady}
+        >
+          <div className="flex flex-col items-center gap-2 text-zinc-400">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-300 border-t-lime-500" />
+            <span className="text-xs font-medium">Loading map…</span>
+          </div>
+        </div>
+      )}
+      <div
+        ref={containerRef}
+        className={className}
+        style={{ height, width: '100%', borderRadius: 16, zIndex: 0 }}
+        role="img"
+        aria-label="Live map of technician locations"
+      />
+    </div>
   );
 }

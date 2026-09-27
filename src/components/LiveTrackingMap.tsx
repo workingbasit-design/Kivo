@@ -28,9 +28,15 @@ export default function LiveTrackingMap({ locale = 'en' }: { locale?: Locale }) 
     const load = async () => {
       try {
         const res = await fetch('/api/locations/latest', { credentials: 'same-origin' });
-        if (!res.ok) return;
+        if (!res.ok) {
+          setLoaded(true);
+          return;
+        }
         const data = await res.json();
-        if (cancelled || !data?.ok || !Array.isArray(data.jobs)) return;
+        if (cancelled || !data?.ok || !Array.isArray(data.jobs)) {
+          setLoaded(true);
+          return;
+        }
         const jobs = data.jobs as LatestJob[];
         setJobs(jobs);
         const next: MapPin[] = jobs
