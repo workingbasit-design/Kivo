@@ -120,6 +120,7 @@ model Business {
   webhookEndpoints     WebhookEndpoint[]
   supportTickets       SupportTicket[]
   equipment            Equipment[]
+  parts                Part[]
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
 }
@@ -1189,4 +1190,24 @@ model Equipment {
 
   @@index([businessId])
   @@index([customerId])
+}
+
+// Parts inventory — track stock quantities for materials/parts.
+// Lightweight: name, SKU, quantity on hand, reorder point, unit cost.
+model Part {
+  id           String   @id @default(cuid())
+  name         String
+  sku          String?
+  quantity     Float    @default(0)
+  reorderPoint Float? // alert when quantity <= reorderPoint
+  unitCost     Float? // cost per unit (for job costing)
+  unit         String? // e.g. "each", "ft", "box"
+  notes        String?
+  businessId   String
+  business     Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([businessId])
+  @@index([businessId, name])
 }
