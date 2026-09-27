@@ -2,7 +2,7 @@ import {
   LayoutDashboard, Calendar, Users, Briefcase, FileText, Wallet,
   Settings, ClipboardList, Tag, Star, PieChart, Sparkles,
   UserPlus, Megaphone, Repeat, Route, BellRing, Timer,
-  UserCog, Import, MapPin, type LucideIcon,
+  UserCog, Import, MapPin, ClipboardCheck, Wrench, type LucideIcon,
 } from 'lucide-react';
 
 export interface NavItem {
@@ -30,6 +30,7 @@ export const navSections: NavSection[] = [
       { nameKey: 'nav.dashboard', href: '/dashboard', icon: LayoutDashboard },
       { nameKey: 'nav.schedule', href: '/schedule', icon: Calendar },
       { nameKey: 'nav.jobs', href: '/jobs', icon: Briefcase },
+      { nameKey: 'nav.dispatch', href: '/dispatch', icon: ClipboardCheck },
       { nameKey: 'nav.recurring', href: '/recurring', icon: Repeat },
       { nameKey: 'nav.routes', href: '/routes', icon: Route, advanced: true },
       { nameKey: 'nav.tracking', href: '/tracking', icon: MapPin, advanced: true },
@@ -48,6 +49,7 @@ export const navSections: NavSection[] = [
     items: [
       { nameKey: 'nav.leads', href: '/leads', icon: UserPlus },
       { nameKey: 'nav.customers', href: '/customers', icon: Users },
+      { nameKey: 'nav.equipment', href: '/equipment', icon: Wrench, advanced: true },
       { nameKey: 'nav.reviews', href: '/reviews', icon: Star },
     ],
   },

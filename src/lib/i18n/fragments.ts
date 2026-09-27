@@ -39,8 +39,10 @@ import quickbooks from './fragments/quickbooks.ts';
 import paymentsFrag from './fragments/payments.ts';
 import pwa from './fragments/pwa.ts';
 import integrations from './fragments/integrations.ts';
+import dispatch from './fragments/dispatch.ts';
+import equipment from './fragments/equipment.ts';
 
-const FRAGMENTS: I18nFragment[] = [reminders, jobops, quotes, homehero, homefaq, notifications, track9, googleReviews, attachments, imports, googleAuth, track8, billing, customerExtras, quoteItems, track10work, track10money, track10misc, exportsFrag, credentials, gps, support, quickbooks, paymentsFrag, pwa, integrations];
+const FRAGMENTS: I18nFragment[] = [reminders, jobops, quotes, homehero, homefaq, notifications, track9, googleReviews, attachments, imports, googleAuth, track8, billing, customerExtras, quoteItems, track10work, track10money, track10misc, exportsFrag, credentials, gps, support, quickbooks, paymentsFrag, pwa, integrations, dispatch, equipment];
 
 function deepMerge(target: Dictionary, src: Dictionary): Dictionary {
   for (const [k, v] of Object.entries(src)) {
