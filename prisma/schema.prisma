@@ -119,7 +119,6 @@ model Business {
   apiKeys              ApiKey[]
   webhookEndpoints     WebhookEndpoint[]
   supportTickets       SupportTicket[]
-  equipment            Equipment[]
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
 }
@@ -152,7 +151,6 @@ model Customer {
   reviewRequests       ReviewRequest[]
   recurringJobs        RecurringJob[]
   portalTokens         CustomerPortalToken[]
-  equipment            Equipment[]
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
 
@@ -1168,25 +1166,4 @@ model PiaAuditLog {
 
   @@index([businessId, createdAt])
   @@index([userId, createdAt])
-}
-
-// Equipment tracking — per-customer equipment records (HVAC units, appliances,
-// etc.) so technicians know what they're servicing. Housecall Pro parity.
-model Equipment {
-  id          String    @id @default(cuid())
-  name        String // e.g. "Furnace", "AC Unit", "Water Heater"
-  brand       String?
-  model       String?
-  serial      String?
-  installDate DateTime?
-  notes       String?
-  customerId  String
-  customer    Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  businessId  String
-  business    Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  @@index([businessId])
-  @@index([customerId])
 }

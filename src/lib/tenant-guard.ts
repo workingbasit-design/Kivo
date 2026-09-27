@@ -87,7 +87,6 @@ export const TENANT_MODELS: ReadonlySet<string> = new Set([
   'Designation',
   'DirectoryClaim',
   'DirectoryReport',
-  'Equipment',
   'GoogleConnection',
   'Invoice',
   'Job',
