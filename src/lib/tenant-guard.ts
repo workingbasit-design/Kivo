@@ -98,6 +98,7 @@ export const TENANT_MODELS: ReadonlySet<string> = new Set([
   'MessagingConnection',
   'MessagingSettings',
   'Notification',
+  'Part',
   'Payment',
   'PiaAuditLog',
   'PushSubscription',
