@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import { ArrowLeft, Phone, Mail, MapPin, StickyNote, Briefcase, FileText, Star, Wrench } from 'lucide-react';
+import { ArrowLeft, Phone, Mail, MapPin, StickyNote, Briefcase, FileText, Star } from 'lucide-react';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { logPiiAccess } from '@/lib/pii-audit';
@@ -61,10 +61,6 @@ async function loadCustomer(id: string, businessId: string) {
       },
       fieldValues: {
         select: { fieldId: true, value: true },
-      },
-      equipment: {
-        orderBy: { updatedAt: 'desc' },
-        select: { id: true, name: true, brand: true, model: true, serial: true },
       },
     },
   });
@@ -390,41 +386,9 @@ export default async function CustomerDetailPage({
         )}
       </Card>
 
-      {/* Equipment */}
-      <Card>
-        <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Wrench size={16} className="text-zinc-400" />
-            <h3 className="font-bold text-sm text-zinc-900">Equipment</h3>
-          </div>
-          <Link
-            href={`/equipment/new?customerId=${customer.id}`}
-            className="text-xs font-semibold text-lime-700 hover:text-lime-800 min-h-[36px] inline-flex items-center px-2"
-          >
-            + Add equipment
-          </Link>
-        </div>
-        {customer.equipment.length === 0 ? (
-          <p className="px-6 py-4 text-sm text-zinc-500">No equipment recorded for this customer.</p>
-        ) : (
-          <ul className="divide-y divide-zinc-100">
-            {customer.equipment.map((eq) => (
-              <li key={eq.id} className="px-6 py-3.5">
-                <Link href={`/equipment/${eq.id}`} className="block hover:bg-zinc-50 -mx-6 px-6 py-1">
-                  <p className="text-sm font-semibold text-zinc-900">{eq.name}</p>
-                  <p className="text-xs text-zinc-500 mt-0.5">
-                    {[eq.brand, eq.model].filter(Boolean).join(' · ')}
-                    {eq.serial ? ` · S/N ${eq.serial}` : ''}
-                  </p>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Card>
-
       {/* Reviews */}
-      {customer.reviews.length > 0 && (        <Card>
+      {customer.reviews.length > 0 && (
+        <Card>
           <div className="px-6 py-4 border-b border-zinc-100 flex items-center gap-2">
             <Star size={16} className="text-zinc-400" />
             <h3 className="font-bold text-sm text-zinc-900">Reviews</h3>
