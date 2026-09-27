@@ -95,7 +95,7 @@ export default function OnboardingChecklist({
       <button
         type="button"
         onClick={show}
-        className="text-sm font-medium text-zinc-500 hover:text-zinc-800 underline underline-offset-2"
+        className="inline-flex items-center gap-1.5 rounded-xl border border-dashed border-zinc-300 bg-zinc-50 px-4 py-2.5 text-sm font-medium text-zinc-500 hover:text-zinc-800 hover:border-zinc-400 hover:bg-zinc-100 min-h-[44px] transition-colors"
       >
         {t(locale, 'support.onboardingShow')}
       </button>
@@ -119,7 +119,7 @@ export default function OnboardingChecklist({
         <button
           type="button"
           onClick={dismiss}
-          className="shrink-0 rounded-lg px-2 py-1 text-xs font-medium text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 min-h-[32px]"
+          className="shrink-0 inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold text-zinc-600 hover:text-zinc-900 hover:border-zinc-300 hover:bg-zinc-50 min-h-[40px] transition-colors"
         >
           {t(locale, 'support.onboardingDismiss')}
         </button>
