@@ -7,7 +7,6 @@ import { t, type Locale } from '@/lib/i18n';
 import {
   recordPayment,
   sendInvoiceEmail,
-  updateInvoiceStatus,
   deleteInvoice,
   type ActionResult,
 } from '@/app/actions/invoices';
@@ -66,10 +65,6 @@ export default function InvoiceActions({
     sendInvoiceEmail,
     {}
   );
-  const [statusState, statusAction, statusPending] = useActionState<ActionResult, FormData>(
-    updateInvoiceStatus,
-    {}
-  );
   const [deleteState, deleteAction, deletePending] = useActionState<ActionResult, FormData>(
     deleteInvoice,
     {}
@@ -85,13 +80,10 @@ export default function InvoiceActions({
   useResultToast(emailState, {
     success: t(locale, 't10money.invoiceEmailSent'),
   });
-  useResultToast(statusState, {
-    success: t(locale, 't10money.invoiceUpdated'),
-  });
   // deleteInvoice redirects to the invoices list on success — toast on failure only.
   useResultToast(deleteState, {});
 
-  const error = payState?.error || emailState?.error || statusState?.error || deleteState?.error;
+  const error = payState?.error || emailState?.error || deleteState?.error;
 
   return (
     <div className="space-y-4">
@@ -153,15 +145,11 @@ export default function InvoiceActions({
       )}
 
       <div className="flex flex-wrap items-center gap-2">
-        {status === 'UNPAID' && (
-          <form action={statusAction}>
-            <input type="hidden" name="id" value={id} />
-            <input type="hidden" name="status" value="PARTIALLY PAID" />
-            <button type="submit" disabled={statusPending} className={secondaryBtnClass}>
-              {statusPending ? t(locale, 't10money.invSaving') : t(locale, 't10money.invMarkPartial')}
-            </button>
-          </form>
-        )}
+        {/* NOTE: the old "Mark partially paid" button was removed 2026-09-28.
+            It flipped the status to PARTIALLY PAID without recording any
+            payment (Paid $0.00) — a dishonest state. Partial payments are
+            recorded through "Record payment" above, which sets the status
+            from the actual amounts. */}
 
         <form action={emailAction}>
           <input type="hidden" name="id" value={id} />

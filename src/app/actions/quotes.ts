@@ -508,6 +508,7 @@ export async function convertQuoteToJob(
     where: { id, businessId },
     include: {
       customer: true,
+      lineItems: { select: { qty: true, unitPrice: true } },
       addons: { select: { title: true, price: true, selected: true } },
     },
   });
@@ -516,12 +517,21 @@ export async function convertQuoteToJob(
     return { error: 'Only approved quotes can be converted to jobs.' };
   }
 
-  // The client-approved total includes any selected add-ons — the job
-  // price and notes must reflect what was actually agreed.
+  // The job price must be PRE-TAX: every downstream invoicing path
+  // (batch invoices, milestone invoices) treats job.price as the subtotal
+  // and adds the business tax on top. Passing the tax-inclusive quote total
+  // here used to double-tax the client (2026-09-28 QA: $111.87 → $126.41).
+  // The client-approved tax-inclusive total is preserved in the job notes.
+  const preTax = computeQuoteTotals(
+    quote.lineItems.map((i) => ({ qty: i.qty, unitPrice: i.unitPrice })),
+    { type: quote.discountType as DiscountType, value: quote.discountValue },
+    0
+  ).subtotal;
   const { price: jobPrice, notes: jobNotes } = convertedJobDetails(
     quote.number,
-    quote.total,
-    quote.addons
+    preTax,
+    quote.addons,
+    quote.total
   );
 
   const job = await prisma.job.create({

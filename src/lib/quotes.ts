@@ -33,21 +33,29 @@ export function addonQuoteTotal(
 
 /**
  * What a converted job should look like when an APPROVED quote becomes a
- * job: the price is the client-approved total (base + selected add-ons),
- * and the notes record which add-ons were included so nothing is lost.
+ * job: the price is the PRE-TAX base (subtotal after discount + selected
+ * add-ons), because every invoicing path treats job.price as the subtotal
+ * and adds tax on top. Passing a tax-inclusive total here double-taxes the
+ * client on the invoice. The notes keep the client-approved tax-inclusive
+ * total so the agreed amount is never lost.
  */
 export function convertedJobDetails(
   quoteNumber: string,
-  baseTotal: number,
-  addons: ConvertibleQuoteAddon[]
+  preTaxBase: number,
+  addons: ConvertibleQuoteAddon[],
+  taxInclusiveTotal?: number
 ): { price: number; notes: string } {
   const selected = addons.filter((a) => a.selected);
-  const price = addonQuoteTotal(baseTotal, addons);
+  const price = addonQuoteTotal(preTaxBase, addons);
   const suffix =
     selected.length > 0
       ? ` Includes add-ons: ${selected
           .map((a) => `${a.title} ($${a.price.toFixed(2)})`)
           .join(', ')}.`
       : '';
-  return { price, notes: `Converted from quote ${quoteNumber}.${suffix}` };
+  const agreed =
+    taxInclusiveTotal != null
+      ? ` Client-approved total: $${taxInclusiveTotal.toFixed(2)} (incl. tax).`
+      : '';
+  return { price, notes: `Converted from quote ${quoteNumber}.${suffix}${agreed}` };
 }

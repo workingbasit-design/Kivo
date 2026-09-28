@@ -217,3 +217,28 @@ test('convertedJobDetails: no add-ons selected keeps base total and plain note',
   assert.equal(price, 189.99);
   assert.equal(notes, 'Converted from quote Q-1043.');
 });
+
+/* ---------------- quote -> job double-tax regression (2026-09-28) ---------------- */
+
+test('convertedJobDetails: records the tax-inclusive agreed total in notes', () => {
+  // QA case: quote Q-0003 total $111.87 (incl. 13% tax) on a $99.00 pre-tax
+  // base. The job price must be the PRE-TAX $99.00 so invoicing adds tax
+  // exactly once; the agreed $111.87 must survive in the notes.
+  const { price, notes } = convertedJobDetails('Q-0003', 99.0, [], 111.87);
+  assert.equal(price, 99.0);
+  assert.ok(notes.includes('Client-approved total: $111.87 (incl. tax)'));
+});
+
+test('convertedJobDetails: invoicing the converted price adds tax exactly once', () => {
+  // Simulate the milestone-invoice math (subtotal + 13% tax): the final
+  // invoice total must equal the client-approved quote total, not more.
+  const { price } = convertedJobDetails('Q-0003', 99.0, [], 111.87);
+  const round2 = (n: number) => Math.round(n * 100) / 100;
+  const invoiceTotal = round2(price + round2((price * 13) / 100));
+  assert.equal(invoiceTotal, 111.87);
+});
+
+test('convertedJobDetails: without an agreed total the note stays plain', () => {
+  const { notes } = convertedJobDetails('Q-1044', 150, []);
+  assert.equal(notes, 'Converted from quote Q-1044.');
+});
