@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { t, type Locale } from '@/lib/i18n';
 import { useLocale } from './LanguageToggle';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import {
   Card,
   Field,
@@ -50,6 +51,7 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
   const [linkUrl, setLinkUrl] = useState<string | null>(null);
   const [linkExpiresAt, setLinkExpiresAt] = useState<string | null>(null);
   const [linkBusy, setLinkBusy] = useState(false);
+  const [confirmingRevoke, setConfirmingRevoke] = useState(false);
 
   const timerRef = useRef<number | null>(null);
   const watchIdRef = useRef<number | null>(null);
@@ -292,7 +294,7 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
 
   const revokeLink = useCallback(async () => {
     if (!jobIdRef.current || linkBusy) return;
-    if (!window.confirm(tr('gps.confirmRevoke'))) return;
+    setConfirmingRevoke(false);
     setLinkBusy(true);
     try {
       const res = await fetch(
@@ -436,7 +438,7 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
                   </a>
                   <button
                     type="button"
-                    onClick={revokeLink}
+                    onClick={() => setConfirmingRevoke(true)}
                     disabled={linkBusy}
                     className={dangerBtnClass}
                   >
@@ -475,6 +477,14 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
           {notice}
         </p>
       )}
+      <ConfirmDialog
+        open={confirmingRevoke}
+        title={tr('gps.confirmRevokeTitle')}
+        message={tr('gps.confirmRevoke')}
+        busy={linkBusy}
+        onConfirm={revokeLink}
+        onClose={() => setConfirmingRevoke(false)}
+      />
     </Card>
   );
 }

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Trash2 } from 'lucide-react';
 import { t, type Locale } from '@/lib/i18n';
 import { Card, Field } from '@/components/ui';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import { deleteEquipment } from '@/app/actions/equipment';
 
 export default function EquipmentDetailClient({
@@ -27,10 +28,11 @@ export default function EquipmentDetailClient({
 }) {
   const router = useRouter();
   const [deleting, setDeleting] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const T = (k: string) => t(locale, `equipment.${k}`);
 
   const onDelete = async () => {
-    if (!confirm(T('deleteConfirm'))) return;
+    setConfirming(false);
     setDeleting(true);
     const res = await deleteEquipment(equipment.id);
     if (res.ok) {
@@ -83,12 +85,20 @@ export default function EquipmentDetailClient({
 
       <button
         type="button"
-        onClick={onDelete}
+        onClick={() => setConfirming(true)}
         disabled={deleting}
         className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50 min-h-[44px]"
       >
         <Trash2 size={14} /> {deleting ? '…' : T('delete')}
       </button>
+      <ConfirmDialog
+        open={confirming}
+        title={T('deleteConfirmTitle')}
+        message={T('deleteConfirm')}
+        busy={deleting}
+        onConfirm={onDelete}
+        onClose={() => setConfirming(false)}
+      />
     </div>
   );
 }

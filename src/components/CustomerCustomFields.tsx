@@ -5,6 +5,7 @@ import { Tag, Plus, Pencil, Trash2, Loader2, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import { Card, Field, inputClass, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import {
   listFieldDefs,
   createFieldDef,
@@ -41,6 +42,7 @@ export default function CustomerCustomFields({
   const [error, setError] = useState<string | null>(null);
   const [savedId, setSavedId] = useState<string | null>(null);
   const [busy, startTransition] = useTransition();
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
 
   const L = (path: string) => t(locale, path);
   const errMsg = (code: CustomFieldErrorCode) => L(`customfields.errors.${code}`);
@@ -94,7 +96,7 @@ export default function CustomerCustomFields({
   }
 
   async function removeDef(id: string) {
-    if (!window.confirm(L('customfields.deleteConfirm'))) return;
+    setConfirmingDeleteId(null);
     setError(null);
     const res = await deleteFieldDef(id);
     if (!res.ok) setError(errMsg(res.error));
@@ -232,7 +234,7 @@ export default function CustomerCustomFields({
                     </button>
                     <button
                       type="button"
-                      onClick={() => startTransition(() => removeDef(def.id))}
+                      onClick={() => setConfirmingDeleteId(def.id)}
                       className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-zinc-400 hover:text-rose-600 hover:bg-rose-50"
                       aria-label={L('customfields.delete')}
                     >
@@ -245,6 +247,14 @@ export default function CustomerCustomFields({
           </ul>
         )}
       </div>
+      <ConfirmDialog
+        open={confirmingDeleteId !== null}
+        title={L('customfields.deleteConfirmTitle')}
+        message={L('customfields.deleteConfirm')}
+        busy={busy}
+        onConfirm={() => confirmingDeleteId && removeDef(confirmingDeleteId)}
+        onClose={() => setConfirmingDeleteId(null)}
+      />
     </Card>
   );
 }
