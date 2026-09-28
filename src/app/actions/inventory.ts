@@ -111,19 +111,26 @@ export async function adjustPartQuantity(id: string, delta: number): Promise<Act
   const { businessId, user } = await requireAuth();
   const limited = await checkLimit(user.id);
   if (limited) return limited;
-  const existing = await prisma.part.findFirst({
-    where: { id, businessId },
-    select: { id: true, quantity: true },
-  });
-  if (!existing) return { ok: false, error: 'Part not found' };
 
-  const newQty = existing.quantity + delta;
-  if (newQty < 0) return { ok: false, error: 'Quantity cannot go below zero' };
-
-  await prisma.part.update({
-    where: { id },
-    data: { quantity: newQty },
+  // Atomic: the "won't go below zero" guard lives in the WHERE clause, so
+  // concurrent taps can't race a read-then-write into negative stock.
+  // Single statement — safe under the one-connection pool constraint.
+  const result = await prisma.part.updateMany({
+    where: {
+      id,
+      businessId,
+      quantity: { gte: -delta },
+    },
+    data: { quantity: { increment: delta } },
   });
+  if (result.count === 0) {
+    const exists = await prisma.part.findFirst({
+      where: { id, businessId },
+      select: { id: true },
+    });
+    if (!exists) return { ok: false, error: 'Part not found' };
+    return { ok: false, error: 'Quantity cannot go below zero' };
+  }
   revalidatePath('/inventory');
   return { ok: true };
 }

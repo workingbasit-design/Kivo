@@ -4,13 +4,13 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { JOB_STATUSES } from '@/lib/validations';
+import { isValidTransition } from '@/lib/job-status';
 
 export interface ActionResult {
   ok: boolean;
   error?: string;
 }
-
-const VALID_STATUSES = ['SCHEDULED', 'IN PROGRESS', 'COMPLETED'] as const;
 
 async function checkLimit(userId: string): Promise<ActionResult | null> {
   const rl = rateLimit(`dispatch:${userId}`, ACTION_LIMIT);
@@ -23,19 +23,24 @@ async function checkLimit(userId: string): Promise<ActionResult | null> {
 /**
  * Dispatch board actions — advance a job's status or assign a technician.
  * Tenant-scoped: the job must belong to the caller's business.
+ * Status changes follow the same pipeline transition rules as the job
+ * detail page (forward freely, one step back for mistaken taps).
  */
 export async function updateJobStatus(jobId: string, status: string): Promise<ActionResult> {
   const { businessId, user } = await requireAuth();
   const limited = await checkLimit(user.id);
   if (limited) return limited;
-  if (!(VALID_STATUSES as readonly string[]).includes(status)) {
+  if (!(JOB_STATUSES as readonly string[]).includes(status)) {
     return { ok: false, error: 'Invalid status' };
   }
   const job = await prisma.job.findFirst({
     where: { id: jobId, businessId },
-    select: { id: true },
+    select: { id: true, status: true },
   });
   if (!job) return { ok: false, error: 'Job not found' };
+  if (!isValidTransition(job.status, status)) {
+    return { ok: false, error: `Cannot move job from ${job.status} to ${status}.` };
+  }
 
   await prisma.job.update({
     where: { id: jobId },

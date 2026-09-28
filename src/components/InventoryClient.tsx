@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useOptimistic } from 'react';
+import { useEffect, useRef, useState, useTransition, useOptimistic } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Search, Minus, Plus, AlertTriangle } from 'lucide-react';
@@ -8,6 +8,9 @@ import { t, type Locale } from '@/lib/i18n';
 import { Card, Badge } from '@/components/ui';
 import { adjustPartQuantity } from '@/app/actions/inventory';
 import { cn } from '@/lib/utils';
+
+/** Debounce delay before a keystroke triggers a search navigation. */
+const SEARCH_DEBOUNCE_MS = 400;
 
 export interface InventoryPart {
   id: string;
@@ -37,6 +40,7 @@ export default function InventoryClient({
   const T = (k: string) => t(locale, `inventory.${k}`);
 
   const [parts, setParts] = useState(initialParts);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const doSearch = (v: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -44,6 +48,17 @@ export default function InventoryClient({
     else params.delete('q');
     startTransition(() => router.replace(`/inventory?${params.toString()}`));
   };
+
+  // Debounced: navigate only after the user pauses typing, not per keystroke.
+  useEffect(() => {
+    if (query === initialQuery) return;
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => doSearch(query), SEARCH_DEBOUNCE_MS);
+    return () => {
+      if (timer.current) clearTimeout(timer.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query]);
 
   const adjust = (part: InventoryPart, delta: number) => {
     const newQty = part.quantity + delta;
@@ -78,7 +93,6 @@ export default function InventoryClient({
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
-            doSearch(e.target.value);
           }}
           placeholder={T('searchPlaceholder')}
           aria-label={T('searchPlaceholder')}

@@ -62,6 +62,8 @@ function makeIcon(tone: 'active' | 'arrived'): unknown {
 
 let leafletLoadPromise: Promise<void> | null = null;
 
+const LEAFLET_TIMEOUT_MS = 15000;
+
 function loadLeaflet(): Promise<void> {
   if (leafletLoadPromise) return leafletLoadPromise;
   leafletLoadPromise = new Promise<void>((resolve, reject) => {
@@ -73,6 +75,12 @@ function loadLeaflet(): Promise<void> {
       resolve();
       return;
     }
+    // Timeout: on slow/blocked networks the script tag may never fire
+    // onload/onerror — don't leave the UI spinning forever.
+    const timer = setTimeout(() => {
+      leafletLoadPromise = null; // allow a later retry
+      reject(new Error('Leaflet load timed out'));
+    }, LEAFLET_TIMEOUT_MS);
     if (!document.querySelector(`link[href="${LEAFLET_CSS}"]`)) {
       const link = document.createElement('link');
       link.rel = 'stylesheet';
@@ -82,8 +90,15 @@ function loadLeaflet(): Promise<void> {
     const script = document.createElement('script');
     script.src = LEAFLET_JS;
     script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error('Leaflet failed to load'));
+    script.onload = () => {
+      clearTimeout(timer);
+      resolve();
+    };
+    script.onerror = () => {
+      clearTimeout(timer);
+      leafletLoadPromise = null; // allow a later retry
+      reject(new Error('Leaflet failed to load'));
+    };
     document.head.appendChild(script);
   });
   return leafletLoadPromise;
@@ -112,6 +127,8 @@ export default function DispatcherMap({
   const pinsRef = useRef<MapPin[]>(pins);
   pinsRef.current = pins;
   const [mapReady, setMapReady] = useState(false);
+  const [mapFailed, setMapFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   // Draw (or redraw) the current pins. Called after init and whenever pins change.
   const drawPins = () => {
@@ -139,17 +156,21 @@ export default function DispatcherMap({
   const drawRef = useRef(drawPins);
   drawRef.current = drawPins;
 
-  // Init once.
+  // Init once (re-runs when the user taps Retry after a failure).
   useEffect(() => {
     let cancelled = false;
     const el = containerRef.current;
     if (!el) return;
 
+    setMapFailed(false);
     loadLeaflet()
       .then(() => {
         if (cancelled || !el) return;
         const L = leaflet();
-        if (!L) return;
+        if (!L) {
+          if (!cancelled) setMapFailed(true);
+          return;
+        }
         const map = L.map(el, { scrollWheelZoom: false }).setView([43.6532, -79.3832], 10);
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
           maxZoom: 19,
@@ -165,11 +186,9 @@ export default function DispatcherMap({
         if (!cancelled) setMapReady(true);
       })
       .catch(() => {
-        // Graceful degradation: surrounding list views still work without tiles.
-        if (el && !cancelled) {
-          el.innerHTML =
-            '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#71717a;font-size:14px;padding:24px;text-align:center;">Map unavailable — the job list is still up to date.</div>';
-        }
+        // Graceful degradation: show a fallback with retry instead of a
+        // stuck spinner. The surrounding list views work without tiles.
+        if (!cancelled) setMapFailed(true);
       });
 
     return () => {
@@ -181,7 +200,7 @@ export default function DispatcherMap({
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [attempt]);
 
   // Redraw when pins change (e.g. a polling parent refetches /api/locations/latest).
   useEffect(() => {
@@ -190,7 +209,7 @@ export default function DispatcherMap({
 
   return (
     <div className="relative" style={{ height, width: '100%' }}>
-      {!mapReady && (
+      {!mapReady && !mapFailed && (
         <div
           className="absolute inset-0 flex items-center justify-center rounded-2xl bg-zinc-100"
           aria-hidden={mapReady}
@@ -199,6 +218,20 @@ export default function DispatcherMap({
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-300 border-t-lime-500" />
             <span className="text-xs font-medium">Loading map…</span>
           </div>
+        </div>
+      )}
+      {mapFailed && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl bg-zinc-100 px-6 text-center">
+          <p className="text-sm text-zinc-500">
+            Map unavailable — check your connection. The job list below is still up to date.
+          </p>
+          <button
+            type="button"
+            onClick={() => setAttempt((a) => a + 1)}
+            className="rounded-xl bg-zinc-900 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-700"
+          >
+            Retry map
+          </button>
         </div>
       )}
       <div
