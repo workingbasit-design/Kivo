@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { getLocale } from '@/lib/i18n/server';
+import { LanguageToggle } from '@/components/LanguageToggle';
 import type { LegalPage } from '@/lib/legal';
 
 /** Shared renderer for the legal pages (privacy, terms, copyright). */
@@ -9,9 +10,12 @@ export default async function LegalLayout({ page }: { page: { en: LegalPage; fr:
   return (
     <div className="min-h-screen bg-paper">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
-        <Link href="/" className="text-sm font-semibold text-ink hover:underline">
-          ← EveryJob
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link href="/" className="text-sm font-semibold text-ink hover:underline">
+            ← EveryJob
+          </Link>
+          <LanguageToggle current={locale} />
+        </div>
         <h1 className="mt-6 text-3xl sm:text-4xl font-bold tracking-tight text-ink">{loc.title}</h1>
         <p className="mt-2 text-sm text-graphite">{loc.updated}</p>
         <div className="mt-6 space-y-4 text-[15px] leading-relaxed text-graphite">
