@@ -4,11 +4,20 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
+import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 
 export interface ActionResult {
   ok: boolean;
   error?: string;
   id?: string;
+}
+
+async function checkLimit(userId: string): Promise<ActionResult | null> {
+  const rl = rateLimit(`inventory:${userId}`, ACTION_LIMIT);
+  if (!rl.ok) {
+    return { ok: false, error: 'Too many requests. Please wait a moment and try again.' };
+  }
+  return null;
 }
 
 const partSchema = z.object({
@@ -27,7 +36,9 @@ function toFormError(e: unknown): string {
 }
 
 export async function createPart(formData: FormData): Promise<ActionResult> {
-  const { businessId } = await requireAuth();
+  const { businessId, user } = await requireAuth();
+  const limited = await checkLimit(user.id);
+  if (limited) return limited;
   try {
     const parsed = partSchema.parse({
       name: formData.get('name'),
@@ -58,7 +69,9 @@ export async function createPart(formData: FormData): Promise<ActionResult> {
 }
 
 export async function updatePart(id: string, formData: FormData): Promise<ActionResult> {
-  const { businessId } = await requireAuth();
+  const { businessId, user } = await requireAuth();
+  const limited = await checkLimit(user.id);
+  if (limited) return limited;
   try {
     const existing = await prisma.part.findFirst({
       where: { id, businessId },
@@ -95,7 +108,9 @@ export async function updatePart(id: string, formData: FormData): Promise<Action
 }
 
 export async function adjustPartQuantity(id: string, delta: number): Promise<ActionResult> {
-  const { businessId } = await requireAuth();
+  const { businessId, user } = await requireAuth();
+  const limited = await checkLimit(user.id);
+  if (limited) return limited;
   const existing = await prisma.part.findFirst({
     where: { id, businessId },
     select: { id: true, quantity: true },
@@ -114,7 +129,9 @@ export async function adjustPartQuantity(id: string, delta: number): Promise<Act
 }
 
 export async function deletePart(id: string): Promise<ActionResult> {
-  const { businessId } = await requireAuth();
+  const { businessId, user } = await requireAuth();
+  const limited = await checkLimit(user.id);
+  if (limited) return limited;
   const existing = await prisma.part.findFirst({
     where: { id, businessId },
     select: { id: true },
