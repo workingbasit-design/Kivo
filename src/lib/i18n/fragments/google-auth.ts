@@ -14,6 +14,8 @@ export default {
       emailUnverified:
         'This Google account has an unverified email address. Verify it with Google first, then try again.',
       sessionMismatch: 'Sign-in session expired. Please try again.',
+      ageRequired:
+        'Please go back and confirm you are 18 or older before creating an account with Google.',
       welcomeTitle: 'Welcome to EveryJob',
       welcomeSubtitle:
         'Your workspace is ready. Add a Canadian contact number so customers can reach you — you can skip this and add it later in Settings.',
@@ -49,6 +51,8 @@ export default {
       emailUnverified:
         'Ce compte Google a une adresse courriel non vérifiée. Vérifiez-la auprès de Google, puis réessayez.',
       sessionMismatch: 'La session de connexion a expiré. Veuillez réessayer.',
+      ageRequired:
+        'Veuillez revenir en arrière et confirmer que vous avez 18 ans ou plus avant de créer un compte avec Google.',
       welcomeTitle: 'Bienvenue à EveryJob',
       welcomeSubtitle:
         'Votre espace de travail est prêt. Ajoutez un numéro de téléphone canadien pour que vos clients puissent vous joindre — vous pouvez passer cette étape et l’ajouter plus tard dans les Réglages.',

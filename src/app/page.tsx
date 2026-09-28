@@ -597,6 +597,15 @@ export default async function LandingPage() {
               <Link href="/directory" className="text-[14px] text-graphite hover:text-ink transition-colors">
                 {h('footer.directory')}
               </Link>
+              <Link href="/privacy" className="text-[14px] text-graphite hover:text-ink transition-colors">
+                {h('footer.privacy')}
+              </Link>
+              <Link href="/terms" className="text-[14px] text-graphite hover:text-ink transition-colors">
+                {h('footer.terms')}
+              </Link>
+              <Link href="/copyright" className="text-[14px] text-graphite hover:text-ink transition-colors">
+                {h('footer.copyright')}
+              </Link>
             </nav>
           </div>
           <div className="mt-8 pt-8 border-t border-smoke text-center">

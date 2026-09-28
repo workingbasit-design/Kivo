@@ -10,6 +10,7 @@ const CODE_TO_KEY: Record<string, string> = {
   denied: 'googleAuth.signInFailed',
   'rate-limited': 'googleAuth.signInFailed',
   'session-mismatch': 'googleAuth.sessionMismatch',
+  'age-required': 'googleAuth.ageRequired',
   'token-exchange': 'googleAuth.signInFailed',
   'verify-failed': 'googleAuth.signInFailed',
   'email-unverified': 'googleAuth.emailUnverified',
