@@ -101,7 +101,7 @@ export async function updateEquipment(id: string, formData: FormData): Promise<A
       customerId: existing.customerId,
     });
     await prisma.equipment.update({
-      where: { id },
+      where: { id, businessId },
       data: {
         name: parsed.name,
         brand: parsed.brand || null,
@@ -128,7 +128,7 @@ export async function deleteEquipment(id: string): Promise<ActionResult> {
     select: { id: true, customerId: true },
   });
   if (!existing) return { ok: false, error: 'Equipment not found' };
-  await prisma.equipment.delete({ where: { id } });
+  await prisma.equipment.delete({ where: { id, businessId } });
   revalidatePath('/equipment');
   revalidatePath(`/customers/${existing.customerId}`);
   return { ok: true };

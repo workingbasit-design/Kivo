@@ -89,7 +89,7 @@ export async function updatePart(id: string, formData: FormData): Promise<Action
       notes: formData.get('notes') || undefined,
     });
     await prisma.part.update({
-      where: { id },
+      where: { id, businessId },
       data: {
         name: parsed.name,
         sku: parsed.sku || null,
@@ -144,7 +144,7 @@ export async function deletePart(id: string): Promise<ActionResult> {
     select: { id: true },
   });
   if (!existing) return { ok: false, error: 'Part not found' };
-  await prisma.part.delete({ where: { id } });
+  await prisma.part.delete({ where: { id, businessId } });
   revalidatePath('/inventory');
   return { ok: true };
 }
