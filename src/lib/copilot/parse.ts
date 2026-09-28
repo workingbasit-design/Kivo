@@ -689,11 +689,35 @@ export function detectIntent(raw: string, followUpName: string | null = null): C
   // query either ("cancel tomorrow's job" contains "tomorrow"). Ask.
   if (isCancellation(text)) return 'unknown';
 
-  const isQuestion = /[?]/.test(raw) || hasAny(text, [
-    ' how much ', ' how many ', ' what ', ' when ', ' show ', ' list ', ' check ',
-    ' combien ', ' quand ', ' quoi ', ' qui ', ' montre ', ' montre moi ',
-    ' affiche ', ' afficher ', ' liste ',
-  ]);
+  // A message LED by a booking verb ("Book ...", "Schedule ...", "Planifie ...")
+  // is a booking command, not a question — even if the job title contains the
+  // word "check" (e.g. "Book schedule check for Alice tomorrow", 2026-09-28 QA).
+  // The "check" question-word only applies when no booking verb leads.
+  const startsWithBookingVerb =
+    /^\s*(book|booked|booking|schedule|scheduling|create|add|plan|arrange|reserver|reserve|reservation|planifier|planifie|ajouter|ajoute|creer|cree)\b/i.test(
+      raw
+    );
+  const isQuestion =
+    /[?]/.test(raw) ||
+    (!startsWithBookingVerb &&
+      hasAny(text, [
+        ' how much ',
+        ' how many ',
+        ' what ',
+        ' when ',
+        ' show ',
+        ' list ',
+        ' check ',
+        ' combien ',
+        ' quand ',
+        ' quoi ',
+        ' qui ',
+        ' montre ',
+        ' montre moi ',
+        ' affiche ',
+        ' afficher ',
+        ' liste ',
+      ]));
 
   // 0. Customer creation — BEFORE job creation, so "add a new customer"
   //    is never misread as a booking. Explicit creation language only.
