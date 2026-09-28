@@ -17,6 +17,7 @@ const fragment = {
       noTeam: 'No team yet',
       viewDetails: 'View job details',
       callCustomer: 'Call customer',
+      selectDate: 'Select date',
     },
     nav: {
       dispatch: 'Dispatch',
@@ -36,6 +37,7 @@ const fragment = {
       noTeam: 'Pas encore d’équipe',
       viewDetails: 'Voir les détails',
       callCustomer: 'Appeler le client',
+      selectDate: 'Choisir une date',
     },
     nav: {
       dispatch: 'Répartition',

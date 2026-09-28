@@ -9,6 +9,7 @@ import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { CalendarDays, User } from 'lucide-react';
 import DispatchBoardClient from '@/components/DispatchBoardClient';
+import DispatchDatePicker from '@/components/DispatchDatePicker';
 
 export const dynamic = 'force-dynamic';
 
@@ -76,6 +77,7 @@ export default async function DispatchPage({
       <PageHeader
         title={T('title')}
         subtitle={formatDateShort(new Date(dateStr + 'T12:00:00'))}
+        actions={<DispatchDatePicker currentDate={dateStr} label={T('selectDate')} />}
       />
       {jobs.length === 0 ? (
         <Card>
