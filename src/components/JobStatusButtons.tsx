@@ -2,42 +2,55 @@
 
 import React, { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Ban, RotateCcw, Trash2, AlertCircle } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Ban, RotateCcw, Trash2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { updateJobStatus, deleteJob } from '@/app/actions/jobs';
 import {
-  primaryBtnClass, secondaryBtnClass, dangerBtnClass, Dialog,
+  primaryBtnClass, secondaryBtnClass, dangerBtnClass, Dialog, StatusBadge,
 } from '@/components/ui';
 import { t, type Locale } from '@/lib/i18n';
-import { cn } from '@/lib/utils';
+import { cn, jobDisplayStatus } from '@/lib/utils';
+import { previousPipelineStatus } from '@/lib/job-status';
 
 const PIPELINE = ['NEW', 'SCHEDULED', 'IN PROGRESS', 'COMPLETED', 'PAID'] as const;
 
 type PendingAction = 'cancel' | 'delete' | null;
 
 /**
- * Client-side status controls for the job detail page. Server re-validates.
+ * Client-side status section for the job detail page: the status badge AND
+ * the status buttons live together here and share one piece of state.
  *
- * Uses in-app confirmation modals (never the native `confirm()` dialog, which
- * is auto-dismissed — i.e. silently cancelled — in automated browsers and
- * some mobile webviews, making the buttons appear to do nothing).
+ * Why: the badge used to be server-rendered while the buttons were client
+ * components calling router.refresh(). On flaky mobile connections the
+ * refresh could return stale data, so the toast said "Job marked COMPLETED"
+ * while the badge still showed the old status. Now the badge updates
+ * instantly from local state on success — no waiting on a server re-render.
+ *
+ * Also offers a one-step "back" undo (COMPLETED -> IN PROGRESS, etc.) so a
+ * mistaken tap can be reversed. The server still enforces the transition
+ * rules; the UI only offers what the server accepts.
  */
 export default function JobStatusButtons({
   jobId,
-  status,
+  status: initialStatus,
+  jobDate,
+  createdLabel,
   locale,
 }: {
   jobId: string;
   status: string;
+  /** ISO date string (YYYY-MM-DD) for the overdue computation. */
+  jobDate: string | null;
+  createdLabel: string;
   locale: Locale;
 }) {
+  const [status, setStatus] = useState(initialStatus);
   const [error, setError] = useState<string | null>(null);
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
   const T = (k: string) => t(locale, `t10work.${k}`);
-  const common = (k: string) => t(locale, `common.${k}`);
   const jobsL = (k: string) => t(locale, `jobs.${k}`);
 
   const runStatus = (next: string) => {
@@ -49,6 +62,9 @@ export default function JobStatusButtons({
           setError(res.error);
           toast.error(T('statusErrorUpdate'));
         } else {
+          // Update the badge + buttons immediately; the server revalidation
+          // keeps lists (jobs, schedule, dashboard) consistent in the bg.
+          setStatus(next);
           toast.success(T('statusChanged').replace('{status}', next));
           router.refresh();
         }
@@ -88,6 +104,7 @@ export default function JobStatusButtons({
 
   const idx = (PIPELINE as readonly string[]).indexOf(status);
   const nextStatus = idx >= 0 && idx < PIPELINE.length - 1 ? PIPELINE[idx + 1] : null;
+  const prevStatus = previousPipelineStatus(status);
   const nextLabel: Record<string, string> = {
     SCHEDULED: T('statusNextSchedule'),
     'IN PROGRESS': T('statusNextStart'),
@@ -96,7 +113,13 @@ export default function JobStatusButtons({
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
+      {/* Badge — updates instantly with the buttons below. */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <StatusBadge status={jobDisplayStatus(status, jobDate)} />
+        <span className="text-xs text-zinc-400">{createdLabel}</span>
+      </div>
+
       <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2">
         {nextStatus && (
           <button
@@ -106,6 +129,18 @@ export default function JobStatusButtons({
           >
             <ArrowRight size={14} />
             {isPending ? T('statusUpdating') : (nextLabel[nextStatus] ?? `Mark ${nextStatus}`)}
+          </button>
+        )}
+
+        {/* Undo: step back one pipeline stage after a mistaken tap. */}
+        {prevStatus && status !== 'CANCELLED' && (
+          <button
+            onClick={() => runStatus(prevStatus)}
+            disabled={isPending}
+            className={cn(secondaryBtnClass, 'w-full sm:w-auto')}
+          >
+            <ArrowLeft size={14} />
+            {T('statusBack').replace('{status}', prevStatus)}
           </button>
         )}
 

@@ -6,8 +6,10 @@
  * `validNextStatuses` so it only offers transitions the server will accept.
  *
  * Rules:
- *  - PIPELINE (NEW -> SCHEDULED -> IN PROGRESS -> COMPLETED -> PAID) is
- *    forward-only; backward moves are rejected.
+ *  - PIPELINE (NEW -> SCHEDULED -> IN PROGRESS -> COMPLETED -> PAID) moves
+ *    forward freely, and ONE step backward (undo for a mistaken tap — e.g.
+ *    COMPLETED -> IN PROGRESS). Jumping back multiple steps at once is
+ *    rejected; tap "back" repeatedly instead.
  *  - CANCELLED is reachable from any status except PAID and CANCELLED.
  *  - A CANCELLED job can only be reopened as NEW or SCHEDULED.
  *  - Moving to the current status is a harmless no-op (allowed).
@@ -27,14 +29,24 @@ export function isValidTransition(from: string, to: string): boolean {
   const fi = (JOB_PIPELINE as readonly string[]).indexOf(from);
   const ti = (JOB_PIPELINE as readonly string[]).indexOf(to);
   if (fi === -1 || ti === -1) return false;
-  return ti > fi; // forward only, never backwards
+  // Forward any number of steps; backward exactly one step (mistake undo).
+  return ti > fi || ti === fi - 1;
 }
 
 /**
  * The statuses a job in `current` may legally move to (excluding `current`
  * itself, which is always a no-op). Sorted: pipeline-forward moves first,
- * then CANCELLED last.
+ * then the one-step-back undo, then CANCELLED last.
  */
 export function validNextStatuses(current: string): string[] {
   return ALL_JOB_STATUSES.filter((s) => s !== current && isValidTransition(current, s));
+}
+
+/**
+ * The single pipeline status a job in `current` can step back to, or null
+ * when there is no earlier pipeline stage (NEW, CANCELLED).
+ */
+export function previousPipelineStatus(current: string): string | null {
+  const i = (JOB_PIPELINE as readonly string[]).indexOf(current);
+  return i > 0 ? JOB_PIPELINE[i - 1] : null;
 }
