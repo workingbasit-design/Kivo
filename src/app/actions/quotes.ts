@@ -20,6 +20,7 @@ import {
 import { convertedJobDetails } from '@/lib/quotes';
 import { formatMoney } from '@/lib/money';
 import { sendPlatformEmail } from '@/lib/messaging/platform-email';
+import { quoteEmail } from '@/lib/messaging/email-templates';
 import { appBaseUrl } from '@/lib/app-url';
 
 export type ActionResult = { error?: string; ok?: boolean; id?: string };
@@ -445,27 +446,18 @@ export async function sendQuoteEmail(
   const link = `${base}/q/${token}`;
 
   const total = formatMoney(quote.total, currency);
-  const subject = `Quote ${quote.number} from ${businessName} / Devis ${quote.number} de ${businessName}`;
-  const body = [
-    `Hi ${quote.customer.name},`,
-    '',
-    `${businessName} prepared quote ${quote.number} (${quote.title}) for you — total ${total}.`,
-    `View it and approve it here: ${link}`,
-    '',
-    'Just reply to this email if you have any questions.',
-    '',
-    '---',
-    '',
-    `Bonjour ${quote.customer.name},`,
-    '',
-    `${businessName} a préparé le devis ${quote.number} (${quote.title}) pour vous — total ${total}.`,
-    `Consultez-le et approuvez-le ici : ${link}`,
-    '',
-    'Répondez simplement à ce courriel si vous avez des questions.',
-  ].join('\n');
+  const tpl = quoteEmail({
+    customerName: quote.customer.name,
+    businessName,
+    quoteNumber: quote.number,
+    quoteTitle: quote.title,
+    total,
+    link,
+  });
 
-  const sent = await sendPlatformEmail(toEmail, subject, body, {
+  const sent = await sendPlatformEmail(toEmail, tpl.subject, tpl.text, {
     fromName: `${businessName} via EveryJob`,
+    htmlBody: tpl.html,
   });
   if (!sent.ok) {
     return {

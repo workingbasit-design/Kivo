@@ -22,6 +22,7 @@ import {
   setShareTokenExpiry,
 } from '@/lib/share';
 import { sendPlatformEmail } from '@/lib/messaging/platform-email';
+import { invoiceEmail } from '@/lib/messaging/email-templates';
 import { appBaseUrl } from '@/lib/app-url';
 
 export type ActionResult = { error?: string; ok?: boolean; id?: string };
@@ -565,27 +566,17 @@ export async function sendInvoiceEmail(
   const link = `${base}/i/${token}`;
 
   const total = formatMoney(invoice.total, currency);
-  const subject = `Invoice ${invoice.number} from ${businessName} / Facture ${invoice.number} de ${businessName}`;
-  const body = [
-    `Hi ${invoice.customer.name},`,
-    '',
-    `Here is invoice ${invoice.number} from ${businessName} — total ${total}.`,
-    `View it and pay online here: ${link}`,
-    '',
-    'Just reply to this email if you have any questions.',
-    '',
-    '---',
-    '',
-    `Bonjour ${invoice.customer.name},`,
-    '',
-    `Voici la facture ${invoice.number} de ${businessName} — total ${total}.`,
-    `Consultez-la et payez en ligne ici : ${link}`,
-    '',
-    'Répondez simplement à ce courriel si vous avez des questions.',
-  ].join('\n');
+  const tpl = invoiceEmail({
+    customerName: invoice.customer.name,
+    businessName,
+    invoiceNumber: invoice.number,
+    total,
+    link,
+  });
 
-  const sent = await sendPlatformEmail(toEmail, subject, body, {
+  const sent = await sendPlatformEmail(toEmail, tpl.subject, tpl.text, {
     fromName: `${businessName} via EveryJob`,
+    htmlBody: tpl.html,
   });
   if (!sent.ok) {
     return {

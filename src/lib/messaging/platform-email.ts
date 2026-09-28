@@ -29,7 +29,7 @@ export async function sendPlatformEmail(
   to: string,
   subject: string,
   textBody: string,
-  opts?: { fromName?: string; fetchFn?: typeof fetch }
+  opts?: { fromName?: string; fetchFn?: typeof fetch; htmlBody?: string }
 ): Promise<PlatformEmailResult> {
   const apiKey = process.env.RESEND_API_KEY?.trim();
   if (!apiKey) {
@@ -51,7 +51,8 @@ export async function sendPlatformEmail(
       to,
       subject,
       textBody,
-      opts?.fetchFn ?? fetch
+      opts?.fetchFn ?? fetch,
+      opts?.htmlBody
     );
   } catch (err) {
     console.error('[platform-email] unexpected send failure', err);

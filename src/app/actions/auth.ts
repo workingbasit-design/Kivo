@@ -10,6 +10,7 @@ import { rateLimit, AUTH_LIMIT } from '@/lib/rate-limit';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { sendPlatformEmail } from '@/lib/messaging/platform-email';
+import { welcomeEmail } from '@/lib/messaging/email-templates';
 import { validateCanadianPhone } from '@/lib/google-auth';
 import { revalidatePath } from 'next/cache';
 
@@ -81,15 +82,11 @@ export async function register(
   // RESEND_API_KEY only skips the email — signup must never fail because
   // of it.
   try {
-    const locale = await getLocale();
-    await sendPlatformEmail(
-      owner.email,
-      t(locale, 't10misc.auth.welcomeEmailSubject'),
-      t(locale, 't10misc.auth.welcomeEmailBody')
-        .replace('{name}', name)
-        .replace('{business}', businessName),
-      { fromName: 'EveryJob' }
-    );
+    const tpl = welcomeEmail(name, businessName);
+    await sendPlatformEmail(owner.email, tpl.subject, tpl.text, {
+      fromName: 'EveryJob',
+      htmlBody: tpl.html,
+    });
   } catch {
     // ignore — the account is already created and the user is signed in
   }

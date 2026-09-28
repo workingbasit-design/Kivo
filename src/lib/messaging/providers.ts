@@ -151,11 +151,14 @@ export async function sendResendEmail(
   to: string,
   subject: string,
   textBody: string,
-  fetchFn: FetchFn = fetch
+  fetchFn: FetchFn = fetch,
+  htmlBody?: string
 ): Promise<SendResult> {
   const from = creds.fromName
     ? `${creds.fromName} <${creds.fromAddress}>`
     : creds.fromAddress;
+  const emailPayload: Record<string, unknown> = { from, to: [to], subject, text: textBody };
+  if (htmlBody) emailPayload.html = htmlBody;
   let res: Response;
   try {
     res = await fetchFn('https://api.resend.com/emails', {
@@ -164,7 +167,7 @@ export async function sendResendEmail(
         Authorization: `Bearer ${creds.apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ from, to: [to], subject, text: textBody }),
+      body: JSON.stringify(emailPayload),
     });
   } catch (err) {
     return {

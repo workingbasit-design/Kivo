@@ -12,6 +12,7 @@ import {
   RESET_TOKEN_TTL_MS,
 } from '@/lib/password-reset';
 import { sendPlatformEmail } from '@/lib/messaging/platform-email';
+import { passwordResetEmail } from '@/lib/messaging/email-templates';
 import { appBaseUrl } from '@/lib/app-url';
 import { clientIpFromHeaders } from '@/lib/client-ip';
 
@@ -89,29 +90,11 @@ export async function requestPasswordReset(
       const firstName = (user.name ?? '').trim().split(/\s+/)[0] || 'there';
       // Best-effort: a missing RESEND_API_KEY only skips the email (logged
       // server-side); the request itself still "succeeds" — no enumeration.
-      await sendPlatformEmail(
-        user.email,
-        'Reset your EveryJob password / Réinitialisez votre mot de passe EveryJob',
-        [
-          `Hi ${firstName},`,
-          '',
-          'Someone requested a password reset for your EveryJob account.',
-          `Reset it here (valid for 1 hour, one-time use): ${link}`,
-          'If that wasn’t you, just ignore this email — your password is unchanged.',
-          '',
-          '— The EveryJob team',
-          '',
-          '---',
-          '',
-          `Bonjour ${firstName},`,
-          '',
-          'Une réinitialisation de mot de passe a été demandée pour votre compte EveryJob.',
-          `Réinitialisez-le ici (valide 1 heure, usage unique) : ${link}`,
-          'Si ce n’était pas vous, ignorez simplement ce courriel — votre mot de passe est inchangé.',
-          '',
-          '— L’équipe EveryJob',
-        ].join('\n')
-      );
+      const tpl = passwordResetEmail(firstName, link);
+      await sendPlatformEmail(user.email, tpl.subject, tpl.text, {
+        fromName: 'EveryJob',
+        htmlBody: tpl.html,
+      });
     }
   }
 
