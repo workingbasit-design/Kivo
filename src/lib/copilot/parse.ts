@@ -182,6 +182,17 @@ export function detectMessageLang(raw: string): 'fr' | 'en' | null {
 /** Phone-number-shaped digit runs — never a price ("416-555-0100" ≠ $416). */
 const PHONE_LIKE_RE = /(\+?1[\s\-.]?)?\(?\d{3}\)?[\s\-.]?\d{3}[\s\-.]?\d{4}/g;
 
+/** Date-like digit runs — never a price ("09/28/2026" ≠ $2026). */
+const NUMERIC_DATE_RE = /\b(\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}|\d{4}[\/\-.]\d{1,2}[\/\-.]\d{1,2})\b/g;
+
+/** Written dates — never a price ("September 28 2026" ≠ $2026). */
+const MONTHS_RE =
+  'january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec';
+const WRITTEN_DATE_RE = new RegExp(
+  `\\b(?:${MONTHS_RE})\\s+\\d{1,2}(?:st|nd|rd|th)?\\s*,?\\s*\\d{4}\\b`,
+  'gi'
+);
+
 /** Extract a CAD amount: "$1,500", "1500$", "1500 dollars", "800 cad". */
 export function extractMoney(raw: string): number | null {
   const text = raw.replace(/,/g, '');
@@ -206,13 +217,20 @@ export function extractMoney(raw: string): number | null {
   }
   // Bare 3-5 digit number in a booking context is a price ("plumbing for
   // Sarah tomorrow 800"). 1-2 digit numbers are dates, 10-digit numbers
-  // are phones — neither can match this shape. Phone-number runs are
-  // stripped first so "416-555-0100" can never yield a $416 price.
+  // are phones — neither can match this shape. Phone-number and date runs
+  // are stripped first so "416-555-0100" can never yield a $416 price and
+  // "09/28/2026" can never yield a $2026 price. As a final guard, a bare
+  // number in the year range 1900-2100 is never a price either.
   // The booking preview always asks for confirmation, so a wrong guess is
   // cheap and correctable.
-  const bare = text.replace(PHONE_LIKE_RE, ' ').match(/\b(\d{3,5})\b/);
+  const bare = text
+    .replace(PHONE_LIKE_RE, ' ')
+    .replace(NUMERIC_DATE_RE, ' ')
+    .replace(WRITTEN_DATE_RE, ' ')
+    .match(/\b(\d{3,5})\b/);
   if (bare) {
     const v = Number(bare[1]);
+    if (v >= 1900 && v <= 2100) return null;
     if (v > 0 && v < 10000000) return Math.round(v);
   }
   return null;

@@ -279,6 +279,22 @@ test('extractMoney: "800 cad" is 800', () => {
   assert.equal(extractMoney('book Mike for Friday, 800 cad'), 800);
 });
 
+test('extractMoney: year "2026" in a numeric date is not a price', () => {
+  assert.equal(extractMoney('AC repair for Sarah on 09/28/2026'), null);
+});
+
+test('extractMoney: year "2026" in a written date is not a price', () => {
+  assert.equal(extractMoney('AC repair for Sarah September 28 2026'), null);
+});
+
+test('extractMoney: bare year-like number is not a price', () => {
+  assert.equal(extractMoney('AC repair for Sarah 2026'), null);
+});
+
+test('extractMoney: real price alongside a date still parses', () => {
+  assert.equal(extractMoney('AC repair for Sarah on 09/28/2026 for $800'), 800);
+});
+
 // --- Bare "job" / "travail" booking noun (Track 1 hardening follow-up) ---
 test('detectIntent: "job on 1st jan for Sarah" is create_job', () => {
   assert.equal(detectIntent('job on 1st jan for Sarah'), 'create_job');
