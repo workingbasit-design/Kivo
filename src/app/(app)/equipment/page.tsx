@@ -79,8 +79,8 @@ export default async function EquipmentPage({
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {equipment.map((eq) => (
-            <Card key={eq.id} className="hover:border-zinc-300 transition-colors h-full">
-              <Link href={`/equipment/${eq.id}`} className="block">
+            <Link key={eq.id} href={`/equipment/${eq.id}`} className="block">
+              <Card className="hover:border-zinc-300 transition-colors h-full">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-sm text-zinc-900 truncate">{eq.name}</p>
@@ -95,16 +95,17 @@ export default async function EquipmentPage({
                   </div>
                   <ChevronRight size={16} className="text-zinc-300 shrink-0 mt-1" />
                 </div>
-              </Link>
-              <div className="mt-3 pt-3 border-t border-zinc-100">
-                <Link
-                  href={`/customers/${eq.customer.id}`}
-                  className="text-xs font-medium text-lime-700 hover:text-lime-800 truncate block"
-                >
-                  {eq.customer.name}
-                </Link>
-              </div>
-            </Card>
+                <div className="mt-3 pt-3 border-t border-zinc-100">
+                  <Link
+                    href={`/customers/${eq.customer.id}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-xs font-medium text-lime-700 hover:text-lime-800 truncate block"
+                  >
+                    {eq.customer.name}
+                  </Link>
+                </div>
+              </Card>
+            </Link>
           ))}
         </div>
       )}

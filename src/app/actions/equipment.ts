@@ -4,20 +4,11 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 
 export interface ActionResult {
   ok: boolean;
   error?: string;
   id?: string;
-}
-
-async function checkLimit(userId: string): Promise<ActionResult | null> {
-  const rl = rateLimit(`equipment:${userId}`, ACTION_LIMIT);
-  if (!rl.ok) {
-    return { ok: false, error: 'Too many requests. Please wait a moment and try again.' };
-  }
-  return null;
 }
 
 const equipmentSchema = z.object({
@@ -44,9 +35,7 @@ async function assertCustomer(businessId: string, customerId: string) {
 }
 
 export async function createEquipment(formData: FormData): Promise<ActionResult> {
-  const { businessId, user } = await requireAuth();
-  const limited = await checkLimit(user.id);
-  if (limited) return limited;
+  const { businessId } = await requireAuth();
   try {
     const parsed = equipmentSchema.parse({
       name: formData.get('name'),
@@ -81,9 +70,7 @@ export async function createEquipment(formData: FormData): Promise<ActionResult>
 }
 
 export async function updateEquipment(id: string, formData: FormData): Promise<ActionResult> {
-  const { businessId, user } = await requireAuth();
-  const limited = await checkLimit(user.id);
-  if (limited) return limited;
+  const { businessId } = await requireAuth();
   try {
     const existing = await prisma.equipment.findFirst({
       where: { id, businessId },
@@ -120,9 +107,7 @@ export async function updateEquipment(id: string, formData: FormData): Promise<A
 }
 
 export async function deleteEquipment(id: string): Promise<ActionResult> {
-  const { businessId, user } = await requireAuth();
-  const limited = await checkLimit(user.id);
-  if (limited) return limited;
+  const { businessId } = await requireAuth();
   const existing = await prisma.equipment.findFirst({
     where: { id, businessId },
     select: { id: true, customerId: true },
