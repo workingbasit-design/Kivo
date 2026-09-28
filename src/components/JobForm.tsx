@@ -96,12 +96,16 @@ export default function JobForm({
 
   return (
     <form action={formAction} className="space-y-5">
-      {initial?.id && <input type="hidden" name="id" value={initial.id} />}
-      {initial?.serviceId && <input type="hidden" name="serviceId" value={initial.serviceId} />}
-      {initial?.templateId && <input type="hidden" name="templateId" value={initial.templateId} />}
+      {initial?.id && <input
+            autoComplete="off" type="hidden" name="id" value={initial.id} />}
+      {initial?.serviceId && <input
+            autoComplete="off" type="hidden" name="serviceId" value={initial.serviceId} />}
+      {initial?.templateId && <input
+            autoComplete="off" type="hidden" name="templateId" value={initial.templateId} />}
 
       <Field label={T('formTitleLabel')}>
         <input
+            autoComplete="off"
           name="title"
           required
           autoFocus
@@ -132,6 +136,7 @@ export default function JobForm({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-paper border border-smoke rounded-2xl">
           <Field label={T('formNewCustomerName')}>
             <input
+            autoComplete="off"
               name="newCustomerName"
               placeholder={T('formNewCustomerNamePlaceholder')}
               maxLength={120}
@@ -140,6 +145,7 @@ export default function JobForm({
           </Field>
           <Field label={T('formNewCustomerPhone')}>
             <input
+            autoComplete="off"
               name="newCustomerPhone"
               placeholder={T('formPhonePlaceholder')}
               maxLength={25}
@@ -153,6 +159,7 @@ export default function JobForm({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Field label={jobsL('date')}>
           <input
+            autoComplete="off"
             type="date"
             name="date"
             required
@@ -162,6 +169,7 @@ export default function JobForm({
         </Field>
         <Field label={jobsL('time')}>
           <input
+            autoComplete="off"
             name="time"
             defaultValue={initial?.time ?? ''}
             placeholder="10:00 AM"
@@ -171,6 +179,7 @@ export default function JobForm({
         </Field>
         <Field label={T('formPriceLabel').replace('{symbol}', currencySymbol(currency))}>
           <input
+            autoComplete="off"
             type="number"
             name="price"
             required
@@ -197,6 +206,7 @@ export default function JobForm({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Field label={`${jobsL('technician')} (${T('formOptional')})`}>
           <input
+            autoComplete="off"
             name="technician"
             defaultValue={initial?.technician ?? ''}
             placeholder={T('formTechnicianPlaceholder')}

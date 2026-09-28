@@ -49,7 +49,7 @@ export async function GET(req: Request) {
   const store = await cookies();
   const raw = store.get(STATE_COOKIE)?.value;
   store.delete(STATE_COOKIE);
-  let saved: { state?: string; nonce?: string; returnTo?: string; ageConfirmed?: boolean } = {};
+  let saved: { state?: string; nonce?: string; returnTo?: string } = {};
   try {
     saved = raw ? JSON.parse(raw) : {};
   } catch {
@@ -106,11 +106,8 @@ export async function GET(req: Request) {
   }
 
   // Fresh Google user: same Canadian business-tenant setup as password signup.
-  // Age gate: refuse to create an account unless the 18+ confirmation came
-  // through the OAuth state (set only by the register page's checkbox).
-  if (saved.ageConfirmed !== true) {
-    return NextResponse.redirect(new URL('/register?google=age-required', req.url));
-  }
+  // By signing up, the user agrees to the Terms of Service (18+ requirement
+  // included) and Privacy Policy linked on the register page.
   const email = claims.email.toLowerCase();
   const name = claims.name?.trim() || email.split('@')[0];
   const business = await prisma.business.create({

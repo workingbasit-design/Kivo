@@ -1,6 +1,5 @@
 "use client";
 
-import React from 'react';
 import Link from 'next/link';
 import { useActionState } from 'react';
 import { BadgeCheck, AlertCircle, CheckCircle2 } from 'lucide-react';
@@ -12,8 +11,6 @@ import GoogleAuthSection from '@/components/GoogleAuthSection';
 export default function RegisterPage() {
   const { t } = useT();
   const [state, formAction, isPending] = useActionState(register, {});
-  const [ageChecked, setAgeChecked] = React.useState(false);
-  const [ageBlocked, setAgeBlocked] = React.useState(false);
 
   return (
     <div className="bg-white rounded-3xl border border-zinc-200/70 shadow-xl shadow-zinc-200/50 p-6 sm:p-8">
@@ -23,34 +20,9 @@ export default function RegisterPage() {
       <h1 className="text-2xl font-bold tracking-tight text-zinc-900">{t('t10misc.auth.registerTitle')}</h1>
       <p className="text-sm text-zinc-500 mt-1 mb-6">{t('t10misc.auth.registerSubtitle')}</p>
 
-      <label
-        className={`flex items-start gap-2.5 text-sm text-zinc-700 bg-zinc-50 border rounded-xl px-3 py-2.5 mb-5 cursor-pointer transition-colors ${
-          ageBlocked && !ageChecked ? 'border-rose-300 bg-rose-50' : 'border-zinc-200 hover:border-zinc-300'
-        }`}
-      >
-        <input
-          id="ageConfirmGate"
-          type="checkbox"
-          checked={ageChecked}
-          onChange={(e) => {
-            setAgeChecked(e.target.checked);
-            if (e.target.checked) setAgeBlocked(false);
-          }}
-          className="mt-0.5 h-4 w-4 shrink-0 accent-emerald-600"
-        />
-        <span>{t('t10misc.auth.ageConfirm')}</span>
-      </label>
-      {ageBlocked && !ageChecked && (
-        <p role="alert" className="flex items-start gap-2 text-xs font-medium text-rose-700 -mt-3 mb-5">
-          <AlertCircle size={14} className="mt-0.5 shrink-0" />
-          <span>{t('t10misc.auth.ageRequired')}</span>
-        </p>
-      )}
-
-      <GoogleAuthSection ageGate={{ checked: ageChecked, onBlocked: () => setAgeBlocked(true) }} />
+      <GoogleAuthSection />
 
       <form action={formAction} className="space-y-4">
-        <input type="hidden" name="ageConfirm" value={ageChecked ? 'on' : ''} />
         <Field label={t('t10misc.auth.yourName')}>
           <input
             id="name"
@@ -115,7 +87,19 @@ export default function RegisterPage() {
         </button>
       </form>
 
-      <p className="text-center text-xs text-zinc-500 mt-6">
+      <p className="text-center text-xs text-zinc-500 mt-5">
+        {t('t10misc.auth.termsPrefix')}{' '}
+        <Link href="/terms" className="underline hover:text-zinc-700">
+          {t('t10misc.auth.termsLink')}
+        </Link>{' '}
+        {t('t10misc.auth.termsAnd')}{' '}
+        <Link href="/privacy" className="underline hover:text-zinc-700">
+          {t('t10misc.auth.privacyLink')}
+        </Link>
+        .
+      </p>
+
+      <p className="text-center text-xs text-zinc-500 mt-4">
         {t('t10misc.auth.haveAccount')}{' '}
         <Link href="/login" className="font-semibold text-ink hover:underline">
           {t('t10misc.auth.loginLink')}

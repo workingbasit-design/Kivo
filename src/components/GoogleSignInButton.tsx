@@ -29,30 +29,17 @@ export function GoogleG({ size = 18 }: { size?: number }) {
 /**
  * "Continue with Google" button. Starts the OIDC flow at
  * /api/auth/google (password login below it is untouched).
- *
- * When `ageGate` is provided (register page), the click is blocked until
- * the age checkbox is ticked; the confirmed flag is forwarded so the
- * callback can enforce it server-side before creating a new account.
  */
 export default function GoogleSignInButton({
   returnTo,
-  ageGate,
 }: {
   returnTo?: string;
-  ageGate?: { checked: boolean; onBlocked: () => void };
 }) {
   const { t } = useT();
-  const base = returnTo ? `/api/auth/google?returnTo=${encodeURIComponent(returnTo)}` : '/api/auth/google';
-  const href = ageGate?.checked ? `${base}${returnTo ? '&' : '?'}ageConfirmed=1` : base;
+  const href = returnTo ? `/api/auth/google?returnTo=${encodeURIComponent(returnTo)}` : '/api/auth/google';
   return (
     <a
       href={href}
-      onClick={(e) => {
-        if (ageGate && !ageGate.checked) {
-          e.preventDefault();
-          ageGate.onBlocked();
-        }
-      }}
       className="w-full bg-white hover:bg-zinc-50 border border-zinc-300 text-zinc-800 font-semibold text-sm py-3 rounded-xl transition-colors flex items-center justify-center gap-2.5"
     >
       <GoogleG />

@@ -119,11 +119,6 @@ export const registerSchema = z.object({
     .max(128)
     .regex(/[A-Za-z]/, "Password must contain a letter")
     .regex(/\d/, "Password must contain a number"),
-  // Age gate: checkbox posts "on" when checked, null when unchecked.
-  // Server-enforced so a forged POST can't bypass the signup form.
-  ageConfirm: z.literal("on", {
-    errorMap: () => ({ message: "You must confirm you are 18 or older to create an account." }),
-  }),
 });
 
 export const loginSchema = z.object({

@@ -1,6 +1,8 @@
 /**
  * Tests for the reel-driven legal fixes:
- * 1. Age gate on signup (registerSchema requires ageConfirm="on").
+ * 1. Age requirement moved to Terms of Service (18+ clause in legal.ts);
+ *    the signup form no longer has an age checkbox — registration succeeds
+ *    without ageConfirm, and the register page links Terms + Privacy.
  * 2. Transactional email footer (no-marketing statement in HTML + text).
  *
  * Run: node --test src/lib/__tests__/legal-fixes.test.mts
@@ -22,20 +24,22 @@ const BASE = {
   password: 'Passw0rd1',
 };
 
-test('registerSchema accepts a checked age confirmation', () => {
+test('registerSchema accepts signup without an age confirmation field', () => {
+  const r = registerSchema.safeParse({ ...BASE });
+  assert.ok(r.success);
+});
+
+test('registerSchema ignores a stray ageConfirm value', () => {
   const r = registerSchema.safeParse({ ...BASE, ageConfirm: 'on' });
   assert.ok(r.success);
 });
 
-test('registerSchema rejects a missing age confirmation', () => {
-  const r = registerSchema.safeParse({ ...BASE, ageConfirm: null });
-  assert.ok(!r.success);
-  assert.match(r.error.issues[0]?.message ?? '', /18 or older/);
-});
-
-test('registerSchema rejects an empty age confirmation', () => {
-  const r = registerSchema.safeParse({ ...BASE, ageConfirm: '' });
-  assert.ok(!r.success);
+test('terms of service require users to be 18 or older (EN + FR)', async () => {
+  const { TERMS } = await import('../legal.ts');
+  const enBody = TERMS.en.sections.map((s) => s.body.join(' ')).join(' ');
+  const frBody = TERMS.fr.sections.map((s) => s.body.join(' ')).join(' ');
+  assert.match(enBody, /18 or older/);
+  assert.match(frBody, /18 ans ou plus/);
 });
 
 test('every email template carries the no-marketing footer (HTML + text)', () => {

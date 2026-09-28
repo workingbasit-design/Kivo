@@ -37,10 +37,6 @@ export async function GET(req: Request) {
 
   const state = randomOAuthValue();
   const nonce = randomOAuthValue();
-  // Age gate: only the register page sends ageConfirmed=1 (after the user
-  // ticks the 18+ checkbox). The callback refuses to create a fresh
-  // account without it, so OAuth can't bypass the age gate.
-  const ageConfirmed = url.searchParams.get('ageConfirmed') === '1';
 
   const authUrl = buildGoogleSignInUrl({
     clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -50,7 +46,7 @@ export async function GET(req: Request) {
   });
 
   const res = NextResponse.redirect(authUrl);
-  res.cookies.set(STATE_COOKIE, JSON.stringify({ state, nonce, returnTo, ageConfirmed }), {
+  res.cookies.set(STATE_COOKIE, JSON.stringify({ state, nonce, returnTo }), {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
