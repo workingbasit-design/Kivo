@@ -107,14 +107,19 @@ export function Field({
   label,
   children,
   hint,
+  required,
 }: {
   label: string;
   children: React.ReactNode;
   hint?: string;
+  required?: boolean;
 }) {
   return (
     <div>
-      <label className="block text-xs font-semibold text-zinc-700 mb-1.5">{label}</label>
+      <label className="block text-xs font-semibold text-zinc-700 mb-1.5">
+        {label}
+        {required && <span className="text-rose-500 ml-1" aria-hidden="true">*</span>}
+      </label>
       {children}
       {hint && <p className="text-[11px] text-zinc-400 mt-1">{hint}</p>}
     </div>

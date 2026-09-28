@@ -49,7 +49,7 @@ export default function EquipmentForm({
   return (
     <form action={formAction} className="space-y-4">
       {mode === 'create' && (
-        <Field label={T('customer')}>
+        <Field label={T('customer')} required>
           <select
             name="customerId"
             required
