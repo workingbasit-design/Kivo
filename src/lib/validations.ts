@@ -41,7 +41,11 @@ export const jobSchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date"),
   time: z.string().trim().max(30).optional().default(""),
   address: z.string().trim().max(500).optional().default(""),
-  price: z.coerce.number().min(0, "Price can't be negative").max(10_000_000),
+  price: z.coerce
+    .number()
+    .min(0, "Price can't be negative")
+    .max(10_000_000)
+    .transform((n) => Math.round(n * 100) / 100),
   status: z.enum(JOB_STATUSES).default("SCHEDULED"),
   notes: z.string().trim().max(2000).optional().default(""),
   technician: z.string().trim().max(120).optional().default(""),
@@ -50,20 +54,32 @@ export const jobSchema = z.object({
 
 export const serviceSchema = z.object({
   name: z.string().trim().min(2, "Name is required").max(200),
-  price: z.coerce.number().min(0, "Price can't be negative").max(10_000_000),
+  price: z.coerce
+    .number()
+    .min(0, "Price can't be negative")
+    .max(10_000_000)
+    .transform((n) => Math.round(n * 100) / 100),
 });
 
 export const quoteSchema = z.object({
   title: z.string().trim().min(2, "Title is required").max(200),
   customerId: z.string().min(1, "Customer is required"),
-  total: z.coerce.number().min(0, "Total can't be negative").max(10_000_000),
+  total: z.coerce
+    .number()
+    .min(0, "Total can't be negative")
+    .max(10_000_000)
+    .transform((n) => Math.round(n * 100) / 100),
   status: z.enum(QUOTE_STATUSES).default("DRAFT"),
 });
 
 export const invoiceSchema = z.object({
   customerId: z.string().min(1, "Customer is required"),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date"),
-  subtotal: z.coerce.number().min(0).max(10_000_000),
+  subtotal: z.coerce
+    .number()
+    .min(0)
+    .max(10_000_000)
+    .transform((n) => Math.round(n * 100) / 100),
   taxRate: z.coerce.number().min(0).max(100).default(0),
   taxType: z.string().trim().max(20).optional().default("GST"),
   notes: z.string().trim().max(2000).optional().default(""),
@@ -71,7 +87,11 @@ export const invoiceSchema = z.object({
 
 export const paymentSchema = z.object({
   invoiceId: z.string().min(1),
-  amount: z.coerce.number().positive("Amount must be positive").max(10_000_000),
+  amount: z.coerce
+    .number()
+    .positive("Amount must be positive")
+    .max(10_000_000)
+    .transform((n) => Math.round(n * 100) / 100),
   provider: z.enum(["CASH", "INTERAC", "CHEQUE", "STRIPE"]).default("CASH"),
   transactionId: z.string().trim().max(200).optional().default(""),
 });
@@ -105,7 +125,11 @@ export const recurringSchema = z.object({
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date"),
   time: z.string().trim().max(30).optional().default(""),
   address: z.string().trim().max(500).optional().default(""),
-  price: z.coerce.number().min(0, "Price can't be negative").max(10_000_000),
+  price: z.coerce
+    .number()
+    .min(0, "Price can't be negative")
+    .max(10_000_000)
+    .transform((n) => Math.round(n * 100) / 100),
   notes: z.string().trim().max(2000).optional().default(""),
 });
 
