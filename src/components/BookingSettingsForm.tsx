@@ -126,7 +126,7 @@ export default function BookingSettingsForm({
           <>
             <p className="text-xs text-zinc-500 mb-3">{t('t10misc.booking.shareDesc')}</p>
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-              <code className="flex-1 min-h-[44px] flex items-center text-xs bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 truncate text-zinc-700">
+              <code className="flex-1 min-h-[44px] flex items-center text-xs bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 break-all select-all text-zinc-700">
                 {publicUrl}
               </code>
               <div className="flex gap-2">

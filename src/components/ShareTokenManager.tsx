@@ -123,7 +123,7 @@ export default function ShareTokenManager({
       {url ? (
         <>
           <div className="flex items-center gap-2">
-            <code className="flex-1 text-xs bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 truncate text-zinc-700">
+            <code className="flex-1 text-xs bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 break-all select-all text-zinc-700">
               {url}
             </code>
             <CopyButton text={url} />

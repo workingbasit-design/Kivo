@@ -248,13 +248,9 @@ function SignShareSheet({
       <h3 className="text-sm font-bold text-zinc-900">{s.shareTitle}</h3>
 
       <div className="flex gap-2">
-        <input
-          type="text"
-          readOnly
-          value={link}
-          onFocus={(e) => e.target.select()}
-          className="flex-1 min-w-0 px-3.5 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-xs font-mono text-zinc-700"
-        />
+        <p className="flex-1 min-w-0 px-3.5 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-xs font-mono text-zinc-700 break-all select-all">
+          {link}
+        </p>
         <button type="button" onClick={copy} className={secondaryBtnClass}>
           {copied ? <Check size={14} /> : <Copy size={14} />}
           {copied ? s.copied : s.copyLink}

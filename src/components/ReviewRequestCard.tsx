@@ -86,12 +86,9 @@ export default function ReviewRequestCard({
       {status === 'done' ? (
         <div className="space-y-3">
           <p className="text-xs text-zinc-500">{tr('linkReady')}</p>
-          <input
-            readOnly
-            value={link}
-            onFocus={(e) => e.target.select()}
-            className="text-xs bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-zinc-700 w-full select-all"
-          />
+          <p className="text-xs bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-zinc-700 w-full break-all select-all">
+            {link}
+          </p>
           <div>
             <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
               {t(locale, 'jobops.notify.preview')}
