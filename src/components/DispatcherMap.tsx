@@ -20,6 +20,8 @@ export interface MapPin {
   status?: string;
   /** Green pin when the tech has arrived, blue otherwise. */
   tone?: 'active' | 'arrived';
+  /** ISO timestamp of the ping — shown as "updated Xm ago" in the popup. */
+  updatedAt?: string;
 }
 
 const LEAFLET_VERSION = '1.9.4';
@@ -112,6 +114,18 @@ function escapeHtml(s: string): string {
     .replace(/"/g, '&quot;');
 }
 
+function timeAgo(iso?: string): string | null {
+  if (!iso) return null;
+  const ms = Date.now() - new Date(iso).getTime();
+  if (!Number.isFinite(ms) || ms < 0) return null;
+  const mins = Math.floor(ms / 60_000);
+  if (mins < 1) return 'just now';
+  if (mins === 1) return '1 min ago';
+  if (mins < 60) return `${mins} min ago`;
+  const hrs = Math.floor(mins / 60);
+  return hrs === 1 ? '1 hr ago' : `${hrs} hr ago`;
+}
+
 export default function DispatcherMap({
   pins,
   height = 420,
@@ -131,7 +145,11 @@ export default function DispatcherMap({
   const [attempt, setAttempt] = useState(0);
 
   // Draw (or redraw) the current pins. Called after init and whenever pins change.
-  const drawPins = () => {
+  // fitBounds only runs when pins first appear or the pin set changes — never
+  // on plain position updates, so the map doesn't snap the user's view away
+  // every 30 seconds while a tech is moving.
+  const fittedRef = useRef(false);
+  const drawPins = (forceFit = false) => {
     const L = leaflet();
     const map = mapRef.current;
     const layer = layerRef.current;
@@ -141,20 +159,27 @@ export default function DispatcherMap({
       (p) => Number.isFinite(p.lat) && Number.isFinite(p.lng)
     );
     for (const p of pts) {
+      const ago = timeAgo(p.updatedAt);
       L.marker([p.lat, p.lng], { icon: makeIcon(p.tone ?? 'active') })
         .bindPopup(
           `<strong>${escapeHtml(p.label)}</strong>` +
             (p.sub ? `<br/>${escapeHtml(p.sub)}` : '') +
-            (p.status ? `<br/><em>${escapeHtml(p.status)}</em>` : '')
+            (p.status ? `<br/><em>${escapeHtml(p.status)}</em>` : '') +
+            (ago ? `<br/><span style="color:#71717a;font-size:12px;">Updated ${escapeHtml(ago)}</span>` : '')
         )
         .addTo(layer);
     }
-    if (pts.length > 0) {
+    const shouldFit = forceFit || !fittedRef.current;
+    if (pts.length > 0 && shouldFit) {
       map.fitBounds(L.latLngBounds(pts.map((p) => [p.lat, p.lng] as [number, number])).pad(0.2));
+      fittedRef.current = true;
     }
+    if (pts.length === 0) fittedRef.current = false;
   };
   const drawRef = useRef(drawPins);
   drawRef.current = drawPins;
+
+  const recenter = () => drawRef.current(true);
 
   // Init once (re-runs when the user taps Retry after a failure).
   useEffect(() => {
@@ -241,6 +266,16 @@ export default function DispatcherMap({
         role="img"
         aria-label="Live map of technician locations"
       />
+      {mapReady && (
+        <button
+          type="button"
+          onClick={recenter}
+          className="absolute bottom-3 right-3 z-10 rounded-xl bg-white/95 px-3 py-2 text-xs font-semibold text-zinc-700 shadow-md border border-zinc-200 hover:bg-white"
+          aria-label="Recenter map on technician locations"
+        >
+          ⌖ Recenter
+        </button>
+      )}
     </div>
   );
 }

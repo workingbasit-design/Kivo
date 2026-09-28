@@ -317,8 +317,21 @@ export async function recordQuoteDeposit(
   if (!Number.isFinite(amount) || amount <= 0) {
     return { error: 'Enter an amount greater than 0.' };
   }
-  if (amount > quote.total) {
-    return { error: "The deposit can't exceed the quote total." };
+  // Cap cumulative deposits at the quote total — a single-deposit check
+  // alone would let two 60% deposits over-collect on the same quote.
+  const existing = await prisma.quoteDeposit.aggregate({
+    where: { quoteId, businessId, status: 'COMPLETED' },
+    _sum: { amount: true },
+  });
+  const alreadyPaid = existing._sum.amount ?? 0;
+  if (alreadyPaid + amount > quote.total + 0.009) {
+    const remaining = Math.max(0, Math.round((quote.total - alreadyPaid) * 100) / 100);
+    return {
+      error:
+        remaining > 0
+          ? `Only $${remaining.toFixed(2)} remains on this quote.`
+          : 'This quote is already fully paid by deposits.',
+    };
   }
 
   const provider = String(formData.get('provider') ?? '').trim().toUpperCase();

@@ -49,6 +49,7 @@ export default function LiveTrackingMap({ locale = 'en' }: { locale?: Locale }) 
             sub: [j.customerName, j.technician].filter(Boolean).join(' · '),
             status: j.status,
             tone: 'active' as const,
+            updatedAt: j.latest!.recordedAt,
           }));
         setPins(next);
         setSharing(next.length);

@@ -31,7 +31,8 @@ export interface SharableJob {
   address?: string | null;
 }
 
-const PING_INTERVAL_MS = 15_000;
+/** Fallback heartbeat when the OS delivers no position updates. */
+const HEARTBEAT_INTERVAL_MS = 60_000;
 
 type ShareState = 'idle' | 'starting' | 'sharing';
 
@@ -51,6 +52,8 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
   const [linkBusy, setLinkBusy] = useState(false);
 
   const timerRef = useRef<number | null>(null);
+  const watchIdRef = useRef<number | null>(null);
+  const wakeLockRef = useRef<{ release: () => Promise<void> } | null>(null);
   const jobIdRef = useRef(jobId);
   jobIdRef.current = jobId;
   const stateRef = useRef(state);
@@ -68,6 +71,14 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
     if (timerRef.current !== null) {
       window.clearInterval(timerRef.current);
       timerRef.current = null;
+    }
+    if (watchIdRef.current !== null && 'geolocation' in navigator) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+    }
+    if (wakeLockRef.current) {
+      wakeLockRef.current.release().catch(() => {});
+      wakeLockRef.current = null;
     }
   }, []);
 
@@ -128,6 +139,47 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
     );
   }, [postPing, stopSharing, locale]);
 
+  /**
+   * Keep the screen awake while sharing: iOS Safari throttles timers and
+   * geolocation once the screen locks, which is the #1 cause of "map stopped
+   * updating". Best-effort — silently ignored where unsupported.
+   */
+  const requestWakeLock = useCallback(async () => {
+    try {
+      const nav = navigator as Navigator & {
+        wakeLock?: { request: (t: string) => Promise<{ release: () => Promise<void> }> };
+      };
+      if (!nav.wakeLock) return;
+      wakeLockRef.current = await nav.wakeLock.request('screen');
+    } catch {
+      /* unsupported or denied — sharing still works while the screen is on */
+    }
+  }, []);
+
+  const startWatching = useCallback(() => {
+    stopTimer();
+    // Primary: watchPosition delivers OS-level updates and survives far
+    // better than interval polling when the page is backgrounded.
+    watchIdRef.current = navigator.geolocation.watchPosition(
+      (pos) =>
+        postPing(
+          pos.coords.latitude,
+          pos.coords.longitude,
+          Number.isFinite(pos.coords.accuracy) ? pos.coords.accuracy : null
+        ),
+      (err) => {
+        if (err.code === err.PERMISSION_DENIED) {
+          stopSharing(t(localeRef.current, 'gps.permissionDenied'));
+        }
+      },
+      { enableHighAccuracy: true, timeout: 20_000, maximumAge: 10_000 }
+    );
+    // Fallback heartbeat: if the OS goes quiet (no movement), still confirm
+    // we're alive every 60s so the dispatcher sees a fresh timestamp.
+    timerRef.current = window.setInterval(sendCurrentPosition, HEARTBEAT_INTERVAL_MS);
+    void requestWakeLock();
+  }, [postPing, stopSharing, sendCurrentPosition, stopTimer, requestWakeLock]);
+
   const startSharing = useCallback(() => {
     if (!('geolocation' in navigator)) {
       say('error', tr('gps.notSupported'));
@@ -161,11 +213,7 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
             setState('sharing');
             setLastPingAt(new Date());
             say('info', tr('gps.started'));
-            stopTimer();
-            timerRef.current = window.setInterval(
-              sendCurrentPosition,
-              PING_INTERVAL_MS
-            );
+            startWatching();
           })
           .catch(() => {
             setState('idle');
@@ -180,14 +228,15 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
       },
       { enableHighAccuracy: true, timeout: 15_000, maximumAge: 5_000 }
     );
-  }, [say, tr, sendCurrentPosition, stopTimer]);
+  }, [say, tr, startWatching]);
 
-  // Never leak the timer: stop sharing when the component unmounts.
+  // Never leak the timer, watch, or wake lock: stop sharing when the
+  // component unmounts.
   useEffect(() => {
     return () => {
-      if (timerRef.current !== null) window.clearInterval(timerRef.current);
+      stopTimer();
     };
-  }, []);
+  }, [stopTimer]);
 
   const createLink = useCallback(async () => {
     if (!jobIdRef.current || linkBusy) return;
