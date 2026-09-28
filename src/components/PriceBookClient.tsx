@@ -2,9 +2,9 @@
 
 import React, { useState, useTransition } from 'react';
 import Link from 'next/link';
-import { Clock, Plus, Search, Tag, Trash2, ListPlus, Briefcase } from 'lucide-react';
+import { Clock, Plus, Search, Tag, Trash2, ListPlus, Briefcase, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
-import { createService, deleteService, seedDefaultServices } from '@/app/actions/services';
+import { createService, updateService, deleteService, seedDefaultServices } from '@/app/actions/services';
 import { currencySymbol, formatMoney } from '@/lib/money';
 import { t, type Locale } from '@/lib/i18n';
 import { Dialog, Field, inputClass, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
@@ -39,6 +39,7 @@ export default function PriceBookClient({
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const filteredServices = initialServices.filter(
     (s) =>
@@ -46,7 +47,27 @@ export default function PriceBookClient({
       (s.description ?? '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleAddService = (e: React.FormEvent) => {
+  const openAdd = () => {
+    setEditingId(null);
+    setName('');
+    setPrice('');
+    setDurationMin('');
+    setDescription('');
+    setError(null);
+    setIsModalOpen(true);
+  };
+
+  const openEdit = (service: Service) => {
+    setEditingId(service.id);
+    setName(service.name);
+    setPrice(String(service.price));
+    setDurationMin(service.durationMin != null ? String(service.durationMin) : '');
+    setDescription(service.description ?? '');
+    setError(null);
+    setIsModalOpen(true);
+  };
+
+  const handleSubmitService = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !price) return;
 
@@ -58,7 +79,9 @@ export default function PriceBookClient({
 
     startTransition(async () => {
       setError(null);
-      const res = await createService(fd);
+      const res = editingId
+        ? await updateService(editingId, fd)
+        : await createService(fd);
       if (res.error) {
         setError(res.error);
         toast.error(res.error);
@@ -68,10 +91,13 @@ export default function PriceBookClient({
       setPrice('');
       setDurationMin('');
       setDescription('');
+      setEditingId(null);
       setIsModalOpen(false);
-      toast.success(tr('t10misc.pricebook.added'));
+      toast.success(tr(editingId ? 't10misc.pricebook.updated' : 't10misc.pricebook.added'));
     });
   };
+
+  const handleAddService = handleSubmitService;
 
   const runDelete = () => {
     const id = pendingDeleteId;
@@ -125,7 +151,7 @@ export default function PriceBookClient({
           )}
 
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={openAdd}
             className="bg-ink hover:bg-graphite text-white px-5 min-h-[44px] rounded-xl font-semibold text-sm transition-colors inline-flex items-center gap-2 shadow-sm cursor-pointer"
           >
             <Plus size={16} /> {tr('t10misc.pricebook.addService')}
@@ -178,6 +204,14 @@ export default function PriceBookClient({
                   <span className="font-bold text-lg text-zinc-900">
                     {formatMoney(service.price, currency)}
                   </span>
+                  <button
+                    onClick={() => openEdit(service)}
+                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 text-zinc-500 hover:text-zinc-800 min-w-[44px] min-h-[44px] inline-flex items-center justify-center hover:bg-zinc-100 rounded-lg transition-all"
+                    title={tr('t10misc.pricebook.editTitle')}
+                    aria-label={`${tr('t10misc.pricebook.editService')}: ${service.name}`}
+                  >
+                    <Pencil size={16} />
+                  </button>
                   <button
                     onClick={() => setPendingDeleteId(service.id)}
                     className="opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 text-rose-500 hover:text-rose-700 min-w-[44px] min-h-[44px] inline-flex items-center justify-center hover:bg-rose-50 rounded-lg transition-all"
@@ -256,13 +290,13 @@ export default function PriceBookClient({
         </div>
       </div>
 
-      {/* Add Service Dialog */}
+      {/* Add/Edit Service Dialog */}
       <Dialog
         open={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={tr('t10misc.pricebook.modalTitle')}
+        title={tr(editingId ? 't10misc.pricebook.modalEditTitle' : 't10misc.pricebook.modalTitle')}
       >
-        <p className="text-xs text-zinc-500 mb-6">{tr('t10misc.pricebook.modalDesc')}</p>
+        <p className="text-xs text-zinc-500 mb-6">{tr(editingId ? 't10misc.pricebook.modalEditDesc' : 't10misc.pricebook.modalDesc')}</p>
 
         <form onSubmit={handleAddService} className="space-y-4">
           {error && (
@@ -327,7 +361,7 @@ export default function PriceBookClient({
               disabled={isPending}
               className={`${primaryBtnClass} flex-1 justify-center`}
             >
-              {isPending ? tr('t10misc.pricebook.saving') : tr('t10misc.pricebook.save')}
+              {isPending ? tr('t10misc.pricebook.saving') : tr(editingId ? 't10misc.pricebook.saveChanges' : 't10misc.pricebook.save')}
             </button>
             <button
               type="button"
