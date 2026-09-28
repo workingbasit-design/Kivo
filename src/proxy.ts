@@ -1,28 +1,17 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { isPublicPath } from '@/lib/public-paths';
 
 // Next.js 16: `proxy.ts` replaces the deprecated `middleware.ts`.
 // Lightweight route guard based on the session cookie. Full session
 // verification happens in the (app) layout via getSession().
-
-const PUBLIC_PATHS = ['/', '/login', '/register'];
-// Public client-facing routes: online booking + magic-link portals (unguessable ids)
-// + the EveryJob business directory (customer discovery layer).
-// '/sign/' must stay public: unauthenticated clients open signing links
-// with no login, and bouncing them to /login would break the feature.
-// '/track/' must stay public: customers open technician tracking links
-// with no account — the unguessable token is the only capability.
-const PUBLIC_PREFIXES = ['/book/', '/q/', '/i/', '/r/', '/p/', '/portal/', '/sign/', '/track/', '/rev/'];
-const PUBLIC_EXACT_EXTRA = ['/directory', '/directory/request'];
+// Public route table lives in @/lib/public-paths (pure, unit-tested).
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionCookie = request.cookies.get('kivo_session');
 
-  const isPublic =
-    PUBLIC_PATHS.some((p) => pathname === p) ||
-    PUBLIC_EXACT_EXTRA.some((p) => pathname === p) ||
-    PUBLIC_PREFIXES.some((p) => pathname.startsWith(p));
+  const isPublic = isPublicPath(pathname);
 
   // Allow API routes and static assets through (matcher already excludes most)
   if (pathname.startsWith('/api/')) {
