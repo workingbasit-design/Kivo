@@ -54,8 +54,8 @@ export async function POST(req: NextRequest) {
   // endpoint is the device's unique push URL (unguessable); the upsert
   // binds it to the authenticated session's business and rewrites keys.
   // Authenticated route — no other tenant's data is readable here.
-  await unsafeUnscoped('push:subscribe:upsert', () =>
-    prisma.pushSubscription.upsert({
+  await unsafeUnscoped('push:subscribe:upsert', (db) =>
+    db.pushSubscription.upsert({
       where: { endpoint },
       update: { businessId, userId: session.userId ?? null, p256dh: keys.p256dh, auth: keys.auth },
       create: {

@@ -99,8 +99,8 @@ export async function POST(req: Request) {
       // stored on our connection row) IS how the tenant is resolved — no
       // business scope can exist before this lookup. The signature check
       // at route entry proves the payload came from Meta.
-      const connection = await unsafeUnscoped('whatsapp:resolveConnection', () =>
-        prisma.messagingConnection.findFirst({
+      const connection = await unsafeUnscoped('whatsapp:resolveConnection', (db) =>
+        db.messagingConnection.findFirst({
           where: { channel: 'WHATSAPP', waPhoneNumberId: phoneNumberId, enabled: true },
           include: { business: { select: { id: true, name: true, timezone: true } } },
         })

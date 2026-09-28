@@ -28,7 +28,7 @@ export function pooledDatabaseUrl(fromEnv = process.env.DATABASE_URL): string | 
 }
 
 import { withDbRetry } from './db-retry.ts';
-import { assertTenantScope } from './tenant-guard.ts';
+import { assertTenantScope, setUnscopedClient } from './tenant-guard.ts';
 
 const cached = globalForPrisma.prisma;
 export const prisma =
@@ -70,3 +70,42 @@ if (!cached) {
   });
   prisma.$use(async (params, next) => withDbRetry(() => next(params)));
 }
+
+const globalForUnscoped = globalThis as unknown as {
+  prismaUnscoped: PrismaClient | undefined;
+};
+
+/**
+ * Unguarded Prisma client for legitimately cross-tenant reads.
+ *
+ * WHY THIS EXISTS (2026-09-28): Prisma's `$use` middleware does NOT preserve
+ * Node.js AsyncLocalStorage context — the middleware is invoked from Prisma's
+ * internal engine scheduling, outside the caller's async chain. So the
+ * `unsafeUnscoped()` ALS exemption never reaches `assertTenantScope`, and
+ * every public token lookup (sign/review/booking/tracking) 500s with
+ * TenantScopeError. An explicit second client without the guard middleware is
+ * the only reliable bypass.
+ *
+ * SAFETY: has the retry middleware but NO tenant guard. Use ONLY via
+ * `unsafeUnscoped('op-name', (db) => ...)` for lookups keyed by unpredictable
+ * 256-bit tokens/slugs (signature requests, review requests, booking pages,
+ * tracking shares, quote/invoice/portal tokens). NEVER for businessId-scoped
+ * data access — the guarded `prisma` client remains the default everywhere.
+ *
+ * POOL NOTE: one extra connection per serverless instance (connection_limit=1).
+ * Acceptable: token pages are low-traffic, and the alternative is broken
+ * public flows.
+ */
+const unscopedCached = globalForUnscoped.prismaUnscoped;
+export const prismaUnscoped =
+  unscopedCached ??
+  new PrismaClient({
+    log: process.env.NODE_ENV === 'production' ? ['error'] : ['query'],
+    datasourceUrl: pooledDatabaseUrl(),
+  });
+globalForUnscoped.prismaUnscoped = prismaUnscoped;
+if (!unscopedCached) {
+  prismaUnscoped.$use(async (params, next) => withDbRetry(() => next(params)));
+}
+// Inject into the guard module so unsafeUnscoped() can hand out this client.
+setUnscopedClient(prismaUnscoped);

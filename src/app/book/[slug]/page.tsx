@@ -17,8 +17,8 @@ export async function generateMetadata({
   // Public page entry point: the slug is the public address of the page.
   // A slug can only resolve to the one business that owns it, so no
   // tenant scope can exist before this lookup.
-  const page = await unsafeUnscoped('book:metadata:findPage', () =>
-    prisma.bookingPage.findUnique({
+  const page = await unsafeUnscoped('book:metadata:findPage', (db) =>
+    db.bookingPage.findUnique({
       where: { slug },
       select: { headline: true, business: { select: { name: true } } },
     })
@@ -40,8 +40,8 @@ export default async function PublicBookingPage({
   const { slug } = await params;
   const locale: Locale = await getLocale();
 
-  const page = await unsafeUnscoped('book:page:findPage', () =>
-    prisma.bookingPage.findUnique({
+  const page = await unsafeUnscoped('book:page:findPage', (db) =>
+    db.bookingPage.findUnique({
       where: { slug },
       select: {
         enabled: true,

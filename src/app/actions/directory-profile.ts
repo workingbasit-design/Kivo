@@ -138,8 +138,8 @@ export async function updateDirectoryProfile(
       // Global slug uniqueness: slugs live in the public /book/[slug] URL
       // namespace, so the clash check must span all businesses — scoping it
       // to the caller's business would let two businesses claim one slug.
-      const clash = await unsafeUnscoped('directory-profile:slugClashCheck', () =>
-        prisma.bookingPage.findUnique({ where: { slug }, select: { id: true } })
+      const clash = await unsafeUnscoped('directory-profile:slugClashCheck', (db) =>
+        db.bookingPage.findUnique({ where: { slug }, select: { id: true } })
       );
       if (!clash) break;
       slug = `${slugify(biz?.name ?? 'business')}-${i}`;
@@ -188,8 +188,8 @@ export async function approveDirectoryClaim(claimId: string): Promise<DirectoryP
 
   // Admin moderation: directory admins act across tenants by design
   // (requireDirectoryAdmin). The claim's own businessId scopes the update below.
-  const claim = await unsafeUnscoped('directory:adminResolveClaim', () =>
-    prisma.directoryClaim.findUnique({
+  const claim = await unsafeUnscoped('directory:adminResolveClaim', (db) =>
+    db.directoryClaim.findUnique({
       where: { id: claimId },
       select: { id: true, businessId: true, status: true },
     })
@@ -225,8 +225,8 @@ export async function rejectDirectoryClaim(
 
   // Admin moderation: directory admins act across tenants by design
   // (requireDirectoryAdmin). The claim's own businessId scopes the update below.
-  const claim = await unsafeUnscoped('directory:adminResolveClaim', () =>
-    prisma.directoryClaim.findUnique({
+  const claim = await unsafeUnscoped('directory:adminResolveClaim', (db) =>
+    db.directoryClaim.findUnique({
       where: { id: claimId },
       select: { id: true, businessId: true, status: true },
     })

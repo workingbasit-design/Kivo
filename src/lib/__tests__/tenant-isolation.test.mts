@@ -19,6 +19,7 @@ import {
   assertTenantScope,
   tenantGuardMiddleware,
   unsafeUnscoped,
+  setUnscopedClient,
 } from '../tenant-guard.ts';
 
 const BIZ_A = 'biz_a';
@@ -159,68 +160,59 @@ describe('tenant guard allows legitimate queries', () => {
 });
 
 describe('unsafeUnscoped escape hatch', () => {
-  it('permits marked blocks and only marked blocks', async () => {
-    // Outside: still blocked.
-    expectBlocked('ShareToken', 'findFirst', { where: { token: 'secret' } });
-    // Inside: allowed.
-    await unsafeUnscoped('test-escape', async () => {
-      expectAllowed('ShareToken', 'findFirst', { where: { token: 'secret' } });
-    });
-    // After: blocked again — no leakage.
-    expectBlocked('ShareToken', 'findFirst', { where: { token: 'secret' } });
-  });
-
-  it('shares the exemption store via globalThis so a bundler-duplicated module copy stays in sync', async () => {
-    // Regression test for the 2026-09-28 production outage: the bundler
-    // evaluated tenant-guard.ts twice (once via `@/lib/tenant-guard`, once
-    // via `./tenant-guard.ts`), creating two AsyncLocalStorage instances.
-    // The Prisma middleware (registered from one copy) never saw exemptions
-    // set via unsafeUnscoped from the other copy, so every public token
-    // page (/sign, /book, /rev, /track, /q, /i, /p, /portal) failed closed
-    // with TenantScopeError → 500. The store must live on globalThis so all
-    // copies share it.
-    const g = globalThis as unknown as Record<string, unknown>;
-    assert.ok(
-      g.__everyjob_unscopedStore,
-      'expected the unscoped ALS instance on globalThis'
+  it('requires an injected client and hands it to the callback', async () => {
+    // Without injection, it throws instead of silently using a wrong client.
+    assert.throws(
+      () => unsafeUnscoped('no-client', async () => 'x'),
+      /unscoped client not initialized/
     );
 
-    // Simulate the duplication: load a second, cache-busted copy of the module.
-    const { pathToFileURL, fileURLToPath } = await import('node:url');
-    const { dirname, join } = await import('node:path');
-    const testDir = dirname(fileURLToPath(import.meta.url));
-    const url = pathToFileURL(join(testDir, '..', 'tenant-guard.ts')).href;
-    const second = (await import(
-      `${url}?dupcopy=1`
-      // @ts-expect-error query-string import is intentional here
-    )) as typeof import('../tenant-guard.ts');
+    // Inject a mock unguarded client.
+    const mockDb = { marker: 'unguarded-mock' } as unknown as Parameters<
+      Parameters<typeof unsafeUnscoped>[1]
+    >[0];
+    setUnscopedClient(mockDb);
 
-    // An exemption opened through the SECOND copy must be honored by
-    // assertTenantScope from the FIRST copy (the middleware's copy).
-    await second.unsafeUnscoped('dup-test', async () => {
-      assertTenantScope({
-        model: 'Job',
-        action: 'findMany',
-        args: { where: { id: 'x' } },
-      });
+    let received: unknown = null;
+    const result = await unsafeUnscoped('test-escape', async (db) => {
+      received = db;
+      return 'ok';
     });
-    // And the first copy still fails closed outside the block.
-    expectBlocked('Job', 'findMany', { where: { id: 'x' } });
+    assert.equal(result, 'ok');
+    assert.equal(received, mockDb, 'callback must receive the injected client');
+
+    // The guard itself is unchanged: unscoped queries still fail closed
+    // when checked directly (the bypass is the separate client, not ALS).
+    expectBlocked('ShareToken', 'findFirst', { where: { token: 'secret' } });
   });
 
-  it('does not leak the exemption across concurrent async work', async () => {
-    const results: string[] = [];
-    await Promise.all([
-      unsafeUnscoped('concurrent-a', async () => {
-        await new Promise((r) => setTimeout(r, 10));
-        results.push(assertTenantScopeSafe('Job', 'findMany', { where: { id: 'x' } }));
-      }),
-      (async () => {
-        await new Promise((r) => setTimeout(r, 5));
-        results.push(assertTenantScopeSafe('Job', 'findMany', { where: { id: 'x' } }));
-      })(),
-    ]);
-    assert.deepEqual(results.sort(), ['allowed', 'blocked']);
+  it('records every unscoped operation in the audit trail', async () => {
+    const { unscopedEvents } = await import('../tenant-guard.ts');
+    const before = unscopedEvents.length;
+    const mockDb = {} as never;
+    setUnscopedClient(mockDb as never);
+    await unsafeUnscoped('audit-test-op', async () => 'x');
+    assert.equal(unscopedEvents.length, before + 1);
+    assert.equal(unscopedEvents[unscopedEvents.length - 1].op, 'audit-test-op');
+  });
+
+  it('does not rely on AsyncLocalStorage (regression: Prisma middleware drops ALS)', async () => {
+    // 2026-09-28 production outage: Prisma's `$use` middleware does not
+    // preserve Node.js AsyncLocalStorage context (it runs from Prisma's
+    // internal engine scheduling, outside the caller's async chain), so an
+    // ALS-based exemption never reached the guard and every public token
+    // page 500'd with TenantScopeError. The fix is an explicit unguarded
+    // client passed to the callback — verify no ALS is involved.
+    const src = readFileSync(
+      new URL('../tenant-guard.ts', import.meta.url),
+      'utf8'
+    );
+    // unsafeUnscoped must not call .run() on an AsyncLocalStorage.
+    const fnBody = src.slice(src.indexOf('export function unsafeUnscoped'));
+    assert.ok(
+      !/unscopedStore\.run/.test(fnBody),
+      'unsafeUnscoped must not use AsyncLocalStorage.run — use the injected client'
+    );
   });
 });
 

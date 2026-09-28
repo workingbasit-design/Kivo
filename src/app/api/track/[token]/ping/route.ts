@@ -41,8 +41,8 @@ export async function GET(
     // Public polling endpoint: the 256-bit token IS the authorization. The
     // business is learned from the resolved row, so no tenant scope can
     // exist before this lookup.
-    share = await unsafeUnscoped('track:ping:resolveShare', () =>
-      prisma.trackingShare.findFirst({
+    share = await unsafeUnscoped('track:ping:resolveShare', (db) =>
+      db.trackingShare.findFirst({
         where: { token },
         select: {
           businessId: true,

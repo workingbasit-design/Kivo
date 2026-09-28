@@ -249,8 +249,8 @@ export async function resolveSignatureRequest(
   // Public signing entry point: the 256-bit token (hashed) IS the
   // authorization — the business is learned from the resolved request, so
   // no tenant scope can exist before this lookup.
-  const rec = await unsafeUnscoped('esign:resolveSignatureRequest', () =>
-    prisma.signatureRequest.findUnique({
+  const rec = await unsafeUnscoped('esign:resolveSignatureRequest', (db) =>
+    db.signatureRequest.findUnique({
       where: { tokenHash: hashSignToken(token) },
       select: {
         id: true,

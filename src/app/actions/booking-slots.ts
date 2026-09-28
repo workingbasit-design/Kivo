@@ -93,8 +93,8 @@ export async function getBookingSlots(
   // Public page resolution: the slug IS the identifier and the business is
   // learned from the resolved row, so no tenant scope can exist before this
   // lookup. The page's businessId scopes every query after it.
-  const page = await unsafeUnscoped('booking-slots:resolvePage', () =>
-    prisma.bookingPage.findUnique({
+  const page = await unsafeUnscoped('booking-slots:resolvePage', (db) =>
+    db.bookingPage.findUnique({
       where: { slug: cleanSlug },
       select: {
         businessId: true,
@@ -245,8 +245,8 @@ async function runBookingWithTime(
   // Public page resolution: the slug IS the identifier and the business is
   // learned from the resolved row, so no tenant scope can exist before this
   // lookup. `businessId` below comes from this row and scopes the rest.
-  const page = await unsafeUnscoped('booking-slots:resolvePageForBooking', () =>
-    prisma.bookingPage.findUnique({
+  const page = await unsafeUnscoped('booking-slots:resolvePageForBooking', (db) =>
+    db.bookingPage.findUnique({
       where: { slug },
       select: {
         businessId: true,

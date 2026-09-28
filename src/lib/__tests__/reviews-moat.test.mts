@@ -46,6 +46,12 @@ const { createReview } = await import('../../app/actions/reviews.ts');
 
 const { db, resetDb } = await import('./reviews-moat-stub.mjs');
 
+// The review-requests actions use unsafeUnscoped(), which needs an injected
+// client. Point it at the in-memory stub prisma.
+const { setUnscopedClient } = await import('../tenant-guard.ts');
+const { prisma: stubPrisma } = await import('./reviews-moat-stub.mjs');
+setUnscopedClient(stubPrisma as never);
+
 const STALE_LINK_ERROR =
   'This review link is no longer valid. Ask your pro for a fresh one.';
 

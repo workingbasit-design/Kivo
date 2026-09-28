@@ -63,8 +63,8 @@ export async function verifyApiKey(key: string): Promise<VerifiedApiKey | null> 
   // resolves the tenant — no business scope can exist before this query.
   // Revoked keys are rejected and unknown keys resolve to null, so there
   // is no enumeration vector.
-  const rec = await unsafeUnscoped('apiKeys:verifyApiKey', () =>
-    prisma.apiKey.findUnique({
+  const rec = await unsafeUnscoped('apiKeys:verifyApiKey', (db) =>
+    db.apiKey.findUnique({
       where: { keyHash: hashApiKey(key) },
       select: { id: true, businessId: true, scopes: true, revokedAt: true },
     })

@@ -142,8 +142,8 @@ export async function resolveShareToken(token: string, type: ShareType) {
   // business is learned from the resolved row, so no tenant scope can
   // exist before this lookup; the caller must verify active/usability
   // (revokedAt/expiresAt) before using the result.
-  const rec = await unsafeUnscoped('share:resolveShareToken', () =>
-    prisma.shareToken.findUnique({
+  const rec = await unsafeUnscoped('share:resolveShareToken', (db) =>
+    db.shareToken.findUnique({
       where: { token, type },
       select: {
         id: true,

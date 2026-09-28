@@ -44,6 +44,25 @@
  * comment justifying why it is safe — grep for unsafeUnscoped to audit.
  */
 import { AsyncLocalStorage } from 'node:async_hooks';
+import type { PrismaClient } from '@prisma/client';
+
+/**
+ * The unguarded client, injected by lib/prisma.ts via setUnscopedClient().
+ * Type-only import: no runtime dependency, so tests can stub freely and
+ * there is no circular module initialization.
+ */
+let unscopedClient: PrismaClient | null = null;
+
+/**
+ * Inject the unguarded Prisma client (called once by lib/prisma.ts).
+ * Tests inject a mock via this same function.
+ */
+export function setUnscopedClient(client: PrismaClient): void {
+  unscopedClient = client;
+}
+
+/** Audit trail of every unscoped operation (for security review). */
+export const unscopedEvents: Array<{ at: number; op: string }> = [];
 
 /** Programming error: a tenant query ran without a tenant. Never retried. */
 export class TenantScopeError extends Error {
@@ -238,9 +257,26 @@ export async function tenantGuardMiddleware(
  * Logs a warning (non-production) naming the operation so every exemption
  * is greppable: `grep -rn unsafeUnscoped src --include="*.ts"`.
  */
-export function unsafeUnscoped<T>(operationName: string, fn: () => Promise<T>): Promise<T> {
+export function unsafeUnscoped<T>(
+  operationName: string,
+  fn: (db: PrismaClient) => Promise<T>
+): Promise<T> {
   if (process.env.NODE_ENV !== 'production') {
     console.warn(`[tenant-guard] unscoped query block: ${operationName}`);
   }
-  return unscopedStore.run(true, fn);
+  // NOTE (2026-09-28): the old AsyncLocalStorage-based exemption was removed.
+  // Prisma's `$use` middleware does not preserve ALS context (it runs from
+  // Prisma's internal engine scheduling, outside the caller's async chain),
+  // so the exemption never reached the guard and every public token page
+  // 500'd with TenantScopeError. The callback now receives an explicit
+  // UNGUARDED client — the only reliable bypass. The client is injected via
+  // setUnscopedClient() (called by lib/prisma.ts) to avoid a circular
+  // runtime import; tests inject a mock.
+  if (!unscopedClient) {
+    throw new Error(
+      '[tenant-guard] unscoped client not initialized — lib/prisma.ts must call setUnscopedClient()'
+    );
+  }
+  unscopedEvents.push({ at: Date.now(), op: operationName });
+  return fn(unscopedClient);
 }

@@ -72,8 +72,8 @@ export async function POST(req: Request) {
   const expiresAt = new Date(Date.now() + SHARE_TTL_HOURS * 60 * 60 * 1000);
   // job.id was business-verified 15 lines above; jobId is this table's
   // unique key, so the upsert can only ever touch this tenant's row.
-  const share = await unsafeUnscoped('tracking:share:upsert', () =>
-    prisma.trackingShare.upsert({
+  const share = await unsafeUnscoped('tracking:share:upsert', (db) =>
+    db.trackingShare.upsert({
       where: { jobId: job.id },
       create: {
         businessId,

@@ -60,8 +60,8 @@ export async function saveBookingSettings(
   // here (we WANT other tenants' rows) and therefore wrapped in
   // unsafeUnscoped — the guard's top-level-businessId rule would otherwise
   // reject it.
-  const clash = await unsafeUnscoped('booking:slugClashCheck', () =>
-    prisma.bookingPage.findFirst({
+  const clash = await unsafeUnscoped('booking:slugClashCheck', (db) =>
+    db.bookingPage.findFirst({
       where: { slug, NOT: { businessId } },
       select: { id: true },
     })

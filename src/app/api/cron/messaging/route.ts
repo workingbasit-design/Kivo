@@ -36,8 +36,8 @@ export async function GET(req: Request) {
   // Cron fan-out (CRON_SECRET at route entry): enumerate opted-in
   // businesses. Each business's sends run inside its own tenant scope
   // with per-business quota checks in runMessagingCycle.
-  const businesses = await unsafeUnscoped('cron:messaging:fanout', () =>
-    prisma.messagingSettings.findMany({
+  const businesses = await unsafeUnscoped('cron:messaging:fanout', (db) =>
+    db.messagingSettings.findMany({
       where: {
         OR: [
           { reminder24h: true },

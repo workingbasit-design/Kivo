@@ -40,8 +40,8 @@ export default async function DirectoryClaimsPage() {
 
   // Super-admin moderation view (isDirectoryAdminEmail gate above):
   // listing claims span all businesses by design.
-  const claims = await unsafeUnscoped('directory:adminListClaims', () =>
-    prisma.directoryClaim.findMany({
+  const claims = await unsafeUnscoped('directory:adminListClaims', (db) =>
+    db.directoryClaim.findMany({
       orderBy: { createdAt: 'desc' },
       take: 200,
       include: {

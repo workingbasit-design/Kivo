@@ -249,8 +249,8 @@ export async function reportBusiness(
   // Public report form: the slug IS the identifier and the business is
   // learned from the resolved row (the report is filed against that
   // business), so no tenant scope can exist before this lookup.
-  const page = await unsafeUnscoped('directory:reportResolvePage', () =>
-    prisma.bookingPage.findUnique({
+  const page = await unsafeUnscoped('directory:reportResolvePage', (db) =>
+    db.bookingPage.findUnique({
       where: { slug: parsed.data.slug },
       select: { businessId: true, business: { select: { directoryOptIn: true } } },
     })
@@ -292,8 +292,8 @@ export async function updateReportStatus(
 
   // Admin moderation: directory admins act across tenants by design. The
   // report's own businessId scopes the status update below.
-  const report = await unsafeUnscoped('directory:adminResolveReport', () =>
-    prisma.directoryReport.findUnique({
+  const report = await unsafeUnscoped('directory:adminResolveReport', (db) =>
+    db.directoryReport.findUnique({
       where: { id: reportId },
       select: { id: true, businessId: true },
     })

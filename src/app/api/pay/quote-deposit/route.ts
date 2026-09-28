@@ -42,8 +42,8 @@ export async function POST(req: Request) {
   // The business is learned from the resolved row, so no tenant scope can
   // exist before this lookup; the token row is usability-checked
   // (revokedAt/expiresAt) before anything renders.
-  const share = await unsafeUnscoped('pay:quote-deposit:resolveShare', () =>
-    prisma.shareToken.findFirst({
+  const share = await unsafeUnscoped('pay:quote-deposit:resolveShare', (db) =>
+    db.shareToken.findFirst({
       where: {
         token,
         type: 'QUOTE',

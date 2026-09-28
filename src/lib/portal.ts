@@ -126,8 +126,8 @@ export async function resolveCustomerPortalToken(
   // tenant and customer are learned from the resolved row, so no scope
   // can exist before this lookup; callers must check active/usability
   // (revokedAt/expiresAt) before using the result.
-  const rec = await unsafeUnscoped('portal:resolveCustomerPortalToken', () =>
-    prisma.customerPortalToken.findUnique({
+  const rec = await unsafeUnscoped('portal:resolveCustomerPortalToken', (db) =>
+    db.customerPortalToken.findUnique({
       where: { tokenHash: hashPortalToken(token) },
       select: {
         id: true,

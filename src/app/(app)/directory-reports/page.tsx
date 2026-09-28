@@ -38,8 +38,8 @@ export default async function DirectoryReportsPage() {
 
   // Super-admin moderation view (isDirectoryAdminEmail gate above):
   // reports about directory listings span all businesses by design.
-  const reports = await unsafeUnscoped('directory:adminListReports', () =>
-    prisma.directoryReport.findMany({
+  const reports = await unsafeUnscoped('directory:adminListReports', (db) =>
+    db.directoryReport.findMany({
       orderBy: { createdAt: 'desc' },
       take: 200,
       include: { business: { select: { name: true } } },

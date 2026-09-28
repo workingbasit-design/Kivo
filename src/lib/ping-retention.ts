@@ -25,8 +25,8 @@ export async function pruneStaleLocationPings(
   // Intentionally cross-tenant: PIPEDA data-minimization purge. Deletes
   // only rows older than the retention cutoff and returns a count — no
   // row contents ever leave the database.
-  const res = await unsafeUnscoped('geofence:pruneStaleLocationPings', () =>
-    prisma.technicianLocation.deleteMany({
+  const res = await unsafeUnscoped('geofence:pruneStaleLocationPings', (db) =>
+    db.technicianLocation.deleteMany({
       where: { recordedAt: { lt: cutoff } },
     })
   );

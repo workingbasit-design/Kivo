@@ -31,8 +31,8 @@ export async function expireOldLeads(): Promise<number> {
 
   // Find leads past expiry that are still NEW (never contacted).
   // CONTACTED/CONVERTED leads are the business's active pipeline — never auto-expire.
-  const expired = await unsafeUnscoped('leads:expireOldLeads', () =>
-    prisma.lead.updateMany({
+  const expired = await unsafeUnscoped('leads:expireOldLeads', (db) =>
+    db.lead.updateMany({
       where: {
         status: 'NEW',
         expiresAt: { lt: now },

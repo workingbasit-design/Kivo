@@ -141,8 +141,8 @@ export async function PATCH(req: Request) {
   // Tickets may be global (no businessId) — the owner inbox sees all of them.
   // isProductOwner() above is the authorization: only the product owner
   // reaches this line.
-  const ticket = await unsafeUnscoped('support:ownerUpdateTicket', () =>
-    prisma.supportTicket.update({
+  const ticket = await unsafeUnscoped('support:ownerUpdateTicket', (db) =>
+    db.supportTicket.update({
       where: { id: parsed.data.id },
       data: { status: parsed.data.status },
       select: { id: true },

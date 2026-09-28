@@ -32,8 +32,8 @@ export default async function SupportInboxPage() {
 
   // Owner support inbox (isProductOwner gate above): tickets about the
   // EveryJob product itself are global by design, not tenant data.
-  const tickets = await unsafeUnscoped('support:ownerInbox', () =>
-    prisma.supportTicket.findMany({
+  const tickets = await unsafeUnscoped('support:ownerInbox', (db) =>
+    db.supportTicket.findMany({
       orderBy: { createdAt: 'desc' },
       take: 100,
       select: {

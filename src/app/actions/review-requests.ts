@@ -137,8 +137,8 @@ export async function submitTokenReview(
   // Public token lookup: the 256-bit review token IS the authorization
   // (capability URL). The business/customer/job are learned from the resolved
   // row, so no tenant scope can exist before this lookup.
-  const req = await unsafeUnscoped('review-requests:resolveTokenSubmit', () =>
-    prisma.reviewRequest.findUnique({
+  const req = await unsafeUnscoped('review-requests:resolveTokenSubmit', (db) =>
+    db.reviewRequest.findUnique({
       where: { tokenHash },
       select: {
         businessId: true,
@@ -166,7 +166,7 @@ export async function submitTokenReview(
     await prisma.$transaction(async (tx) => {
       // Same capability-token justification as the lookup above; re-checked
       // inside the transaction for the atomic single-use guarantee.
-      const fresh = await unsafeUnscoped('review-requests:recheckToken', () =>
+      const fresh = await unsafeUnscoped('review-requests:recheckToken', (db) =>
         tx.reviewRequest.findUnique({
           where: { tokenHash },
           select: { status: true, expiresAt: true },
@@ -185,7 +185,7 @@ export async function submitTokenReview(
       });
       // Same capability-token justification as the lookups above: the token
       // proves the caller may act on this request; no tenant scope exists.
-      await unsafeUnscoped('review-requests:markTokenUsed', () =>
+      await unsafeUnscoped('review-requests:markTokenUsed', (db) =>
         tx.reviewRequest.update({
           where: { tokenHash },
           data: { status: 'USED', usedAt: new Date(), reviewId: review.id },
@@ -218,8 +218,8 @@ export async function getTokenReviewContext(
   // Public token lookup: the review token IS the authorization (capability
   // URL). Only names/titles are exposed — never emails, phones, addresses,
   // or financials.
-  const req = await unsafeUnscoped('review-requests:resolveTokenContext', () =>
-    prisma.reviewRequest.findUnique({
+  const req = await unsafeUnscoped('review-requests:resolveTokenContext', (db) =>
+    db.reviewRequest.findUnique({
       where: { tokenHash: hashReviewToken(token.trim()) },
       select: {
         status: true,

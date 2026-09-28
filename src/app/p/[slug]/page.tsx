@@ -31,8 +31,8 @@ async function getProfile(slug: string) {
   // page. A slug can only resolve to the one business that owns it, so no
   // tenant scope can exist before this lookup; every follow-up query uses
   // the resolved business id.
-  const page = await unsafeUnscoped('profile:findPage', () =>
-    prisma.bookingPage.findUnique({
+  const page = await unsafeUnscoped('profile:findPage', (db) =>
+    db.bookingPage.findUnique({
       where: { slug },
       select: {
         headline: true,

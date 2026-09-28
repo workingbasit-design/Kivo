@@ -201,8 +201,8 @@ export async function updateBusinessSettings(
       for (let i = 2; i <= 20; i++) {
         // Global slug uniqueness: slugs live in the public /book/[slug] URL
         // namespace, so the clash check must span all businesses.
-        const clash = await unsafeUnscoped('settings:bookingSlugClashCheck', () =>
-          prisma.bookingPage.findUnique({
+        const clash = await unsafeUnscoped('settings:bookingSlugClashCheck', (db) =>
+          db.bookingPage.findUnique({
             where: { slug },
             select: { id: true },
           })

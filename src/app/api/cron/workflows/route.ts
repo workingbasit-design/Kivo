@@ -98,8 +98,8 @@ export async function GET(req: Request) {
     // Cron fan-out (CRON_SECRET at route entry): enumerate calendar
     // connections. Each sync runs inside its own tenant scope in
     // syncJobsToGoogleCalendar(c.businessId).
-    const calBusinesses = await unsafeUnscoped('cron:workflows:calendarFanout', () =>
-      prisma.googleConnection.findMany({
+    const calBusinesses = await unsafeUnscoped('cron:workflows:calendarFanout', (db) =>
+      db.googleConnection.findMany({
         where: { scopes: { contains: 'calendar' } },
         select: { businessId: true },
       })
