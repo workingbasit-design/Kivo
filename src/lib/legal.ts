@@ -68,6 +68,15 @@ export const PRIVACY: { en: LegalPage; fr: LegalPage } = {
         ],
       },
       {
+        heading: 'Cookies',
+        body: [
+          'We use only cookies that are strictly necessary for the app to work. We do not use advertising, tracking, or analytics cookies.',
+          'kivo_session: keeps you signed in. Without it you would have to log in on every page. It expires when you sign out or after 30 days of inactivity.',
+          'kivo-locale: remembers whether you chose English or French so the app shows the right language.',
+          'Because these cookies are essential, the app cannot function without them. You can clear them in your browser settings at any time, but you will be signed out and your language choice will reset.',
+        ],
+      },
+      {
         heading: 'Children',
         body: [
           'EveryJob is a business tool for adults. You must be 18 or older to create an account. We do not knowingly collect information from anyone under 18.',
@@ -121,6 +130,15 @@ export const PRIVACY: { en: LegalPage; fr: LegalPage } = {
         heading: 'Conservation des données',
         body: [
           'Nous conservons vos données d\u2019entreprise tant que votre compte est actif. Les positions sont supprimées après 24 heures. Si vous fermez votre compte, nous supprimons vos renseignements personnels dans les 30 jours, sauf les dossiers que nous devons conserver pour des raisons légales ou fiscales.',
+        ],
+      },
+      {
+        heading: 'Témoins (cookies)',
+        body: [
+          'Nous n\u2019utilisons que les témoins strictement nécessaires au fonctionnement de l\u2019application. Nous n\u2019utilisons aucun témoin publicitaire, de suivi ou d\u2019analyse.',
+          'kivo_session : vous garde connecté. Sans lui, vous devriez vous reconnecter à chaque page. Il expire à la déconnexion ou après 30 jours d\u2019inactivité.',
+          'kivo-locale : mémorise votre choix de langue (français ou anglais) pour afficher l\u2019application dans la bonne langue.',
+          'Puisque ces témoins sont essentiels, l\u2019application ne peut pas fonctionner sans eux. Vous pouvez les effacer dans les paramètres de votre navigateur à tout moment, mais vous serez déconnecté et votre choix de langue sera réinitialisé.',
         ],
       },
       {

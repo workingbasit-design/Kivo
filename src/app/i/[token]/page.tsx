@@ -124,7 +124,7 @@ export default async function InvoicePortalPage({
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={invoice.business.logoUrl}
-              alt=""
+              alt={`${invoice.business.name} logo`}
               className="w-16 h-16 rounded-2xl object-contain mx-auto mb-3 border border-zinc-200 bg-white"
             />
           ) : (
