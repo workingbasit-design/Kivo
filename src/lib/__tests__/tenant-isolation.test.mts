@@ -170,6 +170,44 @@ describe('unsafeUnscoped escape hatch', () => {
     expectBlocked('ShareToken', 'findFirst', { where: { token: 'secret' } });
   });
 
+  it('shares the exemption store via globalThis so a bundler-duplicated module copy stays in sync', async () => {
+    // Regression test for the 2026-09-28 production outage: the bundler
+    // evaluated tenant-guard.ts twice (once via `@/lib/tenant-guard`, once
+    // via `./tenant-guard.ts`), creating two AsyncLocalStorage instances.
+    // The Prisma middleware (registered from one copy) never saw exemptions
+    // set via unsafeUnscoped from the other copy, so every public token
+    // page (/sign, /book, /rev, /track, /q, /i, /p, /portal) failed closed
+    // with TenantScopeError → 500. The store must live on globalThis so all
+    // copies share it.
+    const g = globalThis as unknown as Record<string, unknown>;
+    assert.ok(
+      g.__everyjob_unscopedStore,
+      'expected the unscoped ALS instance on globalThis'
+    );
+
+    // Simulate the duplication: load a second, cache-busted copy of the module.
+    const { pathToFileURL, fileURLToPath } = await import('node:url');
+    const { dirname, join } = await import('node:path');
+    const testDir = dirname(fileURLToPath(import.meta.url));
+    const url = pathToFileURL(join(testDir, '..', 'tenant-guard.ts')).href;
+    const second = (await import(
+      `${url}?dupcopy=1`
+      // @ts-expect-error query-string import is intentional here
+    )) as typeof import('../tenant-guard.ts');
+
+    // An exemption opened through the SECOND copy must be honored by
+    // assertTenantScope from the FIRST copy (the middleware's copy).
+    await second.unsafeUnscoped('dup-test', async () => {
+      assertTenantScope({
+        model: 'Job',
+        action: 'findMany',
+        args: { where: { id: 'x' } },
+      });
+    });
+    // And the first copy still fails closed outside the block.
+    expectBlocked('Job', 'findMany', { where: { id: 'x' } });
+  });
+
   it('does not leak the exemption across concurrent async work', async () => {
     const results: string[] = [];
     await Promise.all([

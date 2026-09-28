@@ -357,11 +357,19 @@ export function Dialog({
   const labelled = labelledBy ?? titleId;
   const panelRef = React.useRef<HTMLDivElement>(null);
   const prevFocus = React.useRef<HTMLElement | null>(null);
+  // onClose is an inline arrow at most call sites (new identity every
+  // render). Keep it in a ref so the effect below only re-runs when `open`
+  // changes — otherwise every keystroke inside the dialog would re-run the
+  // effect and yank focus back to the first input (2026-09-28: typing a
+  // multi-digit price kept only the first digit; the rest leaked into the
+  // name field).
+  const onCloseRef = React.useRef(onClose);
+  onCloseRef.current = onClose;
 
   React.useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') onCloseRef.current();
     };
     document.addEventListener('keydown', onKey);
     const prevOverflow = document.body.style.overflow;
@@ -379,7 +387,7 @@ export function Dialog({
       document.body.style.overflow = prevOverflow;
       prevFocus.current?.focus?.({ preventScroll: true });
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
   const closeLabel = t(locale, 't10misc.confirmDialog.close');

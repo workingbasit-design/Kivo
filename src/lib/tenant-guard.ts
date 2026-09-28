@@ -145,7 +145,27 @@ const GUARDED_ACTIONS: ReadonlySet<string> = new Set([
   'createMany',
 ]);
 
-const unscopedStore = new AsyncLocalStorage<boolean>();
+const globalForGuard = globalThis as unknown as {
+  __everyjob_unscopedStore?: AsyncLocalStorage<boolean>;
+};
+/**
+ * The exemption store lives on globalThis — NOT as a plain module-level
+ * const — because the production bundler can evaluate this module twice
+ * when it is imported through two different specifiers (e.g. `@/lib/tenant-guard`
+ * in pages vs `./tenant-guard.ts` in lib files). Two module instances mean
+ * two AsyncLocalStorage instances; the Prisma middleware (registered from
+ * one copy) would then never see exemptions set via unsafeUnscoped from
+ * the other copy, and every public token page (/sign, /book, /rev, /track,
+ * /q, /i, /p, /portal) plus token-based API routes would fail closed with
+ * TenantScopeError → 500. Sharing the store through globalThis makes the
+ * exemption visible no matter which copy sets or reads it.
+ * (2026-09-28: this exact duplication broke all public token pages in
+ * production; the middleware saw an empty store and rejected every
+ * unsafeUnscoped query.)
+ */
+const unscopedStore =
+  globalForGuard.__everyjob_unscopedStore ??
+  (globalForGuard.__everyjob_unscopedStore = new AsyncLocalStorage<boolean>());
 
 export interface GuardParams {
   model?: string;

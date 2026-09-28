@@ -66,7 +66,7 @@ const fragment = {
         smsLabel: 'Send via SMS',
         whatsappLabel: 'Send via WhatsApp',
         noPhone: 'Add a phone number to this customer to enable messaging.',
-        ourTech: 'our technician',
+        ourTech: 'Our technician',
         message:
           'Hi {customerName}, this is {businessName}. {techName} is on the way to your {jobTitle} appointment. Track the arrival live here: {trackLink}',
         messageNoLink:
@@ -88,6 +88,7 @@ const fragment = {
       },
       profitability: {
         title: 'Profitability',
+        subtitle: 'Actuals to date — profit is invoiced revenue minus recorded costs.',
         quotedPrice: 'Quoted price',
         invoiced: 'Invoiced to date',
         labor: 'Labor',
@@ -198,7 +199,7 @@ const fragment = {
         smsLabel: 'Envoyer par SMS',
         whatsappLabel: 'Envoyer via WhatsApp',
         noPhone: 'Ajoutez un numéro de téléphone à ce client pour activer la messagerie.',
-        ourTech: 'notre technicien',
+        ourTech: 'Notre technicien',
         message:
           'Bonjour {customerName}, ici {businessName}. {techName} est en route pour votre rendez-vous {jobTitle}. Suivez l’arrivée en direct ici : {trackLink}',
         messageNoLink:
@@ -220,6 +221,7 @@ const fragment = {
       },
       profitability: {
         title: 'Rentabilité',
+        subtitle: 'Réel à ce jour — le profit est le revenu facturé moins les coûts comptabilisés.',
         quotedPrice: 'Prix convenu',
         invoiced: 'Facturé à ce jour',
         labor: 'Main-d’œuvre',

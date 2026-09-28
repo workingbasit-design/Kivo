@@ -50,6 +50,18 @@ const fragment = {
       route: {
         openFullRoute: 'Open full route in Google Maps',
       },
+      list: {
+        title: 'Quotes',
+        newQuote: 'New quote',
+        subtitle: '{count} {quoteWord} · {pipeline} in open pipeline',
+        quoteOne: 'quote',
+        quoteOther: 'quotes',
+        filterAll: 'All',
+        filterDraft: 'Draft',
+        filterSent: 'Sent',
+        filterApproved: 'Approved',
+        filterDeclined: 'Declined',
+      },
     },
   } as Dictionary,
   fr: {
@@ -96,6 +108,18 @@ const fragment = {
       },
       route: {
         openFullRoute: "Ouvrir l'itinéraire complet dans Google Maps",
+      },
+      list: {
+        title: 'Devis',
+        newQuote: 'Nouveau devis',
+        subtitle: '{count} {quoteWord} · {pipeline} en pipeline ouvert',
+        quoteOne: 'devis',
+        quoteOther: 'devis',
+        filterAll: 'Tous',
+        filterDraft: 'Brouillon',
+        filterSent: 'Envoyé',
+        filterApproved: 'Approuvé',
+        filterDeclined: 'Refusé',
       },
     },
   } as Dictionary,

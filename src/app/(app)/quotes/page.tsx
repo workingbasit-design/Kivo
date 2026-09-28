@@ -98,12 +98,28 @@ export default async function QuotesPage({
     total: q.total,
   }));
   const exportFileBase = `everyjob-quotes-${new Date().toISOString().slice(0, 10)}`;
+  const quoteWord =
+    quotes.length === 1
+      ? t(locale, 'quotes.list.quoteOne')
+      : t(locale, 'quotes.list.quoteOther');
+  const subtitle = t(locale, 'quotes.list.subtitle')
+    .replace('{count}', String(quotes.length))
+    .replace('{quoteWord}', quoteWord)
+    .replace('{pipeline}', formatMoney(pipelineTotal, business?.currency));
+
+  const FILTER_LABELS: Record<(typeof FILTERS)[number], string> = {
+    ALL: t(locale, 'quotes.list.filterAll'),
+    DRAFT: t(locale, 'quotes.list.filterDraft'),
+    SENT: t(locale, 'quotes.list.filterSent'),
+    APPROVED: t(locale, 'quotes.list.filterApproved'),
+    DECLINED: t(locale, 'quotes.list.filterDeclined'),
+  };
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Quotes"
-        subtitle={`${quotes.length} quote${quotes.length === 1 ? '' : 's'} · ${formatMoney(pipelineTotal, business?.currency)} in open pipeline`}
+        title={t(locale, 'quotes.list.title')}
+        subtitle={subtitle}
         actions={
           <>
             <ExportButtons
@@ -114,7 +130,7 @@ export default async function QuotesPage({
               locale={locale}
             />
             <Link href="/quotes/new" className={primaryBtnClass}>
-              <Plus size={14} /> New quote
+              <Plus size={14} /> {t(locale, 'quotes.list.newQuote')}
             </Link>
           </>
         }
@@ -133,7 +149,7 @@ export default async function QuotesPage({
                 : 'bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300'
             )}
           >
-            {f}
+            {FILTER_LABELS[f]}
           </Link>
         ))}
       </div>

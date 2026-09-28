@@ -392,6 +392,9 @@ export default async function JobDetailPage({
               <TrendingUp size={14} /> {t(locale, 'jobops.profitability.title')}
             </span>
           </SectionTitle>
+          <p className="text-xs text-zinc-500 -mt-3 mb-4">
+            {t(locale, 'jobops.profitability.subtitle')}
+          </p>
           <dl className="space-y-2.5 text-sm">
             <ProfitRow
               label={t(locale, 'jobops.profitability.quotedPrice')}

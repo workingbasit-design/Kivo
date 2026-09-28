@@ -12,7 +12,7 @@ const PUBLIC_PATHS = ['/', '/login', '/register'];
 // with no login, and bouncing them to /login would break the feature.
 // '/track/' must stay public: customers open technician tracking links
 // with no account — the unguessable token is the only capability.
-const PUBLIC_PREFIXES = ['/book/', '/q/', '/i/', '/r/', '/p/', '/portal/', '/sign/', '/track/'];
+const PUBLIC_PREFIXES = ['/book/', '/q/', '/i/', '/r/', '/p/', '/portal/', '/sign/', '/track/', '/rev/'];
 const PUBLIC_EXACT_EXTRA = ['/directory', '/directory/request'];
 
 export function proxy(request: NextRequest) {

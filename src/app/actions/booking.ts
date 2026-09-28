@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { unsafeUnscoped } from '@/lib/tenant-guard';
 
 export type BookingResult = { error?: string; ok?: boolean };
 
@@ -53,10 +54,18 @@ export async function saveBookingSettings(
   }
   const { enabled, slug, headline, intro } = parsed.data;
 
-  const clash = await prisma.bookingPage.findFirst({
-    where: { slug, NOT: { businessId } },
-    select: { id: true },
-  });
+  // Global slug uniqueness: slugs live in the public /book/[slug] URL
+  // namespace, so the clash check must span all businesses and exclude only
+  // this business's own page. The nested NOT: { businessId } is deliberate
+  // here (we WANT other tenants' rows) and therefore wrapped in
+  // unsafeUnscoped — the guard's top-level-businessId rule would otherwise
+  // reject it.
+  const clash = await unsafeUnscoped('booking:slugClashCheck', () =>
+    prisma.bookingPage.findFirst({
+      where: { slug, NOT: { businessId } },
+      select: { id: true },
+    })
+  );
   if (clash) {
     return { error: 'This booking link is already taken. Try another one.' };
   }
