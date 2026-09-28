@@ -55,6 +55,49 @@ const fragment = {
         entries: 'entries',
         entry: 'entry',
       },
+      notify: {
+        title: 'Notify customer',
+        summary:
+          '"I\'m on the way" message for the customer — tap to send it from your own SMS or WhatsApp app. EveryJob never sends anything automatically.',
+        preview: 'Message preview',
+        gettingLink: 'Getting tracking link…',
+        linkHint:
+          "Couldn't create a tracking link. Send the message without it, or create the link from the live-tracking section above.",
+        smsLabel: 'Send via SMS',
+        whatsappLabel: 'Send via WhatsApp',
+        noPhone: 'Add a phone number to this customer to enable messaging.',
+        ourTech: 'our technician',
+        message:
+          'Hi {customerName}, this is {businessName}. {techName} is on the way to your {jobTitle} appointment. Track the arrival live here: {trackLink}',
+        messageNoLink:
+          'Hi {customerName}, this is {businessName}. {techName} is on the way to your {jobTitle} appointment.',
+      },
+      reviewRequest: {
+        title: 'Request a review',
+        desc: 'The job is complete. Create a one-time review link and send it to the customer — they can leave a review in a couple of taps.',
+        create: 'Create review link',
+        creating: 'Creating…',
+        failed: 'Could not create the review link. Please try again.',
+        linkReady: 'Review link ready — send it to the customer:',
+        copy: 'Copy link',
+        copied: 'Copied!',
+        smsLabel: 'Send via SMS',
+        whatsappLabel: 'Send via WhatsApp',
+        message:
+          'Hi {customerName}, thanks for choosing {businessName}! If you were happy with the work, a quick review would mean a lot: {reviewLink}',
+      },
+      profitability: {
+        title: 'Profitability',
+        quotedPrice: 'Quoted price',
+        invoiced: 'Invoiced to date',
+        labor: 'Labor',
+        materials: 'Materials',
+        travel: 'Travel',
+        other: 'Other expenses',
+        totalCost: 'Total cost',
+        profit: 'Profit',
+        margin: 'Margin',
+      },
       templates: {
         title: 'Checklist templates',
         subtitle: 'Reusable checklists you can apply to any job in one tap.',
@@ -143,6 +186,49 @@ const fragment = {
         noTime: 'Aucune heure inscrite. Pointez depuis la page Feuilles de temps et choisissez ce travail.',
         entries: 'entrées',
         entry: 'entrée',
+      },
+      notify: {
+        title: 'Prévenir le client',
+        summary:
+          'Message « je suis en route » pour le client — touchez pour l’envoyer depuis votre propre appli SMS ou WhatsApp. EveryJob n’envoie jamais rien automatiquement.',
+        preview: 'Aperçu du message',
+        gettingLink: 'Récupération du lien de suivi…',
+        linkHint:
+          'Impossible de créer un lien de suivi. Envoyez le message sans lien, ou créez le lien dans la section de suivi en direct ci-dessus.',
+        smsLabel: 'Envoyer par SMS',
+        whatsappLabel: 'Envoyer via WhatsApp',
+        noPhone: 'Ajoutez un numéro de téléphone à ce client pour activer la messagerie.',
+        ourTech: 'notre technicien',
+        message:
+          'Bonjour {customerName}, ici {businessName}. {techName} est en route pour votre rendez-vous {jobTitle}. Suivez l’arrivée en direct ici : {trackLink}',
+        messageNoLink:
+          'Bonjour {customerName}, ici {businessName}. {techName} est en route pour votre rendez-vous {jobTitle}.',
+      },
+      reviewRequest: {
+        title: 'Demander un avis',
+        desc: 'Le travail est terminé. Créez un lien d’avis unique et envoyez-le au client — il pourra laisser un avis en quelques touchers.',
+        create: 'Créer le lien d’avis',
+        creating: 'Création…',
+        failed: 'Impossible de créer le lien d’avis. Veuillez réessayer.',
+        linkReady: 'Lien d’avis prêt — envoyez-le au client :',
+        copy: 'Copier le lien',
+        copied: 'Copié!',
+        smsLabel: 'Envoyer par SMS',
+        whatsappLabel: 'Envoyer via WhatsApp',
+        message:
+          'Bonjour {customerName}, merci d’avoir choisi {businessName}! Si vous êtes satisfait du travail, un avis nous ferait très plaisir : {reviewLink}',
+      },
+      profitability: {
+        title: 'Rentabilité',
+        quotedPrice: 'Prix convenu',
+        invoiced: 'Facturé à ce jour',
+        labor: 'Main-d’œuvre',
+        materials: 'Matériaux',
+        travel: 'Déplacements',
+        other: 'Autres dépenses',
+        totalCost: 'Coût total',
+        profit: 'Profit',
+        margin: 'Marge',
       },
       templates: {
         title: 'Modèles de liste de contrôle',

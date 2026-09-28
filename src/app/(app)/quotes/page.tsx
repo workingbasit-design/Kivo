@@ -1,15 +1,19 @@
 import Link from 'next/link';
 import type { CSSProperties } from 'react';
 import { redirect } from 'next/navigation';
-import { Plus, ClipboardList } from 'lucide-react';
+import { Plus, ClipboardList, Clock } from 'lucide-react';
 import { getSession } from '@/lib/auth';
+import { fillTemplate, daysWaiting, FOLLOWUP_AFTER_DAYS, DAY_MS } from '@/lib/revenue';
 import { prisma } from '@/lib/prisma';
-import { PageHeader, Card, StatusBadge, EmptyState, primaryBtnClass } from '@/components/ui';
+import { PageHeader, Card, StatusBadge, EmptyState, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
 import { formatDateShort, cn } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import { QUOTE_STATUSES } from '@/lib/validations';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
+import { getActiveShareToken } from '@/lib/share';
+import SmsButton from '@/components/SmsButton';
+import WhatsAppButton from '@/components/WhatsAppButton';
 import ExportButtons, { type ExportColumn, type ExportRow } from '@/components/ExportButtons';
 
 const FILTERS = ['ALL', ...QUOTE_STATUSES] as const;
@@ -29,8 +33,11 @@ export default async function QuotesPage({
     : 'ALL';
   const locale: Locale = await getLocale();
 
-  const [business, quotes] = await Promise.all([
-    prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } }),
+  const [business, quotes, staleQuotes] = await Promise.all([
+    prisma.business.findUnique({
+      where: { id: businessId },
+      select: { currency: true, name: true, regionCode: true },
+    }),
     prisma.quote.findMany({
       where: {
         businessId,
@@ -39,11 +46,39 @@ export default async function QuotesPage({
       include: { customer: { select: { name: true } } },
       orderBy: { createdAt: 'desc' },
     }),
+    // Follow-up queue: SENT quotes waiting >3 days, longest-waiting first.
+    prisma.quote.findMany({
+      where: {
+        businessId,
+        status: 'SENT',
+        updatedAt: { lt: new Date(Date.now() - FOLLOWUP_AFTER_DAYS * DAY_MS) },
+      },
+      select: {
+        id: true,
+        number: true,
+        total: true,
+        updatedAt: true,
+        customer: { select: { name: true, phone: true } },
+      },
+      orderBy: { updatedAt: 'asc' },
+      take: 5,
+    }),
   ]);
 
   const pipelineTotal = quotes
     .filter((q) => q.status === 'SENT' || q.status === 'APPROVED')
     .reduce((s, q) => s + q.total, 0);
+
+  // Resolve each follow-up quote's public review-and-approve link (/q/[token])
+  // when a usable share token exists; otherwise fall back to the detail page.
+  const followupLinks = await Promise.all(
+    staleQuotes.map(async (q) => {
+      const rec = await getActiveShareToken(businessId, 'QUOTE', { quoteId: q.id });
+      return { id: q.id, link: rec ? `/q/${rec.token}` : `/quotes/${q.id}` };
+    }),
+  );
+  const linkFor = (id: string) =>
+    followupLinks.find((l) => l.id === id)?.link ?? `/quotes/${id}`;
 
   // Export the *currently filtered* list (2026-09-24).
   const exportColumns: ExportColumn[] = [
@@ -102,6 +137,96 @@ export default async function QuotesPage({
           </Link>
         ))}
       </div>
+
+      {/* Quote follow-up queue — revenue recovery. Only the user sends
+          anything: buttons open their own SMS/WhatsApp apps prefilled. */}
+      {staleQuotes.length > 0 && activeFilter === 'ALL' && (
+        <Card className="!p-0 overflow-hidden">
+          <div className="px-5 pt-5 pb-3">
+            <div className="flex items-center gap-2.5">
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600">
+                <Clock className="h-4 w-4" aria-hidden />
+              </span>
+              <div>
+                <h2 className="font-semibold">
+                  {t(locale, 't10money.followups.title')}{' '}
+                  <span className="text-sm font-bold text-violet-700">({staleQuotes.length})</span>
+                </h2>
+                <p className="text-xs text-zinc-500">{t(locale, 't10money.followups.desc')}</p>
+              </div>
+            </div>
+          </div>
+          <ul className="divide-y divide-zinc-100">
+            {staleQuotes.map((q) => {
+              const waitingDays = Math.max(1, daysWaiting(new Date(q.updatedAt)));
+              const message = fillTemplate(t(locale, 't10money.followups.message'), {
+                customerName: q.customer.name,
+                businessName: business?.name ?? '',
+                number: q.number,
+                amount: formatMoney(q.total, business?.currency),
+                signLink: linkFor(q.id),
+              });
+              return (
+                <li key={q.id} className="px-4 sm:px-5 py-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-zinc-900 truncate">
+                        <Link href={`/quotes/${q.id}`} className="hover:underline">
+                          {q.number}
+                        </Link>
+                        <span className="font-normal text-zinc-500"> · {q.customer.name}</span>
+                      </p>
+                      <p className="text-xs text-zinc-500 mt-1">
+                        <span className="font-semibold text-violet-700">
+                          {t(locale, 't10money.followups.daysWaiting').replace(
+                            '{days}',
+                            String(waitingDays),
+                          )}
+                        </span>
+                        {' · '}
+                        {formatMoney(q.total, business?.currency)}
+                      </p>
+                    </div>
+                  </div>
+                  <details className="mt-2 group">
+                    <summary className="inline-flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-sky-700 hover:underline min-h-[32px]">
+                      {t(locale, 't10money.followups.sendFollowup')}
+                    </summary>
+                    <div className="mt-2 rounded-xl bg-zinc-50 border border-zinc-200 p-3 space-y-3">
+                      <p className="text-xs text-zinc-700 whitespace-pre-wrap">{message}</p>
+                      {q.customer.phone ? (
+                        <div className="flex flex-wrap gap-2">
+                          <SmsButton
+                            phone={q.customer.phone}
+                            regionCode={business?.regionCode}
+                            message={message}
+                            label={t(locale, 't10money.reminders.smsLabel')}
+                          />
+                          <WhatsAppButton
+                            phone={q.customer.phone}
+                            regionCode={business?.regionCode}
+                            message={message}
+                            label={t(locale, 't10money.reminders.waLabel')}
+                          />
+                        </div>
+                      ) : (
+                        <p className="text-xs text-zinc-500">
+                          {t(locale, 't10money.reminders.noPhone')}
+                        </p>
+                      )}
+                    </div>
+                  </details>
+                </li>
+              );
+            })}
+          </ul>
+          <div className="px-5 py-3 border-t border-zinc-100">
+            <Link href="/quotes?status=SENT" className={secondaryBtnClass}>
+              {t(locale, 't10money.followups.viewAll')}
+            </Link>
+          </div>
+        </Card>
+      )}
 
       {quotes.length === 0 ? (
         <Card>

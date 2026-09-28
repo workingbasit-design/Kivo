@@ -3,15 +3,15 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import {
   ArrowLeft, Calendar, Clock, MapPin, User, Phone, Pencil,
-  DollarSign, FileText, StickyNote,
+  DollarSign, FileText, StickyNote, TrendingUp,
 } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card, StatusBadge, SectionTitle } from '@/components/ui';
 import { formatDateLabel, toISODateLocal, hasJobTime, localeDateTag, localeMoneyTag } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
-import { entryMinutes } from '@/lib/timesheets';
-import { sumLaborMinutes } from '@/lib/costing';
+import { entryMinutes, formatDuration } from '@/lib/timesheets';
+import { sumLaborMinutes, summarizeJobCost } from '@/lib/costing';
 import JobStatusButtons from '@/components/JobStatusButtons';
 import { JobNoteForm, JobNoteItem } from '@/components/JobNoteForm';
 import MilestoneInvoiceForm from '@/components/MilestoneInvoiceForm';
@@ -22,10 +22,33 @@ import { JobCostingCard } from '@/components/JobCostingCard';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import SmsButton from '@/components/SmsButton';
 import TechLocationSharer from '@/components/TechLocationSharer';
+import OnMyWayNotifier from '@/components/OnMyWayNotifier';
 import ReviewLinkButton from '@/components/ReviewLinkButton';
+import ReviewRequestCard from '@/components/ReviewRequestCard';
 import Attachments from '@/components/Attachments';
 import { getReviewEligibility } from '@/lib/review-eligibility';
 import { getLocale } from '@/lib/i18n/server';
+
+function ProfitRow({
+  label,
+  value,
+  strong,
+}: {
+  label: string;
+  value: string;
+  strong?: boolean;
+}) {
+  return (
+    <div className="flex items-baseline justify-between gap-3">
+      <dt className="text-graphite">{label}</dt>
+      <dd
+        className={`tabular-nums ${strong ? 'font-bold text-ink' : 'font-semibold text-ink'}`}
+      >
+        {value}
+      </dd>
+    </div>
+  );
+}
 
 export default async function JobDetailPage({
   params,
@@ -88,6 +111,28 @@ export default async function JobDetailPage({
   // Labor minutes for costing exclude still-running sessions (null clockOut);
   // the entry list below still shows live elapsed time for transparency.
   const laborMinutes = sumLaborMinutes(job.timeEntries);
+  const hourlyRate = business?.defaultHourlyRate ?? null;
+
+  // Profitability — read-only P&L snapshot. Revenue is what has actually been
+  // invoiced to date (quoted price shown as reference); costs are labor
+  // (hours × business rate) plus expenses. Reuses the tested
+  // summarizeJobCost math, which never divides by zero (marginPct is null
+  // when revenue is 0). Only rendered when at least one input is non-zero.
+  const invoicedToDate = job.invoices.reduce(
+    (s, inv) => s + (Number.isFinite(inv.total) ? inv.total : 0),
+    0
+  );
+  const plSummary = summarizeJobCost({
+    price: invoicedToDate,
+    laborMinutes,
+    hourlyRate,
+    expenses: job.expenses.map((e) => ({ category: e.category, amount: e.amount })),
+  });
+  const showProfitability =
+    (job.price ?? 0) > 0 ||
+    invoicedToDate > 0 ||
+    laborMinutes > 0 ||
+    plSummary.expensesTotal > 0;
 
   // job.date is a date-only DB value (midnight): format its calendar-day
   // key, never the Date instant, so the label can't shift a day when the
@@ -214,18 +259,56 @@ export default async function JobDetailPage({
           is scheduled or in progress; the server rejects pings for jobs in
           any other status. */}
       {(job.status === 'SCHEDULED' || job.status === 'IN PROGRESS') && (
-        <Card className="p-5">
-          <TechLocationSharer
-            jobs={[
-              {
-                id: job.id,
-                title: job.title,
-                customerName: job.customer.name,
-                address: job.customer.address ?? undefined,
-              },
-            ]}
-          />
-        </Card>
+        <>
+          <Card className="p-5">
+            <TechLocationSharer
+              jobs={[
+                {
+                  id: job.id,
+                  title: job.title,
+                  customerName: job.customer.name,
+                  address: job.customer.address ?? undefined,
+                },
+              ]}
+            />
+          </Card>
+
+          {/* "On my way" customer notification — pre-written message with
+              SMS/WhatsApp send buttons. Shown only while the job is active,
+              matching the tracking-share endpoint's ACTIVE_STATUSES. The
+              pro taps to send from their own apps; nothing is sent
+              automatically. */}
+          <Card className="p-5">
+            <OnMyWayNotifier
+              jobId={job.id}
+              jobTitle={job.title}
+              customerName={job.customer.name}
+              phone={job.customer.phone}
+              regionCode={business?.regionCode}
+              businessName={business?.name ?? ''}
+              techName={
+                job.technician ||
+                job.assignedTo?.name ||
+                t(locale, 'jobops.notify.ourTech')
+              }
+              locale={locale}
+            />
+          </Card>
+        </>
+      )}
+
+      {/* Post-job review request — COMPLETED jobs only. The single-use link
+          is created via the server action, which re-checks the review moat
+          (completed job + paid invoice) and never bypasses it. */}
+      {job.status === 'COMPLETED' && (
+        <ReviewRequestCard
+          jobId={job.id}
+          customerName={job.customer.name}
+          businessName={business?.name ?? ''}
+          phone={job.customer.phone}
+          regionCode={business?.regionCode}
+          locale={locale}
+        />
       )}
 
       {/* Details */}
@@ -288,7 +371,7 @@ export default async function JobDetailPage({
         price={job.price ?? 0}
         laborMinutes={laborMinutes}
         timeEntryCount={job.timeEntries.length}
-        hourlyRate={business?.defaultHourlyRate ?? null}
+        hourlyRate={hourlyRate}
         expenses={job.expenses.map((e) => ({ category: e.category, amount: e.amount }))}
         entries={job.timeEntries.slice(0, 8).map((e) => ({
           name: e.user.name || e.user.email,
@@ -297,6 +380,89 @@ export default async function JobDetailPage({
           minutes: entryMinutes(e.clockIn, e.clockOut),
         }))}
       />
+
+      {/* Profitability — read-only P&L snapshot: what has actually been
+          invoiced to date vs labor (hours × rate) and expenses. Purely
+          derived from the job query above; no new data entry, no new
+          models. Rendered only when at least one input is non-zero. */}
+      {showProfitability && (
+        <Card className="p-5 md:p-6">
+          <SectionTitle>
+            <span className="inline-flex items-center gap-2 normal-case tracking-normal">
+              <TrendingUp size={14} /> {t(locale, 'jobops.profitability.title')}
+            </span>
+          </SectionTitle>
+          <dl className="space-y-2.5 text-sm">
+            <ProfitRow
+              label={t(locale, 'jobops.profitability.quotedPrice')}
+              value={formatMoney(job.price ?? 0, currency, moneyLocale)}
+            />
+            <ProfitRow
+              label={t(locale, 'jobops.profitability.invoiced')}
+              value={formatMoney(invoicedToDate, currency, moneyLocale)}
+              strong
+            />
+            <div className="flex items-baseline justify-between gap-3">
+              <dt className="text-graphite">{t(locale, 'jobops.profitability.labor')}</dt>
+              <dd className="font-semibold text-ink tabular-nums text-right">
+                {formatDuration(laborMinutes)}{' '}
+                <span className="text-[11px] font-semibold text-graphite">
+                  ×{' '}
+                  {hourlyRate !== null
+                    ? formatMoney(hourlyRate, currency, moneyLocale)
+                    : '—'}
+                  /h
+                </span>{' '}
+                {formatMoney(plSummary.laborCost, currency, moneyLocale)}
+              </dd>
+            </div>
+            {plSummary.materialsCost > 0 && (
+              <ProfitRow
+                label={t(locale, 'jobops.profitability.materials')}
+                value={formatMoney(plSummary.materialsCost, currency, moneyLocale)}
+              />
+            )}
+            {plSummary.travelCost > 0 && (
+              <ProfitRow
+                label={t(locale, 'jobops.profitability.travel')}
+                value={formatMoney(plSummary.travelCost, currency, moneyLocale)}
+              />
+            )}
+            {plSummary.otherCost > 0 && (
+              <ProfitRow
+                label={t(locale, 'jobops.profitability.other')}
+                value={formatMoney(plSummary.otherCost, currency, moneyLocale)}
+              />
+            )}
+
+            <div className="border-t border-smoke pt-2.5" />
+
+            <ProfitRow
+              label={t(locale, 'jobops.profitability.totalCost')}
+              value={formatMoney(plSummary.totalCost, currency, moneyLocale)}
+              strong
+            />
+            <div className="flex items-baseline justify-between gap-3">
+              <dt className="text-graphite">{t(locale, 'jobops.profitability.profit')}</dt>
+              <dd
+                className={`font-bold tabular-nums ${
+                  plSummary.profit >= 0 ? 'text-emerald-600' : 'text-rose-600'
+                }`}
+              >
+                {formatMoney(plSummary.profit, currency, moneyLocale)}
+                <span className="text-[11px] font-semibold ml-2">
+                  {plSummary.marginPct !== null
+                    ? `${plSummary.marginPct.toFixed(1)}% ${t(
+                        locale,
+                        'jobops.profitability.margin'
+                      ).toLowerCase()}`
+                    : '—'}
+                </span>
+              </dd>
+            </div>
+          </dl>
+        </Card>
+      )}
 
       {/* Job photos & files — the deferred job-photo decision resolves to
           universal Attachments (Vercel Blob, Track 6A). */}

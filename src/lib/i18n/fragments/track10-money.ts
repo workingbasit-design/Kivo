@@ -27,6 +27,31 @@ const fragment = {
         noQuotesYet: 'No open quotes.',
         noInvoicesYet: 'No unpaid invoices.',
       },
+      // Overdue-invoice reminder queue (/money) — Phase 1 revenue recovery
+      reminders: {
+        title: 'Payment reminders',
+        desc: 'Overdue invoices that could use a nudge. Messages open in your own apps — nothing is ever sent automatically.',
+        daysOverdue: '{days} days overdue',
+        balanceDue: 'Balance due',
+        sendReminder: 'Send reminder',
+        smsLabel: 'SMS',
+        waLabel: 'WhatsApp',
+        noPhone: 'No phone number on file for this customer.',
+        // {customerName} {businessName} {number} {amount} {days} {invoiceLink}
+        message:
+          'Hi {customerName}, this is {businessName}. Invoice {number} for {amount} was due {days} days ago. You can view it here: {invoiceLink}. Reply if you have questions — thanks!',
+      },
+      // Quote follow-up queue (/quotes) — Phase 1 revenue recovery
+      followups: {
+        title: 'Needs follow-up',
+        desc: 'Sent quotes waiting more than 3 days for a decision. A quick nudge wins jobs.',
+        daysWaiting: '{days} days waiting',
+        sendFollowup: 'Send follow-up',
+        viewAll: 'View all quotes',
+        // {customerName} {businessName} {number} {amount} {signLink}
+        message:
+          'Hi {customerName}, this is {businessName} following up on quote {number} for {amount}. You can review and approve it here: {signLink}. Let me know if you have questions!',
+      },
       // Toasts for main action results
       customerSaved: 'Customer saved.',
       customerDeleted: 'Customer deleted.',
@@ -401,6 +426,31 @@ const fragment = {
         allCaughtUp: 'Tout est à jour — rien en suspens.',
         noQuotesYet: 'Aucun devis ouvert.',
         noInvoicesYet: 'Aucune facture impayée.',
+      },
+      // File de rappels de paiement (/money) — relance des revenus
+      reminders: {
+        title: 'Rappels de paiement',
+        desc: 'Factures en retard qui mériteraient un rappel. Les messages s’ouvrent dans vos propres applis — rien n’est jamais envoyé automatiquement.',
+        daysOverdue: 'en retard de {days} jours',
+        balanceDue: 'Solde dû',
+        sendReminder: 'Envoyer un rappel',
+        smsLabel: 'SMS',
+        waLabel: 'WhatsApp',
+        noPhone: 'Aucun numéro de téléphone au dossier pour ce client.',
+        // {customerName} {businessName} {number} {amount} {days} {invoiceLink}
+        message:
+          'Bonjour {customerName}, ici {businessName}. La facture {number} de {amount} était due il y a {days} jours. Vous pouvez la voir ici : {invoiceLink}. Répondez si vous avez des questions — merci!',
+      },
+      // File de relance des devis (/quotes) — relance des revenus
+      followups: {
+        title: 'À relancer',
+        desc: 'Devis envoyés en attente d’une décision depuis plus de 3 jours. Une petite relance fait gagner des contrats.',
+        daysWaiting: 'en attente depuis {days} jours',
+        sendFollowup: 'Envoyer une relance',
+        viewAll: 'Voir tous les devis',
+        // {customerName} {businessName} {number} {amount} {signLink}
+        message:
+          'Bonjour {customerName}, ici {businessName} — je fais suite au devis {number} de {amount}. Vous pouvez le voir et l’approuver ici : {signLink}. N’hésitez pas si vous avez des questions!',
       },
       customerSaved: 'Client enregistré.',
       customerDeleted: 'Client supprimé.',

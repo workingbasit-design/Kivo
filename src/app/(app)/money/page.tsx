@@ -1,12 +1,15 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { Plus, ClipboardList, FileText, ArrowRight } from 'lucide-react';
+import { Plus, ClipboardList, FileText, ArrowRight, BellRing } from 'lucide-react';
 import { getSession } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { prisma } from '@/lib/prisma';
 import { PageHeader, Card, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
 import { formatMoney } from '@/lib/money';
+import SmsButton from '@/components/SmsButton';
+import WhatsAppButton from '@/components/WhatsAppButton';
+import { fillTemplate, daysOverdue, remainingBalance, OVERDUE_AFTER_DAYS, DAY_MS } from '@/lib/revenue';
 
 /**
  * Money hub (Phase 1): a simple overview of what's outstanding.
@@ -20,8 +23,11 @@ export default async function MoneyPage() {
   const locale = await getLocale();
   const L = (path: string) => t(locale, path);
 
-  const [business, openQuotes, unpaidInvoices] = await Promise.all([
-    prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } }),
+  const [business, openQuotes, unpaidInvoices, overdueInvoices] = await Promise.all([
+    prisma.business.findUnique({
+      where: { id: businessId },
+      select: { currency: true, name: true, regionCode: true },
+    }),
     prisma.quote.findMany({
       where: { businessId, status: 'SENT' },
       select: { total: true },
@@ -29,6 +35,24 @@ export default async function MoneyPage() {
     prisma.invoice.findMany({
       where: { businessId, status: { not: 'PAID' } },
       select: { total: true, payments: { select: { amount: true } } },
+    }),
+    // Overdue queue: unpaid/partially-paid invoices older than Net-30, oldest first.
+    prisma.invoice.findMany({
+      where: {
+        businessId,
+        status: { not: 'PAID' },
+        date: { lt: new Date(Date.now() - OVERDUE_AFTER_DAYS * DAY_MS) },
+      },
+      select: {
+        id: true,
+        number: true,
+        total: true,
+        date: true,
+        customer: { select: { name: true, phone: true } },
+        payments: { select: { amount: true } },
+      },
+      orderBy: { date: 'asc' },
+      take: 10,
     }),
   ]);
 
@@ -111,6 +135,89 @@ export default async function MoneyPage() {
           </div>
         </Card>
       </div>
+
+      {/* Overdue-invoice reminder queue — revenue recovery.
+          EveryJob never sends anything itself: SmsButton/WhatsAppButton only
+          open the user's own apps with the message prefilled. */}
+      {overdueInvoices.length > 0 && (
+        <Card className="!p-0 overflow-hidden">
+          <div className="px-5 pt-5 pb-3">
+            <div className="flex items-center gap-2.5">
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600">
+                <BellRing className="h-4 w-4" aria-hidden />
+              </span>
+              <div>
+                <h2 className="font-semibold">{L('t10money.reminders.title')}</h2>
+                <p className="text-xs text-[var(--ej-muted)]">{L('t10money.reminders.desc')}</p>
+              </div>
+            </div>
+          </div>
+          <ul className="divide-y divide-zinc-100">
+            {overdueInvoices.map((inv) => {
+              const remaining = remainingBalance(
+                inv.total,
+                inv.payments.map((p) => p.amount)
+              );
+              const overdueDays = Math.max(1, daysOverdue(new Date(inv.date)));
+              const message = fillTemplate(L('t10money.reminders.message'), {
+                customerName: inv.customer.name,
+                businessName: business?.name ?? '',
+                number: inv.number,
+                amount: formatMoney(remaining, business?.currency),
+                days: overdueDays,
+                invoiceLink: `/invoices/${inv.id}`,
+              });
+              return (
+                <li key={inv.id} className="px-4 sm:px-5 py-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-zinc-900 truncate">
+                        <Link href={`/invoices/${inv.id}`} className="hover:underline">
+                          {inv.number}
+                        </Link>
+                        <span className="font-normal text-zinc-500"> · {inv.customer.name}</span>
+                      </p>
+                      <p className="text-xs text-zinc-500 mt-1">
+                        <span className="font-semibold text-amber-700">
+                          {L('t10money.reminders.daysOverdue').replace('{days}', String(overdueDays))}
+                        </span>
+                        {' · '}
+                        {L('t10money.reminders.balanceDue')}: {formatMoney(remaining, business?.currency)}
+                      </p>
+                    </div>
+                  </div>
+                  <details className="mt-2 group">
+                    <summary className="inline-flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-sky-700 hover:underline min-h-[32px]">
+                      {L('t10money.reminders.sendReminder')}
+                    </summary>
+                    <div className="mt-2 rounded-xl bg-zinc-50 border border-zinc-200 p-3 space-y-3">
+                      <p className="text-xs text-zinc-700 whitespace-pre-wrap">{message}</p>
+                      {inv.customer.phone ? (
+                        <div className="flex flex-wrap gap-2">
+                          <SmsButton
+                            phone={inv.customer.phone}
+                            regionCode={business?.regionCode}
+                            message={message}
+                            label={L('t10money.reminders.smsLabel')}
+                          />
+                          <WhatsAppButton
+                            phone={inv.customer.phone}
+                            regionCode={business?.regionCode}
+                            message={message}
+                            label={L('t10money.reminders.waLabel')}
+                          />
+                        </div>
+                      ) : (
+                        <p className="text-xs text-zinc-500">{L('t10money.reminders.noPhone')}</p>
+                      )}
+                    </div>
+                  </details>
+                </li>
+              );
+            })}
+          </ul>
+        </Card>
+      )}
     </div>
   );
 }
