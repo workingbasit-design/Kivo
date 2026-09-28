@@ -59,6 +59,10 @@ ${opts.bodyFr}
 EveryJob — Every job. One place.<br>
 Made in Canada
 </div>
+<div style="color:${TEXT_MUTED};font-size:11px;margin-top:12px;line-height:1.5;max-width:420px;margin-left:auto;margin-right:auto;">
+You're receiving this because it's related to your EveryJob account. EveryJob never sends marketing email — only account, quote, and invoice messages you asked for.<br>
+Vous recevez ce courriel parce qu'il concerne votre compte EveryJob. EveryJob n'envoie jamais de courriels marketing — seulement les messages de compte, devis et factures que vous avez demandés.
+</div>
 </td></tr>
 </table>
 </td></tr>
@@ -91,6 +95,21 @@ function signoff(teamEn = '— The EveryJob team', teamFr = '— L’équipe Eve
 
 function signoffFr(): string {
   return `<p style="margin:24px 0 0 0;">— L’équipe EveryJob</p>`;
+}
+
+/**
+ * Plain-text footer appended to every transactional email: explains why the
+ * recipient got it and states the no-marketing-email policy. (CAN-SPAM /
+ * CASL hygiene for the day we ever send anything promotional.)
+ */
+function textFooter(): string[] {
+  return [
+    '',
+    '---',
+    '',
+    "You're receiving this because it's related to your EveryJob account. EveryJob never sends marketing email — only account, quote, and invoice messages you asked for.",
+    'Vous recevez ce courriel parce qu\u2019il concerne votre compte EveryJob. EveryJob n\u2019envoie jamais de courriels marketing.',
+  ];
 }
 
 /** Escape user-controlled values interpolated into HTML. */
@@ -142,6 +161,7 @@ export function welcomeEmail(name: string, business: string): EmailTemplate {
     'Ouvrir votre tableau de bord : https://kivo-nine-silk.vercel.app/dashboard',
     '',
     '— L’équipe EveryJob',
+    ...textFooter(),
   ].join('\n');
   return {
     subject,
@@ -184,6 +204,7 @@ export function passwordResetEmail(name: string, link: string): EmailTemplate {
     `Réinitialisez-le ici (valide 1 heure, usage unique) : ${link}`,
     '',
     '— L’équipe EveryJob',
+    ...textFooter(),
   ].join('\n');
   return {
     subject,
@@ -237,6 +258,7 @@ export function quoteEmail(opts: {
     `Voir le devis ici : ${opts.link}`,
     '',
     `— ${opts.businessName} via EveryJob`,
+    ...textFooter(),
   ].join('\n');
   return {
     subject,
@@ -288,6 +310,7 @@ export function invoiceEmail(opts: {
     `Voir la facture ici : ${opts.link}`,
     '',
     `— ${opts.businessName} via EveryJob`,
+    ...textFooter(),
   ].join('\n');
   return {
     subject,

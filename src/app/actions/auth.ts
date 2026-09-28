@@ -48,6 +48,7 @@ export async function register(
     businessName: formData.get('businessName'),
     email: formData.get('email'),
     password: formData.get('password'),
+    ageConfirm: formData.get('ageConfirm'),
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? 'Invalid details.' };
