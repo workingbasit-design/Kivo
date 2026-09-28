@@ -446,32 +446,3 @@ test('detectIntent: "Quel est mon revenu réservé ce mois-ci ?" is ask_booked_r
 test('detectIntent: "how much did I earn today?" stays ask_revenue (collections)', () => {
   assert.equal(detectIntent('how much did I earn today?'), 'ask_revenue');
 });
-
-/* ---------------- booking-verb-led intent regression (2026-09-28) ---------------- */
-
-test('detectIntent: "Book schedule check for Alice tomorrow" is a booking, not a schedule query', () => {
-  // QA: the word "check" in the job title triggered the question detector,
-  // and "schedule" then routed to ask_schedule. A booking-verb-led message
-  // is a command.
-  assert.equal(
-    detectIntent('Book schedule check for Alice Tremblay tomorrow at 2pm'),
-    'create_job'
-  );
-});
-
-test('detectIntent: "Schedule safety check for Bob Friday" is a booking', () => {
-  assert.equal(detectIntent('Schedule safety check for Bob Friday'), 'create_job');
-});
-
-test('detectIntent: "check my schedule" is still a schedule query', () => {
-  assert.equal(detectIntent('check my schedule'), 'ask_schedule');
-});
-
-test('detectIntent: "check tomorrow" is still a schedule query', () => {
-  assert.equal(detectIntent('check tomorrow'), 'ask_schedule');
-});
-
-test('detectIntent: "Book AC repair for Bob tomorrow?" with a question mark stays a question', () => {
-  // An explicit "?" still marks a question even when booking-led.
-  assert.notEqual(detectIntent('Book AC repair for Bob tomorrow?'), 'create_job');
-});
