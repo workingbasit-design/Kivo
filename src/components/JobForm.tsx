@@ -189,12 +189,6 @@ export default function JobForm({
             placeholder="0"
             inputMode="decimal"
             className={inputClass}
-            // Normalize float artifacts (e.g. 149.99000549316406) on blur so
-            // the displayed value always matches the cents-rounded save.
-            onBlur={(e) => {
-              const n = parseFloat(e.target.value);
-              if (Number.isFinite(n)) e.target.value = n.toFixed(2);
-            }}
           />
         </Field>
       </div>
