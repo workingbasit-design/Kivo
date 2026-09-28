@@ -94,6 +94,12 @@ export async function POST(req: Request) {
     token: share.token,
     url: `/track/${share.token}`,
     expiresAt: share.expiresAt,
+    // TEMP DIAG 2026-09-28: read-back verification for the dead-tracking-link bug
+    _diag: await unsafeUnscoped('tracking:share:diag-readback', (db) =>
+      db.trackingShare
+        .findFirst({ where: { token: share.token }, select: { id: true, jobId: true } })
+        .then((r) => ({ found: !!r, jobId: r?.jobId ?? null }))
+    ),
   });
 }
 
