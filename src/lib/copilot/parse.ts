@@ -341,7 +341,10 @@ export function extractServiceTitle(raw: string): string | null {
       }
     }
   }
-  return null;
+  // No keyword matched — try to extract a custom title from the message.
+  // E.g. "Book E2E3 Copilot Job for tomorrow" -> "E2E3 Copilot Job".
+  // (extractCustomTitle is defined below, after NAME_STOPWORDS.)
+  return extractCustomTitle(raw);
 }
 
 const NAME_STOPWORDS = new Set([
@@ -402,6 +405,48 @@ const BOOKING_VERBS = new Set([
   'planifie', 'ajouter', 'ajoute', 'creer', 'cree',
   'cancel', 'cancelled', 'delete', 'remove', 'annuler', 'annule', 'supprimer',
 ]);
+
+/**
+ * Extract a custom job title when no service keyword matches.
+ * Only applies to clear booking intents (starts with book/schedule/etc).
+ * Strips booking verbs, date/time expressions, and customer info,
+ * returning the remaining meaningful text.
+ * E.g. "Book E2E3 Copilot Job for tomorrow" -> "E2E3 Copilot Job".
+ */
+function extractCustomTitle(raw: string): string | null {
+  const trimmed = raw.trim();
+  const lower = trimmed.toLowerCase();
+  
+  // Must start with a booking verb — otherwise it's not a job title request
+  // (e.g. "A new customer named..." should return null, not a title)
+  const verbMatch = trimmed.match(/^(book|schedule|create|add|make|set up|set|plan)\s+/i);
+  if (!verbMatch) return null;
+  
+  // Guard: customer-creation intents ("Add a new customer named...") are not jobs
+  if (/\b(customer|client)s?\b/i.test(trimmed)) return null;
+  
+  let text = trimmed.slice(verbMatch[0].length);
+  
+  // Remove date/time expressions
+  text = text.replace(/\s+(for|on|at)\s+(tomorrow|today|monday|tuesday|wednesday|thursday|friday|saturday|sunday|next week|this week).*$/i, '');
+  text = text.replace(/\s+\d{1,2}(:\d{2})?\s*(am|pm).*$/i, '');
+  
+  // Remove "for [customer]" pattern at the end
+  text = text.replace(/\s+for\s+[A-Z][a-z]+(\s+[A-Z][a-z]+)?$/i, '');
+  
+  text = text.trim();
+  
+  // Must be meaningful (2+ chars, not just stopwords)
+  if (text.length < 2) return null;
+  const words = text.toLowerCase().split(/\s+/);
+  const meaningful = words.filter(w => !NAME_STOPWORDS.has(w));
+  if (meaningful.length === 0) return null;
+  
+  // Capitalize first letter of each word for a clean title
+  return text.split(/\s+/)
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ');
+}
 
 function capitalizeWord(w: string): string {
   // All-caps input is title-cased ("SARAH" -> "Sarah"); otherwise the user's
