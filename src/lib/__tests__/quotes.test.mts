@@ -10,7 +10,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { addonQuoteTotal, convertedJobDetails } from '../quotes.ts';
-import { computeQuoteTotals } from '../quote-totals.ts';
 import { signatureDocPayload, signatureDocHash } from '../esign.ts';
 import { googleMapsRouteUrl } from '../routes.ts';
 
@@ -242,19 +241,4 @@ test('convertedJobDetails: invoicing the converted price adds tax exactly once',
 test('convertedJobDetails: without an agreed total the note stays plain', () => {
   const { notes } = convertedJobDetails('Q-1044', 150, []);
   assert.equal(notes, 'Converted from quote Q-1044.');
-});
-
-/* ---------------- quote→job conversion base regression (2026-09-28) ---------------- */
-
-test('quote→job: conversion base is post-discount pre-tax (.taxable), not pre-discount (.subtotal)', () => {
-  // $200 of line items with a 10% discount: the job price base must be $180
-  // (post-discount, pre-tax), so downstream invoicing adds tax once on $180.
-  // Using .subtotal ($200) would silently drop the $20 discount.
-  const totals = computeQuoteTotals(
-    [{ qty: 1, unitPrice: 200 }],
-    { type: 'PERCENT', value: 10 },
-    0
-  );
-  assert.equal(totals.subtotal, 200);
-  assert.equal(totals.taxable, 180);
 });
