@@ -64,7 +64,7 @@ export const PRIVACY: { en: LegalPage; fr: LegalPage } = {
       {
         heading: 'Data retention',
         body: [
-          'We keep your business data while your account is active. Location pings are deleted after 24 hours. If you close your account, we delete your personal information within 30 days, except records we must keep for legal or tax reasons.',
+          'We keep your business data while your account is active. Location pings are deleted after 24 hours. If you close your account, contact us from the Help center and we will delete your personal information, except records we must keep for legal or tax reasons.',
         ],
       },
       {
@@ -285,7 +285,7 @@ export const COPYRIGHT: { en: LegalPage; fr: LegalPage } = {
       {
         heading: 'What happens after you file',
         body: [
-          'We review every complete notice, usually within 2 business days.',
+          'We review every complete notice as promptly as we can.',
           'If the notice is valid, we remove or disable access to the material and notify the user who uploaded it.',
           'Repeat infringers lose their accounts.',
         ],
@@ -305,7 +305,7 @@ export const COPYRIGHT: { en: LegalPage; fr: LegalPage } = {
       {
         heading: 'Designated agent',
         body: [
-          'Our designated copyright agent is the EveryJob support team, reachable from the Help center in the app. (US safe-harbor registration with the Copyright Office is in progress.)',
+          'Our designated copyright agent is the EveryJob support team, reachable from the Help center in the app.',
         ],
       },
     ],
