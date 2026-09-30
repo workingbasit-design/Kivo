@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { prisma, prismaUnscoped } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,18 +32,18 @@ export async function GET(req: NextRequest) {
       `SELECT id FROM "Business" LIMIT 1`
     );
     const businessId = biz[0].id;
-    const created = await prisma.service.create({
+    const created = await prismaUnscoped.service.create({
       data: { name: 'DB Layer Probe', price: 99.99, businessId },
     });
-    const viaPrisma = await prisma.service.findUnique({
+    const viaPrisma = await prismaUnscoped.service.findUnique({
       where: { id: created.id },
       select: { price: true },
     });
     const viaSql = await prisma.$queryRawUnsafe<Array<{ price: number; t: string }>>(
       `SELECT price, price::text AS t FROM "Service" WHERE id = '${created.id}'`
     );
-    await prisma.service.delete({ where: { id: created.id } });
-    const stillThere = await prisma.service.findUnique({ where: { id: created.id } });
+    await prismaUnscoped.service.delete({ where: { id: created.id } });
+    const stillThere = await prismaUnscoped.service.findUnique({ where: { id: created.id } });
     probe = {
       wrote: '99.99',
       viaPrisma: viaPrisma ? String(viaPrisma.price) : null,
