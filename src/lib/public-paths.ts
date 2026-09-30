@@ -41,7 +41,12 @@ export const PUBLIC_PREFIXES = [
   '/reset-password/',
 ];
 
-export const PUBLIC_EXACT_EXTRA = ['/directory', '/directory/request'];
+export const PUBLIC_EXACT_EXTRA = [
+  '/directory',
+  '/directory/request',
+  '/customer/login',
+  '/customer/signup',
+];
 
 /** Is this pathname reachable without a session? */
 export function isPublicPath(pathname: string): boolean {

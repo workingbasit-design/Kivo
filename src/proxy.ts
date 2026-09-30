@@ -10,12 +10,27 @@ import { isPublicPath } from '@/lib/public-paths';
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionCookie = request.cookies.get('kivo_session');
+  const customerCookie = request.cookies.get('kivo_customer_session');
 
   const isPublic = isPublicPath(pathname);
 
   // Allow API routes and static assets through (matcher already excludes most)
   if (pathname.startsWith('/api/')) {
     return NextResponse.next();
+  }
+
+  // Customer area: allow with either a customer session or public path.
+  // The customer layout/pages enforce customer auth via getCustomerSession().
+  const isCustomerRoute = pathname === '/customer' || pathname.startsWith('/customer/');
+  if (isCustomerRoute) {
+    if (customerCookie || isPublic) {
+      return NextResponse.next();
+    }
+    // No customer session and not a public customer route: send to customer login
+    const url = request.nextUrl.clone();
+    url.pathname = '/customer/login';
+    url.searchParams.set('next', pathname);
+    return NextResponse.redirect(url);
   }
 
   if (!sessionCookie && !isPublic) {

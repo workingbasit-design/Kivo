@@ -42,3 +42,11 @@ test('public paths: app pages still require a session', () => {
   assert.equal(isPublicPath('/loginx'), false);
   assert.equal(isPublicPath('/revoke'), false);
 });
+
+test('public paths: customer auth pages are reachable without a session', () => {
+  assert.equal(isPublicPath('/customer/login'), true);
+  assert.equal(isPublicPath('/customer/signup'), true);
+  // Customer app pages still require a session (proxy checks customer cookie)
+  assert.equal(isPublicPath('/customer'), false);
+  assert.equal(isPublicPath('/customer/requests'), false);
+});
