@@ -143,6 +143,15 @@ async function revenueBetween(businessId: string, start: Date, end: Date): Promi
   return agg._sum.amount ?? 0;
 }
 
+/** All-time completed payment total for "total revenue" questions. */
+async function totalRevenue(businessId: string): Promise<number> {
+  const agg = await prisma.payment.aggregate({
+    where: { status: 'COMPLETED', businessId },
+    _sum: { amount: true },
+  });
+  return agg._sum.amount ?? 0;
+}
+
 /**
  * Booked revenue: the scheduled value of jobs in a period, excluding
  * cancelled jobs. Mirrors the dashboard's "booked" definition (price sum,
@@ -313,19 +322,55 @@ export async function runCopilot(
       // Pronoun follow-ups ("usko kal kar do") name no service — carry the
       // service forward from the most recent booking preview in history so
       // the follow-up doesn't silently reset to "General Service".
+      // IMPORTANT: never carry forward an invented placeholder — only real
+      // service titles from history. "A Job For February 30" leaking into
+      // the next question was a real contamination bug (2026-09-30 QA).
       let serviceTitle = extractServiceTitle(message);
       if (!serviceTitle) {
         for (let i = history.length - 1; i >= 0; i--) {
           const m = history[i].content.match(/^Service:\s*(.+)$/m);
-          if (m && m[1].trim() && !/^general service$/i.test(m[1].trim())) {
-            serviceTitle = m[1].trim();
+          const histTitle = m?.[1]?.trim();
+          // Skip placeholders and invented titles: "General Service",
+          // anything starting with "A Job For", or single vague words.
+          if (
+            histTitle &&
+            !/^general service$/i.test(histTitle) &&
+            !/^a job for\b/i.test(histTitle) &&
+            !/^(something|anything|thing|stuff)$/i.test(histTitle)
+          ) {
+            serviceTitle = histTitle;
             break;
           }
         }
       }
+      // If the message names NO service, NO customer, NO phone, NO address,
+      // NO price, and NO explicit date (e.g. just "Book a job"), don't invent
+      // a "General Service" preview — ask what the job is for.
+      const customerNameEarly = extractCustomerName(message) ?? followUpName ?? '';
+      const hasAnyDetail =
+        !!serviceTitle ||
+        !!customerNameEarly ||
+        !!extractPhone(message) ||
+        !!extractAddress(message) ||
+        extractMoney(message) !== null ||
+        !!explicitDate ||
+        !!invalidDate;
+      if (!hasAnyDetail) {
+        return {
+          intent,
+          reply: pick(
+            lang,
+            'Sure — what’s the job? Tell me the service (e.g. "AC repair"), who it’s for, and when. For example: "AC repair for Sarah tomorrow at 3pm, $800".',
+            'Bien sûr — c’est pour quel travail? Dites-moi le service (p. ex. « réparation de climatiseur »), pour qui et quand. Par exemple : « réparation de climatiseur pour Sarah demain à 15h, 800 $ ».'
+          ),
+        };
+      }
       const draft: JobDraft = {
         title: serviceTitle ?? 'General Service',
-        date: explicitDate ?? todayStr,
+        // If the user named an impossible date ("February 30"), do NOT put
+        // the JS-rolled-over date (Mar 2) in the preview — leave it blank so
+        // they must pick a valid date. The warning below explains why.
+        date: invalidDate ? '' : (explicitDate ?? todayStr),
         time: extractTime(message),
         customerName: extractCustomerName(message) ?? followUpName ?? '',
         phone: extractPhone(message),
@@ -590,22 +635,60 @@ export async function runCopilot(
           ),
         };
       }
-      // Format nicely: 149.99 + 19.99 = 169.98
+      // Format nicely: 149.99 + 19.99 = 169.98; 10 % of 500 = 50
       const fmt = (n: number) =>
         Number.isInteger(n) ? String(n) : String(Math.round(n * 100) / 100);
+      const opLabel = expr.op === '%of' ? '% of' : expr.op;
       return {
         intent,
-        reply: `${fmt(expr.a)} ${expr.op} ${fmt(expr.b)} = ${fmt(result)}`,
+        reply: `${fmt(expr.a)} ${opLabel} ${fmt(expr.b)} = ${fmt(result)}`,
       };
     }
 
     case 'out_of_scope': {
+      // Tailored guidance when the user asked to create an invoice or quote
+      // (the copilot can't create those — point to the right page instead of
+      // the generic out-of-scope text).
+      const t = norm(message);
+      if (hasAny(' ' + t + ' ', [' invoice ', ' invoices ', ' facture ', ' factures '])) {
+        return {
+          intent,
+          reply: pick(
+            lang,
+            'I can’t create invoices — but you can in seconds from the Invoices page: open Invoices → New invoice, pick the customer, add line items, and send it. Want me to explain any of those steps?',
+            'Je ne peux pas créer de factures — mais vous pouvez le faire en quelques secondes depuis la page Factures : ouvrez Factures → Nouvelle facture, choisissez le client, ajoutez les lignes et envoyez-la. Voulez-vous que j’explique une de ces étapes?'
+          ),
+        };
+      }
+      if (hasAny(' ' + t + ' ', [' quote ', ' quotes ', ' devis ', ' soumission ', ' soumissions '])) {
+        return {
+          intent,
+          reply: pick(
+            lang,
+            'I can’t create quotes — but you can in seconds from the Quotes page: open Quotes → New quote, pick the customer, add line items, and send it. Want me to explain any of those steps?',
+            'Je ne peux pas créer de soumissions — mais vous pouvez le faire en quelques secondes depuis la page Soumissions : ouvrez Soumissions → Nouvelle soumission, choisissez le client, ajoutez les lignes et envoyez-la. Voulez-vous que j’explique une de ces étapes?'
+          ),
+        };
+      }
       return {
         intent,
         reply: pick(
           lang,
           'That’s outside what I can help with — I answer questions about your EveryJob business: jobs, customers, quotes, invoices, earnings and certifications. What would you like to know about your business?',
           'C’est en dehors de ce que je peux faire — je réponds aux questions sur votre entreprise EveryJob : tâches, clients, soumissions, factures, revenus et certifications. Que voulez-vous savoir sur votre entreprise?'
+        ),
+      };
+    }
+
+    case 'refuse_destructive': {
+      // Explicit refusal for mass-destructive requests ("delete all my
+      // customers"). The copilot never deletes data — say so directly.
+      return {
+        intent,
+        reply: pick(
+          lang,
+          'I can’t delete your customers, jobs, or other records — I never delete data. If you need to remove something specific, you can do it from the relevant page (Customers, Jobs, etc.), where each delete asks for confirmation first.',
+          'Je ne peux pas supprimer vos clients, tâches ou autres dossiers — je ne supprime jamais de données. Si vous devez retirer un élément précis, faites-le depuis la page concernée (Clients, Tâches, etc.), où chaque suppression demande d’abord une confirmation.'
         ),
       };
     }
@@ -638,9 +721,12 @@ export async function runCopilot(
 
     case 'ask_revenue': {
       const text = norm(message);
-      let start: Date, end: Date, label: string;
+      let start: Date | null, end: Date, label: string;
       const now = new Date();
-      if (hasAny(' ' + text + ' ', [' aaj ', ' ajj ', ' today ', ' aujourd hui '])) {
+      if (hasAny(' ' + text + ' ', [' total ', ' all time ', ' overall ', ' lifetime ', ' tout ', ' totalite ', ' depuis le debut '])) {
+        // "What is my total revenue?" — all-time collections, not today's.
+        start = null; end = now; label = pick(lang, 'all time', 'depuis le début');
+      } else if (hasAny(' ' + text + ' ', [' aaj ', ' ajj ', ' today ', ' aujourd hui '])) {
         const { gte, lte } = dayRange(todayStr);
         start = gte; end = lte; label = pick(lang, 'Today', 'Aujourd’hui');
       } else if (hasAny(' ' + text + ' ', [' hafte ', ' week ', ' iss week ', ' semaine '])) {
@@ -653,17 +739,21 @@ export async function runCopilot(
         const { gte, lte } = dayRange(todayStr);
         start = gte; end = lte; label = pick(lang, 'Today', 'Aujourd’hui');
       }
-      const total = await revenueBetween(businessId, start, end);
+      const total = start ? await revenueBetween(businessId, start, end) : await totalRevenue(businessId);
       return {
         intent,
         reply: pick(
           lang,
           label === 'Today'
             ? `Today's collection: ${formatMoney(total, currency)} (based on received payments).`
-            : `Collection over ${label}: ${formatMoney(total, currency)} (based on received payments).`,
+            : label === 'all time'
+              ? `Total revenue (all time): ${formatMoney(total, currency)} (based on received payments).`
+              : `Collection over ${label}: ${formatMoney(total, currency)} (based on received payments).`,
           label === 'Aujourd’hui'
             ? `Collecte d’aujourd’hui : ${formatMoney(total, currency)} (selon les paiements reçus).`
-            : `Collecte sur ${label} : ${formatMoney(total, currency)} (selon les paiements reçus).`
+            : label === 'depuis le début'
+              ? `Revenu total (depuis le début) : ${formatMoney(total, currency)} (selon les paiements reçus).`
+              : `Collecte sur ${label} : ${formatMoney(total, currency)} (selon les paiements reçus).`
         ),
         data: { total, label },
       };
