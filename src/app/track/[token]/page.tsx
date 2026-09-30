@@ -41,7 +41,11 @@ export default async function TrackPage({
     // The business is learned from the resolved row, so no tenant scope
     // can exist before this lookup.
     share = await unsafeUnscoped('track:page:resolveShare', (db) =>
-      db.trackingShare.findFirst({
+      // findUnique (not findFirst): matches the working quote/invoice token
+      // pattern in lib/share.ts. The token column is @unique, so this is
+      // the correct query — and works around a production issue where
+      // findFirst by token returned no rows (2026-09-30).
+      db.trackingShare.findUnique({
         where: { token },
         select: {
           businessId: true,

@@ -42,7 +42,9 @@ export async function GET(
     // business is learned from the resolved row, so no tenant scope can
     // exist before this lookup.
     share = await unsafeUnscoped('track:ping:resolveShare', (db) =>
-      db.trackingShare.findFirst({
+      // findUnique (not findFirst): matches the working quote/invoice token
+      // pattern. See track/[token]/page.tsx for the 2026-09-30 context.
+      db.trackingShare.findUnique({
         where: { token },
         select: {
           businessId: true,
