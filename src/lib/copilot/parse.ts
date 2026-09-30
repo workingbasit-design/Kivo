@@ -441,11 +441,9 @@ function extractCustomTitle(raw: string): string | null {
   const words = text.toLowerCase().split(/\s+/);
   const meaningful = words.filter(w => !NAME_STOPWORDS.has(w));
   if (meaningful.length === 0) return null;
-  
-  // Capitalize first letter of each word for a clean title
-  return text.split(/\s+/)
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-    .join(' ');
+
+  // Preserve user's capitalization (E2E3 stays E2E3); only title-case ALL-CAPS words
+  return text.split(/\s+/).map(capitalizeWord).join(' ');
 }
 
 function capitalizeWord(w: string): string {
