@@ -127,5 +127,37 @@ export async function GET(req: NextRequest) {
       bookingCleanup = { business: page.business.name, deleted };
     }
   }
-  return NextResponse.json({ rows, probe, zodProbe, bookingCleanup });
+  // Artifact-input probe: what does the DEPLOYED server do when the client
+  // sends an already-corrupted float32 string? ?artifactprobe=1 to run.
+  let artifactProbe: unknown = null;
+  if (req.nextUrl.searchParams.get('artifactprobe') === '1') {
+    const { serviceSchema: ss } = await import('@/lib/validations');
+    const inputs = ['99.98999786376952', '199.9900054931641', '19.989999771118164'];
+    const results: Array<Record<string, unknown>> = [];
+    for (const raw of inputs) {
+      const parsed = ss.safeParse({ name: `Artifact Probe ${raw.slice(0, 6)}`, price: raw });
+      let stored: string | null = null;
+      let cleaned = false;
+      if (parsed.success) {
+        const created = await prismaUnscoped.service.create({
+          data: { name: `Artifact Probe ${raw.slice(0, 6)}`, price: parsed.data.price, businessId: 'qa-probe-biz' },
+          select: { id: true },
+        });
+        const rows2 = await prismaUnscoped.$queryRaw<Array<{ p: string }>>`
+          SELECT price::text AS p FROM "Service" WHERE id = ${created.id}`;
+        stored = rows2[0]?.p ?? null;
+        await prismaUnscoped.service.delete({ where: { id: created.id } });
+        cleaned = true;
+      }
+      results.push({
+        raw,
+        parsedOk: parsed.success,
+        parsedPrice: parsed.success ? String(parsed.data.price) : null,
+        storedRaw: stored,
+        cleaned,
+      });
+    }
+    artifactProbe = { results };
+  }
+  return NextResponse.json({ rows, probe, zodProbe, bookingCleanup, artifactProbe });
 }
