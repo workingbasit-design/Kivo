@@ -72,22 +72,35 @@ export async function POST(req: Request) {
   const expiresAt = new Date(Date.now() + SHARE_TTL_HOURS * 60 * 60 * 1000);
   // job.id was business-verified 15 lines above; jobId is this table's
   // unique key, so the upsert can only ever touch this tenant's row.
-  const share = await unsafeUnscoped('tracking:share:upsert', (db) =>
-    db.trackingShare.upsert({
+  // Reuse the existing token if it's still valid — regenerating on every
+  // "Share" click invalidates links already sent to customers (2026-09-30 QA).
+  const existing = await unsafeUnscoped('tracking:share:findExisting', (db) =>
+    db.trackingShare.findFirst({
       where: { jobId: job.id },
-      create: {
-        businessId,
-        jobId: job.id,
-        token: newShareTokenValue(),
-        expiresAt,
-      },
-      update: {
-        token: newShareTokenValue(),
-        expiresAt,
-      },
       select: { token: true, expiresAt: true },
     })
   );
+  let share: { token: string; expiresAt: Date };
+  if (existing && existing.expiresAt.getTime() > Date.now()) {
+    share = existing;
+  } else {
+    share = await unsafeUnscoped('tracking:share:upsert', (db) =>
+      db.trackingShare.upsert({
+        where: { jobId: job.id },
+        create: {
+          businessId,
+          jobId: job.id,
+          token: newShareTokenValue(),
+          expiresAt,
+        },
+        update: {
+          token: newShareTokenValue(),
+          expiresAt,
+        },
+        select: { token: true, expiresAt: true },
+      })
+    );
+  }
 
   return NextResponse.json({
     ok: true,
