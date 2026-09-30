@@ -430,3 +430,77 @@ export function Dialog({
     </div>
   );
 }
+
+/**
+ * Apple/Instagram-style smooth Button (2026-09-30).
+ *
+ * Apple-style: spring-like press with a smooth cubic-bezier easing (not the
+ * linear scale the global CSS used to apply), subtle shadow that compresses
+ * on press, 44px min touch target.
+ *
+ * Instagram-style: `variant="gradient"` gives the signature purple → pink →
+ * orange gradient with white text.
+ *
+ * Reduced motion: the press animation is disabled via
+ * `motion-reduce:transform-none` so it respects OS settings.
+ * Focus: visible ring on keyboard focus.
+ */
+type ButtonVariant = 'primary' | 'secondary' | 'gradient' | 'ghost' | 'danger';
+type ButtonSize = 'sm' | 'md' | 'lg';
+
+const buttonVariants: Record<ButtonVariant, string> = {
+  // Apple-style solid: near-black with soft shadow
+  primary:
+    'bg-zinc-900 text-white shadow-[0_2px_8px_rgba(0,0,0,0.12)] hover:bg-zinc-700 hover:shadow-[0_4px_12px_rgba(0,0,0,0.16)] border border-transparent',
+  // Apple-style secondary: light gray, subtle
+  secondary:
+    'bg-zinc-100 text-zinc-900 border border-zinc-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:bg-zinc-200/70',
+  // Instagram-style gradient: purple → pink → orange
+  gradient:
+    'text-white border border-transparent shadow-[0_2px_12px_rgba(253,29,29,0.25)] hover:shadow-[0_4px_16px_rgba(253,29,29,0.35)] bg-[linear-gradient(45deg,#833AB4,#FD1D1D,#FCB045)] bg-[length:150%_150%] hover:bg-[position:100%_50%]',
+  // Minimal ghost: transparent with hover wash
+  ghost:
+    'bg-transparent text-zinc-700 border border-transparent hover:bg-zinc-100',
+  // Destructive: red tint
+  danger:
+    'bg-red-50 text-red-700 border border-red-200/70 shadow-[0_1px_3px_rgba(220,38,38,0.08)] hover:bg-red-100',
+};
+
+const buttonSizes: Record<ButtonSize, string> = {
+  sm: 'min-h-[36px] px-3.5 text-[13px] rounded-xl',
+  md: 'min-h-[44px] px-5 text-sm rounded-xl',
+  lg: 'min-h-[52px] px-7 text-[15px] rounded-2xl',
+};
+
+export function Button({
+  variant = 'primary',
+  size = 'md',
+  className,
+  children,
+  ...props
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+}) {
+  return (
+    <button
+      className={cn(
+        // Apple-style smooth press: spring-like cubic-bezier, 200ms.
+        // motion-reduce disables the transform for accessibility.
+        'inline-flex items-center justify-center gap-2 font-semibold tracking-tight',
+        'transition-all duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)]',
+        'active:scale-[0.96] active:duration-100',
+        'motion-reduce:transition-none motion-reduce:transform-none motion-reduce:active:scale-100',
+        'disabled:opacity-50 disabled:pointer-events-none disabled:shadow-none',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/40 focus-visible:ring-offset-2',
+        'select-none cursor-pointer',
+        buttonVariants[variant],
+        buttonSizes[size],
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+}
