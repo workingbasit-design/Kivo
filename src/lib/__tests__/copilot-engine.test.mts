@@ -260,3 +260,32 @@ test('engine: booked revenue question in French answers in French', async () => 
   assert.equal(res.intent, 'ask_booked_revenue');
   assert.match(res.reply, /Revenu réservé/i);
 });
+
+// --- calculate: simple arithmetic (2026-09-30 QA: "149.99 + 19.99" was refused) ---
+test('engine: "What is 149.99 + 19.99?" computes 169.98', async () => {
+  const res = await convo('What is 149.99 + 19.99?');
+  assert.equal(res.intent, 'calculate');
+  assert.match(res.reply, /169\.98/);
+});
+
+test('engine: "100 - 25" computes 75', async () => {
+  const res = await convo('100 - 25');
+  assert.equal(res.intent, 'calculate');
+  assert.match(res.reply, /= 75/);
+});
+
+test('engine: "2026-09-30" is NOT treated as arithmetic', async () => {
+  const res = await convo('What jobs do I have on 2026-09-30?');
+  assert.notEqual(res.intent, 'calculate');
+});
+
+// --- invalid date: "February 30" must be flagged, not rolled to Mar 2 ---
+test('engine: "Schedule a job for February 30" flags the impossible date', async () => {
+  const res = await convo('Schedule a job for February 30');
+  assert.match(res.reply, /isn't a real calendar date/i);
+});
+
+test('engine: "Book for 31 April" flags the impossible date', async () => {
+  const res = await convo('Book a job for 31 April');
+  assert.match(res.reply, /isn't a real calendar date/i);
+});

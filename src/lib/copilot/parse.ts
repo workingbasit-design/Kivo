@@ -23,6 +23,7 @@ export type CopilotIntent =
   | 'out_of_scope'
   | 'draft_reminder'
   | 'help'
+  | 'calculate'
   | 'unknown';
 
 export interface JobDraft {
@@ -724,6 +725,81 @@ function hasDomainWords(raw: string): boolean {
   return false;
 }
 
+/**
+ * Extract a simple arithmetic expression: "149.99 + 19.99", "what is 5*3?",
+ * "100-25". Returns { a, op, b } or null. Only handles a single binary
+ * operation on two numbers (safe — no eval).
+ */
+export function extractArithmetic(raw: string): { a: number; op: string; b: number } | null {
+  // Strip common question prefixes so "what is 149.99 + 19.99?" works.
+  let text = raw
+    .replace(/^(what is|what's|calculate|compute|how much is|combien (fait|font))\s+/i, '')
+    .replace(/[×]/g, '*')
+    .replace(/÷/g, '/')
+    .replace(/,/g, '')
+    .trim()
+    .replace(/[?.!]+$/, '')
+    .trim();
+  // The remaining text must be JUST the expression (prevents "2026-09-30"
+  // or "book for 5-6 people" from matching).
+  const m = text.match(/^(-?\d+(?:\.\d+)?)\s*([+\-*/])\s*(-?\d+(?:\.\d+)?)$/);
+  if (!m) return null;
+  const a = Number(m[1]);
+  const b = Number(m[3]);
+  if (!Number.isFinite(a) || !Number.isFinite(b)) return null;
+  if (m[2] === '/' && b === 0) return null;
+  return { a, op: m[2], b };
+}
+
+/** Safely compute a binary arithmetic operation. */
+export function computeArithmetic(a: number, op: string, b: number): number | null {
+  let result: number;
+  switch (op) {
+    case '+': result = a + b; break;
+    case '-': result = a - b; break;
+    case '*': result = a * b; break;
+    case '/': result = b !== 0 ? a / b : NaN; break;
+    default: return null;
+  }
+  if (!Number.isFinite(result)) return null;
+  // Round to 2 decimal places to avoid float artifacts (0.1+0.2=0.30000000000000004)
+  return Math.round(result * 100) / 100;
+}
+
+/**
+ * Detect an impossible calendar date in the message, e.g. "February 30",
+ * "31 April". Returns the matched date string (e.g. "February 30") or null.
+ * JavaScript's Date silently rolls these over (Feb 30 → Mar 2), so we must
+ * flag them instead of booking the wrong day.
+ */
+export function extractInvalidDate(raw: string): string | null {
+  const text = norm(raw);
+  // Month-first: "february 30", "feb 31"
+  const md = text.match(
+    /\b(jan|january|janvier|feb|february|fevrier|fev|mar|march|mars|apr|april|avril|avr|may|mai|jun|june|juin|jul|july|juillet|juil|aug|august|aout|sep|sept|september|septembre|oct|october|octobre|nov|november|novembre|dec|december|decembre)\s*(\d{1,2})(?:st|nd|rd|th)?\b/
+  );
+  // Day-first: "30 february", "31st april"
+  const dm =
+    md === null
+      ? text.match(
+          /\b(\d{1,2})(?:st|nd|rd|th)?\s*(jan|january|janvier|feb|february|fevrier|fev|mar|march|mars|apr|april|avril|avr|may|mai|jun|june|juin|jul|july|juillet|juil|aug|august|aout|sep|sept|september|septembre|oct|october|octobre|nov|november|novembre|dec|december|decembre)\b/
+        )
+      : null;
+  const m = md ?? dm;
+  if (!m) return null;
+  const monthName = md ? m[1] : m[2];
+  const day = Number(md ? m[2] : m[1]);
+  const month = MONTHS[monthName];
+  if (month === undefined || !Number.isFinite(day)) return null;
+  // Days in month (use a leap year for February so Feb 29 is allowed;
+  // the engine can refine with the actual year if needed).
+  const daysInMonth = new Date(2024, month + 1, 0).getDate();
+  if (day < 1 || day > daysInMonth) {
+    return m[0].trim();
+  }
+  return null;
+}
+
 export function detectIntent(raw: string, followUpName: string | null = null): CopilotIntent {
   const text = ' ' + norm(raw) + ' ';
 
@@ -883,6 +959,12 @@ export function detectIntent(raw: string, followUpName: string | null = null): C
   // 7. Help
   if (hasAny(text, [' help ', ' what can you do ', ' aide ', ' que peux tu faire ', ' que fais tu '])) {
     return 'help';
+  }
+
+  // 7b. Simple arithmetic — "what is 149.99 + 19.99?", "100 - 25", "5*3".
+  // A money-savvy assistant should handle basic math, not refuse it.
+  if (extractArithmetic(raw) !== null) {
+    return 'calculate';
   }
 
   // Default: a question about the business domain with no recognized

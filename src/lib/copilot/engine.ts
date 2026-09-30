@@ -25,8 +25,11 @@ import {
   detectProvince,
   detectTrade,
   extractAddress,
+  extractArithmetic,
+  computeArithmetic,
   extractCustomerName,
   extractDate,
+  extractInvalidDate,
   extractMoney,
   extractPhone,
   extractServiceTitle,
@@ -49,8 +52,11 @@ export {
   detectProvince,
   detectTrade,
   extractAddress,
+  extractArithmetic,
+  computeArithmetic,
   extractCustomerName,
   extractDate,
+  extractInvalidDate,
   extractMoney,
   extractPhone,
   extractServiceTitle,
@@ -301,6 +307,9 @@ export async function runCopilot(
       // today without telling the user was a real mis-parse ("25 ko" once
       // silently became "today"). When unsure, say so in the reply.
       const explicitDate = extractDate(message);
+      // Flag impossible calendar dates ("February 30") instead of silently
+      // rolling them over (JS Date turns Feb 30 into Mar 2).
+      const invalidDate = extractInvalidDate(message);
       // Pronoun follow-ups ("usko kal kar do") name no service — carry the
       // service forward from the most recent booking preview in history so
       // the follow-up doesn't silently reset to "General Service".
@@ -401,6 +410,16 @@ export async function runCopilot(
       ];
       if (!explicitDate) {
         lines.push('', L.dateNote);
+      }
+      if (invalidDate) {
+        lines.push(
+          '',
+          pick(
+            lang,
+            `⚠️ "${invalidDate}" isn't a real calendar date — I can't book that day. Please pick a valid date.`,
+            `⚠️ « ${invalidDate} » n'est pas une vraie date du calendrier — je ne peux pas réserver ce jour-là. Veuillez choisir une date valide.`
+          )
+        );
       }
       if (matched) {
         lines.push('', L.matchedNote(matched.name));
@@ -545,6 +564,38 @@ export async function runCopilot(
             '• Recueillir un avis après chaque tâche bâtit le signal de confiance que la plupart des propriétaires vérifient en premier.\n\n' +
             'Pour une liste personnalisée, voyez votre score de profil dans Aperçus.'
         ),
+      };
+    }
+
+    case 'calculate': {
+      const expr = extractArithmetic(message);
+      if (!expr) {
+        return {
+          intent,
+          reply: pick(
+            lang,
+            "I couldn't parse that calculation. Try something like: 149.99 + 19.99",
+            "Je n'ai pas pu comprendre ce calcul. Essayez par exemple : 149,99 + 19,99"
+          ),
+        };
+      }
+      const result = computeArithmetic(expr.a, expr.op, expr.b);
+      if (result === null) {
+        return {
+          intent,
+          reply: pick(
+            lang,
+            "I couldn't compute that. Try simpler numbers.",
+            "Je n'ai pas pu calculer cela. Essayez avec des nombres plus simples."
+          ),
+        };
+      }
+      // Format nicely: 149.99 + 19.99 = 169.98
+      const fmt = (n: number) =>
+        Number.isInteger(n) ? String(n) : String(Math.round(n * 100) / 100);
+      return {
+        intent,
+        reply: `${fmt(expr.a)} ${expr.op} ${fmt(expr.b)} = ${fmt(result)}`,
       };
     }
 
