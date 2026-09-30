@@ -22,9 +22,18 @@ export default async function CustomerLayout({ children }: { children: React.Rea
             </span>
           </Link>
           {session && (
-            <span className="text-sm text-zinc-600 truncate max-w-[160px]">
-              Hi, {session.customer.name?.split(' ')[0] || 'there'}
-            </span>
+            <div className="flex items-center gap-4">
+              <nav className="hidden md:flex items-center gap-4 text-sm font-medium text-zinc-600">
+                <Link href="/customer" className="hover:text-indigo-600">Search</Link>
+                <Link href="/customer/requests" className="hover:text-indigo-600">Requests</Link>
+                <Link href="/customer/saved" className="hover:text-indigo-600">Saved</Link>
+                <Link href="/customer/messages" className="hover:text-indigo-600">Messages</Link>
+                <Link href="/customer/profile" className="hover:text-indigo-600">Profile</Link>
+              </nav>
+              <span className="text-sm text-zinc-600 truncate max-w-[160px]">
+                Hi, {session.customer.name?.split(' ')[0] || 'there'}
+              </span>
+            </div>
           )}
         </div>
       </header>
