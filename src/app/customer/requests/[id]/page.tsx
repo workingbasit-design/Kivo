@@ -42,35 +42,28 @@ export default async function CustomerRequestDetailPage({
         My requests
       </Link>
 
-      <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 rounded-3xl p-4 shadow-lg shadow-indigo-600/25">
-        <div
-          className="absolute inset-0 opacity-20 pointer-events-none"
-          style={{
-            backgroundImage: 'radial-gradient(circle at 85% 15%, white 0, transparent 35%)',
-          }}
-        />
-        <div className="relative flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur border border-white/30 flex items-center justify-center shrink-0 overflow-hidden">
+      <div className="bg-white rounded-2xl border border-zinc-200 p-4">
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 rounded-xl bg-indigo-100 flex items-center justify-center shrink-0 overflow-hidden">
             {req.business.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
               <img src={req.business.logoUrl} alt="" className="w-full h-full object-cover" />
             ) : (
-              <span className="font-bold text-white">{req.business.name.charAt(0).toUpperCase()}</span>
+              <span className="font-bold text-indigo-600">{req.business.name.charAt(0)}</span>
             )}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
-              <h1 className="font-bold text-[15px] text-white truncate">{req.business.name}</h1>
-              <BadgeCheck className="w-4 h-4 text-emerald-300 shrink-0" />
+              <h1 className="font-bold text-[15px] text-zinc-900 truncate">{req.business.name}</h1>
+              <BadgeCheck className="w-4 h-4 text-indigo-600 shrink-0" />
             </div>
-            <p className="text-xs text-indigo-200">
+            <p className="text-xs text-zinc-500">
               {req.service} · {STATUS_LABEL[req.status] || req.status}
             </p>
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-3xl border border-zinc-200/80 p-4 space-y-3 min-h-[200px] shadow-sm">
+      <div className="bg-white rounded-2xl border border-zinc-200 p-4 space-y-3 min-h-[200px]">
         {req.messages.map((msg) => {
           const mine = msg.senderType === 'customer';
           return (

@@ -33,36 +33,27 @@ export default function CustomerQuoteForm({
         Back to search
       </Link>
 
-      <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 rounded-3xl p-5 text-white shadow-lg shadow-indigo-600/25">
-        <div
-          className="absolute inset-0 opacity-20 pointer-events-none"
-          style={{
-            backgroundImage: 'radial-gradient(circle at 85% 15%, white 0, transparent 35%)',
-          }}
-        />
-        <div className="relative flex items-center gap-3">
-          <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur border border-white/30 flex items-center justify-center shrink-0 overflow-hidden">
-            {logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={logoUrl} alt="" className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-xl font-bold text-white">{businessName.charAt(0).toUpperCase()}</span>
-            )}
+      <div className="bg-white rounded-2xl border border-zinc-200 p-4 flex items-center gap-3">
+        <div className="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center shrink-0 overflow-hidden">
+          {logoUrl ? (
+            <img src={logoUrl} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-lg font-bold text-indigo-600">{businessName.charAt(0)}</span>
+          )}
+        </div>
+        <div>
+          <div className="flex items-center gap-1.5">
+            <h1 className="font-bold text-[15px] text-zinc-900">{businessName}</h1>
+            <BadgeCheck className="w-4 h-4 text-indigo-600" />
           </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <h1 className="font-bold text-[16px] text-white">{businessName}</h1>
-              <BadgeCheck className="w-4 h-4 text-emerald-300" />
-            </div>
-            <p className="text-xs text-indigo-200">Verified pro · typically responds within a day</p>
-          </div>
+          <p className="text-xs text-zinc-500">Verified pro</p>
         </div>
       </div>
 
       <div>
         <h2 className="text-lg font-bold tracking-tight text-zinc-900">Request a quote</h2>
         <p className="text-sm text-zinc-500 mt-0.5">
-          Describe what you need — it's free and takes less than a minute.
+          Describe what you need. {businessName} typically responds within a day.
         </p>
       </div>
 
