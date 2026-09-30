@@ -445,7 +445,7 @@ export function Dialog({
  * `motion-reduce:transform-none` so it respects OS settings.
  * Focus: visible ring on keyboard focus.
  */
-type ButtonVariant = 'primary' | 'secondary' | 'gradient' | 'ghost' | 'danger';
+type ButtonVariant = 'primary' | 'secondary' | 'gradient' | 'ghost' | 'danger' | 'cta';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 const buttonVariants: Record<ButtonVariant, string> = {
@@ -464,6 +464,10 @@ const buttonVariants: Record<ButtonVariant, string> = {
   // Destructive: red tint
   danger:
     'bg-red-50 text-red-700 border border-red-200/70 shadow-[0_1px_3px_rgba(220,38,38,0.08)] hover:bg-red-100',
+  // Instagram-ad CTA bar: full-width bold color block, white text.
+  // Pair with <CtaBar> or w-full + justify-between and a chevron.
+  cta:
+    'text-white border border-transparent bg-[#E8402A] hover:bg-[#d23723] shadow-[0_4px_16px_rgba(232,64,42,0.3)] hover:shadow-[0_6px_20px_rgba(232,64,42,0.4)]',
 };
 
 const buttonSizes: Record<ButtonSize, string> = {
@@ -502,5 +506,89 @@ export function Button({
     >
       {children}
     </button>
+  );
+}
+
+/**
+ * Instagram-ad-style full-width CTA bar (2026-09-30).
+ * Like the "Sign up" bar in sponsored posts: a bold full-bleed color block
+ * with white text and a chevron on the right. Sticky-bottom friendly.
+ *
+ * Usage:
+ *   <CtaBar onClick={...}>Sign up</CtaBar>
+ */
+export function CtaBar({
+  children,
+  className,
+  ...props
+}: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button
+      className={cn(
+        'w-full flex items-center justify-between gap-3',
+        'min-h-[56px] px-6 text-[17px]',
+        'font-semibold tracking-tight text-white',
+        'bg-[#E8402A] hover:bg-[#d23723]',
+        'shadow-[0_4px_16px_rgba(232,64,42,0.3)] hover:shadow-[0_6px_20px_rgba(232,64,42,0.4)]',
+        // Same Apple-style spring press as Button
+        'transition-all duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)]',
+        'active:scale-[0.98] active:duration-100',
+        'motion-reduce:transition-none motion-reduce:transform-none motion-reduce:active:scale-100',
+        'disabled:opacity-50 disabled:pointer-events-none',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E8402A]/50 focus-visible:ring-offset-2',
+        'select-none cursor-pointer',
+        className
+      )}
+      {...props}
+    >
+      <span>{children}</span>
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+        className="shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"
+      >
+        <path d="M9 18l6-6-6-6" />
+      </svg>
+    </button>
+  );
+}
+
+/**
+ * Animated entrance wrapper — Instagram-ad-style smooth reveals.
+ * `animation`: 'fade-up' (default), 'scale-in', 'float'.
+ * `delay`: stagger delay in ms for sequenced entrances.
+ * Respects prefers-reduced-motion (renders statically).
+ */
+export function Reveal({
+  children,
+  animation = 'fade-up',
+  delay = 0,
+  className,
+}: {
+  children: React.ReactNode;
+  animation?: 'fade-up' | 'scale-in' | 'float';
+  delay?: number;
+  className?: string;
+}) {
+  const animClass =
+    animation === 'scale-in'
+      ? 'ej-anim-scale-in'
+      : animation === 'float'
+        ? 'ej-anim-float'
+        : 'ej-anim-fade-up';
+  return (
+    <div
+      className={cn(animClass, className)}
+      style={delay ? { animationDelay: `${delay}ms` } : undefined}
+    >
+      {children}
+    </div>
   );
 }
