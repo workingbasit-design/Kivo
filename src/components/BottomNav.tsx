@@ -65,7 +65,7 @@ export default function BottomNav({
         onClick={() => setMoreOpen(false)}
         aria-current={active ? 'page' : undefined}
         className={cn(
-          'flex items-center gap-3 px-3 min-h-[48px] rounded-xl text-sm font-medium transition-colors',
+          'ej-icon-hover flex items-center gap-3 px-3 min-h-[48px] rounded-xl text-sm font-medium',
           active ? 'bg-ink text-lime' : 'text-zinc-700 hover:bg-zinc-100'
         )}
       >
@@ -90,7 +90,7 @@ export default function BottomNav({
                 href={tab.href}
                 aria-current={active ? 'page' : undefined}
                 className={cn(
-                  'flex flex-col items-center justify-center gap-1 min-h-[64px] py-2 text-[10px] font-semibold transition-colors',
+                  'ej-icon-hover flex flex-col items-center justify-center gap-1 min-h-[64px] py-2 text-[10px] font-semibold',
                   'focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-lime',
                   active ? 'text-lime' : 'text-white/55 hover:text-white'
                 )}

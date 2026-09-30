@@ -116,7 +116,7 @@ export default function AppSidebar({
                 ? `${t(locale, 'notifications.title')} (${unreadCount} ${t(locale, 'notifications.unread')})`
                 : t(locale, 'notifications.title')
             }
-            className="relative rounded-xl p-2.5 text-white/60 hover:bg-white/10 hover:text-white transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70"
+            className="ej-icon-hover relative rounded-xl p-2.5 text-white/60 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70"
           >
             <Bell size={19} />
             {unreadCount > 0 && (
