@@ -1,9 +1,10 @@
 import Link from 'next/link';
-import { MapPin, Search, Star, BadgeCheck, MessageSquareQuote } from 'lucide-react';
+import { MapPin, Search, Star, BadgeCheck, MessageSquareQuote, User } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { prisma } from '@/lib/prisma';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
+import { getCustomerSession } from '@/lib/customer-auth';
 import {
   matchesCity,
   matchesServiceKeyword,
@@ -88,6 +89,8 @@ export default async function DirectoryPage({
     .replaceAll('{s}', results.length === 1 ? '' : 's')
     .replace('{q}', q);
 
+  const customerSession = await getCustomerSession().catch(() => null);
+
   return (
     <div className="min-h-screen bg-paper font-sans">
       <header className="bg-ink text-white">
@@ -95,6 +98,25 @@ export default async function DirectoryPage({
           <div className="flex items-center gap-3 mb-3">
             <Logo tone="onDark" size={30} />
             <span className="text-sm font-semibold text-white/60">{tr('t10misc.directory.title')}</span>
+            <div className="ml-auto">
+              {customerSession ? (
+                <Link
+                  href="/customer"
+                  className="inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-full bg-white/10 border border-white/20 text-sm font-semibold hover:bg-white/20"
+                >
+                  <User size={14} />
+                  My account
+                </Link>
+              ) : (
+                <Link
+                  href="/customer/signup"
+                  className="inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-full bg-lime text-ink text-sm font-bold hover:brightness-105"
+                >
+                  <User size={14} />
+                  Sign up free
+                </Link>
+              )}
+            </div>
           </div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
             {tr('t10misc.directory.title')}

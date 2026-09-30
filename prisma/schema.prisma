@@ -75,6 +75,8 @@ model Business {
   messageLogs          MessageLog[]
   communications       Communication[]
   leads                Lead[]
+  savedByCustomers   SavedPro[]
+  customerQuotes     QuoteRequest[]
   quotes               Quote[]
   signatureRequests    SignatureRequest[]
   reviews              Review[]
@@ -1210,4 +1212,72 @@ model Part {
 
   @@index([businessId])
   @@index([businessId, name])
+}
+
+// ─── Customer (homeowner) accounts ──────────────────────────────────────
+// Separate from business User accounts. Customers use the directory to find
+// pros, save favorites, send quote requests, and message businesses.
+
+model CustomerUser {
+  id            String      @id @default(cuid())
+  email         String      @unique
+  passwordHash  String
+  name          String?
+  phone         String?
+  city          String?
+  locale        String      @default("en")
+  sessions      CustomerSession[]
+  savedPros     SavedPro[]
+  quoteRequests QuoteRequest[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model CustomerSession {
+  id         String       @id @default(cuid())
+  customerId String
+  expiresAt  DateTime
+  customer   CustomerUser @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+}
+
+model SavedPro {
+  id         String       @id @default(cuid())
+  customerId String
+  businessId String
+  customer   CustomerUser @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  business   Business     @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  createdAt  DateTime     @default(now())
+
+  @@unique([customerId, businessId])
+  @@index([customerId])
+}
+
+model QuoteRequest {
+  id          String         @id @default(cuid())
+  customerId  String
+  businessId  String
+  service     String
+  description String?
+  status      String         @default("sent") // sent | replied | accepted | declined | completed
+  messages    QuoteMessage[]
+  customer    CustomerUser   @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  business    Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([customerId])
+  @@index([businessId])
+}
+
+model QuoteMessage {
+  id             String       @id @default(cuid())
+  quoteRequestId String
+  senderType     String       // "customer" | "business"
+  body           String
+  quoteRequest   QuoteRequest @relation(fields: [quoteRequestId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+
+  @@index([quoteRequestId])
 }

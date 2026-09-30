@@ -128,6 +128,8 @@ export const TENANT_MODELS: ReadonlySet<string> = new Set([
   'RecurringJob',
   'Review',
   'ReviewRequest',
+  'SavedPro',
+  'QuoteRequest',
   'Service',
   'ShareToken',
   'SignatureRequest',
