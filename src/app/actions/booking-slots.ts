@@ -277,6 +277,10 @@ async function runBookingWithTime(
   }
 
   // --- Slot validation (the double-booking guard) ---
+  // All database operations below run unscoped: this is a public page with no
+  // authenticated user, and businessId (from the resolved booking page slug)
+  // scopes every query explicitly.
+  return unsafeUnscoped('booking-slots:createBooking', async (db) => {
   let validatedTime: string | null = null;
   const gen = generateDaySlots(page.business.workingHours, date);
   if (!gen.hoursNotSet && !gen.closed) {
@@ -285,7 +289,7 @@ async function runBookingWithTime(
       return { error: t(locale, 'reminders.booking.timeRequired') };
     }
     const { gte, lte } = dayRange(date);
-    const jobs = await prisma.job.findMany({
+    const jobs = await db.job.findMany({
       where: {
         businessId,
         date: { gte, lte },
@@ -308,20 +312,20 @@ async function runBookingWithTime(
 
   let service: { id: string; name: string; price: number } | null = null;
   if (serviceId) {
-    service = await prisma.service.findFirst({
+    service = await db.service.findFirst({
       where: { id: serviceId, businessId },
       select: { id: true, name: true, price: true },
     });
     if (!service) return { error: 'Selected service is not available.' };
   }
 
-  const existingCustomer = await prisma.customer.findFirst({
+  const existingCustomer = await db.customer.findFirst({
     where: { businessId, OR: [{ phoneNorm }, { phone }] },
     select: { id: true, phoneNorm: true },
   });
 
   const customer = existingCustomer
-    ? await prisma.customer.update({
+    ? await db.customer.update({
         where: { id: existingCustomer.id, businessId },
         data: {
           name,
@@ -330,7 +334,7 @@ async function runBookingWithTime(
         },
         select: { id: true },
       })
-    : await prisma.customer.create({
+    : await db.customer.create({
         data: {
           name,
           phone,
@@ -342,7 +346,7 @@ async function runBookingWithTime(
         select: { id: true },
       });
 
-  await prisma.job.create({
+  await db.job.create({
     data: {
       title: service ? service.name : 'Booking request',
       date: preferred,
@@ -360,4 +364,5 @@ async function runBookingWithTime(
   });
 
   return { ok: true };
+  });
 }
