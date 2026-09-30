@@ -9,6 +9,8 @@ import {
   detectMessageLang,
   detectProvince,
   detectTrade,
+  extractArithmetic,
+  computeArithmetic,
   extractCustomerName,
   extractDate,
   extractMoney,
@@ -474,4 +476,62 @@ test('detectIntent: "check tomorrow" is still a schedule query', () => {
 test('detectIntent: "Book AC repair for Bob tomorrow?" with a question mark stays a question', () => {
   // An explicit "?" still marks a question even when booking-led.
   assert.notEqual(detectIntent('Book AC repair for Bob tomorrow?'), 'create_job');
+});
+
+/* ---------------- 2026-09-30 deep QA fixes ---------------- */
+
+test('extractArithmetic: "10% of 500" is 50', () => {
+  const expr = extractArithmetic('What is 10% of 500?');
+  assert.ok(expr);
+  assert.equal(expr.op, '%of');
+  assert.equal(computeArithmetic(expr.a, expr.op, expr.b), 50);
+});
+
+test('extractArithmetic: "100 times 1.13" is 113', () => {
+  const expr = extractArithmetic('What is 100 times 1.13?');
+  assert.ok(expr);
+  assert.equal(expr.op, '*');
+  assert.equal(computeArithmetic(expr.a, expr.op, expr.b), 113);
+});
+
+test('extractArithmetic: "100 multiplied by 1.13" is 113', () => {
+  const expr = extractArithmetic('100 multiplied by 1.13');
+  assert.ok(expr);
+  assert.equal(computeArithmetic(expr.a, expr.op, expr.b), 113);
+});
+
+test('detectIntent: "delete all my customers" is refuse_destructive', () => {
+  assert.equal(detectIntent('Delete all my customers'), 'refuse_destructive');
+});
+
+test('detectIntent: "cancel all my jobs" is refuse_destructive', () => {
+  assert.equal(detectIntent('Cancel all my jobs'), 'refuse_destructive');
+});
+
+test('detectIntent: "cancel tomorrow\'s job" is still unknown (not destructive)', () => {
+  // Single cancellation without "all" stays as unknown (asks for clarification)
+  assert.equal(detectIntent("cancel tomorrow's job"), 'unknown');
+});
+
+test('detectIntent: "create an invoice for $500" is out_of_scope (not a job)', () => {
+  assert.equal(detectIntent('Create an invoice for $500'), 'out_of_scope');
+});
+
+test('detectIntent: "make a new quote" is out_of_scope (not a job)', () => {
+  assert.equal(detectIntent('Make a new quote for Sarah'), 'out_of_scope');
+});
+
+test('extractCustomerName: "Add customer John Smith with phone +14165550123" is John Smith', () => {
+  assert.equal(
+    extractCustomerName('Add customer John Smith with phone +14165550123'),
+    'John Smith'
+  );
+});
+
+test('extractServiceTitle: "Schedule something for next Monday" is null (not "Something")', () => {
+  assert.equal(extractServiceTitle('Schedule something for next Monday'), null);
+});
+
+test('extractServiceTitle: "Schedule a job for February 30" is null (not "A Job For February 30")', () => {
+  assert.equal(extractServiceTitle('Schedule a job for February 30'), null);
 });
