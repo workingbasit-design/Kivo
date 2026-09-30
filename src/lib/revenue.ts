@@ -46,5 +46,5 @@ export function daysWaiting(updatedAt: Date, now = new Date()): number {
 /** Invoice remaining balance, clamped at 0 (overpayments are rejected server-side). */
 export function remainingBalance(total: number, payments: number[]): number {
   const paid = payments.reduce((s, p) => s + p, 0);
-  return Math.max(0, Number(((total - paid)).toFixed(2)));
+  return Math.max(0, Math.round((total - paid) * 100) / 100);
 }

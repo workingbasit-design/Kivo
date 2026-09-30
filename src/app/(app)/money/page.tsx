@@ -86,7 +86,7 @@ export default async function MoneyPage() {
             </div>
           </div>
           <p className="mt-4 text-3xl font-bold tabular-nums">
-            {formatMoney(Number((openQuoteValue).toFixed(2)), currency)}
+            {formatMoney(Math.round(openQuoteValue * 100) / 100, currency)}
           </p>
           <p className="mt-1 text-sm text-[var(--ej-muted)]">
             {openQuotes.length === 0
@@ -116,7 +116,7 @@ export default async function MoneyPage() {
             </div>
           </div>
           <p className="mt-4 text-3xl font-bold tabular-nums">
-            {formatMoney(Number((unpaidBalance).toFixed(2)), currency)}
+            {formatMoney(Math.round(unpaidBalance * 100) / 100, currency)}
           </p>
           <p className="mt-1 text-sm text-[var(--ej-muted)]">
             {unpaidInvoices.length === 0

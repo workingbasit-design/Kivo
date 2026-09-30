@@ -6,7 +6,7 @@ import {
   deriveInvoiceStatus,
 } from '@/lib/stripe';
 
-const round2 = (n: number) => Number(n.toFixed(2));
+const round2 = (n: number) => Math.round(n * 100) / 100;
 
 interface StripeEventPayload {
   id: string;

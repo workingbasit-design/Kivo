@@ -196,7 +196,7 @@ export function computeInsights(
       ? jobsByWeekday.indexOf(Math.max(...jobsByWeekday))
       : null;
   const avgValueByWeekday = jobsByWeekday.map((n, i) =>
-    n > 0 ? Number(((valueByWeekday[i] / n)).toFixed(2)) : null
+    n > 0 ? Math.round((valueByWeekday[i] / n) * 100) / 100 : null
   );
 
   // --- Quote follow-ups: SENT quotes waiting 7+ days ---

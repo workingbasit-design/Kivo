@@ -106,7 +106,7 @@ export interface UnpaidInvoiceRow {
 /** Remaining balance after completed payments (never negative). */
 export function invoiceBalance(inv: { total: number; payments: Array<{ amount: number }> }): number {
   const paid = inv.payments.reduce((s, p) => s + p.amount, 0);
-  return Math.max(0, Number(((inv.total - paid)).toFixed(2)));
+  return Math.max(0, Math.round((inv.total - paid) * 100) / 100);
 }
 
 export interface CustomerSearchRow {

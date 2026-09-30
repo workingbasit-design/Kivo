@@ -151,7 +151,7 @@ export async function setQuoteDepositAction(
   if (raw === '') {
     await prisma.quote.update({ where: { id: quoteId, businessId }, data: { depositAmount: null } });
   } else {
-    const amount = Number((Number(raw)).toFixed(2));
+    const amount = Math.round(Number(raw) * 100) / 100;
     if (!Number.isFinite(amount) || amount <= 0) {
       return { error: 'Deposit must be a positive amount.' };
     }
@@ -181,7 +181,7 @@ export async function recordManualQuoteDepositAction(
     return { error: 'Please log in again.' };
   }
   const quoteId = String(formData.get('quoteId') ?? '');
-  const amount = Number((Number(formData.get('amount') ?? 0)).toFixed(2));
+  const amount = Math.round(Number(formData.get('amount') ?? 0) * 100) / 100;
   const provider = String(formData.get('provider') ?? '');
   const note = String(formData.get('note') ?? '').trim().slice(0, 120);
   if (!['INTERAC', 'CASH', 'CHEQUE'].includes(provider)) {

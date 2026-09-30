@@ -3,7 +3,7 @@
  * Pure helpers: no DB, no I/O, no auth. Safe to unit-test with plain node.
  */
 
-const round2 = (n: number) => Number(n.toFixed(2));
+const round2 = (n: number) => Math.round(n * 100) / 100;
 
 export type BatchJobInput = {
   id: string;

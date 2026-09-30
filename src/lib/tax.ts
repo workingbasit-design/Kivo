@@ -79,7 +79,7 @@ const CA_TAXES: Record<string, TaxLine[]> = {
   YT: [{ name: 'GST', rate: 5 }],
 };
 
-const round2 = (n: number) => Number(n.toFixed(2));
+const round2 = (n: number) => Math.round(n * 100) / 100;
 /** 3-decimal rounding — preserves QST's 9.975% through rate sums. */
 const round3 = (n: number) => Math.round(n * 1000) / 1000;
 

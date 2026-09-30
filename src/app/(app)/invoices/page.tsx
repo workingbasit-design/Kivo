@@ -105,14 +105,14 @@ export default async function InvoicesPage({
       <div className="grid grid-cols-2 gap-4">
         <StatCard
           label="Outstanding"
-          value={formatMoney(Number((outstanding).toFixed(2)), business?.currency)}
+          value={formatMoney(Math.round(outstanding * 100) / 100, business?.currency)}
           sub="yet to be collected"
           icon={<Wallet size={16} />}
           accent="bg-amber-100 text-amber-700"
         />
         <StatCard
           label="Collected"
-          value={formatMoney(Number((collected).toFixed(2)), business?.currency)}
+          value={formatMoney(Math.round(collected * 100) / 100, business?.currency)}
           sub="payments recorded"
           icon={<FileText size={16} />}
           accent="bg-emerald-100 text-emerald-700"
@@ -155,7 +155,7 @@ export default async function InvoicesPage({
           <ul className="divide-y divide-zinc-100">
             {invoices.map((inv) => {
               const paid = inv.payments.reduce((s, p) => s + p.amount, 0);
-              const due = Number(((inv.total - paid)).toFixed(2));
+              const due = Math.round((inv.total - paid) * 100) / 100;
               // Usual 30-day payment terms — the Invoice model stores no
               // contractual due date, so this is a follow-up hint, not a legal state.
               const overdue =

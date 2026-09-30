@@ -414,7 +414,7 @@ export interface EJPayment {
 
 /** Round to cents — QuickBooks rejects more than 2 decimals on amounts. */
 function cents(n: number): number {
-  return Number((n).toFixed(2));
+  return Math.round(n * 100) / 100;
 }
 
 function isoDate(d: Date): string {

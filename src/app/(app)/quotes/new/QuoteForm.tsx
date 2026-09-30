@@ -53,7 +53,7 @@ export default function QuoteForm({
 
   // Client-side preview — the server recomputes the same numbers.
   const { taxAmount, breakdown } = calcTax(subtotal, taxConfig);
-  const total = Number(((subtotal + taxAmount)).toFixed(2));
+  const total = Math.round((subtotal + taxAmount) * 100) / 100;
 
   return (
     <form action={formAction} className="space-y-6 max-w-2xl">

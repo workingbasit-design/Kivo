@@ -7,7 +7,7 @@ import { createInvoiceCheckout, toCents } from '@/lib/stripe';
 import { getLocale } from '@/lib/i18n/server';
 import { clientIpFromHeaders } from '@/lib/client-ip';
 
-const round2 = (n: number) => Number(n.toFixed(2));
+const round2 = (n: number) => Math.round(n * 100) / 100;
 
 async function rateLimited(businessId: string): Promise<boolean> {
   const h = await headers();

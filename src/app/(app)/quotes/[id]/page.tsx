@@ -25,7 +25,7 @@ import QuoteDepositCard from '@/components/QuoteDepositCard';
 import QuoteItemsEditor from './QuoteItemsEditor';
 import RecordDepositForm from '@/components/RecordDepositForm';
 
-const round2 = (n: number) => Number(n.toFixed(2));
+const round2 = (n: number) => Math.round(n * 100) / 100;
 
 export default async function QuoteDetailPage({
   params,

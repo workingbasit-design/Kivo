@@ -60,8 +60,8 @@ export async function draftInvoiceFollowup(invoiceId: string): Promise<DraftResu
   });
   if (!invoice) return { error: t(locale, 'reminders.errors.notFound') };
 
-  const paid = Number((invoice.payments.reduce((s, p) => s + p.amount, 0)).toFixed(2));
-  const remaining = Number(((invoice.total - paid)).toFixed(2));
+  const paid = Math.round(invoice.payments.reduce((s, p) => s + p.amount, 0) * 100) / 100;
+  const remaining = Math.round((invoice.total - paid) * 100) / 100;
   if (remaining <= 0) return { error: t(locale, 'reminders.errors.alreadyPaid') };
 
   const text = buildInvoiceFollowupDraft({

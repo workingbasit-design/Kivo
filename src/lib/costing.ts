@@ -163,7 +163,7 @@ export function parseHourlyRateInput(raw: unknown): ValidationResult<number | nu
   if (!s) return { ok: true, data: null };
   const n = Number(s);
   if (!Number.isFinite(n) || n < 0) return { ok: false, error: 'errors.rateInvalid' };
-  return { ok: true, data: Number((n).toFixed(2)) };
+  return { ok: true, data: Math.round(n * 100) / 100 };
 }
 
 /** Validate a checklist item label (shared by template-apply and ad-hoc add). */
@@ -202,5 +202,5 @@ export function summarizeLineItems(
 }
 
 function round2(n: number): string {
-  return (Number((n).toFixed(2))).toString();
+  return (Math.round(n * 100) / 100).toString();
 }

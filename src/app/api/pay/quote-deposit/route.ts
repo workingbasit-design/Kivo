@@ -6,7 +6,7 @@ import { createCheckoutSession, toCents } from '@/lib/stripe';
 import { clientIpFromHeaders } from '@/lib/client-ip';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
 
-const round2 = (n: number) => Number(n.toFixed(2));
+const round2 = (n: number) => Math.round(n * 100) / 100;
 
 async function rateLimited(): Promise<boolean> {
   const h = await headers();

@@ -63,7 +63,7 @@ export default function LineItemsEditor({
   );
 
   const subtotal = useMemo(
-    () => Number((validRows.reduce((s, r) => s + r.qty * r.rate, 0)).toFixed(2)),
+    () => Math.round(validRows.reduce((s, r) => s + r.qty * r.rate, 0) * 100) / 100,
     [validRows]
   );
 
@@ -80,8 +80,8 @@ export default function LineItemsEditor({
     const value = raw;
     const amount =
       discountType === 'PERCENT'
-        ? Number(((subtotal * Math.min(100, value)) / 100).toFixed(2))
-        : Number((Math.min(subtotal, value)).toFixed(2));
+        ? Math.round((subtotal * Math.min(100, value)) / 100 * 100) / 100
+        : Math.round(Math.min(subtotal, value) * 100) / 100;
     return { type: discountType, value, amount };
   }, [subtotal, discountType, discountValue]);
 
@@ -140,7 +140,7 @@ export default function LineItemsEditor({
                 {L('t10money.itemAmountPreview')}:{' '}
                 <span className="font-bold text-zinc-900">
                   {formatMoney(
-                    Number((Number(row.qty || 0) * Number(row.rate || 0)).toFixed(2)),
+                    Math.round(Number(row.qty || 0) * Number(row.rate || 0) * 100) / 100,
                     currency
                   )}
                 </span>

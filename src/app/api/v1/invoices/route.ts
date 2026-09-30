@@ -45,7 +45,7 @@ const select = {
 } as const;
 
 function round2(n: number): number {
-  return Number((n).toFixed(2));
+  return Math.round(n * 100) / 100;
 }
 
 /** Mirror the app's INV-XXXX numbering (see src/app/actions/invoices.ts). */

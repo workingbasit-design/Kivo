@@ -15,7 +15,7 @@ export interface ConvertibleQuoteAddon extends QuoteAddonInput {
   title: string;
 }
 
-const round2 = (n: number) => Number(n.toFixed(2));
+const round2 = (n: number) => Math.round(n * 100) / 100;
 
 /**
  * Live client total: base quote total + prices of the selected add-ons.
