@@ -35,16 +35,7 @@ body {
 
 @layer base {
   button {
-    /* Apple-style smooth press: spring-like easing instead of linear.
-       The Button component in ui.tsx uses the same curve for consistency.
-       Respects reduced-motion via the media query below. */
-    @apply transition-all duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] active:scale-[0.96] active:duration-100;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    button {
-      @apply transition-none transform-none active:scale-100;
-    }
+    @apply transition-transform duration-100 ease-out active:scale-[0.98];
   }
 
   /* Visible keyboard focus everywhere in the app (inputs/buttons already
@@ -156,70 +147,6 @@ body {
     animation: ej-fade-up 0.85s cubic-bezier(0.22, 0.61, 0.21, 1) both;
     animation-delay: var(--ej-delay, 0ms);
     will-change: opacity, transform;
-  }
-
-  /* Generic entrance utilities for the Reveal component (Instagram-ad-style
-     smooth reveals). Stagger via inline animation-delay. */
-  .ej-anim-fade-up {
-    animation: ej-fade-up 0.7s cubic-bezier(0.22, 0.61, 0.21, 1) both;
-    will-change: opacity, transform;
-  }
-  .ej-anim-scale-in {
-    animation: ej-scale-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-    will-change: opacity, transform;
-  }
-  .ej-anim-float {
-    animation: ej-float 6s ease-in-out infinite;
-    will-change: transform;
-  }
-
-  @keyframes ej-scale-in {
-    from {
-      opacity: 0;
-      transform: scale(0.92);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .ej-anim-fade-up,
-    .ej-anim-scale-in,
-    .ej-anim-float {
-      animation: none;
-    }
-  }
-
-  /* Icon hover animation — like the smooth sidebar icons in modern apps.
-     Background pill scales in with spring easing, icon lifts slightly.
-     Apply to nav links, icon buttons, and interactive icons. */
-  .ej-icon-hover {
-    transition:
-      background-color 0.2s ease,
-      color 0.2s ease,
-      transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-  .ej-icon-hover:hover {
-    transform: translateY(-1px);
-  }
-  .ej-icon-hover:active {
-    transform: translateY(0) scale(0.96);
-    transition-duration: 0.1s;
-  }
-  .ej-icon-hover svg {
-    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-  .ej-icon-hover:hover svg {
-    transform: scale(1.12);
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .ej-icon-hover,
-    .ej-icon-hover svg {
-      transition: none;
-      transform: none;
-    }
   }
 
   /* Premium ambient motion — drifting organic gradient blobs (reel-inspired).
