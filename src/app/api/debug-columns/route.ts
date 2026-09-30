@@ -52,5 +52,46 @@ export async function GET(req: NextRequest) {
       deleted: stillThere === null,
     };
   }
-  return NextResponse.json({ rows, probe });
+  // Zod+write pipeline probe: replicates the pricebook action's exact parse
+  // path (FormData string -> serviceSchema -> prisma create -> read back).
+  // ?zod=1 to run.
+  let zodProbe: unknown = null;
+  if (req.nextUrl.searchParams.get('zod') === '1') {
+    const { serviceSchema } = await import('@/lib/validations');
+    const fd = new FormData();
+    fd.append('name', 'Zod Probe');
+    fd.append('price', '99.99');
+    const raw = fd.get('price');
+    const coerced = Number(raw);
+    const parsed = serviceSchema.safeParse({ name: fd.get('name'), price: raw });
+    const biz = await prisma.$queryRawUnsafe<Array<{ id: string }>>(
+      `SELECT id FROM "Business" LIMIT 1`
+    );
+    let roundTrip: string | null = null;
+    let cleaned = false;
+    if (parsed.success) {
+      const created = await prismaUnscoped.service.create({
+        data: { name: 'Zod Probe', price: parsed.data.price, businessId: biz[0].id },
+      });
+      const back = await prismaUnscoped.service.findUnique({
+        where: { id: created.id },
+        select: { price: true },
+      });
+      roundTrip = back ? String(back.price) : null;
+      await prismaUnscoped.service.delete({ where: { id: created.id } });
+      cleaned = (await prismaUnscoped.service.findUnique({ where: { id: created.id } })) === null;
+    }
+    zodProbe = {
+      raw: String(raw),
+      rawType: typeof raw,
+      coerced: String(coerced),
+      parsedOk: parsed.success,
+      parsedPrice: parsed.success ? String(parsed.data.price) : null,
+      parsedType: parsed.success ? typeof parsed.data.price : null,
+      roundTrip,
+      cleaned,
+      issues: parsed.success ? null : parsed.error.issues[0]?.message,
+    };
+  }
+  return NextResponse.json({ rows, probe, zodProbe });
 }
