@@ -144,6 +144,40 @@ body {
     will-change: opacity, transform;
   }
 
+  /* Premium ambient motion — drifting organic gradient blobs (reel-inspired).
+     Durations/delays are tuned per-blob inline via animationDuration/Delay. */
+  @keyframes ej-blob-drift {
+    0% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(46px, -34px, 0) scale(1.12);
+    }
+    100% {
+      transform: translate3d(-34px, 28px, 0) scale(0.94);
+    }
+  }
+  @keyframes ej-blob-morph {
+    0%,
+    100% {
+      border-radius: 58% 42% 55% 45% / 45% 55% 42% 58%;
+    }
+    50% {
+      border-radius: 44% 56% 47% 53% / 60% 40% 62% 38%;
+    }
+  }
+  .ej-blob {
+    animation:
+      ej-blob-drift 24s ease-in-out infinite alternate,
+      ej-blob-morph 17s ease-in-out infinite;
+    will-change: transform, border-radius;
+  }
+  /* Aurora blobs for dark sections — drift only, blur applied inline. */
+  .ej-aurora-blob {
+    animation: ej-blob-drift 28s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+
   /* Scroll-reveal — toggled by the Reveal island via .ej-reveal-visible. */
   .ej-reveal {
     opacity: 0;
@@ -263,7 +297,9 @@ body {
   .ej-marquee-track,
   .ej-mock-float,
   .ej-mock-live-dot,
-  .ej-mock-shimmer {
+  .ej-mock-shimmer,
+  .ej-blob,
+  .ej-aurora-blob {
     animation: none;
   }
   .ej-reveal {

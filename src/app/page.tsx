@@ -7,6 +7,8 @@ import { t } from '@/lib/i18n';
 import Reveal from '@/components/home/Reveal';
 import TradesMarquee from '@/components/home/TradesMarquee';
 import HeroVisual from '@/components/home/HeroVisual';
+import HeroBackdrop from '@/components/home/HeroBackdrop';
+import SectionWave from '@/components/home/SectionWave';
 import CopilotDemo from '@/components/home/CopilotDemo';
 import {
   ArrowRight,
@@ -164,11 +166,7 @@ export default async function LandingPage() {
       <main>
         {/* Hero — editorial scattered-work headline, staggered entrance */}
         <section className="relative overflow-hidden">
-          <div aria-hidden className="pointer-events-none absolute inset-0">
-            <div className="absolute -top-48 left-1/2 -translate-x-1/2 h-[520px] w-[880px] rounded-full bg-lime/[0.3] blur-3xl" />
-            <div className="absolute top-48 -left-48 h-[340px] w-[340px] rounded-full bg-lime/[0.35] blur-3xl" />
-            <div className="absolute top-72 -right-48 h-[340px] w-[340px] rounded-full bg-lime/[0.25] blur-3xl" />
-          </div>
+          <HeroBackdrop />
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-12 md:pt-28 md:pb-16 text-center">
             <p
               className="ej-hero-anim inline-flex items-center gap-2 text-[13px] font-medium text-graphite border border-smoke bg-white/70 backdrop-blur rounded-full px-4 py-1.5 mb-8"
@@ -271,11 +269,22 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* AI Copilot — dark section */}
+        {/* AI Copilot — dark premium section with aurora glow */}
+        <SectionWave fillClass="text-zinc-950" label="Wave divider into the AI copilot section" />
         <section id="copilot" className="relative py-16 md:py-28 bg-zinc-950 text-white scroll-mt-16 overflow-hidden">
           <div aria-hidden className="pointer-events-none absolute inset-0">
-            <div className="absolute -top-32 left-1/4 h-[380px] w-[520px] rounded-full bg-lime/10 blur-3xl" />
-            <div className="absolute bottom-0 right-0 h-[280px] w-[380px] rounded-full bg-lime/[0.08] blur-3xl" />
+            <div
+              className="ej-aurora-blob absolute -top-40 left-[8%] h-[420px] w-[560px] rounded-full bg-lime/[0.13] blur-[100px]"
+              style={{ animationDuration: '30s' }}
+            />
+            <div
+              className="ej-aurora-blob absolute top-1/3 right-[-6rem] h-[380px] w-[420px] rounded-full bg-cyan-500/[0.12] blur-[100px]"
+              style={{ animationDuration: '24s', animationDelay: '-11s' }}
+            />
+            <div
+              className="ej-aurora-blob absolute bottom-[-8rem] left-[38%] h-[300px] w-[480px] rounded-full bg-violet-600/[0.14] blur-[100px]"
+              style={{ animationDuration: '34s', animationDelay: '-19s' }}
+            />
           </div>
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
@@ -335,6 +344,10 @@ export default async function LandingPage() {
             </div>
           </div>
         </section>
+
+        <div className="bg-zinc-950">
+          <SectionWave fillClass="text-paper" flip label="Wave divider out of the AI copilot section" />
+        </div>
 
         {/* Honest stats — Apple rhythm, true numbers only */}
         <section className="py-16 md:py-28">
@@ -556,7 +569,7 @@ export default async function LandingPage() {
         {/* Final CTA */}
         <section className="relative pb-24 md:pb-32 overflow-hidden">
           <div aria-hidden className="pointer-events-none absolute inset-0">
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[300px] w-[700px] rounded-full bg-lime/[0.25] blur-3xl" />
+            <div className="ej-blob absolute bottom-[-6rem] left-1/2 ml-[-360px] h-[320px] w-[720px] bg-lime/[0.28] blur-3xl" />
           </div>
           <div className="relative max-w-3xl mx-auto px-4 sm:px-6 text-center">
             <Reveal>
