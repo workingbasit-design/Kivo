@@ -27,8 +27,7 @@ export default function DeletePartButton({
     startTransition(async () => {
       const res = await deletePart(id);
       if (res.ok) {
-        router.push('/inventory');
-        router.refresh();
+        window.location.href = '/inventory';
       } else {
         setError(res.error ?? T('deleteFailed'));
       }

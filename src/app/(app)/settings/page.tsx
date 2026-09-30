@@ -72,6 +72,11 @@ export default async function SettingsPage() {
     },
   });
 
+  const bookingPage = await prisma.bookingPage.findUnique({
+    where: { businessId },
+    select: { slug: true, enabled: true },
+  });
+
   let specialtiesText = '';
   try {
     const parsed = JSON.parse(business.specialties ?? '[]');
@@ -114,6 +119,28 @@ export default async function SettingsPage() {
         </p>
         <Link href="/settings/payments" className={secondaryBtnClass}>
           {tr('t10misc.settingsMain.managePayments')}
+        </Link>
+      </Card>
+      <Card className="p-5 md:p-6">
+        <h2 className="text-sm font-bold text-zinc-900 mb-1">{tr('t10misc.booking.pageTitle')}</h2>
+        <p className="text-xs text-zinc-500 mb-4">
+          {tr('t10misc.booking.pageSubtitle')}
+        </p>
+        {bookingPage?.enabled && bookingPage.slug ? (
+          <div className="mb-4 p-3 bg-zinc-50 rounded-lg border border-zinc-200">
+            <p className="text-[11px] text-zinc-500 mb-1">{tr('t10misc.booking.publicUrlLabel')}</p>
+            <a
+              href={`/book/${bookingPage.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium text-blue-600 hover:text-blue-800 break-all"
+            >
+              {`/book/${bookingPage.slug}`}
+            </a>
+          </div>
+        ) : null}
+        <Link href="/settings/booking" className={secondaryBtnClass}>
+          {tr('t10misc.booking.pageTitle')}
         </Link>
       </Card>
       {/* Phase 1: Automations is deferred. The /settings/automations route

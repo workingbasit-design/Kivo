@@ -85,8 +85,8 @@ export default function JobStatusButtons({
           toast.error(T('statusErrorDelete'));
         } else {
           toast.success(T('statusDeleted'));
-          router.push('/jobs');
-          router.refresh();
+          // Use hard navigation to avoid stale cache after delete
+          window.location.href = '/jobs';
         }
       } catch {
         setError(T('statusErrorDelete'));
