@@ -235,9 +235,24 @@ export function assertTenantScope(params: GuardParams): void {
 
   const where = params.args?.where as Record<string, unknown> | undefined;
   const businessId = where?.businessId;
-  if (typeof businessId !== 'string' || businessId.length === 0) {
-    throw new TenantScopeError(model, action);
+  if (typeof businessId === 'string' && businessId.length > 0) {
+    return;
   }
+  // SavedPro and QuoteRequest are dual-scoped: businesses query by businessId,
+  // customers query by customerId. Allow customer-scoped reads for these models.
+  // (Customer actions always scope by the session's customerId; see customer-*.ts)
+  if ((model === 'SavedPro' || model === 'QuoteRequest')) {
+    const customerId = where?.customerId;
+    if (typeof customerId === 'string' && customerId.length > 0) {
+      return;
+    }
+    // Compound unique key: { customerId_businessId: { customerId, businessId } }
+    const compound = where?.customerId_businessId as Record<string, unknown> | undefined;
+    if (compound && typeof compound.customerId === 'string' && (compound.customerId as string).length > 0) {
+      return;
+    }
+  }
+  throw new TenantScopeError(model, action);
 }
 
 /**
