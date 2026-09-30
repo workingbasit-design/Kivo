@@ -93,5 +93,39 @@ export async function GET(req: NextRequest) {
       issues: parsed.success ? null : parsed.error.issues[0]?.message,
     };
   }
-  return NextResponse.json({ rows, probe, zodProbe });
+  // Booking-probe cleanup: finds the "Night Booking Probe" customer + jobs
+  // created by the public-booking QA submit under slug e2e-phase7-shop
+  // (belongs to a different business than the signed-in QA account) and
+  // deletes them. ?cleanupbooking=1 to run.
+  let bookingCleanup: unknown = null;
+  if (req.nextUrl.searchParams.get('cleanupbooking') === '1') {
+    const page = await prismaUnscoped.bookingPage.findUnique({
+      where: { slug: 'e2e-phase7-shop' },
+      select: { businessId: true, business: { select: { name: true } } },
+    });
+    if (!page) {
+      bookingCleanup = { error: 'slug not found' };
+    } else {
+      const customers = await prismaUnscoped.customer.findMany({
+        where: { businessId: page.businessId, name: 'Night Booking Probe' },
+        select: { id: true, name: true, phone: true, notes: true },
+      });
+      const deleted: Array<{ customer: string; jobs: string[] }> = [];
+      for (const c of customers) {
+        const jobs = await prismaUnscoped.job.findMany({
+          where: { businessId: page.businessId, customerId: c.id },
+          select: { id: true, title: true, status: true },
+        });
+        await prismaUnscoped.job.deleteMany({
+          where: { businessId: page.businessId, customerId: c.id },
+        });
+        await prismaUnscoped.customer.delete({
+          where: { id: c.id },
+        });
+        deleted.push({ customer: `${c.name} (${c.phone})`, jobs: jobs.map((j) => `${j.title} [${j.status}]`) });
+      }
+      bookingCleanup = { business: page.business.name, deleted };
+    }
+  }
+  return NextResponse.json({ rows, probe, zodProbe, bookingCleanup });
 }
