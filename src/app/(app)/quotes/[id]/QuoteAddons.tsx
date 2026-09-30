@@ -162,9 +162,9 @@ export default function QuoteAddons({
                     <span className="text-[11px] font-semibold text-graphite">{s.priceLabel}</span>
                     <input
                       name="price"
-                      type="number"
-                      min="0"
-                      step="0.01"
+                      type="text"
+                      inputMode="decimal"
+                      pattern="[0-9]*\.?[0-9]*"
                       defaultValue={a.price}
                       required
                       className="mt-1 w-full rounded-lg border border-smoke px-3 py-2.5 min-h-[44px] text-sm focus:border-ink focus:outline-none"
@@ -289,9 +289,9 @@ export default function QuoteAddons({
                   <span className="text-[11px] font-semibold text-graphite">{s.priceLabel}</span>
                   <input
                     name="price"
-                    type="number"
-                    min="0"
-                    step="0.01"
+                    type="text"
+                    inputMode="decimal"
+                    pattern="[0-9]*\.?[0-9]*"
                     required
                     placeholder="0.00"
                     className="mt-1 w-full rounded-lg border border-smoke bg-white px-3 py-2.5 min-h-[44px] text-sm focus:border-ink focus:outline-none"

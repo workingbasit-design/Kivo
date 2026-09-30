@@ -52,10 +52,9 @@ export default function RecordDepositForm({
             <Field label={t(locale, 'quoteItems.deposit.amount')}>
               <input
                 name="amount"
-                type="number"
-                min="0.01"
-                step="0.01"
-                max={maxAmount}
+                type="text"
+                inputMode="decimal"
+                pattern="[0-9]*\.?[0-9]*"
                 required
                 placeholder="0.00"
                 className={inputClass}

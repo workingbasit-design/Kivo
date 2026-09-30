@@ -108,9 +108,9 @@ export default function QuoteDepositCard({
         <Field label={t(locale, 'payments.depositRequired')}>
           <input
             name="depositAmount"
-            type="number"
-            min="0"
-            step="0.01"
+            type="text"
+            inputMode="decimal"
+            pattern="[0-9]*\.?[0-9]*"
             defaultValue={target > 0 ? target.toFixed(2) : ''}
             placeholder="0.00"
             className={`${inputClass} w-36`}
@@ -154,7 +154,7 @@ export default function QuoteDepositCard({
           <input type="hidden" name="quoteId" value={quoteId} />
           <div className="grid grid-cols-2 gap-3">
             <Field label={t(locale, 'payments.colAmount')}>
-              <input name="amount" type="number" min="0.01" step="0.01" required className={inputClass} />
+              <input name="amount" type="text" inputMode="decimal" pattern="[0-9]*\.?[0-9]*" required className={inputClass} />
             </Field>
             <Field label={t(locale, 'payments.colMethod')}>
               <select name="provider" required className={inputClass} defaultValue="">

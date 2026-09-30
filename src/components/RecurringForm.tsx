@@ -172,11 +172,11 @@ export default function RecurringForm({
 
         <Field label={T('recurFormPrice').replace('{symbol}', currencySymbol(currency))}>
           <input
-            type="number"
+            type="text"
+            inputMode="decimal"
+            pattern="[0-9]*\.?[0-9]*"
             name="price"
             required
-            min={0}
-            step="0.01"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
             placeholder={T('recurFormPricePlaceholder')}

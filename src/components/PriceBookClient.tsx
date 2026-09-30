@@ -320,11 +320,11 @@ export default function PriceBookClient({
               label={tr('t10misc.pricebook.flatRate').replace('{symbol}', currencySymbol(currency))}
             >
               <input
-                type="number"
+                type="text"
+                inputMode="decimal"
+                pattern="[0-9]*\.?[0-9]*"
                 required
                 placeholder={tr('t10misc.pricebook.flatRatePlaceholder')}
-                min={0}
-                step="0.01"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 className={inputClass}

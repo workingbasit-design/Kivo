@@ -107,10 +107,9 @@ export default function InvoiceActions({
             <Field label={`${t(locale, 't10money.invAmount')} ${currencySymbol(currency)}`}>
               <input
                 name="amount"
-                type="number"
-                min={0.01}
-                max={remaining}
-                step="0.01"
+                type="text"
+                inputMode="decimal"
+                pattern="[0-9]*\.?[0-9]*"
                 required
                 defaultValue={remaining}
                 className={inputClass}

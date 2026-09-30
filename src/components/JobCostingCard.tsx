@@ -245,10 +245,9 @@ function RateForm({
         <input type="hidden" name="jobId" value={jobId} />
         <input
           name="rate"
-          type="number"
-          min="0"
-          step="0.01"
+          type="text"
           inputMode="decimal"
+          pattern="[0-9]*\.?[0-9]*"
           placeholder={t(locale, 'jobops.costing.ratePlaceholder')}
           defaultValue={current !== null ? String(current) : ''}
           className={`${jInputClass} flex-1 min-w-0`}

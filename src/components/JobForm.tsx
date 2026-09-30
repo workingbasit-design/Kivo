@@ -180,14 +180,13 @@ export default function JobForm({
         <Field label={T('formPriceLabel').replace('{symbol}', currencySymbol(currency))}>
           <input
             autoComplete="off"
-            type="number"
+            type="text"
+            inputMode="decimal"
+            pattern="[0-9]*\.?[0-9]*"
             name="price"
             required
-            min={0}
-            step="0.01"
             defaultValue={initial?.price ?? ''}
             placeholder="0"
-            inputMode="decimal"
             className={inputClass}
             // Normalize float artifacts (e.g. 149.99000549316406) on blur so
             // the displayed value always matches the cents-rounded save.

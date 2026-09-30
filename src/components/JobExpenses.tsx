@@ -185,10 +185,9 @@ function AddExpenseForm({ jobId, locale }: { jobId: string; locale: Locale }) {
           </label>
           <input
             name="amount"
-            type="number"
-            min="0.01"
-            step="0.01"
+            type="text"
             inputMode="decimal"
+            pattern="[0-9]*\.?[0-9]*"
             required
             placeholder="0.00"
             className={jInputClass}

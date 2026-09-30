@@ -158,10 +158,9 @@ export default function InvoiceForm({
             <div className="flex gap-2">
               <input
                 name="taxRate"
-                type="number"
-                min={0}
-                max={100}
-                step="0.001"
+                type="text"
+                inputMode="decimal"
+                pattern="[0-9]*\.?[0-9]*"
                 value={taxRate}
                 onChange={(e) => setTaxRate(Number(e.target.value) || 0)}
                 className={inputClass}
