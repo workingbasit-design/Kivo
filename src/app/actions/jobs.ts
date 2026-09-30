@@ -112,7 +112,7 @@ export async function createJob(
       date: parseDateInput(parsed.data.date),
       time: parsed.data.time || null,
       address: parsed.data.address || null,
-      price: Math.round(parsed.data.price * 100) / 100, // cents (2026-09-24)
+      price: Number(parsed.data.price.toFixed(2)), // cents, avoids float artifacts
       status: 'SCHEDULED',
       notes: parsed.data.notes || null,
       technician: parsed.data.technician || null,
@@ -198,7 +198,7 @@ export async function updateJob(
       date: parseDateInput(parsed.data.date),
       time: parsed.data.time || null,
       address: parsed.data.address || null,
-      price: Math.round(parsed.data.price * 100) / 100, // cents (2026-09-24)
+      price: Number(parsed.data.price.toFixed(2)), // cents, avoids float artifacts
       notes: parsed.data.notes || null,
       technician: parsed.data.technician || null,
     },
