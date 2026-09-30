@@ -24,7 +24,6 @@ export type CopilotIntent =
   | 'draft_reminder'
   | 'help'
   | 'calculate'
-  | 'refuse_destructive'
   | 'unknown';
 
 export interface JobDraft {
@@ -355,8 +354,6 @@ const NAME_STOPWORDS = new Set([
   'house', 'home', 'shop', 'office', 'place',
   'the', 'a', 'an', 'guy', 'man', 'woman', 'person', 'someone', 'anyone',
   'my', 'our', 'their', 'his', 'her',
-  // Vague placeholders — never a real service ("schedule something" -> ask, don't invent "Something")
-  'something', 'anything', 'thing', 'things', 'stuff',
   // French fillers
   'pour', 'chez', 'avec', 'sans', 'dans', 'sur', 'demain', 'aujourdhui',
   'le', 'la', 'les', 'un', 'une', 'des', 'du', 'de', 'mon', 'ma', 'mes', 'son', 'sa',
@@ -443,9 +440,7 @@ function extractCustomTitle(raw: string): string | null {
   // Must be meaningful (2+ chars, not just stopwords)
   if (text.length < 2) return null;
   const words = text.toLowerCase().split(/\s+/);
-  const meaningful = words.filter(
-    (w) => !NAME_STOPWORDS.has(w) && !/^\d+$/.test(w) && !/^\d+(st|nd|rd|th)$/.test(w)
-  );
+  const meaningful = words.filter(w => !NAME_STOPWORDS.has(w));
   if (meaningful.length === 0) return null;
 
   // Preserve user's capitalization (E2E3 stays E2E3); only title-case ALL-CAPS words
@@ -573,18 +568,6 @@ export function extractCustomerName(raw: string): string | null {
     }
   }
 
-  // "Add customer John Smith with phone +14165550123" / "Add customer
-  // John Smith, phone 416-555-0123" — the name sits between "customer"
-  // and a "with"/"phone"/number cue. The m2 pattern above can't handle the
-  // "with phone +..." tail, so capture up to that cue explicitly.
-  const m2b = text.match(
-    /(?:customer|client)\s+([A-Za-z]{2,25}(?:\s+[A-Za-z]{2,25}){0,2})\s+(?:with\s+)?(?:phone|tel|telephone|mobile|cell)?\s*\+?[\d][\d\s\-.()]{5,17}/i
-  );
-  if (m2b) {
-    const name = leadingName(m2b[1].split(/\s+/));
-    if (name) return name;
-  }
-
   // "schedule a Jon for 29th October" / "book Sarah for tomorrow" /
   // "book Sarah 4165551234 for tomorrow" / "planifier Jon pour demain" —
   // the name sits BEFORE the "for"/"pour" cue, anchored on a booking verb
@@ -660,23 +643,6 @@ function isCancellation(text: string): boolean {
   return hasAny(text, [
     ' cancel ', ' cancelled ', ' delete ', ' remove ',
     ' annuler ', ' annule ', ' annulation ', ' supprime ', ' supprimer ',
-  ]);
-}
-
-/**
- * Mass-destructive requests: "delete all my customers", "remove all jobs",
- * "cancel all invoices", etc. These get an explicit refusal, not the generic
- * unknown fallback. Matches a destruction verb + "all" (or equivalent).
- */
-function isMassDestructive(text: string): boolean {
-  const hasDestroyVerb = hasAny(text, [
-    ' delete ', ' remove ', ' cancel ', ' destroy ', ' erase ', ' wipe ',
-    ' supprimer ', ' supprime ', ' effacer ', ' annuler ',
-  ]);
-  if (!hasDestroyVerb) return false;
-  return hasAny(text, [
-    ' all ', ' every ', ' entire ',
-    ' tout ', ' toute ', ' tous ', ' toutes ',
   ]);
 }
 
@@ -770,23 +736,10 @@ export function extractArithmetic(raw: string): { a: number; op: string; b: numb
     .replace(/^(what is|what's|calculate|compute|how much is|combien (fait|font))\s+/i, '')
     .replace(/[×]/g, '*')
     .replace(/÷/g, '/')
-    // "100 times 1.13" / "100 multiplied by 1.13" -> "100 * 1.13"
-    .replace(/\s+(times|multiplied\s+by|x)\s+/gi, ' * ')
     .replace(/,/g, '')
     .trim()
     .replace(/[?.!]+$/, '')
     .trim();
-  // Percentage: "10% of 500" / "10 percent of 500" -> 10 * 500 / 100.
-  // Must run before the binary-op match below.
-  const pct = text.match(/^(-?\d+(?:\.\d+)?)\s*%\s*(?:of|de)\s*(-?\d+(?:\.\d+)?)$/i)
-    ?? text.match(/^(-?\d+(?:\.\d+)?)\s*percent\s*(?:of|de)\s*(-?\d+(?:\.\d+)?)$/i);
-  if (pct) {
-    const a = Number(pct[1]);
-    const b = Number(pct[2]);
-    if (!Number.isFinite(a) || !Number.isFinite(b)) return null;
-    // Represent as a * (b / 100) so the reply reads "10 % of 500 = 50".
-    return { a, op: '%of', b };
-  }
   // The remaining text must be JUST the expression (prevents "2026-09-30"
   // or "book for 5-6 people" from matching).
   const m = text.match(/^(-?\d+(?:\.\d+)?)\s*([+\-*/])\s*(-?\d+(?:\.\d+)?)$/);
@@ -806,7 +759,6 @@ export function computeArithmetic(a: number, op: string, b: number): number | nu
     case '-': result = a - b; break;
     case '*': result = a * b; break;
     case '/': result = b !== 0 ? a / b : NaN; break;
-    case '%of': result = (a / 100) * b; break;
     default: return null;
   }
   if (!Number.isFinite(result)) return null;
@@ -851,10 +803,6 @@ export function extractInvalidDate(raw: string): string | null {
 export function detectIntent(raw: string, followUpName: string | null = null): CopilotIntent {
   const text = ' ' + norm(raw) + ' ';
 
-  // Mass-destructive requests ("delete all my customers", "cancel all jobs")
-  // get an explicit refusal — never the generic "didn't catch that".
-  if (isMassDestructive(text)) return 'refuse_destructive';
-
   // Explicit cancellation — the copilot has no cancel capability, so a
   // cancellation must NEVER book and must not masquerade as a schedule
   // query either ("cancel tomorrow's job" contains "tomorrow"). Ask.
@@ -894,23 +842,6 @@ export function detectIntent(raw: string, followUpName: string | null = null): C
   //    is never misread as a booking. Explicit creation language only.
   if (CREATE_CUSTOMER_RES.some((re) => re.test(norm(raw)))) {
     return 'create_customer';
-  }
-
-  // 0b. Invoice/quote creation — the copilot cannot create invoices or
-  // quotes, so "create an invoice for $500" must NOT become a job preview
-  // with invented service "An Invoice For $500" (2026-09-30 QA). Guide to
-  // the right page instead.
-  if (
-    hasAny(text, [' invoice ', ' invoices ', ' facture ', ' factures ']) &&
-    hasAny(text, [' create ', ' make ', ' new ', ' creer ', ' cree ', ' nouveau ', ' nouvelle '])
-  ) {
-    return 'out_of_scope';
-  }
-  if (
-    hasAny(text, [' quote ', ' quotes ', ' devis ', ' soumission ', ' soumissions ']) &&
-    hasAny(text, [' create ', ' make ', ' new ', ' creer ', ' cree ', ' nouveau ', ' nouvelle '])
-  ) {
-    return 'out_of_scope';
   }
 
   // 1. Payment reminder drafting
