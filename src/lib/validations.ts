@@ -45,7 +45,7 @@ export const jobSchema = z.object({
     .number()
     .min(0, "Price can't be negative")
     .max(10_000_000)
-    .transform((n) => Math.round(n * 100) / 100),
+    .transform((n) => Number(n.toFixed(2))),
   status: z.enum(JOB_STATUSES).default("SCHEDULED"),
   notes: z.string().trim().max(2000).optional().default(""),
   technician: z.string().trim().max(120).optional().default(""),
@@ -58,7 +58,7 @@ export const serviceSchema = z.object({
     .number()
     .min(0, "Price can't be negative")
     .max(10_000_000)
-    .transform((n) => Math.round(n * 100) / 100),
+    .transform((n) => Number(n.toFixed(2))),
 });
 
 export const quoteSchema = z.object({
@@ -68,7 +68,7 @@ export const quoteSchema = z.object({
     .number()
     .min(0, "Total can't be negative")
     .max(10_000_000)
-    .transform((n) => Math.round(n * 100) / 100),
+    .transform((n) => Number(n.toFixed(2))),
   status: z.enum(QUOTE_STATUSES).default("DRAFT"),
 });
 
@@ -79,7 +79,7 @@ export const invoiceSchema = z.object({
     .number()
     .min(0)
     .max(10_000_000)
-    .transform((n) => Math.round(n * 100) / 100),
+    .transform((n) => Number(n.toFixed(2))),
   taxRate: z.coerce.number().min(0).max(100).default(0),
   taxType: z.string().trim().max(20).optional().default("GST"),
   notes: z.string().trim().max(2000).optional().default(""),
@@ -91,7 +91,7 @@ export const paymentSchema = z.object({
     .number()
     .positive("Amount must be positive")
     .max(10_000_000)
-    .transform((n) => Math.round(n * 100) / 100),
+    .transform((n) => Number(n.toFixed(2))),
   provider: z.enum(["CASH", "INTERAC", "CHEQUE", "STRIPE"]).default("CASH"),
   transactionId: z.string().trim().max(200).optional().default(""),
 });
@@ -129,7 +129,7 @@ export const recurringSchema = z.object({
     .number()
     .min(0, "Price can't be negative")
     .max(10_000_000)
-    .transform((n) => Math.round(n * 100) / 100),
+    .transform((n) => Number(n.toFixed(2))),
   notes: z.string().trim().max(2000).optional().default(""),
 });
 
