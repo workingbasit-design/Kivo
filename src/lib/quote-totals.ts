@@ -18,7 +18,7 @@ export interface QuoteTotals {
   total: number;
 }
 
-const round2 = (n: number) => Math.round(n * 100) / 100;
+const round2 = (n: number) => Number(n.toFixed(2));
 
 export function computeQuoteTotals(
   items: { qty: number; unitPrice: number }[],

@@ -74,7 +74,7 @@ function checkLimit(key: string): ActionResult | null {
   return null;
 }
 
-const round2 = (n: number) => Math.round(n * 100) / 100;
+const round2 = (n: number) => Number(n.toFixed(2));
 
 /** Next INV-0001 style number, scoped per business, retry-safe. */
 async function nextInvoiceNumber(businessId: string): Promise<string> {

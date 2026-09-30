@@ -95,7 +95,7 @@ export async function buildExportCsv(businessId: string, type: ExportType): Prom
         rows.map((i) => [
           i.number, i.customer.name, i.status, i.subtotal, i.taxAmount, i.total, i.taxType, i.taxRate, d(i.date), d(i.createdAt),
           summarizeLineItems(i.lineItems),
-          Math.round(i.payments.reduce((s, p) => s + p.amount, 0) * 100) / 100,
+          Number((i.payments.reduce((s, p) => s + p.amount, 0)).toFixed(2)),
         ])
       );
     }

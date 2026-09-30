@@ -195,8 +195,8 @@ export async function draftPaymentReminder(
   });
   if (!invoice) return { error: 'Invoice not found.' };
 
-  const paid = Math.round(invoice.payments.reduce((s, p) => s + p.amount, 0) * 100) / 100;
-  const remaining = Math.round((invoice.total - paid) * 100) / 100;
+  const paid = Number((invoice.payments.reduce((s, p) => s + p.amount, 0)).toFixed(2));
+  const remaining = Number(((invoice.total - paid)).toFixed(2));
   if (remaining <= 0) return { error: 'This invoice is already fully paid.' };
 
   const interacLine = invoice.business.interacEmail

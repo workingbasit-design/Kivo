@@ -24,7 +24,7 @@ export type BatchPreviewResult = { error?: string; rows?: BatchPreviewRow[] };
 export type ConfirmBatchResult = { error?: string; ok?: boolean; created?: number };
 export type MilestoneResult = { error?: string; ok?: boolean; invoiceId?: string };
 
-const round2 = (n: number) => Math.round(n * 100) / 100;
+const round2 = (n: number) => Number(n.toFixed(2));
 
 async function clientKey(prefix: string): Promise<string> {
   const h = await headers();

@@ -24,7 +24,7 @@ import ReminderDraft from '@/components/ReminderDraft';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import SmsButton from '@/components/SmsButton';
 
-const round2 = (n: number) => Math.round(n * 100) / 100;
+const round2 = (n: number) => Number(n.toFixed(2));
 
 export default async function InvoiceDetailPage({
   params,
@@ -55,8 +55,8 @@ export default async function InvoiceDetailPage({
 
   const shareState = await getInvoiceShareState(invoice.id);
 
-  const paid = Math.round(invoice.payments.reduce((s, p) => s + p.amount, 0) * 100) / 100;
-  const remaining = Math.round((invoice.total - paid) * 100) / 100;
+  const paid = Number((invoice.payments.reduce((s, p) => s + p.amount, 0)).toFixed(2));
+  const remaining = Number(((invoice.total - paid)).toFixed(2));
   // Usual 30-day payment terms — the Invoice model stores no contractual
   // due date, so this is a follow-up hint, not a legal state.
   const overdue =

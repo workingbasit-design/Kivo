@@ -89,8 +89,8 @@ export default async function RemindersPage() {
 
   const invoices = invoiceRows
     .map((inv) => {
-      const paid = Math.round(inv.payments.reduce((s, p) => s + p.amount, 0) * 100) / 100;
-      const remaining = Math.round((inv.total - paid) * 100) / 100;
+      const paid = Number((inv.payments.reduce((s, p) => s + p.amount, 0)).toFixed(2));
+      const remaining = Number(((inv.total - paid)).toFixed(2));
       return { ...inv, remaining };
     })
     .filter((inv) => inv.remaining > 0);

@@ -95,7 +95,7 @@ export default async function InvoicePortalPage({
 
   const paid = invoice.payments.reduce((s, p) => s + p.amount, 0);
   const balance = Math.max(0, invoice.total - paid);
-  const round2 = (n: number) => Math.round(n * 100) / 100;
+  const round2 = (n: number) => Number(n.toFixed(2));
 
   // Online card payments: only when the business connected Stripe with
   // charges enabled. Live accounts additionally need the owner's explicit

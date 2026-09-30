@@ -11,7 +11,7 @@ import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import SignPrepareClient from './SignPrepareClient';
 
-const round2 = (n: number) => Math.round(n * 100) / 100;
+const round2 = (n: number) => Number(n.toFixed(2));
 
 /** Owner-side: place signature/date/initials fields on the quote document. */
 export default async function SignPreparePage({

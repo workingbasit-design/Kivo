@@ -52,7 +52,7 @@ function parseDiscount(formData: FormData): {
     return { type: null, value: null, error: 'Percentage discounts max out at 100%.' };
   }
   if (value === 0) return { type: null, value: null };
-  return { type: rawType as DiscountType, value: Math.round(value * 100) / 100 };
+  return { type: rawType as DiscountType, value: Number((value).toFixed(2)) };
 }
 
 async function clientKey(prefix: string): Promise<string> {
@@ -313,7 +313,7 @@ export async function recordQuoteDeposit(
   const quote = await ownedQuote(businessId, quoteId);
   if (!quote) return { error: 'Quote not found.' };
 
-  const amount = Math.round(Number(formData.get('amount')) * 100) / 100;
+  const amount = Number((Number(formData.get('amount'))).toFixed(2));
   if (!Number.isFinite(amount) || amount <= 0) {
     return { error: 'Enter an amount greater than 0.' };
   }
@@ -325,7 +325,7 @@ export async function recordQuoteDeposit(
   });
   const alreadyPaid = existing._sum.amount ?? 0;
   if (alreadyPaid + amount > quote.total + 0.009) {
-    const remaining = Math.max(0, Math.round((quote.total - alreadyPaid) * 100) / 100);
+    const remaining = Math.max(0, Number(((quote.total - alreadyPaid)).toFixed(2)));
     return {
       error:
         remaining > 0
