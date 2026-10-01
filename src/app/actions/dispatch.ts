@@ -43,7 +43,7 @@ export async function updateJobStatus(jobId: string, status: string): Promise<Ac
   }
 
   await prisma.job.update({
-    where: { id: jobId },
+    where: { id: jobId, businessId },
     data: { status },
   });
   revalidatePath('/dispatch');
@@ -64,7 +64,7 @@ export async function assignJobTechnician(jobId: string, technicianUserId: strin
 
   if (!technicianUserId) {
     await prisma.job.update({
-      where: { id: jobId },
+      where: { id: jobId, businessId },
       data: { assignedToId: null },
     });
   } else {
@@ -75,7 +75,7 @@ export async function assignJobTechnician(jobId: string, technicianUserId: strin
     });
     if (!member) return { ok: false, error: 'Team member not found' };
     await prisma.job.update({
-      where: { id: jobId },
+      where: { id: jobId, businessId },
       data: { assignedToId: technicianUserId, technician: member.name },
     });
   }
