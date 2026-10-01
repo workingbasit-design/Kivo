@@ -159,5 +159,14 @@ export async function GET(req: NextRequest) {
     }
     artifactProbe = { results };
   }
-  return NextResponse.json({ rows, probe, zodProbe, bookingCleanup, artifactProbe });
+  return NextResponse.json({
+    rows,
+    probe,
+    zodProbe,
+    bookingCleanup,
+    artifactProbe,
+    // Which commit is actually serving this request (baked at build time)?
+    deployedCommit: process.env.VERCEL_GIT_COMMIT_SHA ?? null,
+    vercelEnv: process.env.VERCEL_ENV ?? null,
+  });
 }
