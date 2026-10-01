@@ -3,10 +3,18 @@
 import { redirect } from 'next/navigation';
 import { getCustomerSession } from '@/lib/customer-auth';
 import { prisma } from '@/lib/prisma';
+import { rateLimit, QUOTE_REQUEST_LIMIT } from '@/lib/rate-limit';
+import { leadExpiryDate } from '@/lib/lead-expiry';
 
 export async function sendQuoteRequest(_prev: unknown, formData: FormData) {
   const session = await getCustomerSession();
   if (!session) redirect('/customer/login');
+
+  // Rate limit: quote requests are spam-prone; per logged-in customer.
+  const rl = rateLimit(`customer-quote-request:${session.customer.id}`, QUOTE_REQUEST_LIMIT);
+  if (!rl.ok) {
+    return { error: 'You have sent several requests recently. Please wait a bit before sending more.' };
+  }
 
   const businessId = String(formData.get('businessId') || '');
   const service = String(formData.get('service') || '').trim();
@@ -16,34 +24,55 @@ export async function sendQuoteRequest(_prev: unknown, formData: FormData) {
   if (!service) return { error: 'Please select or enter a service.' };
   if (!description) return { error: 'Please describe what you need.' };
 
-  const business = await prisma.business.findUnique({
-    where: { id: businessId },
+  // Consent gate: quote requests may only target opted-in, VERIFIED
+  // directory businesses. The businessId comes from the client and must
+  // never be trusted on its own — without this check a tampered form could
+  // file requests against businesses that never consented to the directory.
+  const business = await prisma.business.findFirst({
+    where: { id: businessId, directoryOptIn: true, directoryVerifiedAt: { not: null } },
     select: { id: true, name: true },
   });
   if (!business) return { error: 'Business not found.' };
 
   const customer = session.customer;
 
-  // Create the quote request (customer's view)
-  const quoteRequest = await prisma.quoteRequest.create({
-    data: {
+  // Double-submit guard: an identical request from this customer to this
+  // business in the last 2 minutes resolves to the original (no duplicates
+  // from double-taps, refreshes, or retried network calls).
+  const recent = await prisma.quoteRequest.findFirst({
+    where: {
       customerId: customer.id,
       businessId: business.id,
       service,
       description,
-      status: 'sent',
-      messages: {
-        create: {
-          senderType: 'customer',
-          body: description,
+      createdAt: { gte: new Date(Date.now() - 2 * 60 * 1000) },
+    },
+    select: { id: true },
+    orderBy: { createdAt: 'desc' },
+  });
+  if (recent) redirect(`/customer/requests/${recent.id}`);
+
+  // One transaction: the customer's quote request (+ opening message) and
+  // the business's lead draft are created together or not at all. A lead
+  // write failure no longer fails silently while the customer sees success.
+  const quoteRequest = await prisma.$transaction(async (tx) => {
+    const qr = await tx.quoteRequest.create({
+      data: {
+        customerId: customer.id,
+        businessId: business.id,
+        service,
+        description,
+        status: 'sent',
+        messages: {
+          create: {
+            senderType: 'customer',
+            body: description,
+          },
         },
       },
-    },
-  });
+    });
 
-  // Create a lead for the business (pro's view)
-  await prisma.lead
-    .create({
+    await tx.lead.create({
       data: {
         name: customer.name || customer.email,
         phone: customer.phone,
@@ -52,10 +81,12 @@ export async function sendQuoteRequest(_prev: unknown, formData: FormData) {
         status: 'NEW',
         source: 'Directory',
         businessId: business.id,
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        expiresAt: leadExpiryDate(),
       },
-    })
-    .catch(() => {});
+    });
+
+    return qr;
+  });
 
   redirect(`/customer/requests/${quoteRequest.id}`);
 }
