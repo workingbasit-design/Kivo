@@ -15,6 +15,7 @@
  * the original proposal instead of creating a duplicate.
  */
 import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
 import { rateLimit } from '@/lib/rate-limit';
 import {
@@ -200,30 +201,26 @@ export async function POST(req: Request) {
   }
 
   // 8. Create the PENDING proposal. Nothing reaches the business yet.
-  // Unscoped: this is a public protocol endpoint with no tenant session;
-  // the guarded client would fail closed here.
   const confirmToken = generateConfirmToken();
-  const proposal = await unsafeUnscoped('agent:proposal:insert', (db) =>
-    db.agentProposal.create({
-      data: {
-        idempotencyKey,
-        agentName,
-        agentKeyId,
-        businessId: business.id,
-        customerId,
-        customerName,
-        customerPhone,
-        customerEmail,
-        customerCity,
-        service: input.service,
-        description: input.description,
-        status: 'pending',
-        confirmToken,
-        expiresAt: proposalExpiry(),
-      },
-      select: { id: true, status: true, expiresAt: true, service: true },
-    })
-  );
+  const proposal = await prisma.agentProposal.create({
+    data: {
+      idempotencyKey,
+      agentName,
+      agentKeyId,
+      businessId: business.id,
+      customerId,
+      customerName,
+      customerPhone,
+      customerEmail,
+      customerCity,
+      service: input.service,
+      description: input.description,
+      status: 'pending',
+      confirmToken,
+      expiresAt: proposalExpiry(),
+    },
+    select: { id: true, status: true, expiresAt: true, service: true },
+  });
 
   return NextResponse.json(
     {

@@ -6,6 +6,7 @@
  * and only public-safe fields are returned.
  */
 import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
 import { rateLimit } from '@/lib/rate-limit';
 import { AGENT_PROTOCOL_VERSION, AGENT_SEARCH_LIMIT } from '@/lib/agent-protocol';

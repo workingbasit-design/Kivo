@@ -6,6 +6,7 @@
  * no key required (read scope is public data).
  */
 import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
 import { rateLimit } from '@/lib/rate-limit';
 import {

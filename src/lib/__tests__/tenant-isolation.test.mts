@@ -160,38 +160,26 @@ describe('tenant guard allows legitimate queries', () => {
 });
 
 describe('unsafeUnscoped escape hatch', () => {
-  it('lazily initializes the unscoped client when lib/prisma.ts was never evaluated', async () => {
-    // Regression (2026-10-01): bundlers drop lib/prisma.ts from a route's
-    // chunk when nothing in that route's graph *uses* its exports, so the
-    // setUnscopedClient() side effect never ran and every agent API route
-    // 500'd in production with "unscoped client not initialized".
-    // unsafeUnscoped must lazily import lib/prisma.ts instead of throwing.
-    let received: unknown = null;
-    const result = await unsafeUnscoped('lazy-init', async (db) => {
-      received = db;
-      return 'ok';
-    });
-    assert.equal(result, 'ok');
-    assert.ok(
-      received !== null &&
-        typeof (received as { $transaction?: unknown }).$transaction === 'function',
-      'callback must receive the lazily-initialized unscoped Prisma client'
+  it('requires an injected client and hands it to the callback', async () => {
+    // Without injection, it throws instead of silently using a wrong client.
+    assert.throws(
+      () => unsafeUnscoped('no-client', async () => 'x'),
+      /unscoped client not initialized/
     );
 
-    // Inject a mock unguarded client: an explicitly injected client still
-    // takes precedence over the lazily-initialized one.
+    // Inject a mock unguarded client.
     const mockDb = { marker: 'unguarded-mock' } as unknown as Parameters<
       Parameters<typeof unsafeUnscoped>[1]
     >[0];
     setUnscopedClient(mockDb);
 
-    let received2: unknown = null;
-    const result2 = await unsafeUnscoped('test-escape', async (db) => {
-      received2 = db;
+    let received: unknown = null;
+    const result = await unsafeUnscoped('test-escape', async (db) => {
+      received = db;
       return 'ok';
     });
-    assert.equal(result2, 'ok');
-    assert.equal(received2, mockDb, 'callback must receive the injected client');
+    assert.equal(result, 'ok');
+    assert.equal(received, mockDb, 'callback must receive the injected client');
 
     // The guard itself is unchanged: unscoped queries still fail closed
     // when checked directly (the bypass is the separate client, not ALS).
@@ -220,7 +208,7 @@ describe('unsafeUnscoped escape hatch', () => {
       'utf8'
     );
     // unsafeUnscoped must not call .run() on an AsyncLocalStorage.
-    const fnBody = src.slice(src.indexOf('export async function unsafeUnscoped'));
+    const fnBody = src.slice(src.indexOf('export function unsafeUnscoped'));
     assert.ok(
       !/unscopedStore\.run/.test(fnBody),
       'unsafeUnscoped must not use AsyncLocalStorage.run — use the injected client'

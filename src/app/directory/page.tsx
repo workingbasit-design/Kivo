@@ -91,8 +91,31 @@ export default async function DirectoryPage({
 
   const customerSession = await getCustomerSession().catch(() => null);
 
+  // ItemList structured data so search engines (and AI agents that read
+  // structured data) understand the directory contents.
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'EveryJob Directory',
+    itemListElement: results.slice(0, 50).map((b, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      item: {
+        '@type': 'LocalBusiness',
+        name: b.name,
+        address: b.locality ?? undefined,
+        aggregateRating:
+          b.avg !== null ? { '@type': 'AggregateRating', ratingValue: b.avg, reviewCount: b.count } : undefined,
+      },
+    })),
+  };
+
   return (
     <div className="min-h-screen bg-paper font-sans">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <header className="bg-ink text-white">
         <div className="max-w-4xl mx-auto px-4 py-10">
           <div className="ej-anim-fade-up flex items-center gap-3 mb-4">

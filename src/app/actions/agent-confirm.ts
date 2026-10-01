@@ -30,6 +30,7 @@
 
 import { randomBytes } from 'node:crypto';
 import { redirect } from 'next/navigation';
+import { prisma } from '@/lib/prisma';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
 import { PROPOSAL_STATUS, isProposalExpired } from '@/lib/agent-protocol';
 import {
