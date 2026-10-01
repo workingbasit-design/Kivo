@@ -1,10 +1,11 @@
 "use client";
 
 import { useActionState } from 'react';
-import Link from 'next/link';
 import { ArrowLeft, Send, AlertCircle, BadgeCheck } from 'lucide-react';
 import { sendQuoteRequest } from '@/app/actions/customer-requests';
+import { t, type Locale } from '@/lib/i18n';
 import { Field, inputClass, primaryBtnClass } from '@/components/ui';
+import { Avatar, BackLink, Card } from '@/components/customer/ui';
 
 export default function CustomerQuoteForm({
   businessId,
@@ -13,6 +14,7 @@ export default function CustomerQuoteForm({
   services,
   customerName,
   customerPhone,
+  locale,
 }: {
   businessId: string;
   businessName: string;
@@ -20,67 +22,57 @@ export default function CustomerQuoteForm({
   services: string[];
   customerName: string;
   customerPhone: string;
+  locale: Locale;
 }) {
   const [state, formAction, isPending] = useActionState(sendQuoteRequest, { error: '' });
+  const tr = (path: string) => t(locale, path as never);
 
   return (
     <div className="space-y-5">
-      <Link
-        href="/customer"
-        className="inline-flex items-center gap-1 text-sm font-semibold text-zinc-500 hover:text-zinc-800 min-h-[44px]"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Back to search
-      </Link>
-
-      <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 rounded-3xl p-5 text-white shadow-lg shadow-indigo-600/25">
-        <div
-          className="absolute inset-0 opacity-20 pointer-events-none"
-          style={{
-            backgroundImage: 'radial-gradient(circle at 85% 15%, white 0, transparent 35%)',
-          }}
-        />
-        <div className="relative flex items-center gap-3">
-          <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur border border-white/30 flex items-center justify-center shrink-0 overflow-hidden">
-            {logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={logoUrl} alt="" className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-xl font-bold text-white">{businessName.charAt(0).toUpperCase()}</span>
-            )}
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <h1 className="font-bold text-[16px] text-white">{businessName}</h1>
-              <BadgeCheck className="w-4 h-4 text-emerald-300" />
-            </div>
-            <p className="text-xs text-indigo-200">Verified pro · typically responds within a day</p>
-          </div>
-        </div>
+      <div className="ej-anim-fade-up">
+        <BackLink href="/customer">
+          <ArrowLeft className="w-4 h-4 transition-transform duration-300 group-hover:-translate-x-0.5" />
+          {tr('customer.quote.backToSearch')}
+        </BackLink>
       </div>
 
-      <div>
-        <h2 className="text-lg font-bold tracking-tight text-zinc-900">Request a quote</h2>
+      <div className="ej-anim-fade-up" style={{ animationDelay: '60ms' }}>
+        <Card className="p-4">
+          <div className="flex items-center gap-3">
+            <Avatar name={businessName} logoUrl={logoUrl} size="lg" />
+            <div>
+              <div className="flex items-center gap-1.5">
+                <h1 className="font-bold text-[16px] text-zinc-900">{businessName}</h1>
+                <BadgeCheck className="w-4 h-4 text-indigo-600 fill-indigo-100" />
+              </div>
+              <p className="text-xs text-zinc-500">{tr('customer.quote.verifiedPro')} · {tr('customer.quote.respondsWithinDay')}</p>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      <div className="ej-anim-fade-up" style={{ animationDelay: '120ms' }}>
+        <h2 className="text-lg font-bold tracking-tight text-zinc-900">{tr('customer.quote.title')}</h2>
         <p className="text-sm text-zinc-500 mt-0.5">
-          Describe what you need — it's free and takes less than a minute.
+          {tr('customer.quote.hint')}
         </p>
       </div>
 
       <form action={formAction} className="space-y-4">
         <input type="hidden" name="businessId" value={businessId} />
 
-        <Field label="What service do you need?">
+        <Field label={tr('customer.quote.whatService')}>
           {services.length > 0 ? (
             <select name="service" required className={inputClass} defaultValue="">
               <option value="" disabled>
-                Select a service…
+                {tr('customer.quote.selectService')}
               </option>
               {services.map((s) => (
                 <option key={s} value={s}>
                   {s}
                 </option>
               ))}
-              <option value="Other">Other</option>
+              <option value="Other">{tr('customer.quote.other')}</option>
             </select>
           ) : (
             <input
@@ -93,13 +85,13 @@ export default function CustomerQuoteForm({
           )}
         </Field>
 
-        <Field label="Describe the job">
+        <Field label={tr('customer.quote.describeJob')}>
           <textarea
             name="description"
             rows={4}
             maxLength={2000}
             required
-            placeholder="Tell the pro what you need, when, and any details…"
+            placeholder={tr('customer.quote.describePlaceholder')}
             className={`${inputClass} resize-none`}
           />
         </Field>
@@ -116,11 +108,11 @@ export default function CustomerQuoteForm({
 
         <button type="submit" disabled={isPending} className={primaryBtnClass}>
           <Send className="w-4 h-4" />
-          {isPending ? 'Sending…' : 'Send quote request'}
+          {isPending ? tr('customer.quote.sending') : tr('customer.quote.send')}
         </button>
 
         <p className="text-xs text-zinc-400 text-center">
-          Free for you. The pro receives your request as a lead.
+          {tr('customer.quote.freeNote')}
         </p>
       </form>
     </div>

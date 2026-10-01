@@ -1,10 +1,12 @@
 import { requireCustomerAuth } from '@/lib/customer-auth';
 import { prisma } from '@/lib/prisma';
+import { getLocale } from '@/lib/i18n/server';
 import { localityFromAddress, isPhoneVerified, ratingSummary } from '@/lib/directory';
 import SavedProsClient from './saved-client';
 
 export default async function CustomerSavedPage() {
   const session = await requireCustomerAuth();
+  const locale = await getLocale();
 
   const saved = await prisma.savedPro.findMany({
     where: { customerId: session.customer.id },
@@ -42,5 +44,5 @@ export default async function CustomerSavedPage() {
     };
   });
 
-  return <SavedProsClient initialPros={pros} />;
+  return <SavedProsClient initialPros={pros} locale={locale} />;
 }
