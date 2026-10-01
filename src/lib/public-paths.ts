@@ -18,6 +18,8 @@ export const PUBLIC_PATHS = [
   '/forgot-password',
   '/terms',
   '/privacy',
+  '/agents',
+  '/.well-known/everyjob.json',
 ];
 
 // Public client-facing routes: online booking + magic-link portals (unguessable ids)
@@ -28,6 +30,11 @@ export const PUBLIC_PATHS = [
 // with no account — the unguessable token is the only capability.
 // '/reset-password/' must stay public: the emailed reset link is opened by
 // logged-out users; bouncing them to /login would break password recovery.
+// '/a/' must stay public: agent-proposal confirmation links are opened by
+// the customer with no account — the unguessable token is the capability.
+// '/api/agent/' must stay public: the Agent Protocol's machine-readable
+// surface (search, pro profiles, proposals, status) is public by design;
+// every write still needs the human's confirmation link.
 export const PUBLIC_PREFIXES = [
   '/book/',
   '/q/',
@@ -39,6 +46,8 @@ export const PUBLIC_PREFIXES = [
   '/track/',
   '/rev/',
   '/reset-password/',
+  '/a/',
+  '/api/agent/',
 ];
 
 export const PUBLIC_EXACT_EXTRA = [
