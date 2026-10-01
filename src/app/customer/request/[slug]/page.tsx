@@ -1,7 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
 import { requireCustomerAuth } from '@/lib/customer-auth';
 import { prisma } from '@/lib/prisma';
-import { getLocale } from '@/lib/i18n/server';
 import CustomerQuoteForm from './form';
 
 /**
@@ -31,7 +30,6 @@ export default async function CustomerQuoteRequestPage({
   });
 
   if (!business) notFound();
-  const locale = await getLocale();
 
   return (
     <CustomerQuoteForm
@@ -41,7 +39,6 @@ export default async function CustomerQuoteRequestPage({
       services={business.services.map((s) => s.name)}
       customerName={session.customer.name || ''}
       customerPhone={session.customer.phone || ''}
-      locale={locale}
     />
   );
 }

@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation';
 import { requireCustomerAuth } from '@/lib/customer-auth';
 import { prisma } from '@/lib/prisma';
-import { getLocale } from '@/lib/i18n/server';
 import {
   matchesCity,
   matchesServiceKeyword,
@@ -24,7 +23,6 @@ export default async function CustomerHomePage({
 }) {
   const session = await requireCustomerAuth();
   const { q = '', city = '' } = await searchParams;
-  const locale = await getLocale();
 
   // Default city to the customer's saved city
   const effectiveCity = city || session.customer.city || '';
@@ -86,7 +84,6 @@ export default async function CustomerHomePage({
       initialCity={effectiveCity}
       savedIds={Array.from(savedIds)}
       customerName={session.customer.name?.split(' ')[0] || 'there'}
-      locale={locale}
     />
   );
 }
