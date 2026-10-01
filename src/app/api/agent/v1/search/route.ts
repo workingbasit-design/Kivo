@@ -12,6 +12,7 @@ import {
   AGENT_PROTOCOL_VERSION,
   AGENT_SEARCH_LIMIT,
   agentSearchSchema,
+  gateAgentContact,
 } from '@/lib/agent-protocol';
 import {
   localityFromAddress,
@@ -79,8 +80,7 @@ export async function GET(req: Request) {
         // Respect the business's public-profile choice: a pro that hid its
         // number on the booking page must not have it (or WhatsApp, which
         // routes to the same number) exposed to anonymous agent callers.
-        phone: b.bookingPage!.showPhone ? b.phone : null,
-        whatsapp: b.bookingPage!.showPhone ? b.whatsappNumber : null,
+        ...gateAgentContact(b.bookingPage!.showPhone, b.phone, b.whatsappNumber),
         regionCode: b.regionCode,
         rating: avg,
         reviewCount: count,

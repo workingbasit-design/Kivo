@@ -11,6 +11,7 @@ import {
   generateAgentKey,
   generateConfirmToken,
   hashAgentKey,
+  gateAgentContact,
   isProposalExpired,
   keyHasScope,
   normalizeAgentName,
@@ -158,4 +159,25 @@ test('buildAgentManifest describes the protocol with absolute URLs', () => {
     (m.rules as string[]).some((r) => r.includes('confirmation')),
     'rules mention confirmation'
   );
+});
+
+// --- gateAgentContact: the showPhone privacy gate shared by both agent routes ---
+
+test('gateAgentContact passes numbers through when showPhone is true', () => {
+  assert.deepEqual(gateAgentContact(true, '5145550100', '15145550100'), {
+    phone: '5145550100',
+    whatsapp: '15145550100',
+  });
+});
+
+test('gateAgentContact nulls phone AND whatsapp when showPhone is false', () => {
+  assert.deepEqual(gateAgentContact(false, '5145550100', '15145550100'), {
+    phone: null,
+    whatsapp: null,
+  });
+});
+
+test('gateAgentContact never invents a number when the business has none', () => {
+  assert.deepEqual(gateAgentContact(true, null, null), { phone: null, whatsapp: null });
+  assert.deepEqual(gateAgentContact(false, null, null), { phone: null, whatsapp: null });
 });

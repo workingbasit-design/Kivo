@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { Bell, LogOut, ChevronDown, SlidersHorizontal } from 'lucide-react';
 import EveryJobLogo from '@/components/EveryJobLogo';
 import PaletteTrigger from '@/components/PaletteTrigger';
+import { LanguageToggle } from '@/components/LanguageToggle';
 import { logout } from '@/app/actions/auth';
 import { formatMoney } from '@/lib/money';
 import { t, type Locale } from '@/lib/i18n';
@@ -198,7 +199,10 @@ export default function AppSidebar({
       </nav>
 
       {/* User profile / Logout */}
-      <div className="p-4 border-t border-white/10 mt-auto">
+      <div className="p-4 border-t border-white/10 mt-auto space-y-3">
+        <div className="flex justify-center">
+          <LanguageToggle current={locale} tone="dark" />
+        </div>
         <form action={logout}>
           <button className="flex items-center gap-3 px-3 py-2.5 text-white/50 hover:bg-white/10 hover:text-white transition-colors rounded-xl w-full text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70">
             <div className="w-9 h-9 rounded-full bg-lime text-ink flex items-center justify-center text-sm font-bold shrink-0">

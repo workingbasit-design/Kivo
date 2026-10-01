@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Bell } from 'lucide-react';
 import EveryJobLogo from '@/components/EveryJobLogo';
 import PaletteTrigger from '@/components/PaletteTrigger';
+import { LanguageToggle } from '@/components/LanguageToggle';
 import { t, type Locale } from '@/lib/i18n';
 
 /**
@@ -18,7 +19,8 @@ export default function MobileNav({ locale = 'en', unreadCount = 0 }: { locale?:
           <EveryJobLogo size={28} />
           <span className="text-lg font-bold tracking-tight">EveryJob</span>
         </Link>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
+          <LanguageToggle current={locale} tone="dark" />
           <PaletteTrigger locale={locale} variant="icon" />
           <Link
             href="/notifications"

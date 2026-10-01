@@ -8,7 +8,7 @@
 import { NextResponse } from 'next/server';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
 import { rateLimit } from '@/lib/rate-limit';
-import { AGENT_PROTOCOL_VERSION, AGENT_SEARCH_LIMIT } from '@/lib/agent-protocol';
+import { AGENT_PROTOCOL_VERSION, AGENT_SEARCH_LIMIT, gateAgentContact } from '@/lib/agent-protocol';
 import {
   isPhoneVerified,
   localityFromAddress,
@@ -86,10 +86,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
       headline: { en: page.headline, fr: page.headlineFr },
       locality: b.directoryHideAddress ? localityFromAddress(b.address) : b.address,
       serviceAreas: page.serviceAreas,
-      phone: page.showPhone ? b.phone : null,
-      // Same gate as phone: WhatsApp exposes the business number, so it
-      // follows the showPhone choice rather than leaking unconditionally.
-      whatsapp: page.showPhone ? b.whatsappNumber : null,
+      // Privacy gate: a pro that hid its number on the booking page must not
+      // have it — or WhatsApp, which routes to the same line — exposed here.
+      ...gateAgentContact(page.showPhone, b.phone, b.whatsappNumber),
       phoneVerified: isPhoneVerified(b.phone, b.whatsappNumber, b.regionCode),
       workingHours: b.workingHours,
       currency: b.currency,

@@ -59,11 +59,11 @@ export function StatusBadge({ status }: { status: string }) {
  * palette stays identical.
  */
 const GLASS_TONES = {
-  zinc: 'bg-zinc-200/50 text-zinc-700',
-  emerald: 'bg-emerald-200/50 text-emerald-700',
-  amber: 'bg-amber-200/50 text-amber-700',
-  blue: 'bg-blue-200/50 text-blue-700',
-  indigo: 'bg-indigo-200/50 text-indigo-700',
+  zinc: 'from-white/60 via-zinc-200/80 to-zinc-400/70 text-zinc-700',
+  emerald: 'from-white/60 via-emerald-200/80 to-emerald-400/70 text-emerald-700',
+  amber: 'from-white/60 via-amber-200/80 to-amber-400/70 text-amber-700',
+  blue: 'from-white/60 via-blue-200/80 to-blue-400/70 text-blue-700',
+  indigo: 'from-white/60 via-indigo-200/80 to-indigo-400/70 text-indigo-700',
 } as const;
 
 export type GlassTone = keyof typeof GLASS_TONES;
@@ -77,9 +77,10 @@ const GLASS_SIZES = {
 /** Full glass treatment as a composable class string (for buttons/links). */
 export function glassClass(tone: GlassTone = 'zinc'): string {
   return cn(
+    'bg-linear-to-br',
     'backdrop-blur-xl backdrop-saturate-150',
-    'ring-1 ring-inset ring-white/70',
-    'shadow-[inset_0_1px_0_rgba(255,255,255,0.9),inset_0_-1px_1px_rgba(0,0,0,0.04),0_10px_20px_-10px_rgba(0,0,0,0.28)]',
+    'ring-1 ring-inset ring-white/80',
+    'shadow-[inset_0_2px_3px_rgba(255,255,255,0.95),inset_0_-3px_6px_rgba(0,0,0,0.08),0_14px_28px_-12px_rgba(0,0,0,0.35)]',
     GLASS_TONES[tone]
   );
 }

@@ -29,7 +29,7 @@ export function useT(): { t: (path: string) => string; locale: Locale } {
 }
 
 /** EN / FR segmented toggle. Renders nothing interactive until hydrated. */
-export function LanguageToggle({ current }: { current: Locale }) {
+export function LanguageToggle({ current, tone = 'light' }: { current: Locale; tone?: 'light' | 'dark' }) {
   const setLocale = (code: Locale) => {
     if (code === current) return;
     // 1-year cookie, readable by server components via getLocale().
@@ -41,11 +41,15 @@ export function LanguageToggle({ current }: { current: Locale }) {
     window.location.reload();
   };
 
+  const dark = tone === 'dark';
+
   return (
     <div
       role="group"
       aria-label="Language / Langue"
-      className="inline-flex rounded-full border border-zinc-200 bg-white p-0.5 text-xs font-bold"
+      className={`inline-flex rounded-full border p-0.5 text-xs font-bold ${
+        dark ? 'border-white/15 bg-white/10' : 'border-zinc-200 bg-white'
+      }`}
     >
       {LOCALES.map((l) => (
         <button
@@ -53,10 +57,14 @@ export function LanguageToggle({ current }: { current: Locale }) {
           type="button"
           onClick={() => setLocale(l.code)}
           aria-pressed={current === l.code}
-          className={`rounded-full px-3 py-1.5 transition-colors ${
+          className={`rounded-full px-3 py-1.5 transition-colors min-h-[32px] ${
             current === l.code
-              ? 'bg-ink text-white shadow-sm'
-              : 'text-zinc-500 hover:text-zinc-900'
+              ? dark
+                ? 'bg-white text-ink shadow-sm'
+                : 'bg-ink text-white shadow-sm'
+              : dark
+                ? 'text-white/60 hover:text-white'
+                : 'text-zinc-500 hover:text-zinc-900'
           }`}
         >
           {l.code.toUpperCase()}

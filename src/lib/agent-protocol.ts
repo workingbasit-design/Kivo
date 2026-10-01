@@ -97,6 +97,24 @@ export function normalizeAgentName(raw: unknown): string {
   return s || 'AI assistant';
 }
 
+/**
+ * Privacy gate for agent-facing contact details. A business that hid its
+ * number on the booking page (showPhone = false) must not have it — or the
+ * WhatsApp number, which routes to the same line — exposed to callers.
+ * Pure: both agent search and the pro-detail route share this gate so a
+ * future change cannot fix one route and leak through the other.
+ */
+export function gateAgentContact(
+  showPhone: boolean,
+  phone: string | null,
+  whatsappNumber: string | null
+): { phone: string | null; whatsapp: string | null } {
+  return {
+    phone: showPhone ? phone : null,
+    whatsapp: showPhone ? whatsappNumber : null,
+  };
+}
+
 /** Directory search query validation. Pure. */
 export const agentSearchSchema = z.object({
   service: z.string().trim().max(80).optional().default(''),

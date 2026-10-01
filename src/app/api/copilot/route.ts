@@ -6,6 +6,7 @@ import { getSession } from '@/lib/auth';
 import { rateLimit } from '@/lib/rate-limit';
 import { runCopilot, type JobDraft, type CustomerDraft, type CopilotHistoryItem } from '@/lib/copilot/engine';
 import { tryAnthropicReply } from '@/lib/copilot/anthropic';
+import { buildConfirmReply } from '@/lib/copilot/confirm-reply';
 import { formatDateShort } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
@@ -161,6 +162,7 @@ export async function POST(req: Request) {
       intent: result.intent,
       dataSummary: summarizeResult(result),
       preview: result.preview,
+      uiLocale: fr ? 'fr' : 'en',
     });
     if (llm) reply = llm;
   }
@@ -526,28 +528,3 @@ async function runConfirm(
   };
 }
 
-function buildConfirmReply(
-  draft: z.infer<typeof confirmSchema>['preview'],
-  customerName: string,
-  duplicate: boolean,
-  currency: string,
-  fr: boolean
-): string {
-  const tr = (en: string, frText: string) => (fr ? frText : en);
-  return (
-    (duplicate
-      ? tr(
-          'This booking was already confirmed — no duplicate job was created.\n\n',
-          'Cette réservation était déjà confirmée — aucun doublon n’a été créé.\n\n'
-        )
-      : tr('Job booked! ✓\n\n', 'Travail réservé! ✓\n\n')) +
-    `${draft.title} — ${customerName}\n` +
-    `${formatDateShort(draft.date)}${draft.time ? `, ${draft.time}` : ''}\n` +
-    `${tr('Price', 'Prix')} : ${
-      draft.price !== null && draft.price !== undefined
-        ? formatMoney(draft.price, currency)
-        : tr('TBD', 'À déterminer')
-    }\n\n` +
-    tr('You can see it on the Schedule page.', 'Vous pouvez le voir sur la page Horaire.')
-  );
-}
