@@ -188,8 +188,24 @@ export function parseTemplateItemLines(raw: unknown, maxItems = 50): string[] {
 
 /** CSV cell escaping: quote cells containing , " or newlines, double inner quotes. */
 export function escapeCsvCell(v: unknown): string {
-  const s = v === null || v === undefined ? '' : String(v);
+  const s = v === null || v === undefined ? '' : String(neutralizeFormulaPrefix(v));
   return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+/**
+ * Spreadsheet formula-injection guard (OWASP "CSV Injection").
+ *
+ * A cell whose value starts with `=`, `+`, `-`, `@` (or tab/CR) becomes a
+ * live formula when the CSV/XLSX is opened in Excel/Sheets — so a customer
+ * name like `=HYPERLINK("https://evil.example","click")` would execute on
+ * open. Prefixing with `'` (the spreadsheet text marker) keeps the cell
+ * displaying exactly the original value while making it unevaluable.
+ * Numbers pass through untouched so money columns stay summable.
+ */
+const FORMULA_PREFIX = /^[=+\-@\t\r]/;
+export function neutralizeFormulaPrefix<T>(v: T): T | string {
+  if (typeof v !== 'string' || v === '') return v;
+  return FORMULA_PREFIX.test(v) ? `'${v}` : v;
 }
 
 /** One-line, accountant-friendly summary of invoice line items. */

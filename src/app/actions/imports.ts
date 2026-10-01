@@ -20,6 +20,28 @@ import {
   type CalendarDraft,
 } from '@/lib/google-calendar';
 import { parseCsv, validateCsvRows, excelRowsToStrings, customerDedupeKey, type CsvType, type CsvRecord, type CustomerRecord, type ServiceRecord, type JobRecord } from '@/lib/csv';
+import { validatePhone } from '@/lib/phone';
+
+/**
+ * Maximum rows per import. Bounds serverless memory/CPU and stays far under
+ * Postgres's 65,535-parameter limit for createMany (~11k rows would break
+ * it). Larger files must be split by the user.
+ */
+const MAX_IMPORT_ROWS = 2000;
+
+function tooManyRowsError(count: number, fr: boolean): ImportActionResult {
+  return {
+    ok: false,
+    errors: [
+      {
+        row: 0,
+        message: fr
+          ? `Trop de lignes (${count}). Maximum ${MAX_IMPORT_ROWS} lignes par importation — divisez le fichier.`
+          : `Too many rows (${count}). Maximum ${MAX_IMPORT_ROWS} rows per import — please split the file.`,
+      },
+    ],
+  };
+}
 import { toISODateLocal, defaultTimezoneForRegion } from '@/lib/utils';
 
 export type ImportActionResult = {
@@ -248,6 +270,7 @@ export async function validateRowsImport(type: CsvType, rows: string[][]): Promi
   if (limited) return limited;
   if (!['customers', 'services', 'jobs'].includes(type)) return { error: 'Invalid type.' };
   const locale = await getLocale();
+  if (rows.length > MAX_IMPORT_ROWS) return tooManyRowsError(rows.length, locale === 'fr');
   const { valid, errors } = validateCsvRows(type, rows, locale === 'fr');
   return { ok: true, valid, errors };
 }
@@ -269,6 +292,7 @@ export async function commitCsvImport(type: CsvType, records: CsvRecord[]): Prom
   if (!['customers', 'services', 'jobs'].includes(type)) return { error: 'Invalid type.' };
   const locale = await getLocale();
   const fr = locale === 'fr';
+  if (records.length > MAX_IMPORT_ROWS) return tooManyRowsError(records.length, fr);
 
   if (type === 'customers' || type === 'services') {
     // Re-validate server-side: never trust the client preview.
@@ -329,10 +353,15 @@ export async function commitCsvImport(type: CsvType, records: CsvRecord[]): Prom
         await prisma.customer.createMany({
           data: toCreate.map((r) => {
             const c = r as CustomerRecord;
+            // phoneNorm is the E.164 matching key used by lead→customer
+            // phone dedupe and WhatsApp links — the UI path sets it, so the
+            // import path must too (rows already passed phone validation).
+            const phoneCheck = validatePhone(c.phone ?? '', 'CA');
             return {
               businessId,
               name: c.name.slice(0, 200),
               phone: c.phone?.slice(0, 50) ?? null,
+              phoneNorm: 'error' in phoneCheck ? null : phoneCheck.digits,
               email: c.email?.slice(0, 200) ?? null,
               address: c.address?.slice(0, 500) ?? null,
               notes: c.notes?.slice(0, 2000) ?? null,
@@ -359,6 +388,20 @@ export async function commitCsvImport(type: CsvType, records: CsvRecord[]): Prom
     revalidatePath('/imports');
     revalidatePath(type === 'customers' ? '/customers' : '/pricebook');
     return { ok: true, imported: toCreate.length, skipped };
+  }
+
+  // Jobs: re-validate server-side first — never trust the client preview.
+  // (Customers/services do this above; the jobs path previously trusted the
+  // client records outright, so a tampered client could store negative
+  // prices and malformed dates threw a 500.)
+  {
+    const { valid: jobsValid, errors: jobsErrors } = validateCsvRows(
+      'jobs',
+      [headerRowFor('jobs'), ...recordsToRows('jobs', records)],
+      fr
+    );
+    if (jobsErrors.length > 0) return { ok: false, errors: jobsErrors };
+    records = jobsValid;
   }
 
   // Jobs: resolve customerMatch → exactly one customer, else row-level error.
@@ -396,6 +439,35 @@ export async function commitCsvImport(type: CsvType, records: CsvRecord[]): Prom
   });
   if (errors.length > 0) return { ok: false, errors };
 
+  // Duplicate-import guard for jobs (customers/services have one above):
+  // the same title for the same customer on the same date is one job.
+  // Covers both re-imported files and internal dupes.
+  let skippedJobs = 0;
+  {
+    const normTitle = (t: string) => t.trim().toLowerCase();
+    const keyOf = (customerId: string, title: string, date: string) =>
+      `${customerId}|${normTitle(title)}|${date}`;
+    const existingJobs = await prisma.job.findMany({
+      where: { businessId },
+      select: { customerId: true, title: true, date: true },
+    });
+    const seen = new Set(
+      existingJobs.map((j) => keyOf(j.customerId, j.title, j.date.toISOString().slice(0, 10)))
+    );
+    const deduped: typeof resolved = [];
+    for (const r of resolved) {
+      const key = keyOf(r.customerId, r.rec.title, r.rec.date);
+      if (seen.has(key)) {
+        skippedJobs += 1;
+        continue;
+      }
+      seen.add(key);
+      deduped.push(r);
+    }
+    resolved.length = 0;
+    resolved.push(...deduped);
+  }
+
   if (resolved.length > 0) {
     await prisma.job.createMany({
       data: resolved.map(({ rec, customerId }) => {
@@ -417,7 +489,7 @@ export async function commitCsvImport(type: CsvType, records: CsvRecord[]): Prom
   }
   revalidatePath('/imports');
   revalidatePath('/jobs');
-  return { ok: true, imported: resolved.length };
+  return { ok: true, imported: resolved.length, skipped: skippedJobs };
 }
 
 /** Helpers to re-run server-side validation on the records the client sends back. */

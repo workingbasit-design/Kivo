@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Download, FileSpreadsheet } from 'lucide-react';
 import { t, type Locale } from '@/lib/i18n';
-import { escapeCsvCell } from '@/lib/costing';
+import { escapeCsvCell, neutralizeFormulaPrefix } from '@/lib/costing';
 import { formatMoney } from '@/lib/money';
 import { secondaryBtnClass } from '@/components/ui';
 
@@ -93,7 +93,11 @@ export default function ExportButtons({
               const n = typeof v === 'number' ? v : Number(v);
               return Number.isFinite(n) ? n : null;
             }
-            return v === undefined ? null : (v as string | number | null);
+            // Neutralize formula injection: a raw string starting with `=`
+            // would become an executable formula cell in Excel (worse than
+            // the CSV case — no quoting ambiguity at all).
+            const cell = v === undefined ? null : (v as string | number | null);
+            return typeof cell === 'string' ? (neutralizeFormulaPrefix(cell) as string) : cell;
           })
         ),
       ];

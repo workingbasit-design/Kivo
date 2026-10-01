@@ -22,6 +22,19 @@ function tryFile(base) {
       /* ignore */
     }
   }
+  // Directory import (e.g. `@/lib/i18n` → `src/lib/i18n/index.ts`).
+  try {
+    if (existsSync(base) && statSync(base).isDirectory()) {
+      for (const ext of ['.ts', '.tsx', '.mts']) {
+        const indexFile = path.join(base, 'index' + ext);
+        if (existsSync(indexFile) && statSync(indexFile).isFile()) {
+          return pathToFileURL(indexFile).href;
+        }
+      }
+    }
+  } catch {
+    /* ignore */
+  }
   return null;
 }
 
