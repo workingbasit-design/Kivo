@@ -238,6 +238,25 @@ export function assertTenantScope(params: GuardParams): void {
   if (typeof businessId === 'string' && businessId.length > 0) {
     return;
   }
+  // Compound unique keys that embed businessId. Prisma requires the compound
+  // input for upsert/findUnique on these models, so there is no top-level
+  // where.businessId — but the embedded businessId scopes the query to one
+  // tenant exactly as well:
+  // - MessageQuota: { businessId_month: { businessId, month } }
+  // - MessagingConnection: { businessId_channel: { businessId, channel } }
+  // (2026-10-01: without this, /settings/messaging crashed to the error
+  // boundary on every load — getMessagingOverview upserts the monthly quota
+  // row — and the messaging scheduler + WhatsApp webhook hit the same wall.)
+  for (const key of ['businessId_month', 'businessId_channel'] as const) {
+    const compound = where?.[key] as Record<string, unknown> | undefined;
+    if (
+      compound &&
+      typeof compound.businessId === 'string' &&
+      (compound.businessId as string).length > 0
+    ) {
+      return;
+    }
+  }
   // SavedPro and QuoteRequest are dual-scoped: businesses query by businessId,
   // customers query by customerId. Allow customer-scoped reads for these models.
   // (Customer actions always scope by the session's customerId; see customer-*.ts)
