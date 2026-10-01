@@ -8,7 +8,7 @@ import { t, type Locale } from '@/lib/i18n';
 import { Field, inputClass, primaryBtnClass } from '@/components/ui';
 import Logo from '@/components/Logo';
 
-export default function CustomerLoginForm({ locale }: { locale: Locale }) {
+export default function CustomerLoginForm({ locale, next }: { locale: Locale; next?: string | null }) {
   const [state, formAction, isPending] = useActionState(customerLogin, { error: '' });
   const tr = (path: string) => t(locale, path as never);
 
@@ -34,6 +34,7 @@ export default function CustomerLoginForm({ locale }: { locale: Locale }) {
           </p>
 
           <form action={formAction} className="space-y-4">
+            {next ? <input type="hidden" name="next" value={next} /> : null}
             <Field label={tr('customer.auth.email')}>
               <input
                 id="email"
