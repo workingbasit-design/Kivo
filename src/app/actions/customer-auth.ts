@@ -44,8 +44,6 @@ export async function customerSignup(_prev: unknown, formData: FormData) {
 export async function customerLogin(_prev: unknown, formData: FormData) {
   const email = String(formData.get('email') || '').trim().toLowerCase();
   const password = String(formData.get('password') || '');
-  const rawNext = String(formData.get('next') || '').trim();
-  const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/customer';
 
   if (!isValidEmail(email) || !password) {
     return { error: 'Please enter your email and password.' };
@@ -57,7 +55,7 @@ export async function customerLogin(_prev: unknown, formData: FormData) {
   }
 
   await createCustomerSession(customer.id);
-  redirect(next);
+  redirect('/customer');
 }
 
 export async function customerLogout() {

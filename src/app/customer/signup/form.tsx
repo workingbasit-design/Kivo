@@ -4,37 +4,33 @@ import Link from 'next/link';
 import { useActionState } from 'react';
 import { UserPlus, AlertCircle, Search } from 'lucide-react';
 import { customerSignup } from '@/app/actions/customer-auth';
-import { t, type Locale } from '@/lib/i18n';
 import { Field, inputClass, primaryBtnClass } from '@/components/ui';
 import Logo from '@/components/Logo';
 
-export default function CustomerSignupForm({ locale }: { locale: Locale }) {
+export default function CustomerSignupForm() {
   const [state, formAction, isPending] = useActionState(customerSignup, { error: '' });
-  const tr = (path: string) => t(locale, path as never);
 
   return (
     <div className="min-h-dvh bg-gradient-to-b from-indigo-50 to-white flex flex-col -m-4 -mt-4">
       <header className="p-4">
-        <Link href="/directory" className="inline-flex items-center gap-2 group">
-          <span className="transition-transform duration-300 group-hover:scale-105 group-active:scale-95 inline-flex">
-            <Logo />
-          </span>
+        <Link href="/directory" className="inline-flex items-center gap-2">
+          <Logo />
         </Link>
       </header>
 
       <main className="flex-1 flex items-center justify-center px-4 pb-12">
-        <div className="ej-anim-fade-up w-full max-w-sm bg-white rounded-3xl border border-zinc-200/70 shadow-xl shadow-zinc-200/50 p-6 sm:p-8">
+        <div className="w-full max-w-sm bg-white rounded-3xl border border-zinc-200/70 shadow-xl shadow-zinc-200/50 p-6 sm:p-8">
           <div className="flex items-center gap-2 text-indigo-600 mb-2">
             <Search className="w-5 h-5" />
-            <span className="text-xs font-bold uppercase tracking-wider">{tr('customer.auth.forCustomers')}</span>
+            <span className="text-xs font-bold uppercase tracking-wider">For customers</span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900">{tr('customer.auth.signupTitle')}</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Find trusted pros</h1>
           <p className="text-sm text-zinc-500 mt-1 mb-6">
-            {tr('customer.auth.signupHint')}
+            One free account to search, save favourites, request quotes, and message local pros.
           </p>
 
           <form action={formAction} className="space-y-4">
-            <Field label={tr('customer.auth.fullName')}>
+            <Field label="Full name">
               <input
                 id="name"
                 name="name"
@@ -46,7 +42,7 @@ export default function CustomerSignupForm({ locale }: { locale: Locale }) {
               />
             </Field>
 
-            <Field label={tr('customer.auth.email')}>
+            <Field label="Email">
               <input
                 id="email"
                 name="email"
@@ -59,7 +55,7 @@ export default function CustomerSignupForm({ locale }: { locale: Locale }) {
             </Field>
 
             <div className="grid grid-cols-2 gap-3">
-              <Field label={tr('customer.auth.phoneOptional')}>
+              <Field label="Phone (optional)">
                 <input
                   id="phone"
                   name="phone"
@@ -69,7 +65,7 @@ export default function CustomerSignupForm({ locale }: { locale: Locale }) {
                   className={inputClass}
                 />
               </Field>
-              <Field label={tr('customer.auth.cityOptional')}>
+              <Field label="City (optional)">
                 <input
                   id="city"
                   name="city"
@@ -81,7 +77,7 @@ export default function CustomerSignupForm({ locale }: { locale: Locale }) {
               </Field>
             </div>
 
-            <Field label={tr('customer.auth.password')}>
+            <Field label="Password">
               <input
                 id="password"
                 name="password"
@@ -89,7 +85,7 @@ export default function CustomerSignupForm({ locale }: { locale: Locale }) {
                 required
                 minLength={8}
                 autoComplete="new-password"
-                placeholder="••••••••"
+                placeholder="At least 8 characters"
                 className={inputClass}
               />
             </Field>
@@ -106,21 +102,21 @@ export default function CustomerSignupForm({ locale }: { locale: Locale }) {
 
             <button type="submit" disabled={isPending} className={primaryBtnClass}>
               <UserPlus className="w-4 h-4" />
-              {isPending ? tr('customer.auth.creatingAccount') : tr('customer.auth.createAccount')}
+              {isPending ? 'Creating account…' : 'Create free account'}
             </button>
           </form>
 
           <p className="text-sm text-zinc-500 mt-6 text-center">
-            {tr('customer.auth.haveAccount')}{' '}
+            Already have an account?{' '}
             <Link href="/customer/login" className="font-semibold text-indigo-600 hover:underline">
-              {tr('customer.auth.logIn')}
+              Log in
             </Link>
           </p>
 
-          <p className="text-xs text-zinc-500 mt-6 text-center">
-            {tr('customer.auth.areYouPro')}{' '}
-            <Link href="/register" className="font-semibold text-indigo-600 hover:underline">
-              {tr('customer.auth.joinAsBusiness')}
+          <p className="text-xs text-zinc-400 mt-4 text-center">
+            Are you a pro?{' '}
+            <Link href="/register" className="font-medium hover:underline">
+              Join as a business
             </Link>
           </p>
         </div>
