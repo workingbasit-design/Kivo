@@ -274,7 +274,7 @@ export async function tenantGuardMiddleware(
  * Logs a warning (non-production) naming the operation so every exemption
  * is greppable: `grep -rn unsafeUnscoped src --include="*.ts"`.
  */
-export function unsafeUnscoped<T>(
+export async function unsafeUnscoped<T>(
   operationName: string,
   fn: (db: PrismaClient) => Promise<T>
 ): Promise<T> {
@@ -289,6 +289,15 @@ export function unsafeUnscoped<T>(
   // UNGUARDED client — the only reliable bypass. The client is injected via
   // setUnscopedClient() (called by lib/prisma.ts) to avoid a circular
   // runtime import; tests inject a mock.
+  //
+  // NOTE (2026-10-01): the injection above only runs when lib/prisma.ts is
+  // actually evaluated. Bundlers drop it from a route's chunk when nothing
+  // in that route's graph *uses* its exports, so unsafeUnscoped 500'd on
+  // every agent API route in production. Fix: lazily import lib/prisma.ts
+  // here (dynamic import keeps the cycle broken) instead of throwing.
+  if (!unscopedClient) {
+    await import('./prisma.ts');
+  }
   if (!unscopedClient) {
     throw new Error(
       '[tenant-guard] unscoped client not initialized — lib/prisma.ts must call setUnscopedClient()'
