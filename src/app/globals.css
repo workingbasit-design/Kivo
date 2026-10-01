@@ -239,23 +239,25 @@ body {
     }
   }
 
-  /* Glassmorphism card — frosted translucent surface, specular top light,
-     soft depth shadow. Radius/padding stay in Tailwind classes; this class
-     owns the glass finish. Original treatment, not an Apple asset. */
+  /* Glassmorphism card — visibly frosted: real translucency, diagonal
+     specular sheen, bright hairline edge, soft depth shadow.
+     Radius/padding stay in Tailwind classes; this class owns the glass
+     finish. Original treatment, not an Apple asset. */
   .ej-glass-card {
     position: relative;
     isolation: isolate;
     background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.75),
-      rgba(255, 255, 255, 0.5)
+      135deg,
+      rgba(255, 255, 255, 0.62),
+      rgba(255, 255, 255, 0.3) 45%,
+      rgba(255, 255, 255, 0.52)
     );
-    backdrop-filter: blur(20px) saturate(150%);
-    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
     box-shadow:
-      0 8px 28px rgba(22, 22, 22, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.7),
-      inset 0 0 0 1px rgba(22, 22, 22, 0.05);
+      0 12px 32px rgba(22, 22, 22, 0.13),
+      inset 0 1px 1px rgba(255, 255, 255, 0.95),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.65);
   }
   .ej-glass-card::before {
     content: "";
@@ -263,11 +265,29 @@ body {
     inset: 0;
     border-radius: inherit;
     background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.5),
-      rgba(255, 255, 255, 0) 30%
+      115deg,
+      rgba(255, 255, 255, 0.7) 0%,
+      rgba(255, 255, 255, 0.14) 28%,
+      rgba(255, 255, 255, 0) 46%
     );
     pointer-events: none;
+  }
+  /* Ambient wash behind the cards — whisper-faint lime/zinc light so the
+     frosted cards have something to refract. The page still reads as the
+     same paper background; the theme is unchanged. */
+  .ej-app-wash {
+    background:
+      radial-gradient(
+        620px 420px at 10% -6%,
+        rgba(190, 242, 38, 0.08),
+        rgba(190, 242, 38, 0) 62%
+      ),
+      radial-gradient(
+        760px 540px at 96% 108%,
+        rgba(63, 63, 70, 0.07),
+        rgba(63, 63, 70, 0) 62%
+      ),
+      #fafaf7;
   }
   /* Desktop-only glass — for containers that are separate cards on mobile
      but merge into one card on md+ screens (e.g. the jobs list). */
@@ -275,16 +295,17 @@ body {
       position: relative;
       isolation: isolate;
       background: linear-gradient(
-        180deg,
-        rgba(255, 255, 255, 0.75),
-        rgba(255, 255, 255, 0.5)
+        135deg,
+        rgba(255, 255, 255, 0.62),
+        rgba(255, 255, 255, 0.3) 45%,
+        rgba(255, 255, 255, 0.52)
       );
-      backdrop-filter: blur(20px) saturate(150%);
-      -webkit-backdrop-filter: blur(20px) saturate(150%);
+      backdrop-filter: blur(24px) saturate(160%);
+      -webkit-backdrop-filter: blur(24px) saturate(160%);
       box-shadow:
-        0 8px 28px rgba(22, 22, 22, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.7),
-        inset 0 0 0 1px rgba(22, 22, 22, 0.05);
+        0 12px 32px rgba(22, 22, 22, 0.13),
+        inset 0 1px 1px rgba(255, 255, 255, 0.95),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.65);
     }
     .ej-glass-card-md::before {
       content: "";
@@ -292,9 +313,10 @@ body {
       inset: 0;
       border-radius: inherit;
       background: linear-gradient(
-        180deg,
-        rgba(255, 255, 255, 0.5),
-        rgba(255, 255, 255, 0) 30%
+        115deg,
+        rgba(255, 255, 255, 0.7) 0%,
+        rgba(255, 255, 255, 0.14) 28%,
+        rgba(255, 255, 255, 0) 46%
       );
       pointer-events: none;
     }
