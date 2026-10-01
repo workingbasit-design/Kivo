@@ -96,14 +96,20 @@ function daysAgo(n: number): Date {
   return d;
 }
 
-export async function getDashboardStats(businessId: string): Promise<DashboardStats> {
+export async function getDashboardStats(
+  businessId: string,
+  biz?: { timezone: string | null; regionCode: string | null } | null
+): Promise<DashboardStats> {
   // "Today" is the business-local calendar day — the server runs on UTC, so
   // a server-local date would show the wrong day's jobs in the evening.
-  const biz = await prisma.business.findUnique({
-    where: { id: businessId },
-    select: { timezone: true, regionCode: true },
-  });
-  const todayStr = todayInTimezone(biz?.timezone, biz?.regionCode);
+  // The caller may pass an already-fetched business row to skip a roundtrip.
+  const b =
+    biz ??
+    (await prisma.business.findUnique({
+      where: { id: businessId },
+      select: { timezone: true, regionCode: true },
+    }));
+  const todayStr = todayInTimezone(b?.timezone, b?.regionCode);
   const { gte: todayStart, lte: todayEnd } = dayRange(todayStr);
   const weekStart = daysAgo(6); // last 7 days incl. today
 

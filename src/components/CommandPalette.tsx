@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Plus, CornerDownLeft } from "lucide-react";
+import { Search, Plus, CornerDownLeft, X } from "lucide-react";
 import { navSections } from "@/components/nav-sections";
 import { t, type Locale } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -86,12 +86,16 @@ export default function CommandPalette({ locale = "en" }: { locale?: Locale }) {
     [close, router]
   );
 
-  // Global shortcut + programmatic open (sidebar / mobile trigger buttons)
+  // Global shortcut + programmatic open (sidebar / mobile trigger buttons).
+  // Escape closes the palette no matter which element has focus.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setOpen((v) => !v);
+      } else if (e.key === "Escape") {
+        setOpen(false);
+        setQuery("");
       }
     };
     const onOpen = () => setOpen(true);
@@ -143,11 +147,12 @@ export default function CommandPalette({ locale = "en" }: { locale?: Locale }) {
     <div
       className="fixed inset-0 z-[90] flex items-start justify-center px-4 pt-[12vh]"
       role="presentation"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) close();
-      }}
     >
-      <div className="absolute inset-0 bg-ink/50 backdrop-blur-[2px]" aria-hidden />
+      <div
+        className="absolute inset-0 bg-ink/50 backdrop-blur-[2px] cursor-pointer"
+        aria-hidden
+        onMouseDown={close}
+      />
       <div
         role="dialog"
         aria-modal="true"
@@ -171,6 +176,14 @@ export default function CommandPalette({ locale = "en" }: { locale?: Locale }) {
           <kbd className="shrink-0 rounded-md border border-zinc-200 bg-zinc-50 px-1.5 py-0.5 text-[10px] font-semibold text-zinc-500">
             ESC
           </kbd>
+          <button
+            type="button"
+            onClick={close}
+            aria-label={locale === "fr" ? "Fermer la recherche" : "Close search"}
+            className="shrink-0 rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition-colors focus-visible:outline-2 focus-visible:outline-lime"
+          >
+            <X size={16} />
+          </button>
         </div>
         <div ref={listRef} id="cmdk-list" role="listbox" className="max-h-[40vh] overflow-y-auto p-2">
           {filtered.length === 0 ? (

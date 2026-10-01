@@ -32,7 +32,7 @@ export function Card({
   style?: React.CSSProperties;
 }) {
   return (
-    <div className={cn('ej-card-lift bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)]', className)} style={style}>
+    <div className={cn('ej-card-lift ej-glass-card rounded-[20px]', className)} style={style}>
       {children}
     </div>
   );
@@ -126,7 +126,7 @@ export function StatCard({
   tone?: GlassTone;
 }) {
   return (
-    <div className="ej-card-lift bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
+    <div className="ej-card-lift ej-glass-card rounded-[20px] p-5">
       <div className="flex items-center justify-between gap-2 mb-3">
         <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 leading-tight text-balance">{label}</p>
         {icon &&

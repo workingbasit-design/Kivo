@@ -205,7 +205,7 @@ export default async function ReportsPage() {
             {/* Team performance shortcut */}
             <Link
               href="/reports/team"
-              className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-zinc-200/60 p-5 flex items-center justify-between gap-4 hover:border-smoke transition-colors"
+              className="lg:col-span-2 ej-glass-card rounded-2xl p-5 flex items-center justify-between gap-4 hover:border-smoke transition-colors"
             >
               <div>
                 <h2 className="text-sm font-bold text-zinc-900">Team performance</h2>

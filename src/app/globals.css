@@ -239,6 +239,76 @@ body {
     }
   }
 
+  /* Glassmorphism card — frosted translucent surface, specular top light,
+     soft depth shadow. Radius/padding stay in Tailwind classes; this class
+     owns the glass finish. Original treatment, not an Apple asset. */
+  .ej-glass-card {
+    position: relative;
+    isolation: isolate;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.75),
+      rgba(255, 255, 255, 0.5)
+    );
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    box-shadow:
+      0 8px 28px rgba(22, 22, 22, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.7),
+      inset 0 0 0 1px rgba(22, 22, 22, 0.05);
+  }
+  .ej-glass-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.5),
+      rgba(255, 255, 255, 0) 30%
+    );
+    pointer-events: none;
+  }
+  /* Desktop-only glass — for containers that are separate cards on mobile
+     but merge into one card on md+ screens (e.g. the jobs list). */
+  @media (min-width: 768px) {    .ej-glass-card-md {
+      position: relative;
+      isolation: isolate;
+      background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.75),
+        rgba(255, 255, 255, 0.5)
+      );
+      backdrop-filter: blur(20px) saturate(150%);
+      -webkit-backdrop-filter: blur(20px) saturate(150%);
+      box-shadow:
+        0 8px 28px rgba(22, 22, 22, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.7),
+        inset 0 0 0 1px rgba(22, 22, 22, 0.05);
+    }
+    .ej-glass-card-md::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.5),
+        rgba(255, 255, 255, 0) 30%
+      );
+      pointer-events: none;
+    }
+    /* Neutralize glass on rows that merge into a glass container on desktop —
+       avoids a pointless backdrop-filter per row. */
+    .ej-glass-plain-md.ej-glass-card,
+    .ej-glass-plain-md.ej-glass-card::before {
+      background: none;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      box-shadow: none;
+    }
+  }
+
   /* Icon hover — calm and precise. The icon breathes slightly on hover;
      no positional jump, so nothing ever feels jittery. Apply to nav
      links, icon buttons, and interactive icons. */

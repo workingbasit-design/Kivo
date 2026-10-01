@@ -59,14 +59,14 @@ export default async function DashboardPage() {
     }
   })();
   const [business] = await Promise.all([
-    prisma.business.findUnique({ where: { id: businessId }, select: { currency: true, logoUrl: true } }),
+    prisma.business.findUnique({ where: { id: businessId }, select: { currency: true, logoUrl: true, timezone: true, regionCode: true } }),
     genPromise,
   ]);
   const currency = business?.currency;
   // Stats, onboarding counts and growth data are mutually independent —
   // one round instead of three.
   const [stats, counts, growth] = await Promise.all([
-    getDashboardStats(businessId),
+    getDashboardStats(businessId, business),
     Promise.all([
       prisma.customer.count({ where: { businessId } }),
       prisma.job.count({ where: { businessId } }),

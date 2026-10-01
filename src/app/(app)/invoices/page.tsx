@@ -1,15 +1,11 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { Plus, FileText, Wallet, Receipt } from 'lucide-react';
 import { getSession } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { prisma } from '@/lib/prisma';
-import { PageHeader, Card, StatusBadge, EmptyState, StatCard, Badge, primaryBtnClass } from '@/components/ui';
-import { formatDateShort, cn } from '@/lib/utils';
-import { formatMoney } from '@/lib/money';
 import { INVOICE_STATUSES } from '@/lib/validations';
-import ExportButtons, { type ExportColumn, type ExportRow } from '@/components/ExportButtons';
+import InvoicesClient, { type InvoiceListItem } from './InvoicesClient';
+import type { ExportColumn } from '@/components/ExportButtons';
 
 const FILTERS = ['ALL', ...INVOICE_STATUSES] as const;
 
@@ -23,18 +19,17 @@ export default async function InvoicesPage({
   const businessId = session.user.businessId;
 
   const { status } = await searchParams;
-  const activeFilter = FILTERS.includes(status as (typeof FILTERS)[number])
+  const initialFilter = FILTERS.includes(status as (typeof FILTERS)[number])
     ? (status as (typeof FILTERS)[number])
     : 'ALL';
   const locale = await getLocale();
 
-  const [business, invoices, aggregates] = await Promise.all([
+  // One fetch for everything: tab switching filters in memory on the client,
+  // so switching tabs never hits the server.
+  const [business, invoiceRows, aggregates] = await Promise.all([
     prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } }),
     prisma.invoice.findMany({
-      where: {
-        businessId,
-        ...(activeFilter !== 'ALL' ? { status: activeFilter } : {}),
-      },
+      where: { businessId },
       include: {
         customer: { select: { name: true } },
         payments: { select: { amount: true } },
@@ -47,6 +42,16 @@ export default async function InvoicesPage({
     }),
   ]);
 
+  const invoices: InvoiceListItem[] = invoiceRows.map((inv) => ({
+    id: inv.id,
+    number: inv.number,
+    total: inv.total,
+    status: inv.status,
+    date: inv.date.toISOString(),
+    customer: { name: inv.customer.name },
+    payments: inv.payments.map((p) => ({ amount: p.amount })),
+  }));
+
   const outstanding = aggregates
     .filter((i) => i.status !== 'PAID')
     .reduce(
@@ -58,7 +63,6 @@ export default async function InvoicesPage({
     0
   );
 
-  // Export the *currently filtered* list (2026-09-24).
   const exportColumns: ExportColumn[] = [
     { key: 'number', label: t(locale, 'exports.colNumber') },
     { key: 'customer', label: t(locale, 'exports.colCustomer') },
@@ -66,138 +70,18 @@ export default async function InvoicesPage({
     { key: 'status', label: t(locale, 'exports.colStatus') },
     { key: 'total', label: t(locale, 'exports.colTotal'), kind: 'money' },
   ];
-  const exportRows: ExportRow[] = invoices.map((inv) => ({
-    number: inv.number,
-    customer: inv.customer.name,
-    date: formatDateShort(inv.date),
-    status: inv.status,
-    total: inv.total,
-  }));
   const exportFileBase = `everyjob-invoices-${new Date().toISOString().slice(0, 10)}`;
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Invoices"
-        subtitle="Every payment, accounted for."
-        actions={
-          <div className="flex items-center gap-2 flex-wrap">
-            <ExportButtons
-              columns={exportColumns}
-              rows={exportRows}
-              fileBase={exportFileBase}
-              currency={business?.currency}
-              locale={locale}
-            />
-            <Link
-              href="/invoices/batch"
-              className="bg-white hover:bg-zinc-50 text-zinc-700 px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 border border-zinc-200 shadow-sm min-h-[44px]"
-            >
-              <Receipt size={14} /> {t(locale, 'billing.batchTitle')}
-            </Link>
-            <Link href="/invoices/new" className={primaryBtnClass}>
-              <Plus size={14} /> New invoice
-            </Link>
-          </div>
-        }
-      />
-
-      <div className="grid grid-cols-2 gap-4">
-        <StatCard
-          label="Outstanding"
-          value={formatMoney(Math.round(outstanding * 100) / 100, business?.currency)}
-          sub="yet to be collected"
-          icon={<Wallet size={16} />}
-          accent="bg-amber-100 text-amber-700"
-        />
-        <StatCard
-          label="Collected"
-          value={formatMoney(Math.round(collected * 100) / 100, business?.currency)}
-          sub="payments recorded"
-          icon={<FileText size={16} />}
-          accent="bg-emerald-100 text-emerald-700"
-        />
-      </div>
-
-      <div className="flex gap-2 flex-wrap">
-        {FILTERS.map((f) => (
-          <Link
-            key={f}
-            href={f === 'ALL' ? '/invoices' : `/invoices?status=${encodeURIComponent(f)}`}
-            aria-current={activeFilter === f ? 'page' : undefined}
-            className={cn(
-              'min-h-[44px] inline-flex items-center px-4 rounded-full text-xs font-semibold border transition-colors',
-              activeFilter === f
-                ? 'bg-ink text-white border-ink'
-                : 'bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300'
-            )}
-          >
-            {f}
-          </Link>
-        ))}
-      </div>
-
-      {invoices.length === 0 ? (
-        <Card>
-          <EmptyState
-            icon={<FileText size={24} />}
-            title="No invoices yet"
-            description="Raise a tax-ready invoice in under a minute — tax math handled for you."
-            action={
-              <Link href="/invoices/new" className={primaryBtnClass}>
-                <Plus size={14} /> New invoice
-              </Link>
-            }
-          />
-        </Card>
-      ) : (
-        <Card className="!p-0 overflow-hidden">
-          <ul className="divide-y divide-zinc-100">
-            {invoices.map((inv) => {
-              const paid = inv.payments.reduce((s, p) => s + p.amount, 0);
-              const due = Math.round((inv.total - paid) * 100) / 100;
-              // Usual 30-day payment terms — the Invoice model stores no
-              // contractual due date, so this is a follow-up hint, not a legal state.
-              const overdue =
-                due > 0 &&
-                inv.status !== 'PAID' &&
-                new Date(inv.date).getTime() < Date.now() - 30 * 24 * 60 * 60 * 1000;
-              return (
-                <li key={inv.id}>
-                  <Link
-                    href={`/invoices/${inv.id}`}
-                    className={cn(
-                      'flex items-center justify-between gap-4 px-4 sm:px-5 py-4 hover:bg-zinc-50 active:bg-zinc-100 transition-colors min-h-[76px] border-l-4',
-                      overdue ? 'border-l-rose-500' : 'border-l-transparent'
-                    )}
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-zinc-900 truncate">
-                        {inv.number} · {inv.customer.name}
-                      </p>
-                      <p className="text-xs text-zinc-500 mt-1">
-                        {formatDateShort(inv.date)}
-                        {due > 0 && inv.status !== 'PAID' && (
-                          <span className="text-amber-700 font-semibold"> · {formatMoney(due, business?.currency)} due</span>
-                        )}
-                      </p>
-                    </div>
-                    <div className="flex flex-col items-end gap-1.5 shrink-0">
-                      <span className="text-sm font-bold text-zinc-900">{formatMoney(inv.total, business?.currency)}</span>
-                      <span className="flex items-center gap-1.5">
-                        {overdue && (
-                          <Badge tone="danger">{t(locale, 't10money.overdue')}</Badge>
-                        )}
-                        <StatusBadge status={inv.status} />
-                      </span>
-                    </div>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </Card>
-      )}
-    </div>
+    <InvoicesClient
+      invoices={invoices}
+      outstanding={outstanding}
+      collected={collected}
+      currency={business?.currency}
+      locale={locale}
+      exportColumns={exportColumns}
+      exportFileBase={exportFileBase}
+      initialFilter={initialFilter}
+    />
   );
 }

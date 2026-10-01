@@ -160,12 +160,12 @@ export default async function JobsPage({
           />
         </Card>
       ) : (
-        <div className="space-y-3 md:space-y-0 md:bg-white md:rounded-2xl md:border md:border-zinc-200/60 md:shadow-sm md:overflow-hidden md:divide-y md:divide-zinc-100">
+        <div className="space-y-3 md:space-y-0 ej-glass-card-md md:rounded-2xl md:overflow-hidden md:divide-y md:divide-zinc-100">
           {filtered.map((job, i) => (
             <Link
               key={job.id}
               href={`/jobs/${job.id}`}
-              className="ej-row-in flex items-center justify-between gap-4 p-4 md:p-5 bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] md:rounded-none md:border-0 md:shadow-none hover:bg-zinc-50/70 transition-colors"
+              className="ej-row-in flex items-center justify-between gap-4 p-4 md:p-5 ej-glass-card ej-glass-plain-md rounded-[20px] md:rounded-none hover:bg-zinc-50/70 transition-colors"
               // @ts-expect-error CSS custom property for the stagger animation
               style={{ '--row-delay': `${Math.min(i, 12) * 35}ms` }}
             >
