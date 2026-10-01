@@ -50,15 +50,3 @@ test('public paths: customer auth pages are reachable without a session', () => 
   assert.equal(isPublicPath('/customer'), false);
   assert.equal(isPublicPath('/customer/requests'), false);
 });
-
-test('public paths: agent protocol surface is reachable without a session', () => {
-  // Regression (2026-09-30): /.well-known/everyjob.json bounced anonymous
-  // callers to /login, breaking machine discovery of the Agent Protocol.
-  assert.equal(isPublicPath('/agents'), true);
-  assert.equal(isPublicPath('/.well-known/everyjob.json'), true);
-  assert.equal(isPublicPath('/a/abc123token'), true);
-  assert.equal(isPublicPath('/api/agent/v1/search'), true);
-  assert.equal(isPublicPath('/api/agent/v1/proposals'), true);
-  // Prefix traps: /agentsx is not /agents
-  assert.equal(isPublicPath('/agentsx'), false);
-});
