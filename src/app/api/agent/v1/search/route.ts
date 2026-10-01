@@ -53,7 +53,7 @@ export async function GET(req: Request) {
         address: true,
         regionCode: true,
         directoryHideAddress: true,
-        bookingPage: { select: { slug: true } },
+        bookingPage: { select: { slug: true, showPhone: true } },
         services: { select: { name: true, price: true }, orderBy: { name: 'asc' }, take: 12 },
         reviews: { select: { rating: true } },
       },
@@ -76,8 +76,11 @@ export async function GET(req: Request) {
         slug,
         name: b.name,
         locality: b.directoryHideAddress ? localityFromAddress(b.address) : b.address,
-        phone: b.phone,
-        whatsapp: b.whatsappNumber,
+        // Respect the business's public-profile choice: a pro that hid its
+        // number on the booking page must not have it (or WhatsApp, which
+        // routes to the same number) exposed to anonymous agent callers.
+        phone: b.bookingPage!.showPhone ? b.phone : null,
+        whatsapp: b.bookingPage!.showPhone ? b.whatsappNumber : null,
         regionCode: b.regionCode,
         rating: avg,
         reviewCount: count,

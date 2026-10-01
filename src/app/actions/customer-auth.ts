@@ -23,6 +23,10 @@ export async function customerSignup(_prev: unknown, formData: FormData) {
   if (!name) return { error: 'Please enter your name.' };
   if (!isValidEmail(email)) return { error: 'Please enter a valid email address.' };
   if (password.length < 8) return { error: 'Password must be at least 8 characters.' };
+  // Cap password length (matches the pro-side 128-char cap): hashing runs
+  // PBKDF2-SHA512 100k iterations synchronously, so an unbounded input on
+  // this unauthenticated endpoint would burn CPU and block the event loop.
+  if (password.length > 128) return { error: 'Password must be at most 128 characters.' };
 
   const existing = await prisma.customerUser.findUnique({ where: { email } }).catch(() => null);
   if (existing) return { error: 'An account with this email already exists. Please log in.' };
@@ -48,6 +52,11 @@ export async function customerLogin(_prev: unknown, formData: FormData) {
   const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/customer';
 
   if (!isValidEmail(email) || !password) {
+    return { error: 'Please enter your email and password.' };
+  }
+  // Same 128-char cap as signup: keeps the sync PBKDF2 verify cheap even
+  // when the stored account was created before the cap existed.
+  if (password.length > 128) {
     return { error: 'Please enter your email and password.' };
   }
 

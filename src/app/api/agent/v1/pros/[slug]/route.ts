@@ -87,7 +87,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
       locality: b.directoryHideAddress ? localityFromAddress(b.address) : b.address,
       serviceAreas: page.serviceAreas,
       phone: page.showPhone ? b.phone : null,
-      whatsapp: b.whatsappNumber,
+      // Same gate as phone: WhatsApp exposes the business number, so it
+      // follows the showPhone choice rather than leaking unconditionally.
+      whatsapp: page.showPhone ? b.whatsappNumber : null,
       phoneVerified: isPhoneVerified(b.phone, b.whatsappNumber, b.regionCode),
       workingHours: b.workingHours,
       currency: b.currency,
