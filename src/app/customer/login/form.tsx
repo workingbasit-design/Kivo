@@ -11,25 +11,35 @@ export default function CustomerLoginForm() {
   const [state, formAction, isPending] = useActionState(customerLogin, { error: '' });
 
   return (
-    <div className="min-h-dvh bg-gradient-to-b from-indigo-50 to-white flex flex-col -m-4 -mt-4">
-      <header className="p-4">
-        <Link href="/directory" className="inline-flex items-center gap-2">
-          <Logo />
+    <div className="min-h-dvh bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 flex flex-col -m-4 -mt-4 relative overflow-hidden">
+      <div
+        className="absolute inset-0 opacity-20 pointer-events-none"
+        style={{
+          backgroundImage:
+            'radial-gradient(circle at 15% 15%, white 0, transparent 30%), radial-gradient(circle at 85% 85%, white 0, transparent 30%)',
+        }}
+      />
+      <header className="relative p-4">
+        <Link href="/directory" className="inline-flex items-center gap-2 bg-white rounded-xl px-3 py-2 shadow-lg">
+          <Logo size={24} />
         </Link>
       </header>
 
-      <main className="flex-1 flex items-center justify-center px-4 pb-12">
-        <div className="w-full max-w-sm bg-white rounded-3xl border border-zinc-200/70 shadow-xl shadow-zinc-200/50 p-6 sm:p-8">
-          <div className="flex items-center gap-2 text-indigo-600 mb-2">
-            <Search className="w-5 h-5" />
-            <span className="text-xs font-bold uppercase tracking-wider">For customers</span>
+      <main className="relative flex-1 flex items-center justify-center px-4 pb-12">
+        <div className="w-full max-w-sm">
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur border border-white/20 text-white rounded-full px-4 py-1.5 mb-4">
+              <Search className="w-4 h-4" />
+              <span className="text-xs font-bold uppercase tracking-wider">For customers</span>
+            </div>
+            <h1 className="text-3xl font-bold tracking-tight text-white">Welcome back</h1>
+            <p className="text-indigo-200 text-sm mt-2 max-w-xs mx-auto">
+              Log in to find pros, track your quote requests, and message businesses.
+            </p>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Welcome back</h1>
-          <p className="text-sm text-zinc-500 mt-1 mb-6">
-            Log in to find pros, track your quote requests, and message businesses.
-          </p>
 
-          <form action={formAction} className="space-y-4">
+          <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8">
+            <form action={formAction} className="space-y-4">
             <Field label="Email">
               <input
                 id="email"
@@ -76,10 +86,11 @@ export default function CustomerLoginForm() {
               Create a free account
             </Link>
           </p>
+          </div>
 
-          <p className="text-xs text-zinc-400 mt-4 text-center">
+          <p className="text-xs text-indigo-200 mt-6 text-center">
             Are you a pro?{' '}
-            <Link href="/login" className="font-medium hover:underline">
+            <Link href="/login" className="font-semibold text-white hover:underline">
               Business login
             </Link>
           </p>
