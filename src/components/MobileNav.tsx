@@ -12,7 +12,7 @@ import { t, type Locale } from '@/lib/i18n';
  */
 export default function MobileNav({ locale = 'en', unreadCount = 0 }: { locale?: Locale; unreadCount?: number }) {
   return (
-    <header className="md:hidden sticky top-0 z-40 bg-ink text-white">
+    <header className="md:hidden sticky top-0 z-40 bg-ink text-white pt-[env(safe-area-inset-top)]">
       <div className="flex items-center justify-between px-4 py-3">
         <Link href="/dashboard" className="flex items-center gap-2 min-h-[44px]">
           <EveryJobLogo size={28} />

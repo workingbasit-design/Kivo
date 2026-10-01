@@ -98,7 +98,8 @@ export default async function DashboardPage() {
       {/* New-business setup checklist (real completion state, dismissable) */}
       <OnboardingChecklist locale={locale} businessId={businessId} completed={onboardingCompleted} />
 
-      {/* Stat cards */}
+      {/* Stat cards — key metrics render immediately with no entrance fade,
+          so a slow device can never leave a card looking "faded". */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">        {(
           [
             {
@@ -130,8 +131,8 @@ export default async function DashboardPage() {
               accent: "bg-blue-100 text-blue-700",
             },
           ] as const
-        ).map((c, i) => (
-          <div key={c.label} className="ej-row-in" style={rowDelay(i)}>
+        ).map((c) => (
+          <div key={c.label}>
             <StatCard
               label={c.label}
               value={c.value}
@@ -173,7 +174,7 @@ export default async function DashboardPage() {
                   {L("growth.scoreLabel")} · {growth.score} {L("growth.scoreOf")}
                 </p>
                 {growth.nextActions[0] && (
-                  <p className="text-xs text-zinc-500 mt-1 truncate">
+                  <p className="text-xs text-zinc-500 mt-1 line-clamp-2">
                     {L("growth.nextUp")}: {L(`growth.checkActions.${growth.nextActions[0].key}`)}
                   </p>
                 )}

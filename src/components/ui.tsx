@@ -66,8 +66,8 @@ export function StatCard({
 }) {
   return (
     <div className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">{label}</p>
+      <div className="flex items-center justify-between gap-2 mb-3">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 leading-tight text-balance">{label}</p>
         {icon && (
           <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center', accent ?? 'bg-zinc-100 text-zinc-600')}>
             {icon}

@@ -515,7 +515,7 @@ export default function GlobalCopilotWidget({
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsOpen(true)}
             style={{ pointerEvents: fabHidden ? 'none' : 'auto' }}
-            className="fixed bottom-24 right-4 md:bottom-10 md:right-10 w-14 h-14 bg-lime rounded-full flex items-center justify-center shadow-2xl shadow-ink/20 z-50 hover:brightness-105 transition-all border border-ink/10"
+            className="fixed right-4 md:bottom-10 md:right-10 bottom-[calc(6rem+env(safe-area-inset-bottom))] w-14 h-14 bg-lime rounded-full flex items-center justify-center shadow-2xl shadow-ink/20 z-50 hover:brightness-105 transition-all border border-ink/10"
             aria-label={t(lang, 'copilot.openLabel')}
           >
             <Bot className="w-6 h-6 text-ink" />
@@ -646,7 +646,7 @@ export default function GlobalCopilotWidget({
             </div>
 
             {/* Input Area */}
-            <div className="p-3 sm:p-4 bg-white border-t border-zinc-200 shrink-0">
+            <div className="p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:p-4 bg-white border-t border-zinc-200 shrink-0">
               <form onSubmit={handleSend} className="relative flex items-center gap-2">
                 <VoiceInputButton
                   compact

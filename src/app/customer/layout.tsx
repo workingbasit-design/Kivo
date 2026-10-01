@@ -18,7 +18,7 @@ export default async function CustomerLayout({ children }: { children: React.Rea
   return (
     <div className="min-h-dvh bg-zinc-50 flex flex-col">
       <header className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-zinc-200/70">
-        <div className="max-w-lg mx-auto px-4 h-14 flex items-center justify-between">
+        <div className="max-w-lg md:max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link href="/customer" className="inline-flex items-center gap-2 group">
             <span className="transition-transform duration-300 group-hover:scale-105 group-active:scale-95">
               <Logo size={26} />
@@ -44,7 +44,7 @@ export default async function CustomerLayout({ children }: { children: React.Rea
         </div>
       </header>
 
-      <main className="flex-1 w-full max-w-lg mx-auto px-4 pt-4 pb-24 md:pb-8">{children}</main>
+      <main className="flex-1 w-full max-w-lg md:max-w-2xl mx-auto px-4 pt-4 pb-24 md:pb-8">{children}</main>
 
       <CustomerBottomNav locale={locale} />
     </div>
