@@ -45,9 +45,8 @@ import inventory from './fragments/inventory.ts';
 import leads from './fragments/leads.ts';
 
 import customer from './fragments/customer.ts';
-import agent from './fragments/agent.ts';
 
-const FRAGMENTS: I18nFragment[] = [reminders, jobops, quotes, homehero, homefaq, notifications, track9, googleReviews, attachments, imports, googleAuth, track8, billing, customerExtras, quoteItems, track10work, track10money, track10misc, exportsFrag, credentials, gps, support, quickbooks, paymentsFrag, pwa, integrations, dispatch, equipment, inventory, leads, customer, agent];
+const FRAGMENTS: I18nFragment[] = [reminders, jobops, quotes, homehero, homefaq, notifications, track9, googleReviews, attachments, imports, googleAuth, track8, billing, customerExtras, quoteItems, track10work, track10money, track10misc, exportsFrag, credentials, gps, support, quickbooks, paymentsFrag, pwa, integrations, dispatch, equipment, inventory, leads, customer];
 
 function deepMerge(target: Dictionary, src: Dictionary): Dictionary {
   for (const [k, v] of Object.entries(src)) {

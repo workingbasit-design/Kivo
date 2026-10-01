@@ -93,25 +93,16 @@ export default async function DirectoryPage({
 
   return (
     <div className="min-h-screen bg-paper font-sans">
-      <header className="relative overflow-hidden bg-gradient-to-br from-indigo-700 via-indigo-800 to-violet-900 text-white">
-        <div
-          className="absolute inset-0 opacity-20 pointer-events-none"
-          style={{
-            backgroundImage:
-              'radial-gradient(circle at 15% 20%, white 0, transparent 30%), radial-gradient(circle at 85% 80%, #a5b4fc 0, transparent 30%)',
-          }}
-        />
-        <div className="relative max-w-4xl mx-auto px-4 py-10">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="bg-white rounded-xl p-1.5 shadow-lg">
-              <Logo size={26} />
-            </span>
-            <span className="text-sm font-semibold text-indigo-200">{tr('t10misc.directory.title')}</span>
+      <header className="bg-ink text-white">
+        <div className="max-w-4xl mx-auto px-4 py-10">
+          <div className="ej-anim-fade-up flex items-center gap-3 mb-4">
+            <Logo tone="onDark" size={30} />
+            <span className="text-sm font-semibold text-white/60">{tr('t10misc.directory.title')}</span>
             <div className="ml-auto">
               {customerSession ? (
                 <Link
                   href="/customer"
-                  className="inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-full bg-white/15 backdrop-blur border border-white/25 text-sm font-semibold hover:bg-white/25 transition-colors"
+                  className="inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-full bg-white/10 border border-white/20 text-sm font-semibold transition-all hover:bg-white/20 hover:-translate-y-px active:translate-y-0 active:scale-[0.97]"
                 >
                   <User size={14} />
                   My account
@@ -119,7 +110,7 @@ export default async function DirectoryPage({
               ) : (
                 <Link
                   href="/customer/signup"
-                  className="inline-flex items-center gap-1.5 min-h-[44px] px-5 rounded-full bg-white text-indigo-700 text-sm font-bold shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
+                  className="inline-flex items-center gap-1.5 min-h-[44px] px-5 rounded-full bg-lime text-ink text-sm font-bold transition-all hover:brightness-105 hover:-translate-y-px hover:shadow-lg active:translate-y-0 active:scale-[0.97]"
                 >
                   <User size={14} />
                   Sign up free
@@ -127,53 +118,53 @@ export default async function DirectoryPage({
               )}
             </div>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+          <h1 className="ej-anim-fade-up text-3xl md:text-4xl font-bold tracking-tight" style={{ animationDelay: '80ms' }}>
             {tr('t10misc.directory.title')}
           </h1>
-          <p className="text-indigo-200 mt-2 text-[15px] max-w-xl">{tr('t10misc.directory.subtitle')}</p>
+          <p className="ej-anim-fade-up text-white/60 mt-2 text-[15px] max-w-xl" style={{ animationDelay: '140ms' }}>{tr('t10misc.directory.subtitle')}</p>
 
-          <form action="/directory" method="get" className="mt-6 grid sm:grid-cols-[1fr_1fr_auto] gap-2">
-            <label className="relative block">
+          <form action="/directory" method="get" className="ej-anim-fade-up mt-6 grid sm:grid-cols-[1fr_1fr_auto] gap-2" style={{ animationDelay: '200ms' }}>
+            <label className="relative block group">
               <span className="sr-only">{tr('t10misc.directory.whatPlaceholder')}</span>
-              <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" />
+              <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 transition-colors group-focus-within:text-lime" />
               <input
                 name="q"
                 defaultValue={q}
                 placeholder={tr('t10misc.directory.whatPlaceholder')}
                 maxLength={100}
                 aria-label={tr('t10misc.directory.whatPlaceholder')}
-                className="w-full min-h-[52px] rounded-2xl bg-white border-0 pl-11 pr-4 text-[15px] text-zinc-900 placeholder:text-zinc-400 outline-none focus:ring-4 focus:ring-white/30 shadow-lg"
+                className="w-full min-h-[52px] rounded-2xl bg-white border-2 border-transparent pl-11 pr-4 text-[15px] text-zinc-900 placeholder:text-zinc-400 outline-none shadow-lg transition-all focus:border-lime hover:border-white/40"
               />
             </label>
-            <label className="relative block">
+            <label className="relative block group">
               <span className="sr-only">{tr('t10misc.directory.cityPlaceholder')}</span>
-              <MapPin size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" />
+              <MapPin size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 transition-colors group-focus-within:text-lime" />
               <input
                 name="city"
                 defaultValue={city}
                 placeholder={tr('t10misc.directory.cityPlaceholder')}
                 maxLength={100}
                 aria-label={tr('t10misc.directory.cityPlaceholder')}
-                className="w-full min-h-[52px] rounded-2xl bg-white border-0 pl-11 pr-4 text-[15px] text-zinc-900 placeholder:text-zinc-400 outline-none focus:ring-4 focus:ring-white/30 shadow-lg"
+                className="w-full min-h-[52px] rounded-2xl bg-white border-2 border-transparent pl-11 pr-4 text-[15px] text-zinc-900 placeholder:text-zinc-400 outline-none shadow-lg transition-all focus:border-lime hover:border-white/40"
               />
             </label>
             <button
               type="submit"
-              className="rounded-2xl min-h-[52px] bg-zinc-900 text-white text-[15px] font-bold px-8 shadow-lg hover:bg-zinc-800 active:scale-[0.98] transition-all"
+              className="rounded-2xl min-h-[52px] bg-lime text-ink text-[15px] font-bold px-8 shadow-lg transition-all hover:brightness-105 hover:-translate-y-px hover:shadow-xl active:translate-y-0 active:scale-[0.98]"
             >
               {tr('t10misc.directory.search')}
             </button>
           </form>
-          <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
-            <span className="text-indigo-200 font-medium">{tr('t10misc.directory.minRating')}</span>
+          <div className="ej-anim-fade-up mt-4 flex flex-wrap items-center gap-2 text-xs" style={{ animationDelay: '260ms' }}>
+            <span className="text-white/60 font-medium">{tr('t10misc.directory.minRating')}</span>
             {['', '4', '4.5'].map((v) => (
               <Link
                 key={v || 'any'}
                 href={`/directory?${new URLSearchParams({ q, city, ...(v ? { minRating: v } : {}) }).toString()}`}
-                className={`inline-flex items-center min-h-[40px] px-4 rounded-full border font-semibold transition-all ${
+                className={`inline-flex items-center min-h-[40px] px-4 rounded-full border font-semibold transition-all duration-200 hover:-translate-y-px active:translate-y-0 active:scale-[0.97] ${
                   (minRating || '') === v
-                    ? 'bg-white text-indigo-700 border-white shadow-md'
-                    : 'text-white border-white/30 hover:border-white/70 hover:bg-white/10'
+                    ? 'bg-lime text-ink border-lime shadow-md'
+                    : 'text-white border-white/30 hover:border-lime/70 hover:bg-white/10'
                 }`}
               >
                 {v === '' ? tr('t10misc.directory.any') : tr('t10misc.directory.starsUp').replace('{v}', v)}
@@ -181,7 +172,7 @@ export default async function DirectoryPage({
             ))}
             <Link
               href="/directory/request"
-              className="ml-auto inline-flex items-center gap-1.5 min-h-[44px] text-white font-semibold py-2 px-3 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-colors"
+              className="ml-auto inline-flex items-center gap-1.5 min-h-[44px] text-white font-semibold py-2 px-3 rounded-full bg-white/10 border border-white/20 transition-all hover:bg-white/20 hover:-translate-y-px active:translate-y-0 active:scale-[0.97]"
             >
               <MessageSquareQuote size={14} /> {tr('t10misc.directory.requestQuotes')}
             </Link>
@@ -223,19 +214,19 @@ export default async function DirectoryPage({
         ) : (
           <ul className="grid sm:grid-cols-2 gap-4">
             {results.map((b) => (
-              <li key={b.slug}>
+              <li key={b.slug} className="ej-anim-fade-up" style={{ animationDelay: `${Math.min(results.indexOf(b), 8) * 50}ms` }}>
                 <Link
                   href={`/p/${b.slug}`}
-                  className="block bg-white rounded-3xl border border-zinc-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-5 hover:shadow-[0_8px_24px_rgba(79,70,229,0.10)] hover:border-indigo-200 transition-all"
+                  className="group block bg-white rounded-3xl border border-zinc-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-5 transition-all duration-300 hover:shadow-[0_12px_32px_rgba(0,0,0,0.10)] hover:border-smoke hover:-translate-y-1 active:translate-y-0 active:scale-[0.99]"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shrink-0 overflow-hidden shadow-md shadow-indigo-500/20">
+                      <div className="w-12 h-12 rounded-2xl bg-ink flex items-center justify-center shrink-0 overflow-hidden transition-transform duration-300 group-hover:scale-105">
                         {b.logoUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={b.logoUrl} alt="" className="w-full h-full object-cover" />
                         ) : (
-                          <span className="text-lg font-bold text-white">{b.name.charAt(0).toUpperCase()}</span>
+                          <span className="text-lg font-bold text-lime">{b.name.charAt(0).toUpperCase()}</span>
                         )}
                       </div>
                       <h2 className="font-bold text-zinc-900 leading-snug">{b.name}</h2>
