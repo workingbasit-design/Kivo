@@ -82,11 +82,15 @@ export default function AppSidebar({
         }`}
       >
         <div className="flex items-center gap-3">
-          <item.icon
-            size={18}
-            strokeWidth={2}
-            className={active ? 'text-ink' : 'text-white/50 group-hover:text-white'}
-          />
+          <span
+            className={`ej-liquid flex items-center justify-center w-8 h-8 rounded-[10px] backdrop-blur-md saturate-150 ring-1 ring-inset transition-all duration-200 ${
+              active
+                ? 'bg-ink/10 ring-ink/15 text-ink shadow-[0_2px_8px_rgba(22,22,22,0.18),inset_0_1px_0_rgba(255,255,255,0.35)]'
+                : 'bg-white/10 ring-white/15 text-white/60 group-hover:text-white group-hover:bg-white/[0.14] shadow-[0_2px_8px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)]'
+            }`}
+          >
+            <item.icon size={16} strokeWidth={2} />
+          </span>
           <span className={`text-[13px] font-medium ${active ? 'font-semibold' : ''}`}>
             {label}
           </span>

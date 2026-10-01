@@ -95,7 +95,16 @@ export default function BottomNav({
                   active ? 'text-lime' : 'text-white/55 hover:text-white'
                 )}
               >
-                <tab.icon size={22} strokeWidth={active ? 2.5 : 2} />
+                <span
+                  className={cn(
+                    'ej-liquid flex items-center justify-center w-11 h-9 rounded-2xl backdrop-blur-md saturate-150 ring-1 ring-inset transition-all duration-200',
+                    active
+                      ? 'bg-lime/20 ring-lime/40 text-lime shadow-[0_0_16px_rgba(198,242,78,0.30),inset_0_1px_0_rgba(255,255,255,0.25)]'
+                      : 'bg-white/[0.07] ring-white/12 text-white/60 shadow-[0_2px_8px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.14)]'
+                  )}
+                >
+                  <tab.icon size={20} strokeWidth={active ? 2.5 : 2} />
+                </span>
                 <span className="leading-none">{t(locale, tab.nameKey)}</span>
                 <span
                   aria-hidden

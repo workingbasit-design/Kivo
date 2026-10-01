@@ -192,6 +192,53 @@ body {
     }
   }
 
+  /* Liquid glass icon finish — iOS 26 style. Frosted translucency comes
+     from backdrop-blur + saturate on the element itself; these
+     pseudo-elements add the specular top light and the slow hover sheen.
+     Original treatment, not an Apple asset. */
+  .ej-liquid {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .ej-liquid::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.5),
+      rgba(255, 255, 255, 0) 42%
+    );
+    pointer-events: none;
+  }
+  .ej-liquid::after {
+    content: "";
+    position: absolute;
+    top: -20%;
+    bottom: -20%;
+    width: 55%;
+    left: -75%;
+    background: linear-gradient(
+      105deg,
+      transparent,
+      rgba(255, 255, 255, 0.45),
+      transparent
+    );
+    transform: skewX(-18deg);
+    transition: left 0.9s ease;
+    pointer-events: none;
+  }
+  .ej-liquid:hover::after {
+    left: 135%;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ej-liquid::after {
+      display: none;
+    }
+  }
+
   /* Icon hover — calm and precise. The icon breathes slightly on hover;
      no positional jump, so nothing ever feels jittery. Apply to nav
      links, icon buttons, and interactive icons. */

@@ -52,17 +52,17 @@ export function StatusBadge({ status }: { status: string }) {
 }
 
 /**
- * GlassIcon — the app's icon chip. Calm flat tint finish: a soft wash of the
- * tone colour, a crisp glyph, a hairline ring and a whisper of shadow.
- * (The old frosted-gloss finish read as visual noise at small sizes, so the
- * gloss goes — the palette stays identical.)
+ * GlassIcon — the app's icon chip. iOS 26 "liquid glass" finish: frosted
+ * translucency (backdrop blur + saturate), a specular top-edge highlight,
+ * a soft depth shadow, and a slow sheen sweep on hover. The tone palette
+ * is unchanged — only the finish is new.
  */
 const GLASS_TONES = {
-  zinc: 'bg-zinc-900/[0.06] text-zinc-600 ring-zinc-900/10',
-  emerald: 'bg-emerald-500/10 text-emerald-700 ring-emerald-600/15',
-  amber: 'bg-amber-500/[0.12] text-amber-700 ring-amber-600/15',
-  blue: 'bg-blue-500/10 text-blue-700 ring-blue-600/15',
-  indigo: 'bg-indigo-500/10 text-indigo-700 ring-indigo-600/15',
+  zinc: 'bg-gradient-to-b from-white/70 to-zinc-200/40 text-zinc-600 ring-zinc-900/10',
+  emerald: 'bg-gradient-to-b from-emerald-100/70 to-emerald-500/15 text-emerald-700 ring-emerald-600/15',
+  amber: 'bg-gradient-to-b from-amber-100/70 to-amber-500/20 text-amber-700 ring-amber-600/15',
+  blue: 'bg-gradient-to-b from-blue-100/70 to-blue-500/15 text-blue-700 ring-blue-600/15',
+  indigo: 'bg-gradient-to-b from-indigo-100/70 to-indigo-500/15 text-indigo-700 ring-indigo-600/15',
 } as const;
 
 export type GlassTone = keyof typeof GLASS_TONES;
@@ -73,11 +73,13 @@ const GLASS_SIZES = {
   lg: 'w-14 h-14 rounded-[20px]',
 } as const;
 
-/** Calm flat-tint icon chip as a composable class string (for buttons/links). */
+/** Liquid-glass icon chip as a composable class string (for buttons/links). */
 export function glassClass(tone: GlassTone = 'zinc'): string {
   return cn(
+    'ej-liquid',
+    'backdrop-blur-md saturate-150',
     'ring-1 ring-inset',
-    'shadow-[0_1px_2px_rgba(22,22,22,0.05)]',
+    'shadow-[0_2px_10px_rgba(22,22,22,0.10),inset_0_1px_0_rgba(255,255,255,0.55)]',
     GLASS_TONES[tone]
   );
 }
