@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Star, BadgeCheck, Heart, MessageSquareQuote, MapPin } from 'lucide-react';
+import { t, type Locale } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
 export type ProCardData = {
@@ -18,37 +19,40 @@ export type ProCardData = {
 
 /**
  * Shared pro card for the customer experience — used on search results
- * and the saved pros page. Rich visual design: gradient avatar fallback,
- * rating pill, verified badge, service chips, prominent quote CTA.
+ * and the saved pros page. Clean EveryJob theme: white card, indigo
+ * accents, refined hover and press micro-interactions.
  */
 export default function ProCard({
   pro,
   saved,
   onToggleSave,
   showSave = true,
+  locale,
 }: {
   pro: ProCardData;
   saved: boolean;
   onToggleSave?: (businessId: string) => void;
   showSave?: boolean;
+  locale: Locale;
 }) {
+  const tr = (path: string) => t(locale, path as never);
   return (
-    <article className="group bg-white rounded-3xl border border-zinc-200/80 p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(79,70,229,0.10)] hover:border-indigo-200 transition-all">
+    <article className="group bg-white rounded-3xl border border-zinc-200/80 p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all duration-300 hover:shadow-[0_12px_32px_rgba(79,70,229,0.12)] hover:border-indigo-200 hover:-translate-y-0.5">
       <div className="flex items-start gap-3">
         <div className="relative shrink-0">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center overflow-hidden shadow-md shadow-indigo-500/20">
+          <div className="w-14 h-14 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center overflow-hidden transition-transform duration-300 group-hover:scale-105">
             {pro.logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={pro.logoUrl} alt="" className="w-full h-full object-cover" />
             ) : (
-              <span className="text-xl font-bold text-white">
+              <span className="text-xl font-bold text-indigo-600">
                 {pro.name.charAt(0).toUpperCase()}
               </span>
             )}
           </div>
           {pro.verified && (
-            <span className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 shadow-sm">
-              <BadgeCheck className="w-5 h-5 text-indigo-600 fill-indigo-100" aria-label="Verified pro" />
+            <span className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 shadow-sm transition-transform duration-300 group-hover:scale-110">
+              <BadgeCheck className="w-5 h-5 text-indigo-600 fill-indigo-100" aria-label={tr('customer.proCard.verified')} />
             </span>
           )}
         </div>
@@ -66,7 +70,7 @@ export default function ProCard({
               </span>
             ) : (
               <span className="text-[11px] font-medium text-zinc-400 bg-zinc-100 rounded-full px-2 py-0.5">
-                New pro
+                {tr('customer.proCard.newPro')}
               </span>
             )}
             {pro.locality && (
@@ -93,14 +97,14 @@ export default function ProCard({
         {showSave && onToggleSave && (
           <button
             onClick={() => onToggleSave(pro.id)}
-            aria-label={saved ? 'Remove from saved' : 'Save pro'}
+            aria-label={saved ? tr('customer.proCard.unsave') : tr('customer.proCard.save')}
             className={cn(
-              'p-2 -m-1 shrink-0 rounded-full transition-all active:scale-90',
-              saved ? 'text-rose-500' : 'text-zinc-300 hover:text-rose-400'
+              'ej-icon-hover p-2 -m-1 shrink-0 rounded-full',
+              saved ? 'text-rose-500' : 'text-zinc-300 hover:text-rose-400 hover:bg-rose-50'
             )}
           >
             <Heart
-              className={cn('w-6 h-6 transition-all', saved && 'fill-rose-500 scale-110')}
+              className={cn('w-6 h-6 transition-all duration-300', saved && 'fill-rose-500 scale-110')}
             />
           </button>
         )}
@@ -109,16 +113,16 @@ export default function ProCard({
       <div className="flex gap-2 mt-4">
         <Link
           href={`/customer/request/${pro.slug}`}
-          className="flex-1 min-h-[46px] inline-flex items-center justify-center gap-1.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-700 text-white text-sm font-bold shadow-md shadow-indigo-600/25 hover:shadow-lg hover:shadow-indigo-600/30 active:scale-[0.98] transition-all"
+          className="flex-1 min-h-[46px] inline-flex items-center justify-center gap-1.5 rounded-2xl bg-indigo-600 text-white text-sm font-bold shadow-sm shadow-indigo-600/20 transition-all duration-200 hover:bg-indigo-700 hover:shadow-md hover:shadow-indigo-600/25 hover:-translate-y-px active:translate-y-0 active:scale-[0.98]"
         >
-          <MessageSquareQuote className="w-4 h-4" />
-          Request quote
+          <MessageSquareQuote className="w-4 h-4 transition-transform duration-300 group-hover:scale-110" />
+          {tr('customer.proCard.requestQuote')}
         </Link>
         <Link
           href={`/p/${pro.slug}`}
-          className="min-h-[46px] px-5 inline-flex items-center justify-center rounded-2xl bg-zinc-100 text-zinc-700 text-sm font-semibold hover:bg-zinc-200 active:scale-[0.98] transition-all"
+          className="min-h-[46px] px-5 inline-flex items-center justify-center rounded-2xl bg-zinc-100 text-zinc-700 text-sm font-semibold transition-all duration-200 hover:bg-zinc-200 hover:-translate-y-px active:translate-y-0 active:scale-[0.98]"
         >
-          View
+          {tr('customer.proCard.view')}
         </Link>
       </div>
     </article>

@@ -16,18 +16,19 @@ import {
   SearchX,
 } from 'lucide-react';
 import { toggleSavePro } from '@/app/actions/customer-pros';
+import { t, type Locale } from '@/lib/i18n';
 import ProCard, { type ProCardData } from '@/components/ProCard';
 
 const CATEGORIES = [
-  { name: 'Plumbing', icon: Wrench, color: 'from-sky-500 to-blue-600', bg: 'bg-sky-50', text: 'text-sky-700' },
-  { name: 'Electrical', icon: Zap, color: 'from-amber-500 to-orange-600', bg: 'bg-amber-50', text: 'text-amber-700' },
-  { name: 'Cleaning', icon: Sparkles, color: 'from-emerald-500 to-teal-600', bg: 'bg-emerald-50', text: 'text-emerald-700' },
-  { name: 'HVAC', icon: Flame, color: 'from-rose-500 to-red-600', bg: 'bg-rose-50', text: 'text-rose-700' },
-  { name: 'Landscaping', icon: TreePine, color: 'from-green-500 to-lime-600', bg: 'bg-green-50', text: 'text-green-700' },
-  { name: 'Painting', icon: PaintRoller, color: 'from-violet-500 to-purple-600', bg: 'bg-violet-50', text: 'text-violet-700' },
-  { name: 'Roofing', icon: Home, color: 'from-slate-500 to-zinc-700', bg: 'bg-slate-100', text: 'text-slate-700' },
-  { name: 'Pest Control', icon: Bug, color: 'from-lime-600 to-green-700', bg: 'bg-lime-50', text: 'text-lime-800' },
-];
+  { key: 'Plumbing', icon: Wrench, bg: 'bg-sky-50', text: 'text-sky-700' },
+  { key: 'Electrical', icon: Zap, bg: 'bg-amber-50', text: 'text-amber-700' },
+  { key: 'Cleaning', icon: Sparkles, bg: 'bg-emerald-50', text: 'text-emerald-700' },
+  { key: 'HVAC', icon: Flame, bg: 'bg-rose-50', text: 'text-rose-700' },
+  { key: 'Landscaping', icon: TreePine, bg: 'bg-green-50', text: 'text-green-700' },
+  { key: 'Painting', icon: PaintRoller, bg: 'bg-violet-50', text: 'text-violet-700' },
+  { key: 'Roofing', icon: Home, bg: 'bg-slate-100', text: 'text-slate-700' },
+  { key: 'Pest Control', icon: Bug, bg: 'bg-lime-50', text: 'text-lime-800' },
+] as const;
 
 export default function CustomerHomeClient({
   results,
@@ -36,6 +37,7 @@ export default function CustomerHomeClient({
   initialCity,
   savedIds,
   customerName,
+  locale,
 }: {
   results: ProCardData[];
   searching: boolean;
@@ -43,8 +45,10 @@ export default function CustomerHomeClient({
   initialCity: string;
   savedIds: string[];
   customerName: string;
+  locale: Locale;
 }) {
   const router = useRouter();
+  const tr = (path: string) => t(locale, path as never);
   const [q, setQ] = useState(initialQ);
   const [city, setCity] = useState(initialCity);
   const [saved, setSaved] = useState<Set<string>>(new Set(savedIds));
@@ -74,77 +78,73 @@ export default function CustomerHomeClient({
   };
 
   return (
-    <div className="space-y-6 -mt-4 -mx-4 px-4 pt-0">
-      {/* Hero */}
-      <div className="relative overflow-hidden rounded-b-[28px] -mx-4 px-4 pb-6 pt-5 bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 text-white">
-        <div
-          className="absolute inset-0 opacity-20"
-          style={{
-            backgroundImage:
-              'radial-gradient(circle at 20% 10%, white 0, transparent 30%), radial-gradient(circle at 85% 90%, white 0, transparent 25%)',
-          }}
-        />
-        <div className="relative">
-          <p className="text-indigo-200 text-xs font-semibold uppercase tracking-widest">
-            {new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 18 ? 'Good afternoon' : 'Good evening'}
-          </p>
-          <h1 className="text-2xl font-bold tracking-tight mt-0.5">
-            Hi {customerName} 👋
-          </h1>
-          <p className="text-indigo-200 text-sm mt-1">
-            Find trusted local pros for every job.
-          </p>
-
-          <form onSubmit={doSearch} className="mt-4 space-y-2">
-            <label className="relative block">
-              <Search size={17} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" />
-              <input
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="What do you need? e.g. plumber"
-                maxLength={100}
-                aria-label="Service needed"
-                className="w-full min-h-[52px] rounded-2xl bg-white border-0 pl-11 pr-4 text-[15px] text-zinc-900 placeholder:text-zinc-400 outline-none focus:ring-4 focus:ring-white/30 shadow-lg"
-              />
-            </label>
-            <div className="flex gap-2">
-              <label className="relative block flex-1">
-                <MapPin size={17} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" />
-                <input
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  placeholder="City"
-                  maxLength={100}
-                  aria-label="City"
-                  className="w-full min-h-[52px] rounded-2xl bg-white/95 border-0 pl-11 pr-4 text-[15px] text-zinc-900 placeholder:text-zinc-400 outline-none focus:ring-4 focus:ring-white/30 shadow-lg"
-                />
-              </label>
-              <button
-                type="submit"
-                className="min-h-[52px] px-6 rounded-2xl bg-zinc-900 text-white text-[15px] font-bold shadow-lg active:scale-[0.97] transition-transform hover:bg-zinc-800"
-              >
-                Search
-              </button>
-            </div>
-          </form>
-        </div>
+    <div className="space-y-6">
+      {/* Hero — clean EveryJob theme with staggered entrance */}
+      <div className="ej-anim-fade-up">
+        <p className="text-indigo-600 text-xs font-bold uppercase tracking-widest">
+          {new Date().getHours() < 12
+            ? tr('customer.home.morning')
+            : new Date().getHours() < 18
+              ? tr('customer.home.afternoon')
+              : tr('customer.home.evening')}
+        </p>
+        <h1 className="text-[26px] font-bold tracking-tight text-zinc-900 mt-1">
+          {tr('customer.home.greeting').replace('{name}', customerName)}
+        </h1>
+        <p className="text-zinc-500 text-sm mt-1">
+          {tr('customer.home.tagline')}
+        </p>
       </div>
 
+      <form onSubmit={doSearch} className="ej-anim-fade-up space-y-2" style={{ animationDelay: '80ms' }}>
+        <label className="relative block group">
+          <Search size={17} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 transition-colors group-focus-within:text-indigo-500" />
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder={tr('customer.home.whatPlaceholder')}
+            maxLength={100}
+            aria-label={tr('customer.home.whatPlaceholder')}
+            className="w-full min-h-[52px] rounded-2xl bg-white border border-zinc-200 pl-11 pr-4 text-[15px] text-zinc-900 placeholder:text-zinc-400 outline-none shadow-sm transition-all focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 hover:border-zinc-300"
+          />
+        </label>
+        <div className="flex gap-2">
+          <label className="relative block flex-1 group">
+            <MapPin size={17} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 transition-colors group-focus-within:text-indigo-500" />
+            <input
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              placeholder={tr('customer.home.cityPlaceholder')}
+              maxLength={100}
+              aria-label={tr('customer.home.cityPlaceholder')}
+              className="w-full min-h-[52px] rounded-2xl bg-white border border-zinc-200 pl-11 pr-4 text-[15px] text-zinc-900 placeholder:text-zinc-400 outline-none shadow-sm transition-all focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 hover:border-zinc-300"
+            />
+          </label>
+          <button
+            type="submit"
+            className="min-h-[52px] px-6 rounded-2xl bg-indigo-600 text-white text-[15px] font-bold shadow-sm shadow-indigo-600/20 transition-all hover:bg-indigo-700 hover:shadow-md hover:shadow-indigo-600/25 hover:-translate-y-px active:translate-y-0 active:scale-[0.97]"
+          >
+            {tr('customer.home.search')}
+          </button>
+        </div>
+      </form>
+
       {!searching && (
-        <div>
-          <h2 className="text-[15px] font-bold text-zinc-900 mb-3">Browse categories</h2>
+        <div className="ej-anim-fade-up" style={{ animationDelay: '160ms' }}>
+          <h2 className="text-[15px] font-bold text-zinc-900 mb-3">{tr('customer.home.browseCategories')}</h2>
           <div className="grid grid-cols-4 gap-2.5">
-            {CATEGORIES.map(({ name, icon: Icon, bg, text }) => (
+            {CATEGORIES.map(({ key, icon: Icon, bg, text }, i) => (
               <button
-                key={name}
-                onClick={() => searchCategory(name)}
-                className="flex flex-col items-center gap-1.5 py-3.5 px-1 rounded-2xl bg-white border border-zinc-200/80 shadow-sm active:scale-[0.95] transition-transform hover:border-indigo-200 hover:shadow-md"
+                key={key}
+                onClick={() => searchCategory(key)}
+                style={{ animationDelay: `${200 + i * 40}ms` }}
+                className="ej-anim-scale-in group flex flex-col items-center gap-1.5 py-3.5 px-1 rounded-2xl bg-white border border-zinc-200/80 shadow-sm transition-all duration-300 hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-100/50 hover:-translate-y-1 active:translate-y-0 active:scale-[0.96]"
               >
-                <span className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center`}>
+                <span className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-active:scale-95`}>
                   <Icon className={`w-5 h-5 ${text}`} />
                 </span>
                 <span className="text-[11px] font-semibold text-zinc-700 leading-tight text-center">
-                  {name}
+                  {tr(`customer.categories.${key}`)}
                 </span>
               </button>
             ))}
@@ -157,11 +157,17 @@ export default function CustomerHomeClient({
           <h2 className="text-[15px] font-bold text-zinc-900">
             {searching ? (
               <>
-                {results.length} pro{results.length === 1 ? '' : 's'} found
-                {initialQ && <span className="text-zinc-500 font-medium"> for “{initialQ}”</span>}
+                {tr('customer.home.prosFound')
+                  .replace('{count}', String(results.length))
+                  .replaceAll('{s}', results.length === 1 ? '' : locale === 'fr' ? 's' : 's')}
+                {initialQ && (
+                  <span className="text-zinc-500 font-medium">
+                    {' '}{tr('customer.home.forQuery').replace('{q}', initialQ)}
+                  </span>
+                )}
               </>
             ) : (
-              'Top rated near you'
+              tr('customer.home.topRated')
             )}
           </h2>
           {searching && (
@@ -172,34 +178,34 @@ export default function CustomerHomeClient({
               }}
               className="text-xs font-semibold text-indigo-600 hover:underline"
             >
-              Clear
+              {tr('customer.home.clear')}
             </button>
           )}
         </div>
 
         {results.length === 0 ? (
-          <div className="bg-white rounded-3xl border border-zinc-200/80 p-10 text-center shadow-sm">
-            <div className="w-14 h-14 rounded-2xl bg-indigo-50 flex items-center justify-center mx-auto mb-4">
+          <div className="ej-anim-fade-up bg-white rounded-3xl border border-zinc-200/80 p-10 text-center shadow-sm">
+            <div className="ej-anim-scale-in w-14 h-14 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center mx-auto mb-4">
               <SearchX className="w-7 h-7 text-indigo-400" />
             </div>
             <p className="font-bold text-zinc-900">
-              {searching ? 'No pros found' : 'No verified pros yet'}
+              {searching ? tr('customer.home.noProsFound') : tr('customer.home.noProsYet')}
             </p>
             <p className="text-sm text-zinc-500 mt-1 max-w-xs mx-auto">
-              {searching
-                ? 'Try a different service or city — new pros join every day.'
-                : 'Check back soon — verified pros are joining every day.'}
+              {searching ? tr('customer.home.noProsFoundHint') : tr('customer.home.noProsYetHint')}
             </p>
           </div>
         ) : (
           <div className="space-y-3">
-            {results.map((pro) => (
-              <ProCard
-                key={pro.id}
-                pro={pro}
-                saved={saved.has(pro.id)}
-                onToggleSave={toggleSave}
-              />
+            {results.map((pro, i) => (
+              <div key={pro.id} className="ej-anim-fade-up" style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}>
+                <ProCard
+                  pro={pro}
+                  saved={saved.has(pro.id)}
+                  onToggleSave={toggleSave}
+                  locale={locale}
+                />
+              </div>
             ))}
           </div>
         )}
