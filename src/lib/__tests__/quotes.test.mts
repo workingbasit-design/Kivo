@@ -253,7 +253,7 @@ test('quote→job: conversion base is post-discount pre-tax (.taxable), not pre-
   const totals = computeQuoteTotals(
     [{ qty: 1, unitPrice: 200 }],
     { type: 'PERCENT', value: 10 },
-    0
+    []
   );
   assert.equal(totals.subtotal, 200);
   assert.equal(totals.taxable, 180);

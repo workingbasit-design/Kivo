@@ -12,6 +12,8 @@ import {
   getTaxConfig,
   defaultTaxType,
   totalTaxRate,
+  calcTax,
+  splitStoredTax,
   type TaxConfig,
 } from '@/lib/tax';
 import { formatMoney } from '@/lib/money';
@@ -183,9 +185,15 @@ export async function createInvoice(
   });
   if (!customer) return { error: 'Customer not found.' };
 
-  // Server-side money math — the single source of truth.
+  // Server-side money math — the single source of truth. Tax is computed
+  // per line through the shared tax engine (calcTax), exactly like the
+  // invoice form preview: reconstruct the lines from the stored tax type +
+  // rate so a hand-edited rate still breaks down consistently, and the
+  // default type/rate rebuild the business's config lines verbatim.
   const subtotal = round2(items.reduce((s, i) => s + i.qty * i.rate, 0));
-  const taxAmount = round2((subtotal * parsed.data.taxRate) / 100);
+  const taxAmount = calcTax(subtotal, {
+    taxes: splitStoredTax(taxType, parsed.data.taxRate),
+  }).taxAmount;
   const total = round2(subtotal + taxAmount);
 
   const notesParts: string[] = [];
@@ -339,43 +347,56 @@ export async function recordPayment(
     return { error: parsed.error.issues[0]?.message ?? 'Invalid payment details.' };
   }
 
-  const invoice = await prisma.invoice.findFirst({
-    where: { id: parsed.data.invoiceId, businessId },
-    include: {
-      payments: { select: { amount: true } },
-      business: { select: { currency: true } },
-    },
-  });
-  if (!invoice) return { error: 'Invoice not found.' };
+  // The balance read, the overpayment guard, the payment insert, and the
+  // status update run in ONE transaction. Without it, two concurrent
+  // submissions (double-tap, retried request) can both read the same
+  // remaining balance, both pass the overpayment guard, and double-record
+  // against the invoice. The transaction makes the read-check-write atomic
+  // from the application's point of view.
+  const recorded = await prisma.$transaction(async (tx) => {
+    const invoice = await tx.invoice.findFirst({
+      where: { id: parsed.data.invoiceId, businessId },
+      include: {
+        payments: { select: { amount: true } },
+        business: { select: { currency: true } },
+      },
+    });
+    if (!invoice) return { error: 'Invoice not found.' };
 
-  const alreadyPaid = round2(invoice.payments.reduce((s, p) => s + p.amount, 0));
-  const remaining = round2(invoice.total - alreadyPaid);
-  if (remaining <= 0) {
-    return { error: 'This invoice is already paid in full.' };
-  }
-  if (parsed.data.amount > remaining + 0.009) {
-    return {
-      error: `Amount exceeds the remaining balance of ${formatMoney(remaining, invoice.business.currency)}.`,
-    };
-  }
+    const alreadyPaid = round2(invoice.payments.reduce((s, p) => s + p.amount, 0));
+    const remaining = round2(invoice.total - alreadyPaid);
+    if (remaining <= 0) {
+      return { error: 'This invoice is already paid in full.' };
+    }
+    if (parsed.data.amount > remaining + 0.009) {
+      return {
+        error: `Amount exceeds the remaining balance of ${formatMoney(remaining, invoice.business.currency)}.`,
+      };
+    }
 
-  const payment = await prisma.payment.create({
-    data: {
-      amount: round2(parsed.data.amount),
-      provider: parsed.data.provider,
-      transactionId: parsed.data.transactionId || null,
-      status: 'COMPLETED',
-      invoiceId: invoice.id,
-      businessId,
-    },
+    const payment = await tx.payment.create({
+      data: {
+        amount: round2(parsed.data.amount),
+        provider: parsed.data.provider,
+        transactionId: parsed.data.transactionId || null,
+        status: 'COMPLETED',
+        invoiceId: invoice.id,
+        businessId,
+      },
+    });
+
+    const newPaid = round2(alreadyPaid + payment.amount);
+    const newStatus = deriveStatus(invoice.total, newPaid);
+    await tx.invoice.update({
+      where: { id: invoice.id, businessId },
+      data: { status: newStatus },
+    });
+
+    return { payment, newStatus, invoice };
   });
 
-  const newPaid = round2(alreadyPaid + payment.amount);
-  const newStatus = deriveStatus(invoice.total, newPaid);
-  await prisma.invoice.update({
-    where: { id: invoice.id, businessId },
-    data: { status: newStatus },
-  });
+  if ('error' in recorded) return { error: recorded.error };
+  const { payment, newStatus, invoice } = recorded;
 
   // Outgoing webhooks: payment recorded (+ invoice paid when fully paid).
   // Best-effort — never fails the payment recording.

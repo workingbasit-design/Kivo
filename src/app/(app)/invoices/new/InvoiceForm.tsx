@@ -32,6 +32,7 @@ function useResultToast<T extends { ok?: boolean; error?: string }>(
 }
 import { formatMoney } from '@/lib/money';
 import {
+  calcTax,
   defaultTaxType,
   splitStoredTax,
   totalTaxRate,
@@ -76,12 +77,13 @@ export default function InvoiceForm({
   const [taxType, setTaxType] = useState<string>(defaultTaxType(taxConfig));
 
   const options = taxTypeOptions(taxConfig);
-  // Breakdown preview from the stored-style tax (server recomputes anyway).
-  const lines = splitStoredTax(taxType, taxRate).map((l) => ({
-    ...l,
-    amount: round2((subtotal * l.rate) / 100),
-  }));
-  const taxAmount = round2(lines.reduce((s, l) => s + l.amount, 0));
+  // Breakdown preview through the shared tax engine — createInvoice
+  // recomputes with the exact same call, so the previewed total is always
+  // the stored total. (Quebec QST is 9.975% on the price before GST —
+  // Revenu Québec changed this from GST-inclusive on 2013-01-01.)
+  const { taxAmount, breakdown: lines } = calcTax(subtotal, {
+    taxes: splitStoredTax(taxType, taxRate),
+  });
   const total = round2(subtotal + taxAmount);
 
   const quickRates = [0, totalTaxRate(taxConfig)];

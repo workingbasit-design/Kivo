@@ -6,7 +6,11 @@
  * - AMOUNT: clamped to 0–subtotal
  * - null type (or null value): no discount
  * Tax is applied to the discounted taxable amount, never to the raw subtotal.
+ *
+ * Tax is computed per line via calcTax (the same function the quote form
+ * preview uses), so the stored total always equals the previewed total.
  */
+import { calcTax, type TaxLine } from './tax.ts';
 
 export type DiscountType = 'PERCENT' | 'AMOUNT' | null;
 
@@ -23,7 +27,7 @@ const round2 = (n: number) => Math.round(n * 100) / 100;
 export function computeQuoteTotals(
   items: { qty: number; unitPrice: number }[],
   discount: { type: DiscountType; value: number | null },
-  taxRatePct: number
+  taxes: TaxLine[]
 ): QuoteTotals {
   const subtotal = round2(
     items.reduce((s, i) => s + i.qty * i.unitPrice, 0)
@@ -39,8 +43,8 @@ export function computeQuoteTotals(
   }
 
   const taxable = round2(subtotal - discountAmount);
-  const safeRate = Number.isFinite(taxRatePct) && taxRatePct > 0 ? taxRatePct : 0;
-  const taxAmount = round2((taxable * safeRate) / 100);
+  // Per-line tax via the shared tax engine — identical to the form preview.
+  const { taxAmount } = calcTax(taxable, { taxes });
   const total = round2(taxable + taxAmount);
 
   return { subtotal, discountAmount, taxable, taxAmount, total };

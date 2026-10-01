@@ -26,7 +26,7 @@ export default async function MoneyPage() {
   const [business, openQuotes, unpaidInvoices, overdueInvoices] = await Promise.all([
     prisma.business.findUnique({
       where: { id: businessId },
-      select: { currency: true, name: true, regionCode: true },
+      select: { currency: true, name: true, regionCode: true, timezone: true },
     }),
     prisma.quote.findMany({
       where: { businessId, status: 'SENT' },
@@ -158,7 +158,8 @@ export default async function MoneyPage() {
                 inv.total,
                 inv.payments.map((p) => p.amount)
               );
-              const overdueDays = Math.max(1, daysOverdue(new Date(inv.date)));
+              // Overdue badge flips at local midnight in the business's timezone.
+              const overdueDays = Math.max(1, daysOverdue(new Date(inv.date), new Date(), business?.timezone));
               const message = fillTemplate(L('t10money.reminders.message'), {
                 customerName: inv.customer.name,
                 businessName: business?.name ?? '',

@@ -7,7 +7,7 @@ import { requireAuth } from '@/lib/auth';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
-import { getTaxConfig, totalTaxRate, type TaxConfig } from '@/lib/tax';
+import { getTaxConfig, totalTaxRate, calcTax, type TaxConfig } from '@/lib/tax';
 import {
   todayInTimezone,
   toISODateLocal,
@@ -96,7 +96,7 @@ export async function previewBatchInvoices(): Promise<BatchPreviewResult> {
     orderBy: { date: 'desc' },
   });
 
-  const taxRate = totalTaxRate(await businessTaxConfig(businessId));
+  const taxConfig = await businessTaxConfig(businessId);
 
   return {
     rows: buildBatchPreview(
@@ -107,7 +107,7 @@ export async function previewBatchInvoices(): Promise<BatchPreviewResult> {
         customerName: j.customer.name,
         date: toISODateLocal(j.date),
       })),
-      taxRate
+      taxConfig.taxes
     ),
   };
 }
@@ -151,7 +151,8 @@ export async function confirmBatchInvoices(
     where: { id: businessId },
     select: { timezone: true, regionCode: true },
   });
-  const taxRate = totalTaxRate(await businessTaxConfig(businessId));
+  const taxConfig = await businessTaxConfig(businessId);
+  const taxRate = totalTaxRate(taxConfig);
   const invoiceDate = localMidnight(
     todayInTimezone(business?.timezone, business?.regionCode)
   );
@@ -161,9 +162,10 @@ export async function confirmBatchInvoices(
 
   await prisma.$transaction(async (tx) => {
     for (const job of jobs) {
-      // Server-side money math — never trusts client values.
+      // Server-side money math — never trusts client values. Per-line tax
+      // through the shared engine, identical to the batch preview.
       const subtotal = round2(job.price);
-      const taxAmount = round2((subtotal * taxRate) / 100);
+      const taxAmount = calcTax(subtotal, taxConfig).taxAmount;
       const total = round2(subtotal + taxAmount);
       const number = await nextInvoiceNumber(businessId, tx);
 
@@ -251,10 +253,12 @@ export async function createMilestoneInvoice(
     where: { id: businessId },
     select: { timezone: true, regionCode: true },
   });
-  const taxRate = totalTaxRate(await businessTaxConfig(businessId));
+  const taxConfig = await businessTaxConfig(businessId);
+  const taxRate = totalTaxRate(taxConfig);
 
   const subtotal = round2(amount);
-  const taxAmount = round2((subtotal * taxRate) / 100);
+  // Per-line tax through the shared engine (see confirmBatchInvoices).
+  const taxAmount = calcTax(subtotal, taxConfig).taxAmount;
   const total = round2(subtotal + taxAmount);
   const number = await nextInvoiceNumber(businessId);
   const invoiceDate = localMidnight(

@@ -8,7 +8,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { quoteSchema, QUOTE_STATUSES } from '@/lib/validations';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
-import { getTaxConfig, totalTaxRate } from '@/lib/tax';
+import { getTaxConfig } from '@/lib/tax';
 import { computeQuoteTotals, type DiscountType } from '@/lib/quote-totals';
 import {
   getActiveShareToken,
@@ -163,7 +163,7 @@ export async function createQuote(
   const totals = computeQuoteTotals(
     items.map((i) => ({ qty: i.qty, unitPrice: i.rate })),
     discount,
-    totalTaxRate(taxConfig)
+    taxConfig.taxes
   );
   const total = totals.total;
 
@@ -259,7 +259,7 @@ export async function updateQuoteItems(
   const totals = computeQuoteTotals(
     items.map((i) => ({ qty: i.qty, unitPrice: i.rate })),
     discount,
-    totalTaxRate(taxConfig)
+    taxConfig.taxes
   );
 
   await prisma.$transaction([
@@ -527,7 +527,7 @@ export async function convertQuoteToJob(
   const preTax = computeQuoteTotals(
     quote.lineItems.map((i) => ({ qty: i.qty, unitPrice: i.unitPrice })),
     { type: quote.discountType as DiscountType, value: quote.discountValue },
-    0
+    []
   ).taxable;
   const { price: jobPrice, notes: jobNotes } = convertedJobDetails(
     quote.number,

@@ -18,7 +18,7 @@ test('buildBatchPreview computes per-row subtotal/tax/total', () => {
       { id: 'j1', title: 'Furnace tune-up', price: 100, customerName: 'Alice', date: '2026-09-20' },
       { id: 'j2', title: 'Drain clean', price: 33.333, customerName: 'Bob', date: '2026-09-21' },
     ],
-    13
+    [{ name: 'HST', rate: 13 }]
   );
   assert.equal(rows.length, 2);
 
@@ -40,10 +40,26 @@ test('buildBatchPreview computes per-row subtotal/tax/total', () => {
 test('buildBatchPreview with zero tax keeps price as total', () => {
   const [row] = buildBatchPreview(
     [{ id: 'j1', title: 'Free visit', price: 50, customerName: 'Cara', date: '2026-09-22' }],
-    0
+    []
   );
   assert.equal(row.taxAmount, 0);
   assert.equal(row.total, 50);
+});
+
+test('buildBatchPreview Quebec: per-line tax identical to the commit path', () => {
+  // Preview and commit both go through calcTax now — the 1c divergence the
+  // audit found (preview per-line vs stored single-rounding) is gone.
+  const qcTaxes = [
+    { name: 'GST', rate: 5 },
+    { name: 'QST', rate: 9.975 },
+  ];
+  const [row] = buildBatchPreview(
+    [{ id: 'j1', title: 'Leak fix', price: 33.35, customerName: 'Dan', date: '2026-09-23' }],
+    qcTaxes
+  );
+  // GST 1.67 + QST 3.33 = 5.00 (was 4.99 under single-rounding)
+  assert.equal(row.taxAmount, 5.0);
+  assert.equal(row.total, 38.35);
 });
 
 test('validateMilestoneInput accepts valid input', () => {
