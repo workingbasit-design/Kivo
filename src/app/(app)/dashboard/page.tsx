@@ -26,6 +26,7 @@ import {
   StatCard,
   StatusBadge,
   EmptyState,
+  GlassIcon,
   limeBtnClass,
   secondaryBtnClass,
 } from "@/components/ui";
@@ -107,28 +108,28 @@ export default async function DashboardPage() {
               value: formatMoney(stats.bookedToday, currency, moneyLocale),
               sub: L(stats.jobsLeftToday === 1 ? "dashboard.jobStillOpen" : "dashboard.jobsStillOpen").replace("{count}", String(stats.jobsLeftToday)),
               icon: <Calendar size={16} />,
-              accent: "bg-smoke text-ink",
+              tone: 'zinc',
             },
             {
               label: L("dashboard.collected7"),
               value: formatMoney(stats.collectedThisWeek, currency, moneyLocale),
               sub: L("dashboard.paymentsReceived"),
               icon: <Banknote size={16} />,
-              accent: "bg-emerald-100 text-emerald-700",
+              tone: 'emerald',
             },
             {
               label: L("dashboard.outstanding"),
               value: formatMoney(stats.outstanding, currency, moneyLocale),
               sub: L(stats.outstandingCount === 1 ? "dashboard.unpaidInvoice" : "dashboard.unpaidInvoices").replace("{count}", String(stats.outstandingCount)),
               icon: <AlertCircle size={16} />,
-              accent: "bg-amber-100 text-amber-700",
+              tone: 'amber',
             },
             {
               label: L("dashboard.newLeads"),
               value: String(stats.newLeads),
               sub: L("dashboard.totalCustomers").replace("{count}", String(stats.totalCustomers)),
               icon: <UserPlus size={16} />,
-              accent: "bg-blue-100 text-blue-700",
+              tone: 'blue',
             },
           ] as const
         ).map((c) => (
@@ -138,7 +139,7 @@ export default async function DashboardPage() {
               value={c.value}
               sub={c.sub}
               icon={c.icon}
-              accent={c.accent}
+              tone={c.tone}
             />
           </div>
         ))}
@@ -189,8 +190,8 @@ export default async function DashboardPage() {
       <div className="grid lg:grid-cols-2 gap-3 md:gap-4">
         <Card>
           <div className="flex items-center justify-between px-5 pt-5 pb-3">
-            <h2 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
-              <Clock size={15} className="text-ink" /> {L("dashboard.todaysSchedule")}
+            <h2 className="text-sm font-bold text-zinc-900 flex items-center gap-2.5">
+              <GlassIcon icon={<Clock size={14} />} tone="zinc" size="sm" /> {L("dashboard.todaysSchedule")}
             </h2>
             <Link
               href="/schedule"
@@ -238,8 +239,8 @@ export default async function DashboardPage() {
 
         <Card>
           <div className="flex items-center justify-between px-5 pt-5 pb-3">
-            <h2 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
-              <Receipt size={15} className="text-amber-600" /> {L("dashboard.paymentsDue")}
+            <h2 className="text-sm font-bold text-zinc-900 flex items-center gap-2.5">
+              <GlassIcon icon={<Receipt size={14} />} tone="amber" size="sm" /> {L("dashboard.paymentsDue")}
             </h2>
             <Link
               href="/invoices"

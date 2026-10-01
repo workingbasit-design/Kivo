@@ -13,7 +13,7 @@ import { formatMoney } from '@/lib/money';
 import { toISODateLocal, formatDateLabel, hasJobTime, jobDisplayStatus, localeDateTag, cn } from '@/lib/utils';
 import { t, type Locale } from '@/lib/i18n';
 import {
-  Card, StatusBadge, EmptyState, Field,
+  Card, StatusBadge, EmptyState, Field, glassClass,
   primaryBtnClass, secondaryBtnClass, dangerBtnClass, inputClass, selectClass, Dialog,
 } from '@/components/ui';
 
@@ -446,7 +446,10 @@ export default function ScheduleClient({
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => startEdit(job)}
-                        className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 rounded-xl transition-colors"
+                        className={cn(
+                          'min-w-[44px] min-h-[44px] flex items-center justify-center text-zinc-600 rounded-full transition-all hover:scale-105 active:scale-95',
+                          glassClass('zinc')
+                        )}
                         title={T('schedRescheduleTitle')}
                         aria-label={T('schedRescheduleTitle')}
                       >
@@ -455,7 +458,10 @@ export default function ScheduleClient({
                       <button
                         onClick={() => setRemovingJobId(job.id)}
                         disabled={isPending}
-                        className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition-colors disabled:opacity-50"
+                        className={cn(
+                          'min-w-[44px] min-h-[44px] flex items-center justify-center text-rose-600 rounded-full transition-all hover:scale-105 active:scale-95 disabled:opacity-50',
+                          glassClass('zinc')
+                        )}
                         title={jobsL('removeFromSchedule')}
                         aria-label={jobsL('removeFromSchedule')}
                       >

@@ -51,28 +51,92 @@ export function StatusBadge({ status }: { status: string }) {
   );
 }
 
+/**
+ * GlassIcon — Apple-style "liquid glass" icon chip.
+ * Frosted translucency (backdrop blur + saturation boost), a bright specular
+ * top edge, a hairline light border and a soft drop shadow. Tones reuse the
+ * exact accent hues already in the theme — only the finish changes, so the
+ * palette stays identical.
+ */
+const GLASS_TONES = {
+  zinc: 'bg-zinc-200/50 text-zinc-700',
+  emerald: 'bg-emerald-200/50 text-emerald-700',
+  amber: 'bg-amber-200/50 text-amber-700',
+  blue: 'bg-blue-200/50 text-blue-700',
+  indigo: 'bg-indigo-200/50 text-indigo-700',
+} as const;
+
+export type GlassTone = keyof typeof GLASS_TONES;
+
+const GLASS_SIZES = {
+  sm: 'w-8 h-8 rounded-xl',
+  md: 'w-10 h-10 rounded-2xl',
+  lg: 'w-14 h-14 rounded-[20px]',
+} as const;
+
+/** Full glass treatment as a composable class string (for buttons/links). */
+export function glassClass(tone: GlassTone = 'zinc'): string {
+  return cn(
+    'backdrop-blur-xl backdrop-saturate-150',
+    'ring-1 ring-inset ring-white/70',
+    'shadow-[inset_0_1px_0_rgba(255,255,255,0.9),inset_0_-1px_1px_rgba(0,0,0,0.04),0_10px_20px_-10px_rgba(0,0,0,0.28)]',
+    GLASS_TONES[tone]
+  );
+}
+
+export function GlassIcon({
+  icon,
+  tone = 'zinc',
+  size = 'md',
+  className,
+}: {
+  icon: React.ReactNode;
+  tone?: GlassTone;
+  size?: keyof typeof GLASS_SIZES;
+  className?: string;
+}) {
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center justify-center shrink-0',
+        GLASS_SIZES[size],
+        glassClass(tone),
+        className
+      )}
+    >
+      {icon}
+    </span>
+  );
+}
+
 export function StatCard({
   label,
   value,
   sub,
   icon,
   accent,
+  tone,
 }: {
   label: string;
   value: string;
   sub?: string;
   icon?: React.ReactNode;
   accent?: string;
+  /** Glassmorphism finish — preferred over `accent`; same hues, frosted. */
+  tone?: GlassTone;
 }) {
   return (
     <div className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
       <div className="flex items-center justify-between gap-2 mb-3">
         <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 leading-tight text-balance">{label}</p>
-        {icon && (
-          <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center', accent ?? 'bg-zinc-100 text-zinc-600')}>
-            {icon}
-          </div>
-        )}
+        {icon &&
+          (tone ? (
+            <GlassIcon icon={icon} tone={tone} size="md" />
+          ) : (
+            <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center', accent ?? 'bg-zinc-100 text-zinc-600')}>
+              {icon}
+            </div>
+          ))}
       </div>
       <p className="text-[26px] font-bold text-zinc-900 tracking-tight tabular-nums">{value}</p>
       {sub && <p className="text-xs text-zinc-500 mt-1">{sub}</p>}
@@ -93,9 +157,7 @@ export function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center p-12 md:p-16 text-center">
-      <div className="w-14 h-14 rounded-2xl bg-zinc-100 text-zinc-400 flex items-center justify-center mb-4">
-        {icon}
-      </div>
+      <GlassIcon icon={icon} tone="zinc" size="lg" className="mb-4" />
       <h3 className="text-base font-bold text-zinc-900 mb-1">{title}</h3>
       <p className="text-sm text-zinc-500 max-w-sm mb-6">{description}</p>
       {action}

@@ -498,7 +498,7 @@ async function runConfirm(
     return {
       ok: true,
       jobId: recent.id,
-      reply: buildConfirmReply(draft, bookedCustomer.name, true, currency),
+      reply: buildConfirmReply(draft, bookedCustomer.name, true, currency, fr),
       duplicate: true,
     };
   }
@@ -521,7 +521,7 @@ async function runConfirm(
   return {
     ok: true,
     jobId: job.id,
-    reply: buildConfirmReply(draft, bookedCustomer.name, false, currency),
+    reply: buildConfirmReply(draft, bookedCustomer.name, false, currency, fr),
     duplicate: false,
   };
 }
@@ -530,15 +530,24 @@ function buildConfirmReply(
   draft: z.infer<typeof confirmSchema>['preview'],
   customerName: string,
   duplicate: boolean,
-  currency: string
+  currency: string,
+  fr: boolean
 ): string {
+  const tr = (en: string, frText: string) => (fr ? frText : en);
   return (
     (duplicate
-      ? 'Yeh booking pehle hi confirm ho chuki hai — duplicate job nahi banayi.\n\n'
-      : 'Job book ho gayi! ✓\n\n') +
+      ? tr(
+          'This booking was already confirmed — no duplicate job was created.\n\n',
+          'Cette réservation était déjà confirmée — aucun doublon n’a été créé.\n\n'
+        )
+      : tr('Job booked! ✓\n\n', 'Travail réservé! ✓\n\n')) +
     `${draft.title} — ${customerName}\n` +
     `${formatDateShort(draft.date)}${draft.time ? `, ${draft.time}` : ''}\n` +
-    `Price: ${draft.price !== null && draft.price !== undefined ? formatMoney(draft.price, currency) : 'TBD'}\n\n` +
-    `Schedule mein dekh sakte ho.`
+    `${tr('Price', 'Prix')} : ${
+      draft.price !== null && draft.price !== undefined
+        ? formatMoney(draft.price, currency)
+        : tr('TBD', 'À déterminer')
+    }\n\n` +
+    tr('You can see it on the Schedule page.', 'Vous pouvez le voir sur la page Horaire.')
   );
 }
