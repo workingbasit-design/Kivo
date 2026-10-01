@@ -180,7 +180,7 @@ export default function CommandPalette({ locale = "en" }: { locale?: Locale }) {
             type="button"
             onClick={close}
             aria-label={locale === "fr" ? "Fermer la recherche" : "Close search"}
-            className="shrink-0 rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition-colors focus-visible:outline-2 focus-visible:outline-lime"
+            className="ej-liquid ej-spring shrink-0 rounded-xl p-2 text-zinc-500 bg-white/60 backdrop-blur-md saturate-150 ring-1 ring-inset ring-zinc-900/10 hover:text-zinc-800 focus-visible:outline-2 focus-visible:outline-lime"
           >
             <X size={16} />
           </button>

@@ -146,7 +146,7 @@ export default async function DashboardPage() {
               tone: 'blue',
             },
           ] as const
-        ).map((c) => (
+        ).map((c, i) => (
           <div key={c.label}>
             <StatCard
               label={c.label}
@@ -154,6 +154,7 @@ export default async function DashboardPage() {
               sub={c.sub}
               icon={c.icon}
               tone={c.tone}
+              index={i}
             />
           </div>
         ))}

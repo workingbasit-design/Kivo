@@ -77,6 +77,7 @@ const GLASS_SIZES = {
 export function glassClass(tone: GlassTone = 'zinc'): string {
   return cn(
     'ej-liquid',
+    'ej-spring',
     'backdrop-blur-md saturate-150',
     'ring-1 ring-inset',
     'shadow-[0_2px_10px_rgba(22,22,22,0.10),inset_0_1px_0_rgba(255,255,255,0.55)]',
@@ -116,6 +117,7 @@ export function StatCard({
   icon,
   accent,
   tone,
+  index = 0,
 }: {
   label: string;
   value: string;
@@ -124,9 +126,14 @@ export function StatCard({
   accent?: string;
   /** Glassmorphism finish — preferred over `accent`; same hues, frosted. */
   tone?: GlassTone;
+  /** Position in a row, for the staggered widget-style entrance. */
+  index?: number;
 }) {
   return (
-    <div className="ej-card-lift ej-glass-card rounded-[20px] p-5">
+    <div
+      className="ej-card-lift ej-glass-card ej-rise rounded-[20px] p-5"
+      style={{ ['--ej-d' as string]: `${Math.min(index, 8) * 0.07}s` }}
+    >
       <div className="flex items-center justify-between gap-2 mb-3">
         <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 leading-tight text-balance">{label}</p>
         {icon &&
