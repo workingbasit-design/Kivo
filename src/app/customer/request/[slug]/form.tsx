@@ -1,11 +1,10 @@
 "use client";
 
 import { useActionState } from 'react';
+import Link from 'next/link';
 import { ArrowLeft, Send, AlertCircle, BadgeCheck } from 'lucide-react';
 import { sendQuoteRequest } from '@/app/actions/customer-requests';
-import { t, type Locale } from '@/lib/i18n';
 import { Field, inputClass, primaryBtnClass } from '@/components/ui';
-import { Avatar, BackLink, Card } from '@/components/customer/ui';
 
 export default function CustomerQuoteForm({
   businessId,
@@ -14,7 +13,6 @@ export default function CustomerQuoteForm({
   services,
   customerName,
   customerPhone,
-  locale,
 }: {
   businessId: string;
   businessName: string;
@@ -22,57 +20,58 @@ export default function CustomerQuoteForm({
   services: string[];
   customerName: string;
   customerPhone: string;
-  locale: Locale;
 }) {
   const [state, formAction, isPending] = useActionState(sendQuoteRequest, { error: '' });
-  const tr = (path: string) => t(locale, path as never);
 
   return (
     <div className="space-y-5">
-      <div className="ej-anim-fade-up">
-        <BackLink href="/customer">
-          <ArrowLeft className="w-4 h-4 transition-transform duration-300 group-hover:-translate-x-0.5" />
-          {tr('customer.quote.backToSearch')}
-        </BackLink>
-      </div>
+      <Link
+        href="/customer"
+        className="inline-flex items-center gap-1 text-sm font-semibold text-zinc-500 hover:text-zinc-800 min-h-[44px]"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back to search
+      </Link>
 
-      <div className="ej-anim-fade-up" style={{ animationDelay: '60ms' }}>
-        <Card className="p-4">
-          <div className="flex items-center gap-3">
-            <Avatar name={businessName} logoUrl={logoUrl} size="lg" />
-            <div>
-              <div className="flex items-center gap-1.5">
-                <h1 className="font-bold text-[16px] text-zinc-900">{businessName}</h1>
-                <BadgeCheck className="w-4 h-4 text-indigo-600 fill-indigo-100" />
-              </div>
-              <p className="text-xs text-zinc-500">{tr('customer.quote.verifiedPro')} · {tr('customer.quote.respondsWithinDay')}</p>
-            </div>
+      <div className="bg-white rounded-2xl border border-zinc-200 p-4 flex items-center gap-3">
+        <div className="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center shrink-0 overflow-hidden">
+          {logoUrl ? (
+            <img src={logoUrl} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-lg font-bold text-indigo-600">{businessName.charAt(0)}</span>
+          )}
+        </div>
+        <div>
+          <div className="flex items-center gap-1.5">
+            <h1 className="font-bold text-[15px] text-zinc-900">{businessName}</h1>
+            <BadgeCheck className="w-4 h-4 text-indigo-600" />
           </div>
-        </Card>
+          <p className="text-xs text-zinc-500">Verified pro</p>
+        </div>
       </div>
 
-      <div className="ej-anim-fade-up" style={{ animationDelay: '120ms' }}>
-        <h2 className="text-lg font-bold tracking-tight text-zinc-900">{tr('customer.quote.title')}</h2>
+      <div>
+        <h2 className="text-lg font-bold tracking-tight text-zinc-900">Request a quote</h2>
         <p className="text-sm text-zinc-500 mt-0.5">
-          {tr('customer.quote.hint')}
+          Describe what you need. {businessName} typically responds within a day.
         </p>
       </div>
 
       <form action={formAction} className="space-y-4">
         <input type="hidden" name="businessId" value={businessId} />
 
-        <Field label={tr('customer.quote.whatService')}>
+        <Field label="What service do you need?">
           {services.length > 0 ? (
             <select name="service" required className={inputClass} defaultValue="">
               <option value="" disabled>
-                {tr('customer.quote.selectService')}
+                Select a service…
               </option>
               {services.map((s) => (
                 <option key={s} value={s}>
                   {s}
                 </option>
               ))}
-              <option value="Other">{tr('customer.quote.other')}</option>
+              <option value="Other">Other</option>
             </select>
           ) : (
             <input
@@ -85,13 +84,13 @@ export default function CustomerQuoteForm({
           )}
         </Field>
 
-        <Field label={tr('customer.quote.describeJob')}>
+        <Field label="Describe the job">
           <textarea
             name="description"
             rows={4}
             maxLength={2000}
             required
-            placeholder={tr('customer.quote.describePlaceholder')}
+            placeholder="Tell the pro what you need, when, and any details…"
             className={`${inputClass} resize-none`}
           />
         </Field>
@@ -108,11 +107,11 @@ export default function CustomerQuoteForm({
 
         <button type="submit" disabled={isPending} className={primaryBtnClass}>
           <Send className="w-4 h-4" />
-          {isPending ? tr('customer.quote.sending') : tr('customer.quote.send')}
+          {isPending ? 'Sending…' : 'Send quote request'}
         </button>
 
         <p className="text-xs text-zinc-400 text-center">
-          {tr('customer.quote.freeNote')}
+          Free for you. The pro receives your request as a lead.
         </p>
       </form>
     </div>

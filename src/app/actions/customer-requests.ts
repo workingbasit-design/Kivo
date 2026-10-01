@@ -77,8 +77,8 @@ export async function sendCustomerMessage(formData: FormData) {
     data: { quoteRequestId: requestId, senderType: 'customer', body },
   });
 
-  await prisma.quoteRequest.updateMany({
-    where: { id: requestId, customerId: session.customer.id },
+  await prisma.quoteRequest.update({
+    where: { id: requestId },
     data: { updatedAt: new Date() },
   });
 
