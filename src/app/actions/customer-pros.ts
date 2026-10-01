@@ -12,9 +12,7 @@ export async function toggleSavePro(businessId: string) {
   });
 
   if (existing) {
-    await prisma.savedPro.deleteMany({
-      where: { customerId: session.customer.id, businessId },
-    });
+    await prisma.savedPro.delete({ where: { id: existing.id } });
     return { saved: false };
   }
 

@@ -235,24 +235,9 @@ export function assertTenantScope(params: GuardParams): void {
 
   const where = params.args?.where as Record<string, unknown> | undefined;
   const businessId = where?.businessId;
-  if (typeof businessId === 'string' && businessId.length > 0) {
-    return;
+  if (typeof businessId !== 'string' || businessId.length === 0) {
+    throw new TenantScopeError(model, action);
   }
-  // SavedPro and QuoteRequest are dual-scoped: businesses query by businessId,
-  // customers query by customerId. Allow customer-scoped reads for these models.
-  // (Customer actions always scope by the session's customerId; see customer-*.ts)
-  if ((model === 'SavedPro' || model === 'QuoteRequest')) {
-    const customerId = where?.customerId;
-    if (typeof customerId === 'string' && customerId.length > 0) {
-      return;
-    }
-    // Compound unique key: { customerId_businessId: { customerId, businessId } }
-    const compound = where?.customerId_businessId as Record<string, unknown> | undefined;
-    if (compound && typeof compound.customerId === 'string' && (compound.customerId as string).length > 0) {
-      return;
-    }
-  }
-  throw new TenantScopeError(model, action);
 }
 
 /**
@@ -274,7 +259,7 @@ export async function tenantGuardMiddleware(
  * Logs a warning (non-production) naming the operation so every exemption
  * is greppable: `grep -rn unsafeUnscoped src --include="*.ts"`.
  */
-export async function unsafeUnscoped<T>(
+export function unsafeUnscoped<T>(
   operationName: string,
   fn: (db: PrismaClient) => Promise<T>
 ): Promise<T> {
@@ -289,15 +274,6 @@ export async function unsafeUnscoped<T>(
   // UNGUARDED client — the only reliable bypass. The client is injected via
   // setUnscopedClient() (called by lib/prisma.ts) to avoid a circular
   // runtime import; tests inject a mock.
-  //
-  // NOTE (2026-10-01): the injection above only runs when lib/prisma.ts is
-  // actually evaluated. Bundlers drop it from a route's chunk when nothing
-  // in that route's graph *uses* its exports, so unsafeUnscoped 500'd on
-  // every agent API route in production. Fix: lazily import lib/prisma.ts
-  // here (dynamic import keeps the cycle broken) instead of throwing.
-  if (!unscopedClient) {
-    await import('./prisma.ts');
-  }
   if (!unscopedClient) {
     throw new Error(
       '[tenant-guard] unscoped client not initialized — lib/prisma.ts must call setUnscopedClient()'
