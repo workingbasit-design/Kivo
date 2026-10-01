@@ -12,6 +12,10 @@
     {
       "path": "/api/cron/workflows",
       "schedule": "30 6 * * *"
+    },
+    {
+      "path": "/api/cron/agent-purge",
+      "schedule": "15 3 * * *"
     }
   ]
 }

@@ -331,7 +331,7 @@ export default async function DashboardPage() {
               <Link
                 key={a.label}
                 href={a.href}
-                className="flex flex-col items-center justify-center gap-2 bg-zinc-50 hover:bg-ink/5 border border-zinc-200 hover:border-smoke rounded-2xl p-4 min-h-[88px] transition-colors"
+                className="ej-icon-hover flex flex-col items-center justify-center gap-2 bg-zinc-50 hover:bg-ink/5 border border-zinc-200 hover:border-smoke rounded-2xl p-4 min-h-[88px] transition-colors"
               >
                 <span className="w-9 h-9 rounded-xl bg-ink/10 text-ink flex items-center justify-center">
                   <a.icon size={16} />
