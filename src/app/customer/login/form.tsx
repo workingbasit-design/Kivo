@@ -6,6 +6,7 @@ import { LogIn, AlertCircle, Search } from 'lucide-react';
 import { customerLogin } from '@/app/actions/customer-auth';
 import { t, type Locale } from '@/lib/i18n';
 import { Field, inputClass, primaryBtnClass } from '@/components/ui';
+import { LanguageToggle } from '@/components/LanguageToggle';
 import Logo from '@/components/Logo';
 
 export default function CustomerLoginForm({ locale, next }: { locale: Locale; next?: string | null }) {
@@ -14,12 +15,13 @@ export default function CustomerLoginForm({ locale, next }: { locale: Locale; ne
 
   return (
     <div className="min-h-dvh bg-gradient-to-b from-indigo-50 to-white flex flex-col -m-4 -mt-4">
-      <header className="p-4">
+      <header className="p-4 flex items-center justify-between">
         <Link href="/directory" className="inline-flex items-center gap-2 group">
           <span className="transition-transform duration-300 group-hover:scale-105 group-active:scale-95 inline-flex">
             <Logo />
           </span>
         </Link>
+        <LanguageToggle current={locale} />
       </header>
 
       <main className="flex-1 flex items-center justify-center px-4 pb-12">
