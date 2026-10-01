@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   Search,
   MapPin,
@@ -14,6 +15,7 @@ import {
   Home,
   Bug,
   SearchX,
+  ArrowRight,
 } from 'lucide-react';
 import { toggleSavePro } from '@/app/actions/customer-pros';
 import { t, type Locale } from '@/lib/i18n';
@@ -95,6 +97,26 @@ export default function CustomerHomeClient({
           {tr('customer.home.tagline')}
         </p>
       </div>
+
+      {/* Get it done for me — concierge entry */}
+      <Link
+        href="/customer/concierge"
+        className="ej-anim-fade-up group flex items-center gap-4 rounded-3xl bg-zinc-900 p-5 shadow-sm transition-all hover:shadow-lg active:scale-[0.98]"
+        style={{ animationDelay: '60ms' }}
+      >
+        <span className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center shrink-0 transition-transform group-active:scale-95">
+          <Sparkles size={22} className="text-white" />
+        </span>
+        <span className="flex-1 min-w-0">
+          <span className="block text-[16px] font-bold text-white">
+            {tr('customer.home.getItDone')}
+          </span>
+          <span className="block text-[13px] text-zinc-400 mt-0.5">
+            {tr('customer.home.getItDoneHint')}
+          </span>
+        </span>
+        <ArrowRight size={20} className="text-zinc-500 shrink-0 transition-transform group-hover:translate-x-0.5" />
+      </Link>
 
       <form onSubmit={doSearch} className="ej-anim-fade-up space-y-2" style={{ animationDelay: '80ms' }}>
         <label className="relative block group">
