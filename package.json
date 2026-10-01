@@ -10,14 +10,9 @@
     "test": "node --test --import ./src/lib/__tests__/register-loader.mjs 'src/lib/__tests__/*.test.mts'"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^0.0.34",
-    "@ai-sdk/react": "^4.0.110",
     "@prisma/client": "^5.22.0",
     "@vercel/blob": "^2.8.0",
-    "ai": "^3.4.33",
     "bcryptjs": "^3.0.3",
-    "date-fns": "^4.4.0",
-    "geist": "^1.7.2",
     "libphonenumber-js": "^1.13.13",
     "lucide-react": "^1.47.0",
     "motion": "^13.4.0",

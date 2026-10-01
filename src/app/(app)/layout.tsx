@@ -17,15 +17,16 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // A database outage must NEVER look like a logout: if we can't validate
   // the session, show "try again" instead of bouncing to /login (which used
   // to cause a /login <-> /dashboard redirect loop on pool exhaustion).
-  let session;
+  let session: Awaited<ReturnType<typeof getSession>>;
+  let locale: Awaited<ReturnType<typeof getLocale>>;
   try {
-    session = await getSession();
+    // Session (DB) and locale (cookie) are independent — fetch together.
+    [session, locale] = await Promise.all([getSession(), getLocale()]);
   } catch (err) {
     if (isDatabaseUnavailable(err)) return <PortalNotice variant="unavailable" />;
     throw err;
   }
   if (!session?.user?.businessId) redirect('/login');
-  const locale = await getLocale();
 
   const businessId = session.user.businessId;
 
@@ -52,9 +53,26 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     ]);
     return { business, todayJobs, newLeads };
   };
+  // Shell data and notification sync are independent — start them together
+  // instead of one after the other. The shell keeps its exact error
+  // semantics: a database outage still renders the honest "try again"
+  // notice (never a login redirect, never a generic 500).
+  const shellPromise = loadShell();
+  // Notification center: generate from real records (never seeded), then
+  // count unread for the bell badge. Best-effort — a sync failure must never
+  // break the app shell.
+  const notifPromise = (async () => {
+    try {
+      await syncNotifications(businessId);
+      return await getUnreadCount(businessId);
+    } catch (err) {
+      console.error('[notifications] sync failed', err);
+      return 0;
+    }
+  })();
   let shell: Awaited<ReturnType<typeof loadShell>>;
   try {
-    shell = await loadShell();
+    shell = await shellPromise;
   } catch (err) {
     if (isDatabaseUnavailable(err)) return <PortalNotice variant="unavailable" />;
     throw err;
@@ -65,16 +83,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // count as booked revenue here either — same helper, same totals).
   const { bookedToday, jobsLeftToday } = summarizeTodayJobs(todayJobs);
 
-  // Notification center: generate from real records (never seeded), then
-  // count unread for the bell badge. Best-effort — a sync failure must never
-  // break the app shell.
-  let unreadCount = 0;
-  try {
-    await syncNotifications(businessId);
-    unreadCount = await getUnreadCount(businessId);
-  } catch (err) {
-    console.error('[notifications] sync failed', err);
-  }
+  const unreadCount = await notifPromise;
 
   const user = {
     name: session.user.name ?? null,

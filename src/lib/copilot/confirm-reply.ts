@@ -31,10 +31,14 @@ export function buildConfirmReply(
         )
       : tr('Job booked! ✓\n\n', 'Travail réservé! ✓\n\n')) +
     `${draft.title} — ${customerName}\n` +
-    `${formatDateShort(draft.date)}${draft.time ? `, ${draft.time}` : ''}\n` +
-    `${tr('Price', 'Prix')} : $${
+    // Date renders in the UI locale (fr-CA: "2 oct. 2026", en-CA: "Oct 2, 2026").
+    `${formatDateShort(draft.date, fr ? 'fr-CA' : 'en-CA')}${draft.time ? `, ${draft.time}` : ''}\n` +
+    // formatMoney already includes the currency symbol ($120.00 / 120,00 $),
+    // so no literal $ here — a second one rendered as "$$120.00".
+    // Colon spacing is locale-correct: "Price: " in English, "Prix : " in French.
+    `${tr('Price: ', 'Prix : ')}${
       draft.price !== null && draft.price !== undefined
-        ? formatMoney(draft.price, currency)
+        ? formatMoney(draft.price, currency, fr ? 'fr' : 'en')
         : tr('TBD', 'À déterminer')
     }\n\n` +
     tr('You can see it on the Schedule page.', 'Vous pouvez le voir sur la page Horaire.')

@@ -11,7 +11,9 @@ import {
   matchesServiceKeyword,
   matchesCity,
   isDirectoryAdminEmail,
+  norm,
 } from '@/lib/directory';
+import { interpretServiceNeed, serviceHintKeywords } from '@/lib/concierge';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { botCheckFailed } from '@/lib/bot-check';
@@ -70,12 +72,23 @@ export async function findDirectoryMatches(
     take: 200,
   });
 
+  // Plain-language requests ("leaky faucet repair") are first interpreted
+  // into a trade via the same deterministic interpreter the concierge uses.
+  // A resolved trade matches any business whose name/services mention it;
+  // only unrecognized input falls back to literal every-word matching.
+  const interpreted = interpretServiceNeed(serviceNeed, 'en');
+  const tradeKeywords =
+    interpreted.key === 'general' ? null : serviceHintKeywords(interpreted.key);
+
   return businesses
-    .filter(
-      (b) =>
-        matchesCity(city, b.address) &&
-        matchesServiceKeyword(serviceNeed, b.name, b.services.map((s) => s.name))
-    )
+    .filter((b) => {
+      if (!matchesCity(city, b.address)) return false;
+      if (tradeKeywords && tradeKeywords.length > 0) {
+        const hay = norm(`${b.name} ${b.services.map((s) => s.name).join(' ')}`);
+        return tradeKeywords.some((k) => hay.includes(norm(k)));
+      }
+      return matchesServiceKeyword(serviceNeed, b.name, b.services.map((s) => s.name));
+    })
     .slice(0, limit)
     .map((b) => ({
       id: b.id,
@@ -86,13 +99,11 @@ export async function findDirectoryMatches(
     }));
 }
 
-/** Phone validation that accepts either region (customer may be IN or CA). */
+/** Phone validation — Canada-only. The old IN fallback was pre-Canada Kivo
+ *  leftover (and validatePhone parses as CA regardless), so it never did
+ *  anything. Removed per the Canada-only rule. */
 function validateCustomerPhone(phone: string): { ok: boolean; digits: string | null } {
-  const inCheck = validatePhone(phone, 'IN');
-  if (inCheck.ok && inCheck.digits) return inCheck;
-  const caCheck = validatePhone(phone, 'CA');
-  if (caCheck.ok && caCheck.digits) return caCheck;
-  return { ok: false, digits: null };
+  return validatePhone(phone, 'CA');
 }
 
 const quoteRequestSchema = z.object({

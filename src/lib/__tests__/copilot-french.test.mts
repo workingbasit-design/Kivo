@@ -37,7 +37,9 @@ test('buildConfirmReply: English reply is English, no Hinglish', () => {
   const r = buildConfirmReply(DRAFT, 'Sarah', false, 'CAD', false);
   assert.ok(r.includes('Job booked!'), 'English headline');
   assert.ok(r.includes('You can see it on the Schedule page.'), 'English schedule line');
-  assert.ok(r.includes('Price'), 'English price label');
+  assert.ok(r.includes('Price: $120.00'), 'English price renders exactly once with $, no space before colon');
+  assert.ok(!r.includes('Price :'), 'English must not use French colon spacing');
+  assert.ok(!r.includes('$$'), 'no doubled currency symbol');
   assertNoHinglish(r);
 });
 
@@ -45,7 +47,9 @@ test('buildConfirmReply: French reply is Canadian French, no Hinglish', () => {
   const r = buildConfirmReply(DRAFT, 'Sarah', false, 'CAD', true);
   assert.ok(r.includes('Travail réservé!'), 'French headline');
   assert.ok(r.includes('Vous pouvez le voir sur la page Horaire.'), 'French schedule line');
-  assert.ok(r.includes('Prix'), 'French price label');
+  // fr-CA puts a non-breaking space (U+00A0) before the $.
+  assert.ok(r.includes('Prix : 120,00 $'), 'French price uses fr-CA format');
+  assert.ok(!r.includes('$$'), 'no doubled currency symbol');
   assert.ok(!r.includes('Job booked!'), 'no English headline in French reply');
   assertNoHinglish(r);
 });

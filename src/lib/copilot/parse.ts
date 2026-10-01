@@ -431,9 +431,12 @@ function extractCustomTitle(raw: string): string | null {
   
   let text = trimmed.slice(verbMatch[0].length);
   
-  // Remove date/time expressions
-  text = text.replace(/\s+(for|on|at)\s+(tomorrow|today|monday|tuesday|wednesday|thursday|friday|saturday|sunday|next week|this week).*$/i, '');
-  text = text.replace(/\s+\d{1,2}(:\d{2})?\s*(am|pm).*$/i, '');
+  // Remove trailing time expressions ("at 10am", "10:30 pm")
+  text = text.replace(/\s+(at\s+)?\d{1,2}(:\d{2})?\s*(am|pm)\b.*$/i, '');
+  // Remove date words wherever they trail ("tomorrow", "for Sarah tomorrow",
+  // "E2E3 Copilot Job for tomorrow") — the preposition is optional so a
+  // customer name between "for" and the date doesn't block the strip.
+  text = text.replace(/\s+(for|on|at)?\s*(tomorrow|today|monday|tuesday|wednesday|thursday|friday|saturday|sunday|next week|this week)\b.*$/i, '');
   
   // Remove "for [customer]" pattern at the end
   text = text.replace(/\s+for\s+[A-Z][a-z]+(\s+[A-Z][a-z]+)?$/i, '');

@@ -11,6 +11,7 @@ import {
   interpretServiceNeed,
   buildConciergeMessage,
   isValidIdempotencyKey,
+  serviceHintKeywords,
   CONCIERGE_MAX_PROS,
   CONCIERGE_RATE_LIMIT,
 } from '@/lib/concierge.ts';
@@ -107,4 +108,24 @@ test('isValidIdempotencyKey: accepts UUID-like keys, rejects junk', () => {
   assert.equal(isValidIdempotencyKey('has spaces in it 12345678'), false);
   assert.equal(isValidIdempotencyKey('x'.repeat(129)), false);
   assert.equal(isValidIdempotencyKey('drop-table;--1234567890'), false);
+});
+
+test('serviceHintKeywords: D1 regression — "leaky faucet repair" resolves to plumbing keywords that match a plumbing business', () => {
+  // Customer-POV E2E D1: the public /directory/request form lost this lead
+  // because every-word literal matching failed. The directory now interprets
+  // the need first; lock the mapping this depends on.
+  const need = interpretServiceNeed('leaky faucet repair', 'en');
+  assert.equal(need.key, 'plumbing');
+  const keywords = serviceHintKeywords('plumbing');
+  assert.ok(keywords.includes('faucet'), 'plumbing keywords include "faucet"');
+  const hay = 'maple leaf plumbing plumbing drain cleaning';
+  assert.ok(
+    keywords.some((k) => hay.includes(k)),
+    'at least one plumbing keyword matches the business name/services'
+  );
+});
+
+test('serviceHintKeywords: unknown key returns empty (falls back to literal matching)', () => {
+  assert.deepEqual(serviceHintKeywords('not-a-trade'), []);
+  assert.equal(interpretServiceNeed('xyzzy frobnicate the wobble', 'en').key, 'general');
 });

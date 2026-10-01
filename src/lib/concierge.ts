@@ -157,6 +157,11 @@ export function interpretServiceNeed(
   };
 }
 
+/** Keywords for a trade key — used for directory matching. Empty for unknown keys. */
+export function serviceHintKeywords(key: string): string[] {
+  return SERVICE_HINTS.find((h) => h.key === key)?.keywords ?? [];
+}
+
 export type ConciergeMessageInput = {
   serviceLabel: string;
   description: string;

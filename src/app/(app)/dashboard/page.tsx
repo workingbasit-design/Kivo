@@ -48,24 +48,43 @@ export default async function DashboardPage() {
   // Lazy auto-generation: create jobs for any due recurring plans before
   // rendering, so jobs appear without the user tapping "Generate due jobs".
   // Best-effort — a failure here must never break the dashboard itself.
-  try {
-    await generateDueJobs(businessId);
-  } catch (err) {
-    console.error('[dashboard] recurring generation failed:', err);
-  }
-
-  const business = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true, logoUrl: true } });
-  const currency = business?.currency;
-  const stats = await getDashboardStats(businessId);
-  // Onboarding checklist — completion from the business's real records.
-  const [customerCount, jobCount, quoteCount, invoiceCount, teamCount, googleConn] = await Promise.all([
-    prisma.customer.count({ where: { businessId } }),
-    prisma.job.count({ where: { businessId } }),
-    prisma.quote.count({ where: { businessId } }),
-    prisma.invoice.count({ where: { businessId } }),
-    prisma.user.count({ where: { businessId } }),
-    prisma.googleConnection.findUnique({ where: { businessId }, select: { id: true } }),
+  // It runs alongside the business lookup (independent), and everything
+  // below only starts once generation has finished, so fresh due jobs
+  // are included in the stats.
+  const genPromise = (async () => {
+    try {
+      await generateDueJobs(businessId);
+    } catch (err) {
+      console.error('[dashboard] recurring generation failed:', err);
+    }
+  })();
+  const [business] = await Promise.all([
+    prisma.business.findUnique({ where: { id: businessId }, select: { currency: true, logoUrl: true } }),
+    genPromise,
   ]);
+  const currency = business?.currency;
+  // Stats, onboarding counts and growth data are mutually independent —
+  // one round instead of three.
+  const [stats, counts, growth] = await Promise.all([
+    getDashboardStats(businessId),
+    Promise.all([
+      prisma.customer.count({ where: { businessId } }),
+      prisma.job.count({ where: { businessId } }),
+      prisma.quote.count({ where: { businessId } }),
+      prisma.invoice.count({ where: { businessId } }),
+      prisma.user.count({ where: { businessId } }),
+      prisma.googleConnection.findUnique({ where: { businessId }, select: { id: true } }),
+    ]),
+    (async () => {
+      try {
+        return await getGrowthData(businessId);
+      } catch (err) {
+        console.error('[dashboard] growth data failed:', err);
+        return null;
+      }
+    })(),
+  ]);
+  const [customerCount, jobCount, quoteCount, invoiceCount, teamCount, googleConn] = counts;
   const onboardingCompleted = {
     logo: !!business?.logoUrl,
     customer: customerCount > 0,
@@ -74,13 +93,8 @@ export default async function DashboardPage() {
     google: !!googleConn,
     team: teamCount > 1,
   };
-  // Best-effort: profile strength must never break the dashboard.
-  let growth: Awaited<ReturnType<typeof getGrowthData>> | null = null;
-  try {
-    growth = await getGrowthData(businessId);
-  } catch (err) {
-    console.error('[dashboard] growth data failed:', err);
-  }
+  // Best-effort: profile strength (already resolved above, in parallel
+  // with the stats) must never break the dashboard.
   const todayLabel = formatDateLabel(new Date(), dateLocale);
   const rowDelay = (i: number) => ({ ["--row-delay" as string]: `${Math.min(i, 8) * 45}ms` });
 
@@ -164,6 +178,8 @@ export default async function DashboardPage() {
                     strokeWidth="4"
                     strokeLinecap="round"
                     strokeDasharray={`${growth.score}, 100`}
+                    className="ej-ring-anim"
+                    style={{ ['--ej-score' as string]: growth.score }}
                   />
                 </svg>
                 <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-zinc-900">

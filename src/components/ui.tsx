@@ -32,7 +32,7 @@ export function Card({
   style?: React.CSSProperties;
 }) {
   return (
-    <div className={cn('bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)]', className)} style={style}>
+    <div className={cn('ej-card-lift bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)]', className)} style={style}>
       {children}
     </div>
   );
@@ -52,18 +52,17 @@ export function StatusBadge({ status }: { status: string }) {
 }
 
 /**
- * GlassIcon — Apple-style "liquid glass" icon chip.
- * Frosted translucency (backdrop blur + saturation boost), a bright specular
- * top edge, a hairline light border and a soft drop shadow. Tones reuse the
- * exact accent hues already in the theme — only the finish changes, so the
- * palette stays identical.
+ * GlassIcon — the app's icon chip. Calm flat tint finish: a soft wash of the
+ * tone colour, a crisp glyph, a hairline ring and a whisper of shadow.
+ * (The old frosted-gloss finish read as visual noise at small sizes, so the
+ * gloss goes — the palette stays identical.)
  */
 const GLASS_TONES = {
-  zinc: 'from-white/60 via-zinc-200/80 to-zinc-400/70 text-zinc-700',
-  emerald: 'from-white/60 via-emerald-200/80 to-emerald-400/70 text-emerald-700',
-  amber: 'from-white/60 via-amber-200/80 to-amber-400/70 text-amber-700',
-  blue: 'from-white/60 via-blue-200/80 to-blue-400/70 text-blue-700',
-  indigo: 'from-white/60 via-indigo-200/80 to-indigo-400/70 text-indigo-700',
+  zinc: 'bg-zinc-900/[0.06] text-zinc-600 ring-zinc-900/10',
+  emerald: 'bg-emerald-500/10 text-emerald-700 ring-emerald-600/15',
+  amber: 'bg-amber-500/[0.12] text-amber-700 ring-amber-600/15',
+  blue: 'bg-blue-500/10 text-blue-700 ring-blue-600/15',
+  indigo: 'bg-indigo-500/10 text-indigo-700 ring-indigo-600/15',
 } as const;
 
 export type GlassTone = keyof typeof GLASS_TONES;
@@ -74,13 +73,11 @@ const GLASS_SIZES = {
   lg: 'w-14 h-14 rounded-[20px]',
 } as const;
 
-/** Full glass treatment as a composable class string (for buttons/links). */
+/** Calm flat-tint icon chip as a composable class string (for buttons/links). */
 export function glassClass(tone: GlassTone = 'zinc'): string {
   return cn(
-    'bg-linear-to-br',
-    'backdrop-blur-xl backdrop-saturate-150',
-    'ring-1 ring-inset ring-white/80',
-    'shadow-[inset_0_2px_3px_rgba(255,255,255,0.95),inset_0_-3px_6px_rgba(0,0,0,0.08),0_14px_28px_-12px_rgba(0,0,0,0.35)]',
+    'ring-1 ring-inset',
+    'shadow-[0_1px_2px_rgba(22,22,22,0.05)]',
     GLASS_TONES[tone]
   );
 }
@@ -127,7 +124,7 @@ export function StatCard({
   tone?: GlassTone;
 }) {
   return (
-    <div className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
+    <div className="ej-card-lift bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
       <div className="flex items-center justify-between gap-2 mb-3">
         <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 leading-tight text-balance">{label}</p>
         {icon &&

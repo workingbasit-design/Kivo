@@ -75,7 +75,7 @@ export default function AppSidebar({
         key={item.nameKey}
         href={item.href}
         aria-current={active ? 'page' : undefined}
-        className={`flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70 ${
+        className={`ej-icon-hover flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70 ${
           active
             ? 'bg-lime text-ink shadow-sm'
             : 'text-white/50 hover:bg-white/10 hover:text-white'
@@ -178,7 +178,7 @@ export default function AppSidebar({
                 ? t(locale, 'nav.collapseAdvanced')
                 : t(locale, 'nav.expandAdvanced')
             }
-            className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-white/50 hover:bg-white/10 hover:text-white transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70"
+            className="ej-icon-hover w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-white/50 hover:bg-white/10 hover:text-white transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70"
           >
             <span className="flex items-center gap-3">
               <SlidersHorizontal size={18} className="text-white/50" aria-hidden />
@@ -204,7 +204,7 @@ export default function AppSidebar({
           <LanguageToggle current={locale} tone="dark" />
         </div>
         <form action={logout}>
-          <button className="flex items-center gap-3 px-3 py-2.5 text-white/50 hover:bg-white/10 hover:text-white transition-colors rounded-xl w-full text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70">
+          <button className="ej-icon-hover flex items-center gap-3 px-3 py-2.5 text-white/50 hover:bg-white/10 hover:text-white transition-colors rounded-xl w-full text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70">
             <div className="w-9 h-9 rounded-full bg-lime text-ink flex items-center justify-center text-sm font-bold shrink-0">
               {(user.name || user.email).charAt(0).toUpperCase()}
             </div>
