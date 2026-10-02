@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import DispatcherMap, { type MapPin } from '@/components/DispatcherMap';
 import { Card } from '@/components/ui';
 import { t } from '@/lib/i18n';
@@ -88,12 +89,12 @@ export default function LiveTrackingMap({ locale = 'en' }: { locale?: Locale }) 
         <p className="mx-auto mt-2 max-w-sm text-sm text-zinc-500">
           {t(locale, 'gps.noJobsDesc') || 'When you have scheduled jobs, they\'ll appear here. Your technician\'s live location shows on the map once they start sharing.'}
         </p>
-        <a
+        <Link
           href="/jobs/new"
           className="mt-4 inline-flex items-center rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-zinc-700"
         >
           + {t(locale, 'gps.scheduleJob') || 'Schedule a job'}
-        </a>
+        </Link>
       </div>
     );
   }

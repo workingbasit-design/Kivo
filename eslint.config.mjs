@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Local backup dir (not real source):
+    "node_modules.bak/**",
   ]),
 ]);
 

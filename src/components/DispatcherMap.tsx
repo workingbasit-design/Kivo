@@ -28,15 +28,27 @@ const LEAFLET_VERSION = '1.9.4';
 const LEAFLET_CSS = `https://unpkg.com/leaflet@${LEAFLET_VERSION}/dist/leaflet.css`;
 const LEAFLET_JS = `https://unpkg.com/leaflet@${LEAFLET_VERSION}/dist/leaflet.js`;
 
+type LeafletMap = {
+  setView: (center: [number, number], zoom: number) => LeafletMap;
+  fitBounds: (bounds: unknown) => LeafletMap;
+  remove: () => void;
+  on: (event: string, handler: () => void) => void;
+  scrollWheelZoom: { enable: () => void };
+};
+type LeafletLayerGroup = {
+  addTo: (m: LeafletMap) => LeafletLayerGroup;
+  clearLayers: () => void;
+};
+type LeafletMarker = {
+  bindPopup: (html: string) => { addTo: (l: LeafletLayerGroup) => void };
+};
 type LeafletNS = {
-  map: (el: HTMLElement, opts?: Record<string, unknown>) => any;
-  tileLayer: (url: string, opts?: Record<string, unknown>) => { addTo: (m: any) => void };
-  layerGroup: () => any;
+  map: (el: HTMLElement, opts?: Record<string, unknown>) => LeafletMap;
+  tileLayer: (url: string, opts?: Record<string, unknown>) => { addTo: (m: LeafletMap) => void };
+  layerGroup: () => LeafletLayerGroup;
   divIcon: (opts: Record<string, unknown>) => unknown;
   latLngBounds: (pts: Array<[number, number]>) => { pad: (n: number) => unknown };
-  marker: (pt: [number, number], opts?: Record<string, unknown>) => {
-    bindPopup: (html: string) => { addTo: (l: any) => void };
-  };
+  marker: (pt: [number, number], opts?: Record<string, unknown>) => LeafletMarker;
 };
 
 function leaflet(): LeafletNS | null {
@@ -136,10 +148,10 @@ export default function DispatcherMap({
   className?: string;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<any>(null);
-  const layerRef = useRef<any>(null);
+  const mapRef = useRef<LeafletMap | null>(null);
+  const layerRef = useRef<LeafletLayerGroup | null>(null);
   const pinsRef = useRef<MapPin[]>(pins);
-  pinsRef.current = pins;
+  // (pinsRef sync moved below, next to drawRef — effects only, never during render)
   const [mapReady, setMapReady] = useState(false);
   const [mapFailed, setMapFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
@@ -177,7 +189,15 @@ export default function DispatcherMap({
     if (pts.length === 0) fittedRef.current = false;
   };
   const drawRef = useRef(drawPins);
-  drawRef.current = drawPins;
+  // Keep the "latest value" mirrors in effects — reading/writing refs during
+  // render is not allowed. Declared before the init/redraw effects so they
+  // always see fresh values (effects run in declaration order).
+  useEffect(() => {
+    pinsRef.current = pins;
+  });
+  useEffect(() => {
+    drawRef.current = drawPins;
+  });
 
   const recenter = () => drawRef.current(true);
 

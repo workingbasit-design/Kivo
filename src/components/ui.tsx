@@ -438,7 +438,10 @@ export function Dialog({
   // multi-digit price kept only the first digit; the rest leaked into the
   // name field).
   const onCloseRef = React.useRef(onClose);
-  onCloseRef.current = onClose;
+  // Keep the latest onClose in an effect — never write refs during render.
+  React.useEffect(() => {
+    onCloseRef.current = onClose;
+  });
 
   React.useEffect(() => {
     if (!open) return;

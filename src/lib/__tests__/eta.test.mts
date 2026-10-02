@@ -54,11 +54,11 @@ test('fetchDrivingEta returns null for invalid coordinates', async () => {
 
 test('fetchDrivingEta parses a valid OSRM response', async () => {
   const realFetch = globalThis.fetch;
-  (globalThis as any).fetch = async () =>
+  globalThis.fetch = (async () =>
     new Response(
       JSON.stringify({ routes: [{ distance: 3210.5, duration: 482 }] }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
-    );
+    )) as typeof globalThis.fetch;
   try {
     const eta = await fetchDrivingEta(43.65, -79.38, 43.7, -79.4);
     assert.deepEqual(eta, { distanceM: 3210.5, durationS: 482 });
@@ -69,9 +69,9 @@ test('fetchDrivingEta parses a valid OSRM response', async () => {
 
 test('fetchDrivingEta returns null when OSRM fails', async () => {
   const realFetch = globalThis.fetch;
-  (globalThis as any).fetch = async () => {
+  globalThis.fetch = (async () => {
     throw new Error('network down');
-  };
+  }) as typeof globalThis.fetch;
   try {
     // Use fresh coordinates to avoid the success-case cache entry above.
     assert.equal(await fetchDrivingEta(44.1, -79.1, 44.2, -79.2), null);

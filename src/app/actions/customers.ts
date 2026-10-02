@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
+import { logger } from '@/lib/logger';
 import { requireAuth } from '@/lib/auth';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { customerSchema } from '@/lib/validations';
@@ -109,7 +110,7 @@ export async function createCustomer(
       name: customer.name,
     });
   } catch (err) {
-    console.error('[customers] customer.created webhook failed', err);
+    logger.error('customers: customer.created webhook failed', { businessId, customerId: customer.id, error: err });
   }
 
   revalidatePath('/customers');

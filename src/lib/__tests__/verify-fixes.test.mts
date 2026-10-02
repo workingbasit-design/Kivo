@@ -18,8 +18,9 @@ const {
   extractServiceTitle,
 } = await import('../copilot/parse.ts');
 const { resetWriteCalls, clearFixtures } = await import('./prisma-stub.mjs');
+import type { CopilotHistoryItem } from '../copilot/parse.ts';
 
-async function ask(message: string, history: any[] = []) {
+async function ask(message: string, history: CopilotHistoryItem[] = []) {
   resetWriteCalls();
   clearFixtures();
   return runCopilot('biz-verify', 'user-verify', message, history);

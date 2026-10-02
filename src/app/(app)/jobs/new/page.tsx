@@ -74,8 +74,8 @@ export default async function NewJobPage({
         {customers.length === 0 ? (
           <div className="space-y-5">
             <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium rounded-xl px-4 py-3">
-              You don't have any customers yet. Add the customer inline below —
-              they'll be saved automatically.
+              You don&apos;t have any customers yet. Add the customer inline below —
+              they&apos;ll be saved automatically.
             </div>
             <JobForm customers={[]} initial={initial} action={createJobWithOfflineFallback} submitLabel="Create job" />
           </div>

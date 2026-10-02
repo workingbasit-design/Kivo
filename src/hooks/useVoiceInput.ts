@@ -62,16 +62,20 @@ export function isVoiceSupported(): boolean {
 }
 
 export function useVoiceInput(initialLang: VoiceLang = 'en-CA') {
-  const [state, setState] = useState<VoiceState>('idle');
+  // 'unsupported' is decided once at mount via lazy initializer (SSR-safe).
+  const [state, setState] = useState<VoiceState>(() =>
+    typeof window === 'undefined' || getRecognitionCtor() ? 'idle' : 'unsupported'
+  );
   const [lang, setLang] = useState<VoiceLang>(initialLang);
   const [transcript, setTranscript] = useState(''); // final transcript
   const [interim, setInterim] = useState(''); // live interim transcript
   const recRef = useRef<SpeechRecognitionInstance | null>(null);
   const langRef = useRef(lang);
-  langRef.current = lang;
+  useEffect(() => {
+    langRef.current = lang;
+  });
 
   useEffect(() => {
-    if (!getRecognitionCtor()) setState('unsupported');
     return () => {
       recRef.current?.abort();
       recRef.current = null;

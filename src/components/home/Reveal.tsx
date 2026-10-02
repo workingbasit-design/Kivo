@@ -21,15 +21,18 @@ export default function Reveal({
   as?: 'div' | 'section' | 'li' | 'span';
 }) {
   const ref = useRef<HTMLElement | null>(null);
-  const [visible, setVisible] = useState(false);
+  // Reduced-motion users see content immediately — decided once at mount via
+  // lazy initializer so the effect below never calls setState synchronously.
+  const [visible, setVisible] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
 
   useEffect(() => {
+    if (visible) return; // reduced-motion: already visible, no observer needed
     const el = ref.current;
     if (!el) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setVisible(true);
-      return;
-    }
     const io = new IntersectionObserver(
       (entries) => {
         if (entries[0]?.isIntersecting) {
@@ -41,7 +44,7 @@ export default function Reveal({
     );
     io.observe(el);
     return () => io.disconnect();
-  }, []);
+  }, [visible]);
 
   return (
     <Tag

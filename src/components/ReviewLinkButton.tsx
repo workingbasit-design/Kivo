@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Check, Link2, Loader2 } from 'lucide-react';
 import { createReviewRequest } from '@/app/actions/review-requests';
 import { cn } from '@/lib/utils';
@@ -23,16 +23,15 @@ export default function ReviewLinkButton({
   errorLabel: string;
   className?: string;
 }) {
-  // Set after mount so SSR and the first client render agree.
-  const [origin, setOrigin] = useState('');
+  // Read after mount so SSR and the first client render agree (avoids
+  // hydration mismatch): lazy initializer runs on the client only.
+  const [origin] = useState(() =>
+    typeof window === 'undefined' ? '' : window.location.origin
+  );
   const [status, setStatus] = useState<'idle' | 'working' | 'copied' | 'error'>(
     'idle'
   );
   const [manualLink, setManualLink] = useState('');
-
-  useEffect(() => {
-    setOrigin(window.location.origin);
-  }, []);
 
   async function run() {
     setStatus('working');

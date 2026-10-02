@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Check, Link2, Loader2, Star } from 'lucide-react';
 import { t, type Locale } from '@/lib/i18n';
 import { Card } from '@/components/ui';
@@ -38,16 +38,15 @@ export default function ReviewRequestCard({
   locale: Locale;
 }) {
   const tr = (k: string) => t(locale, `jobops.reviewRequest.${k}`);
-  // Set after mount so SSR and the first client render agree.
-  const [origin, setOrigin] = useState('');
+  // Read after mount so SSR and the first client render agree (avoids
+  // hydration mismatch): lazy initializer runs on the client only.
+  const [origin] = useState(() =>
+    typeof window === 'undefined' ? '' : window.location.origin
+  );
   const [status, setStatus] = useState<'idle' | 'working' | 'done' | 'error'>('idle');
   const [error, setError] = useState('');
   const [link, setLink] = useState('');
   const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    setOrigin(window.location.origin);
-  }, []);
 
   async function run() {
     setStatus('working');

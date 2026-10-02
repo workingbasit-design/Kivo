@@ -45,6 +45,7 @@
  */
 import { AsyncLocalStorage } from 'node:async_hooks';
 import type { PrismaClient } from '@prisma/client';
+import { logger } from './logger.ts';
 
 /**
  * The unguarded client, injected by lib/prisma.ts via setUnscopedClient().
@@ -297,9 +298,8 @@ export async function unsafeUnscoped<T>(
   operationName: string,
   fn: (db: PrismaClient) => Promise<T>
 ): Promise<T> {
-  if (process.env.NODE_ENV !== 'production') {
-    console.warn(`[tenant-guard] unscoped query block: ${operationName}`);
-  }
+  // debug preserves the original dev-only semantics (debug is off in production).
+  logger.debug('tenant-guard: unscoped query block', { operation: operationName });
   // NOTE (2026-09-28): the old AsyncLocalStorage-based exemption was removed.
   // Prisma's `$use` middleware does not preserve ALS context (it runs from
   // Prisma's internal engine scheduling, outside the caller's async chain),

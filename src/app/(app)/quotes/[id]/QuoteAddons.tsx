@@ -76,21 +76,36 @@ export default function QuoteAddons({
   strings: QuoteAddonsStrings;
   locale?: Locale;
 }) {
-  const [createState, createAction, createPending] = useActionState<ActionResult, FormData>(
-    createQuoteAddon,
-    {}
-  );
-  const [updateState, updateAction, updatePending] = useActionState<ActionResult, FormData>(
-    updateQuoteAddon,
-    {}
-  );
-  const [deleteState, deleteAction, deletePending] = useActionState<ActionResult, FormData>(
-    deleteQuoteAddon,
-    {}
-  );
   const [editingId, setEditingId] = useState<string | null>(null);
   const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
+  // Wrap the server actions so editors close on success right in the
+  // submission handler (user-initiated) instead of syncing via effects.
+  const [createState, createAction, createPending] = useActionState<ActionResult, FormData>(
+    async (prev, formData) => {
+      const result = await createQuoteAddon(prev, formData);
+      if (result?.ok) setShowAdd(false);
+      return result;
+    },
+    {}
+  );
+  const [updateState, updateAction, updatePending] = useActionState<ActionResult, FormData>(
+    async (prev, formData) => {
+      const result = await updateQuoteAddon(prev, formData);
+      if (result?.ok) setEditingId(null);
+      return result;
+    },
+    {}
+  );
+  const [deleteState, deleteAction, deletePending] = useActionState<ActionResult, FormData>(
+    async (prev, formData) => {
+      const result = await deleteQuoteAddon(prev, formData);
+      if (result?.ok) setConfirmingDeleteId(null);
+      return result;
+    },
+    {}
+  );
+  // (Editor tidy-up now happens in the action wrappers above.)
 
   useResultToast(createState, {
     success: t(locale, 't10money.addonSaved'),
@@ -102,16 +117,7 @@ export default function QuoteAddons({
     success: t(locale, 't10money.addonDeleted'),
   });
 
-  // Tidy up open editors after a successful action.
-  React.useEffect(() => {
-    if (createState?.ok) setShowAdd(false);
-  }, [createState]);
-  React.useEffect(() => {
-    if (updateState?.ok) setEditingId(null);
-  }, [updateState]);
-  React.useEffect(() => {
-    if (deleteState?.ok) setConfirmingDeleteId(null);
-  }, [deleteState]);
+  // (Editor tidy-up now happens in the action wrappers above.)
 
   const locked = status === 'APPROVED';
   const error = createState?.error || updateState?.error || deleteState?.error;

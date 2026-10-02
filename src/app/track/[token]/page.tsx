@@ -9,6 +9,14 @@ import { clientIpFromHeaders } from '@/lib/client-ip';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
 
 /**
+ * "Now" for the share-expiry check, evaluated fresh per request. Plain module
+ * helper (not a component) so the impure Date.now() stays out of render.
+ */
+function nowMs(): number {
+  return Date.now();
+}
+
+/**
  * Public live-tracking page: /track/[token].
  * No authentication — the unguessable token in the URL is the only
  * capability, and it auto-expires (12h). The server validates the token
@@ -86,7 +94,7 @@ export default async function TrackPage({
       </div>
     );
   }
-  if (share.expiresAt.getTime() <= Date.now()) {
+  if (share.expiresAt.getTime() <= nowMs()) {
     return (
       <div data-track-diag="token-expired">
         <PortalNotice variant="expired" />

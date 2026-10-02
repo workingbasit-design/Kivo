@@ -9,9 +9,9 @@
  *
  * Idempotent: invoices that already have line items are skipped.
  *
- * Run: node scripts/migrate-invoice-line-items.js
+ * Run: node scripts/migrate-invoice-line-items.mjs
  */
-const { PrismaClient } = require('@prisma/client');
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 const round2 = (n) => Math.round(n * 100) / 100;

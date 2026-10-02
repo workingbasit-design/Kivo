@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useActionState, useEffect, useTransition } from 'react';
+import React, { useActionState, useTransition } from 'react';
 import { AlertCircle, Trash2, UserPlus, ShieldCheck, User } from 'lucide-react';
 import { toast } from 'sonner';
 import { inviteTeamMember, removeTeamMember, type SettingsResult } from '@/app/actions/settings';
@@ -18,20 +18,22 @@ export type TeamMember = {
 
 function InviteForm() {
   const { t } = useResolvedT();
+  const [show, setShow] = React.useState(false);
+  // Handle the result in the submission handler (user-initiated) instead of
+  // syncing via an effect.
   const [state, formAction, isPending] = useActionState<SettingsResult, FormData>(
-    inviteTeamMember,
+    async (prev, formData) => {
+      const result = await inviteTeamMember(prev, formData);
+      if (result?.ok) {
+        toast.success(t('t10misc.team.added'));
+        setShow(false);
+      } else if (result?.error) {
+        toast.error(result.error);
+      }
+      return result;
+    },
     {}
   );
-  const [show, setShow] = React.useState(false);
-
-  useEffect(() => {
-    if (state?.ok) {
-      toast.success(t('t10misc.team.added'));
-      setShow(false);
-    } else if (state?.error) {
-      toast.error(state.error);
-    }
-  }, [state, t]);
 
   return (
     <div>

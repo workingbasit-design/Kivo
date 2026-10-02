@@ -41,7 +41,6 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
   const locale: Locale = useLocale();
   const tr = (path: string) => t(locale, path);
   const localeRef = useRef(locale);
-  localeRef.current = locale;
 
   const [jobId, setJobId] = useState(jobs[0]?.id ?? '');
   const [state, setState] = useState<ShareState>('idle');
@@ -57,9 +56,15 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
   const watchIdRef = useRef<number | null>(null);
   const wakeLockRef = useRef<{ release: () => Promise<void> } | null>(null);
   const jobIdRef = useRef(jobId);
-  jobIdRef.current = jobId;
   const stateRef = useRef(state);
-  stateRef.current = state;
+
+  // Keep the "latest value" mirrors in an effect — never during render.
+  // (Async geolocation/fetch callbacks read these.)
+  useEffect(() => {
+    localeRef.current = locale;
+    jobIdRef.current = jobId;
+    stateRef.current = state;
+  });
 
   const say = useCallback(
     (kind: 'info' | 'error', msg: string) => {
@@ -261,16 +266,21 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
     }
   }, [linkBusy, say, tr]);
 
+  // Reset link state during render when the selected job changes, so the
+  // fetch effect below stays free of synchronous setState calls.
+  const [prevJobId, setPrevJobId] = useState<string | null>(null);
+  if (prevJobId !== jobId) {
+    setPrevJobId(jobId);
+    setLinkUrl(null);
+    setLinkExpiresAt(null);
+    setLinkBusy(jobId !== '');
+  }
+
   // Load the existing active link for the selected job (if any) so a page
   // reload doesn't hide a link that's still valid.
   useEffect(() => {
-    if (!jobId) {
-      setLinkUrl(null);
-      setLinkExpiresAt(null);
-      return;
-    }
+    if (!jobId) return;
     let cancelled = false;
-    setLinkBusy(true);
     fetch(`/api/tracking/share?jobId=${encodeURIComponent(jobId)}`)
       .then((res) => (res.ok ? res.json() : { url: null }))
       .then((data: { url: string | null; expiresAt?: string }) => {

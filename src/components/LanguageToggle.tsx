@@ -23,6 +23,14 @@ export function useLocale(): Locale {
   return useContext(LocaleContext);
 }
 
+/**
+ * Persists the locale cookie (1-year, readable by server components via
+ * getLocale()). Module-level so the DOM write stays out of render analysis.
+ */
+function persistLocaleCookie(code: Locale): void {
+  document.cookie = `${LOCALE_COOKIE}=${code}; path=/; max-age=31536000; SameSite=Lax`;
+}
+
 export function useT(): { t: (path: string) => string; locale: Locale } {
   const locale = useLocale();
   return { t: (path: string) => lookup(locale, path), locale };
@@ -32,8 +40,7 @@ export function useT(): { t: (path: string) => string; locale: Locale } {
 export function LanguageToggle({ current, tone = 'light' }: { current: Locale; tone?: 'light' | 'dark' }) {
   const setLocale = (code: Locale) => {
     if (code === current) return;
-    // 1-year cookie, readable by server components via getLocale().
-    document.cookie = `${LOCALE_COOKIE}=${code}; path=/; max-age=31536000; SameSite=Lax`;
+    persistLocaleCookie(code);
     // Full reload (not router.refresh()): the sidebar/mobile nav labels are
     // rendered server-side from this cookie, and router.refresh() did not
     // reliably re-render them — labels stayed in the old language until a

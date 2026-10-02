@@ -14,6 +14,64 @@ import { getLocale } from '@/lib/i18n/server';
 
 export const maxDuration = 30;
 
+/**
+ * GET /api/copilot?type=customers&q=… | ?type=services
+ *
+ * Lookup lists for the guided copilot flows (pick a customer, pick a
+ * service). Tenant-scoped, auth-checked, rate-limited. Read-only.
+ */
+const lookupQuerySchema = z.object({
+  type: z.enum(['customers', 'services']),
+  q: z.string().trim().max(80).optional(),
+});
+
+export async function GET(req: Request) {
+  const originCheck = checkSameOrigin(req);
+  if (!originCheck.ok) return originForbidden(originCheck.reason);
+
+  const session = await getSession();
+  const businessId = session?.user?.businessId;
+  if (!session || !businessId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const rl = rateLimit(`copilot-lookup:${session.user.id}`, { limit: 60, windowMs: 60_000 });
+  if (!rl.ok) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
+  const url = new URL(req.url);
+  const parsed = lookupQuerySchema.safeParse({
+    type: url.searchParams.get('type'),
+    q: url.searchParams.get('q') ?? undefined,
+  });
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid lookup request' }, { status: 400 });
+  }
+
+  if (parsed.data.type === 'services') {
+    const services = await prisma.service.findMany({
+      where: { businessId },
+      select: { id: true, name: true, price: true },
+      orderBy: { name: 'asc' },
+      take: 12,
+    });
+    return NextResponse.json({ services });
+  }
+
+  const q = parsed.data.q;
+  const customers = await prisma.customer.findMany({
+    where: {
+      businessId,
+      ...(q ? { name: { contains: q, mode: 'insensitive' } } : {}),
+    },
+    select: { id: true, name: true, phone: true, address: true },
+    orderBy: { updatedAt: 'desc' },
+    take: 8,
+  });
+  return NextResponse.json({ customers });
+}
+
 /** Strict YYYY-MM-DD: rejects rolled-over dates like 2026-02-30. */
 const strictDate = z
   .string()

@@ -63,6 +63,11 @@ export async function requestPasswordReset(
   }
   const { email } = parsed.data;
 
+  // Per-email bucket alongside the per-IP one: without it, an attacker
+  // could flood one victim's inbox with reset emails by rotating IPs.
+  const rlEmail = rateLimit(`pw-reset-email:${email}`, AUTH_LIMIT);
+  if (!rlEmail.ok) return tooMany(rlEmail);
+
   const user = await prisma.user.findUnique({
     where: { email },
     select: { id: true, email: true, name: true, passwordHash: true },

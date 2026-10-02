@@ -69,6 +69,7 @@ export async function GET(req: Request) {
   try {
     webhookStats = await dispatchWebhookRetries(50);
   } catch (err) {
+    // TODO(logging): migrate to structured logger (src/lib/logger.ts)
     console.error('[cron] webhook retries failed:', err);
   }
 
@@ -76,6 +77,7 @@ export async function GET(req: Request) {
   try {
     pingsPruned = await pruneStaleLocationPings();
   } catch (err) {
+    // TODO(logging): migrate to structured logger (src/lib/logger.ts)
     console.error('[cron] GPS ping pruning failed:', err);
   }
 
@@ -83,6 +85,7 @@ export async function GET(req: Request) {
   try {
     rateLimitsPruned = await pruneRateLimits();
   } catch (err) {
+    // TODO(logging): migrate to structured logger (src/lib/logger.ts)
     console.error('[cron] Rate-limit pruning failed:', err);
   }
 
@@ -90,10 +93,11 @@ export async function GET(req: Request) {
   try {
     leadsExpired = await expireOldLeads();
   } catch (err) {
+    // TODO(logging): migrate to structured logger (src/lib/logger.ts)
     console.error('[cron] Lead expiry failed:', err);
   }
 
-  let calendarSyncs = { ok: 0, skipped: 0 };
+  const calendarSyncs = { ok: 0, skipped: 0 };
   try {
     // Cron fan-out (CRON_SECRET at route entry): enumerate calendar
     // connections. Each sync runs inside its own tenant scope in
@@ -110,11 +114,13 @@ export async function GET(req: Request) {
         if (r.ok) calendarSyncs.ok++;
         else calendarSyncs.skipped++;
       } catch (err) {
+        // TODO(logging): migrate to structured logger (src/lib/logger.ts)
         console.error(`[cron] calendar sync failed for ${c.businessId}:`, err);
         calendarSyncs.skipped++;
       }
     }
   } catch (err) {
+    // TODO(logging): migrate to structured logger (src/lib/logger.ts)
     console.error('[cron] calendar sync sweep failed:', err);
   }
 

@@ -64,29 +64,34 @@ export default function PortalLinkManager({
   const [tokenId, setTokenId] = useState<string | null>(initialTokenId);
   const [confirming, setConfirming] = useState<'regen' | 'revoke' | null>(null);
 
+  // Wrap the server actions so token state updates on success right in the
+  // submission handler (user-initiated) instead of syncing via effects.
   const [regenState, regenFormAction, regenPending] = useActionState<RegenResult, FormData>(
-    createPortalLink,
+    async (prev, formData) => {
+      const result = await createPortalLink(prev, formData);
+      if (result?.ok && result.token) {
+        setToken(result.token);
+        setTokenId(result.tokenId ?? null);
+        setConfirming(null);
+      }
+      return result;
+    },
     {}
   );
   const [revokeState, revokeFormAction, revokePending] = useActionState<PortalActionResult, FormData>(
-    revokePortalLink,
+    async (prev, formData) => {
+      const result = await revokePortalLink(prev, formData);
+      if (result?.ok) {
+        setToken(null);
+        setTokenId(null);
+        setConfirming(null);
+      }
+      return result;
+    },
     {}
   );
 
-  useEffect(() => {
-    if (regenState?.ok && regenState.token) {
-      setToken(regenState.token);
-      setTokenId(regenState.tokenId ?? null);
-      setConfirming(null);
-    }
-  }, [regenState]);
-  useEffect(() => {
-    if (revokeState?.ok) {
-      setToken(null);
-      setTokenId(null);
-      setConfirming(null);
-    }
-  }, [revokeState]);
+  // (Token-state sync now happens in the action wrappers above.)
 
   useResultToast(regenState, {
     success: t(locale, 't10money.portalLinkCreated'),
@@ -95,11 +100,11 @@ export default function PortalLinkManager({
     success: t(locale, 't10money.portalLinkRevoked'),
   });
 
-  // Set after mount so SSR and the first client render agree.
-  const [origin, setOrigin] = useState('');
-  useEffect(() => {
-    setOrigin(window.location.origin);
-  }, []);
+  // Read after mount so SSR and the first client render agree (avoids
+  // hydration mismatch): lazy initializer runs on the client only.
+  const [origin] = useState(() =>
+    typeof window === 'undefined' ? '' : window.location.origin
+  );
   const url = token ? `${origin}/portal/${token}` : null;
 
   const error = regenState?.error || revokeState?.error;

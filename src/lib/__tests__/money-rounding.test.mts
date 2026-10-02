@@ -23,7 +23,7 @@ import { parseHourlyRateInput } from '../costing.ts';
 /** Historically-bad values from the production incident. */
 const BAD_VALUES = ['99.99', '199.99', '19.99', '149.50', '0', '10000'];
 
-function priceOf(schema: { parse: (v: unknown) => any }, input: unknown, field: string) {
+function priceOf(schema: { parse: (v: unknown) => unknown }, input: unknown, field: string) {
   const base: Record<string, unknown> = {
     name: 'Test Service',
     title: 'Test Quote',
@@ -31,7 +31,7 @@ function priceOf(schema: { parse: (v: unknown) => any }, input: unknown, field: 
     date: '2026-10-01',
     invoiceId: 'inv_1',
   };
-  const parsed = schema.parse({ ...base, [field]: input });
+  const parsed = schema.parse({ ...base, [field]: input }) as Record<string, unknown>;
   return parsed[field] as number;
 }
 

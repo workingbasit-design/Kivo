@@ -68,16 +68,23 @@ function AddReviewForm({
   eligibleJobs: EligibleJobOption[];
   locale: Locale;
 }) {
-  const [state, formAction, isPending] = useActionState<ReviewResult, FormData>(createReview, {});
   const [show, setShow] = React.useState(false);
+  // Wrap so the form closes on success in the submission handler
+  // (user-initiated) instead of syncing via an effect.
+  const [state, formAction, isPending] = useActionState<ReviewResult, FormData>(
+    async (prev, formData) => {
+      const result = await createReview(prev, formData);
+      if (result?.ok) setShow(false);
+      return result;
+    },
+    {}
+  );
 
   useResultToast(state, {
     success: t(locale, 't10money.reviewSaved'),
   });
 
-  useEffect(() => {
-    if (state?.ok) setShow(false);
-  }, [state]);
+  // (Form tidy-up now happens in the action wrapper above.)
 
   return (
     <div>
@@ -171,7 +178,7 @@ function ReviewRow({ review, locale }: { review: ReviewItem; locale: Locale }) {
     <div className="px-5 py-4 border-b border-zinc-100 last:border-0">
       {error && (
         <div className="bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2 mb-2">
-          Couldn't delete: {error}
+          Couldn&apos;t delete: {error}
         </div>
       )}
       <div className="flex items-start justify-between gap-4">

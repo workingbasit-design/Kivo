@@ -1,4 +1,5 @@
 import { getLocale } from '@/lib/i18n/server';
+import Link from 'next/link';
 import { t, type Locale } from '@/lib/i18n';
 import {
   HELP_CATEGORIES,
@@ -73,7 +74,7 @@ export default async function HelpPage({
       </form>
 
       <div className="mt-4 flex flex-wrap gap-2" aria-label={t(locale, 'support.categoriesLabel')}>
-        <a
+        <Link
           href="/help"
           className={`rounded-full px-4 py-2 text-sm font-medium min-h-[44px] inline-flex items-center ${
             !activeCat
@@ -82,9 +83,9 @@ export default async function HelpPage({
           }`}
         >
           {t(locale, 'support.allLabel')}
-        </a>
+        </Link>
         {HELP_CATEGORIES.map((c) => (
-          <a
+          <Link
             key={c.id}
             href={`/help?cat=${c.id}${query ? `&q=${encodeURIComponent(query)}` : ''}`}
             className={`rounded-full px-4 py-2 text-sm font-medium min-h-[44px] inline-flex items-center ${
@@ -94,7 +95,7 @@ export default async function HelpPage({
             }`}
           >
             {c[locale]}
-          </a>
+          </Link>
         ))}
       </div>
 

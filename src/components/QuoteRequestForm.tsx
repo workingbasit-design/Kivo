@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useEffect, useState } from 'react';
+import { useActionState, useState } from 'react';
 import Link from 'next/link';
 import { AlertCircle, CheckCircle2, Clock, MessageSquareQuote, Send } from 'lucide-react';
 import { submitQuoteRequest, type DirectoryActionResult } from '@/app/actions/directory';
@@ -20,11 +20,9 @@ export default function QuoteRequestForm() {
 
   // Bot protection: hidden timestamp set when the form first renders.
   // The server rejects submissions that arrive impossibly fast (bots) or
-  // with the honeypot filled. Set in an effect to stay hydration-safe.
-  const [formStartedAt, setFormStartedAt] = useState('');
-  useEffect(() => {
-    setFormStartedAt(String(Date.now()));
-  }, []);
+  // with the honeypot filled. Lazy initializer keeps the impure Date.now()
+  // out of the render path.
+  const [formStartedAt] = useState(() => String(Date.now()));
 
   const labelClass = 'block text-xs font-bold text-zinc-700 mb-1';
 

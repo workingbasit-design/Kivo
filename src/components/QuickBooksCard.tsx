@@ -28,6 +28,26 @@ interface SyncResult {
   items: SyncItemResult[];
 }
 
+type Banner = { kind: 'ok' | 'warn' | 'error'; text: string } | null;
+
+/** Reads the QuickBooks OAuth callback code (?quickbooks=…) once. Null on the server. */
+function readQuickbooksCode(): string | null {
+  if (typeof window === 'undefined') return null;
+  return new URLSearchParams(window.location.search).get('quickbooks');
+}
+
+function qbBannerKey(code: string): string {
+  return code === 'connected'
+    ? 'statusConnected'
+    : code === 'denied'
+      ? 'statusDenied'
+      : code === 'invalid-state'
+        ? 'statusInvalid'
+        : code === 'rate-limited'
+          ? 'statusRateLimited'
+          : 'statusError';
+}
+
 const ENTITY_LABEL: Record<SyncItemResult['entityType'], string> = {
   customer: 'Customers',
   invoice: 'Invoices',
@@ -56,43 +76,47 @@ export default function QuickBooksCard({
   initialLastSyncAt: string | null;
   sandbox: boolean;
 }) {
-  const [connected, setConnected] = useState(initialConnected);
+  const [connected, setConnected] = useState(
+    () => initialConnected || readQuickbooksCode() === 'connected'
+  );
   const [lastSyncAt, setLastSyncAt] = useState<string | null>(initialLastSyncAt);
-  const [banner, setBanner] = useState<{ kind: 'ok' | 'warn' | 'error'; text: string } | null>(null);
+  // OAuth callback banner (?quickbooks=…), derived during render so it always
+  // uses the current locale. `actionBanner` (set by sync/disconnect handlers)
+  // takes over once set; 'cleared' hides the callback banner without showing
+  // an action banner.
+  const [qbCode] = useState<string | null>(readQuickbooksCode);
+  const [actionBanner, setActionBanner] = useState<Banner | 'cleared'>(null);
+  const callbackBanner: Banner =
+    qbCode && !actionBanner
+      ? {
+          kind:
+            qbCode === 'connected'
+              ? 'ok'
+              : qbCode === 'not-configured'
+                ? 'warn'
+                : 'error',
+          text: t(locale, `quickbooks.${qbBannerKey(qbCode)}`),
+        }
+      : null;
+  const banner = actionBanner === 'cleared' ? null : (actionBanner ?? callbackBanner);
+  const setBanner = (b: Banner) => setActionBanner(b ?? 'cleared');
   const [syncing, setSyncing] = useState(false);
   const [result, setResult] = useState<SyncResult | null>(null);
   const [confirming, setConfirming] = useState(false);
-  const [callbackUri, setCallbackUri] = useState('');
+  const [callbackUri] = useState(() =>
+    typeof window === 'undefined'
+      ? ''
+      : `${window.location.origin}/api/integrations/quickbooks/callback`
+  );
 
-  // Surface the OAuth callback outcome (?quickbooks=connected|denied|…) once.
+  // Clean the OAuth callback query param once (pure side effect, no state).
   useEffect(() => {
+    if (!qbCode) return;
     const params = new URLSearchParams(window.location.search);
-    const code = params.get('quickbooks');
-    if (!code) return;
-    setCallbackUri(`${window.location.origin}/api/integrations/quickbooks/callback`);
-    const key =
-      code === 'connected'
-        ? 'statusConnected'
-        : code === 'denied'
-          ? 'statusDenied'
-          : code === 'invalid-state'
-            ? 'statusInvalid'
-            : code === 'rate-limited'
-              ? 'statusRateLimited'
-              : 'statusError';
-    setBanner({
-      kind: code === 'connected' ? 'ok' : code === 'not-configured' ? 'warn' : 'error',
-      text: t(locale, `quickbooks.${key}`),
-    });
-    if (code === 'connected') setConnected(true);
     params.delete('quickbooks');
     const clean = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`;
     window.history.replaceState(null, '', clean);
-  }, [locale]);
-
-  useEffect(() => {
-    if (!callbackUri) setCallbackUri(`${window.location.origin}/api/integrations/quickbooks/callback`);
-  }, [callbackUri]);
+  }, [qbCode]);
 
   async function doSync() {
     setSyncing(true);

@@ -33,6 +33,7 @@ export async function sendPlatformEmail(
 ): Promise<PlatformEmailResult> {
   const apiKey = process.env.RESEND_API_KEY?.trim();
   if (!apiKey) {
+    // TODO(logging): migrate to structured logger (src/lib/logger.ts)
     console.warn('[platform-email] skipped — RESEND_API_KEY is not set');
     return {
       ok: false,
@@ -55,6 +56,7 @@ export async function sendPlatformEmail(
       opts?.htmlBody
     );
   } catch (err) {
+    // TODO(logging): migrate to structured logger (src/lib/logger.ts)
     console.error('[platform-email] unexpected send failure', err);
     return { ok: false, error: 'Email could not be sent.' };
   }

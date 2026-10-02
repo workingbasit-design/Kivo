@@ -1,10 +1,10 @@
 /**
  * Test setup for workstream A verification (temporary).
  * Creates a uniquely-named test business with user + session cookie.
- * Run: node scripts/setup-reltest.js   (prints session cookie + ids)
+ * Run: node scripts/setup-reltest.mjs   (prints session cookie + ids)
  */
-const { PrismaClient } = require('@prisma/client');
-const bcrypt = require('bcryptjs');
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 

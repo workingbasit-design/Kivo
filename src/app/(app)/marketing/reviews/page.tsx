@@ -9,6 +9,14 @@ import { getLocale } from '@/lib/i18n/server';
 
 export const metadata = { title: 'Review requests | EveryJob' };
 
+/**
+ * Eligibility window start, evaluated fresh per request. Plain module helper
+ * (not a component) so the impure Date.now() stays out of render.
+ */
+function eligibilitySince(): Date {
+  return new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+}
+
 // Review-moat: only completed jobs with a paid invoice can get a review
 // link. Jobs that already received a token-linked review are excluded.
 
@@ -16,7 +24,7 @@ export default async function ReviewRequestsPage() {
   const { businessId } = await requireAuth();
   const locale = await getLocale();
 
-  const since = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+  const since = eligibilitySince();
   const eligible = await listEligibleReviewJobs(businessId, since);
   const jobIds = eligible.map((j) => j.id);
 

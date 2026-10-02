@@ -68,16 +68,23 @@ export default function AddressAutocomplete({
   );
 
   // Debounced fetch as the user types (min 3 chars).
-  useEffect(() => {
-    if (debounce.current) clearTimeout(debounce.current);
-    const q = value.trim();
-    if (q.length < 3) {
+  // Reset dropdown state during render when the query changes
+  // (render-phase adjustment), so the effect below only fetches.
+  const [prevQuery, setPrevQuery] = useState<string | null>(null);
+  if (prevQuery !== value) {
+    setPrevQuery(value);
+    if (value.trim().length < 3) {
       setSuggestions([]);
       setLoading(false);
       setActiveIndex(-1);
-      return;
+    } else {
+      setLoading(true);
     }
-    setLoading(true);
+  }
+  useEffect(() => {
+    if (debounce.current) clearTimeout(debounce.current);
+    const q = value.trim();
+    if (q.length < 3) return;
     const id = ++requestId.current;
     debounce.current = setTimeout(async () => {
       try {

@@ -769,7 +769,7 @@ function hasDomainWords(raw: string): boolean {
  */
 export function extractArithmetic(raw: string): { a: number; op: string; b: number } | null {
   // Strip common question prefixes so "what is 149.99 + 19.99?" works.
-  let text = raw
+  const text = raw
     .replace(/^(what is|what's|calculate|compute|how much is|combien (fait|font))\s+/i, '')
     .replace(/[×]/g, '*')
     .replace(/÷/g, '/')

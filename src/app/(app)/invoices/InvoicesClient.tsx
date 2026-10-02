@@ -50,6 +50,9 @@ export default function InvoicesClient({
   initialFilter: Filter;
 }) {
   const [activeFilter, setActiveFilter] = useState<Filter>(initialFilter);
+  // Snapshot "now" once per mount for the overdue hint below (lazy
+  // initializer keeps the impure Date.now() out of the render path).
+  const [now] = useState(() => Date.now());
 
   const filtered = useMemo(
     () =>
@@ -167,7 +170,7 @@ export default function InvoicesClient({
               const overdue =
                 due > 0 &&
                 inv.status !== 'PAID' &&
-                new Date(inv.date).getTime() < Date.now() - OVERDUE_MS;
+                new Date(inv.date).getTime() < now - OVERDUE_MS;
               return (
                 <li key={inv.id}>
                   <Link

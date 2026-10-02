@@ -34,6 +34,14 @@ export default function CommandPalette({ locale = "en" }: { locale?: Locale }) {
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  // Reset the highlighted entry whenever the query changes or the palette
+  // (re)opens — render-phase adjustment instead of an effect.
+  const [prevQueryOpenKey, setPrevQueryOpenKey] = useState<string | null>(null);
+  const queryOpenKey = `${open}|${query}`;
+  if (prevQueryOpenKey !== queryOpenKey) {
+    setPrevQueryOpenKey(queryOpenKey);
+    setActive(0);
+  }
 
   const entries: Entry[] = useMemo(() => {
     const out: Entry[] = [];
@@ -69,9 +77,7 @@ export default function CommandPalette({ locale = "en" }: { locale?: Locale }) {
     );
   }, [entries, query]);
 
-  useEffect(() => {
-    setActive(0);
-  }, [query, open]);
+  // (Active-entry reset is handled by the render-phase adjustment above.)
 
   const close = useCallback(() => {
     setOpen(false);

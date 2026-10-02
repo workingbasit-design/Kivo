@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { logger } from '@/lib/logger';
 import {
   verifyWebhookSignature,
   retrieveCompletedPayment,
@@ -85,7 +86,7 @@ export async function POST(req: Request) {
     // event. Downstream idempotency keys (unique payment intent /
     // checkout-session lookups) make retries safe. Returning 500 tells
     // Stripe to retry instead of dropping the payment.
-    console.error('[stripe-webhook] handler error', event.id, err instanceof Error ? err.message : err);
+    logger.error('stripe-webhook: handler error', { eventId: event.id, error: err });
     await prisma.stripeEvent
       .delete({ where: { stripeEventId: event.id } })
       .catch(() => undefined);
@@ -222,7 +223,7 @@ async function handleCheckoutCompleted(
           });
         }
       } catch (err) {
-        console.error('[stripe-webhook] payment webhooks failed', err);
+        logger.error('stripe-webhook: payment webhooks failed', { businessId, invoiceId: invoice.id, error: err });
       }
       // Push notification: money in. Best-effort, bilingual copy.
       try {
@@ -234,6 +235,7 @@ async function handleCheckoutCompleted(
           tag: `payment-${paymentId}`,
         });
       } catch (err) {
+        // TODO(logging): migrate to structured logger (src/lib/logger.ts)
         console.error('[stripe-webhook] payment push failed', err);
       }
     }

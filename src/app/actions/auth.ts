@@ -54,6 +54,11 @@ export async function register(
   }
   const { name, businessName, email, password } = parsed.data;
 
+  // Per-email bucket alongside the per-IP one: without it, one account's
+  // signup could be retried indefinitely by rotating IPs.
+  const rlEmail = rateLimit(`register-email:${email}`, AUTH_LIMIT);
+  if (!rlEmail.ok) return tooMany(rlEmail);
+
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
     return { error: 'An account with this email already exists. Try logging in.' };
@@ -112,6 +117,12 @@ export async function login(
     return { error: parsed.error.issues[0]?.message ?? 'Invalid details.' };
   }
   const { email, password } = parsed.data;
+
+  // Per-email bucket alongside the per-IP one: this is the credential-
+  // stuffing defense. An attacker rotating IPs still can't hammer one
+  // account's password beyond the limit.
+  const rlEmail = rateLimit(`login-email:${email}`, AUTH_LIMIT);
+  if (!rlEmail.ok) return tooMany(rlEmail);
 
   // Always hash-compare to keep timing consistent-ish, even for unknown emails.
   const user = await prisma.user.findUnique({ where: { email } });

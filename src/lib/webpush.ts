@@ -149,6 +149,7 @@ export async function pushToBusiness(
       }
     }
   } catch (err) {
+    // TODO(logging): migrate to structured logger (src/lib/logger.ts)
     console.error('[push] fan-out failed', err);
   }
   return out;

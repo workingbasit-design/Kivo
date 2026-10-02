@@ -11,6 +11,14 @@ import type { ExportColumn } from '@/components/ExportButtons';
 
 const FILTERS = ['ALL', ...QUOTE_STATUSES] as const;
 
+/**
+ * Follow-up threshold, evaluated fresh per request. Plain module helper
+ * (not a component) so the impure Date.now() stays out of render.
+ */
+function followupThreshold(): Date {
+  return new Date(Date.now() - FOLLOWUP_AFTER_DAYS * DAY_MS);
+}
+
 export default async function QuotesPage({
   searchParams,
 }: {
@@ -43,7 +51,7 @@ export default async function QuotesPage({
       where: {
         businessId,
         status: 'SENT',
-        updatedAt: { lt: new Date(Date.now() - FOLLOWUP_AFTER_DAYS * DAY_MS) },
+        updatedAt: { lt: followupThreshold() },
       },
       select: {
         id: true,

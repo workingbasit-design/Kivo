@@ -23,11 +23,11 @@ export default function BookingSettingsForm({
   const [state, formAction, pending] = useActionState(saveBookingSettings, initialState);
   const [slug, setSlug] = useState(initial?.slug ?? suggestedSlug);
   const [copied, setCopied] = useState(false);
-  // Set after mount so SSR and the first client render agree (avoids hydration mismatch).
-  const [origin, setOrigin] = useState('');
-  useEffect(() => {
-    setOrigin(window.location.origin);
-  }, []);
+  // Read after mount so SSR and the first client render agree (avoids
+  // hydration mismatch): lazy initializer runs on the client only.
+  const [origin] = useState(() =>
+    typeof window === 'undefined' ? '' : window.location.origin
+  );
   const publicUrl = `${origin}/book/${slug}`;
 
   useEffect(() => {

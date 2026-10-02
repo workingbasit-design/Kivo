@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Bell, LogOut, ChevronDown, SlidersHorizontal } from 'lucide-react';
@@ -14,6 +14,15 @@ import { navSections, navBadgeKeys, advancedNavItems, type NavItem } from '@/com
 
 /** Shared with the mobile More sheet — one persisted preference per device. */
 const ADVANCED_OPEN_KEY = 'ej-advanced-open';
+
+/** Hydration-safe read of the persisted Advanced-group preference. */
+function readStoredAdvancedOpen(): boolean {
+  try {
+    return localStorage.getItem(ADVANCED_OPEN_KEY) === '1';
+  } catch {
+    return false; // private mode / SSR
+  }
+}
 
 export interface SidebarStats {
   bookedToday: number;
@@ -43,16 +52,16 @@ export default function AppSidebar({
   // Advanced group: collapsed by default, persisted per device (shared with
   // the mobile More sheet). Auto-expands on an advanced route.
   const advancedActive = advancedNavItems.some((item) => isActive(item.href));
-  const [advancedOpen, setAdvancedOpen] = useState(false);
-  useEffect(() => {
-    let stored = false;
-    try {
-      stored = localStorage.getItem(ADVANCED_OPEN_KEY) === '1';
-    } catch {
-      /* private mode */
-    }
-    setAdvancedOpen(stored || advancedActive);
-  }, [advancedActive]);
+  const [advancedOpen, setAdvancedOpen] = useState(
+    () => readStoredAdvancedOpen() || advancedActive
+  );
+  // Re-sync when the route moves onto/off an advanced route (render-phase
+  // adjustment — no effect needed).
+  const [prevAdvancedActive, setPrevAdvancedActive] = useState(advancedActive);
+  if (prevAdvancedActive !== advancedActive) {
+    setPrevAdvancedActive(advancedActive);
+    setAdvancedOpen(readStoredAdvancedOpen() || advancedActive);
+  }
   const toggleAdvanced = () => {
     setAdvancedOpen((prev) => {
       const next = !prev;

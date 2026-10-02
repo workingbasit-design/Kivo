@@ -160,6 +160,7 @@ export async function uploadAttachment(formData: FormData): Promise<AttachmentRe
     revalidatePath(entityPath(entityType, entityId));
     return { ok: true, attachment: toRow(row) };
   } catch (e) {
+    // TODO(logging): migrate to structured logger (src/lib/logger.ts)
     console.error('[attachments] upload failed', e);
     return { ok: false, error: 'uploadFailed' };
   }
@@ -210,6 +211,7 @@ export async function deleteAttachment(id: string): Promise<AttachmentResult> {
     // Best-effort: the DB row is deleted even if Blob removal fails.
     if (token) {
       await del(row.blobUrl, { token }).catch((e) =>
+        // TODO(logging): migrate to structured logger (src/lib/logger.ts)
         console.error('[attachments] blob delete failed', e)
       );
     }
@@ -217,6 +219,7 @@ export async function deleteAttachment(id: string): Promise<AttachmentResult> {
     revalidatePath(entityPath(row.entityType as AttachmentEntityType, row.entityId));
     return { ok: true };
   } catch (e) {
+    // TODO(logging): migrate to structured logger (src/lib/logger.ts)
     console.error('[attachments] delete failed', e);
     return { ok: false, error: 'deleteFailed' };
   }

@@ -44,6 +44,7 @@ export async function logPiiAccess(params: LogPiiAccessParams): Promise<void> {
     // in development; in production this is a silent degradation that
     // should be monitored via error tracking.
     if (process.env.NODE_ENV !== 'production') {
+      // TODO(logging): migrate to structured logger (src/lib/logger.ts)
       console.warn('[pii-audit] Failed to write audit log');
     }
   }

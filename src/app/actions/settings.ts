@@ -196,7 +196,7 @@ export async function updateBusinessSettings(
     });
     if (!existing) {
       const { slugify } = await import('@/lib/slug');
-      let base = slugify(name);
+      const base = slugify(name);
       let slug = base;
       for (let i = 2; i <= 20; i++) {
         // Global slug uniqueness: slugs live in the public /book/[slug] URL
@@ -400,6 +400,7 @@ export async function uploadBusinessLogo(formData: FormData): Promise<LogoResult
     revalidatePath('/dashboard');
     return { ok: true, logoUrl: blob.url };
   } catch (e) {
+    // TODO(logging): migrate to structured logger (src/lib/logger.ts)
     console.error('[settings] logo upload failed', e);
     return { error: 'Upload failed. Please try again.' };
   }

@@ -46,7 +46,11 @@ function ensureHeadTags() {
 }
 
 export default function PwaRegister() {
-  const [online, setOnline] = useState(true);
+  // Lazy initializer keeps the navigator read out of the mount effect
+  // (SSR defaults to online).
+  const [online, setOnline] = useState(
+    () => typeof navigator === 'undefined' || navigator.onLine
+  );
   const [outbox, setOutbox] = useState<OutboxStatus>({ pending: 0, syncing: false, lastError: null });
   const [justSynced, setJustSynced] = useState(false);
 
@@ -58,7 +62,6 @@ export default function PwaRegister() {
       navigator.serviceWorker.register('/sw.js').catch(() => undefined);
     }
 
-    setOnline(navigator.onLine);
     const on = () => setOnline(true);
     const off = () => setOnline(false);
     window.addEventListener('online', on);

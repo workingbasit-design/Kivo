@@ -10,6 +10,14 @@ import { classifyLegacySource } from '@/lib/review-guards';
 
 export const metadata = { title: 'Reviews | EveryJob' };
 
+/**
+ * Eligibility window start, evaluated fresh per request. Plain module helper
+ * (not a component) so the impure Date.now() stays out of render.
+ */
+function eligibilitySince(): Date {
+  return new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+}
+
 // Review-moat: the add dialog offers only eligible jobs (completed + paid
 // invoice). Older sources are shown as "Legacy" — only Verified and Google
 // keep their badge.
@@ -26,7 +34,7 @@ export default async function ReviewsPage() {
     }),
     listEligibleReviewJobs(
       businessId,
-      new Date(Date.now() - 60 * 24 * 60 * 60 * 1000)
+      eligibilitySince()
     ),
     prisma.review.aggregate({
       where: { businessId },

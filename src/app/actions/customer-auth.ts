@@ -1,5 +1,6 @@
 'use server';
 
+import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import {
@@ -9,12 +10,29 @@ import {
   verifyCustomerPassword,
 } from '@/lib/customer-auth';
 import { isPasswordTooLong, MAX_PASSWORD_LENGTH } from '@/lib/password-policy';
+import { rateLimit, AUTH_LIMIT } from '@/lib/rate-limit';
 
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+async function clientKey(prefix: string): Promise<string> {
+  const h = await headers();
+  const ip =
+    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    h.get('x-real-ip') ||
+    'unknown';
+  return `${prefix}:${ip}`;
+}
+
+function tooMany(): { error: string } {
+  return { error: 'Too many attempts. Please try again later.' };
+}
+
 export async function customerSignup(_prev: unknown, formData: FormData) {
+  const rl = rateLimit(await clientKey('customer-signup'), AUTH_LIMIT);
+  if (!rl.ok) return tooMany();
+
   const name = String(formData.get('name') || '').trim();
   const email = String(formData.get('email') || '').trim().toLowerCase();
   const password = String(formData.get('password') || '');
@@ -47,6 +65,9 @@ export async function customerSignup(_prev: unknown, formData: FormData) {
 }
 
 export async function customerLogin(_prev: unknown, formData: FormData) {
+  const rl = rateLimit(await clientKey('customer-login'), AUTH_LIMIT);
+  if (!rl.ok) return tooMany();
+
   const email = String(formData.get('email') || '').trim().toLowerCase();
   const password = String(formData.get('password') || '');
   const rawNext = String(formData.get('next') || '').trim();
@@ -55,6 +76,9 @@ export async function customerLogin(_prev: unknown, formData: FormData) {
   if (!isValidEmail(email) || !password) {
     return { error: 'Please enter your email and password.' };
   }
+  // Per-email bucket alongside the per-IP one (credential-stuffing defense).
+  const rlEmail = rateLimit(`customer-login-email:${email}`, AUTH_LIMIT);
+  if (!rlEmail.ok) return tooMany();
   // Same cap as signup: keeps the sync PBKDF2 verify cheap even
   // when the stored account was created before the cap existed.
   if (isPasswordTooLong(password)) {

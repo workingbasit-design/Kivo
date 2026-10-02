@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, LogOut, X, ChevronDown, SlidersHorizontal } from 'lucide-react';
@@ -12,6 +12,15 @@ import { cn } from '@/lib/utils';
 
 /** localStorage key for the More-sheet Advanced group's open/closed state. */
 const ADVANCED_OPEN_KEY = 'ej-advanced-open';
+
+/** Hydration-safe read of the persisted Advanced-group preference. */
+function readStoredAdvancedOpen(): boolean {
+  try {
+    return localStorage.getItem(ADVANCED_OPEN_KEY) === '1';
+  } catch {
+    return false; // private mode / SSR
+  }
+}
 
 /**
  * Thumb-friendly mobile bottom tab bar. The four primary destinations are
@@ -34,16 +43,16 @@ export default function BottomNav({
 
   // Advanced group: collapsed by default, persisted per device. Auto-expands
   // when the user is on an advanced route so the active item stays visible.
-  const [advancedOpen, setAdvancedOpen] = useState(false);
-  useEffect(() => {
-    let stored = false;
-    try {
-      stored = localStorage.getItem(ADVANCED_OPEN_KEY) === '1';
-    } catch {
-      /* private mode — default to collapsed */
-    }
-    setAdvancedOpen(stored || advancedActive);
-  }, [advancedActive]);
+  const [advancedOpen, setAdvancedOpen] = useState(
+    () => readStoredAdvancedOpen() || advancedActive
+  );
+  // Re-sync when the route moves onto/off an advanced route (render-phase
+  // adjustment — no effect needed).
+  const [prevAdvancedActive, setPrevAdvancedActive] = useState(advancedActive);
+  if (prevAdvancedActive !== advancedActive) {
+    setPrevAdvancedActive(advancedActive);
+    setAdvancedOpen(readStoredAdvancedOpen() || advancedActive);
+  }
   const toggleAdvanced = () => {
     setAdvancedOpen((prev) => {
       const next = !prev;

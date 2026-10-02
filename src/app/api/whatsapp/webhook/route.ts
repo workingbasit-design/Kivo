@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { prisma } from '@/lib/prisma';
+import { logger } from '@/lib/logger';
 import { isStopText, isHelpText, normalizeInboundText } from '@/lib/messaging/consent';
 import { monthKeyInTimezone, quotaAllows } from '@/lib/messaging/quota';
 import { sendWhatsAppText } from '@/lib/messaging/providers';
@@ -66,7 +67,7 @@ export async function POST(req: Request) {
   const appSecret = process.env.WHATSAPP_APP_SECRET;
   const rawBody = await req.text();
   if (!appSecret) {
-    console.error('[whatsapp:webhook] WHATSAPP_APP_SECRET not configured — rejecting POST');
+    logger.error('whatsapp:webhook rejected — WHATSAPP_APP_SECRET not configured');
     return NextResponse.json({ error: 'Webhook not configured.' }, { status: 403 });
   }
   const sigHeader = req.headers.get('x-hub-signature-256') ?? '';

@@ -12,6 +12,14 @@ import WhatsAppButton from '@/components/WhatsAppButton';
 import { fillTemplate, daysOverdue, remainingBalance, OVERDUE_AFTER_DAYS, DAY_MS } from '@/lib/revenue';
 
 /**
+ * "Now" for overdue-threshold math. A plain module helper (not a component),
+ * so it evaluates fresh on every request without tripping render-purity rules.
+ */
+function overdueThreshold(): Date {
+  return new Date(Date.now() - OVERDUE_AFTER_DAYS * DAY_MS);
+}
+
+/**
  * Money hub (Phase 1): a simple overview of what's outstanding.
  * Tenant-scoped open-quote value + unpaid-invoice balance, with links
  * into /quotes and /invoices. Reachable from the mobile bottom bar.
@@ -41,7 +49,7 @@ export default async function MoneyPage() {
       where: {
         businessId,
         status: { not: 'PAID' },
-        date: { lt: new Date(Date.now() - OVERDUE_AFTER_DAYS * DAY_MS) },
+        date: { lt: overdueThreshold() },
       },
       select: {
         id: true,

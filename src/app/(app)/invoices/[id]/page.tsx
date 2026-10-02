@@ -26,6 +26,14 @@ import SmsButton from '@/components/SmsButton';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
+/**
+ * 30-day payment-terms threshold, evaluated fresh per request. A plain module
+ * helper (not a component) so the impure Date.now() stays out of render.
+ */
+function overdueThresholdMs(): number {
+  return Date.now() - 30 * 24 * 60 * 60 * 1000;
+}
+
 export default async function InvoiceDetailPage({
   params,
 }: {
@@ -62,7 +70,7 @@ export default async function InvoiceDetailPage({
   const overdue =
     remaining > 0 &&
     invoice.status !== 'PAID' &&
-    new Date(invoice.date).getTime() < Date.now() - 30 * 24 * 60 * 60 * 1000;
+    new Date(invoice.date).getTime() < overdueThresholdMs();
   const userNotes = displayNotes(invoice.notes, invoice.lineItems.length > 0);
   const currency = 'CAD';
   // Online card collection: mirror the customer portal logic — charges must

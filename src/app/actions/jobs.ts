@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { logger } from '@/lib/logger';
 import { requireAuth } from '@/lib/auth';
 import { jobSchema, JOB_STATUSES } from '@/lib/validations';
 import { isValidTransition } from '@/lib/job-status';
@@ -151,7 +152,7 @@ export async function createJob(
       status: job.status,
     });
   } catch (err) {
-    console.error('[jobs] job.created webhook failed', err);
+    logger.error('jobs: job.created webhook failed', { businessId, jobId: job.id, error: err });
   }
   redirect(`/jobs/${job.id}`);
 }
@@ -245,7 +246,7 @@ export async function updateJobStatus(
       await prisma.job.update({ where: { id: jobId, businessId }, data: { status: newStatus } });
     }
   } catch (e) {
-    console.error('[jobs] updateJobStatus failed', e);
+    logger.error('jobs: updateJobStatus failed', { businessId, jobId, error: e });
     return { error: 'Could not update the job. Please try again.' };
   }
   revalidateJobPaths(jobId);
@@ -259,7 +260,7 @@ export async function updateJobStatus(
         customer_id: job.customerId ?? null,
       });
     } catch (err) {
-      console.error('[jobs] job.completed webhook failed', err);
+      logger.error('jobs: job.completed webhook failed', { businessId, jobId, error: err });
     }
   }
   return { ok: true };
@@ -313,6 +314,7 @@ export async function updateJobSchedule(
         customer_id: job.customerId ?? null,
       });
     } catch (err) {
+      // TODO(logging): migrate to structured logger (src/lib/logger.ts)
       console.error('[jobs] job.completed webhook failed', err);
     }
   }

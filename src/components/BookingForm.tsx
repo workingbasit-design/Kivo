@@ -50,10 +50,9 @@ export default function BookingForm({
 
   // Bot protection: hidden timestamp set when the form first renders; the
   // server rejects impossibly fast submissions and filled honeypots.
-  const [formStartedAt, setFormStartedAt] = useState('');
-  useEffect(() => {
-    setFormStartedAt(String(Date.now()));
-  }, []);
+  // (Lazy initializer — the component already uses non-deterministic lazy
+  // init for the idempotency key above.)
+  const [formStartedAt] = useState(() => String(Date.now()));
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -61,16 +60,19 @@ export default function BookingForm({
 
   // Date -> available slots. The server re-validates the chosen slot at
   // confirm time, so a stale pick can never double-book.
-  useEffect(() => {
+  // Reset slot state during render when the date/business changes
+  // (render-phase adjustment), so the effect below only fetches.
+  const [prevSlotKey, setPrevSlotKey] = useState<string | null>(null);
+  const slotKey = `${slug}|${date}`;
+  if (prevSlotKey !== slotKey) {
+    setPrevSlotKey(slotKey);
     setSelectedTime('');
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date < today) {
-      setSlotsResult(null);
-      setSlotsLoading(false);
-      return;
-    }
-    let cancelled = false;
-    setSlotsLoading(true);
     setSlotsResult(null);
+    setSlotsLoading(/^\d{4}-\d{2}-\d{2}$/.test(date) && date >= today);
+  }
+  useEffect(() => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date < today) return;
+    let cancelled = false;
     getBookingSlots(slug, date)
       .then((res) => {
         if (!cancelled) setSlotsResult(res);

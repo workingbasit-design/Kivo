@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { logger } from '@/lib/logger';
 import { requireAuth } from '@/lib/auth';
 import { invoiceSchema, paymentSchema, INVOICE_STATUSES } from '@/lib/validations';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
@@ -244,7 +245,7 @@ export async function createInvoice(
       total: invoice.total,
     });
   } catch (err) {
-    console.error('[invoices] invoice.created webhook failed', err);
+    logger.error('invoices: invoice.created webhook failed', { businessId, invoiceId: invoice.id, error: err });
   }
   redirect(`/invoices/${invoice.id}`);
 }
@@ -427,7 +428,7 @@ export async function recordPayment(
       tag: `payment-${payment.id}`,
     });
   } catch (err) {
-    console.error('[invoices] payment webhooks failed', err);
+    logger.error('invoices: payment webhooks failed', { businessId, invoiceId: invoice.id, error: err });
   }
 
   revalidatePath('/invoices');

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { t, type Locale } from '@/lib/i18n';
 import { Card, ProgressBar } from '@/components/ui';
 
@@ -23,6 +23,15 @@ const STEPS: { id: OnboardingStepId; href: string }[] = [
 
 function storageKey(businessId: string): string {
   return `ej-onboarding-dismissed:${businessId}`;
+}
+
+/** Hydration-safe read of the dismissed flag (false on the server). */
+function readDismissed(businessId: string): boolean {
+  try {
+    return window.localStorage.getItem(storageKey(businessId)) === '1';
+  } catch {
+    return false; // private mode / SSR
+  }
 }
 
 /** i18n path for a step field. Cast needed until the support fragment is wired. */
@@ -61,15 +70,13 @@ export default function OnboardingChecklist({
   businessId: string;
   completed: Record<OnboardingStepId, boolean>;
 }) {
-  const [dismissed, setDismissed] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    try {
-      setDismissed(window.localStorage.getItem(storageKey(businessId)) === '1');
-    } catch {
-      setDismissed(false);
-    }
-  }, [businessId]);
+  const [dismissed, setDismissed] = useState<boolean>(() => readDismissed(businessId));
+  // Re-read when switching businesses (render-phase adjustment).
+  const [prevBusinessId, setPrevBusinessId] = useState(businessId);
+  if (prevBusinessId !== businessId) {
+    setPrevBusinessId(businessId);
+    setDismissed(readDismissed(businessId));
+  }
 
   const dismiss = () => {
     try {
@@ -87,8 +94,6 @@ export default function OnboardingChecklist({
     }
     setDismissed(false);
   };
-
-  if (dismissed === null) return null;
 
   if (dismissed) {
     return (

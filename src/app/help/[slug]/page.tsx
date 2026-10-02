@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
 import {
@@ -99,12 +100,12 @@ export default async function HelpArticlePage({
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-      <a
+      <Link
         href="/help"
         className="text-sm font-medium text-zinc-600 hover:text-zinc-900"
       >
         ← {t(locale, 'support.backToHelp')}
-      </a>
+      </Link>
       <div className="mt-3 text-xs font-semibold uppercase tracking-wide text-lime-700">
         {categoryLabel(article.category, locale)}
       </div>

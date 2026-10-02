@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import { Card, Field, inputClass, primaryBtnClass, secondaryBtnClass, ProgressBar } from '@/components/ui';
 import { formatMoney } from '@/lib/money';
-import { setQuoteDepositAction, recordManualQuoteDepositAction } from '@/app/actions/stripe';
+import { setQuoteDepositAction, recordManualQuoteDepositAction, type ActionResult } from '@/app/actions/stripe';
 
 /**
  * Fires a toast exactly once per server-action result. Minimal inline
@@ -54,9 +54,20 @@ export default function QuoteDepositCard({
   deposits: Deposit[];
   locale: Locale;
 }) {
-  const [amtState, amtAction] = useActionState(setQuoteDepositAction, {});
-  const [recState, recAction] = useActionState(recordManualQuoteDepositAction, {});
   const [showRecord, setShowRecord] = useState(false);
+  const [amtState, amtAction] = useActionState(setQuoteDepositAction, {});
+  // Wrap so the record form closes on success in the submission handler
+  // (user-initiated) instead of syncing via an effect.
+  const [recState, recAction] = useActionState(
+    async (prev: ActionResult, formData: FormData) => {
+      const result = await recordManualQuoteDepositAction(prev, formData);
+      if (result?.ok) setShowRecord(false);
+      return result;
+    },
+    {}
+  );
+
+  // (Record-form tidy-up now happens in the action wrapper above.)
 
   useResultToast(amtState, {
     success: t(locale, 't10money.depositSaved'),
@@ -64,10 +75,6 @@ export default function QuoteDepositCard({
   useResultToast(recState, {
     success: t(locale, 't10money.depositRecorded'),
   });
-
-  useEffect(() => {
-    if (recState?.ok) setShowRecord(false);
-  }, [recState]);
 
   const collected = deposits
     .filter((d) => d.status === 'COMPLETED')

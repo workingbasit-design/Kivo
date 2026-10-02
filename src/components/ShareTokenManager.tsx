@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useActionState, useEffect, useState } from 'react';
+import React, { useActionState, useState } from 'react';
 import { AlertCircle, CalendarClock, Link2, RefreshCw, ShieldOff } from 'lucide-react';
 import CopyButton from '@/components/CopyButton';
 import { inputClass, secondaryBtnClass } from '@/components/ui';
@@ -48,12 +48,32 @@ export default function ShareTokenManager({
   const [expiresAt, setExpiresAt] = useState<string>(initial?.expiresAt ?? '');
   const [confirming, setConfirming] = useState<'regen' | 'revoke' | null>(null);
 
+  // Wrap the injected server actions so token state updates on success in
+  // the submission handler (user-initiated) instead of syncing via effects.
   const [regenState, regenFormAction, regenPending] = useActionState<RegenResult, FormData>(
-    regenerateAction,
+    async (prev, formData) => {
+      const result = await regenerateAction(prev, formData);
+      if (result?.ok && result.token) {
+        setToken(result.token);
+        if (result.tokenId) setTokenId(result.tokenId);
+        setExpiresAt('');
+        setConfirming(null);
+      }
+      return result;
+    },
     {}
   );
   const [revokeState, revokeFormAction, revokePending] = useActionState<ActionResult, FormData>(
-    revokeAction,
+    async (prev, formData) => {
+      const result = await revokeAction(prev, formData);
+      if (result?.ok) {
+        setToken(null);
+        setTokenId(null);
+        setExpiresAt('');
+        setConfirming(null);
+      }
+      return result;
+    },
     {}
   );
   const [expiryState, expiryFormAction, expiryPending] = useActionState<ActionResult, FormData>(
@@ -61,28 +81,7 @@ export default function ShareTokenManager({
     {}
   );
 
-  // Pick up fresh results from the server actions.
-  useEffect(() => {
-    if (regenState?.ok && regenState.token) {
-      setToken(regenState.token);
-      if (regenState.tokenId) setTokenId(regenState.tokenId);
-      setExpiresAt('');
-      setConfirming(null);
-    }
-  }, [regenState]);
-  useEffect(() => {
-    if (revokeState?.ok) {
-      setToken(null);
-      setTokenId(null);
-      setExpiresAt('');
-      setConfirming(null);
-    }
-  }, [revokeState]);
-  useEffect(() => {
-    if (expiryState?.ok) {
-      // expiry saved — the displayed value is already what the user picked
-    }
-  }, [expiryState]);
+  // (Token-state sync now happens in the action wrappers above.)
 
   const error = regenState?.error || revokeState?.error || expiryState?.error;
   const okMsg =
@@ -91,11 +90,11 @@ export default function ShareTokenManager({
     (expiryState?.ok && 'Expiry updated.') ||
     null;
 
-  // Set after mount so SSR and the first client render agree (avoids hydration mismatch).
-  const [origin, setOrigin] = useState('');
-  useEffect(() => {
-    setOrigin(window.location.origin);
-  }, []);
+  // Read after mount so SSR and the first client render agree (avoids
+  // hydration mismatch): lazy initializer runs on the client only.
+  const [origin] = useState(() =>
+    typeof window === 'undefined' ? '' : window.location.origin
+  );
   const url = token ? `${origin}/${kind === 'invoice' ? 'i' : 'q'}/${token}` : null;
   const field = kind === 'invoice' ? 'invoiceId' : 'quoteId';
 
