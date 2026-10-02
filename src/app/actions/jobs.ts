@@ -231,8 +231,19 @@ export async function updateJobStatus(
 
   // 2026-09-24: never throw on the write path — an unhandled throw renders a
   // full server-error page instead of the inline error + toast the UI shows.
+  // 2026-10-01: marking PAID settles the money in the same transaction —
+  // without this, "Collected" and the monthly revenue bars (payment-based)
+  // disagreed with the job status and the job-based earnings numbers.
   try {
-    await prisma.job.update({ where: { id: jobId, businessId }, data: { status: newStatus } });
+    if (newStatus === 'PAID') {
+      const { settleJobPaid } = await import('./invoices');
+      await prisma.$transaction(async (tx) => {
+        await tx.job.update({ where: { id: jobId, businessId }, data: { status: newStatus } });
+        await settleJobPaid(businessId, jobId, tx);
+      });
+    } else {
+      await prisma.job.update({ where: { id: jobId, businessId }, data: { status: newStatus } });
+    }
   } catch (e) {
     console.error('[jobs] updateJobStatus failed', e);
     return { error: 'Could not update the job. Please try again.' };
@@ -277,13 +288,20 @@ export async function updateJobSchedule(
     return { error: `Cannot move job from ${job.status} to ${status}.` };
   }
 
-  await prisma.job.update({
-    where: { id: jobId, businessId },
-    data: {
-      date: parseDateInput(dateStr),
-      time: time.trim() || null,
-      status,
-    },
+  await prisma.$transaction(async (tx) => {
+    await tx.job.update({
+      where: { id: jobId, businessId },
+      data: {
+        date: parseDateInput(dateStr),
+        time: time.trim() || null,
+        status,
+      },
+    });
+    // 2026-10-01: marking PAID settles the money so earnings numbers agree.
+    if (status === 'PAID') {
+      const { settleJobPaid } = await import('./invoices');
+      await settleJobPaid(businessId, jobId, tx);
+    }
   });
   revalidateJobPaths(jobId);
   if (status === 'COMPLETED') {

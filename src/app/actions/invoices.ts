@@ -79,9 +79,12 @@ function checkLimit(key: string): ActionResult | null {
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
 /** Next INV-0001 style number, scoped per business, retry-safe. */
-async function nextInvoiceNumber(businessId: string): Promise<string> {
+async function nextInvoiceNumber(
+  businessId: string,
+  db: Pick<typeof prisma, 'invoice'> = prisma
+): Promise<string> {
   for (let attempt = 0; attempt < 5; attempt++) {
-    const existing = await prisma.invoice.findMany({
+    const existing = await db.invoice.findMany({
       where: { businessId },
       select: { number: true },
     });
@@ -91,7 +94,7 @@ async function nextInvoiceNumber(businessId: string): Promise<string> {
       if (m) max = Math.max(max, parseInt(m[1], 10));
     }
     const number = `INV-${String(max + 1 + attempt).padStart(4, '0')}`;
-    const clash = await prisma.invoice.findFirst({
+    const clash = await db.invoice.findFirst({
       where: { businessId, number },
       select: { id: true },
     });
@@ -431,6 +434,110 @@ export async function recordPayment(
   revalidatePath(`/invoices/${invoice.id}`);
   revalidatePath('/dashboard');
   return { ok: true, id: payment.id };
+}
+
+/**
+ * Money-correctness: marking a job PAID means the customer paid in full, so
+ * the payment ledger must reflect it — otherwise "Collected" and the monthly
+ * revenue bars disagree with the job status (and with top-customer / avg-job
+ * / revenue-by-service numbers, which are job-based).
+ *
+ * Settles the job's invoices inside one transaction:
+ * - each of the job's open invoices gets a COMPLETED payment for its
+ *   outstanding balance (provider OTHER = the pro marked it paid on the job
+ *   without specifying a method);
+ * - if the job has no invoice at all and a positive price, a paid invoice
+ *   for the job price is created first, then the matching payment.
+ * A zero-price job with no invoice just flips status — nothing to record.
+ */
+type PrismaTx = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
+
+async function settleJobPaidTx(tx: PrismaTx, businessId: string, jobId: string): Promise<void> {
+  const job = await tx.job.findFirst({
+    where: { id: jobId, businessId },
+    select: { id: true, price: true, title: true, customerId: true },
+  });
+  if (!job) return;
+
+  const invoices = await tx.invoice.findMany({
+    where: { jobId: job.id, businessId },
+    select: {
+      id: true,
+      total: true,
+      payments: { select: { amount: true } },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  if (invoices.length === 0) {
+    const price = round2(job.price ?? 0);
+    if (price <= 0 || !job.customerId) return;
+    const number = await nextInvoiceNumber(businessId, tx);
+    const inv = await tx.invoice.create({
+      data: {
+        number,
+        date: new Date(),
+        subtotal: price,
+        taxRate: 0,
+        taxAmount: 0,
+        total: price,
+        status: 'PAID',
+        notes: `Auto-created when job "${job.title}" was marked paid.`,
+        customerId: job.customerId,
+        businessId,
+        jobId: job.id,
+        paidAt: new Date(),
+      },
+    });
+    await tx.invoiceLineItem.create({
+      data: {
+        invoiceId: inv.id,
+        description: job.title,
+        qty: 1,
+        unitPrice: price,
+        position: 0,
+      },
+    });
+    await tx.payment.create({
+      data: {
+        amount: price,
+        provider: 'OTHER',
+        status: 'COMPLETED',
+        invoiceId: inv.id,
+        businessId,
+      },
+    });
+    return;
+  }
+
+  for (const inv of invoices) {
+    const paid = round2(inv.payments.reduce((s, p) => s + p.amount, 0));
+    const outstanding = round2(inv.total - paid);
+    if (outstanding > 0) {
+      await tx.payment.create({
+        data: {
+          amount: outstanding,
+          provider: 'OTHER',
+          status: 'COMPLETED',
+          invoiceId: inv.id,
+          businessId,
+        },
+      });
+      await tx.invoice.update({
+        where: { id: inv.id, businessId },
+        data: { status: 'PAID', paidAt: new Date() },
+      });
+    }
+  }
+}
+
+export async function settleJobPaid(
+  businessId: string,
+  jobId: string,
+  tx?: PrismaTx
+): Promise<void> {
+  if (tx) return settleJobPaidTx(tx, businessId, jobId);
+  await prisma.$transaction((t) => settleJobPaidTx(t, businessId, jobId));
 }
 
 /* ------------------------------------------------------------------ */

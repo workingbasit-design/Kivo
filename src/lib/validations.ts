@@ -92,7 +92,7 @@ export const paymentSchema = z.object({
     .positive("Amount must be positive")
     .max(10_000_000)
     .transform((n) => Number(n.toFixed(2))),
-  provider: z.enum(["CASH", "INTERAC", "CHEQUE", "STRIPE"]).default("CASH"),
+  provider: z.enum(["CASH", "INTERAC", "CHEQUE", "STRIPE", "OTHER"]).default("CASH"),
   transactionId: z.string().trim().max(200).optional().default(""),
 });
 

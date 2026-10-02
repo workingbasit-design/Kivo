@@ -208,6 +208,28 @@ export function buildAgentManifest(baseUrl: string) {
       search: '60 requests/minute per IP',
       proposals: '5 proposals/hour per IP',
     },
+    skills: [
+      {
+        name: 'everyjob-find-pro',
+        description: 'Find a verified home-service pro: search the directory by service and city, read pro profiles.',
+        url: `${b}/skills/everyjob-find-pro/SKILL.md`,
+      },
+      {
+        name: 'everyjob-request-quote',
+        description: "Propose a quote request to a pro on the customer's behalf. Creates a pending proposal; the human approves.",
+        url: `${b}/skills/everyjob-request-quote/SKILL.md`,
+      },
+      {
+        name: 'everyjob-track-proposal',
+        description: 'Check a proposal\u2019s status: pending, approved, declined, or expired.',
+        url: `${b}/skills/everyjob-track-proposal/SKILL.md`,
+      },
+      {
+        name: 'everyjob-connect-assistant',
+        description: "Connect a customer's AI assistant to their EveryJob account with a scoped agent key.",
+        url: `${b}/skills/everyjob-connect-assistant/SKILL.md`,
+      },
+    ],
     rules: [
       'Identify your agent with a descriptive User-Agent and the agentName field.',
       'Never scrape HTML to perform actions — use this API.',

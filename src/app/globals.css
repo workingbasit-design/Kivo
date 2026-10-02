@@ -7,6 +7,10 @@
   --color-paper: #fafaf7; /* page background */
   --color-smoke: #e8e8e3; /* borders, dividers */
   --color-graphite: #55554e; /* secondary text */
+  /* 2026-10-01 accessibility: zinc-400 (#a1a1aa) is ~2.3:1 on paper —
+     unreadable for secondary text. Remapped to the zinc-500 value (#71717a,
+     ~4.8:1, passes WCAG 2.1 AA) so all 300+ muted-text usages stay legible. */
+  --color-zinc-400: #71717a;
 }
 
 :root {

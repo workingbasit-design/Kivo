@@ -35,12 +35,13 @@ function useResultToast<T extends { ok?: boolean; error?: string }>(
   }, [state]);
 }
 
-const PROVIDERS = ['CASH', 'INTERAC', 'CHEQUE', 'STRIPE'] as const;
+const PROVIDERS = ['CASH', 'INTERAC', 'CHEQUE', 'STRIPE', 'OTHER'] as const;
 
 /** Human labels for payment providers (record-only — EveryJob never processes payments). */
 function providerLabel(p: string, locale: Locale): string {
   if (p === 'CASH') return t(locale, 't10money.invProviderCash');
   if (p === 'CHEQUE') return t(locale, 't10money.invProviderCheque');
+  if (p === 'OTHER') return t(locale, 't10money.invProviderOther');
   return p === 'INTERAC' ? 'Interac e-Transfer' : 'Stripe';
 }
 
