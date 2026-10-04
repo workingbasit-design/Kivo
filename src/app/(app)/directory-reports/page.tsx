@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation';
 import { Flag } from 'lucide-react';
 import { getSession } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
 import { PageHeader, Card, EmptyState } from '@/components/ui';
 import { isDirectoryAdminEmail } from '@/lib/directory';
 import { getLocale } from '@/lib/i18n/server';

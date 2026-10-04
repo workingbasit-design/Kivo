@@ -40,7 +40,7 @@ export function setup() {
   }
 }
 
-export default function () {
+export default function dashboardAuthedLoad() {
   const jar = http.cookieJar();
   jar.set(BASE_URL, 'kivo_session', SESSION_COOKIE);
   const res = http.get(`${BASE_URL}/dashboard`);

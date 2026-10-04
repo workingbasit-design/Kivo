@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { Menu, LogOut, X, ChevronDown, SlidersHorizontal } from 'lucide-react';
 import { t, type Locale } from '@/lib/i18n';
 import { navSections, bottomTabs, advancedNavItems, type NavItem } from '@/components/nav-sections';
+import { NavIconView } from '@/components/animated-icons/nav-icon';
 import { Dialog, ghostBtnClass } from '@/components/ui';
 import { logout } from '@/app/actions/auth';
 import { cn } from '@/lib/utils';
@@ -78,7 +79,7 @@ export default function BottomNav({
           active ? 'bg-ink text-lime' : 'text-zinc-700 hover:bg-zinc-100'
         )}
       >
-        <item.icon size={18} className={active ? 'text-lime' : 'text-zinc-400'} />
+        <NavIconView icon={item.icon} size={18} className={active ? 'text-lime' : 'text-zinc-400'} />
         {t(locale, item.nameKey)}
       </Link>
     );
@@ -112,7 +113,7 @@ export default function BottomNav({
                       : 'bg-white/[0.07] ring-white/12 text-white/60 shadow-[0_2px_8px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.14)]'
                   )}
                 >
-                  <tab.icon size={20} strokeWidth={active ? 2.5 : 2} />
+                  <NavIconView icon={tab.icon} size={20} />
                 </span>
                 <span className="leading-none">{t(locale, tab.nameKey)}</span>
                 <span

@@ -27,7 +27,7 @@ export const options = {
   },
 };
 
-export default function () {
+export default function healthLoad() {
   const res = http.get(`${BASE_URL}/api/health`);
   check(res, {
     'status 200': (r) => r.status === 200,

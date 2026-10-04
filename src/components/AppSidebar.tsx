@@ -11,6 +11,7 @@ import { logout } from '@/app/actions/auth';
 import { formatMoney } from '@/lib/money';
 import { t, type Locale } from '@/lib/i18n';
 import { navSections, navBadgeKeys, advancedNavItems, type NavItem } from '@/components/nav-sections';
+import { NavIconView } from '@/components/animated-icons/nav-icon';
 
 /** Shared with the mobile More sheet — one persisted preference per device. */
 const ADVANCED_OPEN_KEY = 'ej-advanced-open';
@@ -98,7 +99,7 @@ export default function AppSidebar({
                 : 'bg-white/10 ring-white/15 text-white/60 group-hover:text-white group-hover:bg-white/[0.14] shadow-[0_2px_8px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)]'
             }`}
           >
-            <item.icon size={16} strokeWidth={2} />
+            <NavIconView icon={item.icon} size={16} />
           </span>
           <span className={`text-[13px] font-medium ${active ? 'font-semibold' : ''}`}>
             {label}

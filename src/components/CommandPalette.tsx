@@ -2,9 +2,10 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Plus, CornerDownLeft, X } from "lucide-react";
+import { Search, Plus, CornerDownLeft, X, Sparkles } from "lucide-react";
 import { navSections } from "@/components/nav-sections";
 import { t, type Locale } from "@/lib/i18n";
+import { parseCommand, commandLabel } from "@/lib/cmdbar";
 import { cn } from "@/lib/utils";
 
 type Entry = {
@@ -13,6 +14,7 @@ type Entry = {
   hint: string; // section label
   href: string;
   action?: boolean;
+  smart?: boolean;
 };
 
 const QUICK_ACTIONS: { key: string; href: string }[] = [
@@ -72,10 +74,23 @@ export default function CommandPalette({ locale = "en" }: { locale?: Locale }) {
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return entries;
-    return entries.filter(
+    const base = entries.filter(
       (e) => e.label.toLowerCase().includes(q) || e.hint.toLowerCase().includes(q)
     );
-  }, [entries, query]);
+    // Natural-language smart action goes first when it matches.
+    const nl = parseCommand(query, locale);
+    if (nl && !base.some((e) => e.href === nl.href)) {
+      base.unshift({
+        id: `nl:${nl.href}`,
+        label: commandLabel(nl, locale),
+        hint: t(locale, "cmdbar.smartAction"),
+        href: nl.href,
+        action: true,
+        smart: true,
+      });
+    }
+    return base;
+  }, [entries, query, locale]);
 
   // (Active-entry reset is handled by the render-phase adjustment above.)
 
@@ -176,7 +191,7 @@ export default function CommandPalette({ locale = "en" }: { locale?: Locale }) {
             aria-expanded="true"
             aria-controls="cmdk-list"
             aria-activedescendant={filtered[active] ? `cmdk-item-${filtered[active].id}` : undefined}
-            placeholder={locale === "fr" ? "Aller à… (nom, section, action)" : "Go to… (name, section, action)"}
+            placeholder={t(locale, "cmdbar.hint")}
             className="h-14 w-full bg-transparent text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none"
           />
           <kbd className="shrink-0 rounded-md border border-zinc-200 bg-zinc-50 px-1.5 py-0.5 text-[10px] font-semibold text-zinc-500">
@@ -194,7 +209,7 @@ export default function CommandPalette({ locale = "en" }: { locale?: Locale }) {
         <div ref={listRef} id="cmdk-list" role="listbox" className="max-h-[40vh] overflow-y-auto p-2">
           {filtered.length === 0 ? (
             <p className="px-3 py-8 text-center text-sm text-zinc-500">
-              {locale === "fr" ? "Aucun résultat." : "No results."}
+              {t(locale, "cmdbar.noResults")}
             </p>
           ) : (
             filtered.slice(0, 30).map((e, i) => (
@@ -211,7 +226,9 @@ export default function CommandPalette({ locale = "en" }: { locale?: Locale }) {
                   i === active ? "bg-smoke" : "bg-transparent"
                 )}
               >
-                {e.action ? (
+                {e.smart ? (
+                  <Sparkles size={16} className="text-lime-600 shrink-0" />
+                ) : e.action ? (
                   <Plus size={16} className="text-zinc-400 shrink-0" />
                 ) : (
                   <CornerDownLeft size={16} className="text-zinc-400 shrink-0" />

@@ -513,6 +513,7 @@ export default function GlobalCopilotWidget({
     { id: '1', role: 'assistant', content: t(lang, 'copilot.greeting') },
   ]);
   const [input, setInput] = useState('');
+  const [homeAsk, setHomeAsk] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [chatFollowups, setChatFollowups] = useState<Followup[] | null>(null);
@@ -1263,6 +1264,17 @@ export default function GlobalCopilotWidget({
         run: () => setMode('chat'),
       },
     ];
+    const askExamples =
+      lang === 'fr'
+        ? ['Qui me doit de l’argent?', 'Quoi au programme aujourd’hui?', 'Comment vont les affaires cette semaine?']
+        : ['Who owes me money?', "What's on today?", "How's business this week?"];
+    const askQuestion = (q: string) => {
+      const clean = q.trim();
+      if (!clean) return;
+      setHomeAsk('');
+      setMode('chat');
+      void sendMessage(clean);
+    };
     return (
       <div className="pt-1">
         <div className="flex items-center gap-3 mb-1.5">
@@ -1275,6 +1287,51 @@ export default function GlobalCopilotWidget({
             </h3>
             <p className="text-xs text-zinc-500 leading-relaxed">{t(lang, 't10misc.copilot.homeSubtitle')}</p>
           </div>
+        </div>
+        {/* Ask-anything: the conversational Q&A, back on the home screen alongside the action cards. */}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            askQuestion(homeAsk);
+          }}
+          className="mt-4 relative flex items-center gap-2"
+        >
+          <label htmlFor="copilot-home-ask" className="sr-only">
+            {lang === 'fr' ? 'Poser une question' : 'Ask a question'}
+          </label>
+          <input
+            id="copilot-home-ask"
+            type="text"
+            value={homeAsk}
+            onChange={(e) => setHomeAsk(e.target.value)}
+            placeholder={
+              lang === 'fr'
+                ? 'Posez n’importe quelle question sur votre entreprise…'
+                : 'Ask anything about your business…'
+            }
+            aria-label={lang === 'fr' ? 'Poser une question' : 'Ask a question'}
+            className="w-full min-h-[48px] pl-4 pr-14 py-3 rounded-2xl border border-zinc-200 bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-ink/40 focus:border-transparent text-sm text-zinc-900 placeholder:text-zinc-400 transition-shadow"
+          />
+          <button
+            type="submit"
+            disabled={!homeAsk.trim()}
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 w-11 h-11 rounded-xl bg-ink hover:bg-graphite disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-white transition-colors"
+            aria-label={lang === 'fr' ? 'Envoyer la question' : 'Send question'}
+          >
+            <Send className="w-4 h-4 ml-0.5" />
+          </button>
+        </form>
+        <div className="flex gap-2 overflow-x-auto mt-2 pb-1">
+          {askExamples.map((q) => (
+            <button
+              key={q}
+              type="button"
+              onClick={() => askQuestion(q)}
+              className="shrink-0 min-h-[44px] text-[11px] font-medium text-ink bg-ink/5 border border-smoke rounded-full px-3 py-1.5 hover:bg-ink/10 active:scale-[0.98] transition-all"
+            >
+              {q}
+            </button>
+          ))}
         </div>
         <div className="grid grid-cols-2 gap-2.5 mt-4">
           {cards.map((c) => (

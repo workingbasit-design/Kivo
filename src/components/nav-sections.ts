@@ -1,15 +1,17 @@
 import {
-  LayoutDashboard, Calendar, Users, Briefcase, FileText, Wallet,
-  Settings, ClipboardList, Tag, Star, PieChart, Sparkles,
-  UserPlus, Megaphone, Repeat, Route, BellRing, Timer,
-  UserCog, Import, MapPin, ClipboardCheck, Wrench, Package, type LucideIcon,
+  LayoutDashboard, Briefcase, FileText, Wallet,
+  ClipboardList, Tag, Star, PieChart, Sparkles,
+  UserPlus, Megaphone, Repeat, Route, Timer,
+  UserCog, Import, ClipboardCheck, Wrench, Package,
+  Siren, Gauge, Mic, Calculator,
 } from 'lucide-react';
+import type { NavIcon } from './animated-icons/nav-icon';
 
 export interface NavItem {
   nameKey: string;
   href: string;
-  /** Lucide icon component. */
-  icon: LucideIcon;
+  /** Lucide icon component or free animated icon name. */
+  icon: NavIcon;
   /**
    * Phase 1: deferred features render under a collapsed "Advanced" group
    * instead of their normal section. The pages and routes stay live; only
@@ -28,12 +30,14 @@ export const navSections: NavSection[] = [
     labelKey: 'nav.sections.work',
     items: [
       { nameKey: 'nav.dashboard', href: '/dashboard', icon: LayoutDashboard },
-      { nameKey: 'nav.schedule', href: '/schedule', icon: Calendar },
+      { nameKey: 'nav.attention', href: '/attention', icon: Siren },
+      { nameKey: 'nav.voice', href: '/voice', icon: Mic },
+      { nameKey: 'nav.schedule', href: '/schedule', icon: 'calendar' },
       { nameKey: 'nav.jobs', href: '/jobs', icon: Briefcase },
       { nameKey: 'nav.dispatch', href: '/dispatch', icon: ClipboardCheck },
       { nameKey: 'nav.recurring', href: '/recurring', icon: Repeat },
       { nameKey: 'nav.routes', href: '/routes', icon: Route, advanced: true },
-      { nameKey: 'nav.tracking', href: '/tracking', icon: MapPin, advanced: true },
+      { nameKey: 'nav.tracking', href: '/tracking', icon: 'location', advanced: true },
       { nameKey: 'nav.timesheets', href: '/timesheets', icon: Timer, advanced: true },
     ],
   },
@@ -48,7 +52,7 @@ export const navSections: NavSection[] = [
     labelKey: 'nav.sections.customers',
     items: [
       { nameKey: 'nav.leads', href: '/leads', icon: UserPlus },
-      { nameKey: 'nav.customers', href: '/customers', icon: Users },
+      { nameKey: 'nav.customers', href: '/customers', icon: 'customers' },
       { nameKey: 'nav.equipment', href: '/equipment', icon: Wrench, advanced: true },
       { nameKey: 'nav.inventory', href: '/inventory', icon: Package, advanced: true },
       { nameKey: 'nav.reviews', href: '/reviews', icon: Star },
@@ -59,7 +63,7 @@ export const navSections: NavSection[] = [
     items: [
       { nameKey: 'nav.pricebook', href: '/pricebook', icon: Tag, advanced: true },
       { nameKey: 'nav.marketing', href: '/marketing', icon: Megaphone, advanced: true },
-      { nameKey: 'nav.reminders', href: '/reminders', icon: BellRing },
+      { nameKey: 'nav.reminders', href: '/reminders', icon: 'bell' },
       // Phase 1: online booking is not advertised. The public /book/[slug]
       // pages keep working for links that were already shared; only this
       // nav/settings entry point is removed.
@@ -69,10 +73,12 @@ export const navSections: NavSection[] = [
     labelKey: 'nav.sections.manage',
     items: [
       { nameKey: 'nav.reports', href: '/reports', icon: PieChart },
+      { nameKey: 'nav.owner', href: '/owner', icon: Gauge },
+      { nameKey: 'nav.scenarios', href: '/scenarios', icon: Calculator, advanced: true },
       { nameKey: 'nav.insights', href: '/insights', icon: Sparkles, advanced: true },
       { nameKey: 'nav.imports', href: '/imports', icon: Import },
       { nameKey: 'nav.team', href: '/settings/team', icon: UserCog },
-      { nameKey: 'nav.settings', href: '/settings', icon: Settings },
+      { nameKey: 'nav.settings', href: '/settings', icon: 'settings' },
     ],
   },
 ];
@@ -90,7 +96,7 @@ export const navBadgeKeys: Record<string, string> = {
 /** Primary thumb-reachable tabs for the mobile bottom bar (More is 5th, rendered separately). */
 export const bottomTabs: NavItem[] = [
   { nameKey: 'nav.dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { nameKey: 'nav.schedule', href: '/schedule', icon: Calendar },
+  { nameKey: 'nav.schedule', href: '/schedule', icon: 'calendar' },
   { nameKey: 'nav.jobs', href: '/jobs', icon: Briefcase },
   { nameKey: 'nav.money', href: '/money', icon: Wallet },
 ];

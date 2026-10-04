@@ -2,12 +2,11 @@ import React from 'react';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { PageHeader, Card, StatusBadge, EmptyState } from '@/components/ui';
-import { dayRange, toISODateLocal, formatDateShort, hasJobTime, cn } from '@/lib/utils';
-import { formatMoney } from '@/lib/money';
+import { PageHeader, Card, EmptyState } from '@/components/ui';
+import { dayRange, toISODateLocal, formatDateShort } from '@/lib/utils';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
-import { CalendarDays, User } from 'lucide-react';
+import { CalendarDays } from 'lucide-react';
 import DispatchBoardClient from '@/components/DispatchBoardClient';
 import DispatchDatePicker from '@/components/DispatchDatePicker';
 

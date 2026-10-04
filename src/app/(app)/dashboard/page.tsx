@@ -31,6 +31,7 @@ import {
   secondaryBtnClass,
 } from "@/components/ui";
 import OnboardingChecklist from "@/components/OnboardingChecklist";
+import AttentionBriefing from "@/components/AttentionBriefing";
 
 export default async function DashboardPage() {
   const { businessId } = await requireAuth();
@@ -159,6 +160,11 @@ export default async function DashboardPage() {
           </div>
         ))}
       </div>
+
+      {/* Daily briefing — the 5 things that need attention first. Renders
+          nothing when there is nothing to flag, so a quiet business sees a
+          calm dashboard, not an empty card. */}
+      <AttentionBriefing businessId={businessId} currency={currency} />
 
       {/* Profile strength — computed from the business's own data only.
           Every "next up" action lives in Settings, so the card links there

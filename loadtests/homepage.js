@@ -25,7 +25,7 @@ export const options = {
   },
 };
 
-export default function () {
+export default function homepageLoad() {
   const res = http.get(`${BASE_URL}/`);
   check(res, {
     'status 200': (r) => r.status === 200,

@@ -34,7 +34,7 @@ export const options = {
 const SERVICES = ['plumber', 'electrician', 'cleaning'];
 const CITIES = ['Toronto', 'Vancouver', 'Montreal'];
 
-export default function () {
+export default function agentSearchLoad() {
   const service = SERVICES[Math.floor(Math.random() * SERVICES.length)];
   const city = CITIES[Math.floor(Math.random() * CITIES.length)];
   const res = http.get(
