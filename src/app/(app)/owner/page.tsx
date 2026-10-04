@@ -37,6 +37,26 @@ function HealthRing({ score, locale }: { score: number; locale: Locale }) {
   );
 }
 
+/**
+ * Tomorrow's day-range in the business timezone, evaluated fresh per request.
+ * Plain module helper (not a component) so the impure Date.now() stays out
+ * of render.
+ */
+function tomorrowRange(tz: string): { start: Date; end: Date } {
+  const fmt = new Intl.DateTimeFormat('en-CA', {
+    timeZone: tz,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+  const key = fmt.format(new Date(Date.now() + 86_400_000));
+  const [y, m, d] = key.split('-').map(Number);
+  return {
+    start: new Date(Date.UTC(y as number, (m as number) - 1, d as number)),
+    end: new Date(Date.UTC(y as number, (m as number) - 1, (d as number) + 1)),
+  };
+}
+
 export default async function OwnerPage() {
   const { businessId } = await requireAuth();
   const locale = await getLocale();
@@ -68,17 +88,9 @@ export default async function OwnerPage() {
   ]);
 
   // Tomorrow's schedule (business-local day).
-  const tz = business?.timezone || "America/Toronto";
-  const tomorrowFmt = new Intl.DateTimeFormat("en-CA", {
-    timeZone: tz,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
-  const tomorrowKey = tomorrowFmt.format(new Date(Date.now() + 86_400_000));
-  const [y, m, d] = tomorrowKey.split("-").map(Number);
-  const tomorrowStart = new Date(Date.UTC(y, m - 1, d));
-  const tomorrowEnd = new Date(Date.UTC(y, m - 1, d + 1));
+  const { start: tomorrowStart, end: tomorrowEnd } = tomorrowRange(
+    business?.timezone || 'America/Toronto',
+  );
   const tomorrowJobs = await prisma.job
     .findMany({
       where: {
