@@ -131,10 +131,10 @@ export default async function OwnerPage() {
                 {health.subs.map((s) => (
                   <div key={s.key} className="flex items-baseline justify-between gap-3">
                     <p className="text-xs text-zinc-600 truncate">
-                      {t(locale, `attention.${s.titleKey}`)}
+                      {t(locale, s.titleKey)}
                       <span className="text-zinc-400">
                         {" "}
-                        · {fillTemplate(t(locale, `attention.${s.explainKey}`), s.explainParams)}
+                        · {fillTemplate(t(locale, s.explainKey), s.explainParams)}
                       </span>
                     </p>
                     <p className="text-xs font-bold text-zinc-900 shrink-0 tabular-nums">
@@ -229,7 +229,7 @@ export default async function OwnerPage() {
                   <Link href={leak.href} className="flex items-center justify-between gap-3 group">
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-zinc-900 group-hover:underline underline-offset-2">
-                        {t(locale, `attention.${leak.titleKey}`)}
+                        {t(locale, leak.titleKey)}
                         {!leak.measured && (
                           <span className="ml-2 text-[10px] font-bold uppercase tracking-wide text-zinc-400">
                             {t(locale, "scenarios.estimateLabel")}
@@ -237,7 +237,7 @@ export default async function OwnerPage() {
                         )}
                       </p>
                       <p className="text-xs text-zinc-500">
-                        {fillTemplate(t(locale, `attention.${leak.detailKey}`), leak.detailParams)}
+                        {fillTemplate(t(locale, leak.detailKey), leak.detailParams)}
                       </p>
                     </div>
                     <p className="text-sm font-bold text-zinc-900 tabular-nums shrink-0">

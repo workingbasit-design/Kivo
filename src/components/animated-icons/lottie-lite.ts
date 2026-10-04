@@ -305,9 +305,11 @@ function transformString(tr: unknown, frame: number): { t: string; opacity: numb
   const o = (tr ?? {}) as Record<string, unknown>;
   const p = pair(evalProp(o.p, frame));
   const a = pair(evalProp(o.a, frame));
-  const s = pair(evalProp(o.s, frame));
+  // Absent scale/opacity mean identity (100%), not 0 — a group without a
+  // Transform item must stay fully visible (2026-10-04 QA: success icon).
+  const s = o.s === undefined ? ([100, 100] as [number, number]) : pair(evalProp(o.s, frame));
   const rot = num(evalProp(o.r, frame));
-  const op = num(evalProp(o.o, frame));
+  const op = o.o === undefined ? 100 : num(evalProp(o.o, frame));
   const parts: string[] = [];
   if (p[0] !== 0 || p[1] !== 0) parts.push(`translate(${r2(p[0])} ${r2(p[1])})`);
   if (rot !== 0) parts.push(`rotate(${r2(rot)})`);

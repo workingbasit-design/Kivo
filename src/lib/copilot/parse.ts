@@ -930,8 +930,10 @@ export function detectIntent(raw: string, followUpName: string | null = null): C
     return 'ask_revenue';
   }
 
-  // 3. Unpaid / outstanding questions (masculine + feminine French forms)
-  if (hasAny(text, [' unpaid ', ' outstanding ', ' pending payment ', ' dues ', ' impaye ', ' impayee ', ' impayes ', ' impayees ', ' non paye ', ' en retard '])) {
+  // 3. Unpaid / outstanding questions (masculine + feminine French forms).
+  // "Who owes me money?" / "Qui me doit de l'argent?" must land here, not
+  // on the schedule fallback (2026-10-04 QA).
+  if (hasAny(text, [' unpaid ', ' outstanding ', ' pending payment ', ' dues ', ' owe ', ' owes ', ' owed ', ' owing ', ' debtor ', ' debtors ', ' impaye ', ' impayee ', ' impayes ', ' impayees ', ' non paye ', ' en retard ', ' me doit ', ' me doivent ', ' creance ', ' creances '])) {
     return 'ask_unpaid';
   }
 

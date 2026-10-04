@@ -138,6 +138,14 @@ test('detectIntent: unpaid question', () => {
   assert.equal(detectIntent('who has unpaid invoices?'), 'ask_unpaid');
 });
 
+test('detectIntent: "Who owes me money?" is ask_unpaid, not ask_schedule', () => {
+  assert.equal(detectIntent('Who owes me money?'), 'ask_unpaid');
+});
+
+test('detectIntent: "Qui me doit de l\u2019argent ?" is ask_unpaid', () => {
+  assert.equal(detectIntent("Qui me doit de l'argent ?"), 'ask_unpaid');
+});
+
 test('detectIntent: customer count', () => {
   assert.equal(detectIntent('how many customers do I have?'), 'ask_customers');
 });
