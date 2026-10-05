@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import { todayInTimezone, dayRange, toISODateLocal } from '@/lib/utils';
+import { todayInTimezone, dayRange, toISODateLocal, toISODateInTimezone } from '@/lib/utils';
 import { t, type Locale } from '@/lib/i18n/index';
 
 // Client-safe preference types/helpers live in ./notification-prefs.ts
@@ -117,11 +117,19 @@ export function minutesInTimezone(d: Date, timeZone: string): number {
   return h * 60 + get('minute');
 }
 
-export function buildJobTomorrow(jobs: JobRow[], tomorrowISO: string): NotificationCandidate[] {
+export function buildJobTomorrow(
+  jobs: JobRow[],
+  tomorrowISO: string,
+  timeZone: string
+): NotificationCandidate[] {
   return jobs
     .filter(
       (j) =>
-        ACTIVE_JOB_STATUSES.includes(j.status) && toISODateLocal(j.date) === tomorrowISO
+        // Compare in the BUSINESS's timezone: tomorrowISO is a business-tz
+        // date, and the server (Vercel) runs in UTC. Using the server-local
+        // date here misclassifies jobs near midnight (2026-10-04: CI in UTC
+        // dropped a Toronto "tomorrow" job).
+        ACTIVE_JOB_STATUSES.includes(j.status) && toISODateInTimezone(j.date, timeZone) === tomorrowISO
     )
     .map((j) => ({
       type: 'job_tomorrow' as const,
@@ -139,12 +147,14 @@ export function buildJobSoon(
   jobs: JobRow[],
   todayISO: string,
   nowMinutes: number,
+  timeZone: string,
   windowMinutes = 120
 ): NotificationCandidate[] {
   return jobs
     .filter((j) => {
       if (!ACTIVE_JOB_STATUSES.includes(j.status)) return false;
-      if (toISODateLocal(j.date) !== todayISO) return false;
+      // Business-timezone comparison (see buildJobTomorrow).
+      if (toISODateInTimezone(j.date, timeZone) !== todayISO) return false;
       const start = parseTimeMinutes(j.time);
       if (start === null) return false;
       return start >= nowMinutes && start <= nowMinutes + windowMinutes;
@@ -196,7 +206,7 @@ export function buildQuoteExpiring(quotes: QuoteRow[], cutoff: Date): Notificati
     }));
 }
 
-export function buildBookingNew(jobs: JobRow[], since: Date): NotificationCandidate[] {
+export function buildBookingNew(jobs: JobRow[], since: Date, timeZone: string): NotificationCandidate[] {
   return jobs
     .filter((j) => j.status === 'NEW')
     .map((j) => ({
@@ -206,7 +216,8 @@ export function buildBookingNew(jobs: JobRow[], since: Date): NotificationCandid
       data: {
         job: j.title,
         customer: j.customerName,
-        when: toISODateLocal(j.date),
+        // Displayed date should be the business-tz date, not server-local.
+        when: toISODateInTimezone(j.date, timeZone),
       },
     }));
 }
@@ -323,8 +334,8 @@ export async function syncNotifications(businessId: string): Promise<number> {
       status: j.status,
       customerName: j.customer.name,
     }));
-    if (settings.job_tomorrow) candidates.push(...buildJobTomorrow(rows, tomorrowISO).slice(0, MAX_PER_TYPE));
-    if (settings.job_soon) candidates.push(...buildJobSoon(rows, todayISO, nowMinutes).slice(0, MAX_PER_TYPE));
+    if (settings.job_tomorrow) candidates.push(...buildJobTomorrow(rows, tomorrowISO, timeZone).slice(0, MAX_PER_TYPE));
+    if (settings.job_soon) candidates.push(...buildJobSoon(rows, todayISO, nowMinutes, timeZone).slice(0, MAX_PER_TYPE));
   }
 
   if (settings.invoice_overdue) {
@@ -411,7 +422,8 @@ export async function syncNotifications(businessId: string): Promise<number> {
           status: j.status,
           customerName: j.customer.name,
         })),
-        recentSince
+        recentSince,
+        timeZone
       )
     );
   }

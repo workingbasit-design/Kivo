@@ -43,10 +43,13 @@ const DAY = 24 * 60 * 60 * 1000;
 const now = new Date();
 const daysAgo = (n: number) => new Date(now.getTime() - n * DAY);
 const daysAhead = (n: number) => new Date(now.getTime() + n * DAY);
-const isoOf = (d: Date) => {
-  const p = (x: number) => String(x).padStart(2, '0');
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
-};
+// Business timezone used by all builder tests. Dates are interpreted in
+// this zone (not the server-local zone) so the suite is deterministic on
+// any CI runner timezone — the 2026-10-04 CI failure was exactly this:
+// a UTC runner misclassified a Toronto "tomorrow" job near midnight.
+const TZ = 'America/Toronto';
+const { toISODateInTimezone } = await import('../utils.ts');
+const isoTz = (d: Date) => toISODateInTimezone(d, TZ);
 
 function job(over: Partial<JobRow>): JobRow {
   return {
@@ -92,7 +95,7 @@ test('serializeSettings round-trips', () => {
 // --- job_tomorrow ------------------------------------------------------------
 
 test('job_tomorrow: active job tomorrow generates a candidate', () => {
-  const c = buildJobTomorrow([job({})], isoOf(daysAhead(1)));
+  const c = buildJobTomorrow([job({})], isoTz(daysAhead(1)), TZ);
   assert.equal(c.length, 1);
   assert.equal(c[0].type, 'job_tomorrow');
   assert.equal(c[0].href, '/jobs/job-1');
@@ -107,14 +110,24 @@ test('job_tomorrow: cancelled/completed jobs and other days are skipped', () => 
     job({ id: 'c', date: daysAhead(2) }),
     job({ id: 'd', date: daysAhead(0) }),
   ];
-  assert.equal(buildJobTomorrow(rows, isoOf(daysAhead(1))).length, 0);
+  assert.equal(buildJobTomorrow(rows, isoTz(daysAhead(1)), TZ).length, 0);
+});
+
+test('job_tomorrow: compares in the business timezone, not server-local (2026-10-04 CI regression)', () => {
+  // 2026-10-05T03:30:00Z is Oct 4 23:30 in Toronto but Oct 5 in UTC.
+  // A UTC server using server-local dates would call it Oct 5; the
+  // business-tz comparison must see Oct 4.
+  const instant = new Date('2026-10-05T03:30:00Z');
+  const c = buildJobTomorrow([job({ date: instant })], '2026-10-04', TZ);
+  assert.equal(c.length, 1, 'job should match business-tz tomorrow');
+  assert.equal(buildJobTomorrow([job({ date: instant })], '2026-10-05', TZ).length, 0);
 });
 
 // --- job_soon -----------------------------------------------------------------
 
 test('job_soon: job today within 2h generates a candidate', () => {
   const rows = [job({ id: 's1', date: daysAhead(0), time: '14:00' })];
-  const c = buildJobSoon(rows, isoOf(daysAhead(0)), 13 * 60);
+  const c = buildJobSoon(rows, isoTz(daysAhead(0)), 13 * 60, TZ);
   assert.equal(c.length, 1);
   assert.equal(c[0].type, 'job_soon');
 });
@@ -127,7 +140,7 @@ test('job_soon: jobs outside the window are skipped', () => {
     job({ id: 's4', date: daysAhead(0), time: 'sometime' }), // unparseable
     job({ id: 's5', date: daysAhead(1), time: '14:00' }), // tomorrow, not today
   ];
-  assert.equal(buildJobSoon(rows, isoOf(daysAhead(0)), 13 * 60).length, 0);
+  assert.equal(buildJobSoon(rows, isoTz(daysAhead(0)), 13 * 60, TZ).length, 0);
 });
 
 test('parseTimeMinutes handles 24h and am/pm', () => {
@@ -173,7 +186,7 @@ test('booking_new: NEW jobs generate; other statuses do not', () => {
     job({ id: 'n1', status: 'NEW' }),
     job({ id: 'n2', status: 'SCHEDULED' }),
   ];
-  const c = buildBookingNew(rows, daysAgo(7));
+  const c = buildBookingNew(rows, daysAgo(7), TZ);
   assert.equal(c.length, 1);
   assert.equal(c[0].dedupeKey, 'booking_new:n1');
   assert.equal(c[0].href, '/jobs/n1');
@@ -223,13 +236,14 @@ test('dedupe keys are unique per record and type', () => {
   const keys = new Set<string>();
   const rows = [job({ id: 'x1' }), job({ id: 'x2' })];
   for (const c of [
-    ...buildJobTomorrow(rows, isoOf(daysAhead(1))),
+    ...buildJobTomorrow(rows, isoTz(daysAhead(1)), TZ),
     ...buildJobSoon(
       rows.map((r) => ({ ...r, date: daysAhead(0), time: '14:00' })),
-      isoOf(daysAhead(0)),
-      13 * 60
+      isoTz(daysAhead(0)),
+      13 * 60,
+      TZ
     ),
-    ...buildBookingNew(rows, daysAgo(7)),
+    ...buildBookingNew(rows, daysAgo(7), TZ),
   ]) {
     assert.ok(!keys.has(c.dedupeKey), `duplicate dedupeKey ${c.dedupeKey}`);
     keys.add(c.dedupeKey);
