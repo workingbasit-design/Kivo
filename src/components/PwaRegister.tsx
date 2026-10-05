@@ -12,7 +12,7 @@
  * NOTE: this component is intentionally not mounted anywhere yet — the app
  * shell is being redesigned in parallel. Mount it in the root layout.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { CloudOff, RefreshCw, CheckCircle2 } from 'lucide-react';
 import {
   onOutboxStatus,
@@ -45,11 +45,23 @@ function ensureHeadTags() {
   meta('apple-mobile-web-app-status-bar-style', 'default');
 }
 
+function subscribeOnlineStatus(onChange: () => void) {
+  window.addEventListener('online', onChange);
+  window.addEventListener('offline', onChange);
+  return () => {
+    window.removeEventListener('online', onChange);
+    window.removeEventListener('offline', onChange);
+  };
+}
+
 export default function PwaRegister() {
-  // Lazy initializer keeps the navigator read out of the mount effect
-  // (SSR defaults to online).
-  const [online, setOnline] = useState(
-    () => typeof navigator === 'undefined' || navigator.onLine
+  // Hydration-safe online status: the server snapshot (true) matches the SSR
+  // HTML exactly, so a browser that reports offline at load can no longer
+  // mismatch hydration (React #418). The client snapshot takes over after.
+  const online = useSyncExternalStore(
+    subscribeOnlineStatus,
+    () => navigator.onLine,
+    () => true
   );
   const [outbox, setOutbox] = useState<OutboxStatus>({ pending: 0, syncing: false, lastError: null });
   const [justSynced, setJustSynced] = useState(false);
@@ -61,11 +73,6 @@ export default function PwaRegister() {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(() => undefined);
     }
-
-    const on = () => setOnline(true);
-    const off = () => setOnline(false);
-    window.addEventListener('online', on);
-    window.addEventListener('offline', off);
 
     const unsub = onOutboxStatus((s) => {
       setOutbox((prev) => {
@@ -89,8 +96,6 @@ export default function PwaRegister() {
     });
 
     return () => {
-      window.removeEventListener('online', on);
-      window.removeEventListener('offline', off);
       unsub();
       stopSync();
     };
@@ -107,7 +112,7 @@ export default function PwaRegister() {
     <div
       role="status"
       aria-live="polite"
-      className="fixed bottom-20 right-4 md:right-6 z-50 flex items-center gap-2 rounded-full bg-zinc-900/95 text-white pl-3 pr-4 py-2 text-xs font-semibold shadow-xl backdrop-blur"
+      className="fixed bottom-28 md:bottom-20 right-4 md:right-6 z-50 flex items-center gap-2 rounded-full bg-zinc-900/95 text-white pl-3 pr-4 py-2 text-xs font-semibold shadow-xl backdrop-blur"
     >
       {showOffline && (
         <>
