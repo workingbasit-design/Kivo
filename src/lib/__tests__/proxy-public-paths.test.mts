@@ -1,6 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { isPublicPath } from '@/lib/public-paths.ts';
+import { readFileSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { isPublicPath, isProxyBypassed, PROXY_STATIC_BYPASS } from '@/lib/public-paths.ts';
+
+const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 
 // Regression test (2026-09-28): the password-recovery and legal pages must be
 // reachable without a session. QA found /forgot-password bouncing anonymous
@@ -61,4 +66,40 @@ test('public paths: agent protocol surface is reachable without a session', () =
   assert.equal(isPublicPath('/api/agent/v1/proposals'), true);
   // Prefix traps: /agentsx is not /agents
   assert.equal(isPublicPath('/agentsx'), false);
+});
+
+test('public paths: static PWA assets bypass the proxy without a session', () => {
+  // Regression (2026-10-05): /favicon.svg — the metadata `icon` — bounced
+  // anonymous browsers to /login because it was missing from the proxy's
+  // static-asset bypass list.
+  for (const p of [
+    '/favicon.svg',
+    '/favicon.ico',
+    '/icons/icon-192.png',
+    '/icons/icon-512.png',
+    '/icons/maskable-512.png',
+    '/apple-touch-icon.png',
+    '/manifest.webmanifest',
+    '/og/og-home.png',
+    '/sw.js',
+  ]) {
+    assert.equal(isProxyBypassed(p), true, p);
+  }
+  // App routes are still guarded.
+  for (const p of ['/dashboard', '/jobs', '/login']) {
+    assert.equal(isProxyBypassed(p), false, p);
+  }
+});
+
+test('public paths: proxy matcher literal stays in sync with PROXY_STATIC_BYPASS', () => {
+  // Next.js requires matcher entries to be static strings, so src/proxy.ts
+  // carries the bypass list as a literal. This test fails the build if the
+  // two drift apart.
+  const proxySrc = readFileSync(join(root, 'src', 'proxy.ts'), 'utf8');
+  for (const entry of PROXY_STATIC_BYPASS.split('|')) {
+    assert.ok(
+      proxySrc.includes(entry),
+      `proxy.ts matcher literal contains bypass entry: ${entry}`
+    );
+  }
 });

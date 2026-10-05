@@ -55,13 +55,15 @@ export function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match all request paths except:
+     * Match all request paths except the static assets in PROXY_STATIC_BYPASS
+     * (@/lib/public-paths, unit-tested — keep this literal in sync; Next.js
+     * requires matcher entries to be static strings):
      * - _next/static, _next/image (static files)
-     * - favicon.ico, sitemap.xml, robots.txt (metadata)
+     * - favicon.ico, favicon.svg, sitemap.xml, robots.txt (metadata)
      * - manifest.webmanifest, sw.js (PWA: browsers fetch these without a session)
      * - og/, icons/, apple-touch-icon.png (public share/PWA assets: social
      *   crawlers fetch og:image with no session; guarding them breaks previews)
      */
-    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|manifest.webmanifest|sw.js|og/|icons/|apple-touch-icon.png).*)',
+    '/((?!_next/static|_next/image|favicon.ico|favicon.svg|sitemap.xml|robots.txt|manifest.webmanifest|sw.js|og/|icons/|apple-touch-icon.png).*)',
   ],
 };

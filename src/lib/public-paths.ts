@@ -65,3 +65,19 @@ export function isPublicPath(pathname: string): boolean {
     PUBLIC_PREFIXES.some((p) => pathname.startsWith(p))
   );
 }
+
+/**
+ * Static asset paths the auth proxy must never guard. Browsers fetch the PWA
+ * icons, manifest, service worker, and favicon with no session; social
+ * crawlers fetch og:image with no session. Guarding them breaks installs,
+ * browser tabs, and link previews.
+ * Regression (2026-10-05): /favicon.svg — the metadata `icon` — bounced
+ * anonymous browsers to /login because it was missing from this list.
+ */
+export const PROXY_STATIC_BYPASS =
+  '_next/static|_next/image|favicon.ico|favicon.svg|sitemap.xml|robots.txt|manifest.webmanifest|sw.js|og/|icons/|apple-touch-icon.png';
+
+/** Pathname the proxy matcher skips entirely (no session check). */
+export function isProxyBypassed(pathname: string): boolean {
+  return new RegExp(`^/(${PROXY_STATIC_BYPASS})`).test(pathname);
+}
