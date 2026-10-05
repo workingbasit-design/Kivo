@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Bell, LogOut, ChevronDown, SlidersHorizontal } from 'lucide-react';
@@ -12,18 +12,10 @@ import { formatMoney } from '@/lib/money';
 import { t, type Locale } from '@/lib/i18n';
 import { navSections, navBadgeKeys, advancedNavItems, type NavItem } from '@/components/nav-sections';
 import { NavIconView } from '@/components/animated-icons/nav-icon';
+import { useAutoExpandFlag } from '@/hooks/useStoredFlag';
 
 /** Shared with the mobile More sheet — one persisted preference per device. */
 const ADVANCED_OPEN_KEY = 'ej-advanced-open';
-
-/** Hydration-safe read of the persisted Advanced-group preference. */
-function readStoredAdvancedOpen(): boolean {
-  try {
-    return localStorage.getItem(ADVANCED_OPEN_KEY) === '1';
-  } catch {
-    return false; // private mode / SSR
-  }
-}
 
 export interface SidebarStats {
   bookedToday: number;
@@ -52,28 +44,11 @@ export default function AppSidebar({
 
   // Advanced group: collapsed by default, persisted per device (shared with
   // the mobile More sheet). Auto-expands on an advanced route.
+  // Hydration-safe: the persisted flag resolves after hydration (useStoredFlag)
+  // instead of being read in a useState initializer, which mismatched the SSR
+  // HTML for returning visitors (React #418).
   const advancedActive = advancedNavItems.some((item) => isActive(item.href));
-  const [advancedOpen, setAdvancedOpen] = useState(
-    () => readStoredAdvancedOpen() || advancedActive
-  );
-  // Re-sync when the route moves onto/off an advanced route (render-phase
-  // adjustment — no effect needed).
-  const [prevAdvancedActive, setPrevAdvancedActive] = useState(advancedActive);
-  if (prevAdvancedActive !== advancedActive) {
-    setPrevAdvancedActive(advancedActive);
-    setAdvancedOpen(readStoredAdvancedOpen() || advancedActive);
-  }
-  const toggleAdvanced = () => {
-    setAdvancedOpen((prev) => {
-      const next = !prev;
-      try {
-        localStorage.setItem(ADVANCED_OPEN_KEY, next ? '1' : '0');
-      } catch {
-        /* private mode */
-      }
-      return next;
-    });
-  };
+  const [advancedOpen, toggleAdvanced] = useAutoExpandFlag(ADVANCED_OPEN_KEY, advancedActive);
 
   const navLink = (item: NavItem) => {
     const active = isActive(item.href);

@@ -10,18 +10,10 @@ import { NavIconView } from '@/components/animated-icons/nav-icon';
 import { Dialog, ghostBtnClass } from '@/components/ui';
 import { logout } from '@/app/actions/auth';
 import { cn } from '@/lib/utils';
+import { useAutoExpandFlag } from '@/hooks/useStoredFlag';
 
 /** localStorage key for the More-sheet Advanced group's open/closed state. */
 const ADVANCED_OPEN_KEY = 'ej-advanced-open';
-
-/** Hydration-safe read of the persisted Advanced-group preference. */
-function readStoredAdvancedOpen(): boolean {
-  try {
-    return localStorage.getItem(ADVANCED_OPEN_KEY) === '1';
-  } catch {
-    return false; // private mode / SSR
-  }
-}
 
 /**
  * Thumb-friendly mobile bottom tab bar. The four primary destinations are
@@ -44,27 +36,10 @@ export default function BottomNav({
 
   // Advanced group: collapsed by default, persisted per device. Auto-expands
   // when the user is on an advanced route so the active item stays visible.
-  const [advancedOpen, setAdvancedOpen] = useState(
-    () => readStoredAdvancedOpen() || advancedActive
-  );
-  // Re-sync when the route moves onto/off an advanced route (render-phase
-  // adjustment — no effect needed).
-  const [prevAdvancedActive, setPrevAdvancedActive] = useState(advancedActive);
-  if (prevAdvancedActive !== advancedActive) {
-    setPrevAdvancedActive(advancedActive);
-    setAdvancedOpen(readStoredAdvancedOpen() || advancedActive);
-  }
-  const toggleAdvanced = () => {
-    setAdvancedOpen((prev) => {
-      const next = !prev;
-      try {
-        localStorage.setItem(ADVANCED_OPEN_KEY, next ? '1' : '0');
-      } catch {
-        /* private mode */
-      }
-      return next;
-    });
-  };
+  // Hydration-safe: the persisted flag resolves after hydration (useStoredFlag)
+  // instead of being read in a useState initializer, which mismatched the SSR
+  // HTML for returning visitors (React #418).
+  const [advancedOpen, toggleAdvanced] = useAutoExpandFlag(ADVANCED_OPEN_KEY, advancedActive);
 
   const renderNavLink = (item: NavItem) => {
     const active = isActive(item.href);

@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
 import { t, type Locale } from '@/lib/i18n';
 import { Card, ProgressBar } from '@/components/ui';
+import { useStoredFlag } from '@/hooks/useStoredFlag';
 
 export type OnboardingStepId =
   | 'logo'
@@ -23,15 +23,6 @@ const STEPS: { id: OnboardingStepId; href: string }[] = [
 
 function storageKey(businessId: string): string {
   return `ej-onboarding-dismissed:${businessId}`;
-}
-
-/** Hydration-safe read of the dismissed flag (false on the server). */
-function readDismissed(businessId: string): boolean {
-  try {
-    return window.localStorage.getItem(storageKey(businessId)) === '1';
-  } catch {
-    return false; // private mode / SSR
-  }
 }
 
 /** i18n path for a step field. Cast needed until the support fragment is wired. */
@@ -70,30 +61,12 @@ export default function OnboardingChecklist({
   businessId: string;
   completed: Record<OnboardingStepId, boolean>;
 }) {
-  const [dismissed, setDismissed] = useState<boolean>(() => readDismissed(businessId));
-  // Re-read when switching businesses (render-phase adjustment).
-  const [prevBusinessId, setPrevBusinessId] = useState(businessId);
-  if (prevBusinessId !== businessId) {
-    setPrevBusinessId(businessId);
-    setDismissed(readDismissed(businessId));
-  }
+  // Hydration-safe: server snapshot (false) matches the SSR HTML; the real
+  // stored value takes over after hydration (useStoredFlag).
+  const [dismissed, setDismissed] = useStoredFlag(storageKey(businessId));
 
-  const dismiss = () => {
-    try {
-      window.localStorage.setItem(storageKey(businessId), '1');
-    } catch {
-      // private mode etc. — dismissal just won't persist
-    }
-    setDismissed(true);
-  };
-  const show = () => {
-    try {
-      window.localStorage.removeItem(storageKey(businessId));
-    } catch {
-      // ignore
-    }
-    setDismissed(false);
-  };
+  const dismiss = () => setDismissed(true);
+  const show = () => setDismissed(false);
 
   if (dismissed) {
     return (
