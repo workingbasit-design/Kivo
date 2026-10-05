@@ -89,9 +89,9 @@ export default function BottomNav({
     <>
       <nav
         aria-label={t(locale, 'nav.primary') ?? 'Primary'}
-        className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-ink text-white border-t border-white/10 ej-safe-bottom"
+        className="md:hidden fixed bottom-0 inset-x-0 z-40 px-3 text-white ej-safe-bottom pointer-events-none"
       >
-        <div className="grid grid-cols-5">
+        <div className="ej-glass-dark pointer-events-auto mb-3 grid grid-cols-5 rounded-[28px] px-1.5 py-1.5">
           {bottomTabs.map((tab) => {
             const active = isActive(tab.href);
             return (
@@ -100,9 +100,9 @@ export default function BottomNav({
                 href={tab.href}
                 aria-current={active ? 'page' : undefined}
                 className={cn(
-                  'ej-icon-hover flex flex-col items-center justify-center gap-1 min-h-[64px] py-2 text-[10px] font-semibold',
+                  'ej-icon-hover flex flex-col items-center justify-center gap-1 min-h-[60px] py-1.5 rounded-[20px] text-[10px] font-semibold',
                   'focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-lime',
-                  active ? 'text-lime' : 'text-white/55 hover:text-white'
+                  active ? 'text-lime bg-lime/[0.07]' : 'text-white/70 hover:text-white'
                 )}
               >
                 <span
@@ -131,9 +131,9 @@ export default function BottomNav({
             onClick={() => setMoreOpen(true)}
             aria-expanded={moreOpen}
             className={cn(
-              'flex flex-col items-center justify-center gap-1 min-h-[64px] py-2 text-[10px] font-semibold transition-colors',
+              'flex flex-col items-center justify-center gap-1 min-h-[60px] py-1.5 rounded-[20px] text-[10px] font-semibold transition-colors',
               'focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-lime',
-              !anyPrimaryActive && moreOpen ? 'text-lime' : 'text-white/55 hover:text-white'
+              !anyPrimaryActive && moreOpen ? 'text-lime bg-lime/[0.07]' : 'text-white/70 hover:text-white'
             )}
           >
             <Menu size={22} />

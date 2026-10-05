@@ -1,16 +1,22 @@
 /**
- * Generates all Kivo brand icon assets from a single SVG source of truth.
- * Run: node scripts/generate-icons.mjs && python3 scripts/ico.py
+ * Generates all EveryJob brand icon assets from ONE layered SVG source of
+ * truth — public/icons/icon-source.svg ("Icon Composer" style: layered
+ * Liquid Glass artwork, not a flat static PNG).
+ *
+ * Run: node scripts/generate-icons.mjs
  *
  * Outputs:
- *   public/icons/icon-192.png        (PWA, rounded tile w/ transparency)
- *   public/icons/icon-512.png        (PWA, rounded tile w/ transparency)
- *   public/icons/maskable-512.png    (PWA maskable, full-bleed)
- *   public/icons/apple-touch-icon.png (180x180, full-bleed, no transparency)
- *   /tmp/kivo-icon-64.png            (staging for favicon.ico via PIL)
+ *   public/icons/icon-192.png         (PWA, layered tile w/ transparency)
+ *   public/icons/icon-512.png         (PWA, layered tile w/ transparency)
+ *   public/icons/maskable-512.png     (PWA maskable: full-bleed, safe zone)
+ *   public/icons/apple-touch-icon.png (180x180, full-bleed, iOS masks it)
+ *   public/favicon.ico                (16/32/48 PNG-compressed ICO)
+ *   public/favicon.svg                (layered vector, rewritten)
+ *
+ * No new dependencies: sharp is already used by Next.js.
  */
 import sharp from 'sharp';
-import { mkdirSync } from 'fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -18,44 +24,87 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const outDir = join(root, 'public', 'icons');
 mkdirSync(outDir, { recursive: true });
 
-const MAIN =
-  'M256 108 C270 208 304 242 404 256 C304 270 270 304 256 404 C242 304 208 270 108 256 C208 242 242 208 256 108 Z';
-const SMALL =
-  'M368 128 C372 152 380 160 404 164 C380 168 372 176 368 200 C364 176 356 168 332 164 C356 160 364 152 368 128 Z';
-
-const DEFS = `
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#8B5CF6"/>
-      <stop offset="0.55" stop-color="#6D28D9"/>
-      <stop offset="1" stop-color="#4C1D95"/>
-    </linearGradient>
-    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.32"/>
-      <stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0"/>
-    </linearGradient>
-  </defs>`;
-
-const SPARKLES = `
-  <path d="${MAIN}" fill="#FFFFFF"/>
-  <path d="${SMALL}" fill="#FFFFFF" opacity="0.92"/>`;
-
-function tileSvg() {
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">${DEFS}
-  <rect x="8" y="8" width="496" height="496" rx="112" fill="url(#bg)"/>
-  <rect x="8" y="8" width="496" height="496" rx="112" fill="url(#gloss)"/>${SPARKLES}
-</svg>`;
+const source = readFileSync(join(outDir, 'icon-source.svg'), 'utf8');
+if (!source.includes('<g clip-path="url(#ej-clip)">')) {
+  throw new Error('icon-source.svg: layered group <g clip-path="url(#ej-clip)"> not found');
 }
 
-function fullBleedSvg(markScale = 1) {
-  const inner =
-    markScale === 1
-      ? SPARKLES
-      : `<g transform="translate(256 256) scale(${markScale}) translate(-256 -256)">${SPARKLES}</g>`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">${DEFS}
-  <rect width="512" height="512" fill="url(#bg)"/>
-  <rect width="512" height="512" fill="url(#gloss)"/>${inner}
-</svg>`;
+/** Layered squircle tile on transparency (PWA "any" icons). */
+function tileSvg() {
+  return source;
+}
+
+/**
+ * Full-bleed charcoal canvas with the layered mark scaled into the
+ * maskable safe zone (markScale 0.8 => artwork inside the 80% circle).
+ */
+function fullBleedSvg(markScale) {
+  const anchor = '<g clip-path="url(#ej-clip)">';
+  const idx = source.indexOf(anchor);
+  const before = source.slice(0, idx);
+  const after = source.slice(idx);
+  const closed = after.replace(/<\/g>\s*<\/svg>\s*$/, '</g></g></svg>');
+  if (closed === after) throw new Error('icon-source.svg: unexpected closing tags');
+  const pad = ((1 - markScale) / 2) * 1024;
+  return (
+    before +
+    '<rect width="1024" height="1024" fill="#161616"/>' +
+    `<g transform="translate(${pad} ${pad}) scale(${markScale})">` +
+    closed
+  );
+}
+
+/** Layered vector favicon (64 grid) — same layers as the 1024 source. */
+function faviconSvg() {
+  const eLines = [
+    '<line x1="24" y1="18" x2="24" y2="46"/>',
+    '<line x1="24" y1="18" x2="44" y2="18"/>',
+    '<line x1="24" y1="32" x2="40" y2="32"/>',
+    '<line x1="24" y1="46" x2="44" y2="46"/>',
+  ].join('');
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">` +
+    `<defs>` +
+    `<linearGradient id="fj-base" x1="0" y1="0" x2="0" y2="1">` +
+    `<stop offset="0" stop-color="#252527"/><stop offset="1" stop-color="#121213"/></linearGradient>` +
+    `<linearGradient id="fj-lime" x1="0" y1="0" x2="0" y2="1">` +
+    `<stop offset="0" stop-color="#d9fb6d"/><stop offset="1" stop-color="#b9e838"/></linearGradient>` +
+    `<linearGradient id="fj-glass" x1="0" y1="0" x2="0" y2="1">` +
+    `<stop offset="0" stop-color="#ffffff" stop-opacity="0.32"/>` +
+    `<stop offset="0.6" stop-color="#ffffff" stop-opacity="0"/></linearGradient>` +
+    `<clipPath id="fj-clip"><rect x="2" y="2" width="60" height="60" rx="16"/></clipPath>` +
+    `</defs>` +
+    `<g clip-path="url(#fj-clip)">` +
+    `<rect x="2" y="2" width="60" height="60" rx="16" fill="url(#fj-base)"/>` +
+    `<rect x="2" y="2" width="60" height="60" fill="url(#fj-glass)"/>` +
+    `<g stroke="#87ad2b" stroke-width="7" stroke-linecap="round" fill="none" transform="translate(0,1.4)">${eLines}</g>` +
+    `<g stroke="url(#fj-lime)" stroke-width="7" stroke-linecap="round" fill="none">${eLines}</g>` +
+    `<rect x="2" y="2" width="60" height="3" fill="#ffffff" opacity="0.18"/>` +
+    `</g></svg>`;
+}
+
+/** Minimal ICO writer: PNG-compressed entries, 16/32/48px. */
+function buildIco(entries) {
+  const header = Buffer.alloc(6);
+  header.writeUInt16LE(0, 0);
+  header.writeUInt16LE(1, 2);
+  header.writeUInt16LE(entries.length, 4);
+  let offset = 6 + 16 * entries.length;
+  const parts = [header];
+  for (const { size, data } of entries) {
+    const e = Buffer.alloc(16);
+    e.writeUInt8(size, 0);
+    e.writeUInt8(size, 1);
+    e.writeUInt8(0, 2);
+    e.writeUInt8(0, 3);
+    e.writeUInt16LE(1, 4);
+    e.writeUInt16LE(32, 6);
+    e.writeUInt32LE(data.length, 8);
+    e.writeUInt32LE(offset, 12);
+    parts.push(e);
+    offset += data.length;
+  }
+  for (const { data } of entries) parts.push(data);
+  return Buffer.concat(parts);
 }
 
 async function render(svg, size, dest) {
@@ -63,12 +112,22 @@ async function render(svg, size, dest) {
   console.log('wrote', dest);
 }
 
-await render(tileSvg(), 512, join(outDir, 'icon-512.png'));
 await render(tileSvg(), 192, join(outDir, 'icon-192.png'));
-// Apple touch icon: full-bleed (iOS applies its own mask; transparency shows black).
-await render(fullBleedSvg(0.78), 180, join(outDir, 'apple-touch-icon.png'));
-// Maskable: full-bleed with the mark inside the ~72% safe zone.
-await render(fullBleedSvg(0.62), 512, join(outDir, 'maskable-512.png'));
-// Staging PNG for favicon.ico (multi-size ICO built with PIL in scripts/make-favicon.py).
-await render(tileSvg(), 64, '/tmp/kivo-icon-64.png');
+await render(tileSvg(), 512, join(outDir, 'icon-512.png'));
+// Maskable: full-bleed with the mark inside the ~80% safe circle.
+await render(fullBleedSvg(0.8), 512, join(outDir, 'maskable-512.png'));
+// Apple touch icon: full-bleed (iOS applies its own rounded mask).
+await render(fullBleedSvg(1), 180, join(outDir, 'apple-touch-icon.png'));
+
+const favicon = faviconSvg();
+writeFileSync(join(root, 'public', 'favicon.svg'), favicon);
+console.log('wrote public/favicon.svg');
+
+const icoEntries = [];
+for (const size of [48, 32, 16]) {
+  const data = await sharp(Buffer.from(tileSvg())).resize(size, size).png().toBuffer();
+  icoEntries.push({ size, data });
+}
+writeFileSync(join(root, 'public', 'favicon.ico'), buildIco(icoEntries));
+console.log('wrote public/favicon.ico');
 console.log('done');

@@ -116,7 +116,7 @@ export default function AppSidebar({
   };
 
   return (
-    <aside className="hidden md:flex flex-col w-64 bg-ink text-white min-h-screen sticky top-0 font-sans shrink-0">
+    <aside className="hidden md:flex flex-col w-64 ej-glass-dark-solid text-white min-h-screen sticky top-0 font-sans shrink-0">
       {/* Header / Logo */}
       <div className="p-6 pb-2">
         <div className="flex items-center justify-between mb-8">

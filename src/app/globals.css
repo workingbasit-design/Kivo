@@ -339,6 +339,56 @@ body {
       ),
       #fafaf7;
   }
+  /* Liquid Glass on dark contexts — the same material adapting to charcoal
+     surfaces (tab bar, sidebar). Translucent ink, heavy blur + saturate so
+     content beneath refracts through it, specular top light, hairline edge.
+     Original treatment, not an Apple asset. */
+  .ej-glass-dark {
+    position: relative;
+    isolation: isolate;
+    background: linear-gradient(
+      135deg,
+      rgba(30, 30, 32, 0.8),
+      rgba(22, 22, 22, 0.74) 50%,
+      rgba(36, 36, 38, 0.8)
+    );
+    backdrop-filter: blur(28px) saturate(160%);
+    -webkit-backdrop-filter: blur(28px) saturate(160%);
+    box-shadow:
+      0 16px 44px rgba(0, 0, 0, 0.38),
+      inset 0 1px 1px rgba(255, 255, 255, 0.22),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  }
+  .ej-glass-dark::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      115deg,
+      rgba(255, 255, 255, 0.2) 0%,
+      rgba(255, 255, 255, 0.05) 28%,
+      rgba(255, 255, 255, 0) 46%
+    );
+    pointer-events: none;
+  }
+  /* Dark-context glass finish without translucency — for in-flow charcoal
+     surfaces (desktop sidebar) where nothing scrolls behind to refract.
+     Same specular edge language as .ej-glass-dark, fully opaque.
+     Sets no position/isolation so it never disturbs sticky/fixed layout. */
+  .ej-glass-dark-solid {
+    background:
+      linear-gradient(
+        115deg,
+        rgba(255, 255, 255, 0.07) 0%,
+        rgba(255, 255, 255, 0) 34%
+      ),
+      linear-gradient(180deg, #1e1e20 0%, #161616 30%, #131313 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.09),
+      inset -1px 0 0 rgba(255, 255, 255, 0.05);
+  }
+
   /* Desktop-only glass — for containers that are separate cards on mobile
      but merge into one card on md+ screens (e.g. the jobs list). */
   @media (min-width: 768px) {    .ej-glass-card-md {
