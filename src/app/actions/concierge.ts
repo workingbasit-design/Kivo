@@ -146,7 +146,10 @@ export async function sendConciergeRequests(input: {
       const existing = await tx.conciergeSend.findUnique({
         where: { idempotencyKey },
       });
-      if (existing) {
+      // Ownership check (mirrors the unique-constraint retry path below):
+      // a replayed key must belong to this customer — fail closed on
+      // mismatch rather than returning another customer's requests.
+      if (existing && existing.customerId === customer.id) {
         // Replay returns the EXACT requests from the original send —
         // never a fresh lookup that could match older requests.
         return {

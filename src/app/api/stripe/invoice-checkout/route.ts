@@ -6,6 +6,7 @@ import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { createInvoiceCheckout, toCents } from '@/lib/stripe';
 import { getLocale } from '@/lib/i18n/server';
 import { clientIpFromHeaders } from '@/lib/client-ip';
+import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -24,6 +25,8 @@ async function rateLimited(businessId: string): Promise<boolean> {
  * money and takes no fee (application_fee_amount = 0).
  */
 export async function POST(req: Request) {
+  const originCheck = checkSameOrigin(req);
+  if (!originCheck.ok) return originForbidden();
   const session = await getSession();
   const businessId = session?.user?.businessId;
   if (!session || !businessId) {

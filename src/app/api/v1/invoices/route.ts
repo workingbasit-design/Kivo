@@ -12,6 +12,21 @@ import { prisma } from '@/lib/prisma';
 import { authenticateV1Request, hasScope } from '@/lib/apiKeys';
 import { emitWebhookEvent } from '@/lib/webhooks';
 import { invoiceSchema } from '@/lib/validations';
+import { calcTax, splitStoredTax } from '@/lib/tax';
+
+// Mirrors the server action's whitelist (src/app/actions/invoices.ts) so a
+// garbage taxType can't be stored with mismatched rate semantics.
+const TAX_TYPES = [
+  'GST',
+  'CGST',
+  'SGST',
+  'IGST',
+  'HST',
+  'PST',
+  'QST',
+  'GST+QST',
+  'GST+PST',
+] as const;
 
 const lineItemSchema = z.object({
   desc: z.string().trim().min(1).max(200),
@@ -48,18 +63,26 @@ function round2(n: number): number {
   return Math.round(n * 100) / 100;
 }
 
-/** Mirror the app's INV-XXXX numbering (see src/app/actions/invoices.ts). */
+/** Mirror the app's INV-XXXX numbering with clash-retry (see src/app/actions/invoices.ts). */
 async function nextInvoiceNumber(businessId: string): Promise<string> {
-  const numbers = await prisma.invoice.findMany({
-    where: { businessId },
-    select: { number: true },
-  });
-  let max = 0;
-  for (const r of numbers) {
-    const m = /^INV-(\d+)$/.exec(r.number);
-    if (m) max = Math.max(max, parseInt(m[1], 10));
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const numbers = await prisma.invoice.findMany({
+      where: { businessId },
+      select: { number: true },
+    });
+    let max = 0;
+    for (const r of numbers) {
+      const m = /^INV-(\d+)$/.exec(r.number);
+      if (m) max = Math.max(max, parseInt(m[1], 10));
+    }
+    const number = `INV-${String(max + 1 + attempt).padStart(4, '0')}`;
+    const clash = await prisma.invoice.findFirst({
+      where: { businessId, number },
+      select: { id: true },
+    });
+    if (!clash) return number;
   }
-  return `INV-${String(max + 1).padStart(4, '0')}`;
+  return `INV-${Date.now().toString().slice(-6)}`;
 }
 
 export async function GET(req: Request) {
@@ -100,6 +123,11 @@ export async function POST(req: Request) {
     );
   }
   const d = parsed.data;
+  // Whitelist the tax type so stored type always matches the rate's semantics.
+  const taxType = String(d.taxType ?? '').toUpperCase();
+  if (!(TAX_TYPES as readonly string[]).includes(taxType)) {
+    return NextResponse.json({ error: 'Invalid taxType.' }, { status: 422 });
+  }
   // Tenant check: the customer must belong to the key's business.
   const customer = await prisma.customer.findFirst({
     where: { id: d.customerId, businessId: auth.key.businessId },
@@ -111,7 +139,11 @@ export async function POST(req: Request) {
   const subtotal = round2(
     d.items ? d.items.reduce((s, i) => s + i.qty * i.rate, 0) : (d.subtotal ?? 0)
   );
-  const taxAmount = round2((subtotal * d.taxRate) / 100);
+  // Server-side money math via the shared tax engine — the single source of
+  // truth, identical to the app's createInvoice path (per-line rounding).
+  const taxAmount = calcTax(subtotal, {
+    taxes: splitStoredTax(taxType, d.taxRate),
+  }).taxAmount;
   const total = round2(subtotal + taxAmount);
   const number = await nextInvoiceNumber(auth.key.businessId);
 
@@ -124,7 +156,7 @@ export async function POST(req: Request) {
         date: new Date(`${d.date}T00:00:00`),
         subtotal,
         taxRate: d.taxRate,
-        taxType: d.taxType,
+        taxType,
         taxAmount,
         total,
         status: 'UNPAID',

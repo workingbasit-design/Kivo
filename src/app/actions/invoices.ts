@@ -27,6 +27,7 @@ import {
 import { sendPlatformEmail } from '@/lib/messaging/platform-email';
 import { invoiceEmail } from '@/lib/messaging/email-templates';
 import { appBaseUrl } from '@/lib/app-url';
+import { invoicePaidUpdate } from '@/lib/invoice-paid';
 
 export type ActionResult = { error?: string; ok?: boolean; id?: string };
 
@@ -393,7 +394,9 @@ export async function recordPayment(
     const newStatus = deriveStatus(invoice.total, newPaid);
     await tx.invoice.update({
       where: { id: invoice.id, businessId },
-      data: { status: newStatus },
+      // invoicePaidUpdate stamps paidAt exactly when the invoice becomes
+      // fully paid — required by paidAt-filtered revenue reporting.
+      data: invoicePaidUpdate(newStatus),
     });
 
     return { payment, newStatus, invoice };
@@ -474,6 +477,15 @@ async function settleJobPaidTx(tx: PrismaTx, businessId: string, jobId: string):
     const price = round2(job.price ?? 0);
     if (price <= 0 || !job.customerId) return;
     const number = await nextInvoiceNumber(businessId, tx);
+    // NOTE (2026-10-04, reviewed): this auto-invoice is a RECEIPT for cash
+    // already in hand (the owner just marked the job paid), not a fresh
+    // bill — so it records the amount received (price) with zero tax, and
+    // the matching payment closes it at PAID. The batch-invoice path
+    // (billing.ts buildBatchPreview) instead treats job.price as a pre-tax
+    // subtotal and adds tax, because there the customer still owes. Adding
+    // tax here would either invent an outstanding balance the customer
+    // doesn't owe or invent a payment they didn't make — both worse than
+    // the path difference. Deliberate, not a defect.
     const inv = await tx.invoice.create({
       data: {
         number,

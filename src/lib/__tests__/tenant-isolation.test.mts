@@ -251,17 +251,12 @@ describe('TENANT_MODELS stays in sync with prisma/schema.prisma', () => {
 
     // User is deliberately excluded (identity root — login looks users up
     // globally before any tenant is known; see tenant-guard.ts).
-    // AgentProposal is deliberately excluded: proposals are pre-tenant
-    // public objects keyed by unguessable tokens (confirmToken /
-    // idempotencyKey), readable without any tenant context by the
-    // confirmation page, the agent status API, and the purge cron.
-    // businessId exists only for the eventual execution join. Every
-    // access goes through explicit unsafeUnscoped with token checks —
-    // the tenant guard's businessId-scoping cannot express "anyone with
-    // the token", so guarding it would break the protocol, not secure it.
+    // AgentProposal IS guarded (fail-closed): every legitimate access goes
+    // through explicit unsafeUnscoped with 256-bit token checks, so a
+    // future unscoped guarded-client query throws loudly instead of
+    // silently succeeding.
     const expected = new Set(modelsWithBusinessId);
     expected.delete('User');
-    expected.delete('AgentProposal');
     assert.deepEqual(
       new Set(TENANT_MODELS),
       expected,

@@ -92,6 +92,7 @@ export class TenantScopeError extends Error {
  * without adding it here fails the suite.
  */
 export const TENANT_MODELS: ReadonlySet<string> = new Set([
+  'AgentProposal',
   'ApiKey',
   'Attachment',
   'AutomationLog',
