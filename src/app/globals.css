@@ -340,17 +340,20 @@ body {
       #fafaf7;
   }
   /* Liquid Glass on dark contexts — the same material adapting to charcoal
-     surfaces (tab bar, sidebar). Translucent ink, heavy blur + saturate so
-     content beneath refracts through it, specular top light, hairline edge.
+     surfaces (tab bar, top bar). Nearly-opaque ink with a deep blur + saturate
+     so a whisper of content refracts through, specular top light, hairline
+     edge. The alpha stays high ON PURPOSE: white text on this surface must
+     stay readable over any scrolling content (2026-10-06: 0.74 alpha washed
+     the header out and made it unreadable — never go below 0.9 here).
      Original treatment, not an Apple asset. */
   .ej-glass-dark {
     position: relative;
     isolation: isolate;
     background: linear-gradient(
       135deg,
-      rgba(30, 30, 32, 0.8),
-      rgba(22, 22, 22, 0.74) 50%,
-      rgba(36, 36, 38, 0.8)
+      rgba(30, 30, 32, 0.94),
+      rgba(22, 22, 22, 0.92) 50%,
+      rgba(36, 36, 38, 0.94)
     );
     backdrop-filter: blur(28px) saturate(160%);
     -webkit-backdrop-filter: blur(28px) saturate(160%);
