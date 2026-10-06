@@ -63,6 +63,13 @@ export function EditCustomerForm({
     success: t(locale, 't10money.customerSaved'),
   });
 
+  // Close the inline editor on successful save — leaving the form open with
+  // a "saved" banner forced users to manually cancel (found 2026-10-06).
+  const saveOk = state?.ok === true;
+  useEffect(() => {
+    if (saveOk) setEditing(false);
+  }, [saveOk]);
+
   if (!editing) {
     return (
       <button onClick={() => setEditing(true)} className={secondaryBtnClass}>
