@@ -10,6 +10,7 @@ import {
 } from "@/lib/voice-commands";
 import { t, type Locale } from "@/lib/i18n";
 import { fillTemplate } from "@/lib/revenue";
+import { useSpeechSupport } from "@/hooks/useSpeechSupport";
 import { Card, EmptyState } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
@@ -49,9 +50,10 @@ export default function VoiceModeClient({
   jobs: VoiceJob[];
   locale: Locale;
 }) {
-  const [supported] = useState(
-    () => typeof window !== "undefined" && !!(window.SpeechRecognition || window.webkitSpeechRecognition)
-  );
+  // Hydration-safe: server snapshot is always false (matches SSR); the real
+  // value is read after hydration. Reading window in a useState initializer
+  // here caused React #418 hydration errors on /voice.
+  const supported = useSpeechSupport();
   const [listening, setListening] = useState(false);
   const [heard, setHeard] = useState("");
   const [log, setLog] = useState<LogEntry[]>([]);

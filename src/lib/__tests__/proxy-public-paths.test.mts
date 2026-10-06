@@ -103,3 +103,20 @@ test('public paths: proxy matcher literal stays in sync with PROXY_STATIC_BYPASS
     );
   }
 });
+
+test('public paths: agent protocol SKILL.md files bypass the proxy without a session', () => {
+  // Regression (2026-10-06): /skills/<name>/SKILL.md bounced anonymous
+  // agents to /login, even though the Agent Protocol manifest advertises
+  // these URLs publicly. Static files under public/skills/ must never be
+  // guarded by the auth proxy.
+  for (const p of [
+    '/skills/everyjob-find-pro/SKILL.md',
+    '/skills/everyjob-request-quote/SKILL.md',
+    '/skills/everyjob-track-proposal/SKILL.md',
+    '/skills/everyjob-connect-assistant/SKILL.md',
+  ]) {
+    assert.equal(isProxyBypassed(p), true, p);
+  }
+  // Guard still applies to lookalike app routes.
+  assert.equal(isProxyBypassed('/skillsx'), false);
+});

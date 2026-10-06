@@ -73,9 +73,12 @@ export function isPublicPath(pathname: string): boolean {
  * browser tabs, and link previews.
  * Regression (2026-10-05): /favicon.svg — the metadata `icon` — bounced
  * anonymous browsers to /login because it was missing from this list.
+ * Regression (2026-10-06): /skills/<name>/SKILL.md — the Agent Protocol
+ * skill files advertised in the public manifest — bounced anonymous agents
+ * to /login for the same reason. They are static files under public/skills/.
  */
 export const PROXY_STATIC_BYPASS =
-  '_next/static|_next/image|favicon.ico|favicon.svg|sitemap.xml|robots.txt|manifest.webmanifest|sw.js|og/|icons/|apple-touch-icon.png';
+  '_next/static|_next/image|favicon.ico|favicon.svg|sitemap.xml|robots.txt|manifest.webmanifest|sw.js|og/|icons/|apple-touch-icon.png|skills/';
 
 /** Pathname the proxy matcher skips entirely (no session check). */
 export function isProxyBypassed(pathname: string): boolean {
