@@ -4,7 +4,7 @@ import React, { useActionState, useEffect, useRef, useState } from 'react';
 import { AlertCircle, CheckCircle2, Pencil, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
-import { updateCustomer, deleteCustomer } from '@/app/actions/customers';
+import { updateCustomer, deleteCustomer, type ActionResult } from '@/app/actions/customers';
 import {
   Field,
   FormGrid,
@@ -57,18 +57,19 @@ export function EditCustomerForm({
   locale?: Locale;
 }) {
   const [editing, setEditing] = useState(false);
-  const [state, formAction, isPending] = useActionState(updateCustomer, {});
+  // Wrap the server action so a successful save also exits editing mode.
+  // (Leaving the form open with a "saved" banner forced a manual cancel —
+  // found 2026-10-06.) setState here runs in the action's async context,
+  // not inside an effect, so no cascading-render lint issue.
+  const [state, formAction, isPending] = useActionState(async (prev: ActionResult, formData: FormData) => {
+    const result = await updateCustomer(prev, formData);
+    if (result?.ok) setEditing(false);
+    return result;
+  }, {});
 
   useResultToast(state, {
     success: t(locale, 't10money.customerSaved'),
   });
-
-  // Close the inline editor on successful save — leaving the form open with
-  // a "saved" banner forced users to manually cancel (found 2026-10-06).
-  const saveOk = state?.ok === true;
-  useEffect(() => {
-    if (saveOk) setEditing(false);
-  }, [saveOk]);
 
   if (!editing) {
     return (
