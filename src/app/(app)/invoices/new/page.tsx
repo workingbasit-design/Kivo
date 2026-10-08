@@ -5,11 +5,13 @@ import { PageHeader } from '@/components/ui';
 import { getTaxConfig } from '@/lib/tax';
 import InvoiceForm from './InvoiceForm';
 import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
 
 export default async function NewInvoicePage() {
   const session = await getSession();
   if (!session?.user?.businessId) redirect('/login');
   const businessId = session.user.businessId;
+  const locale = await getLocale();
 
   const [customers, business] = await Promise.all([
     prisma.customer.findMany({
@@ -28,10 +30,10 @@ export default async function NewInvoicePage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="New invoice"
+        title={t(locale, 'billing.newInvoice')}
         subtitle={`Tax is computed on the server — what you see is what gets billed. Default: ${taxConfig.label}.`}
       />
-      <InvoiceForm customers={customers} taxConfig={taxConfig} locale={await getLocale()} />
+      <InvoiceForm customers={customers} taxConfig={taxConfig} locale={locale} />
     </div>
   );
 }

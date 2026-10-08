@@ -85,8 +85,8 @@ export default function InvoicesClient({
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Invoices"
-        subtitle="Every payment, accounted for."
+        title={t(locale, 'billing.listTitle')}
+        subtitle={t(locale, 'billing.listSubtitle')}
         actions={
           <div className="flex items-center gap-2 flex-wrap">
             <ExportButtons
@@ -103,7 +103,7 @@ export default function InvoicesClient({
               <Receipt size={14} /> {t(locale, 'billing.batchTitle')}
             </Link>
             <Link href="/invoices/new" className={primaryBtnClass}>
-              <Plus size={14} /> New invoice
+              <Plus size={14} /> {t(locale, 'billing.newInvoice')}
             </Link>
           </div>
         }
@@ -111,22 +111,22 @@ export default function InvoicesClient({
 
       <div className="grid grid-cols-2 gap-4">
         <StatCard
-          label="Outstanding"
+          label={t(locale, 'billing.statOutstanding')}
           value={formatMoney(Math.round(outstanding * 100) / 100, currency)}
-          sub="yet to be collected"
+          sub={t(locale, 'billing.statYetToCollect')}
           icon={<Wallet size={16} />}
           accent="bg-amber-100 text-amber-700"
         />
         <StatCard
-          label="Collected"
+          label={t(locale, 'billing.statCollected')}
           value={formatMoney(Math.round(collected * 100) / 100, currency)}
-          sub="payments recorded"
+          sub={t(locale, 'billing.statPaymentsRecorded')}
           icon={<FileText size={16} />}
           accent="bg-emerald-100 text-emerald-700"
         />
       </div>
 
-      <div className="flex gap-2 flex-wrap" role="tablist" aria-label="Invoice status filter">
+      <div className="flex gap-2 flex-wrap" role="tablist" aria-label={t(locale, 'billing.filterLabel')}>
         {FILTERS.map((f) => (
           <button
             key={f}
@@ -150,11 +150,11 @@ export default function InvoicesClient({
         <Card>
           <EmptyState
             icon={<FileText size={24} />}
-            title="No invoices yet"
-            description="Raise a tax-ready invoice in under a minute — tax math handled for you."
+            title={t(locale, 'billing.listEmptyTitle')}
+            description={t(locale, 'billing.listEmptyDesc')}
             action={
               <Link href="/invoices/new" className={primaryBtnClass}>
-                <Plus size={14} /> New invoice
+                <Plus size={14} /> {t(locale, 'billing.newInvoice')}
               </Link>
             }
           />
@@ -187,7 +187,7 @@ export default function InvoicesClient({
                       <p className="text-xs text-zinc-500 mt-1">
                         {formatDateShort(inv.date)}
                         {due > 0 && inv.status !== 'PAID' && (
-                          <span className="text-amber-700 font-semibold"> · {formatMoney(due, currency)} due</span>
+                          <span className="text-amber-700 font-semibold"> · {t(locale, 'billing.dueSuffix').replace('{amount}', formatMoney(due, currency))}</span>
                         )}
                       </p>
                     </div>

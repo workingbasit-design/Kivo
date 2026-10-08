@@ -21,6 +21,38 @@ import { PageHeader, Card, StatCard, StatusBadge, EmptyState } from "@/component
 const JOB_STATUS_ORDER = ["NEW", "SCHEDULED", "IN PROGRESS", "COMPLETED", "PAID", "CANCELLED"];
 
 const frReports = {
+  title: 'Rapports',
+  subtitle: 'La santé de votre entreprise — 6 derniers mois',
+  emptyTitle: 'Aucune donnée pour le moment',
+  emptyDesc:
+    'Ajoutez des travaux, envoyez des factures et enregistrez des paiements — vos rapports se construiront ici.',
+  createFirstJob: 'Créez votre premier travail',
+  collectedLabel: 'Encaissé · 6 mois',
+  paymentsReceived: 'Paiements reçus',
+  avgJobLabel: 'Valeur moyenne par travail',
+  completedPaid: 'Travaux terminés et payés',
+  outstandingLabel: 'Impayé',
+  unpaidInvoice: 'facture impayée',
+  unpaidInvoices: 'factures impayées',
+  winRateLabel: 'Taux de conversion',
+  quote: 'soumission',
+  quotes: 'soumissions',
+  quoteTotalSuffix: 'au total',
+  viewSchedule: 'Voir l’horaire',
+  teamPerf: 'Rendement de l’équipe',
+  teamPerfDesc: 'Travaux terminés, revenus et présence par membre de l’équipe.',
+  viewReport: 'Voir le rapport',
+  revenueByMonth: 'Revenus par mois',
+  jobsByStatus: 'Travaux par statut',
+  allJobs: 'Tous les travaux',
+  noJobsYet: 'Aucun travail pour le moment.',
+  jobsAllTime: 'travaux au total',
+  topCustomers: 'Meilleurs clients',
+  completeJobsHint: 'Terminez des travaux pour voir vos meilleurs clients ici.',
+  waitingToCollect: '{amount} à encaisser',
+  acrossUnpaid:
+    '{count} factures impayées. Un petit rappel aujourd’hui garde la trésorerie en santé.',
+  reviewInvoices: 'Voir les factures',
   revenueByService: 'Revenus par service',
   revenueByServiceSub: 'Tâches terminées et payées',
   noServiceRevenue: 'Aucune tâche terminée pour le moment — liez vos tâches à votre carnet de prix pour voir la répartition.',
@@ -35,6 +67,38 @@ const frReports = {
 };
 
 const enReports = {
+  title: 'Reports',
+  subtitle: 'How your business is doing — last 6 months',
+  emptyTitle: 'No data yet',
+  emptyDesc:
+    'Add jobs, send invoices and record payments — your reports will build themselves here.',
+  createFirstJob: 'Create your first job',
+  collectedLabel: 'Collected · 6 months',
+  paymentsReceived: 'Payments received',
+  avgJobLabel: 'Avg job value',
+  completedPaid: 'Completed & paid jobs',
+  outstandingLabel: 'Outstanding',
+  unpaidInvoice: 'unpaid invoice',
+  unpaidInvoices: 'unpaid invoices',
+  winRateLabel: 'Quote win rate',
+  quote: 'quote',
+  quotes: 'quotes',
+  quoteTotalSuffix: 'total',
+  viewSchedule: 'View schedule',
+  teamPerf: 'Team performance',
+  teamPerfDesc: 'Jobs completed, revenue, and attendance by team member.',
+  viewReport: 'View report',
+  revenueByMonth: 'Revenue by month',
+  jobsByStatus: 'Jobs by status',
+  allJobs: 'All jobs',
+  noJobsYet: 'No jobs yet.',
+  jobsAllTime: 'jobs all time',
+  topCustomers: 'Top customers',
+  completeJobsHint: 'Complete some jobs to see your best customers here.',
+  waitingToCollect: '{amount} waiting to be collected',
+  acrossUnpaid:
+    'Across {count} unpaid invoices. A nudge today keeps cash flow healthy.',
+  reviewInvoices: 'Review invoices',
   revenueByService: 'Revenue by service',
   revenueByServiceSub: 'Completed & paid jobs',
   noServiceRevenue: 'No completed jobs yet — link jobs to your price book to see the breakdown.',
@@ -72,22 +136,22 @@ export default async function ReportsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Reports"
-        subtitle="How your business is doing — last 6 months"
+        title={r.title}
+        subtitle={r.subtitle}
       />
 
       {!hasData ? (
         <Card>
           <EmptyState
             icon={<TrendingUp size={22} />}
-            title="No data yet"
-            description="Add jobs, send invoices and record payments — your reports will build themselves here."
+            title={r.emptyTitle}
+            description={r.emptyDesc}
             action={
               <Link
                 href="/jobs/new"
                 className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs inline-flex items-center gap-2"
               >
-                Create your first job
+                {r.createFirstJob}
               </Link>
             }
           />
@@ -97,30 +161,30 @@ export default async function ReportsPage() {
           {/* Stat cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard
-              label="Collected · 6 months"
+              label={r.collectedLabel}
               value={formatMoney(stats.totalCollected, currency)}
-              sub="Payments received"
+              sub={r.paymentsReceived}
               icon={<TrendingUp size={16} />}
               accent="bg-emerald-100 text-emerald-700"
             />
             <StatCard
-              label="Avg job value"
+              label={r.avgJobLabel}
               value={formatMoney(stats.avgJobValue, currency)}
-              sub="Completed & paid jobs"
+              sub={r.completedPaid}
               icon={<Briefcase size={16} />}
               accent="bg-smoke text-ink"
             />
             <StatCard
-              label="Outstanding"
+              label={r.outstandingLabel}
               value={formatMoney(stats.outstanding, currency)}
-              sub={`${stats.outstandingCount} unpaid invoice${stats.outstandingCount === 1 ? "" : "s"}`}
+              sub={`${stats.outstandingCount} ${stats.outstandingCount === 1 ? r.unpaidInvoice : r.unpaidInvoices}`}
               icon={<AlertCircle size={16} />}
               accent="bg-amber-100 text-amber-700"
             />
             <StatCard
-              label="Quote win rate"
+              label={r.winRateLabel}
               value={stats.quoteWinRate === null ? "—" : `${stats.quoteWinRate}%`}
-              sub={`${stats.quotesSent} quote${stats.quotesSent === 1 ? "" : "s"} total`}
+              sub={`${stats.quotesSent} ${stats.quotesSent === 1 ? r.quote : r.quotes} ${r.quoteTotalSuffix}`}
               icon={<Target size={16} />}
               accent="bg-blue-100 text-blue-700"
             />
@@ -194,7 +258,7 @@ export default async function ReportsPage() {
                     href="/schedule"
                     className="text-xs font-semibold text-ink hover:underline inline-flex items-center gap-1"
                   >
-                    View schedule <ChevronRight size={13} />
+                    {r.viewSchedule} <ChevronRight size={13} />
                   </Link>
                 </div>
               )}
@@ -208,20 +272,20 @@ export default async function ReportsPage() {
               className="lg:col-span-2 ej-glass-card rounded-2xl p-5 flex items-center justify-between gap-4 hover:border-smoke transition-colors"
             >
               <div>
-                <h2 className="text-sm font-bold text-zinc-900">Team performance</h2>
+                <h2 className="text-sm font-bold text-zinc-900">{r.teamPerf}</h2>
                 <p className="text-xs text-zinc-500 mt-0.5">
-                  Jobs completed, revenue, and attendance by team member.
+                  {r.teamPerfDesc}
                 </p>
               </div>
               <span className="text-xs font-semibold text-ink inline-flex items-center gap-1 shrink-0">
-                View report <ChevronRight size={13} />
+                {r.viewReport} <ChevronRight size={13} />
               </span>
             </Link>
 
             {/* Revenue by month */}
             <Card className="p-5">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-sm font-bold text-zinc-900">Revenue by month</h2>
+                <h2 className="text-sm font-bold text-zinc-900">{r.revenueByMonth}</h2>
                 <span className="text-[11px] text-zinc-400 font-medium">Payments received</span>
               </div>
               <div className="space-y-3">
@@ -241,7 +305,7 @@ export default async function ReportsPage() {
                       />
                     </div>
                     <p className="text-[11px] text-zinc-400 mt-1">
-                      {m.jobs} job{m.jobs === 1 ? "" : "s"}
+                      {m.jobs} {m.jobs === 1 ? r.otherLabelJob : r.otherLabelJobs}
                     </p>
                   </div>
                 ))}
@@ -251,16 +315,16 @@ export default async function ReportsPage() {
             {/* Jobs by status */}
             <Card className="p-5">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-sm font-bold text-zinc-900">Jobs by status</h2>
+                <h2 className="text-sm font-bold text-zinc-900">{r.jobsByStatus}</h2>
                 <Link
                   href="/jobs"
                   className="text-xs font-semibold text-ink hover:underline inline-flex items-center gap-1"
                 >
-                  All jobs <ChevronRight size={13} />
+                  {r.allJobs} <ChevronRight size={13} />
                 </Link>
               </div>
               {totalJobs === 0 ? (
-                <p className="text-sm text-zinc-500">No jobs yet.</p>
+                <p className="text-sm text-zinc-500">{r.noJobsYet}</p>
               ) : (
                 <div className="space-y-3">
                   {orderedStatuses.map((g) => (
@@ -278,7 +342,7 @@ export default async function ReportsPage() {
                     </div>
                   ))}
                   <p className="text-[11px] text-zinc-400 pt-1">
-                    {totalJobs} job{totalJobs === 1 ? "" : "s"} all time
+                    {totalJobs} {totalJobs === 1 ? r.otherLabelJob : r.otherLabelJobs} {r.jobsAllTime}
                   </p>
                 </div>
               )}
@@ -286,11 +350,11 @@ export default async function ReportsPage() {
               {/* Top customers */}
               <div className="mt-6 pt-5 border-t border-zinc-100">
                 <h2 className="text-sm font-bold text-zinc-900 mb-3 flex items-center gap-2">
-                  <Trophy size={14} className="text-amber-500" /> Top customers
+                  <Trophy size={14} className="text-amber-500" /> {r.topCustomers}
                 </h2>
                 {stats.topCustomers.length === 0 ? (
                   <p className="text-sm text-zinc-500">
-                    Complete some jobs to see your best customers here.
+                    {r.completeJobsHint}
                   </p>
                 ) : (
                   <ul className="space-y-2">
@@ -313,7 +377,7 @@ export default async function ReportsPage() {
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold text-zinc-900 truncate">{c.name}</p>
                             <p className="text-[11px] text-zinc-500">
-                              {c.jobs} job{c.jobs === 1 ? "" : "s"}
+                              {c.jobs} {c.jobs === 1 ? r.otherLabelJob : r.otherLabelJobs}
                             </p>
                           </div>
                           <p className="text-sm font-bold text-zinc-900">{formatMoney(c.revenue, currency)}</p>
@@ -332,18 +396,17 @@ export default async function ReportsPage() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h2 className="text-sm font-bold text-zinc-900">
-                    {formatMoney(stats.outstanding, currency)} waiting to be collected
+                    {r.waitingToCollect.replace('{amount}', formatMoney(stats.outstanding, currency))}
                   </h2>
                   <p className="text-xs text-zinc-500 mt-1">
-                    Across {stats.outstandingCount} unpaid invoice
-                    {stats.outstandingCount === 1 ? "" : "s"}. A nudge today keeps cash flow healthy.
+                    {r.acrossUnpaid.replace('{count}', String(stats.outstandingCount))}
                   </p>
                 </div>
                 <Link
                   href="/invoices"
                   className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm shrink-0"
                 >
-                  Review invoices <ChevronRight size={13} />
+                  {r.reviewInvoices} <ChevronRight size={13} />
                 </Link>
               </div>
             </Card>
