@@ -61,6 +61,14 @@ const fragment = {
         filterSent: 'Sent',
         filterApproved: 'Approved',
         filterDeclined: 'Declined',
+        emptyTitle: 'No quotes yet',
+        emptyDesc:
+          'Send your first quote in under a minute — line items in, a clean total out.',
+      },
+      new: {
+        title: 'New quote',
+        subtitle:
+          'Line items in, total out — {taxLabel} is added automatically from your region settings.',
       },
     },
   } as Dictionary,
@@ -120,6 +128,14 @@ const fragment = {
         filterSent: 'Envoyé',
         filterApproved: 'Approuvé',
         filterDeclined: 'Refusé',
+        emptyTitle: 'Aucun devis pour le moment',
+        emptyDesc:
+          'Envoyez votre premier devis en moins d\u2019une minute — articles entrés, total clair en sortie.',
+      },
+      new: {
+        title: 'Nouveau devis',
+        subtitle:
+          'Articles entrés, total en sortie — {taxLabel} est ajouté automatiquement selon vos paramètres régionaux.',
       },
     },
   } as Dictionary,

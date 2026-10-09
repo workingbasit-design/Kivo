@@ -6,9 +6,12 @@ import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card } from '@/components/ui';
 import RecurringForm from '@/components/RecurringForm';
 import { createRecurring } from '@/app/actions/recurring';
+import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
 
 export default async function NewRecurringPage() {
   const { businessId } = await requireAuth();
+  const locale = await getLocale();
   const __biz = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } });
   const currency = __biz?.currency;
 
@@ -31,12 +34,12 @@ export default async function NewRecurringPage() {
         href="/recurring"
         className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900"
       >
-        <ArrowLeft size={14} /> Back to recurring jobs
+        <ArrowLeft size={14} /> {t(locale, 'recurringPage.backLink')}
       </Link>
 
       <PageHeader
-        title="New recurring plan"
-        subtitle="Set it once — EveryJob creates a job every week, fortnight, or month."
+        title={t(locale, 'recurringPage.newTitle')}
+        subtitle={t(locale, 'recurringPage.newSubtitle')}
       />
 
       <Card className="p-6">

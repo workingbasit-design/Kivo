@@ -6,6 +6,8 @@ import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card } from '@/components/ui';
 import JobForm, { type JobFormInitial } from '@/components/JobForm';
 import { createJobWithOfflineFallback } from '@/lib/offline/job-action';
+import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
 
 // Always render fresh: the customer list must include customers created
 // moments ago (client-side navigation can otherwise reuse a cached render).
@@ -18,6 +20,7 @@ export default async function NewJobPage({
 }) {
   const { businessId } = await requireAuth();
   const { service: serviceParam, template: templateParam } = await searchParams;
+  const locale = await getLocale();
 
   const customers = await prisma.customer.findMany({
     where: { businessId },
@@ -62,12 +65,12 @@ export default async function NewJobPage({
         href="/jobs"
         className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900"
       >
-        <ArrowLeft size={14} /> Back to jobs
+        <ArrowLeft size={14} /> {t(locale, 'jobs.backToJobs')}
       </Link>
 
       <PageHeader
-        title="New job"
-        subtitle="Fill the essentials — under 20 seconds."
+        title={t(locale, 'jobs.newJob')}
+        subtitle={t(locale, 'jobs.newJobSubtitle')}
       />
 
       <Card className="p-6">

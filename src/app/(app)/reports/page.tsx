@@ -286,7 +286,7 @@ export default async function ReportsPage() {
             <Card className="p-5">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-sm font-bold text-zinc-900">{r.revenueByMonth}</h2>
-                <span className="text-[11px] text-zinc-400 font-medium">Payments received</span>
+                <span className="text-[11px] text-zinc-400 font-medium">{r.paymentsReceived}</span>
               </div>
               <div className="space-y-3">
                 {stats.months.map((m) => (

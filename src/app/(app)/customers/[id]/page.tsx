@@ -17,6 +17,7 @@ import CustomerConsentCard from '@/components/CustomerConsentCard';
 import CustomerProperties from '@/components/CustomerProperties';
 import CustomerCustomFields from '@/components/CustomerCustomFields';
 import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
 import { CA_PROVINCES } from '@/lib/tax';
 
 /**
@@ -128,7 +129,9 @@ export default async function CustomerDetailPage({
   }
 
   const currency = business?.currency ?? 'CAD';
-  const customerName = customer.name ?? 'Unnamed customer';
+  const locale = await getLocale();
+  const custL = (k: string) => t(locale, 'customers.' + k);
+  const customerName = customer.name ?? custL('unnamed');
   const totalRevenue = (customer.jobs ?? []).reduce(
     (s, j) => s + (typeof j?.price === 'number' ? j.price : 0),
     0
@@ -143,10 +146,10 @@ export default async function CustomerDetailPage({
     <div className="space-y-6 max-w-4xl">
       <PageHeader
         title={customerName}
-        subtitle="Customer details, history and notes."
+        subtitle={custL('detailSubtitle')}
         actions={
           <Link href="/customers" className={secondaryBtnClass}>
-            <ArrowLeft size={14} /> All customers
+            <ArrowLeft size={14} /> {custL('allCustomers')}
           </Link>
         }
       />
@@ -252,7 +255,7 @@ export default async function CustomerDetailPage({
             label="SMS"
           />
           <EditCustomerForm
-            locale={await getLocale()}
+            locale={locale}
             customer={{
               id: customer.id,
               name: customerName,
@@ -268,7 +271,7 @@ export default async function CustomerDetailPage({
           <DeleteCustomerButton
             customerId={customer.id}
             customerName={customerName}
-            locale={await getLocale()}
+            locale={locale}
           />
         </div>
       </Card>
@@ -282,7 +285,7 @@ export default async function CustomerDetailPage({
           businessName={business?.name ?? 'us'}
           regionCode={regionCode}
           initialTokenId={activePortalToken?.id ?? null}
-          locale={await getLocale()}
+          locale={locale}
         />
       </Card>
 
@@ -292,13 +295,13 @@ export default async function CustomerDetailPage({
         consent={customer.messageConsent ?? false}
         consentAt={customer.messageConsentAt?.toISOString() ?? null}
         preferredLocale={customer.preferredLocale}
-        locale={await getLocale()}
+        locale={locale}
       />
 
       {/* Properties (home, cottage, job sites) */}
       <CustomerProperties
         customerId={customer.id}
-        locale={await getLocale()}
+        locale={locale}
         initial={customer.properties.map((p) => ({
           id: p.id,
           label: p.label,
@@ -311,7 +314,7 @@ export default async function CustomerDetailPage({
       {/* Business-defined custom fields */}
       <CustomerCustomFields
         customerId={customer.id}
-        locale={await getLocale()}
+        locale={locale}
         initial={{
           defs: fieldDefs,
           values: customer.fieldValues.map((v) => ({

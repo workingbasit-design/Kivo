@@ -1,5 +1,6 @@
 import { requireAuth } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
 import { prisma } from '@/lib/prisma';
 import { PageHeader } from '@/components/ui';
 import ReviewsClient from '@/components/ReviewsClient';
@@ -50,8 +51,8 @@ export default async function ReviewsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Reviews"
-        subtitle="Track what customers say about your work."
+        title={t(locale, 'reviewsPage.title')}
+        subtitle={t(locale, 'reviewsPage.subtitle')}
       />
       <GoogleReviewsPanel status={googleStatus} locale={locale} />
       <ReviewsClient

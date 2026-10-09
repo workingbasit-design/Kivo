@@ -31,7 +31,7 @@ export default async function NewInvoicePage() {
     <div className="space-y-6">
       <PageHeader
         title={t(locale, 'billing.newInvoice')}
-        subtitle={`Tax is computed on the server — what you see is what gets billed. Default: ${taxConfig.label}.`}
+        subtitle={t(locale, 'billing.newInvoiceSubtitle').replace('{taxLabel}', taxConfig.label)}
       />
       <InvoiceForm customers={customers} taxConfig={taxConfig} locale={locale} />
     </div>

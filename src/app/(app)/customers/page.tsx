@@ -9,6 +9,7 @@ import { PageHeader, Card, primaryBtnClass } from '@/components/ui';
 import CustomersClient from '@/components/CustomersClient';
 import type { CustomerRow } from '@/components/CustomersClient';
 import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
 
 /**
  * Customers list — defensive by design (production incident 2026-09-23:
@@ -19,6 +20,8 @@ export default async function CustomersPage() {
   const session = await getSession();
   if (!session?.user?.businessId) redirect('/login');
   const businessId = session.user.businessId;
+  const locale = await getLocale();
+  const custL = (k: string) => t(locale, 'customers.' + k);
 
   let customers: CustomerRow[] = [];
   let currency: string | undefined;
@@ -59,7 +62,7 @@ export default async function CustomersPage() {
       id: c.id ?? '',
       // Never assume the row is well-formed — a bad row renders as
       // "Unnamed customer" instead of crashing the whole page.
-      name: c.name ?? 'Unnamed customer',
+      name: c.name ?? custL('unnamed'),
       phone: c.phone ?? null,
       email: c.email ?? null,
       address: c.address ?? null,
@@ -72,18 +75,22 @@ export default async function CustomersPage() {
     }));
   } catch (e) {
     console.error('[customers] failed to load customer list:', e);
-    loadError =
-      'We couldn\u2019t load your customers just now. Your data is safe — please try again.';
+    loadError = custL('loadErrorBody');
   }
+
+  const countLabel = custL(customers.length === 1 ? 'countOne' : 'countOther').replace(
+    '{count}',
+    String(customers.length)
+  );
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Customers"
-        subtitle={`${customers.length} customer${customers.length === 1 ? '' : 's'}`}
+        title={custL('title')}
+        subtitle={countLabel}
         actions={
           <Link href="/customers/new" className={primaryBtnClass}>
-            <Plus size={14} /> Add customer
+            <Plus size={14} /> {custL('addCustomer')}
           </Link>
         }
       />
@@ -94,15 +101,15 @@ export default async function CustomersPage() {
             <AlertCircle size={22} />
           </div>
           <h2 className="text-base font-semibold text-zinc-900 mb-1">
-            Couldn&apos;t load customers
+            {custL('loadErrorTitle')}
           </h2>
           <p className="text-sm text-zinc-600 mb-5">{loadError}</p>
           <div className="flex items-center justify-center gap-3">
             <Link href="/customers" className={primaryBtnClass}>
-              Try again
+              {custL('tryAgain')}
             </Link>
             <Link href="/customers/new" className="text-sm font-medium text-ink hover:underline">
-              Add a customer
+              {custL('addACustomer')}
             </Link>
           </div>
         </Card>
@@ -110,7 +117,7 @@ export default async function CustomersPage() {
         <CustomersClient
           customers={customers}
           currency={currency}
-          locale={await getLocale()}
+          locale={locale}
         />
       )}
     </div>

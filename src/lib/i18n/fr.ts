@@ -71,6 +71,8 @@ const fr: Dictionary = {
   jobs: {
     title: 'Travaux',
     newJob: 'Nouveau travail',
+    newJobSubtitle: 'L\u2019essentiel seulement — moins de 20 secondes.',
+    backToJobs: 'Retour aux travaux',
     customer: 'Client',
     service: 'Service',
     date: 'Date',
@@ -130,6 +132,17 @@ const fr: Dictionary = {
     notes: 'Notes',
     searchPlaceholder: 'Rechercher nom, téléphone, courriel ou adresse…',
     noResults: 'Aucun client ne correspond à votre recherche.',
+    countOne: '{count} client',
+    countOther: '{count} clients',
+    addCustomer: 'Ajouter un client',
+    unnamed: 'Client sans nom',
+    loadErrorTitle: 'Impossible de charger les clients',
+    loadErrorBody:
+      'Nous n\u2019avons pas pu charger vos clients pour le moment. Vos données sont en sécurité — veuillez réessayer.',
+    tryAgain: 'Réessayer',
+    addACustomer: 'Ajouter un client',
+    detailSubtitle: 'Détails, historique et notes du client.',
+    allCustomers: 'Tous les clients',
   },
   schedule: {
     title: 'Horaire',

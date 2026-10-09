@@ -72,6 +72,8 @@ const en: Dict = {
   jobs: {
     title: 'Jobs',
     newJob: 'New job',
+    newJobSubtitle: 'Fill the essentials — under 20 seconds.',
+    backToJobs: 'Back to jobs',
     customer: 'Customer',
     service: 'Service',
     date: 'Date',
@@ -131,6 +133,17 @@ const en: Dict = {
     notes: 'Notes',
     searchPlaceholder: 'Search name, phone, email or address…',
     noResults: 'No customers match your search.',
+    countOne: '{count} customer',
+    countOther: '{count} customers',
+    addCustomer: 'Add customer',
+    unnamed: 'Unnamed customer',
+    loadErrorTitle: "Couldn't load customers",
+    loadErrorBody:
+      'We couldn\u2019t load your customers just now. Your data is safe — please try again.',
+    tryAgain: 'Try again',
+    addACustomer: 'Add a customer',
+    detailSubtitle: 'Customer details, history and notes.',
+    allCustomers: 'All customers',
   },
   schedule: {
     title: 'Schedule',

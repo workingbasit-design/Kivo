@@ -245,11 +245,11 @@ export default function QuotesClient({
         <Card>
           <EmptyState
             icon={<ClipboardList size={24} />}
-            title="No quotes yet"
-            description="Send your first quote in under a minute — line items in, a clean total out."
+            title={t(locale, 'quotes.list.emptyTitle')}
+            description={t(locale, 'quotes.list.emptyDesc')}
             action={
               <Link href="/quotes/new" className={primaryBtnClass}>
-                <Plus size={14} /> New quote
+                <Plus size={14} /> {t(locale, 'quotes.list.newQuote')}
               </Link>
             }
           />
