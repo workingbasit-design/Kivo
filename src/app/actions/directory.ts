@@ -60,7 +60,7 @@ export async function findDirectoryMatches(
   limit = 5
 ): Promise<DirectoryCandidate[]> {
   const businesses = await prisma.business.findMany({
-    where: { directoryOptIn: true, directoryVerifiedAt: { not: null }, bookingPage: { isNot: null } },
+    where: { directoryOptIn: true, directoryVerifiedAt: { not: null }, bookingPage: { is: { enabled: true } } },
     select: {
       id: true,
       name: true,

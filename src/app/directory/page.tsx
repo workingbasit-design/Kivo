@@ -42,7 +42,7 @@ export default async function DirectoryPage({
   const minR = Number(minRating) || 0;
 
   const businesses = await prisma.business.findMany({
-    where: { directoryOptIn: true, directoryVerifiedAt: { not: null }, bookingPage: { isNot: null } },
+    where: { directoryOptIn: true, directoryVerifiedAt: { not: null }, bookingPage: { is: { enabled: true } } },
     select: {
       name: true,
       logoUrl: true,

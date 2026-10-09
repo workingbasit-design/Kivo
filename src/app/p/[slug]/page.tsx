@@ -43,6 +43,7 @@ async function getProfile(slug: string) {
         descriptionFr: true,
         serviceAreas: true,
         showPhone: true,
+        enabled: true,
         business: {
           select: {
             id: true,
@@ -62,7 +63,7 @@ async function getProfile(slug: string) {
       },
     })
   );
-  if (!page || !page.business.directoryOptIn || !page.business.directoryVerifiedAt) return null;
+  if (!page || !page.enabled || !page.business.directoryOptIn || !page.business.directoryVerifiedAt) return null;
 
   const businessId = page.business.id;
   const [services, reviews] = await Promise.all([
@@ -150,7 +151,7 @@ export default async function PublicProfilePage({
   let similarPros: { name: string; slug: string; avg: number | null; service: string | null }[] = [];
   if (locality) {
     const others = await prisma.business.findMany({
-      where: { directoryOptIn: true, directoryVerifiedAt: { not: null }, bookingPage: { isNot: null }, id: { not: b.id } },
+      where: { directoryOptIn: true, directoryVerifiedAt: { not: null }, bookingPage: { is: { enabled: true } }, id: { not: b.id } },
       select: {
         name: true,
         address: true,

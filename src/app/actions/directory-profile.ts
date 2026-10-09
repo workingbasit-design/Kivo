@@ -26,7 +26,7 @@ async function checkLimit(userId: string): Promise<DirectoryProfileResult | null
 export async function ensureClaimState(businessId: string): Promise<void> {
   const biz = await prisma.business.findUnique({
     where: { id: businessId },
-    select: { directoryOptIn: true, directoryVerifiedAt: true },
+    select: { directoryOptIn: true, directoryVerifiedAt: true, createdAt: true },
   });
   if (!biz || !biz.directoryOptIn || biz.directoryVerifiedAt) return;
   const [claim, page] = await Promise.all([
@@ -34,22 +34,41 @@ export async function ensureClaimState(businessId: string): Promise<void> {
     prisma.bookingPage.findUnique({ where: { businessId }, select: { id: true } }),
   ]);
   if (claim || !page) return;
-  await prisma.$transaction([
-    prisma.directoryClaim.create({
+  // Grandfathering only applies to businesses that existed before claim
+  // verification launched (2026-09-23). Anything newer that opts in waits
+  // for a human reviewer — the claim-verification gate.
+  if (biz.createdAt < GRANDFATHER_CUTOFF) {
+    await prisma.$transaction([
+      prisma.directoryClaim.create({
+        data: {
+          businessId,
+          status: 'APPROVED',
+          decidedBy: 'system',
+          decidedAt: new Date(),
+          note: 'Grandfathered: listing was already public via the app before claim verification was introduced.',
+        },
+      }),
+      prisma.business.update({
+        where: { id: businessId },
+        data: { directoryVerifiedAt: new Date() },
+      }),
+    ]);
+  } else {
+    await prisma.directoryClaim.create({
       data: {
         businessId,
-        status: 'APPROVED',
-        decidedBy: 'system',
-        decidedAt: new Date(),
-        note: 'Grandfathered: listing was already public via the app before claim verification was introduced.',
+        status: 'PENDING',
+        note: 'Auto-created: opted in after claim verification launched; awaiting reviewer approval.',
       },
-    }),
-    prisma.business.update({
-      where: { id: businessId },
-      data: { directoryVerifiedAt: new Date() },
-    }),
-  ]);
+    });
+    // directoryVerifiedAt stays null -> listing stays unpublished until an
+    // admin approves at /directory-claims. Idempotent: the claim row makes
+    // future ensureClaimState calls return early.
+  }
 }
+
+// Claim verification launched 2026-09-23.
+const GRANDFATHER_CUTOFF = new Date('2026-09-24T00:00:00Z');
 
 /**
  * Business requests verification of its directory listing. Creates a PENDING
