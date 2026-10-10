@@ -38,6 +38,7 @@ type Mood =
 export default function JobiMascot() {
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const revertTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const bubbleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [dismissed, setDismissed] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [ready, setReady] = useState(false);
@@ -188,8 +189,8 @@ export default function JobiMascot() {
 
   const showBubble = useCallback((text: string, ms = 4000) => {
     setBubble(text);
-    if (revertTimer.current) clearTimeout(revertTimer.current);
-    revertTimer.current = setTimeout(() => setBubble(null), ms);
+    if (bubbleTimer.current) clearTimeout(bubbleTimer.current);
+    bubbleTimer.current = setTimeout(() => setBubble(null), ms);
   }, []);
 
   const handleClick = useCallback(() => {
@@ -305,6 +306,7 @@ export default function JobiMascot() {
         style={{ cursor: 'pointer', borderRadius: '50%' }}
       >
         <Avatar
+          key={mood}
           definition={jobiDefinition as never}
           animation={reducedMotion ? undefined : (mood as never)}
           expression={reducedMotion ? ('neutral' as never) : undefined}
