@@ -46,7 +46,7 @@ export async function GET(req: Request) {
 
   const businesses = await unsafeUnscoped('agent:search', (db) =>
     db.business.findMany({
-      where: { directoryOptIn: true, directoryVerifiedAt: { not: null }, bookingPage: { isNot: null } },
+      where: { directoryOptIn: true, directoryVerifiedAt: { not: null }, bookingPage: { is: { enabled: true } } },
       select: {
         name: true,
         phone: true,

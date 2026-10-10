@@ -6,7 +6,7 @@ import { t } from "@/lib/i18n";
 import { localeMoneyTag } from "@/lib/utils";
 import { PageHeader, Card, EmptyState } from "@/components/ui";
 import { AttentionRow } from "@/components/AttentionBriefing";
-import { AnimatedIcon } from "@/components/animated-icons/AnimatedIcon";
+import { CheckCircle2 } from "lucide-react";
 
 export default async function AttentionPage() {
   const { businessId } = await requireAuth();
@@ -44,7 +44,7 @@ export default async function AttentionPage() {
       {items.length === 0 ? (
         <Card>
           <EmptyState
-            icon={<AnimatedIcon name="success" size={28} label="All clear" />}
+            icon={<CheckCircle2 size={28} className="text-emerald-500" aria-label="All clear" />}
             title={t(locale, "attention.emptyTitle")}
             description={t(locale, "attention.emptyDesc")}
           />

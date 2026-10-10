@@ -30,6 +30,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
     db.bookingPage.findUnique({
       where: { slug },
       select: {
+        slug: true,
+        enabled: true,
         headline: true,
         headlineFr: true,
         showPhone: true,
@@ -53,7 +55,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
       },
     })
   );
-  if (!page || !page.business.directoryOptIn || !page.business.directoryVerifiedAt) {
+  if (!page || !page.enabled || !page.business.directoryOptIn || !page.business.directoryVerifiedAt) {
     return NextResponse.json({ error: 'Pro not found.' }, { status: 404 });
   }
   const b = page.business;

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import PwaRegister from "@/components/PwaRegister";
+import JobiMascot from "@/components/mascot/JobiMascot";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -105,6 +106,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <PwaRegister />
         <Toaster position="bottom-right" />
+        <JobiMascot />
       </body>
     </html>
   );

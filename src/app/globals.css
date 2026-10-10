@@ -351,9 +351,9 @@ body {
     isolation: isolate;
     background: linear-gradient(
       135deg,
-      rgba(30, 30, 32, 0.94),
-      rgba(22, 22, 22, 0.92) 50%,
-      rgba(36, 36, 38, 0.94)
+      rgba(30, 30, 32, 0.97),
+      rgba(22, 22, 22, 0.97) 50%,
+      rgba(36, 36, 38, 0.97)
     );
     backdrop-filter: blur(28px) saturate(160%);
     -webkit-backdrop-filter: blur(28px) saturate(160%);

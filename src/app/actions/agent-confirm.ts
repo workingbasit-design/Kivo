@@ -142,7 +142,7 @@ export async function approveProposal(_prev: unknown, formData: FormData) {
               select: {
                 directoryOptIn: true,
                 directoryVerifiedAt: true,
-                bookingPage: { select: { id: true } },
+                bookingPage: { select: { id: true, enabled: true } },
               },
             },
           },
@@ -150,9 +150,10 @@ export async function approveProposal(_prev: unknown, formData: FormData) {
         if (!p || p.status !== PROPOSAL_STATUS.PENDING || isProposalExpired(p.expiresAt)) {
           throw new ProposalDecisionError('gone');
         }
-        // The pro may have withdrawn directory consent since the proposal
-        // was created — revalidate before anything is sent.
-        if (!p.business.directoryOptIn || !p.business.directoryVerifiedAt || !p.business.bookingPage) {
+        // The pro may have withdrawn directory consent or disabled their
+        // booking page since the proposal was created — revalidate before
+        // anything is sent.
+        if (!p.business.directoryOptIn || !p.business.directoryVerifiedAt || !p.business.bookingPage || !p.business.bookingPage.enabled) {
           throw new ProposalDecisionError('ineligible');
         }
 

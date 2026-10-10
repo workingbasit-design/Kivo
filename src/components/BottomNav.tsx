@@ -77,7 +77,7 @@ export default function BottomNav({
                 className={cn(
                   'ej-icon-hover flex flex-col items-center justify-center gap-1 min-h-[60px] py-1.5 rounded-[20px] text-[10px] font-semibold',
                   'focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-lime',
-                  active ? 'text-lime bg-lime/[0.07]' : 'text-white/70 hover:text-white'
+                  active ? 'text-lime bg-lime/[0.07]' : 'text-white/90 hover:text-white'
                 )}
               >
                 <span
@@ -85,7 +85,7 @@ export default function BottomNav({
                     'ej-liquid flex items-center justify-center w-11 h-9 rounded-2xl backdrop-blur-md saturate-150 ring-1 ring-inset transition-all duration-200',
                     active
                       ? 'bg-lime/20 ring-lime/40 text-lime shadow-[0_0_16px_rgba(198,242,78,0.30),inset_0_1px_0_rgba(255,255,255,0.25)]'
-                      : 'bg-white/[0.07] ring-white/12 text-white/60 shadow-[0_2px_8px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.14)]'
+                      : 'bg-white/[0.07] ring-white/12 text-white/85 shadow-[0_2px_8px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.14)]'
                   )}
                 >
                   <NavIconView icon={tab.icon} size={20} />
@@ -108,7 +108,7 @@ export default function BottomNav({
             className={cn(
               'flex flex-col items-center justify-center gap-1 min-h-[60px] py-1.5 rounded-[20px] text-[10px] font-semibold transition-colors',
               'focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-lime',
-              !anyPrimaryActive && moreOpen ? 'text-lime bg-lime/[0.07]' : 'text-white/70 hover:text-white'
+              !anyPrimaryActive && moreOpen ? 'text-lime bg-lime/[0.07]' : 'text-white/90 hover:text-white'
             )}
           >
             <Menu size={22} />

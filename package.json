@@ -10,6 +10,7 @@
     "test": "node --test --import ./src/lib/__tests__/register-loader.mjs src/lib/__tests__/*.test.mts"
   },
   "dependencies": {
+    "@bible-strong/avatar-react": "^0.1.0",
     "@prisma/client": "^5.22.0",
     "@vercel/blob": "^2.8.0",
     "bcryptjs": "^3.0.3",

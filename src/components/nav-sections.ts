@@ -3,7 +3,7 @@ import {
   ClipboardList, Tag, Star, PieChart, Sparkles,
   UserPlus, Megaphone, Repeat, Route, Timer,
   UserCog, Import, ClipboardCheck, Wrench, Package,
-  Siren, Gauge, Mic, Calculator,
+  Siren, Gauge, Mic, Calculator, Calendar, MapPin, Users, Bell, Settings,
 } from 'lucide-react';
 import type { NavIcon } from './animated-icons/nav-icon';
 
@@ -32,12 +32,12 @@ export const navSections: NavSection[] = [
       { nameKey: 'nav.dashboard', href: '/dashboard', icon: LayoutDashboard },
       { nameKey: 'nav.attention', href: '/attention', icon: Siren },
       { nameKey: 'nav.voice', href: '/voice', icon: Mic },
-      { nameKey: 'nav.schedule', href: '/schedule', icon: 'calendar' },
+      { nameKey: 'nav.schedule', href: '/schedule', icon: Calendar },
       { nameKey: 'nav.jobs', href: '/jobs', icon: Briefcase },
       { nameKey: 'nav.dispatch', href: '/dispatch', icon: ClipboardCheck },
       { nameKey: 'nav.recurring', href: '/recurring', icon: Repeat },
       { nameKey: 'nav.routes', href: '/routes', icon: Route, advanced: true },
-      { nameKey: 'nav.tracking', href: '/tracking', icon: 'location', advanced: true },
+      { nameKey: 'nav.tracking', href: '/tracking', icon: MapPin, advanced: true },
       { nameKey: 'nav.timesheets', href: '/timesheets', icon: Timer, advanced: true },
     ],
   },
@@ -52,7 +52,7 @@ export const navSections: NavSection[] = [
     labelKey: 'nav.sections.customers',
     items: [
       { nameKey: 'nav.leads', href: '/leads', icon: UserPlus },
-      { nameKey: 'nav.customers', href: '/customers', icon: 'customers' },
+      { nameKey: 'nav.customers', href: '/customers', icon: Users },
       { nameKey: 'nav.equipment', href: '/equipment', icon: Wrench, advanced: true },
       { nameKey: 'nav.inventory', href: '/inventory', icon: Package, advanced: true },
       { nameKey: 'nav.reviews', href: '/reviews', icon: Star },
@@ -63,7 +63,7 @@ export const navSections: NavSection[] = [
     items: [
       { nameKey: 'nav.pricebook', href: '/pricebook', icon: Tag, advanced: true },
       { nameKey: 'nav.marketing', href: '/marketing', icon: Megaphone, advanced: true },
-      { nameKey: 'nav.reminders', href: '/reminders', icon: 'bell' },
+      { nameKey: 'nav.reminders', href: '/reminders', icon: Bell },
       // Phase 1: online booking is not advertised. The public /book/[slug]
       // pages keep working for links that were already shared; only this
       // nav/settings entry point is removed.
@@ -78,7 +78,7 @@ export const navSections: NavSection[] = [
       { nameKey: 'nav.insights', href: '/insights', icon: Sparkles, advanced: true },
       { nameKey: 'nav.imports', href: '/imports', icon: Import },
       { nameKey: 'nav.team', href: '/settings/team', icon: UserCog },
-      { nameKey: 'nav.settings', href: '/settings', icon: 'settings' },
+      { nameKey: 'nav.settings', href: '/settings', icon: Settings },
     ],
   },
 ];
@@ -96,7 +96,7 @@ export const navBadgeKeys: Record<string, string> = {
 /** Primary thumb-reachable tabs for the mobile bottom bar (More is 5th, rendered separately). */
 export const bottomTabs: NavItem[] = [
   { nameKey: 'nav.dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { nameKey: 'nav.schedule', href: '/schedule', icon: 'calendar' },
+  { nameKey: 'nav.schedule', href: '/schedule', icon: Calendar },
   { nameKey: 'nav.jobs', href: '/jobs', icon: Briefcase },
   { nameKey: 'nav.money', href: '/money', icon: Wallet },
 ];

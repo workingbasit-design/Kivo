@@ -42,13 +42,14 @@ async function resolveEligibleBusiness(
         where: { slug: businessSlug },
         select: {
           slug: true,
+          enabled: true,
           business: {
             select: { id: true, name: true, directoryOptIn: true, directoryVerifiedAt: true },
           },
         },
       })
     );
-    if (!page || !page.business.directoryOptIn || !page.business.directoryVerifiedAt) return null;
+    if (!page || !page.enabled || !page.business.directoryOptIn || !page.business.directoryVerifiedAt) return null;
     return { id: page.business.id, name: page.business.name, slug: page.slug };
   }
   const b = await unsafeUnscoped('agent:proposal:byId', (db) =>
@@ -59,11 +60,11 @@ async function resolveEligibleBusiness(
         name: true,
         directoryOptIn: true,
         directoryVerifiedAt: true,
-        bookingPage: { select: { slug: true } },
+        bookingPage: { select: { slug: true, enabled: true } },
       },
     })
   );
-  if (!b || !b.directoryOptIn || !b.directoryVerifiedAt || !b.bookingPage) return null;
+  if (!b || !b.directoryOptIn || !b.directoryVerifiedAt || !b.bookingPage || !b.bookingPage.enabled) return null;
   return { id: b.id, name: b.name, slug: b.bookingPage.slug };
 }
 
