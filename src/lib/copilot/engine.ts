@@ -43,6 +43,7 @@ import {
   type CustomerDraft,
   type JobDraft,
 } from './parse';
+import { findCustomerNameCandidates, exactNameMatch } from './match-customer';
 
 // Re-export the pure parsing API (and shared types) for route handlers,
 // widgets and tests.
@@ -390,18 +391,13 @@ export async function runCopilot(
 
       // Does this customer already exist in the workspace? Never silently
       // proceed: say so explicitly, and suggest a close match if there is one.
+      // Candidate fetch is case-insensitive (2026-10-10 QA: a case-only name
+      // difference used to return zero candidates).
       let customerExists = !!matched;
       let similarCustomer: string | null = null;
       if (!customerExists && draft.customerName) {
-        const candidates = await prisma.customer.findMany({
-          where: { businessId, name: { contains: draft.customerName } },
-          select: { name: true },
-          take: 5,
-        });
-        const wanted = draft.customerName.trim().toLowerCase();
-        customerExists = candidates.some(
-          (c) => c.name.trim().toLowerCase() === wanted
-        );
+        const candidates = await findCustomerNameCandidates(prisma, businessId, draft.customerName);
+        customerExists = exactNameMatch(candidates, draft.customerName) !== null;
         if (!customerExists && candidates.length > 0) {
           similarCustomer = candidates[0].name;
         }
@@ -503,14 +499,10 @@ export async function runCopilot(
         if (byPhone) return { intent, reply: alreadyMsg(byPhone.name) };
       }
       if (name) {
-        const candidates = await prisma.customer.findMany({
-          where: { businessId, name: { contains: name } },
-          select: { name: true },
-          take: 5,
-        });
-        const exact = candidates.find(
-          (c) => c.name.trim().toLowerCase() === name.trim().toLowerCase()
-        );
+        // Case-insensitive candidate fetch + exact JS comparison (2026-10-10
+        // QA: case-only name differences must not create duplicates).
+        const candidates = await findCustomerNameCandidates(prisma, businessId, name);
+        const exact = exactNameMatch(candidates, name);
         if (exact) return { intent, reply: alreadyMsg(exact.name) };
       }
       if (!name) {

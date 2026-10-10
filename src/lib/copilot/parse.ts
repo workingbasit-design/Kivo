@@ -923,7 +923,10 @@ export function detectIntent(raw: string, followUpName: string | null = null): C
 
   // 2. Revenue questions — "booked revenue" is its own metric (scheduled
   //    job value, excluding cancelled) distinct from cash collections.
-  if (hasAny(text, [' revenue ', ' earning ', ' earnings ', ' earn ', ' earned ', ' income ', ' collection ', ' revenu ', ' revenus ', ' gains ', ' chiffre '])) {
+  //    "collect/collected" is dashboard-canonical ("COLLECTED · 7 DAYS");
+  //    without it "How much did I collect this week?" fell through to
+  //    ask_schedule (2026-10-10 QA).
+  if (hasAny(text, [' revenue ', ' earning ', ' earnings ', ' earn ', ' earned ', ' income ', ' collection ', ' collect ', ' collected ', ' collecting ', ' collecte ', ' encaisse ', ' encaisser ', ' encaisses ', ' revenu ', ' revenus ', ' gains ', ' chiffre '])) {
     if (hasAny(text, [' booked ', ' reserve ', ' scheduled ', ' planifie '])) {
       return 'ask_booked_revenue';
     }

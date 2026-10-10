@@ -477,6 +477,22 @@ test('detectIntent: "how much did I earn today?" stays ask_revenue (collections)
   assert.equal(detectIntent('how much did I earn today?'), 'ask_revenue');
 });
 
+/* ---------------- collect-family revenue regression (2026-10-10 QA) ---------------- */
+
+test('detectIntent: "How much did I collect this week?" is ask_revenue, not ask_schedule', () => {
+  // QA: "collect" was missing from the revenue keywords, so a money question
+  // fell through to the schedule fallback and answered with a job list.
+  assert.equal(detectIntent('How much did I collect this week?'), 'ask_revenue');
+});
+
+test('detectIntent: "how much money did i collect today?" is ask_revenue', () => {
+  assert.equal(detectIntent('how much money did i collect today?'), 'ask_revenue');
+});
+
+test('detectIntent: "Combien ai-je encaissé cette semaine ?" is ask_revenue', () => {
+  assert.equal(detectIntent('Combien ai-je encaissé cette semaine ?'), 'ask_revenue');
+});
+
 /* ---------------- booking-verb-led intent regression (2026-09-28) ---------------- */
 
 test('detectIntent: "Book schedule check for Alice tomorrow" is a booking, not a schedule query', () => {

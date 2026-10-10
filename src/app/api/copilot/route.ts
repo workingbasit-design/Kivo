@@ -7,6 +7,7 @@ import { rateLimit } from '@/lib/rate-limit';
 import { runCopilot, type JobDraft, type CustomerDraft, type CopilotHistoryItem } from '@/lib/copilot/engine';
 import { tryAnthropicReply } from '@/lib/copilot/anthropic';
 import { buildConfirmReply } from '@/lib/copilot/confirm-reply';
+import { findCustomerNameCandidates, exactNameMatch } from '@/lib/copilot/match-customer';
 import { formatDateShort } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
@@ -507,15 +508,12 @@ async function runConfirm(
     });
   }
   if (!customer) {
-    // Case-insensitive EXACT name match only: fetch contains-candidates and
-    // compare in JS. Never attach a job to a partial-name customer.
-    const candidates = await prisma.customer.findMany({
-      where: { businessId, name: { contains: draft.customerName } },
-      select: { id: true, name: true },
-      take: 5,
-    });
-    const wanted = draft.customerName.trim().toLowerCase();
-    customer = candidates.find((c) => c.name.trim().toLowerCase() === wanted) ?? null;
+    // Case-insensitive EXACT name match only: fetch candidates
+    // case-insensitively, then compare in JS. Never attach a job to a
+    // partial-name customer. (2026-10-10 QA: a case-only name difference
+    // returned zero candidates and the confirm created a duplicate.)
+    const candidates = await findCustomerNameCandidates(prisma, businessId, draft.customerName);
+    customer = exactNameMatch(candidates, draft.customerName);
   }
   if (!customer) {
     customer = await prisma.customer.create({
