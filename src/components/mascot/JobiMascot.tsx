@@ -94,22 +94,27 @@ export default function JobiMascot() {
     }, IDLE_TIMEOUT_MS);
   }, [play, goIdle]);
 
-  // Reduced-motion + dismissed preferences (client only)
+  // Reduced-motion + dismissed preferences (client only). Reads stay in an
+  // effect (never in a useState initializer) so the server render is
+  // identical for every visitor — localStorage in an initializer caused
+  // React #418 hydration crashes. setState calls live in the subscription
+  // callback, not the effect body (react-hooks cascading-render rule).
   useEffect(() => {
-    try {
-      if (localStorage.getItem(DISMISS_KEY) === '1') {
-        setDismissed(true);
-        return;
-      }
-    } catch {
-      /* storage unavailable — show mascot */
-    }
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setReducedMotion(mq.matches);
-    const onChange = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
-    mq.addEventListener('change', onChange);
-    setReady(true);
-    return () => mq.removeEventListener('change', onChange);
+    const applyPrefs = () => {
+      let stored: string | null = null;
+      try {
+        stored = localStorage.getItem(DISMISS_KEY);
+      } catch {
+        /* storage unavailable — show mascot */
+      }
+      setDismissed(stored === '1');
+      setReducedMotion(mq.matches);
+      setReady(true);
+    };
+    mq.addEventListener('change', applyPrefs);
+    applyPrefs();
+    return () => mq.removeEventListener('change', applyPrefs);
   }, []);
 
   // Page-load sequence: waking -> idle
