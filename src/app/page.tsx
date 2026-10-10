@@ -147,7 +147,7 @@ export default async function LandingPage() {
             </nav>
             <div className="flex items-center gap-2">
               <Link
-                href="/login"
+                href="/start"
                 className="text-[15px] text-graphite hover:text-ink transition-colors px-4 py-2 rounded-full"
               >
                 {h('nav.login')}
@@ -601,7 +601,7 @@ export default async function LandingPage() {
               <Logo />
             </Link>
             <nav className="flex flex-wrap justify-center gap-x-8 gap-y-3" aria-label="Footer">
-              <Link href="/login" className="text-[14px] text-graphite hover:text-ink transition-colors">
+              <Link href="/start" className="text-[14px] text-graphite hover:text-ink transition-colors">
                 {h('footer.login')}
               </Link>
               <Link href="/register" className="text-[14px] text-graphite hover:text-ink transition-colors">

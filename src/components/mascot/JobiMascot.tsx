@@ -21,7 +21,7 @@ import { Avatar } from '@bible-strong/avatar-react';
 import '@bible-strong/avatar-react/styles.css';
 import jobiDefinition from './jobi.avatar.json';
 
-const DISMISS_KEY = 'ej-mascot-dismissed';
+const DISMISS_KEY = 'ej-mascot-dismissed-v2';
 const IDLE_TIMEOUT_MS = 30_000;
 
 type Mood =
@@ -227,7 +227,41 @@ export default function JobiMascot() {
     return () => clearTimeout(t);
   }, [ready, dismissed, reducedMotion, showBubble, playOnce]);
 
-  if (!ready || dismissed) return null;
+  const restore = useCallback(() => {
+    try {
+      localStorage.removeItem(DISMISS_KEY);
+    } catch {
+      /* ignore */
+    }
+    setDismissed(false);
+  }, []);
+
+  if (dismissed) {
+    // Tiny restore dot so Jobi is never permanently lost
+    return (
+      <button
+        type="button"
+        onClick={restore}
+        aria-label="Show Jobi the mascot"
+        title="Show Jobi"
+        style={{
+          position: 'fixed',
+          left: 'max(1rem, env(safe-area-inset-left))',
+          bottom: 'max(5.5rem, env(safe-area-inset-bottom))',
+          zIndex: 60,
+          width: 28,
+          height: 28,
+          borderRadius: '50%',
+          background: '#b9e838',
+          border: '2px solid #161616',
+          cursor: 'pointer',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+        }}
+      />
+    );
+  }
+
+  if (!ready) return null;
 
   return (
     <div

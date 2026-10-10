@@ -131,7 +131,7 @@ export function StatCard({
 }) {
   return (
     <div
-      className="ej-card-lift ej-rise rounded-[20px] p-5 bg-ink text-white border border-white/10 shadow-[0_16px_40px_rgba(22,22,22,0.25)]"
+      className="ej-card-lift ej-rise rounded-[20px] p-5 bg-[#2e2e30] text-white border border-white/10 shadow-[0_16px_40px_rgba(22,22,22,0.25)]"
       style={{ ['--ej-d' as string]: `${Math.min(index, 8) * 0.07}s` }}
     >
       <div className="flex items-center justify-between gap-2 mb-3">

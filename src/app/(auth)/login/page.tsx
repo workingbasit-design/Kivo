@@ -76,6 +76,15 @@ export default function LoginPage() {
           {t('t10misc.auth.createWorkspace')}
         </Link>
       </p>
+
+      <div className="mt-4 pt-4 border-t border-zinc-100 text-center">
+        <p className="text-xs text-zinc-500">
+          {t('start.customerTitle') ?? 'Find a pro'}{' '}
+          <Link href="/customer/login" className="font-semibold text-ink hover:underline">
+            {t('start.customerCta') ?? 'Continue as customer'}
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }
