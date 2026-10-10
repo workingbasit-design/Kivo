@@ -415,16 +415,6 @@ const fr: Dictionary = {
       cta: 'Commencer gratuitement',
       note: 'Gratuit pour toujours · Aucune carte de crédit',
     },
-    start: {
-      title: 'Comment utiliserez-vous EveryJob?',
-      subtitle: 'Choisissez l’expérience faite pour vous. Vous pourrez changer plus tard.',
-      customerTitle: 'Trouver un pro',
-      customerDesc: 'Cherchez des pros locaux de confiance, demandez des soumissions et suivez vos travaux.',
-      customerCta: 'Continuer comme client',
-      businessTitle: 'Pour les entreprises',
-      businessDesc: 'Travaux, planification, soumissions, factures et paiements — gratuit pour les pros canadiens.',
-      businessCta: "Continuer comme entreprise",
-    },
     footer: {
       login: 'Connexion',
       createAccount: 'Créer un compte gratuit',
@@ -435,6 +425,16 @@ const fr: Dictionary = {
       rightsSuffix: 'EveryJob. Chaque travail. Au même endroit.',
       madeFor: 'Gratuit pour toujours. Fait pour le Canada.',
     },
+  },
+  start: {
+    title: 'Comment utiliserez-vous EveryJob?',
+    subtitle: 'Choisissez l’expérience faite pour vous. Vous pourrez changer plus tard.',
+    customerTitle: 'Trouver un pro',
+    customerDesc: 'Cherchez des pros locaux de confiance, demandez des soumissions et suivez vos travaux.',
+    customerCta: 'Continuer comme client',
+    businessTitle: 'Pour les entreprises',
+    businessDesc: 'Travaux, planification, soumissions, factures et paiements — gratuit pour les pros canadiens.',
+    businessCta: "Continuer comme entreprise",
   },
 };
 

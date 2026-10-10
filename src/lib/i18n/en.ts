@@ -414,16 +414,6 @@ const en: Dict = {
       cta: 'Start free',
       note: 'Free forever · No credit card',
     },
-    start: {
-      title: 'How will you use EveryJob?',
-      subtitle: 'Pick the experience built for you. You can always switch later.',
-      customerTitle: 'Find a pro',
-      customerDesc: 'Search trusted local pros, request quotes, and track your jobs.',
-      customerCta: 'Continue as customer',
-      businessTitle: 'For businesses',
-      businessDesc: 'Jobs, scheduling, quotes, invoices, and payments — free for Canadian pros.',
-      businessCta: 'Continue as business',
-    },
     footer: {
       login: 'Login',
       createAccount: 'Create free account',
@@ -434,6 +424,16 @@ const en: Dict = {
       rightsSuffix: 'EveryJob. Every job. One place.',
       madeFor: 'Free forever. Made for Canada.',
     },
+  },
+  start: {
+    title: 'How will you use EveryJob?',
+    subtitle: 'Pick the experience built for you. You can always switch later.',
+    customerTitle: 'Find a pro',
+    customerDesc: 'Search trusted local pros, request quotes, and track your jobs.',
+    customerCta: 'Continue as customer',
+    businessTitle: 'For businesses',
+    businessDesc: 'Jobs, scheduling, quotes, invoices, and payments — free for Canadian pros.',
+    businessCta: 'Continue as business',
   },
 };
 
