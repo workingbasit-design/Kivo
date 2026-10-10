@@ -4,19 +4,20 @@
  * Jobi — EveryJob's animated mascot.
  *
  * A lime ball character (Bible Strong Avatar Lab, AGPL-3.0) that lives in the
- * bottom-right corner of every page and reacts to visitors:
+ * bottom-left corner of every page and reacts to visitors:
  * - page load: "waking" -> "idle"
  * - primary button hover: "excited"
  * - success toast: "celebrate" / error toast: "confused"
  * - 30s inactivity: "drowsy" -> "sleeping" (any activity wakes)
  * - click the mascot: "laughing"
  *
- * Respects prefers-reduced-motion (still neutral expression), is dismissible
- * (choice persisted in localStorage), and shrinks on small screens so it never
- * covers buttons.
+ * Uses controlled `animation` prop (not the imperative controller) for
+ * reliability. Respects prefers-reduced-motion (still neutral expression),
+ * is dismissible (choice persisted in localStorage), and shrinks on small
+ * screens so it never covers buttons.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Avatar, type AvatarController } from '@bible-strong/avatar-react';
+import { Avatar } from '@bible-strong/avatar-react';
 import '@bible-strong/avatar-react/styles.css';
 import jobiDefinition from './jobi.avatar.json';
 
@@ -34,96 +35,74 @@ type Mood =
   | 'sleeping'
   | 'laughing';
 
-const VALID_MOODS = new Set<string>([
-  'sleeping',
-  'waking',
-  'idle',
-  'listening',
-  'thinking',
-  'searching',
-  'working',
-  'excited',
-  'bored',
-  'suspicious',
-  'angry',
-  'drowsy',
-  'happy',
-  'curious',
-  'confused',
-  'surprised',
-  'proud',
-  'shy',
-  'sad',
-  'laughing',
-  'scared',
-  'playful',
-  'celebrate',
-]);
-
 export default function JobiMascot() {
-  const controllerRef = useRef<AvatarController | null>(null);
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const wakeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const revertTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [dismissed, setDismissed] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [ready, setReady] = useState(false);
+  const [mood, setMood] = useState<Mood>('waking');
   const moodRef = useRef<Mood>('waking');
 
-  const play = useCallback((mood: Mood) => {
-    if (!VALID_MOODS.has(mood)) return;
-    moodRef.current = mood;
-    controllerRef.current?.play(mood as never);
+  const setMoodBoth = useCallback((m: Mood) => {
+    moodRef.current = m;
+    setMood(m);
   }, []);
 
-  const goIdle = useCallback(() => {
-    play('idle');
-  }, [play]);
+  // Play a mood temporarily, then return to idle
+  const playOnce = useCallback(
+    (m: Mood, holdMs: number) => {
+      if (revertTimer.current) clearTimeout(revertTimer.current);
+      setMoodBoth(m);
+      revertTimer.current = setTimeout(() => {
+        if (moodRef.current === m) setMoodBoth('idle');
+      }, holdMs);
+    },
+    [setMoodBoth]
+  );
 
   const wakeUp = useCallback(() => {
-    if (wakeTimer.current) clearTimeout(wakeTimer.current);
     // Any activity wakes Jobi from drowsy/sleeping
     if (moodRef.current === 'drowsy' || moodRef.current === 'sleeping') {
-      play('waking');
-      wakeTimer.current = setTimeout(goIdle, 2000);
+      playOnce('waking', 2000);
     }
     // Reset the inactivity clock
     if (idleTimer.current) clearTimeout(idleTimer.current);
     idleTimer.current = setTimeout(() => {
-      play('drowsy');
-      wakeTimer.current = setTimeout(() => play('sleeping'), 4000);
+      setMoodBoth('drowsy');
+      revertTimer.current = setTimeout(() => {
+        if (moodRef.current === 'drowsy') setMoodBoth('sleeping');
+      }, 4000);
     }, IDLE_TIMEOUT_MS);
-  }, [play, goIdle]);
+  }, [playOnce, setMoodBoth]);
 
-  // Reduced-motion + dismissed preferences (client only). Reads stay in an
-  // effect (never in a useState initializer) so the server render is
-  // identical for every visitor — localStorage in an initializer caused
-  // React #418 hydration crashes. setState calls live in the subscription
-  // callback, not the effect body (react-hooks cascading-render rule).
+  // Reduced-motion + dismissed preferences (client only)
   useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const applyPrefs = () => {
-      let stored: string | null = null;
-      try {
-        stored = localStorage.getItem(DISMISS_KEY);
-      } catch {
-        /* storage unavailable — show mascot */
+    try {
+      if (localStorage.getItem(DISMISS_KEY) === '1') {
+        setDismissed(true);
+        return;
       }
-      setDismissed(stored === '1');
-      setReducedMotion(mq.matches);
-      setReady(true);
-    };
-    mq.addEventListener('change', applyPrefs);
-    applyPrefs();
-    return () => mq.removeEventListener('change', applyPrefs);
+    } catch {
+      /* storage unavailable — show mascot */
+    }
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReducedMotion(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
+    mq.addEventListener('change', onChange);
+    setReady(true);
+    return () => mq.removeEventListener('change', onChange);
   }, []);
 
-  // Page-load sequence: waking -> idle
+  // Page-load sequence: waking -> idle (handled by onAnimationEnd + fallback)
   useEffect(() => {
     if (!ready || dismissed || reducedMotion) return;
-    play('waking');
-    const t = setTimeout(goIdle, 2500);
+    setMoodBoth('waking');
+    const t = setTimeout(() => {
+      if (moodRef.current === 'waking') setMoodBoth('idle');
+    }, 3000);
     return () => clearTimeout(t);
-  }, [ready, dismissed, reducedMotion, play, goIdle]);
+  }, [ready, dismissed, reducedMotion, setMoodBoth]);
 
   // Inactivity tracking: drowsy -> sleeping after 30s
   useEffect(() => {
@@ -134,29 +113,25 @@ export default function JobiMascot() {
     return () => {
       events.forEach((e) => window.removeEventListener(e, wakeUp));
       if (idleTimer.current) clearTimeout(idleTimer.current);
-      if (wakeTimer.current) clearTimeout(wakeTimer.current);
+      if (revertTimer.current) clearTimeout(revertTimer.current);
     };
   }, [ready, dismissed, reducedMotion, wakeUp]);
 
-  // Primary-button hover -> excited (event delegation, tap on phones)
+  // Primary-button hover -> excited (event delegation)
   useEffect(() => {
     if (!ready || dismissed || reducedMotion) return;
     const isCoarse = window.matchMedia('(pointer: coarse)').matches;
+    if (isCoarse) return;
     const onOver = (e: Event) => {
       const t = e.target as HTMLElement | null;
       const btn = t?.closest?.(
         'a[class*="primary"], button[class*="primary"], [data-mascot-excited]'
       );
-      if (btn) {
-        play('excited');
-        setTimeout(() => {
-          if (moodRef.current === 'excited') goIdle();
-        }, 1800);
-      }
+      if (btn && moodRef.current === 'idle') playOnce('excited', 1800);
     };
-    if (!isCoarse) document.addEventListener('mouseover', onOver, { passive: true });
+    document.addEventListener('mouseover', onOver, { passive: true });
     return () => document.removeEventListener('mouseover', onOver);
-  }, [ready, dismissed, reducedMotion, play, goIdle]);
+  }, [ready, dismissed, reducedMotion, playOnce]);
 
   // Toast watching: sonner success -> celebrate, error -> confused
   useEffect(() => {
@@ -167,43 +142,29 @@ export default function JobiMascot() {
         for (const node of m.addedNodes) {
           if (!(node instanceof HTMLElement) || seen.has(node)) continue;
           seen.add(node);
-          const text = node.textContent ?? '';
-          const cls = node.className ?? '';
+          const text = (node.textContent ?? '').trim();
+          if (!text) continue;
           const html = node.outerHTML ?? '';
-          const looksSuccess =
-            /success/i.test(cls) || /data-type="success"/.test(html);
-          const looksError =
-            /error/i.test(cls) || /data-type="error"/.test(html);
-          if (looksSuccess && text.trim()) {
-            play('celebrate');
-            setTimeout(() => {
-              if (moodRef.current === 'celebrate') goIdle();
-            }, 3000);
-          } else if (looksError && text.trim()) {
-            play('confused');
-            setTimeout(() => {
-              if (moodRef.current === 'confused') goIdle();
-            }, 3000);
+          const cls = typeof node.className === 'string' ? node.className : '';
+          if (/success/i.test(cls) || /data-type="success"/.test(html)) {
+            playOnce('celebrate', 3000);
+          } else if (/error/i.test(cls) || /data-type="error"/.test(html)) {
+            playOnce('confused', 3000);
           }
         }
       }
     });
     observer.observe(document.body, { childList: true, subtree: true });
     return () => observer.disconnect();
-  }, [ready, dismissed, reducedMotion, play, goIdle]);
+  }, [ready, dismissed, reducedMotion, playOnce]);
 
-  // Custom events other parts of the app can dispatch
+  // Custom events other parts of the app can dispatch:
+  // window.dispatchEvent(new Event('ej:mascot-celebrate'))
   useEffect(() => {
     if (!ready || dismissed || reducedMotion) return;
-    const on = (mood: Mood, holdMs: number) => () => {
-      play(mood);
-      setTimeout(() => {
-        if (moodRef.current === mood) goIdle();
-      }, holdMs);
-    };
-    const celebrate = on('celebrate', 3000);
-    const confused = on('confused', 3000);
-    const thinking = on('thinking', 2500);
+    const celebrate = () => playOnce('celebrate', 3000);
+    const confused = () => playOnce('confused', 3000);
+    const thinking = () => playOnce('thinking', 2500);
     window.addEventListener('ej:mascot-celebrate', celebrate);
     window.addEventListener('ej:mascot-confused', confused);
     window.addEventListener('ej:mascot-thinking', thinking);
@@ -212,7 +173,7 @@ export default function JobiMascot() {
       window.removeEventListener('ej:mascot-confused', confused);
       window.removeEventListener('ej:mascot-thinking', thinking);
     };
-  }, [ready, dismissed, reducedMotion, play, goIdle]);
+  }, [ready, dismissed, reducedMotion, playOnce]);
 
   const dismiss = useCallback(() => {
     try {
@@ -223,14 +184,47 @@ export default function JobiMascot() {
     setDismissed(true);
   }, []);
 
+  const [bubble, setBubble] = useState<string | null>(null);
+
+  const showBubble = useCallback((text: string, ms = 4000) => {
+    setBubble(text);
+    if (revertTimer.current) clearTimeout(revertTimer.current);
+    revertTimer.current = setTimeout(() => setBubble(null), ms);
+  }, []);
+
   const handleClick = useCallback(() => {
     wakeUp();
     if (reducedMotion) return;
-    play('laughing');
-    setTimeout(() => {
-      if (moodRef.current === 'laughing') goIdle();
-    }, 2500);
-  }, [play, goIdle, wakeUp, reducedMotion]);
+    const phrases = [
+      'Hehe! That tickles!',
+      'Every job, one place!',
+      'Need a hand? Just ask!',
+      'You got this!',
+    ];
+    const phrase = phrases[Math.floor(Math.random() * phrases.length)];
+    showBubble(phrase, 2500);
+    playOnce('laughing', 2500);
+  }, [playOnce, wakeUp, reducedMotion, showBubble]);
+
+  const handleAnimationEnd = useCallback(
+    (anim: string) => {
+      // Chain waking -> idle naturally when the animation completes
+      if (anim === 'waking' && moodRef.current === 'waking') {
+        setMoodBoth('idle');
+      }
+    },
+    [setMoodBoth]
+  );
+
+  // Welcome bubble on first load
+  useEffect(() => {
+    if (!ready || dismissed || reducedMotion) return;
+    const t = setTimeout(() => {
+      showBubble("Hi! I'm Jobi — click me anytime!", 5000);
+      playOnce('excited', 2000);
+    }, 3500);
+    return () => clearTimeout(t);
+  }, [ready, dismissed, reducedMotion, showBubble, playOnce]);
 
   if (!ready || dismissed) return null;
 
@@ -273,10 +267,36 @@ export default function JobiMascot() {
       >
         ×
       </button>
+      {bubble && (
+        <div
+          role="status"
+          style={{
+            position: 'absolute',
+            bottom: 'calc(100% + 12px)',
+            left: 0,
+            maxWidth: 220,
+            background: '#161616',
+            color: '#fff',
+            fontSize: 13,
+            lineHeight: 1.4,
+            padding: '10px 14px',
+            borderRadius: 16,
+            borderBottomLeftRadius: 4,
+            boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
+            zIndex: 3,
+            animation: 'ej-bubble-pop 0.25s ease-out',
+          }}
+        >
+          {bubble}
+        </div>
+      )}
       <div
         onClick={handleClick}
         onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') handleClick();
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleClick();
+          }
         }}
         role="button"
         tabIndex={0}
@@ -284,26 +304,15 @@ export default function JobiMascot() {
         title="Jobi — EveryJob's helper"
         style={{ cursor: 'pointer', borderRadius: '50%' }}
       >
-        {reducedMotion ? (
-          <Avatar
-            definition={jobiDefinition as never}
-            defaultExpression="neutral"
-            size="clamp(72px, 18vw, 120px)"
-            ariaLabel="Jobi, the EveryJob mascot"
-          />
-        ) : (
-          <Avatar
-            ref={controllerRef as never}
-            definition={jobiDefinition as never}
-            defaultAnimation="idle"
-            size="clamp(72px, 18vw, 120px)"
-            ariaLabel="Jobi, the EveryJob mascot"
-            onAnimationEnd={(anim) => {
-              // Chain waking -> idle and drowsy -> sleeping naturally
-              if (anim === 'waking') goIdle();
-            }}
-          />
-        )}
+        <Avatar
+          definition={jobiDefinition as never}
+          animation={reducedMotion ? undefined : (mood as never)}
+          expression={reducedMotion ? ('neutral' as never) : undefined}
+          autoplay
+          size="clamp(72px, 18vw, 120px)"
+          ariaLabel="Jobi, the EveryJob mascot"
+          onAnimationEnd={handleAnimationEnd as never}
+        />
       </div>
     </div>
   );

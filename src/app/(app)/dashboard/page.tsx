@@ -198,12 +198,12 @@ export default async function DashboardPage() {
                   {L("growth.scoreLabel")} · {growth.score} {L("growth.scoreOf")}
                 </p>
                 {growth.nextActions[0] && (
-                  <p className="text-xs text-zinc-500 mt-1 line-clamp-2">
+                  <p className="text-xs text-zinc-700 mt-1 line-clamp-2">
                     {L("growth.nextUp")}: {L(`growth.checkActions.${growth.nextActions[0].key}`)}
                   </p>
                 )}
               </div>
-              <ChevronRight size={16} className="text-zinc-400 shrink-0" />
+              <ChevronRight size={16} className="text-zinc-600 shrink-0" />
             </div>
           </Card>
         </Link>
@@ -250,7 +250,7 @@ export default async function DashboardPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-zinc-900 truncate">{job.title}</p>
-                      <p className="text-xs text-zinc-500 truncate">{job.customerName}</p>
+                      <p className="text-xs text-zinc-700 truncate">{job.customerName}</p>
                     </div>
                     <StatusBadge status={jobDisplayStatus(job.status, job.date)} />
                   </Link>
@@ -290,7 +290,7 @@ export default async function DashboardPage() {
                       <p className="text-sm font-semibold text-zinc-900 truncate">
                         {inv.number} · {inv.customerName}
                       </p>
-                      <p className="text-xs text-zinc-500">{formatDateLabel(inv.date, dateLocale)}</p>
+                      <p className="text-xs text-zinc-700">{formatDateLabel(inv.date, dateLocale)}</p>
                     </div>
                     <p className="text-sm font-bold text-zinc-900 tabular-nums">{formatMoney(inv.outstanding, currency, moneyLocale)}</p>
                   </Link>
@@ -306,7 +306,7 @@ export default async function DashboardPage() {
         <Card className="lg:col-span-2 p-5">
           <h2 className="text-sm font-bold text-zinc-900 mb-3">{L("dashboard.upcomingJobs")}</h2>
           {stats.upcomingJobs.length === 0 ? (
-            <p className="text-sm text-zinc-500">{L("dashboard.noUpcoming")}</p>
+            <p className="text-sm text-zinc-700">{L("dashboard.noUpcoming")}</p>
           ) : (
             <ul className="divide-y divide-zinc-100">
               {stats.upcomingJobs.map((job, i) => (
@@ -317,7 +317,7 @@ export default async function DashboardPage() {
                   >
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-zinc-900 truncate">{job.title}</p>
-                      <p className="text-xs text-zinc-500 truncate">
+                      <p className="text-xs text-zinc-700 truncate">
                         {job.customerName}
                         {hasJobTime(job.time) ? ` · ${job.time}` : ""}
                       </p>
@@ -329,11 +329,11 @@ export default async function DashboardPage() {
             </ul>
           )}
           <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-zinc-100">
-            <p className="w-full text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-1">
+            <p className="w-full text-[11px] font-bold uppercase tracking-wider text-zinc-600 mb-1">
               {L("dashboard.jobsByStatus")}
             </p>
             {stats.jobsByStatus.length === 0 ? (
-              <p className="text-sm text-zinc-500">{L("dashboard.noJobsYet")}</p>
+              <p className="text-sm text-zinc-700">{L("dashboard.noJobsYet")}</p>
             ) : (
               stats.jobsByStatus.map((g) => (
                 <Link

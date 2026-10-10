@@ -131,22 +131,22 @@ export function StatCard({
 }) {
   return (
     <div
-      className="ej-card-lift ej-glass-card ej-rise rounded-[20px] p-5"
+      className="ej-card-lift ej-rise rounded-[20px] p-5 bg-ink text-white border border-white/10 shadow-[0_16px_40px_rgba(22,22,22,0.25)]"
       style={{ ['--ej-d' as string]: `${Math.min(index, 8) * 0.07}s` }}
     >
       <div className="flex items-center justify-between gap-2 mb-3">
-        <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 leading-tight text-balance">{label}</p>
+        <p className="text-[11px] font-bold uppercase tracking-wider text-white/60 leading-tight text-balance">{label}</p>
         {icon &&
           (tone ? (
             <GlassIcon icon={icon} tone={tone} size="md" />
           ) : (
-            <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center', accent ?? 'bg-zinc-100 text-zinc-600')}>
+            <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center', accent ?? 'bg-white/10 text-lime')}>
               {icon}
             </div>
           ))}
       </div>
-      <p className="text-[26px] font-bold text-zinc-900 tracking-tight tabular-nums">{value}</p>
-      {sub && <p className="text-xs text-zinc-500 mt-1">{sub}</p>}
+      <p className="text-[26px] font-bold text-white tracking-tight tabular-nums">{value}</p>
+      {sub && <p className="text-xs text-white/60 mt-1">{sub}</p>}
     </div>
   );
 }
