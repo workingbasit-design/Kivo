@@ -1,5 +1,5 @@
 import React from 'react';
-import { cn, statusClasses } from '@/lib/utils';
+import { cn, statusClasses, statusLabel } from '@/lib/utils';
 import { t, type Locale } from '@/lib/i18n';
 
 export function PageHeader({
@@ -38,7 +38,7 @@ export function Card({
   );
 }
 
-export function StatusBadge({ status }: { status: string }) {
+export function StatusBadge({ status, locale = 'en' }: { status: string; locale?: Locale }) {
   return (
     <span
       className={cn(
@@ -46,7 +46,7 @@ export function StatusBadge({ status }: { status: string }) {
         statusClasses(status)
       )}
     >
-      {status}
+      {statusLabel(status, locale)}
     </span>
   );
 }

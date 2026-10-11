@@ -436,6 +436,24 @@ const fr: Dictionary = {
     businessDesc: 'Travaux, planification, soumissions, factures et paiements — gratuit pour les pros canadiens.',
     businessCta: "Continuer comme entreprise",
   },
+  statuses: {
+    ALL: 'Tous',
+    NEW: 'Nouveau',
+    SCHEDULED: 'Planifié',
+    'IN PROGRESS': 'En cours',
+    COMPLETED: 'Terminé',
+    PAID: 'Payé',
+    UNPAID: 'Impayé',
+    'PARTIALLY PAID': 'Partiellement payé',
+    DRAFT: 'Brouillon',
+    SENT: 'Envoyé',
+    APPROVED: 'Approuvé',
+    DECLINED: 'Refusé',
+    CANCELLED: 'Annulé',
+    OVERDUE: 'En retard',
+    CONVERTED: 'Converti',
+    CONTACTED: 'Contacté',
+  },
 };
 
 export default fr;

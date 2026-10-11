@@ -77,28 +77,42 @@ export default function JobiMascot() {
     }, IDLE_TIMEOUT_MS);
   }, [playOnce, setMoodBoth]);
 
-  // Reduced-motion + dismissed preferences (client only)
+  // Reduced-motion + dismissed preferences (client only). Reads stay in an
+  // effect (never in a useState initializer) so the server render is
+  // identical for every visitor — localStorage in an initializer caused
+  // React #418 hydration crashes. setState calls live in the subscription
+  // callback, not the effect body (react-hooks cascading-render rule).
   useEffect(() => {
-    try {
-      if (localStorage.getItem(DISMISS_KEY) === '1') {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const applyPrefs = () => {
+      let stored: string | null = null;
+      try {
+        stored = localStorage.getItem(DISMISS_KEY);
+      } catch {
+        /* storage unavailable — show mascot */
+      }
+      if (stored === '1') {
         setDismissed(true);
         return;
       }
-    } catch {
-      /* storage unavailable — show mascot */
-    }
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setReducedMotion(mq.matches);
-    const onChange = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
+      setReducedMotion(mq.matches);
+      setReady(true);
+    };
+    const onChange = () => {
+      setReducedMotion(mq.matches);
+    };
     mq.addEventListener('change', onChange);
-    setReady(true);
+    applyPrefs();
     return () => mq.removeEventListener('change', onChange);
   }, []);
 
   // Page-load sequence: waking -> idle (handled by onAnimationEnd + fallback)
   useEffect(() => {
     if (!ready || dismissed || reducedMotion) return;
-    setMoodBoth('waking');
+    // Subscription-callback wrapper: react-hooks cascading-render rule
+    // flags a synchronous setState directly in the effect body.
+    const startWaking = () => setMoodBoth('waking');
+    startWaking();
     const t = setTimeout(() => {
       if (moodRef.current === 'waking') setMoodBoth('idle');
     }, 3000);

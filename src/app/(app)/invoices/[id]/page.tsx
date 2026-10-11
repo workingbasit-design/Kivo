@@ -134,7 +134,7 @@ export default async function InvoiceDetailPage({
         actions={
           <span className="flex items-center gap-1.5">
             {overdue && <Badge tone="danger">{t(locale, 't10money.overdue')}</Badge>}
-            <StatusBadge status={invoice.status} />
+            <StatusBadge status={invoice.status} locale={locale} />
           </span>
         }
       />
@@ -262,7 +262,7 @@ export default async function InvoiceDetailPage({
                     {formatDateShort(p.createdAt, dateLocale)}
                   </p>
                 </div>
-                <StatusBadge status={p.status} />
+                <StatusBadge status={p.status} locale={locale} />
               </li>
             ))}
           </ul>

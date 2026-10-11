@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Plus, FileText, Wallet, Receipt } from 'lucide-react';
 import { PageHeader, Card, StatusBadge, EmptyState, StatCard, Badge, primaryBtnClass } from '@/components/ui';
+import { statusLabel } from '@/lib/utils';
 import { formatDateShort, cn } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import { t, type Locale } from '@/lib/i18n';
@@ -141,7 +142,7 @@ export default function InvoicesClient({
                 : 'bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300'
             )}
           >
-            {f}
+            {statusLabel(f, locale)}
           </button>
         ))}
       </div>
@@ -197,7 +198,7 @@ export default function InvoicesClient({
                         {overdue && (
                           <Badge tone="danger">{t(locale, 't10money.overdue')}</Badge>
                         )}
-                        <StatusBadge status={inv.status} />
+                        <StatusBadge status={inv.status} locale={locale} />
                       </span>
                     </div>
                   </Link>

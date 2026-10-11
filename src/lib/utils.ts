@@ -1,3 +1,5 @@
+import { getDictionary } from './i18n/index.ts';
+
 /** Join class names, dropping falsy values. */
 export function cn(
   ...inputs: Array<string | false | null | undefined>
@@ -158,6 +160,16 @@ export function statusClasses(status: string): string {
 
 /** Job statuses that count as "still open" for overdue computation. */
 export const OPEN_JOB_STATUSES = ['NEW', 'SCHEDULED', 'IN PROGRESS'] as const;
+
+/**
+ * Localized status label (job / invoice / quote / lead badges). Falls back
+ * to the raw status string for values not yet translated, so no badge ever
+ * renders a raw i18n key path.
+ */
+export function statusLabel(status: string, locale: 'en' | 'fr' = 'en'): string {
+  const dict = getDictionary(locale) as unknown as { statuses?: Record<string, string> };
+  return dict.statuses?.[status] ?? status;
+}
 
 /**
  * True when a job's date has passed and it still isn't done/cancelled.

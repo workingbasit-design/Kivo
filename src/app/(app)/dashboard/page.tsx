@@ -252,7 +252,7 @@ export default async function DashboardPage() {
                       <p className="text-sm font-semibold text-zinc-900 truncate">{job.title}</p>
                       <p className="text-xs text-zinc-700 truncate">{job.customerName}</p>
                     </div>
-                    <StatusBadge status={jobDisplayStatus(job.status, job.date)} />
+                    <StatusBadge status={jobDisplayStatus(job.status, job.date)} locale={locale} />
                   </Link>
                 </li>
               ))}
@@ -322,7 +322,7 @@ export default async function DashboardPage() {
                         {hasJobTime(job.time) ? ` · ${job.time}` : ""}
                       </p>
                     </div>
-                    <StatusBadge status={jobDisplayStatus(job.status, job.date)} />
+                    <StatusBadge status={jobDisplayStatus(job.status, job.date)} locale={locale} />
                   </Link>
                 </li>
               ))}
@@ -341,7 +341,7 @@ export default async function DashboardPage() {
                   href="/jobs"
                   className="inline-flex items-center gap-2 bg-zinc-50 border border-zinc-200 rounded-full px-3 py-2 min-h-[44px] text-xs font-semibold text-zinc-700 hover:border-smoke transition-colors"
                 >
-                  <StatusBadge status={g.status} />
+                  <StatusBadge status={g.status} locale={locale} />
                   <span className="tabular-nums">{g.count}</span>
                 </Link>
               ))

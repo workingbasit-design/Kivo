@@ -435,6 +435,24 @@ const en: Dict = {
     businessDesc: 'Jobs, scheduling, quotes, invoices, and payments — free for Canadian pros.',
     businessCta: 'Continue as business',
   },
+  statuses: {
+    ALL: 'All',
+    NEW: 'New',
+    SCHEDULED: 'Scheduled',
+    'IN PROGRESS': 'In progress',
+    COMPLETED: 'Completed',
+    PAID: 'Paid',
+    UNPAID: 'Unpaid',
+    'PARTIALLY PAID': 'Partially paid',
+    DRAFT: 'Draft',
+    SENT: 'Sent',
+    APPROVED: 'Approved',
+    DECLINED: 'Declined',
+    CANCELLED: 'Cancelled',
+    OVERDUE: 'Overdue',
+    CONVERTED: 'Converted',
+    CONTACTED: 'Contacted',
+  },
 };
 
 export type Dictionary = Dict;
