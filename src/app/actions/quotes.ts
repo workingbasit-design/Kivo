@@ -10,6 +10,7 @@ import { quoteSchema, QUOTE_STATUSES } from '@/lib/validations';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { getTaxConfig } from '@/lib/tax';
 import { computeQuoteTotals, type DiscountType } from '@/lib/quote-totals';
+import { parseDepositAmount } from '@/lib/quote-deposit';
 import {
   getActiveShareToken,
   issueShareToken,
@@ -151,7 +152,6 @@ export async function createQuote(
   // Discount comes from the form; anything invalid is a hard error.
   const discount = parseDiscount(formData);
   if (discount.error) return { error: discount.error };
-
   // Server-side money math — the single source of truth. Discount applies
   // before tax (tax comes from the business's region settings), so the
   // stored total is tax-inclusive on the discounted amount.
@@ -166,6 +166,11 @@ export async function createQuote(
     taxConfig.taxes
   );
   const total = totals.total;
+
+  // Optional deposit request — validated against the server-computed total.
+  // Blank means no deposit (stored as null).
+  const deposit = parseDepositAmount(formData.get('depositAmount') as string | null, total);
+  if (deposit.error) return { error: deposit.error };
 
   const parsed = quoteSchema.safeParse({
     title: formData.get('title'),
@@ -196,6 +201,7 @@ export async function createQuote(
         total,
         discountType: discount.type,
         discountValue: discount.value,
+        depositAmount: deposit.amount,
         status: 'DRAFT',
         customerId: customer.id,
         businessId,

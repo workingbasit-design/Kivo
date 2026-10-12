@@ -181,6 +181,12 @@ const fragment = {
       invCreating: 'Creating…',
       formCancel: 'Cancel',
 
+      // Deposit request on the quote create form
+      depositRequestLabel: 'Request deposit',
+      depositRequestPh: '0.00',
+      depositRequestHint:
+        'Optional — ask for money upfront. When the customer approves the quote, they can pay this deposit online.',
+
       // Invoice overdue state
       overdue: 'Overdue',
       overdueNote:
@@ -580,6 +586,12 @@ const fragment = {
       invCreate: 'Créer la facture',
       invCreating: 'Création…',
       formCancel: 'Annuler',
+
+      // Deposit request on the quote create form
+      depositRequestLabel: 'Demander un acompte',
+      depositRequestPh: '0,00',
+      depositRequestHint:
+        'Optionnel — demandez un paiement d’avance. Quand le client approuvera la soumission, il pourra payer cet acompte en ligne.',
 
       overdue: 'En retard',
       overdueNote:

@@ -296,7 +296,7 @@ export async function deleteExpense(expenseId: string): Promise<JobOpsActionResu
   if (!expense) return err('notFound');
 
   await prisma.jobExpense.delete({ where: { id: expense.id, businessId } });
-  revalidateJob(expense.jobId);
+  if (expense.jobId) revalidateJob(expense.jobId);
   return { ok: true };
 }
 

@@ -57,6 +57,38 @@ export function JobCostingCard({
   const hasCostData = laborMinutes > 0 || expenses.length > 0;
   const [editingRate, setEditingRate] = useState(false);
 
+  // Per-job rate override (job-only, not saved to the business). When set,
+  // the costing math below uses the override instead of the business rate.
+  const [useCustomRate, setUseCustomRate] = useState(false);
+  const [customRateInput, setCustomRateInput] = useState('');
+  const customRate =
+    useCustomRate && customRateInput.trim() !== ''
+      ? Number(customRateInput)
+      : null;
+  const validCustomRate =
+    customRate !== null && Number.isFinite(customRate) && customRate > 0
+      ? customRate
+      : null;
+  const effectiveRate = validCustomRate ?? hourlyRate;
+  const liveSummary =
+    validCustomRate !== null
+      ? summarizeJobCost({ price, laborMinutes, hourlyRate: validCustomRate, expenses })
+      : summary;
+
+  // Profit-bar color: green at healthy margins, amber when thin, red when
+  // losing money.
+  const margin = liveSummary.marginPct;
+  const barColor =
+    margin === null
+      ? 'bg-zinc-300'
+      : margin >= 30
+        ? 'bg-emerald-500'
+        : margin >= 10
+          ? 'bg-amber-400'
+          : 'bg-rose-500';
+  const barWidth =
+    margin === null ? 0 : Math.max(0, Math.min(100, margin));
+
   return (
     <Card className="p-5 md:p-6">
       <h2 className="text-sm font-bold text-ink mb-4 flex items-center gap-2">
@@ -81,21 +113,22 @@ export function JobCostingCard({
             <dd className="font-bold text-ink tabular-nums text-right">
               {formatDuration(laborMinutes)}{' '}
               <span className="text-[11px] font-semibold text-graphite">
-                × {hourlyRate !== null ? formatMoney(hourlyRate, currency) : '—'}/h
+                × {effectiveRate !== null ? formatMoney(effectiveRate, currency) : '—'}/h
               </span>
             </dd>
           </div>
-          {hourlyRate !== null ? (
+          {effectiveRate !== null ? (
             <div className="flex items-center justify-between gap-3 mt-1">
               <button
                 type="button"
                 onClick={() => setEditingRate((v) => !v)}
                 className="text-[11px] font-bold text-ink hover:underline"
               >
-                {formatMoney(hourlyRate, currency)}/h · {t(locale, 'jobops.templates.edit')}
+                {formatMoney(hourlyRate ?? 0, currency)}/h · {t(locale, 'jobops.templates.edit')}
+                {validCustomRate !== null && ` · ${t(locale, 'jobops.costing.useCustomRate')}`}
               </button>
               <span className="text-sm font-semibold text-ink tabular-nums">
-                {formatMoney(summary.laborCost, currency)}
+                {formatMoney(liveSummary.laborCost, currency)}
               </span>
             </div>
           ) : (
@@ -118,25 +151,55 @@ export function JobCostingCard({
               <RateForm jobId={jobId} locale={locale} current={null} />
             </div>
           )}
+
+          {/* Per-job rate override (not saved — job-only view) */}
+          <div className="mt-2">
+            <label className="flex items-center gap-2 text-[11px] font-semibold text-graphite cursor-pointer">
+              <input
+                type="checkbox"
+                checked={useCustomRate}
+                onChange={(e) => setUseCustomRate(e.target.checked)}
+                className="w-4 h-4 accent-lime-600"
+              />
+              {t(locale, 'jobops.costing.useCustomRate')}
+            </label>
+            {useCustomRate && (
+              <div className="mt-1.5">
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  pattern="[0-9]*\.?[0-9]*"
+                  value={customRateInput}
+                  onChange={(e) => setCustomRateInput(e.target.value)}
+                  placeholder={t(locale, 'jobops.costing.customRatePlaceholder')}
+                  aria-label={t(locale, 'jobops.costing.customRatePlaceholder')}
+                  className={`${jInputClass} w-full`}
+                />
+                <p className="text-[11px] text-graphite mt-1">
+                  {t(locale, 'jobops.costing.customRateHint')}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Expenses by category */}
-        {summary.materialsCost > 0 && (
+        {liveSummary.materialsCost > 0 && (
           <CostRow
             label={t(locale, 'jobops.costing.materials')}
-            value={formatMoney(summary.materialsCost, currency)}
+            value={formatMoney(liveSummary.materialsCost, currency)}
           />
         )}
-        {summary.travelCost > 0 && (
+        {liveSummary.travelCost > 0 && (
           <CostRow
             label={t(locale, 'jobops.costing.travel')}
-            value={formatMoney(summary.travelCost, currency)}
+            value={formatMoney(liveSummary.travelCost, currency)}
           />
         )}
-        {summary.otherCost > 0 && (
+        {liveSummary.otherCost > 0 && (
           <CostRow
             label={t(locale, 'jobops.costing.other')}
-            value={formatMoney(summary.otherCost, currency)}
+            value={formatMoney(liveSummary.otherCost, currency)}
           />
         )}
 
@@ -144,28 +207,65 @@ export function JobCostingCard({
 
         <CostRow
           label={t(locale, 'jobops.costing.totalCost')}
-          value={formatMoney(summary.totalCost, currency)}
+          value={formatMoney(liveSummary.totalCost, currency)}
           strong
         />
         <div className="flex items-baseline justify-between gap-3">
           <dt className="text-graphite">{t(locale, 'jobops.costing.profit')}</dt>
           <dd
             className={`font-bold tabular-nums ${
-              summary.profit >= 0 ? 'text-emerald-600' : 'text-rose-600'
+              liveSummary.profit >= 0 ? 'text-emerald-600' : 'text-rose-600'
             }`}
           >
-            {formatMoney(summary.profit, currency)}
-            {summary.marginPct !== null && (
+            {formatMoney(liveSummary.profit, currency)}
+            {liveSummary.marginPct !== null && (
               <span className="text-[11px] font-semibold ml-2">
-                {summary.marginPct.toFixed(1)}% {t(locale, 'jobops.costing.margin').toLowerCase()}
+                {liveSummary.marginPct.toFixed(1)}% {t(locale, 'jobops.costing.margin').toLowerCase()}
               </span>
             )}
           </dd>
         </div>
+
+        {/* Visual profit bar — margin fill, color by health */}
+        {liveSummary.marginPct !== null && (
+          <div className="pt-1">
+            <div
+              role="img"
+              aria-label={`${t(locale, 'jobops.costing.profitBarLabel')}: ${liveSummary.marginPct.toFixed(1)}%`}
+              className="h-2.5 rounded-full bg-zinc-100 overflow-hidden"
+            >
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${barColor}`}
+                style={{ width: `${barWidth}%` }}
+              />
+            </div>
+          </div>
+        )}
       </dl>
 
       {!hasCostData && (
-        <p className="text-xs text-graphite mt-3">{t(locale, 'jobops.costing.noData')}</p>
+        <div className="mt-3 rounded-2xl bg-zinc-50 border border-smoke p-4 text-center">
+          <p className="text-xs font-semibold text-graphite mb-1">
+            {t(locale, 'jobops.costing.noCostsYet')}
+          </p>
+          <p className="text-[11px] text-graphite mb-3">
+            {t(locale, 'jobops.costing.noData')}
+          </p>
+          <div className="flex flex-wrap justify-center gap-2">
+            <a
+              href="#job-time-form"
+              className={`${jSecondaryBtnClass} !min-h-[40px] !text-xs`}
+            >
+              {t(locale, 'jobops.costing.logTime')}
+            </a>
+            <a
+              href="#job-expenses"
+              className={`${jSecondaryBtnClass} !min-h-[40px] !text-xs`}
+            >
+              {t(locale, 'jobops.costing.addExpense')}
+            </a>
+          </div>
+        </div>
       )}
 
       {/* Time entries */}

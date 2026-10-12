@@ -120,6 +120,27 @@ export default function QuoteForm({
         </p>
       </Card>
 
+      <Card className="p-6">
+        <Field label={t(locale, 't10money.depositRequestLabel')}>
+          <div className="relative max-w-[200px]">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-zinc-400">
+              $
+            </span>
+            <input
+              name="depositAmount"
+              type="text"
+              inputMode="decimal"
+              pattern="[0-9]*\.?[0-9]*"
+              placeholder={t(locale, 't10money.depositRequestPh')}
+              className={`${inputClass} pl-7`}
+            />
+          </div>
+          <p className="text-[11px] text-zinc-400 mt-1.5">
+            {t(locale, 't10money.depositRequestHint')}
+          </p>
+        </Field>
+      </Card>
+
       {state?.error && (
         <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />

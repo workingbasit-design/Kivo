@@ -19,6 +19,7 @@ import { t } from '@/lib/i18n';
 import { JobChecklist } from '@/components/JobChecklist';
 import { JobExpenses } from '@/components/JobExpenses';
 import { JobCostingCard } from '@/components/JobCostingCard';
+import JobTimeEntryForm from '@/components/JobTimeEntryForm';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import SmsButton from '@/components/SmsButton';
 import TechLocationSharer from '@/components/TechLocationSharer';
@@ -56,7 +57,7 @@ export default async function JobDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { businessId } = await requireAuth();
+  const { businessId, user } = await requireAuth();
   const locale = await getLocale();
   const T = (k: string) => t(locale, `t10work.${k}`);
   const jobsL = (k: string) => t(locale, `jobs.${k}`);
@@ -97,6 +98,14 @@ export default async function JobDetailPage({
     },
   });
   if (!job) notFound();
+
+  // Team members for the per-job time-entry form (tenant-scoped).
+  const members = await prisma.user.findMany({
+    where: { businessId },
+    select: { id: true, name: true, email: true },
+    orderBy: { name: 'asc' },
+  });
+  const isAdmin = user.role === 'ADMIN';
 
   // Review-moat eligibility: show the review-link button only for completed
   // jobs with a paid invoice. Re-checked server-side at generation time.
@@ -350,17 +359,29 @@ export default async function JobDetailPage({
       />
 
       {/* Expenses */}
-      <JobExpenses
+      <div id="job-expenses" className="scroll-mt-24">
+        <JobExpenses
+          jobId={job.id}
+          locale={locale}
+          currency={currency}
+          expenses={job.expenses.map((e) => ({
+            id: e.id,
+            description: e.description,
+            amount: e.amount,
+            category: e.category,
+            spentAt: formatDateLabel(e.spentAt, dateLocale),
+          }))}
+        />
+      </div>
+
+      {/* Log time for this job (manual time entry, pre-scoped) */}
+      <JobTimeEntryForm
         jobId={job.id}
+        jobTitle={job.title}
+        members={members}
+        isAdmin={isAdmin}
+        selfId={user.id}
         locale={locale}
-        currency={currency}
-        expenses={job.expenses.map((e) => ({
-          id: e.id,
-          description: e.description,
-          amount: e.amount,
-          category: e.category,
-          spentAt: formatDateLabel(e.spentAt, dateLocale),
-        }))}
       />
 
       {/* Job costing — quoted price vs labor + expenses */}

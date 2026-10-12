@@ -4,6 +4,7 @@ import {
   UserPlus, Megaphone, Repeat, Route, Timer,
   UserCog, Import, ClipboardCheck, Wrench, Package,
   Siren, Gauge, Mic, Calculator, Calendar, MapPin, Users, Bell, Settings,
+  Receipt,
 } from 'lucide-react';
 import type { NavIcon } from './animated-icons/nav-icon';
 
@@ -46,6 +47,7 @@ export const navSections: NavSection[] = [
     items: [
       { nameKey: 'nav.quotes', href: '/quotes', icon: ClipboardList },
       { nameKey: 'nav.invoices', href: '/invoices', icon: FileText },
+      { nameKey: 'nav.expenses', href: '/expenses', icon: Receipt },
     ],
   },
   {

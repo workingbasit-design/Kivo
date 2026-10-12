@@ -656,15 +656,19 @@ model Attachment {
 
 model JobExpense {
   id          String   @id @default(cuid())
-  jobId       String
-  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobId       String? // optional — null = general business expense (not tied to a job)
+  job         Job?     @relation(fields: [jobId], references: [id], onDelete: Cascade)
   businessId  String
   business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
   description String
   amount      Float
   category    String   @default("MATERIALS") // MATERIALS, TRAVEL, OTHER
   spentAt     DateTime @default(now())
+  note        String? // optional longer note
+  receiptUrl  String? // Vercel Blob URL of the receipt photo, when uploaded
   createdAt   DateTime @default(now())
+
+  @@index([businessId, spentAt])
 }
 
 model QuoteAddon {

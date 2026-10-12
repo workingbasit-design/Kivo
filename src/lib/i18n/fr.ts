@@ -31,6 +31,7 @@ const fr: Dictionary = {
     customers: 'Clients',
     quotes: 'Soumissions',
     invoices: 'Factures',
+    expenses: 'Dépenses',
     leads: 'Pistes',
     reports: 'Rapports',
     insights: 'Perspectives',
