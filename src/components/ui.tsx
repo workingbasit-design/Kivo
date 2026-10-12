@@ -157,16 +157,7 @@ export function StatCard({
           ))}
       </div>
       <p className="text-[26px] font-bold text-white tracking-tight tabular-nums">
-        {numericValue !== undefined ? (
-          <AnimatedNumber
-            value={numericValue}
-            formatKind={formatKind}
-            currency={currency}
-            locale={moneyLocale}
-          />
-        ) : (
-          value
-        )}
+        {value}
       </p>
       {sub && <p className="text-xs text-white/60 mt-1">{sub}</p>}
     </div>
