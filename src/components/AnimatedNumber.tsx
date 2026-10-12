@@ -66,9 +66,9 @@ export default function AnimatedNumber({
 
   const text =
     formatKind === 'money'
-      ? new Intl.NumberFormat(locale, {
+      ? new Intl.NumberFormat(locale || 'en-CA', {
           style: 'currency',
-          currency,
+          currency: currency || 'CAD',
         }).format(display)
       : String(Math.round(display));
   return (
