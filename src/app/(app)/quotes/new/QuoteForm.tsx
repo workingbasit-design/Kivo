@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { createQuote, type ActionResult } from '@/app/actions/quotes';
 import LineItemsEditor from '@/components/LineItemsEditor';
 import { Field, inputClass, primaryBtnClass, secondaryBtnClass, Card } from '@/components/ui';
+import MorphSelect from '@/components/MorphSelect';
 import { formatMoney } from '@/lib/money';
 import { calcTax, type TaxConfig } from '@/lib/tax';
 import type { Locale } from '@/lib/i18n';
@@ -47,6 +48,7 @@ export default function QuoteForm({
     {}
   );
   const [subtotal, setSubtotal] = React.useState(0);
+  const [customerId, setCustomerId] = React.useState('');
 
   // createQuote redirects to the new quote page on success; toast on failure only.
   useResultToast(state, {});
@@ -68,16 +70,13 @@ export default function QuoteForm({
           />
         </Field>
         <Field label="Customer">
-          <select name="customerId" required className={inputClass} defaultValue="">
-            <option value="" disabled>
-              Select a customer
-            </option>
-            {customers.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+          <MorphSelect
+            id="quote-customer"
+            options={customers.map((c) => ({ value: c.id, label: c.name }))}
+            value={customerId}
+            onChange={setCustomerId}
+          />
+          <input type="hidden" name="customerId" value={customerId} required />
           {customers.length === 0 && (
             <p className="text-[11px] text-zinc-400 mt-1">
               No customers yet —{' '}

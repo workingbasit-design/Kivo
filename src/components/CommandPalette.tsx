@@ -7,6 +7,7 @@ import { navSections } from "@/components/nav-sections";
 import { t, type Locale } from "@/lib/i18n";
 import { parseCommand, commandLabel } from "@/lib/cmdbar";
 import { cn } from "@/lib/utils";
+import { motion } from "motion/react";
 
 type Entry = {
   id: string;
@@ -174,9 +175,12 @@ export default function CommandPalette({ locale = "en" }: { locale?: Locale }) {
         aria-hidden
         onMouseDown={close}
       />
-      <div
+      <motion.div
         role="dialog"
         aria-modal="true"
+        initial={{ opacity: 0, scale: 0.96, y: -12 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 500, damping: 35 }}
         aria-label={locale === "fr" ? "Recherche rapide" : "Quick search"}
         className="relative w-full max-w-xl overflow-hidden rounded-2xl bg-white shadow-2xl border border-zinc-200"
       >
@@ -257,7 +261,7 @@ export default function CommandPalette({ locale = "en" }: { locale?: Locale }) {
           </span>
           <span className="ml-auto">⌘K / Ctrl+K</span>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

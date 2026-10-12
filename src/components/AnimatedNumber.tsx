@@ -32,8 +32,12 @@ export default function AnimatedNumber({
     if (from === to) return;
 
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setDisplay(to);
-      return;
+      // No animation: jump to the final value on the next frame.
+      // Scheduled (not synchronous) so react-hooks/set-state-in-effect holds.
+      rafRef.current = requestAnimationFrame(() => setDisplay(to));
+      return () => {
+        if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      };
     }
 
     const start = performance.now();
