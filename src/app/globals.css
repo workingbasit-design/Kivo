@@ -782,3 +782,66 @@ section[id] h2, section[id] h3, [id] > h2:first-child {
     transition: none;
   }
 }
+
+/* ---------- Thinking orb (AI state indicator) ---------- */
+.ej-thinking-orb {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.ej-thinking-orb__core {
+  width: 60%;
+  height: 60%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #d8f76a, #b9e838 60%, #9fd41f);
+  box-shadow: 0 0 12px rgba(185, 232, 56, 0.5);
+}
+.ej-thinking-orb--thinking .ej-thinking-orb__core {
+  animation: ej-orb-breathe 1.6s ease-in-out infinite;
+}
+.ej-thinking-orb--listening .ej-thinking-orb__core {
+  animation: ej-orb-breathe 1s ease-in-out infinite;
+  background: radial-gradient(circle at 35% 35%, #7dd3fc, #38bdf8 60%, #0284c7);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
+}
+.ej-thinking-orb--idle .ej-thinking-orb__core {
+  animation: ej-orb-idle 3s ease-in-out infinite;
+}
+.ej-thinking-orb__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(56, 189, 248, 0.4);
+  animation: ej-orb-ring 1.5s ease-out infinite;
+}
+@keyframes ej-orb-breathe {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.25); opacity: 0.75; }
+}
+@keyframes ej-orb-idle {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.08); opacity: 0.85; }
+}
+@keyframes ej-orb-ring {
+  0% { transform: scale(0.6); opacity: 1; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ej-thinking-orb__core, .ej-thinking-orb__ring {
+    animation: none;
+  }
+}
+
+/* ---------- Squircle buttons (superellipse feel) ---------- */
+.ej-squircle {
+  /* Squircle approximation via layered border-radius */
+  border-radius: 28% 28% 28% 28% / 36% 36% 36% 36%;
+}
+@supports (corner-shape: squircle) {
+  .ej-squircle {
+    corner-shape: squircle;
+    border-radius: 14px;
+  }
+}

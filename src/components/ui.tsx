@@ -1,6 +1,7 @@
 import React from 'react';
 import { cn, statusClasses, statusLabel } from '@/lib/utils';
 import { t, type Locale } from '@/lib/i18n';
+import AnimatedNumber from './AnimatedNumber';
 
 export function PageHeader({
   title,
@@ -113,6 +114,8 @@ export function GlassIcon({
 export function StatCard({
   label,
   value,
+  numericValue,
+  format,
   sub,
   icon,
   accent,
@@ -121,6 +124,10 @@ export function StatCard({
 }: {
   label: string;
   value: string;
+  /** If provided, the value animates as a rolling odometer number */
+  numericValue?: number;
+  /** Format for the animated number, e.g. (n) => `$${n.toLocaleString()}` */
+  format?: (n: number) => string;
   sub?: string;
   icon?: React.ReactNode;
   accent?: string;
@@ -145,7 +152,13 @@ export function StatCard({
             </div>
           ))}
       </div>
-      <p className="text-[26px] font-bold text-white tracking-tight tabular-nums">{value}</p>
+      <p className="text-[26px] font-bold text-white tracking-tight tabular-nums">
+        {numericValue !== undefined ? (
+          <AnimatedNumber value={numericValue} format={format} />
+        ) : (
+          value
+        )}
+      </p>
       {sub && <p className="text-xs text-white/60 mt-1">{sub}</p>}
     </div>
   );

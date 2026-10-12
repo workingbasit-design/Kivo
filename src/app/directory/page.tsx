@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { getCustomerSession } from '@/lib/customer-auth';
+import DirectoryRatingFilter from '@/components/DirectoryRatingFilter';
 import {
   matchesCity,
   matchesServiceKeyword,
@@ -180,20 +181,12 @@ export default async function DirectoryPage({
             </button>
           </form>
           <div className="ej-anim-fade-up mt-4 flex flex-wrap items-center gap-2 text-xs" style={{ animationDelay: '260ms' }}>
-            <span className="text-white/60 font-medium">{tr('t10misc.directory.minRating')}</span>
-            {['', '4', '4.5'].map((v) => (
-              <Link
-                key={v || 'any'}
-                href={`/directory?${new URLSearchParams({ q, city, ...(v ? { minRating: v } : {}) }).toString()}`}
-                className={`inline-flex items-center min-h-[44px] px-4 rounded-full border font-semibold transition-all duration-200 hover:-translate-y-px active:translate-y-0 active:scale-[0.97] ${
-                  (minRating || '') === v
-                    ? 'bg-lime text-ink border-lime shadow-md'
-                    : 'text-white border-white/30 hover:border-lime/70 hover:bg-white/10'
-                }`}
-              >
-                {v === '' ? tr('t10misc.directory.any') : tr('t10misc.directory.starsUp').replace('{v}', v)}
-              </Link>
-            ))}
+            <DirectoryRatingFilter
+              options={['', '4', '4.5'] as const}
+              anyLabel={tr('t10misc.directory.any')}
+              starsUp={tr('t10misc.directory.starsUp')}
+              minRatingLabel={tr('t10misc.directory.minRating')}
+            />
             <Link
               href="/directory/request"
               className="sm:ml-auto inline-flex items-center gap-1.5 min-h-[44px] text-white font-semibold py-2 px-3 rounded-full bg-white/10 border border-white/20 whitespace-nowrap shrink-0 transition-all hover:bg-white/20 hover:-translate-y-px active:translate-y-0 active:scale-[0.97]"

@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import type { JobDraft, CustomerDraft } from '@/lib/copilot/engine';
 import VoiceInputButton from '@/components/copilot/VoiceInputButton';
+import ThinkingOrb from '@/components/ThinkingOrb';
 import { useRouter } from 'next/navigation';
 
 type Message = {
@@ -1400,10 +1401,8 @@ export default function GlobalCopilotWidget({
               <div className="w-6 h-6 rounded-full bg-ink/10 flex items-center justify-center border border-smoke mt-1">
                 <Bot className="w-3 h-3 text-ink" />
               </div>
-              <div className="px-4 py-3 rounded-2xl rounded-tl-sm bg-white border border-zinc-200 shadow-sm flex items-center space-x-1.5 h-[42px]">
-                <div className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                <div className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                <div className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce"></div>
+              <div className="px-4 py-3 rounded-2xl rounded-tl-sm bg-white border border-zinc-200 shadow-sm flex items-center h-[42px]">
+                <ThinkingOrb state="thinking" size={24} />
               </div>
             </div>
           </div>
