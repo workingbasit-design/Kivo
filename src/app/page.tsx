@@ -148,7 +148,7 @@ export default async function LandingPage() {
             <div className="flex items-center gap-2">
               <Link
                 href="/start"
-                className="text-[15px] text-graphite hover:text-ink transition-colors px-4 py-2 rounded-full"
+                className="text-[15px] text-graphite hover:text-ink transition-colors px-4 py-2.5 min-h-[44px] inline-flex items-center rounded-full"
               >
                 {h('nav.login')}
               </Link>

@@ -720,3 +720,8 @@ body {
     animation: none;
   }
 }
+
+/* Prevent sticky headers from clipping section headings on scroll */
+section[id] h2, section[id] h3, [id] > h2:first-child {
+  scroll-margin-top: 5rem;
+}

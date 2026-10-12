@@ -42,6 +42,7 @@ export default function JobiMascot() {
   const [dismissed, setDismissed] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [ready, setReady] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [mood, setMood] = useState<Mood>('waking');
   const moodRef = useRef<Mood>('waking');
 
@@ -84,6 +85,7 @@ export default function JobiMascot() {
   // callback, not the effect body (react-hooks cascading-render rule).
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const mobileMq = window.matchMedia('(max-width: 640px)');
     const applyPrefs = () => {
       let stored: string | null = null;
       try {
@@ -96,14 +98,20 @@ export default function JobiMascot() {
         return;
       }
       setReducedMotion(mq.matches);
+      setIsMobile(mobileMq.matches);
       setReady(true);
     };
     const onChange = () => {
       setReducedMotion(mq.matches);
+      setIsMobile(mobileMq.matches);
     };
     mq.addEventListener('change', onChange);
+    mobileMq.addEventListener('change', onChange);
     applyPrefs();
-    return () => mq.removeEventListener('change', onChange);
+    return () => {
+      mq.removeEventListener('change', onChange);
+      mobileMq.removeEventListener('change', onChange);
+    };
   }, []);
 
   // Page-load sequence: waking -> idle (handled by onAnimationEnd + fallback)
@@ -231,15 +239,17 @@ export default function JobiMascot() {
     [setMoodBoth]
   );
 
-  // Welcome bubble on first load
+  // Welcome bubble on first load — desktop only. On mobile the bubble
+  // covers page content (390px viewport), so mobile users get the mascot
+  // without the auto bubble; tapping still shows phrases.
   useEffect(() => {
-    if (!ready || dismissed || reducedMotion) return;
+    if (!ready || dismissed || reducedMotion || isMobile) return;
     const t = setTimeout(() => {
       showBubble("Hi! I'm Jobi — click me anytime!", 5000);
       playOnce('excited', 2000);
     }, 3500);
     return () => clearTimeout(t);
-  }, [ready, dismissed, reducedMotion, showBubble, playOnce]);
+  }, [ready, dismissed, reducedMotion, isMobile, showBubble, playOnce]);
 
   const restore = useCallback(() => {
     try {
@@ -299,13 +309,13 @@ export default function JobiMascot() {
           position: 'absolute',
           top: -8,
           left: -8,
-          width: 24,
-          height: 24,
+          width: 32,
+          height: 32,
           borderRadius: '50%',
           border: '1px solid rgba(0,0,0,0.12)',
           background: '#fff',
           color: '#555',
-          fontSize: 13,
+          fontSize: 16,
           lineHeight: 1,
           cursor: 'pointer',
           zIndex: 2,

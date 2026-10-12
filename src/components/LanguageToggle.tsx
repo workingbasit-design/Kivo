@@ -64,7 +64,7 @@ export function LanguageToggle({ current, tone = 'light' }: { current: Locale; t
           type="button"
           onClick={() => setLocale(l.code)}
           aria-pressed={current === l.code}
-          className={`rounded-full px-3 py-1.5 transition-colors min-h-[32px] ${
+          className={`rounded-full px-3 py-1.5 transition-colors min-h-[44px] min-w-[44px] inline-flex items-center justify-center ${
             current === l.code
               ? dark
                 ? 'bg-white text-ink shadow-sm'

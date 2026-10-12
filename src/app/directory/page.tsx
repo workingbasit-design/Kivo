@@ -125,7 +125,7 @@ export default async function DirectoryPage({
               {customerSession ? (
                 <Link
                   href="/customer"
-                  className="inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-full bg-white/10 border border-white/20 text-sm font-semibold transition-all hover:bg-white/20 hover:-translate-y-px active:translate-y-0 active:scale-[0.97]"
+                  className="inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-full bg-white/10 border border-white/20 text-sm font-semibold whitespace-nowrap shrink-0 transition-all hover:bg-white/20 hover:-translate-y-px active:translate-y-0 active:scale-[0.97]"
                 >
                   <User size={14} />
                   My account
@@ -133,10 +133,11 @@ export default async function DirectoryPage({
               ) : (
                 <Link
                   href="/customer/signup"
-                  className="inline-flex items-center gap-1.5 min-h-[44px] px-5 rounded-full bg-lime text-ink text-sm font-bold transition-all hover:brightness-105 hover:-translate-y-px hover:shadow-lg active:translate-y-0 active:scale-[0.97]"
+                  className="inline-flex items-center gap-1.5 min-h-[44px] px-4 sm:px-5 rounded-full bg-lime text-ink text-sm font-bold whitespace-nowrap shrink-0 transition-all hover:brightness-105 hover:-translate-y-px hover:shadow-lg active:translate-y-0 active:scale-[0.97]"
                 >
-                  <User size={14} />
-                  Sign up free
+                  <User size={14} className="hidden sm:block" />
+                  <span className="sm:hidden">Sign up</span>
+                  <span className="hidden sm:inline">Sign up free</span>
                 </Link>
               )}
             </div>
@@ -184,7 +185,7 @@ export default async function DirectoryPage({
               <Link
                 key={v || 'any'}
                 href={`/directory?${new URLSearchParams({ q, city, ...(v ? { minRating: v } : {}) }).toString()}`}
-                className={`inline-flex items-center min-h-[40px] px-4 rounded-full border font-semibold transition-all duration-200 hover:-translate-y-px active:translate-y-0 active:scale-[0.97] ${
+                className={`inline-flex items-center min-h-[44px] px-4 rounded-full border font-semibold transition-all duration-200 hover:-translate-y-px active:translate-y-0 active:scale-[0.97] ${
                   (minRating || '') === v
                     ? 'bg-lime text-ink border-lime shadow-md'
                     : 'text-white border-white/30 hover:border-lime/70 hover:bg-white/10'
@@ -195,7 +196,7 @@ export default async function DirectoryPage({
             ))}
             <Link
               href="/directory/request"
-              className="ml-auto inline-flex items-center gap-1.5 min-h-[44px] text-white font-semibold py-2 px-3 rounded-full bg-white/10 border border-white/20 transition-all hover:bg-white/20 hover:-translate-y-px active:translate-y-0 active:scale-[0.97]"
+              className="sm:ml-auto inline-flex items-center gap-1.5 min-h-[44px] text-white font-semibold py-2 px-3 rounded-full bg-white/10 border border-white/20 whitespace-nowrap shrink-0 transition-all hover:bg-white/20 hover:-translate-y-px active:translate-y-0 active:scale-[0.97]"
             >
               <MessageSquareQuote size={14} /> {tr('t10misc.directory.requestQuotes')}
             </Link>
