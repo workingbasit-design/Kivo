@@ -131,7 +131,7 @@ export function StatCard({
 }) {
   return (
     <div
-      className="ej-card-lift ej-rise rounded-[20px] p-5 bg-[#2e2e30] text-white border border-white/10 shadow-[0_16px_40px_rgba(22,22,22,0.25)]"
+      className="ej-card-lift ej-rise ej-premium ej-premium-dark rounded-[20px] p-5 bg-[#2e2e30] text-white border border-white/10 shadow-[0_16px_40px_rgba(22,22,22,0.25)]"
       style={{ ['--ej-d' as string]: `${Math.min(index, 8) * 0.07}s` }}
     >
       <div className="flex items-center justify-between gap-2 mb-3">
@@ -196,22 +196,22 @@ export function Field({
 }
 
 export const inputClass =
-  'w-full min-h-[44px] px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/40 focus-visible:border-ink';
+  'w-full min-h-[44px] px-4 py-2.5 rounded-xl border border-zinc-200 bg-white text-sm text-zinc-900 placeholder:text-zinc-400 shadow-[inset_0_1px_2px_rgba(22,22,22,0.04)] focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/40 focus-visible:border-ink transition-shadow';
 
 export const textareaClass =
-  'w-full min-h-[88px] px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/40 focus-visible:border-ink';
+  'w-full min-h-[88px] px-4 py-2.5 rounded-xl border border-zinc-200 bg-white text-sm text-zinc-900 placeholder:text-zinc-400 shadow-[inset_0_1px_2px_rgba(22,22,22,0.04)] focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/40 focus-visible:border-ink transition-shadow';
 
 export const selectClass =
-  'w-full min-h-[44px] px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-sm text-zinc-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/40 focus-visible:border-ink';
+  'w-full min-h-[44px] px-4 py-2.5 rounded-xl border border-zinc-200 bg-white text-sm text-zinc-900 shadow-[inset_0_1px_2px_rgba(22,22,22,0.04)] focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/40 focus-visible:border-ink transition-shadow';
 
 export const checkboxClass =
   'w-5 h-5 rounded-md border-zinc-300 accent-[#161616] focus-visible:ring-2 focus-visible:ring-ink/40 focus-visible:ring-offset-2';
 
 export const primaryBtnClass =
-  'bg-ink hover:bg-graphite active:bg-ink text-white min-h-[44px] px-5 py-2.5 rounded-xl font-semibold text-sm transition-colors inline-flex items-center justify-center gap-2 shadow-sm disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/50 focus-visible:ring-offset-2';
+  'bg-gradient-to-b from-[#2a2a2a] to-ink hover:from-graphite hover:to-[#2a2a2a] active:from-ink active:to-ink text-white min-h-[44px] px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 inline-flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(22,22,22,0.2),inset_0_1px_0_rgba(255,255,255,0.08)] hover:shadow-[0_4px_12px_rgba(22,22,22,0.25),inset_0_1px_0_rgba(255,255,255,0.08)] disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/50 focus-visible:ring-offset-2';
 
 export const secondaryBtnClass =
-  'bg-white hover:bg-zinc-50 active:bg-zinc-100 text-zinc-700 min-h-[44px] px-5 py-2.5 rounded-xl font-semibold text-sm transition-colors inline-flex items-center justify-center gap-2 border border-zinc-200 shadow-sm disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/40 focus-visible:ring-offset-2';
+  'bg-gradient-to-b from-white to-zinc-50 hover:to-white active:from-zinc-50 active:to-zinc-100 text-zinc-700 min-h-[44px] px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 inline-flex items-center justify-center gap-2 border border-zinc-200 shadow-[0_1px_2px_rgba(22,22,22,0.06),inset_0_1px_0_rgba(255,255,255,0.8)] hover:shadow-[0_4px_12px_rgba(22,22,22,0.08)] disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/40 focus-visible:ring-offset-2';
 
 export const dangerBtnClass =
   'bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white min-h-[44px] px-5 py-2.5 rounded-xl font-semibold text-sm transition-colors inline-flex items-center justify-center gap-2 shadow-sm disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/60 focus-visible:ring-offset-2';
@@ -220,7 +220,7 @@ export const ghostBtnClass =
   'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 active:bg-zinc-200 min-h-[44px] min-w-[44px] px-4 py-2.5 rounded-xl font-semibold text-sm transition-colors inline-flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/40 focus-visible:ring-offset-2';
 
 export const limeBtnClass =
-  'bg-lime hover:brightness-105 active:brightness-95 text-ink min-h-[44px] px-5 py-2.5 rounded-xl font-semibold text-sm transition-all inline-flex items-center justify-center gap-2 shadow-sm disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/60 focus-visible:ring-offset-2';
+  'bg-gradient-to-b from-[#d4f55e] to-lime hover:brightness-105 active:brightness-95 text-ink min-h-[44px] px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 inline-flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(22,22,22,0.15),inset_0_1px_0_rgba(255,255,255,0.5)] hover:shadow-[0_4px_14px_rgba(200,240,74,0.4)] disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/60 focus-visible:ring-offset-2';
 
 /* ---------- Loading skeletons (never blank screens) ---------- */
 

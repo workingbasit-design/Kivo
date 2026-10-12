@@ -725,3 +725,60 @@ body {
 section[id] h2, section[id] h3, [id] > h2:first-child {
   scroll-margin-top: 5rem;
 }
+
+/* ---------- "Feel expensive" premium layer (2026-10-12) ----------
+   Industry-standard refinements: tighter display typography, layered soft
+   shadows, hairline top-highlights, and restrained motion. */
+
+/* Display typography: tight tracking + optical sizing for headings.
+   This is the single biggest "expensive" signal. */
+@layer base {
+  h1, h2, h3 {
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+  }
+  h1 {
+    letter-spacing: -0.035em;
+  }
+}
+
+/* Premium card surface: layered soft shadow + hairline top highlight.
+   Apply via .ej-premium on any card. */
+.ej-premium {
+  position: relative;
+  box-shadow:
+    0 1px 2px rgba(22, 22, 22, 0.04),
+    0 4px 12px rgba(22, 22, 22, 0.06),
+    0 12px 32px rgba(22, 22, 22, 0.08);
+}
+.ej-premium::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  /* hairline light from above */
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.ej-premium-dark::before {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Refined pressable: subtle lift on hover, soft settle on press */
+.ej-lift {
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.ej-lift:hover {
+  transform: translateY(-2px);
+}
+.ej-lift:active {
+  transform: translateY(0) scale(0.98);
+  transition-duration: 0.1s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ej-lift, .ej-lift:hover, .ej-lift:active {
+    transform: none;
+    transition: none;
+  }
+}
