@@ -115,7 +115,9 @@ export function StatCard({
   label,
   value,
   numericValue,
-  format,
+  formatKind,
+  currency,
+  moneyLocale,
   sub,
   icon,
   accent,
@@ -126,8 +128,10 @@ export function StatCard({
   value: string;
   /** If provided, the value animates as a rolling odometer number */
   numericValue?: number;
-  /** Format for the animated number, e.g. (n) => `$${n.toLocaleString()}` */
-  format?: (n: number) => string;
+  /** How to format the animated number: 'money' or 'number' */
+  formatKind?: 'money' | 'number';
+  currency?: string;
+  moneyLocale?: string;
   sub?: string;
   icon?: React.ReactNode;
   accent?: string;
@@ -154,7 +158,12 @@ export function StatCard({
       </div>
       <p className="text-[26px] font-bold text-white tracking-tight tabular-nums">
         {numericValue !== undefined ? (
-          <AnimatedNumber value={numericValue} format={format} />
+          <AnimatedNumber
+            value={numericValue}
+            formatKind={formatKind}
+            currency={currency}
+            locale={moneyLocale}
+          />
         ) : (
           value
         )}

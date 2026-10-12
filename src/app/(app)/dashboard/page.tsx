@@ -122,7 +122,7 @@ export default async function DashboardPage() {
               label: L("dashboard.bookedToday"),
               value: formatMoney(stats.bookedToday, currency, moneyLocale),
               numericValue: stats.bookedToday,
-              format: (n: number) => formatMoney(n, currency, moneyLocale),
+              formatKind: 'money' as const,
               sub: L(stats.jobsLeftToday === 1 ? "dashboard.jobStillOpen" : "dashboard.jobsStillOpen").replace("{count}", String(stats.jobsLeftToday)),
               icon: <Calendar size={16} />,
               tone: 'zinc',
@@ -131,7 +131,7 @@ export default async function DashboardPage() {
               label: L("dashboard.collected7"),
               value: formatMoney(stats.collectedThisWeek, currency, moneyLocale),
               numericValue: stats.collectedThisWeek,
-              format: (n: number) => formatMoney(n, currency, moneyLocale),
+              formatKind: 'money' as const,
               sub: L("dashboard.paymentsReceived"),
               icon: <Banknote size={16} />,
               tone: 'emerald',
@@ -140,7 +140,7 @@ export default async function DashboardPage() {
               label: L("dashboard.outstanding"),
               value: formatMoney(stats.outstanding, currency, moneyLocale),
               numericValue: stats.outstanding,
-              format: (n: number) => formatMoney(n, currency, moneyLocale),
+              formatKind: 'money' as const,
               sub: L(stats.outstandingCount === 1 ? "dashboard.unpaidInvoice" : "dashboard.unpaidInvoices").replace("{count}", String(stats.outstandingCount)),
               icon: <AlertCircle size={16} />,
               tone: 'amber',
@@ -160,7 +160,9 @@ export default async function DashboardPage() {
               label={c.label}
               value={c.value}
               numericValue={'numericValue' in c && typeof c.numericValue === 'number' && Number.isFinite(c.numericValue) ? c.numericValue : undefined}
-              format={'format' in c ? c.format : undefined}
+              formatKind={'formatKind' in c ? c.formatKind : undefined}
+              currency={currency}
+              moneyLocale={moneyLocale}
               sub={c.sub}
               icon={c.icon}
               tone={c.tone}

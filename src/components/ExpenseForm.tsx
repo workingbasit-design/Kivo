@@ -50,13 +50,13 @@ export default function ExpenseForm({
   const T = (k: string) => t(locale, `expenses.${k}` as never);
   const isEdit = !!initial;
 
-  const [state, formAction, isPending] = useActionState<ExpenseResult, FormData>(
+  const [state, formAction, isPending] = useActionState<ExpenseResult | null, FormData>(
     isEdit
-      ? (_prev: ExpenseResult, fd: FormData) => updateExpense(initial.id, fd)
-      : (_prev: ExpenseResult, fd: FormData) => createExpense(fd),
-    { ok: true }
+      ? (_prev: ExpenseResult | null, fd: FormData) => updateExpense(initial.id, fd)
+      : (_prev: ExpenseResult | null, fd: FormData) => createExpense(fd),
+    null
   );
-  const seen = useRef<ExpenseResult | undefined>(undefined);
+  const seen = useRef<ExpenseResult | null | undefined>(undefined);
   useEffect(() => {
     if (!state || seen.current === state) return;
     seen.current = state;

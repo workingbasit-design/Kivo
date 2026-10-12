@@ -9,14 +9,20 @@ import { useEffect, useRef, useState } from 'react';
  */
 export default function AnimatedNumber({
   value,
-  format,
+  formatKind = 'number',
+  currency = 'CAD',
+  locale = 'en-CA',
   duration = 800,
   className,
 }: {
   /** Numeric target value */
   value: number;
-  /** Format the displayed number, e.g. (n) => `$${n.toFixed(2)}` */
-  format?: (n: number) => string;
+  /** How to format: 'money' for currency, 'number' for plain integer */
+  formatKind?: 'money' | 'number';
+  /** Currency code for money formatting */
+  currency?: string;
+  /** Locale for formatting */
+  locale?: string;
   /** Animation duration in ms */
   duration?: number;
   className?: string;
@@ -58,7 +64,13 @@ export default function AnimatedNumber({
     };
   }, [safeValue, duration]);
 
-  const text = format ? format(display) : String(Math.round(display));
+  const text =
+    formatKind === 'money'
+      ? new Intl.NumberFormat(locale, {
+          style: 'currency',
+          currency,
+        }).format(display)
+      : String(Math.round(display));
   return (
     <span className={className} style={{ fontVariantNumeric: 'tabular-nums' }}>
       {text}
