@@ -159,7 +159,7 @@ export default async function DashboardPage() {
             <StatCard
               label={c.label}
               value={c.value}
-              numericValue={'numericValue' in c ? c.numericValue : undefined}
+              numericValue={'numericValue' in c && typeof c.numericValue === 'number' && Number.isFinite(c.numericValue) ? c.numericValue : undefined}
               format={'format' in c ? c.format : undefined}
               sub={c.sub}
               icon={c.icon}

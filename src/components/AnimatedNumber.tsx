@@ -21,14 +21,16 @@ export default function AnimatedNumber({
   duration?: number;
   className?: string;
 }) {
-  const [display, setDisplay] = useState(value);
-  const prevRef = useRef(value);
+  // Guard against undefined/null/NaN from server stats — render fallback.
+  const safeValue = typeof value === 'number' && Number.isFinite(value) ? value : 0;
+  const [display, setDisplay] = useState(safeValue);
+  const prevRef = useRef(safeValue);
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     const from = prevRef.current;
-    const to = value;
-    prevRef.current = value;
+    const to = safeValue;
+    prevRef.current = to;
     if (from === to) return;
 
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -54,7 +56,7 @@ export default function AnimatedNumber({
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [value, duration]);
+  }, [safeValue, duration]);
 
   const text = format ? format(display) : String(Math.round(display));
   return (
