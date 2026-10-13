@@ -561,8 +561,8 @@ test('detectIntent: "create an invoice for $500" is out_of_scope (not a job)', (
   assert.equal(detectIntent('Create an invoice for $500'), 'out_of_scope');
 });
 
-test('detectIntent: "make a new quote" is out_of_scope (not a job)', () => {
-  assert.equal(detectIntent('Make a new quote for Sarah'), 'out_of_scope');
+test('detectIntent: "make a new quote" drafts a quote', () => {
+  assert.equal(detectIntent('Make a new quote for Sarah'), 'draft_quote');
 });
 
 test('extractCustomerName: "Add customer John Smith with phone +14165550123" is John Smith', () => {

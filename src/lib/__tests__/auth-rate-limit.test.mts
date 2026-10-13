@@ -62,7 +62,7 @@ test('business register: per-email limit triggers from a fresh IP', async () => 
   stub.resetAuthStub();
   stub.setBusinessUser({ id: 'u1', email: 'taken@example.com' });
   const form = () =>
-    fd({ name: 'T User', businessName: 'Biz Co', email: 'taken@example.com', password: 'Passw0rd1' });
+    fd({ name: 'T User', businessName: 'Biz Co', email: 'taken@example.com', password: 'Passw0rd1234567' });
   stub.setTestIp('10.11.2.1');
   for (let i = 0; i < 8; i++) {
     const r = await businessRegister(null, form());

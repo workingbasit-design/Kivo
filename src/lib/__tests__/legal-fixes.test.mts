@@ -21,7 +21,7 @@ const BASE = {
   name: 'Sarah Miller',
   businessName: 'Maple Leaf Plumbing',
   email: 'sarah@mapleleaf.ca',
-  password: 'Passw0rd1',
+  password: 'ValidPassword123',
 };
 
 test('registerSchema accepts signup without an age confirmation field', () => {

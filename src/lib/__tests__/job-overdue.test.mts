@@ -44,14 +44,14 @@ test('isJobOverdue: accepts YYYY-MM-DD strings as local calendar days', () => {
   assert.equal(isJobOverdue('SCHEDULED', fmt(today), now), false);
 });
 
-test('jobDisplayStatus: returns OVERDUE label only when overdue', () => {
-  assert.equal(jobDisplayStatus('SCHEDULED', yesterday, now), 'OVERDUE');
+test('jobDisplayStatus: returns LATE label only when overdue', () => {
+  assert.equal(jobDisplayStatus('SCHEDULED', yesterday, now), 'LATE');
   assert.equal(jobDisplayStatus('SCHEDULED', today, now), 'SCHEDULED');
   assert.equal(jobDisplayStatus('COMPLETED', yesterday, now), 'COMPLETED');
   assert.equal(jobDisplayStatus('CANCELLED', yesterday, now), 'CANCELLED');
 });
 
-test('statusClasses: OVERDUE gets an urgent red badge', () => {
-  const cls = statusClasses('OVERDUE');
+test('statusClasses: LATE gets an urgent red badge', () => {
+  const cls = statusClasses('LATE');
   assert.ok(cls.includes('red'), `expected red classes, got: ${cls}`);
 });
