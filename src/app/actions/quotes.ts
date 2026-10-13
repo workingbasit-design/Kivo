@@ -8,6 +8,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { quoteSchema, QUOTE_STATUSES } from '@/lib/validations';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { dollarsToCents } from '@/lib/money';
 import { getTaxConfig } from '@/lib/tax';
 import { computeQuoteTotals, type DiscountType } from '@/lib/quote-totals';
 import { parseDepositAmount } from '@/lib/quote-deposit';
@@ -199,9 +200,12 @@ export async function createQuote(
         number,
         title: parsed.data.title,
         total,
+        totalCents: dollarsToCents(total),
         discountType: discount.type,
         discountValue: discount.value,
+        discountValueCents: dollarsToCents(discount.value),
         depositAmount: deposit.amount,
+        depositAmountCents: dollarsToCents(deposit.amount),
         status: 'DRAFT',
         customerId: customer.id,
         businessId,

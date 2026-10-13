@@ -6,6 +6,7 @@ import { put, del } from '@vercel/blob';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { dollarsToCents } from '@/lib/money';
 import {
   validateExpenseForm,
   buildExpenseReceiptPathname,
@@ -97,6 +98,7 @@ export async function createExpense(fd: FormData): Promise<ExpenseResult> {
       jobId: parsed.data.jobId,
       description: parsed.data.description,
       amount: parsed.data.amount,
+      amountCents: dollarsToCents(parsed.data.amount),
       category: parsed.data.category,
       spentAt: new Date(parsed.data.spentAt + 'T00:00:00'),
       note: parsed.data.note,
