@@ -22,8 +22,8 @@ test('parseDepositAmount: rounds to cents', () => {
   assert.deepEqual(parseDepositAmount('99.999', 500), { amount: 100 });
 });
 
-test('parseDepositAmount: rejects zero, negative, and non-numeric input', () => {
-  assert.equal(parseDepositAmount('0', 500).error, 'Deposit must be a positive amount.');
+test('parseDepositAmount: treats zero as no-deposit, rejects negative and non-numeric input', () => {
+  assert.deepEqual(parseDepositAmount('0', 500), { amount: null });
   assert.equal(parseDepositAmount('-50', 500).error, 'Deposit must be a positive amount.');
   assert.equal(parseDepositAmount('abc', 500).error, 'Deposit must be a positive amount.');
 });

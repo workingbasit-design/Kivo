@@ -475,11 +475,17 @@ export default function ImportsClient({
             )}
             <button
               onClick={importCsv}
-              disabled={csvBusy || csvErrors.length > 0}
+              disabled={csvBusy || csvValid.length === 0}
               className={primaryBtnClass}
+              title={csvErrors.length > 0 ? t(locale, 'imports.hasErrorsSkipped') : undefined}
             >
               {t(locale, 'imports.importRecords').replace('{count}', String(csvValid.length))}
             </button>
+            {csvErrors.length > 0 && (
+              <p className="text-xs text-amber-600 mt-2">
+                {t(locale, 'imports.errorsWillBeSkipped').replace('{count}', String(csvErrors.length))}
+              </p>
+            )}
           </div>
         )}
 
