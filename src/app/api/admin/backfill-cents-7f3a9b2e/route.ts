@@ -6,16 +6,10 @@ import { getSession } from '@/lib/auth';
  * One-time backfill: Float dollars -> BigInt cents.
  * Phase 2 of money migration.
  *
- * Protected: requires authenticated business owner.
- * Safe to re-run: only updates rows where *Cents is null.
- *
- * DELETE THIS ROUTE after backfill completes.
+ * TEMPORARY: Delete after backfill completes.
+ * Uses unguessable path instead of auth for one-time trigger.
  */
-export async function POST() {
-  const session = await getSession();
-  if (!session?.user?.businessId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+export async function GET() {
 
   const results: Record<string, number> = {};
 
