@@ -1,5 +1,5 @@
 /**
- * /agents — EveryJob's public AI-agent policy page.
+ * /agents - EveryJob's public AI-agent policy page.
  *
  * The stance: agents are welcome, through the documented protocol, with
  * the human always confirming before anything happens. This is the

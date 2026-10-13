@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Jobi — EveryJob's animated mascot.
+ * Jobi - EveryJob's animated mascot.
  *
  * A lime ball character (Bible Strong Avatar Lab, AGPL-3.0) that lives in the
  * bottom-left corner of every page and reacts to visitors:
@@ -80,7 +80,7 @@ export default function JobiMascot() {
 
   // Reduced-motion + dismissed preferences (client only). Reads stay in an
   // effect (never in a useState initializer) so the server render is
-  // identical for every visitor — localStorage in an initializer caused
+  // identical for every visitor - localStorage in an initializer caused
   // React #418 hydration crashes. setState calls live in the subscription
   // callback, not the effect body (react-hooks cascading-render rule).
   useEffect(() => {
@@ -91,7 +91,7 @@ export default function JobiMascot() {
       try {
         stored = localStorage.getItem(DISMISS_KEY);
       } catch {
-        /* storage unavailable — show mascot */
+        /* storage unavailable - show mascot */
       }
       if (stored === '1') {
         setDismissed(true);
@@ -239,13 +239,13 @@ export default function JobiMascot() {
     [setMoodBoth]
   );
 
-  // Welcome bubble on first load — desktop only. On mobile the bubble
+  // Welcome bubble on first load - desktop only. On mobile the bubble
   // covers page content (390px viewport), so mobile users get the mascot
   // without the auto bubble; tapping still shows phrases.
   useEffect(() => {
     if (!ready || dismissed || reducedMotion || isMobile) return;
     const t = setTimeout(() => {
-      showBubble("Hi! I'm Jobi — click me anytime!", 5000);
+      showBubble("Hi! I'm Jobi - click me anytime!", 5000);
       playOnce('excited', 2000);
     }, 3500);
     return () => clearTimeout(t);
@@ -272,7 +272,7 @@ export default function JobiMascot() {
           position: 'fixed',
           left: 'max(1rem, env(safe-area-inset-left))',
           bottom: 'max(5.5rem, env(safe-area-inset-bottom))',
-          zIndex: 60,
+          zIndex: 40,
           width: 28,
           height: 28,
           borderRadius: '50%',
@@ -296,7 +296,7 @@ export default function JobiMascot() {
         position: 'fixed',
         left: 'max(1rem, env(safe-area-inset-left))',
         bottom: 'max(5.5rem, env(safe-area-inset-bottom))',
-        zIndex: 60,
+        zIndex: 40,
         lineHeight: 0,
       }}
     >
@@ -331,15 +331,15 @@ export default function JobiMascot() {
           role="status"
           style={{
             position: 'absolute',
-            bottom: 'calc(100% + 12px)',
+            bottom: 'calc(100% + 8px)',
             left: 0,
-            maxWidth: 220,
+            maxWidth: 'min(200px, 60vw)',
             background: '#161616',
             color: '#fff',
-            fontSize: 13,
+            fontSize: 12,
             lineHeight: 1.4,
-            padding: '10px 14px',
-            borderRadius: 16,
+            padding: '8px 12px',
+            borderRadius: 14,
             borderBottomLeftRadius: 4,
             boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
             zIndex: 3,
@@ -359,8 +359,8 @@ export default function JobiMascot() {
         }}
         role="button"
         tabIndex={0}
-        aria-label="Jobi the mascot — click to say hi"
-        title="Jobi — EveryJob's helper"
+        aria-label="Jobi the mascot - click to say hi"
+        title="Jobi - EveryJob's helper"
         style={{ cursor: 'pointer', borderRadius: '50%' }}
       >
         <Avatar
@@ -369,7 +369,7 @@ export default function JobiMascot() {
           animation={reducedMotion ? undefined : (mood as never)}
           expression={reducedMotion ? ('neutral' as never) : undefined}
           autoplay
-          size="clamp(72px, 18vw, 120px)"
+          size="clamp(44px, 11vw, 72px)"
           ariaLabel="Jobi, the EveryJob mascot"
           onAnimationEnd={handleAnimationEnd as never}
         />

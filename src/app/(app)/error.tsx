@@ -6,7 +6,7 @@ import { primaryBtnClass } from '@/components/ui';
 
 /**
  * Error boundary for the signed-in app. Next.js renders this when any page
- * under (app) throws during server render or hydration — instead of the
+ * under (app) throws during server render or hydration - instead of the
  * generic black "This page couldn't load" page, the user gets a clear
  * explanation, a retry button, and the error digest for support.
  */
@@ -31,7 +31,7 @@ export default function AppError({
         </div>
         <h1 className="text-xl font-bold text-zinc-900 mb-2">Something went wrong</h1>
         <p className="text-sm text-zinc-500 leading-relaxed mb-6">
-          This page couldn&apos;t load. Your data is safe — try again, and if it
+          This page couldn&apos;t load. Your data is safe - try again, and if it
           keeps happening, contact support with the code below.
         </p>
         <button

@@ -138,7 +138,7 @@ export default async function OwnerPage() {
                       </span>
                     </p>
                     <p className="text-xs font-bold text-zinc-900 shrink-0 tabular-nums">
-                      {s.score != null ? s.score : "—"}
+                      {s.score != null ? s.score : "-"}
                     </p>
                   </div>
                 ))}
@@ -190,16 +190,16 @@ export default async function OwnerPage() {
         )}
       </section>
 
-      {/* 3. Are we making money? — cash picture */}
+      {/* 3. Are we making money? - cash picture */}
       <section>
         <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2 px-1">
           {t(locale, "owner.questions.makingMoney")}
         </h2>
         <div className="grid grid-cols-3 gap-3">
           {[
-            { label: t(locale, "owner.cashOutstanding"), value: stats ? money(stats.outstanding) : "—", tone: "text-amber-700" },
-            { label: t(locale, "owner.cashOverdue"), value: leaks.length ? money(leaks.find((l) => l.id === "overdue")?.amount ?? 0) : "—", tone: "text-red-700" },
-            { label: t(locale, "owner.cashBooked"), value: stats ? money(stats.bookedToday) : "—", tone: "text-zinc-900" },
+            { label: t(locale, "owner.cashOutstanding"), value: stats ? money(stats.outstanding) : "-", tone: "text-amber-700" },
+            { label: t(locale, "owner.cashOverdue"), value: leaks.length ? money(leaks.find((l) => l.id === "overdue")?.amount ?? 0) : "-", tone: "text-red-700" },
+            { label: t(locale, "owner.cashBooked"), value: stats ? money(stats.bookedToday) : "-", tone: "text-zinc-900" },
           ].map((c) => (
             <Card key={c.label} className="p-4">
               <p className="text-[11px] font-semibold text-zinc-500">{c.label}</p>
@@ -276,7 +276,7 @@ export default async function OwnerPage() {
                 className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-50 min-h-[56px]"
               >
                 <p className="text-xs font-bold text-zinc-900 tabular-nums w-14 shrink-0">
-                  {j.time || "—"}
+                  {j.time || "-"}
                 </p>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-zinc-900 truncate">{j.title}</p>

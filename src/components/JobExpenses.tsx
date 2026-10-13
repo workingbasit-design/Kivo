@@ -25,7 +25,7 @@ export interface ExpenseData {
 
 const CATEGORIES = ['MATERIALS', 'TRAVEL', 'OTHER'] as const;
 
-/** Expenses card for the job detail page. Record-only — never a payment. */
+/** Expenses card for the job detail page. Record-only - never a payment. */
 export function JobExpenses({
   jobId,
   expenses,

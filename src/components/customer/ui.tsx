@@ -8,7 +8,7 @@
  * through the caller's `tr` function.
  *
  * Architecture notes (Google-style):
- * - Presentational only — no data fetching, no routing decisions.
+ * - Presentational only - no data fetching, no routing decisions.
  * - Server-component safe; interactive pieces are marked "use client".
  * - Every prop is typed; no `any`, no prop drilling of raw dictionaries.
  * - Variants are closed unions so misuse fails at compile time.
@@ -19,7 +19,7 @@ import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 /* ------------------------------------------------------------------ */
-/* Avatar — business monogram tile                                     */
+/* Avatar - business monogram tile                                     */
 /* ------------------------------------------------------------------ */
 
 const AVATAR_SIZES = {
@@ -59,7 +59,7 @@ export function Avatar({
 }
 
 /* ------------------------------------------------------------------ */
-/* Card — white elevated surface                                       */
+/* Card - white elevated surface                                       */
 /* ------------------------------------------------------------------ */
 
 export function Card({
@@ -87,7 +87,7 @@ export function Card({
 }
 
 /* ------------------------------------------------------------------ */
-/* PageHeader — consistent page title block                            */
+/* PageHeader - consistent page title block                            */
 /* ------------------------------------------------------------------ */
 
 export function PageHeader({
@@ -116,7 +116,7 @@ export function PageHeader({
 }
 
 /* ------------------------------------------------------------------ */
-/* PrimaryCTA — indigo call-to-action (link or button)                 */
+/* PrimaryCTA - indigo call-to-action (link or button)                 */
 /* ------------------------------------------------------------------ */
 
 const CTA_BASE =
@@ -151,7 +151,7 @@ export function PrimaryButton({
 }
 
 /* ------------------------------------------------------------------ */
-/* EmptyState — consistent empty illustration block                    */
+/* EmptyState - consistent empty illustration block                    */
 /* ------------------------------------------------------------------ */
 
 export function EmptyState({
@@ -183,7 +183,7 @@ export function EmptyState({
 }
 
 /* ------------------------------------------------------------------ */
-/* StatusBadge — quote request lifecycle state                         */
+/* StatusBadge - quote request lifecycle state                         */
 /* ------------------------------------------------------------------ */
 
 const STATUS_STYLES: Record<string, string> = {
@@ -208,7 +208,7 @@ export function StatusBadge({ status, label }: { status: string; label: string }
 }
 
 /* ------------------------------------------------------------------ */
-/* BackLink — consistent back navigation                               */
+/* BackLink - consistent back navigation                               */
 /* ------------------------------------------------------------------ */
 
 export function BackLink({ href, children }: { href: string; children: React.ReactNode }) {
@@ -223,7 +223,7 @@ export function BackLink({ href, children }: { href: string; children: React.Rea
 }
 
 /* ------------------------------------------------------------------ */
-/* Stagger — entrance-animation wrapper for lists                       */
+/* Stagger - entrance-animation wrapper for lists                       */
 /* ------------------------------------------------------------------ */
 
 export function Stagger({

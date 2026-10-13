@@ -19,7 +19,7 @@ const blankRow = (): LineItemRow => ({ desc: '', qty: '1', rate: '' });
  * input; the server recomputes all money math from it.
  *
  * Discount controls emit hidden `discountType` / `discountValue` fields in
- * the same form — the server validates and recomputes them too.
+ * the same form - the server validates and recomputes them too.
  */
 export default function LineItemsEditor({
   onSubtotal,
@@ -71,7 +71,7 @@ export default function LineItemsEditor({
     onSubtotal?.(subtotal);
   }, [subtotal, onSubtotal]);
 
-  // Live discount preview — the server re-validates and recomputes this.
+  // Live discount preview - the server re-validates and recomputes this.
   const discount = useMemo(() => {
     const raw = Number(discountValue);
     if (!discountType || !Number.isFinite(raw) || raw <= 0) {

@@ -20,7 +20,7 @@ import {
 /**
  * Business-defined custom fields ("Gate code", "Dog name"…) with one
  * per-customer value per field. Owners manage field definitions inline and
- * save values directly — empty values clear the field.
+ * save values directly - empty values clear the field.
  */
 export default function CustomerCustomFields({
   customerId,

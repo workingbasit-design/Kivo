@@ -28,7 +28,7 @@ export type RecurringPlanItem = {
 
 /**
  * Recurring plans with instant client-side tab filtering. The server sends
- * all plans once; switching tabs filters in memory — no navigation, no
+ * all plans once; switching tabs filters in memory - no navigation, no
  * server roundtrip, no lag.
  */
 export default function RecurringClient({

@@ -4,7 +4,7 @@ import crypto from 'crypto';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { rateLimit } from '@/lib/rate-limit';
-import { runCopilot, type JobDraft, type CustomerDraft, type CopilotHistoryItem } from '@/lib/copilot/engine';
+import { runCopilot, type JobDraft, type CustomerDraft, type QuoteDraft, type CopilotHistoryItem } from '@/lib/copilot/engine';
 import { tryAnthropicReply } from '@/lib/copilot/anthropic';
 import { buildConfirmReply } from '@/lib/copilot/confirm-reply';
 import { findCustomerNameCandidates, exactNameMatch } from '@/lib/copilot/match-customer';
@@ -235,7 +235,7 @@ export async function POST(req: Request) {
   });
 }
 
-function summarizeResult(result: { intent: string; reply: string; data?: Record<string, unknown>; preview?: JobDraft | CustomerDraft }): string {
+function summarizeResult(result: { intent: string; reply: string; data?: Record<string, unknown>; preview?: JobDraft | CustomerDraft | QuoteDraft }): string {
   // The engine reply already contains only real data; pass it through as grounding.
   return result.reply;
 }

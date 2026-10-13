@@ -6,7 +6,7 @@ import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
 import { formatDateShort } from '@/lib/utils';
 
-// Public page — no auth. The 256-bit token is the entire credential; only
+// Public page - no auth. The 256-bit token is the entire credential; only
 // public-safe fields (names, job title, date) are ever rendered.
 
 export async function generateMetadata({
@@ -64,7 +64,7 @@ export default async function TokenReviewPage({
 
   // Distinguish "never valid / already used" from "expired" for better copy.
   // We only learn the business name when the token format resolves; otherwise
-  // fall back to a generic label — never leak which businesses exist.
+  // fall back to a generic label - never leak which businesses exist.
   const ctx = await getTokenReviewContext(token);
 
   return (

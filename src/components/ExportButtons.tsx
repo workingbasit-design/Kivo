@@ -104,7 +104,7 @@ export default function ExportButtons({
             }
             // Neutralize formula injection: a raw string starting with `=`
             // would become an executable formula cell in Excel (worse than
-            // the CSV case — no quoting ambiguity at all).
+            // the CSV case - no quoting ambiguity at all).
             const cleaned = cleanText(v);
             const cell = cleaned === '' ? null : cleaned;
             return typeof cell === 'string' ? (neutralizeFormulaPrefix(cell) as string) : cell;

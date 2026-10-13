@@ -53,10 +53,10 @@ export function StatusBadge({ status, locale = 'en' }: { status: string; locale?
 }
 
 /**
- * GlassIcon — the app's icon chip. iOS 26 "liquid glass" finish: frosted
+ * GlassIcon - the app's icon chip. iOS 26 "liquid glass" finish: frosted
  * translucency (backdrop blur + saturate), a specular top-edge highlight,
  * a soft depth shadow, and a slow sheen sweep on hover. The tone palette
- * is unchanged — only the finish is new.
+ * is unchanged - only the finish is new.
  */
 const GLASS_TONES = {
   zinc: 'bg-gradient-to-b from-white/70 to-zinc-200/40 text-zinc-600 ring-zinc-900/10',
@@ -135,7 +135,7 @@ export function StatCard({
   sub?: string;
   icon?: React.ReactNode;
   accent?: string;
-  /** Glassmorphism finish — preferred over `accent`; same hues, frosted. */
+  /** Glassmorphism finish - preferred over `accent`; same hues, frosted. */
   tone?: GlassTone;
   /** Position in a row, for the staggered widget-style entrance. */
   index?: number;
@@ -446,12 +446,12 @@ export function Dialog({
   const prevFocus = React.useRef<HTMLElement | null>(null);
   // onClose is an inline arrow at most call sites (new identity every
   // render). Keep it in a ref so the effect below only re-runs when `open`
-  // changes — otherwise every keystroke inside the dialog would re-run the
+  // changes - otherwise every keystroke inside the dialog would re-run the
   // effect and yank focus back to the first input (2026-09-28: typing a
   // multi-digit price kept only the first digit; the rest leaked into the
   // name field).
   const onCloseRef = React.useRef(onClose);
-  // Keep the latest onClose in an effect — never write refs during render.
+  // Keep the latest onClose in an effect - never write refs during render.
   React.useEffect(() => {
     onCloseRef.current = onClose;
   });
@@ -646,7 +646,7 @@ export function CtaBar({
 }
 
 /**
- * Animated entrance wrapper — Instagram-ad-style smooth reveals.
+ * Animated entrance wrapper - Instagram-ad-style smooth reveals.
  * `animation`: 'fade-up' (default), 'scale-in', 'float'.
  * `delay`: stagger delay in ms for sequenced entrances.
  * Respects prefers-reduced-motion (renders statically).

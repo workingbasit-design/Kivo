@@ -9,7 +9,7 @@ const fragment = {
     support: {
       helpTitle: 'Help center',
       helpSub:
-        'Real guides for the real app — searchable, in English and French.',
+        'Real guides for the real app - searchable, in English and French.',
       searchPh: 'Search articles…',
       searchLabel: 'Search help articles',
       searchBtn: 'Search',
@@ -22,7 +22,7 @@ const fragment = {
       updatedNote: 'Written from the app as it works today.',
       ticketTitle: 'Still stuck? Talk to a human.',
       ticketDesc:
-        'Your ticket goes directly to the owner of EveryJob — no ticket black hole, no tiered queues.',
+        'Your ticket goes directly to the owner of EveryJob - no ticket black hole, no tiered queues.',
       formName: 'Your name',
       formNamePh: 'Jane Smith',
       formEmail: 'Email',
@@ -36,18 +36,18 @@ const fragment = {
       formSending: 'Sending…',
       formSuccessTitle: 'Ticket received.',
       formSuccessMsg:
-        'Thanks — a human (usually the person who built the feature) will read it and reply to your email.',
+        'Thanks - a human (usually the person who built the feature) will read it and reply to your email.',
       formError: 'Something went wrong sending your ticket. Please try again.',
       formRateLimited: 'You have sent a few tickets already. Please wait a bit and try again.',
       formInvalid: 'Please check the highlighted fields and try again.',
       onboardingTitle: 'Get set up',
       onboardingSub: 'Six steps to a business-ready EveryJob.',
       onboardingProgress: 'of 6 complete',
-      onboardingAllDone: 'You are all set up — nice work.',
+      onboardingAllDone: 'You are all set up - nice work.',
       onboardingDismiss: 'Do later',
       onboardingShow: 'Show setup checklist',
       inboxTitle: 'Support inbox',
-      inboxSub: 'Tickets sent from the help center. Reply by email — nothing is sent automatically.',
+      inboxSub: 'Tickets sent from the help center. Reply by email - nothing is sent automatically.',
       inboxEmpty: 'No tickets yet.',
       inboxRestricted: 'The support inbox is only visible to the product owner. Set OWNER_EMAILS to your email to open it.',
       inboxOpen: 'Open',
@@ -59,7 +59,7 @@ const fragment = {
       steps: {
         logo: {
           title: 'Add your business logo',
-          desc: 'Upload your logo in Settings — it appears on quotes and invoices.',
+          desc: 'Upload your logo in Settings - it appears on quotes and invoices.',
           cta: 'Upload logo',
         },
         customer: {
@@ -94,7 +94,7 @@ const fragment = {
     support: {
       helpTitle: 'Centre d’aide',
       helpSub:
-        'De vrais guides pour la vraie application — consultables, en français et en anglais.',
+        'De vrais guides pour la vraie application - consultables, en français et en anglais.',
       searchPh: 'Rechercher des articles…',
       searchLabel: 'Rechercher dans les articles d’aide',
       searchBtn: 'Rechercher',
@@ -108,7 +108,7 @@ const fragment = {
       updatedNote: 'Rédigé d’après l’application telle qu’elle fonctionne aujourd’hui.',
       ticketTitle: 'Toujours bloqué? Parlez à un humain.',
       ticketDesc:
-        'Votre billet va directement au propriétaire d’EveryJob — pas de trou noir, pas de files d’attente.',
+        'Votre billet va directement au propriétaire d’EveryJob - pas de trou noir, pas de files d’attente.',
       formName: 'Votre nom',
       formNamePh: 'Marie Tremblay',
       formEmail: 'Courriel',
@@ -122,18 +122,18 @@ const fragment = {
       formSending: 'Envoi…',
       formSuccessTitle: 'Billet reçu.',
       formSuccessMsg:
-        'Merci — un humain (généralement la personne qui a conçu la fonction) le lira et vous répondra par courriel.',
+        'Merci - un humain (généralement la personne qui a conçu la fonction) le lira et vous répondra par courriel.',
       formError: 'Un problème est survenu lors de l’envoi. Veuillez réessayer.',
       formRateLimited: 'Vous avez déjà envoyé quelques billets. Attendez un peu et réessayez.',
       formInvalid: 'Vérifiez les champs surlignés et réessayez.',
       onboardingTitle: 'Mise en route',
       onboardingSub: 'Six étapes pour un EveryJob prêt à travailler.',
       onboardingProgress: 'sur 6 terminées',
-      onboardingAllDone: 'Tout est configuré — beau travail.',
+      onboardingAllDone: 'Tout est configuré - beau travail.',
       onboardingDismiss: 'Plus tard',
       onboardingShow: 'Afficher la liste de démarrage',
       inboxTitle: 'Boîte de réception d’assistance',
-      inboxSub: 'Billets envoyés depuis le centre d’aide. Répondez par courriel — rien n’est envoyé automatiquement.',
+      inboxSub: 'Billets envoyés depuis le centre d’aide. Répondez par courriel - rien n’est envoyé automatiquement.',
       inboxEmpty: 'Aucun billet pour l’instant.',
       inboxRestricted: 'La boîte de réception d’assistance n’est visible que par le propriétaire du produit. Définissez OWNER_EMAILS à votre courriel pour l’ouvrir.',
       inboxOpen: 'Ouvert',
@@ -145,7 +145,7 @@ const fragment = {
       steps: {
         logo: {
           title: 'Ajoutez le logo de votre entreprise',
-          desc: 'Téléversez votre logo dans Paramètres — il apparaît sur les soumissions et factures.',
+          desc: 'Téléversez votre logo dans Paramètres - il apparaît sur les soumissions et factures.',
           cta: 'Téléverser le logo',
         },
         customer: {

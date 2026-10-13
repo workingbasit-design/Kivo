@@ -8,7 +8,7 @@ import {
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card, StatusBadge, SectionTitle } from '@/components/ui';
-import { formatDateLabel, toISODateLocal, hasJobTime, localeDateTag, localeMoneyTag } from '@/lib/utils';
+import { formatDateLabel, toISODateLocal, hasJobTime, formatJobTime, localeDateTag, localeMoneyTag } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import { entryMinutes, formatDuration } from '@/lib/timesheets';
 import { sumLaborMinutes, summarizeJobCost } from '@/lib/costing';
@@ -122,7 +122,7 @@ export default async function JobDetailPage({
   const laborMinutes = sumLaborMinutes(job.timeEntries);
   const hourlyRate = business?.defaultHourlyRate ?? null;
 
-  // Profitability — read-only P&L snapshot. Revenue is what has actually been
+  // Profitability - read-only P&L snapshot. Revenue is what has actually been
   // invoiced to date (quoted price shown as reference); costs are labor
   // (hours × business rate) plus expenses. Reuses the tested
   // summarizeJobCost math, which never divides by zero (marginPct is null
@@ -157,7 +157,7 @@ export default async function JobDetailPage({
     {
       icon: <Clock size={14} className="text-zinc-400" />,
       label: jobsL('time'),
-      value: hasJobTime(job.time) ? job.time : '—',
+      value: hasJobTime(job.time) ? formatJobTime(job.time, locale) : '-',
     },
     {
       icon: <DollarSign size={14} className="text-zinc-400" />,
@@ -192,7 +192,7 @@ export default async function JobDetailPage({
     {
       icon: <MapPin size={14} className="text-zinc-400" />,
       label: jobsL('address'),
-      value: job.address || '—',
+      value: job.address || '-',
     },
     {
       icon: <User size={14} className="text-zinc-400" />,
@@ -214,7 +214,7 @@ export default async function JobDetailPage({
         title={job.title}
         actions={
           <div className="flex items-center gap-2 flex-wrap">
-            {/* wa.me chat with the customer — user taps to send from their own
+            {/* wa.me chat with the customer - user taps to send from their own
                 WhatsApp; EveryJob never sends anything automatically. */}
             <WhatsAppButton
               phone={job.customer.phone}
@@ -223,7 +223,7 @@ export default async function JobDetailPage({
               label={T('jobWhatsAppLabel')}
             />
             {/* Free SMS: opens the phone's SMS app with the same message
-                prefilled — sent from the user's own mobile plan, $0. */}
+                prefilled - sent from the user's own mobile plan, $0. */}
             <SmsButton
               phone={job.customer.phone}
               regionCode={business?.regionCode}
@@ -252,7 +252,7 @@ export default async function JobDetailPage({
         }
       />
 
-      {/* Status badge + controls — one client component so the badge updates
+      {/* Status badge + controls - one client component so the badge updates
           instantly when the status changes (no stale server render). */}
       <Card className="p-5">
         <JobStatusButtons
@@ -264,7 +264,7 @@ export default async function JobDetailPage({
         />
       </Card>
 
-      {/* Live location sharing — per-job controls. Shown only while the job
+      {/* Live location sharing - per-job controls. Shown only while the job
           is scheduled or in progress; the server rejects pings for jobs in
           any other status. */}
       {(job.status === 'SCHEDULED' || job.status === 'IN PROGRESS') && (
@@ -282,7 +282,7 @@ export default async function JobDetailPage({
             />
           </Card>
 
-          {/* "On my way" customer notification — pre-written message with
+          {/* "On my way" customer notification - pre-written message with
               SMS/WhatsApp send buttons. Shown only while the job is active,
               matching the tracking-share endpoint's ACTIVE_STATUSES. The
               pro taps to send from their own apps; nothing is sent
@@ -306,7 +306,7 @@ export default async function JobDetailPage({
         </>
       )}
 
-      {/* Post-job review request — COMPLETED jobs only. The single-use link
+      {/* Post-job review request - COMPLETED jobs only. The single-use link
           is created via the server action, which re-checks the review moat
           (completed job + paid invoice) and never bypasses it. */}
       {job.status === 'COMPLETED' && (
@@ -384,7 +384,7 @@ export default async function JobDetailPage({
         locale={locale}
       />
 
-      {/* Job costing — quoted price vs labor + expenses */}
+      {/* Job costing - quoted price vs labor + expenses */}
       <JobCostingCard
         jobId={job.id}
         locale={locale}
@@ -402,7 +402,7 @@ export default async function JobDetailPage({
         }))}
       />
 
-      {/* Profitability — read-only P&L snapshot: what has actually been
+      {/* Profitability - read-only P&L snapshot: what has actually been
           invoiced to date vs labor (hours × rate) and expenses. Purely
           derived from the job query above; no new data entry, no new
           models. Rendered only when at least one input is non-zero. */}
@@ -434,7 +434,7 @@ export default async function JobDetailPage({
                   ×{' '}
                   {hourlyRate !== null
                     ? formatMoney(hourlyRate, currency, moneyLocale)
-                    : '—'}
+                    : '-'}
                   /h
                 </span>{' '}
                 {formatMoney(plSummary.laborCost, currency, moneyLocale)}
@@ -480,7 +480,7 @@ export default async function JobDetailPage({
                         locale,
                         'jobops.profitability.margin'
                       ).toLowerCase()}`
-                    : '—'}
+                    : '-'}
                 </span>
               </dd>
             </div>
@@ -488,11 +488,11 @@ export default async function JobDetailPage({
         </Card>
       )}
 
-      {/* Job photos & files — the deferred job-photo decision resolves to
+      {/* Job photos & files - the deferred job-photo decision resolves to
           universal Attachments (Vercel Blob, Track 6A). */}
       <Attachments entityType="job" entityId={job.id} locale={locale} />
 
-      {/* Progress invoicing — milestone invoices linked to this job */}
+      {/* Progress invoicing - milestone invoices linked to this job */}
       <Card className="p-5 md:p-6">
         <SectionTitle>
           <span className="inline-flex items-center gap-2 normal-case tracking-normal">

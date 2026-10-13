@@ -30,7 +30,7 @@ const fragment = {
       itemDescPlaceholder: 'e.g. Fan installation',
       deposit: {
         title: 'Record a deposit',
-        hint: 'Record-keeping only — this does not move any money through EveryJob.',
+        hint: 'Record-keeping only - this does not move any money through EveryJob.',
         amount: 'Amount',
         provider: 'Method',
         interac: 'Interac e-Transfer',
@@ -82,7 +82,7 @@ const fragment = {
       itemDescPlaceholder: 'p. ex. Installation de ventilateur',
       deposit: {
         title: 'Enregistrer un acompte',
-        hint: 'Tenue de dossiers seulement — cela ne transfère aucun argent via EveryJob.',
+        hint: 'Tenue de dossiers seulement - cela ne transfère aucun argent via EveryJob.',
         amount: 'Montant',
         provider: 'Méthode',
         interac: 'Virement Interac',

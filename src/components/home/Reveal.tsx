@@ -21,7 +21,7 @@ export default function Reveal({
   as?: 'div' | 'section' | 'li' | 'span';
 }) {
   const ref = useRef<HTMLElement | null>(null);
-  // Reduced-motion users see content immediately — decided once at mount via
+  // Reduced-motion users see content immediately - decided once at mount via
   // lazy initializer so the effect below never calls setState synchronously.
   const [visible, setVisible] = useState(
     () =>

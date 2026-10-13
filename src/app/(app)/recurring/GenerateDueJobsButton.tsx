@@ -9,7 +9,7 @@ import { useResolvedT } from '@/hooks/useResolvedLocale';
 /**
  * "Generate due jobs" button. Tapping it creates SCHEDULED jobs for every
  * active recurring plan whose next run is due, then reports how many were
- * created. No cron — the business runs this when they want.
+ * created. No cron - the business runs this when they want.
  */
 export default function GenerateDueJobsButton() {
   const [state, formAction, isPending] = useActionState(runRecurringGeneration, {});

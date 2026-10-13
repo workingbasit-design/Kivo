@@ -12,7 +12,7 @@ import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 
 /**
- * Customers list — defensive by design (production incident 2026-09-23:
+ * Customers list - defensive by design (production incident 2026-09-23:
  * /customers 500'd deterministically). Minimal selects, null-safe mapping,
  * and a DB failure renders an inline error card instead of a 500 page.
  */
@@ -60,7 +60,7 @@ export default async function CustomersPage() {
 
     customers = rows.map((c) => ({
       id: c.id ?? '',
-      // Never assume the row is well-formed — a bad row renders as
+      // Never assume the row is well-formed - a bad row renders as
       // "Unnamed customer" instead of crashing the whole page.
       name: c.name ?? custL('unnamed'),
       phone: c.phone ?? null,

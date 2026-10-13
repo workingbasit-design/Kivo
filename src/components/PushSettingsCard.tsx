@@ -4,7 +4,7 @@
  * Push notification settings card (per device).
  *
  * Lets the signed-in user enable/disable Web Push on *this* device and send
- * a test notification. Everything is free (browser push services, VAPID —
+ * a test notification. Everything is free (browser push services, VAPID -
  * no paid provider), tenant-scoped, and degrades gracefully:
  *  - browser without PushManager → friendly "not supported" note
  *  - server without VAPID keys  → friendly "not set up" note
@@ -21,7 +21,7 @@ import { Badge, Card, primaryBtnClass, secondaryBtnClass } from '@/components/ui
 
 type Status = 'loading' | 'unsupported' | 'unconfigured' | 'denied' | 'off' | 'on';
 
-/** VAPID keys are base64url — convert for PushManager.subscribe(). */
+/** VAPID keys are base64url - convert for PushManager.subscribe(). */
 function urlBase64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {
   const padding = '='.repeat((4 - (base64.length % 4)) % 4);
   const b64 = (base64 + padding).replace(/-/g, '+').replace(/_/g, '/');

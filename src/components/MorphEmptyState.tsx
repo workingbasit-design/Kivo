@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { SearchX, WifiOff, Inbox, CalendarX } from 'lucide-react';
 
 /**
- * MorphEmptyState — a single illustration that morphs between scenes.
+ * MorphEmptyState - a single illustration that morphs between scenes.
  * The icon cross-fades and scales with spring physics when the variant changes,
  * so empty states feel alive instead of static.
  */

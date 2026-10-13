@@ -20,7 +20,7 @@ export const metadata = { title: 'Settings | EveryJob' };
 
 /**
  * Phase 1: deferred settings surfaces (Automations) are hidden behind this
- * flag. The routes and code stay live — only the surface links are removed.
+ * flag. The routes and code stay live - only the surface links are removed.
  * Set to true when the feature graduates back into Phase 1.
  */
 const SHOW_ADVANCED_SETTINGS_LINKS = false;

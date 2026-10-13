@@ -4,7 +4,10 @@ import {
   UserPlus, Megaphone, Repeat, Route, Timer,
   UserCog, Import, ClipboardCheck, Wrench, Package,
   Siren, Gauge, Mic, Calculator, Calendar, MapPin, Users, Bell, Settings,
+  Sunrise,
+  FolderKanban,
   Receipt,
+  Palette,
 } from 'lucide-react';
 import type { NavIcon } from './animated-icons/nav-icon';
 
@@ -32,9 +35,12 @@ export const navSections: NavSection[] = [
     items: [
       { nameKey: 'nav.dashboard', href: '/dashboard', icon: LayoutDashboard },
       { nameKey: 'nav.attention', href: '/attention', icon: Siren },
+      { nameKey: 'nav.digest', href: '/digest', icon: Sunrise },
       { nameKey: 'nav.voice', href: '/voice', icon: Mic },
       { nameKey: 'nav.schedule', href: '/schedule', icon: Calendar },
       { nameKey: 'nav.jobs', href: '/jobs', icon: Briefcase },
+      { nameKey: 'nav.projects', href: '/projects', icon: FolderKanban },
+      { nameKey: 'nav.crews', href: '/crews', icon: Users },
       { nameKey: 'nav.dispatch', href: '/dispatch', icon: ClipboardCheck },
       { nameKey: 'nav.recurring', href: '/recurring', icon: Repeat },
       { nameKey: 'nav.routes', href: '/routes', icon: Route, advanced: true },
@@ -48,6 +54,7 @@ export const navSections: NavSection[] = [
       { nameKey: 'nav.quotes', href: '/quotes', icon: ClipboardList },
       { nameKey: 'nav.invoices', href: '/invoices', icon: FileText },
       { nameKey: 'nav.expenses', href: '/expenses', icon: Receipt },
+      { nameKey: 'nav.bookkeeping', href: '/bookkeeping', icon: Calculator },
     ],
   },
   {
@@ -65,6 +72,7 @@ export const navSections: NavSection[] = [
     items: [
       { nameKey: 'nav.pricebook', href: '/pricebook', icon: Tag, advanced: true },
       { nameKey: 'nav.marketing', href: '/marketing', icon: Megaphone, advanced: true },
+      { nameKey: 'nav.brand', href: '/marketing/brand', icon: Palette, advanced: true },
       { nameKey: 'nav.reminders', href: '/reminders', icon: Bell },
       // Phase 1: online booking is not advertised. The public /book/[slug]
       // pages keep working for links that were already shared; only this

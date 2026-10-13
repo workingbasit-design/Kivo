@@ -11,7 +11,7 @@ export const metadata = { title: 'Integrations | EveryJob' };
 
 /**
  * Phase 1: QuickBooks is deferred. The card, routes, and sync engine stay
- * live — only the card is hidden from this page. Set to true when the
+ * live - only the card is hidden from this page. Set to true when the
  * integration graduates back into Phase 1.
  */
 const SHOW_QUICKBOOKS_CARD = false;
@@ -32,7 +32,7 @@ export default async function IntegrationsPage() {
   const tr = (p: string) => t(locale, p);
 
   // NOTE (2026-09-26): the API-keys and webhooks cards used to live on this
-  // page. They were removed at the owner's request — developer tooling that
+  // page. They were removed at the owner's request - developer tooling that
   // confused non-technical users. The underlying /api/v1 routes and webhook
   // delivery engine remain in the codebase but are no longer surfaced in UI.
   const [googleConn, qbConn] = await Promise.all([

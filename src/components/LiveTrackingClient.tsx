@@ -12,7 +12,7 @@ const POLL_MS = 15_000;
 export interface TrackingSnapshot {
   lat: number;
   lng: number;
-  /** ISO string — formatted in the VIEWER's timezone on the client. */
+  /** ISO string - formatted in the VIEWER's timezone on the client. */
   recordedAt: string;
   straightM: number | null;
   driveM: number | null;
@@ -29,7 +29,7 @@ interface Props {
   jobAddress: string | null;
   jobStatus: string;
   jobDate: string | null;
-  /** Null when the job has no technician name — banner omits the name. */
+  /** Null when the job has no technician name - banner omits the name. */
   techName: string | null;
   initial: TrackingSnapshot | null;
 }
@@ -64,7 +64,7 @@ export default function LiveTrackingClient({
         setExpired(true);
         return;
       }
-      if (!res.ok) return; // 429 etc. — keep old data, try again next tick
+      if (!res.ok) return; // 429 etc. - keep old data, try again next tick
       const data = (await res.json()) as {
         ok: boolean;
         latest: { lat: number; lng: number; recordedAt: string } | null;
@@ -90,7 +90,7 @@ export default function LiveTrackingClient({
         arrived: data.arrived,
       });
     } catch {
-      // Transient network failure — keep the last known position.
+      // Transient network failure - keep the last known position.
     }
   }, [token]);
 
@@ -102,7 +102,7 @@ export default function LiveTrackingClient({
   }, [poll]);
 
   if (expired) {
-    // Inline expired UI — PortalNotice imports server-only i18n helpers and
+    // Inline expired UI - PortalNotice imports server-only i18n helpers and
     // cannot render inside a client component.
     return (
       <div data-track-diag="token-expired">
@@ -130,7 +130,7 @@ export default function LiveTrackingClient({
     jobDate ? new Date(jobDate) : null
   );
 
-  // Viewer-local time — the server can only render UTC, which is why the
+  // Viewer-local time - the server can only render UTC, which is why the
   // old page showed the wrong hour.
   const updatedLabel = snap
     ? new Date(snap.recordedAt).toLocaleTimeString(tag, {
@@ -177,14 +177,14 @@ export default function LiveTrackingClient({
           <Card className="p-4 bg-emerald-50 border-emerald-200">
             <p className="text-center font-bold text-emerald-800">
               ✅ {tr('gps.arrived')}
-              {techName ? ` — ${techName}` : ''}
+              {techName ? ` - ${techName}` : ''}
             </p>
           </Card>
         ) : (
           <Card className="p-4 bg-sky-50 border-sky-200">
             <p className="text-center font-bold text-sky-900">
               🚗 {tr('gps.onTheWay')}
-              {techName ? ` — ${techName}` : ''}
+              {techName ? ` - ${techName}` : ''}
             </p>
           </Card>
         )}

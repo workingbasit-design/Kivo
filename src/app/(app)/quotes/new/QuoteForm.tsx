@@ -53,7 +53,7 @@ export default function QuoteForm({
   // createQuote redirects to the new quote page on success; toast on failure only.
   useResultToast(state, {});
 
-  // Client-side preview — the server recomputes the same numbers.
+  // Client-side preview - the server recomputes the same numbers.
   const { taxAmount, breakdown } = calcTax(subtotal, taxConfig);
   const total = Math.round((subtotal + taxAmount) * 100) / 100;
 
@@ -79,7 +79,7 @@ export default function QuoteForm({
           <input type="hidden" name="customerId" value={customerId} required />
           {customers.length === 0 && (
             <p className="text-[11px] text-zinc-400 mt-1">
-              No customers yet —{' '}
+              No customers yet -{' '}
               <Link href="/customers/new" className="text-ink font-semibold hover:underline">
                 add one first
               </Link>
@@ -116,7 +116,7 @@ export default function QuoteForm({
           </div>
         </dl>
         <p className="text-[11px] text-zinc-400 mt-3">
-          {taxConfig.label} included — set in Settings → Region & tax.
+          {taxConfig.label} included - set in Settings → Region & tax.
         </p>
       </Card>
 

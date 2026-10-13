@@ -64,7 +64,7 @@ export default function RecurringForm({
   action: (_prev: RecurringActionResult, formData: FormData) => Promise<RecurringActionResult>;
   submitLabel: string;
   currency?: string;
-  /** Optional — falls back to the `kivo-locale` cookie so pages that don't
+  /** Optional - falls back to the `kivo-locale` cookie so pages that don't
    *  pass it still render in the user's language. */
   locale?: Locale;
 }) {
@@ -164,7 +164,7 @@ export default function RecurringForm({
             <option value="">{T('recurFormServicePick')}</option>
             {services.map((s) => (
               <option key={s.id} value={s.id}>
-                {s.name} — {formatMoney(s.price, currency)}
+                {s.name} - {formatMoney(s.price, currency)}
               </option>
             ))}
           </select>

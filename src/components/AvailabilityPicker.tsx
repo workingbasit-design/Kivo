@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 /**
- * AvailabilityPicker — day-strip + time-slot picker with shared-element motion.
+ * AvailabilityPicker - day-strip + time-slot picker with shared-element motion.
  * Slots slide in when the day changes; the selection highlight glides
  * between days on a spring. For booking flows.
  */

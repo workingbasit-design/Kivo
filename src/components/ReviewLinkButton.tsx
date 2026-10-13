@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 /**
  * Generates a single-use review link for a job and copies it.
  * The pro then sends the link to the customer themselves (WhatsApp, SMS,
- * …) — EveryJob never sends anything automatically.
+ * …) - EveryJob never sends anything automatically.
  */
 export default function ReviewLinkButton({
   jobId,
@@ -45,7 +45,7 @@ export default function ReviewLinkButton({
     try {
       await navigator.clipboard.writeText(url);
     } catch {
-      // Clipboard API unavailable (permissions, non-secure context) —
+      // Clipboard API unavailable (permissions, non-secure context) -
       // show the link for manual copy instead of failing silently.
       setManualLink(url);
     }

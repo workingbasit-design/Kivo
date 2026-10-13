@@ -58,7 +58,7 @@ export function EditCustomerForm({
 }) {
   const [editing, setEditing] = useState(false);
   // Wrap the server action so a successful save also exits editing mode.
-  // (Leaving the form open with a "saved" banner forced a manual cancel —
+  // (Leaving the form open with a "saved" banner forced a manual cancel -
   // found 2026-10-06.) setState here runs in the action's async context,
   // not inside an effect, so no cascading-render lint issue.
   const [state, formAction, isPending] = useActionState(async (prev: ActionResult, formData: FormData) => {
@@ -120,7 +120,7 @@ export function EditCustomerForm({
       <FormGrid>
         <Field label="Province">
           <select name="province" defaultValue={customer.province ?? ''} className={inputClass}>
-            <option value="">—</option>
+            <option value="">-</option>
             {CA_PROVINCES.map((p) => (
               <option key={p.code} value={p.code}>
                 {p.name}

@@ -6,7 +6,7 @@ import { smsLink } from '@/lib/sms';
 
 /**
  * "Send via SMS" button. Opens the phone's native SMS app with the message
- * prefilled — the user taps it and sends from their own mobile plan.
+ * prefilled - the user taps it and sends from their own mobile plan.
  * EveryJob never sends anything automatically and this costs nothing.
  * Renders nothing without a phone number.
  */

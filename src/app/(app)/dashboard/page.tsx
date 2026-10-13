@@ -16,7 +16,7 @@ import { prisma } from "@/lib/prisma";
 import { getDashboardStats } from "@/lib/dashboard";
 import { getGrowthData } from "@/lib/growth";
 import { generateDueJobs } from "@/lib/recurring";
-import { formatDateLabel, hasJobTime, jobDisplayStatus, localeDateTag, localeMoneyTag } from "@/lib/utils";
+import { formatDateLabel, hasJobTime, formatJobTime, jobDisplayStatus, localeDateTag, localeMoneyTag } from "@/lib/utils";
 import { formatMoney } from "@/lib/money";
 import { getLocale } from "@/lib/i18n/server";
 import { t } from "@/lib/i18n";
@@ -48,7 +48,7 @@ export default async function DashboardPage() {
 
   // Lazy auto-generation: create jobs for any due recurring plans before
   // rendering, so jobs appear without the user tapping "Generate due jobs".
-  // Best-effort — a failure here must never break the dashboard itself.
+  // Best-effort - a failure here must never break the dashboard itself.
   // It runs alongside the business lookup (independent), and everything
   // below only starts once generation has finished, so fresh due jobs
   // are included in the stats.
@@ -64,7 +64,7 @@ export default async function DashboardPage() {
     genPromise,
   ]);
   const currency = business?.currency;
-  // Stats, onboarding counts and growth data are mutually independent —
+  // Stats, onboarding counts and growth data are mutually independent -
   // one round instead of three.
   const [stats, counts, growth] = await Promise.all([
     getDashboardStats(businessId, business),
@@ -114,7 +114,7 @@ export default async function DashboardPage() {
       {/* New-business setup checklist (real completion state, dismissable) */}
       <OnboardingChecklist locale={locale} businessId={businessId} completed={onboardingCompleted} />
 
-      {/* Stat cards — key metrics render immediately with no entrance fade,
+      {/* Stat cards - key metrics render immediately with no entrance fade,
           so a slow device can never leave a card looking "faded". */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">        {(
           [
@@ -172,12 +172,12 @@ export default async function DashboardPage() {
         ))}
       </div>
 
-      {/* Daily briefing — the 5 things that need attention first. Renders
+      {/* Daily briefing - the 5 things that need attention first. Renders
           nothing when there is nothing to flag, so a quiet business sees a
           calm dashboard, not an empty card. */}
       <AttentionBriefing businessId={businessId} currency={currency} />
 
-      {/* Profile strength — computed from the business's own data only.
+      {/* Profile strength - computed from the business's own data only.
           Every "next up" action lives in Settings, so the card links there
           (Insights is a deferred feature under More → Advanced). */}
       {growth && growth.score < 100 && (
@@ -257,7 +257,7 @@ export default async function DashboardPage() {
                     className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-50 transition-colors min-h-[56px]"
                   >
                     <div className="w-14 shrink-0 text-center">
-                      <p className="text-xs font-bold text-zinc-900 tabular-nums">{hasJobTime(job.time) ? job.time : "—"}</p>
+                      <p className="text-xs font-bold text-zinc-900 tabular-nums">{hasJobTime(job.time) ? formatJobTime(job.time, locale) : "-"}</p>
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-zinc-900 truncate">{job.title}</p>
@@ -330,7 +330,7 @@ export default async function DashboardPage() {
                       <p className="text-sm font-semibold text-zinc-900 truncate">{job.title}</p>
                       <p className="text-xs text-zinc-700 truncate">
                         {job.customerName}
-                        {hasJobTime(job.time) ? ` · ${job.time}` : ""}
+                        {hasJobTime(job.time) ? ` · ${formatJobTime(job.time, locale)}` : ""}
                       </p>
                     </div>
                     <StatusBadge status={jobDisplayStatus(job.status, job.date)} locale={locale} />

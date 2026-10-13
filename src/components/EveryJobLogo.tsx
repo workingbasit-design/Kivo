@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * The EveryJob brand mark — layered "liquid glass" identity.
+ * The EveryJob brand mark - layered "liquid glass" identity.
  * Same layers as public/icons/icon-source.svg (one design, every surface):
  * charcoal squircle base, glass cover sheet, lime E with a darker offset
  * depth layer, and a specular top edge light. Use everywhere the logo

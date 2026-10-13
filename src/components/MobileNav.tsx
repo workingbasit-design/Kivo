@@ -9,7 +9,7 @@ import { t, type Locale } from '@/lib/i18n';
 
 /**
  * Slim mobile top bar: brand + search + notification bell. Primary navigation lives
- * in the bottom tab bar (BottomNav) — thumb-reachable on phones.
+ * in the bottom tab bar (BottomNav) - thumb-reachable on phones.
  */
 export default function MobileNav({ locale = 'en', unreadCount = 0 }: { locale?: Locale; unreadCount?: number }) {
   return (

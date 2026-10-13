@@ -81,7 +81,7 @@ export default async function CustomerDetailPage({
   const businessId = session.user.businessId;
 
   // Defensive: any DB failure (bad row, schema drift) renders the friendly
-  // error boundary instead of a raw 500 — see the 2026-09-23 /customers incident.
+  // error boundary instead of a raw 500 - see the 2026-09-23 /customers incident.
   let business: { currency: string | null; name: string | null } | null = null;
   let customer: Awaited<ReturnType<typeof loadCustomer>> = null;
   let activePortalToken: { id: string; createdAt: Date } | null = null;
@@ -120,12 +120,12 @@ export default async function CustomerDetailPage({
     });
   } catch (e) {
     // notFound() throws a NEXT_NOT_FOUND sentinel (older Next) or
-    // NEXT_HTTP_ERROR_FALLBACK;404 (newer Next) — let it through so a
+    // NEXT_HTTP_ERROR_FALLBACK;404 (newer Next) - let it through so a
     // cross-tenant probe renders the 404 page, not the error page.
     const digest = e instanceof Error ? (e as { digest?: string }).digest : undefined;
     if (digest === 'NEXT_NOT_FOUND' || digest?.startsWith('NEXT_HTTP_ERROR_FALLBACK;404')) throw e;
     console.error('[customers] failed to load customer detail:', e);
-    throw new Error('Could not load this customer. Your data is safe — please try again.');
+    throw new Error('Could not load this customer. Your data is safe - please try again.');
   }
 
   const currency = business?.currency ?? 'CAD';
@@ -181,7 +181,7 @@ export default async function CustomerDetailPage({
                   {customer.phone}
                 </a>
               ) : (
-                <p className="text-zinc-800">—</p>
+                <p className="text-zinc-800">-</p>
               )}
             </div>
           </div>
@@ -197,7 +197,7 @@ export default async function CustomerDetailPage({
                   {customer.email}
                 </a>
               ) : (
-                <p className="text-zinc-800">—</p>
+                <p className="text-zinc-800">-</p>
               )}
             </div>
           </div>
@@ -205,7 +205,7 @@ export default async function CustomerDetailPage({
             <MapPin size={15} className="text-zinc-400 mt-0.5 shrink-0" />
             <div>
               <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Address</p>
-              <p className="text-zinc-800 whitespace-pre-line">{customer.address ?? '—'}</p>
+              <p className="text-zinc-800 whitespace-pre-line">{customer.address ?? '-'}</p>
               {(provinceLabel || customer.postalCode) && (
                 <p className="text-xs text-zinc-500 mt-1">
                   {[provinceLabel, customer.postalCode].filter(Boolean).join(' · ')}
@@ -240,7 +240,7 @@ export default async function CustomerDetailPage({
         </div>
 
         <div className="flex flex-wrap gap-2 pt-4 border-t border-zinc-100">
-          {/* Opens a wa.me chat with the customer — user taps to send from
+          {/* Opens a wa.me chat with the customer - user taps to send from
               their own WhatsApp; EveryJob never sends anything automatically. */}
           <WhatsAppButton
             phone={customer.phone}
@@ -276,7 +276,7 @@ export default async function CustomerDetailPage({
         </div>
       </Card>
 
-      {/* Customer portal link — magic link on WhatsApp */}
+      {/* Customer portal link - magic link on WhatsApp */}
       <Card className="p-6 md:p-8">
         <PortalLinkManager
           customerId={customer.id}

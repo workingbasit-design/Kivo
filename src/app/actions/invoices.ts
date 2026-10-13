@@ -311,6 +311,18 @@ export async function deleteInvoice(
   if (invoice.status === 'PAID') {
     return { error: 'Paid invoices are kept as records and can\'t be deleted.' };
   }
+  // Never delete an invoice with payments on file - that destroys the payment
+  // record. Void it instead (keeps the audit trail).
+  const paymentCount = await prisma.payment.count({
+    where: { invoiceId: id, invoice: { businessId } },
+  });
+  if (paymentCount > 0) {
+    return {
+      error:
+        'This invoice has payments recorded and can\'t be deleted. ' +
+        'Void it instead to keep the payment history.',
+    };
+  }
 
   await prisma.invoice.delete({ where: { id, businessId } });
   revalidatePath('/invoices');

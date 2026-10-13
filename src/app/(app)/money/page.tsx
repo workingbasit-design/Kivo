@@ -31,7 +31,7 @@ export default async function MoneyPage() {
   const locale = await getLocale();
   const L = (path: string) => t(locale, path);
 
-  const [business, openQuotes, unpaidInvoices, overdueInvoices] = await Promise.all([
+  const [business, openQuotes, unpaidInvoices, overdueInvoices, unbilledJobs] = await Promise.all([
     prisma.business.findUnique({
       where: { id: businessId },
       select: { currency: true, name: true, regionCode: true, timezone: true },
@@ -62,6 +62,24 @@ export default async function MoneyPage() {
       orderBy: { date: 'asc' },
       take: 10,
     }),
+    // Ready to invoice: completed jobs with no invoice yet - the most common
+    // cash leak for small trades. Without this, Money says "all caught up"
+    // while billable work sits unbilled.
+    prisma.job.findMany({
+      where: {
+        businessId,
+        status: 'COMPLETED',
+        invoices: { none: {} },
+      },
+      select: {
+        id: true,
+        title: true,
+        price: true,
+        customer: { select: { name: true } },
+      },
+      orderBy: { date: 'asc' },
+      take: 10,
+    }),
   ]);
 
   const currency = business?.currency;
@@ -70,7 +88,8 @@ export default async function MoneyPage() {
     (s, i) => s + (i.total - i.payments.reduce((p, pay) => p + pay.amount, 0)),
     0,
   );
-  const allCaughtUp = openQuotes.length === 0 && unpaidInvoices.length === 0;
+  const unbilledValue = unbilledJobs.reduce((s, j) => s + j.price, 0);
+  const allCaughtUp = openQuotes.length === 0 && unpaidInvoices.length === 0 && unbilledJobs.length === 0;
 
   return (
     <div className="space-y-6">
@@ -144,7 +163,49 @@ export default async function MoneyPage() {
         </Card>
       </div>
 
-      {/* Overdue-invoice reminder queue — revenue recovery.
+      {/* Ready to invoice - completed jobs with no invoice yet. */}
+      {unbilledJobs.length > 0 && (
+        <Card className="!p-0 overflow-hidden">
+          <div className="px-5 pt-5 pb-3">
+            <div className="flex items-center gap-2.5">
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
+                <FileText className="h-4 w-4" aria-hidden />
+              </span>
+              <div>
+                <h2 className="font-semibold">{L('t10money.money.unbilledTitle')}</h2>
+                <p className="text-xs text-[var(--ej-muted)]">{L('t10money.money.unbilledDesc')}</p>
+              </div>
+              <span className="ml-auto text-lg font-bold tabular-nums text-emerald-700">
+                {formatMoney(Math.round(unbilledValue * 100) / 100, currency)}
+              </span>
+            </div>
+          </div>
+          <ul className="divide-y divide-zinc-100">
+            {unbilledJobs.map((j) => (
+              <li key={j.id} className="px-4 sm:px-5 py-3">
+                <Link
+                  href={`/jobs/${j.id}`}
+                  className="flex items-center justify-between gap-4 min-h-[44px]"
+                >
+                  <span className="min-w-0">
+                    <span className="block text-sm font-semibold text-zinc-900 truncate">
+                      {j.title}
+                    </span>
+                    <span className="block text-xs text-zinc-500 truncate">
+                      {j.customer.name}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-sm font-bold tabular-nums text-zinc-900">
+                    {formatMoney(j.price, currency)}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
+
+      {/* Overdue-invoice reminder queue - revenue recovery.
           EveryJob never sends anything itself: SmsButton/WhatsAppButton only
           open the user's own apps with the message prefilled. */}
       {overdueInvoices.length > 0 && (

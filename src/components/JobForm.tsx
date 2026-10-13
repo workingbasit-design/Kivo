@@ -25,10 +25,16 @@ export interface JobFormInitial {
   price?: number;
   notes?: string | null;
   technician?: string | null;
+  crewId?: string | null;
   /** Price-book service this job was created from (create flow only). */
   serviceId?: string;
   /** Checklist template this job was created from (create flow only). */
   templateId?: string;
+}
+
+export interface JobFormCrew {
+  id: string;
+  name: string;
 }
 
 /** Resolve the app locale in a client component: an explicit prop wins,
@@ -48,6 +54,7 @@ function resolveLocale(prop?: Locale): Locale {
  */
 export default function JobForm({
   customers,
+  crews,
   initial,
   action,
   submitLabel,
@@ -55,23 +62,31 @@ export default function JobForm({
   currency,
 }: {
   customers: JobFormCustomer[];
+  /** Optional crew options for the crew <select> (omitted when crews aren't loaded). */
+  crews?: JobFormCrew[];
   initial?: JobFormInitial;
   action: (_prev: JobActionResult, formData: FormData) => Promise<JobActionResult>;
   submitLabel: string;
-  /** Optional — falls back to the `kivo-locale` cookie so pages that don't
+  /** Optional - falls back to the `kivo-locale` cookie so pages that don't
    *  pass it (e.g. /jobs/new) still render in the user's language. */
   locale?: Locale;
-  /** Business currency code — drives the price label (e.g. CAD). */
+  /** Business currency code - drives the price label (e.g. CAD). */
   currency?: string;
 }) {
   const [state, formAction, isPending] = useActionState(action, {});
   const [locale] = useState<Locale>(() => resolveLocale(localeProp));
   const T = (k: string) => t(locale, `t10work.${k}`);
   const jobsL = (k: string) => t(locale, `jobs.${k}`);
+  const crewsL = (k: string) => t(locale, `crews.${k}`);
   // Freshness: the SSR `customers` prop can be stale (client-side navigation
   // reuses cached RSC). Refresh on mount so a customer created moments ago
   // always appears in the combobox.
   const [liveCustomers, setLiveCustomers] = useState<JobFormCustomer[]>(customers);
+  const [priceValue, setPriceValue] = useState<string>(String(initial?.price ?? ''));
+  const priceIsZero = (() => {
+    const n = parseFloat(priceValue);
+    return priceValue.trim() !== '' && Number.isFinite(n) && n === 0;
+  })();
   useEffect(() => {
     let cancelled = false;
     fetch('/api/customers/options', { cache: 'no-store' })
@@ -188,6 +203,7 @@ export default function JobForm({
             defaultValue={initial?.price ?? ''}
             placeholder="0"
             className={inputClass}
+            onChange={(e) => setPriceValue(e.target.value)}
             // Normalize float artifacts (e.g. 149.99000549316406) on blur so
             // the displayed value always matches the cents-rounded save.
             onBlur={(e) => {
@@ -195,6 +211,12 @@ export default function JobForm({
               if (Number.isFinite(n)) e.target.value = n.toFixed(2);
             }}
           />
+          {priceIsZero && (
+            <p role="alert" className="mt-2 flex items-start gap-2 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+              <AlertCircle size={14} className="shrink-0 mt-0.5" aria-hidden />
+              {T('formZeroPriceWarning')}
+            </p>
+          )}
         </Field>
       </div>
 
@@ -219,6 +241,22 @@ export default function JobForm({
             className={inputClass}
           />
         </Field>
+        {crews && crews.length > 0 && (
+          <Field label={`${crewsL('jobCrewOptional')}`}>
+            <select
+              name="crewId"
+              defaultValue={initial?.crewId ?? ''}
+              className={`${inputClass} min-h-[44px]`}
+            >
+              <option value="">{crewsL('jobCrewNone')}</option>
+              {crews.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+        )}
         <Field label={`${jobsL('notes')} (${T('formOptional')})`}>
           <textarea
             name="notes"

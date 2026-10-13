@@ -9,7 +9,7 @@ import { secondaryBtnClass } from '@/components/ui';
 
 /**
  * Generates a polite, copy-paste payment reminder draft.
- * Never sends anything — the business copies the draft or taps the
+ * Never sends anything - the business copies the draft or taps the
  * WhatsApp button to send it themselves from their own WhatsApp.
  */
 export default function ReminderDraft({
@@ -61,7 +61,7 @@ export default function ReminderDraft({
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
           <div className="flex items-center justify-between gap-2 mb-2">
             <p className="text-[11px] font-bold uppercase tracking-wider text-amber-700">
-              Reminder draft — send it yourself
+              Reminder draft - send it yourself
             </p>
             <div className="flex items-center gap-2 shrink-0">
               <WhatsAppButton phone={phone} message={text} regionCode={regionCode} />
@@ -70,7 +70,7 @@ export default function ReminderDraft({
           </div>
           <p className="text-sm text-zinc-700 whitespace-pre-wrap">{text}</p>
           <p className="text-[11px] text-amber-700/70 mt-2">
-            EveryJob never sends messages itself — tap the WhatsApp button or copy this
+            EveryJob never sends messages itself - tap the WhatsApp button or copy this
             and send it via WhatsApp or SMS.
           </p>
         </div>

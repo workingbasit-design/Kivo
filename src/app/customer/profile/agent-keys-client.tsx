@@ -72,7 +72,7 @@ export default function AgentKeysSection({ keys, s, locale }: { keys: KeyRow[]; 
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       } catch {
-        /* clipboard unavailable — user can select manually */
+        /* clipboard unavailable - user can select manually */
       }
     };
     return (

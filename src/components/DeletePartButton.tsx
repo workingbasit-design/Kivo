@@ -7,7 +7,7 @@ import { t, type Locale } from '@/lib/i18n';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { deletePart } from '@/app/actions/inventory';
 
-/** Delete button with confirmation dialog — no silent destructive actions. */
+/** Delete button with confirmation dialog - no silent destructive actions. */
 export default function DeletePartButton({
   id,
   locale,

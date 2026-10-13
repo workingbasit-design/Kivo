@@ -3,7 +3,7 @@
 import { motion } from 'motion/react';
 
 /**
- * MorphChips — filter chips with fluid shared-element transitions.
+ * MorphChips - filter chips with fluid shared-element transitions.
  * The selection highlight glides between chips via layoutId; the check
  * grows in and neighbors shift smoothly. Overflow folds behind "+N more".
  */

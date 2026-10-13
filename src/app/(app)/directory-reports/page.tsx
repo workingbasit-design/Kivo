@@ -12,7 +12,7 @@ export const metadata = { title: 'Directory reports | EveryJob' };
 
 /**
  * Internal trust & safety queue. Super-admin only, gated by the
- * KIVO_ADMIN_EMAILS env var (comma-separated). Not linked in the nav —
+ * KIVO_ADMIN_EMAILS env var (comma-separated). Not linked in the nav -
  * reach it directly at /directory-reports.
  */
 export default async function DirectoryReportsPage() {

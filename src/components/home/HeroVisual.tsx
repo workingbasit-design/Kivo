@@ -51,7 +51,7 @@ function Chip({
 /**
  * Scattered-context hero visual: a wavy timeline draws itself in while
  * floating chips (a client text, a calendar note, a quote draft, and a
- * "Where's that invoice?" pill) drift above it — all converging toward an
+ * "Where's that invoice?" pill) drift above it - all converging toward an
  * EveryJob card. Pure CSS motion; disabled under prefers-reduced-motion.
  * Decorative chips hide on small screens; the invoice pill and the EveryJob
  * card stay visible so the story survives on mobile.

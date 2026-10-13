@@ -41,6 +41,7 @@ import {
   type CopilotIntent,
   type CopilotResult,
   type CustomerDraft,
+  type QuoteDraft,
   type JobDraft,
 } from './parse';
 import { findCustomerNameCandidates, exactNameMatch } from './match-customer';
@@ -67,6 +68,7 @@ export {
   type CopilotIntent,
   type CopilotResult,
   type CustomerDraft,
+  type QuoteDraft,
   type JobDraft,
 };
 
@@ -475,6 +477,127 @@ export async function runCopilot(
       lines.push('', L.confirmNote);
 
       return { intent, reply: lines.join('\n'), preview: draft };
+    }
+
+    case 'draft_quote': {
+      const serviceTitle = extractServiceTitle(message);
+      const customerName = extractCustomerName(message) ?? followUpName ?? '';
+      const saidPrice = extractMoney(message);
+
+      if (!serviceTitle && !customerName && saidPrice === null) {
+        return {
+          intent,
+          reply: pick(
+            lang,
+            'Sure — what’s the quote for? Tell me the service and who it’s for. For example: "Quote for Sarah — bathroom tile, $1,200". If you skip the price, I’ll suggest one from similar past quotes.',
+            'Bien sûr — c’est un devis pour quoi? Dites-moi le service et pour qui. Par exemple : « Devis pour Sarah — carrelage de salle de bain, 1 200 $ ». Si vous omettez le prix, je suggérerai à partir de devis similaires.'
+          ),
+        };
+      }
+
+      // Suggest a price from similar past quotes when the user didn't name one.
+      // Conservative: median of up to 20 similar quotes, never invented.
+      let price: number | null = saidPrice;
+      let priceSource: QuoteDraft['priceSource'] = saidPrice !== null ? 'said' : 'none';
+      if (price === null && serviceTitle) {
+        const words = serviceTitle
+          .toLowerCase()
+          .split(/[^a-zàâäéèêëîïôöùûüç0-9]+/i)
+          .filter((w) => w.length > 3);
+        if (words.length > 0) {
+          const past = await prisma.quote.findMany({
+            where: {
+              businessId,
+              OR: words.map((w) => ({ title: { contains: w, mode: 'insensitive' } })),
+            },
+            select: { total: true },
+            take: 20,
+            orderBy: { createdAt: 'desc' },
+          });
+          const totals = past.map((q) => q.total).filter((t) => t > 0).sort((a, b) => a - b);
+          if (totals.length > 0) {
+            price = totals[Math.floor(totals.length / 2)];
+            priceSource = 'history';
+          }
+        }
+      }
+
+      // Customer matching — same discipline as job booking: never silent.
+      let customerExists = false;
+      let similarCustomer: string | null = null;
+      if (customerName) {
+        const candidates = await findCustomerNameCandidates(prisma, businessId, customerName);
+        customerExists = exactNameMatch(candidates, customerName) !== null;
+        if (!customerExists && candidates.length > 0) {
+          similarCustomer = candidates[0].name;
+        }
+      }
+
+      const draft: QuoteDraft = {
+        title: serviceTitle ?? 'General Service',
+        customerName,
+        price,
+        priceSource,
+        notes: null,
+      };
+
+      const L = {
+        title: pick(lang, "Here's the quote draft — please confirm?", 'Voici le brouillon de devis — confirmez-vous?'),
+        service: pick(lang, 'Service', 'Service'),
+        customer: pick(lang, 'Customer', 'Client'),
+        price: pick(lang, 'Price', 'Prix'),
+        priceSuggested: pick(
+          lang,
+          'Suggested from similar past quotes — adjust as needed.',
+          'Suggéré à partir de devis similaires — ajustez au besoin.'
+        ),
+        priceMissing: pick(
+          lang,
+          'No price set — add one in the preview.',
+          'Aucun prix défini — ajoutez-en un dans l’aperçu.'
+        ),
+        noName: pick(lang, '(no name found)', '(nom introuvable)'),
+        matchedNote: (name: string) =>
+          pick(lang, `Note: ${name} is already in your customers.`, `Note : ${name} est déjà dans vos clients.`),
+        newCustomerNote: (name: string) =>
+          pick(
+            lang,
+            `Note: "${name}" isn’t in your customers — you’ll need to add them before the quote can be created.`,
+            `Note : « ${name} » ne figure pas dans vos clients — vous devrez l’ajouter avant de créer le devis.`
+          ),
+        similarNote: (name: string) =>
+          pick(lang, `Did you mean "${name}"?`, `Vouliez-vous dire « ${name} »?`),
+        nameMissingNote: pick(
+          lang,
+          'Note: I couldn’t find the customer name — add it in the preview, it’s required.',
+          'Note : je n’ai pas trouvé le nom du client — ajoutez-le dans l’aperçu, c’est requis.'
+        ),
+        confirmNote: pick(lang, 'The quote is only created when you confirm.', 'Le devis ne sera créé qu’après votre confirmation.'),
+      };
+
+      const lines = [
+        L.title,
+        '',
+        `${L.service}: ${draft.title}`,
+        `${L.customer}: ${draft.customerName || L.noName}`,
+        `${L.price}: ${draft.price !== null ? formatMoney(draft.price, currency) : '—'}`,
+      ];
+      if (priceSource === 'history') {
+        lines.push(`(${L.priceSuggested})`);
+      } else if (priceSource === 'none') {
+        lines.push(`(${L.priceMissing})`);
+      }
+      if (draft.customerName && customerExists) {
+        lines.push('', L.matchedNote(draft.customerName));
+      } else if (draft.customerName && !customerExists) {
+        lines.push('', L.newCustomerNote(draft.customerName));
+        if (similarCustomer) lines.push(L.similarNote(similarCustomer));
+      } else if (!draft.customerName) {
+        lines.push('', L.nameMissingNote);
+      }
+      lines.push('', L.confirmNote);
+
+      return { intent, reply: lines.join('\n'), preview: draft, previewKind: 'quote' };
     }
 
     case 'create_customer': {

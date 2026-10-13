@@ -102,7 +102,7 @@ export default function ApiKeysCard({
       toast.success(tr('integrations.copied'));
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      /* clipboard unavailable — the key is selectable */
+      /* clipboard unavailable - the key is selectable */
     }
   };
 

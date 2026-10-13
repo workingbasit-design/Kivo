@@ -9,7 +9,7 @@ import { recordQuoteDeposit, type ActionResult } from '@/app/actions/quotes';
 
 /**
  * Record a deposit the owner collected outside EveryJob (Interac e-Transfer,
- * cash, cheque). Record-keeping only — no money moves through EveryJob.
+ * cash, cheque). Record-keeping only - no money moves through EveryJob.
  * maxAmount is the quote total; deposits above it are rejected server-side.
  */
 export default function RecordDepositForm({

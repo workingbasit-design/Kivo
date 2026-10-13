@@ -81,7 +81,7 @@ export default function CustomerHomeClient({
 
   return (
     <div className="space-y-6">
-      {/* Hero — clean EveryJob theme with staggered entrance */}
+      {/* Hero - clean EveryJob theme with staggered entrance */}
       <div className="ej-anim-fade-up">
         <p className="text-indigo-600 text-xs font-bold uppercase tracking-widest">
           {new Date().getHours() < 12
@@ -98,7 +98,7 @@ export default function CustomerHomeClient({
         </p>
       </div>
 
-      {/* Get it done for me — concierge entry */}
+      {/* Get it done for me - concierge entry */}
       <Link
         href="/customer/concierge"
         className="ej-anim-fade-up group flex items-center gap-4 rounded-3xl bg-zinc-900 p-5 shadow-sm transition-all hover:shadow-lg active:scale-[0.98]"

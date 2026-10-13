@@ -14,7 +14,7 @@ import CustomerHomeClient from './home-client';
 type SearchParams = { q?: string; city?: string };
 
 /**
- * Customer home — mobile-first pro search for logged-in homeowners.
+ * Customer home - mobile-first pro search for logged-in homeowners.
  * Remembers the customer's city for faster searching.
  */
 export default async function CustomerHomePage({

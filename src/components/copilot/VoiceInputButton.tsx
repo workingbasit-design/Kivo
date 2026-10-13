@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Mic button for the EveryJob AI copilot — drop it next to the chat input:
+ * Mic button for the EveryJob AI copilot - drop it next to the chat input:
  *
  *   <VoiceInputButton onTranscript={(text) => setInput((p) => p ? `${p} ${text}` : text)} />
  *
@@ -42,7 +42,7 @@ export default function VoiceInputButton({
     }
   };
 
-  // Deliver the final transcript once listening stops — one clean string.
+  // Deliver the final transcript once listening stops - one clean string.
   const deliveredRef = useRef('');
   useEffect(() => {
     if (!listening && transcript && deliveredRef.current !== transcript) {

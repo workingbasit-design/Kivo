@@ -3,14 +3,14 @@
 import React, { useState, useTransition } from 'react';
 import Link from 'next/link';
 import {
-  Calendar as CalendarIcon, Clock, MapPin, ChevronLeft, ChevronRight,
-  User as UserIcon, Plus, Trash2, Edit3, Search, ListPlus, CheckCircle2, XCircle
+  Calendar as CalendarIcon, Clock, MapPin,
+  User as UserIcon, Trash2, Edit3, Search, ListPlus, CheckCircle2, XCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { updateJobStatus, deleteJob, seedSampleJobs, updateJobSchedule } from '@/app/actions/jobs';
 import { validNextStatuses } from '@/lib/job-status';
 import { formatMoney } from '@/lib/money';
-import { toISODateLocal, formatDateLabel, hasJobTime, jobDisplayStatus, localeDateTag, cn } from '@/lib/utils';
+import { toISODateLocal, formatDateLabel, hasJobTime, formatStatusLabel, jobDisplayStatus, localeDateTag, cn } from '@/lib/utils';
 import { t, type Locale } from '@/lib/i18n';
 import {
   Card, StatusBadge, EmptyState, Field, glassClass,
@@ -21,7 +21,7 @@ type Job = {
   id: string;
   title: string;
   date: Date | string;
-  /** Server-local calendar date (YYYY-MM-DD) — the day the user booked.
+  /** Server-local calendar date (YYYY-MM-DD) - the day the user booked.
    *  All day filtering/counting uses this; never derive it from
    *  toISOString() (UTC), which shifts the day for timezones ahead of UTC. */
   dateKey: string;
@@ -42,7 +42,7 @@ type Job = {
   } | null;
 };
 
-const STATUS_TABS = ['ALL', 'SCHEDULED', 'IN PROGRESS', 'NEW', 'COMPLETED'] as const;
+const STATUS_TABS = ['ALL', 'NEW', 'SCHEDULED', 'IN PROGRESS', 'COMPLETED', 'PAID', 'CANCELLED'] as const;
 
 export default function ScheduleClient({
   initialJobs,
@@ -72,9 +72,9 @@ export default function ScheduleClient({
   const [editTime, setEditTime] = useState<string>('');
   const [editStatus, setEditStatus] = useState<string>('');
   const [isPending, startTransition] = useTransition();
-  /** Last failed status/date change — shown as a banner so rejections are never silent. */
+  /** Last failed status/date change - shown as a banner so rejections are never silent. */
   const [actionError, setActionError] = useState<string | null>(null);
-  /** Job awaiting remove-from-schedule confirmation (in-app modal — never
+  /** Job awaiting remove-from-schedule confirmation (in-app modal - never
    *  native confirm(), which automated browsers auto-dismiss). */
   const [removingJobId, setRemovingJobId] = useState<string | null>(null);
 
@@ -94,7 +94,7 @@ export default function ScheduleClient({
   // @/lib/utils (never `new Date(iso)` + toLocaleDateString, which shifts
   // the day for timezones behind UTC).
 
-  // Filter jobs logic — compare calendar-day keys, never UTC date strings.
+  // Filter jobs logic - compare calendar-day keys, never UTC date strings.
   const filteredJobs = initialJobs.filter((job) => {
     const jobDateStr = job.dateKey;
 
@@ -117,20 +117,6 @@ export default function ScheduleClient({
 
     return true;
   });
-
-  /** Shift the selected calendar day by `delta` days using local date math
-   *  (parsing 'YYYY-MM-DD' with `new Date(str)` would anchor at UTC midnight
-   *  and shift the day for timezones ahead of UTC). */
-  const shiftSelectedDay = (delta: number) => {
-    const base =
-      selectedDate === 'TODAY' || selectedDate === 'ALL' ? todayStr : selectedDate;
-    const [y, m, d] = base.split('-').map(Number);
-    setSelectedDate(toISODateLocal(new Date(y, m - 1, d + delta)));
-  };
-
-  const handleNextDay = () => shiftSelectedDay(1);
-
-  const handlePrevDay = () => shiftSelectedDay(-1);
 
   const handleStatusChange = (jobId: string, newStatus: string) => {
     setActionError(null);
@@ -192,7 +178,7 @@ export default function ScheduleClient({
     setEditDate(job.dateKey);
     // Prefill the real time when one is set. Never invent "10:00 AM" for an
     // unset time (saving would then silently set a time the user never chose),
-    // and never show the legacy "TBD" sentinel as if it were a real time —
+    // and never show the legacy "TBD" sentinel as if it were a real time -
     // the save path already turns a blank input back into NULL.
     setEditTime(hasJobTime(job.time) ? job.time : '');
     setEditStatus(job.status);
@@ -217,45 +203,13 @@ export default function ScheduleClient({
     });
   };
 
-  const selectedLabel =
-    selectedDate === 'TODAY'
-      ? T('schedToday')
-      : selectedDate === 'ALL'
-        ? `${T('schedAllDates')} (${initialJobs.length})`
-        : formatDateLabel(selectedDate, dateLocale);
-
   return (
     <div className="space-y-5">
-      {/* Date navigator */}
+      {/* Date filter - the 7-day strip above handles day navigation;
+          this is just the "show all" reset. */}
       <Card className="p-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-2 flex-wrap">
-            <div className="flex items-center bg-zinc-100 p-1 rounded-xl border border-zinc-200">
-              <button
-                onClick={handlePrevDay}
-                className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-white rounded-lg text-zinc-600 transition-colors"
-                aria-label={T('schedPrevDay')}
-              >
-                <ChevronLeft size={18} />
-              </button>
-              <button
-                onClick={() => setSelectedDate('TODAY')}
-                aria-pressed={selectedDate === 'TODAY'}
-                className={cn(
-                  'px-4 min-h-[44px] font-bold text-sm rounded-lg transition-colors',
-                  selectedDate === 'TODAY' ? 'bg-ink text-white shadow-sm' : 'text-zinc-600 hover:bg-white'
-                )}
-              >
-                {T('schedToday')}
-              </button>
-              <button
-                onClick={handleNextDay}
-                className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-white rounded-lg text-zinc-600 transition-colors"
-                aria-label={T('schedNextDay')}
-              >
-                <ChevronRight size={18} />
-              </button>
-            </div>
             <button
               onClick={() => setSelectedDate('ALL')}
               aria-pressed={selectedDate === 'ALL'}
@@ -278,9 +232,6 @@ export default function ScheduleClient({
                 <ListPlus size={14} /> {T('schedSeedJobs')}
               </button>
             )}
-            <Link href="/jobs/new" className={primaryBtnClass}>
-              <Plus size={14} /> {T('schedNewJobBtn')}
-            </Link>
           </div>
         </div>
 
@@ -310,7 +261,7 @@ export default function ScheduleClient({
                   : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50'
               )}
             >
-              {st === 'ALL' ? T('jobsTabAll') : st}
+              {st === 'ALL' ? T('jobsTabAll') : formatStatusLabel(st, locale)}
             </button>
           ))}
         </div>
@@ -331,7 +282,7 @@ export default function ScheduleClient({
         </div>
       </div>
 
-      {/* Rejection feedback — status/date changes the server refuses surface here. */}
+      {/* Rejection feedback - status/date changes the server refuses surface here. */}
       {actionError && (
         <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-2xl px-4 py-3">
           <XCircle size={14} className="mt-0.5 shrink-0" />
@@ -541,7 +492,7 @@ export default function ScheduleClient({
           {(() => {
             const target = initialJobs.find((j) => j.id === removingJobId);
             return target
-              ? `\u201c${target.title}\u201d — ${jobsL('confirmRemoveBody')}`
+              ? `\u201c${target.title}\u201d - ${jobsL('confirmRemoveBody')}`
               : jobsL('confirmRemoveBody');
           })()}
         </p>

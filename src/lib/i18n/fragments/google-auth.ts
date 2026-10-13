@@ -1,5 +1,5 @@
 /**
- * Track 7 — Google sign-in + contact number. `as const` fragment;
+ * Track 7 - Google sign-in + contact number. `as const` fragment;
  * registered in ../fragments.ts.
  */
 export default {
@@ -18,7 +18,7 @@ export default {
         'Please go back and confirm you are 18 or older before creating an account with Google.',
       welcomeTitle: 'Welcome to EveryJob',
       welcomeSubtitle:
-        'Your workspace is ready. Add a Canadian contact number so customers can reach you — you can skip this and add it later in Settings.',
+        'Your workspace is ready. Add a Canadian contact number so customers can reach you - you can skip this and add it later in Settings.',
       businessNameLabel: 'Business name',
       businessNamePlaceholder: 'e.g. Martin Roy Plumbing',
       phoneLabel: 'Contact number (Canada)',
@@ -55,7 +55,7 @@ export default {
         'Veuillez revenir en arrière et confirmer que vous avez 18 ans ou plus avant de créer un compte avec Google.',
       welcomeTitle: 'Bienvenue à EveryJob',
       welcomeSubtitle:
-        'Votre espace de travail est prêt. Ajoutez un numéro de téléphone canadien pour que vos clients puissent vous joindre — vous pouvez passer cette étape et l’ajouter plus tard dans les Réglages.',
+        'Votre espace de travail est prêt. Ajoutez un numéro de téléphone canadien pour que vos clients puissent vous joindre - vous pouvez passer cette étape et l’ajouter plus tard dans les Réglages.',
       businessNameLabel: 'Nom de l’entreprise',
       businessNamePlaceholder: 'p. ex. Plomberie Martin Roy',
       phoneLabel: 'Numéro de téléphone (Canada)',

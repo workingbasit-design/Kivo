@@ -14,7 +14,7 @@ function fill(template: string, vars: Record<string, string>): string {
 
 /**
  * "On my way" customer notification. A <details> section with a pre-written
- * message plus SMS/WhatsApp buttons — the pro taps to send from their own
+ * message plus SMS/WhatsApp buttons - the pro taps to send from their own
  * apps. EveryJob never sends anything automatically.
  *
  * The tracking link is fetched lazily (first open): reuse the existing

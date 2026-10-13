@@ -11,8 +11,8 @@ export async function generateMetadata() {
   return {
     title: en ? 'Request free quotes | EveryJob Directory' : 'Demander des devis gratuits | Répertoire EveryJob',
     description: en
-      ? 'Tell us what you need and your city — up to 5 matching local pros get your request. Free, no commission.'
-      : 'Dites-nous ce dont vous avez besoin et votre ville — jusqu’à 5 pros locaux correspondants reçoivent votre demande. Gratuit, sans commission.',
+      ? 'Tell us what you need and your city - up to 5 matching local pros get your request. Free, no commission.'
+      : 'Dites-nous ce dont vous avez besoin et votre ville - jusqu’à 5 pros locaux correspondants reçoivent votre demande. Gratuit, sans commission.',
   };
 }
 

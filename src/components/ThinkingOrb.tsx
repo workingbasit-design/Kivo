@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * ThinkingOrb — AI state indicator.
+ * ThinkingOrb - AI state indicator.
  * A breathing orb that shifts between states: thinking (lime pulse),
  * listening (expanding rings), idle (soft glow). Replaces generic spinners
  * in AI interfaces with something that feels alive.

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Check, Copy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-/** Copy-to-clipboard button. Never sends anything — just copies text. */
+/** Copy-to-clipboard button. Never sends anything - just copies text. */
 export default function CopyButton({
   text,
   label = 'Copy',

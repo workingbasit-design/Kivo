@@ -10,7 +10,7 @@ import { smsDraftLink, mailtoDraftLink } from '@/lib/reminders';
 
 /**
  * One reminder queue row: summary + "Prepare reminder" expander + one-tap
- * draft buttons. EveryJob never sends anything — the owner taps a button
+ * draft buttons. EveryJob never sends anything - the owner taps a button
  * and sends from their own WhatsApp / SMS / email app.
  */
 export interface ReminderUiStrings {

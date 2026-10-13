@@ -15,7 +15,7 @@ const PRESET_DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
 
 /**
  * Convert a modal preset ("09:00 AM - 06:00 PM", "24/7 Availability") to the
- * stored working-hours JSON. Timed presets apply Mon–Sat (Sunday closed);
+ * stored working-hours JSON. Timed presets apply Mon-Sat (Sunday closed);
  * 24/7 applies to all seven days.
  */
 function presetToWorkingHoursJson(preset: string): string {

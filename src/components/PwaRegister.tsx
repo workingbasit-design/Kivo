@@ -9,7 +9,7 @@
  * - Injects <link rel="manifest">, theme-color and apple-touch-icon tags.
  * - Shows a small sync pill when offline or when the outbox has pending items.
  *
- * NOTE: this component is intentionally not mounted anywhere yet — the app
+ * NOTE: this component is intentionally not mounted anywhere yet - the app
  * shell is being redesigned in parallel. Mount it in the root layout.
  */
 import { useEffect, useState, useSyncExternalStore } from 'react';
@@ -69,7 +69,7 @@ export default function PwaRegister() {
   useEffect(() => {
     ensureHeadTags();
 
-    // Service worker registration — silent on failure (private mode etc.).
+    // Service worker registration - silent on failure (private mode etc.).
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(() => undefined);
     }
@@ -117,7 +117,7 @@ export default function PwaRegister() {
       {showOffline && (
         <>
           <CloudOff size={14} className="text-amber-400" />
-          <span>Offline — work will sync later</span>
+          <span>Offline - work will sync later</span>
         </>
       )}
       {showSyncing && (

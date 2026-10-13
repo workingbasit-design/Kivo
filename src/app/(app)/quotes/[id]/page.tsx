@@ -124,19 +124,19 @@ export default async function QuoteDetailPage({
               <p className="text-xs text-zinc-500">
                 {[quote.customer.phone, quote.customer.address].filter(Boolean).join(' · ') || 'No contact details'}
               </p>
-              {/* wa.me chat with the customer — user taps to send from their
+              {/* wa.me chat with the customer - user taps to send from their
                   own WhatsApp; EveryJob never sends anything automatically. */}
               <div className="mt-2">
                 <WhatsAppButton
                   phone={quote.customer.phone}
                   regionCode={quote.business.regionCode}
-                  message={`Hi ${quote.customer.name}! ${quote.business.name ?? 'We'} prepared quote ${quote.number} (${quote.title}) for you — total ${formatMoney(quote.total, currency, moneyLocale)}. Just reply if you have any questions.`}
+                  message={`Hi ${quote.customer.name}! ${quote.business.name ?? 'We'} prepared quote ${quote.number} (${quote.title}) for you - total ${formatMoney(quote.total, currency, moneyLocale)}. Just reply if you have any questions.`}
                   label="WhatsApp"
                 />
                 <SmsButton
                   phone={quote.customer.phone}
                   regionCode={quote.business.regionCode}
-                  message={`Hi ${quote.customer.name}! ${quote.business.name ?? 'We'} prepared quote ${quote.number} (${quote.title}) for you — total ${formatMoney(quote.total, currency, moneyLocale)}. Just reply if you have any questions.`}
+                  message={`Hi ${quote.customer.name}! ${quote.business.name ?? 'We'} prepared quote ${quote.number} (${quote.title}) for you - total ${formatMoney(quote.total, currency, moneyLocale)}. Just reply if you have any questions.`}
                   label="SMS"
                 />
               </div>

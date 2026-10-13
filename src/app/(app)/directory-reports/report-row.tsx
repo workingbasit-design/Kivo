@@ -68,7 +68,7 @@ export default function ReportRow({ report }: { report: Report }) {
           </div>
           <p className="text-xs text-zinc-600 mt-1">
             <span className="font-semibold">{REASON_LABELS[report.reason] ?? report.reason}</span>
-            {report.details && <span> — {report.details}</span>}
+            {report.details && <span> - {report.details}</span>}
           </p>
           <p className="text-[11px] text-zinc-400 mt-1">
             {new Date(report.createdAt).toLocaleString()}

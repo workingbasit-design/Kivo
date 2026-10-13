@@ -20,7 +20,7 @@ function eligibilitySince(): Date {
 }
 
 // Review-moat: the add dialog offers only eligible jobs (completed + paid
-// invoice). Older sources are shown as "Legacy" — only Verified and Google
+// invoice). Older sources are shown as "Legacy" - only Verified and Google
 // keep their badge.
 
 export default async function ReviewsPage() {
@@ -46,7 +46,7 @@ export default async function ReviewsPage() {
   ]);
 
   const total = agg._count.id;
-  const average = total > 0 && agg._avg.rating ? agg._avg.rating.toFixed(1) : '—';
+  const average = total > 0 && agg._avg.rating ? agg._avg.rating.toFixed(1) : '-';
 
   return (
     <div className="space-y-6">

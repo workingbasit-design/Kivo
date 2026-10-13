@@ -6,7 +6,7 @@ const fragment = {
   en: {
     equipment: {
       title: 'Equipment',
-      subtitle: 'Track customer equipment — HVAC units, appliances, and more.',
+      subtitle: 'Track customer equipment - HVAC units, appliances, and more.',
       add: 'Add equipment',
       searchPlaceholder: 'Search equipment…',
       emptyTitle: 'No equipment yet',
@@ -39,7 +39,7 @@ const fragment = {
   fr: {
     equipment: {
       title: 'Équipement',
-      subtitle: 'Suivez l\u2019équipement des clients — unités CVC, appareils, et plus.',
+      subtitle: 'Suivez l\u2019équipement des clients - unités CVC, appareils, et plus.',
       add: 'Ajouter un équipement',
       searchPlaceholder: 'Rechercher un équipement…',
       emptyTitle: 'Aucun équipement',

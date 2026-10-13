@@ -199,7 +199,7 @@ export default function PaymentsSettingsClient({
                             <Receipt size={12} /> {t(locale, 'payments.receiptLink')}
                           </a>
                         ) : (
-                          <span className="text-zinc-300">—</span>
+                          <span className="text-zinc-300">-</span>
                         )}
                       </td>
                     </tr>
@@ -247,7 +247,7 @@ export default function PaymentsSettingsClient({
                             <Receipt size={12} /> {t(locale, 'payments.receiptLink')}
                           </a>
                         ) : (
-                          <span className="text-zinc-300">—</span>
+                          <span className="text-zinc-300">-</span>
                         )}
                       </td>
                     </tr>

@@ -12,6 +12,7 @@ import type { TradeKey } from '../certifications';
 export type CopilotIntent =
   | 'create_job'
   | 'create_customer'
+  | 'draft_quote'
   | 'ask_schedule'
   | 'find_customer'
   | 'ask_customers'
@@ -44,12 +45,25 @@ export interface CustomerDraft {
   address: string | null;
 }
 
+/**
+ * Draft for a new quote — always previewed, never silent. `priceSource`
+ * tells the UI whether the price came from the user's message ('said'),
+ * was suggested from similar past quotes ('history'), or is unset ('none').
+ */
+export interface QuoteDraft {
+  title: string;
+  customerName: string;
+  price: number | null;
+  priceSource: 'said' | 'history' | 'none';
+  notes: string | null;
+}
+
 export interface CopilotResult {
   intent: CopilotIntent;
   reply: string;
-  preview?: JobDraft | CustomerDraft;
+  preview?: JobDraft | CustomerDraft | QuoteDraft;
   /** Which kind of record the preview would create. */
-  previewKind?: 'job' | 'customer';
+  previewKind?: 'job' | 'customer' | 'quote';
   data?: Record<string, unknown>;
 }
 
@@ -899,18 +913,17 @@ export function detectIntent(raw: string, followUpName: string | null = null): C
     return 'create_customer';
   }
 
-  // 0b. Invoice/quote creation — the copilot cannot create invoices or
-  // quotes, so "create an invoice for $500" must NOT become a job preview
-  // with invented service "An Invoice For $500" (2026-09-30 QA). Guide to
-  // the right page instead.
-  if (
-    hasAny(text, [' invoice ', ' invoices ', ' facture ', ' factures ']) &&
-    hasAny(text, [' create ', ' make ', ' new ', ' creer ', ' cree ', ' nouveau ', ' nouvelle '])
-  ) {
-    return 'out_of_scope';
-  }
+  // 0b. Quote drafting — "draft/make/prepare a quote for X" produces a
+  // previewed quote draft (with price suggested from history when the user
+  // doesn't name one). Plain "create an invoice" stays out of scope.
   if (
     hasAny(text, [' quote ', ' quotes ', ' devis ', ' soumission ', ' soumissions ']) &&
+    hasAny(text, [' draft ', ' prepare ', ' make ', ' create ', ' new ', ' redige ', ' rediger ', ' preparer ', ' prepare ', ' creer ', ' cree ', ' nouveau ', ' nouvelle '])
+  ) {
+    return 'draft_quote';
+  }
+  if (
+    hasAny(text, [' invoice ', ' invoices ', ' facture ', ' factures ']) &&
     hasAny(text, [' create ', ' make ', ' new ', ' creer ', ' cree ', ' nouveau ', ' nouvelle '])
   ) {
     return 'out_of_scope';

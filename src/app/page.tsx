@@ -33,9 +33,9 @@ import {
 } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'EveryJob — Every job. One place.',
+  title: 'EveryJob - Every job. One place.',
   description:
-    'EveryJob is free field-service software for Canadian home-service businesses: jobs, schedule, customers, quotes, invoices, payment records and a bilingual English–French AI assistant — all in one place. No credit card required.',
+    'EveryJob is free field-service software for Canadian home-service businesses: jobs, schedule, customers, quotes, invoices, payment records and a bilingual English-French AI assistant - all in one place. No credit card required.',
 };
 
 const APPLE_FONT =
@@ -80,7 +80,7 @@ export default async function LandingPage() {
     h('trades.applianceRepair'),
   ];
 
-  /** The 12 modules — icon + name grid, Apple-style hairline dividers. */
+  /** The 12 modules - icon + name grid, Apple-style hairline dividers. */
   const FEATURE_GRID = [
     { icon: Bot, key: 'copilot' },
     { icon: CalendarClock, key: 'schedule' },
@@ -96,7 +96,7 @@ export default async function LandingPage() {
     { icon: UserCog, key: 'team' },
   ];
 
-  /** Honest stats only — every number here is verifiably true. */
+  /** Honest stats only - every number here is verifiably true. */
   const STATS = [
     { key: 'cost', value: h('stats.costValue') },
     { key: 'modules', value: h('stats.modulesValue') },
@@ -104,7 +104,7 @@ export default async function LandingPage() {
     { key: 'langs', value: h('stats.langsValue') },
   ];
 
-  /** Local where it matters — built for Canada, province by province. */
+  /** Local where it matters - built for Canada, province by province. */
   const CANADA_POINTS = [
     h('canada.point1'),
     h('canada.point2'),
@@ -164,7 +164,7 @@ export default async function LandingPage() {
       </header>
 
       <main>
-        {/* Hero — editorial scattered-work headline, staggered entrance */}
+        {/* Hero - editorial scattered-work headline, staggered entrance */}
         <section className="relative overflow-hidden">
           <HeroBackdrop />
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-12 md:pt-28 md:pb-16 text-center">
@@ -216,7 +216,7 @@ export default async function LandingPage() {
             </p>
           </div>
 
-          {/* Scattered-context visual — wavy timeline + floating work chips converging to EveryJob */}
+          {/* Scattered-context visual - wavy timeline + floating work chips converging to EveryJob */}
           <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 md:pb-28">
             <HeroVisual
               strings={{
@@ -236,7 +236,7 @@ export default async function LandingPage() {
           <TradesMarquee trades={TRADES} label={h('trades.label')} />
         </section>
 
-        {/* Feature grid — hairline dividers, Apple style */}
+        {/* Feature grid - hairline dividers, Apple style */}
         <section id="features" className="py-16 md:py-28 scroll-mt-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <Reveal className="text-center max-w-2xl mx-auto mb-12">
@@ -269,7 +269,7 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* AI Copilot — dark premium section with aurora glow */}
+        {/* AI Copilot - dark premium section with aurora glow */}
         <SectionWave fillClass="text-zinc-950" label="Wave divider into the AI copilot section" />
         <section id="copilot" className="relative py-16 md:py-28 bg-zinc-950 text-white scroll-mt-16 overflow-hidden">
           <div aria-hidden className="pointer-events-none absolute inset-0">
@@ -288,7 +288,7 @@ export default async function LandingPage() {
           </div>
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-              {/* Chat mock — messages stagger in on scroll */}
+              {/* Chat mock - messages stagger in on scroll */}
               <div className="order-2 lg:order-1">
                 <Reveal>
                   <CopilotDemo
@@ -349,7 +349,7 @@ export default async function LandingPage() {
           <SectionWave fillClass="text-paper" flip label="Wave divider out of the AI copilot section" />
         </div>
 
-        {/* Honest stats — Apple rhythm, true numbers only */}
+        {/* Honest stats - Apple rhythm, true numbers only */}
         <section className="py-16 md:py-28">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <Reveal className="text-center mb-14">
@@ -418,7 +418,7 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* Local where it matters — built for Canada */}
+        {/* Local where it matters - built for Canada */}
         <section id="regions" className="py-16 md:py-28 scroll-mt-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <Reveal className="text-center max-w-2xl mx-auto mb-14">

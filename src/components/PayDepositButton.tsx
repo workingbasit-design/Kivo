@@ -8,7 +8,7 @@ import { formatMoney } from '@/lib/money';
 /**
  * Public "Pay deposit" button on the quote portal. Creates a Stripe Checkout
  * Session (via /api/pay/quote-deposit) and redirects to Stripe's hosted
- * page — card data never touches our servers.
+ * page - card data never touches our servers.
  */
 export default function PayDepositButton({
   token,

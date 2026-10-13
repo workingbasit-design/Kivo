@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import type { LucideIcon } from 'lucide-react';
 
 /**
- * MorphIcon — one icon fluidly morphs into another on state change.
+ * MorphIcon - one icon fluidly morphs into another on state change.
  * Cross-fade + scale + slight rotation with spring physics (~0.22s feel).
  * For toggles: save/bookmark, expand/collapse, play/pause, etc.
  */

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 /**
- * AnimatedNumber — odometer-style rolling number.
+ * AnimatedNumber - odometer-style rolling number.
  * Animates from the previous value to the new value with an ease-out curve.
  * Respects prefers-reduced-motion (jumps to final value).
  */
@@ -27,7 +27,7 @@ export default function AnimatedNumber({
   duration?: number;
   className?: string;
 }) {
-  // Guard against undefined/null/NaN from server stats — render fallback.
+  // Guard against undefined/null/NaN from server stats - render fallback.
   const safeValue = typeof value === 'number' && Number.isFinite(value) ? value : 0;
   const [display, setDisplay] = useState(safeValue);
   const prevRef = useRef(safeValue);

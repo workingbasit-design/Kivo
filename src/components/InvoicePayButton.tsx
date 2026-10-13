@@ -11,10 +11,10 @@ import CopyButton from '@/components/CopyButton';
  * Owner-side "Collect payment" on the invoice detail view. Creates a Stripe
  * Checkout payment link (via /api/stripe/invoice-checkout) that the owner
  * sends to the customer by text/email. The customer pays on Stripe's hosted
- * page — money settles straight to the business's connected account.
+ * page - money settles straight to the business's connected account.
  *
  * When Stripe isn't connected the button is replaced by a graceful hint
- * pointing at Settings → Payments — never a crash, never a dead button.
+ * pointing at Settings → Payments - never a crash, never a dead button.
  */
 export default function InvoicePayButton({
   invoiceId,

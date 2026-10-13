@@ -2,7 +2,7 @@
 
 import { useT } from '@/components/LanguageToggle';
 
-/** Google "G" mark (multi-colour), drawn inline — no external assets. */
+/** Google "G" mark (multi-colour), drawn inline - no external assets. */
 export function GoogleG({ size = 18 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">

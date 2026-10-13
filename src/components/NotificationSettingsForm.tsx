@@ -14,7 +14,7 @@ import { saveNotificationSettingsAction } from '@/app/actions/notifications';
 
 /**
  * Per-type notification toggles for /settings. Plain-language labels, all on
- * by default. Unchecked boxes submit nothing — the server action reads every
+ * by default. Unchecked boxes submit nothing - the server action reads every
  * known type explicitly (missing = off), so the form can never half-save.
  */
 export default function NotificationSettingsForm({

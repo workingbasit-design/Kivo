@@ -9,7 +9,7 @@ const fragment = {
     billing: {
       batchTitle: 'Batch invoicing',
       batchSubtitle:
-        'Every completed job without an invoice is listed here. Tick the ones you want to bill — one invoice per job, nothing is created until you confirm.',
+        'Every completed job without an invoice is listed here. Tick the ones you want to bill - one invoice per job, nothing is created until you confirm.',
       colCustomer: 'Customer',
       colJob: 'Job',
       colDate: 'Date',
@@ -34,7 +34,7 @@ const fragment = {
         tooMany: 'Too many requests. Please wait a moment and try again.',
         nothingSelected: 'Select at least one job to invoice.',
         someInvalid:
-          'Some jobs are no longer eligible (already invoiced or not completed). Nothing was created — refresh and try again.',
+          'Some jobs are no longer eligible (already invoiced or not completed). Nothing was created - refresh and try again.',
         jobNotFound: 'Job not found.',
         jobCancelled: 'Cancelled jobs can\'t be invoiced.',
         labelRequired: 'Milestone label is required.',
@@ -46,11 +46,11 @@ const fragment = {
       },
       progressTitle: 'Progress invoicing',
       progressDesc:
-        'Bill this job in parts — a deposit, a milestone, or a final payment. Each milestone becomes its own invoice linked to this job.',
+        'Bill this job in parts - a deposit, a milestone, or a final payment. Each milestone becomes its own invoice linked to this job.',
       existingInvoices: 'Progress invoices',
       noProgressInvoices: 'No progress invoices yet.',
       labelLabel: 'Milestone label',
-      labelPlaceholder: 'e.g. Deposit, Milestone 2 — rough-in, Final',
+      labelPlaceholder: 'e.g. Deposit, Milestone 2 - rough-in, Final',
       amountLabel: 'Amount ($)',
       amountPlaceholder: '0.00',
       descriptionLabel: 'Description (optional)',
@@ -62,7 +62,7 @@ const fragment = {
       listSubtitle: 'Every payment, accounted for.',
       newInvoice: 'New invoice',
       newInvoiceSubtitle:
-        'Tax is computed on the server — what you see is what gets billed. Default: {taxLabel}.',
+        'Tax is computed on the server - what you see is what gets billed. Default: {taxLabel}.',
       statOutstanding: 'Outstanding',
       statYetToCollect: 'yet to be collected',
       statCollected: 'Collected',
@@ -70,7 +70,7 @@ const fragment = {
       filterLabel: 'Invoice status filter',
       listEmptyTitle: 'No invoices yet',
       listEmptyDesc:
-        'Raise a tax-ready invoice in under a minute — tax math handled for you.',
+        'Raise a tax-ready invoice in under a minute - tax math handled for you.',
       dueSuffix: '{amount} due',
     },
   },
@@ -78,7 +78,7 @@ const fragment = {
     billing: {
       batchTitle: 'Facturation par lot',
       batchSubtitle:
-        'Tous les travaux terminés sans facture sont listés ici. Cochez ceux à facturer — une facture par travail, rien n’est créé avant votre confirmation.',
+        'Tous les travaux terminés sans facture sont listés ici. Cochez ceux à facturer - une facture par travail, rien n’est créé avant votre confirmation.',
       colCustomer: 'Client',
       colJob: 'Travail',
       colDate: 'Date',
@@ -103,7 +103,7 @@ const fragment = {
         tooMany: 'Trop de requêtes. Patientez un moment et réessayez.',
         nothingSelected: 'Sélectionnez au moins un travail à facturer.',
         someInvalid:
-          'Certains travaux ne sont plus admissibles (déjà facturés ou non terminés). Rien n’a été créé — actualisez et réessayez.',
+          'Certains travaux ne sont plus admissibles (déjà facturés ou non terminés). Rien n’a été créé - actualisez et réessayez.',
         jobNotFound: 'Travail introuvable.',
         jobCancelled: 'Les travaux annulés ne peuvent pas être facturés.',
         labelRequired: 'Le libellé de l’étape est requis.',
@@ -115,11 +115,11 @@ const fragment = {
       },
       progressTitle: 'Facturation par étapes',
       progressDesc:
-        'Facturez ce travail en plusieurs parties — un acompte, une étape ou un paiement final. Chaque étape devient sa propre facture liée à ce travail.',
+        'Facturez ce travail en plusieurs parties - un acompte, une étape ou un paiement final. Chaque étape devient sa propre facture liée à ce travail.',
       existingInvoices: 'Factures d’étapes',
       noProgressInvoices: 'Aucune facture d’étape pour le moment.',
       labelLabel: 'Libellé de l’étape',
-      labelPlaceholder: 'p. ex. Acompte, Étape 2 — dégrossissage, Final',
+      labelPlaceholder: 'p. ex. Acompte, Étape 2 - dégrossissage, Final',
       amountLabel: 'Montant ($)',
       amountPlaceholder: '0,00',
       descriptionLabel: 'Description (facultatif)',
@@ -131,7 +131,7 @@ const fragment = {
       listSubtitle: 'Chaque paiement, comptabilisé.',
       newInvoice: 'Nouvelle facture',
       newInvoiceSubtitle:
-        'La taxe est calculée sur le serveur — ce que vous voyez est ce qui sera facturé. Par défaut : {taxLabel}.',
+        'La taxe est calculée sur le serveur - ce que vous voyez est ce qui sera facturé. Par défaut : {taxLabel}.',
       statOutstanding: 'Impayé',
       statYetToCollect: 'à encaisser',
       statCollected: 'Encaissé',
@@ -139,7 +139,7 @@ const fragment = {
       filterLabel: 'Filtrer par statut',
       listEmptyTitle: 'Aucune facture pour le moment',
       listEmptyDesc:
-        'Créez une facture prête pour les taxes en moins d’une minute — le calcul des taxes est pris en charge.',
+        'Créez une facture prête pour les taxes en moins d’une minute - le calcul des taxes est pris en charge.',
       dueSuffix: '{amount} dû',
     },
   },

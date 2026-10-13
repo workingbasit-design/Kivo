@@ -32,7 +32,7 @@ export function isAnimatedIconName(v: string): v is AnimatedIconName {
 
 /**
  * Dependency-free animated icon (MIT-licensed Lottie assets, rendered via
- * lottie-lite — no lottie-react / lottie-web, $0).
+ * lottie-lite - no lottie-react / lottie-web, $0).
  *
  * Plays once on mount, replays on hover/focus. Respects
  * prefers-reduced-motion by rendering the final frame statically.

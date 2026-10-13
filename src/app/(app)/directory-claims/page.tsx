@@ -13,9 +13,9 @@ export const dynamic = 'force-dynamic';
 
 /**
  * Directory claim verification queue. Every business that requests a public
- * listing waits here until an admin explicitly approves or rejects it —
+ * listing waits here until an admin explicitly approves or rejects it -
  * nothing goes live automatically. Super-admin only (KIVO_ADMIN_EMAILS).
- * Not linked in the nav — reach it directly at /directory-claims.
+ * Not linked in the nav - reach it directly at /directory-claims.
  */
 export default async function DirectoryClaimsPage() {
   const session = await getSession();

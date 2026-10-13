@@ -43,7 +43,7 @@ export function LanguageToggle({ current, tone = 'light' }: { current: Locale; t
     persistLocaleCookie(code);
     // Full reload (not router.refresh()): the sidebar/mobile nav labels are
     // rendered server-side from this cookie, and router.refresh() did not
-    // reliably re-render them — labels stayed in the old language until a
+    // reliably re-render them - labels stayed in the old language until a
     // manual reload. A settings-page language switch may reload the page.
     window.location.reload();
   };
@@ -81,7 +81,7 @@ export function LanguageToggle({ current, tone = 'light' }: { current: Locale; t
   );
 }
 
-/** Show a translated dictionary section, e.g. <T path="nav" /> is not needed — use useT(). */
+/** Show a translated dictionary section, e.g. <T path="nav" /> is not needed - use useT(). */
 export function useDict() {
   const locale = useLocale();
   return getDictionary(locale);

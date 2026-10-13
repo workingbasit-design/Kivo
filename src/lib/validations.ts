@@ -139,7 +139,7 @@ export const registerSchema = z.object({
   email: z.string().trim().toLowerCase().email("Enter a valid email").max(255),
   password: z
     .string()
-    .min(8, "Password must be at least 8 characters")
+    .min(15, "Password must be at least 15 characters")
     .max(128)
     .regex(/[A-Za-z]/, "Password must contain a letter")
     .regex(/\d/, "Password must contain a number"),

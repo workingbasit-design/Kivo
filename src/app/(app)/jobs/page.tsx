@@ -4,7 +4,7 @@ import { Plus, Briefcase, Search } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card, StatusBadge, EmptyState, limeBtnClass, inputClass } from '@/components/ui';
-import { formatDateShort, hasJobTime, cn, jobDisplayStatus } from '@/lib/utils';
+import { formatDateShort, hasJobTime, formatJobTime, formatStatusLabel, cn, jobDisplayStatus } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import { JOB_STATUSES } from '@/lib/validations';
 import { getLocale } from '@/lib/i18n/server';
@@ -138,12 +138,12 @@ export default async function JobsPage({
                 : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50'
             )}
           >
-            {s === 'ALL' ? T('jobsTabAll') : s}
+            {s === 'ALL' ? T('jobsTabAll') : formatStatusLabel(s, locale)}
           </Link>
         ))}
       </div>
 
-      {/* Job list — cards on mobile, compact rows on desktop */}
+      {/* Job list - cards on mobile, compact rows on desktop */}
       {filtered.length === 0 ? (
         <Card>
           <EmptyState
@@ -176,7 +176,7 @@ export default async function JobsPage({
                 </div>
                 <p className="text-xs text-zinc-500 mt-1 truncate">
                   {job.customer.name}
-                  {hasJobTime(job.time) ? ` · ${job.time}` : ''} · {formatDateShort(job.date)}
+                  {hasJobTime(job.time) ? ` · ${formatJobTime(job.time, locale)}` : ''} · {formatDateShort(job.date)}
                   {job.address ? ` · ${job.address}` : ''}
                 </p>
               </div>

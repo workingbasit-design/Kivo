@@ -177,11 +177,26 @@ export async function deleteCustomer(
 
   const existing = await prisma.customer.findFirst({
     where: { id, businessId },
-    select: { id: true },
+    select: {
+      id: true,
+      jobs: { select: { id: true }, take: 1 },
+      invoices: { select: { id: true }, take: 1 },
+      quotes: { select: { id: true }, take: 1 },
+    },
   });
   if (!existing) return { error: 'Customer not found.' };
 
-  // Related jobs, invoices, quotes cascade; reviews are set null.
+  // CRA requires businesses to keep records for 6 years. Never cascade-delete
+  // a customer with jobs, invoices, or quotes — that would destroy records
+  // the business is legally required to keep.
+  if (existing.jobs.length > 0 || existing.invoices.length > 0 || existing.quotes.length > 0) {
+    return {
+      error:
+        'Cannot delete this customer: they have jobs, invoices, or quotes on file. ' +
+        'Tax records must be kept for 6 years. Remove their contact details instead, or contact support.',
+    };
+  }
+
   await prisma.customer.delete({ where: { id, businessId } });
 
   revalidatePath('/customers');

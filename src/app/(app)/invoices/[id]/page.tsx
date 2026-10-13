@@ -65,7 +65,7 @@ export default async function InvoiceDetailPage({
 
   const paid = Math.round(invoice.payments.reduce((s, p) => s + p.amount, 0) * 100) / 100;
   const remaining = Math.round((invoice.total - paid) * 100) / 100;
-  // Usual 30-day payment terms — the Invoice model stores no contractual
+  // Usual 30-day payment terms - the Invoice model stores no contractual
   // due date, so this is a follow-up hint, not a legal state.
   const overdue =
     remaining > 0 &&
@@ -73,7 +73,7 @@ export default async function InvoiceDetailPage({
     new Date(invoice.date).getTime() < overdueThresholdMs();
   const userNotes = displayNotes(invoice.notes, invoice.lineItems.length > 0);
   const currency = 'CAD';
-  // Online card collection: mirror the customer portal logic — charges must
+  // Online card collection: mirror the customer portal logic - charges must
   // be enabled, and live accounts need the owner's explicit live confirmation
   // (the /api/stripe/invoice-checkout endpoint enforces this server-side too).
   const stripeConn = invoice.business.stripeConnection;
@@ -110,7 +110,7 @@ export default async function InvoiceDetailPage({
           <ArrowLeft size={14} /> {L('invoices.backToInvoices')}
         </Link>
         <div className="flex items-center gap-2 print:hidden">
-          {/* wa.me chat with the customer — user taps to send from their own
+          {/* wa.me chat with the customer - user taps to send from their own
               WhatsApp; EveryJob never sends anything automatically. */}
           <WhatsAppButton
             phone={invoice.customer.phone}
@@ -144,7 +144,7 @@ export default async function InvoiceDetailPage({
           <span className="mt-0.5 text-rose-500 shrink-0" aria-hidden><AlertTriangle size={18} /></span>
           <div>
             <p className="text-sm font-bold text-rose-700">
-              {t(locale, 't10money.overdue')} — {formatMoney(remaining, currency, moneyLocale)} {L('invoices.balanceDue').toLowerCase()}
+              {t(locale, 't10money.overdue')} - {formatMoney(remaining, currency, moneyLocale)} {L('invoices.balanceDue').toLowerCase()}
             </p>
             <p className="text-xs text-rose-600 mt-0.5">{t(locale, 't10money.overdueNote')}</p>
           </div>

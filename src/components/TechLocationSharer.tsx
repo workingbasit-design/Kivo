@@ -58,7 +58,7 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
   const jobIdRef = useRef(jobId);
   const stateRef = useRef(state);
 
-  // Keep the "latest value" mirrors in an effect — never during render.
+  // Keep the "latest value" mirrors in an effect - never during render.
   // (Async geolocation/fetch callbacks read these.)
   useEffect(() => {
     localeRef.current = locale;
@@ -113,7 +113,7 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
           }),
         });
         if (res.status === 403) {
-          // Job closed or not ours — stop, never keep pinging silently.
+          // Job closed or not ours - stop, never keep pinging silently.
           stopSharing(t(localeRef.current, 'gps.jobInactive'));
           return;
         }
@@ -149,7 +149,7 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
   /**
    * Keep the screen awake while sharing: iOS Safari throttles timers and
    * geolocation once the screen locks, which is the #1 cause of "map stopped
-   * updating". Best-effort — silently ignored where unsupported.
+   * updating". Best-effort - silently ignored where unsupported.
    */
   const requestWakeLock = useCallback(async () => {
     try {
@@ -159,7 +159,7 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
       if (!nav.wakeLock) return;
       wakeLockRef.current = await nav.wakeLock.request('screen');
     } catch {
-      /* unsupported or denied — sharing still works while the screen is on */
+      /* unsupported or denied - sharing still works while the screen is on */
     }
   }, []);
 
@@ -328,7 +328,7 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
       await navigator.clipboard.writeText(linkUrl);
       say('info', tr('gps.copied'));
     } catch {
-      // Clipboard unavailable — the link is still visible to copy manually.
+      // Clipboard unavailable - the link is still visible to copy manually.
     }
   }, [linkUrl, say, tr]);
 
@@ -394,7 +394,7 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
             >
               {jobs.map((j) => (
                 <option key={j.id} value={j.id}>
-                  {j.title} — {j.customerName}
+                  {j.title} - {j.customerName}
                 </option>
               ))}
             </select>

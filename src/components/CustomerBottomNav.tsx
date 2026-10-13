@@ -15,7 +15,7 @@ const tabs = [
 ];
 
 /**
- * Customer bottom tab bar — thumb-friendly mobile navigation for homeowners.
+ * Customer bottom tab bar - thumb-friendly mobile navigation for homeowners.
  * 5 tabs: Search, Requests, Saved, Messages, Profile.
  */
 export default function CustomerBottomNav({ locale }: { locale: Locale }) {

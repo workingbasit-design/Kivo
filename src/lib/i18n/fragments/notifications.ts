@@ -1,7 +1,7 @@
 import type { Dictionary } from '../en';
 
 /**
- * Notification-center strings (Track 3). In-app only — nothing here sends
+ * Notification-center strings (Track 3). In-app only - nothing here sends
  * external messages. Every key exists in both en and fr.
  */
 const fragment = {
@@ -9,7 +9,7 @@ const fragment = {
     notifications: {
       title: 'Notifications',
       subtitle: 'Updates generated from your jobs, invoices, quotes and payments.',
-      empty: 'You’re all caught up — nothing needs your attention right now.',
+      empty: 'You’re all caught up - nothing needs your attention right now.',
       emptyHint: 'When a job is coming up, an invoice goes overdue or a payment is recorded, it will show up here.',
       markAllRead: 'Mark all as read',
       markRead: 'Mark as read',
@@ -48,7 +48,7 @@ const fragment = {
       t_payment_recorded: 'Payment recorded: {amount}',
       b_payment_recorded: 'Invoice {number} · {customer}',
       t_messaging_quota: 'Messaging free quota exhausted ({month})',
-      b_messaging_quota: 'WhatsApp {whatsappUsed}/{whatsappLimit} · Email {emailUsed}/{emailLimit} — sends paused until reset',
+      b_messaging_quota: 'WhatsApp {whatsappUsed}/{whatsappLimit} · Email {emailUsed}/{emailLimit} - sends paused until reset',
       noTime: 'time not set',
     },
   } as Dictionary,
@@ -56,7 +56,7 @@ const fragment = {
     notifications: {
       title: 'Notifications',
       subtitle: 'Mises à jour générées à partir de vos travaux, factures, soumissions et paiements.',
-      empty: 'Vous êtes à jour — rien ne requiert votre attention pour le moment.',
+      empty: 'Vous êtes à jour - rien ne requiert votre attention pour le moment.',
       emptyHint: 'Quand un travail approche, qu’une facture devient en retard ou qu’un paiement est enregistré, il apparaîtra ici.',
       markAllRead: 'Tout marquer comme lu',
       markRead: 'Marquer comme lu',
@@ -94,7 +94,7 @@ const fragment = {
       t_payment_recorded: 'Paiement enregistré : {amount}',
       b_payment_recorded: 'Facture {number} · {customer}',
       t_messaging_quota: 'Quota gratuit de messagerie épuisé ({month})',
-      b_messaging_quota: 'WhatsApp {whatsappUsed}/{whatsappLimit} · Courriel {emailUsed}/{emailLimit} — envois en pause jusqu’au renouvellement',
+      b_messaging_quota: 'WhatsApp {whatsappUsed}/{whatsappLimit} · Courriel {emailUsed}/{emailLimit} - envois en pause jusqu’au renouvellement',
       noTime: 'heure non définie',
     },
   } as Dictionary,

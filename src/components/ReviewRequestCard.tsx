@@ -16,10 +16,10 @@ function fill(template: string, vars: Record<string, string>): string {
 
 /**
  * Post-job review request card (COMPLETED jobs only). Creates the
- * server-moated single-use review link via createReviewRequest — the moat
+ * server-moated single-use review link via createReviewRequest - the moat
  * (completed job + paid invoice) is enforced server-side and never bypassed
  * here; its error is shown as-is. The pro then sends the link to the
- * customer themselves via SMS/WhatsApp — EveryJob never sends anything
+ * customer themselves via SMS/WhatsApp - EveryJob never sends anything
  * automatically.
  */
 export default function ReviewRequestCard({
@@ -68,7 +68,7 @@ export default function ReviewRequestCard({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Clipboard unavailable — the link stays visible for manual copy.
+      // Clipboard unavailable - the link stays visible for manual copy.
     }
   }
 

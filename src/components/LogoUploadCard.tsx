@@ -9,7 +9,7 @@ import { uploadBusinessLogo, removeBusinessLogo } from '@/app/actions/settings';
 
 /**
  * Business logo upload card for Settings. The onboarding checklist points
- * here ("Upload your logo in Settings") — this is the UI that makes that
+ * here ("Upload your logo in Settings") - this is the UI that makes that
  * step actually work.
  */
 export default function LogoUploadCard({

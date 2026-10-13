@@ -57,7 +57,7 @@ export function AttentionRow({
 
 /**
  * Dashboard briefing: the top-5 attention items ("here are the 5 things").
- * Async server component — fetches tenant-scoped data, never breaks the
+ * Async server component - fetches tenant-scoped data, never breaks the
  * dashboard when the DB is having a moment.
  */
 export default async function AttentionBriefing({

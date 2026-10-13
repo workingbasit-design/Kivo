@@ -5,14 +5,14 @@ const fragment = {
   en: {
     expenses: {
       title: 'Expenses',
-      subtitle: 'Track what the business spends — materials, travel, everything else.',
+      subtitle: 'Track what the business spends - materials, travel, everything else.',
       new: 'New expense',
       newTitle: 'New expense',
       newSubtitle: 'Record a business expense. Link it to a job and it counts toward job costing.',
       editTitle: 'Edit expense',
       back: 'Back to expenses',
       empty: 'No expenses yet.',
-      emptyHint: 'Record your first expense — materials, fuel, tools, anything the business spends.',
+      emptyHint: 'Record your first expense - materials, fuel, tools, anything the business spends.',
       description: 'Description',
       descriptionPlaceholder: 'e.g. Copper pipe, fuel, drill bits',
       amount: 'Amount (CAD)',
@@ -63,14 +63,14 @@ const fragment = {
   fr: {
     expenses: {
       title: 'Dépenses',
-      subtitle: 'Suivez les dépenses de l’entreprise — matériaux, déplacements, tout le reste.',
+      subtitle: 'Suivez les dépenses de l’entreprise - matériaux, déplacements, tout le reste.',
       new: 'Nouvelle dépense',
       newTitle: 'Nouvelle dépense',
       newSubtitle: 'Enregistrez une dépense. Liez-la à un travail et elle comptera dans le coût du travail.',
       editTitle: 'Modifier la dépense',
       back: 'Retour aux dépenses',
       empty: 'Aucune dépense pour l’instant.',
-      emptyHint: 'Enregistrez votre première dépense — matériaux, carburant, outils, tout ce que l’entreprise dépense.',
+      emptyHint: 'Enregistrez votre première dépense - matériaux, carburant, outils, tout ce que l’entreprise dépense.',
       description: 'Description',
       descriptionPlaceholder: 'p. ex. Tuyau de cuivre, carburant, mèches',
       amount: 'Montant (CAD)',

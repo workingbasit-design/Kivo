@@ -28,7 +28,7 @@ const OVERDUE_MS = 30 * 24 * 60 * 60 * 1000;
 
 /**
  * Invoice list with instant client-side tab filtering. The server sends all
- * invoices once; switching tabs filters in memory — no navigation, no
+ * invoices once; switching tabs filters in memory - no navigation, no
  * server roundtrip, no lag.
  */
 export default function InvoicesClient({
@@ -166,7 +166,7 @@ export default function InvoicesClient({
             {filtered.map((inv) => {
               const paid = inv.payments.reduce((s, p) => s + p.amount, 0);
               const due = Math.round((inv.total - paid) * 100) / 100;
-              // Usual 30-day payment terms — the Invoice model stores no
+              // Usual 30-day payment terms - the Invoice model stores no
               // contractual due date, so this is a follow-up hint, not a legal state.
               const overdue =
                 due > 0 &&

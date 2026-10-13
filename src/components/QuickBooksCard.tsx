@@ -279,7 +279,7 @@ export default function QuickBooksCard({
                   <StatusIcon status={i.status} />
                   <span>
                     <span className="font-semibold text-zinc-800">{i.label}</span>
-                    <span className="text-zinc-500"> — {i.detail}</span>
+                    <span className="text-zinc-500"> - {i.detail}</span>
                   </span>
                 </li>
               ))}

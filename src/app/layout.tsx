@@ -16,9 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 const SITE_URL = "https://kivo-nine-silk.vercel.app";
-const SITE_TITLE = "EveryJob — Every job. One place.";
+const SITE_TITLE = "EveryJob - Every job. One place.";
 const SITE_DESCRIPTION =
-  "EveryJob is free field-service software for Canadian home-service businesses: jobs, schedule, customers, quotes, invoices, payment records and a bilingual English–French AI assistant — all in one place. No credit card required.";
+  "EveryJob is free field-service software for Canadian home-service businesses: jobs, schedule, customers, quotes, invoices, payment records and a bilingual English-French AI assistant - all in one place. No credit card required.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
         url: `${SITE_URL}/og/og-home.png`,
         width: 1200,
         height: 630,
-        alt: "EveryJob — Every job. One place.",
+        alt: "EveryJob - Every job. One place.",
       },
     ],
   },

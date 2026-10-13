@@ -5,7 +5,7 @@ import TryAgainButton from './try-again-button';
 
 export const metadata = {
   title: 'You are offline | EveryJob',
-  description: 'EveryJob works offline — reconnect to sync your work.',
+  description: 'EveryJob works offline - reconnect to sync your work.',
 };
 
 /**
@@ -25,7 +25,7 @@ export default function OfflinePage() {
           </div>
           <h1 className="text-xl font-bold text-zinc-900 tracking-tight">You&apos;re offline</h1>
           <p className="text-sm text-zinc-500 mt-2 leading-relaxed">
-            No connection right now. Anything you queued — new jobs, quotes —
+            No connection right now. Anything you queued - new jobs, quotes -
             will sync automatically the moment you&apos;re back online.
           </p>
           <TryAgainButton />
@@ -35,7 +35,7 @@ export default function OfflinePage() {
             </Link>
           </div>
         </div>
-        <p className="text-[11px] text-zinc-400 mt-4">EveryJob works in low-signal areas — your work is safe.</p>
+        <p className="text-[11px] text-zinc-400 mt-4">EveryJob works in low-signal areas - your work is safe.</p>
       </div>
     </div>
   );

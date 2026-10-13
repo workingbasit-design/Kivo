@@ -15,7 +15,7 @@ import MissedCallCard from '@/components/reminders/MissedCallCard';
  * Reminder queue: one-tap draft queue for upcoming jobs + invoice
  * follow-ups + a manual missed-call text-back quick action.
  *
- * EveryJob never sends anything — every draft is text the owner sends
+ * EveryJob never sends anything - every draft is text the owner sends
  * themselves via WhatsApp / SMS / email / copy.
  */
 export default async function RemindersPage() {
@@ -42,7 +42,7 @@ export default async function RemindersPage() {
   const currency = business?.currency ?? 'CAD';
 
   // Job dates are stored at (server-local) midnight of their calendar day,
-  // so the window must start at the business-local day boundary — comparing
+  // so the window must start at the business-local day boundary - comparing
   // against the current instant would hide today's jobs after midnight.
   const todayStr = todayInTimezone(business?.timezone, regionCode);
   const [ty, tm, td] = todayStr.split('-').map(Number);

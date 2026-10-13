@@ -8,7 +8,7 @@ import { formatMoney } from '@/lib/money';
 /**
  * Public "Pay now" button on the invoice portal. Creates a Stripe Checkout
  * Session (via /api/pay/invoice) and redirects the customer to Stripe's
- * hosted page — card data never touches our servers. The existing Interac /
+ * hosted page - card data never touches our servers. The existing Interac /
  * manual path stays untouched alongside.
  */
 export default function PayNowButton({

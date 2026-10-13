@@ -6,7 +6,7 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { hasJobTime } from '../utils.ts';
+import { hasJobTime, normalizeJobTime, formatJobTime } from '../utils.ts';
 
 test('real times count as set', () => {
   assert.equal(hasJobTime('10:00 AM'), true);
@@ -35,4 +35,40 @@ test('narrows to string for display use', () => {
   } else {
     assert.fail('should have narrowed');
   }
+});
+
+test('normalizeJobTime: 24h passes through canonically', () => {
+  assert.equal(normalizeJobTime('09:00'), '09:00');
+  assert.equal(normalizeJobTime('21:30'), '21:30');
+  assert.equal(normalizeJobTime('9:00'), '09:00');
+});
+
+test('normalizeJobTime: 12h converts to 24h', () => {
+  assert.equal(normalizeJobTime('10:00 AM'), '10:00');
+  assert.equal(normalizeJobTime('2:00 PM'), '14:00');
+  assert.equal(normalizeJobTime('2pm'), '14:00');
+  assert.equal(normalizeJobTime('12:00 AM'), '00:00');
+  assert.equal(normalizeJobTime('12:00 PM'), '12:00');
+});
+
+test('normalizeJobTime: blank/TBD/garbage -> null', () => {
+  assert.equal(normalizeJobTime(null), null);
+  assert.equal(normalizeJobTime(''), null);
+  assert.equal(normalizeJobTime('TBD'), null);
+  assert.equal(normalizeJobTime('whenever'), null);
+  assert.equal(normalizeJobTime('25:00'), null);
+  assert.equal(normalizeJobTime('13:00 PM'), null);
+});
+
+test('formatJobTime: en shows 12h, fr shows 24h', () => {
+  assert.equal(formatJobTime('09:00', 'en'), '9:00 AM');
+  assert.equal(formatJobTime('14:00', 'en'), '2:00 PM');
+  assert.equal(formatJobTime('09:00', 'fr'), '9 h 00');
+  assert.equal(formatJobTime('14:00', 'fr'), '14 h 00');
+});
+
+test('formatJobTime: blank -> empty, legacy text passes through', () => {
+  assert.equal(formatJobTime(null, 'en'), '');
+  assert.equal(formatJobTime('TBD', 'en'), '');
+  assert.equal(formatJobTime('morning', 'en'), 'morning');
 });

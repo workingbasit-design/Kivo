@@ -37,7 +37,7 @@ export default function ProfileForm({
             type="text"
             autoComplete="name"
             defaultValue={initial.name}
-            placeholder={initial.name || '—'}
+            placeholder={initial.name || '-'}
             className="w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-ink/30 focus:border-ink"
           />
         </div>

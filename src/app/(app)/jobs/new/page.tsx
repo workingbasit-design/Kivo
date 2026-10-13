@@ -28,8 +28,14 @@ export default async function NewJobPage({
     orderBy: { name: 'asc' },
   });
 
+  const crews = await prisma.crew.findMany({
+    where: { businessId },
+    select: { id: true, name: true },
+    orderBy: { name: 'asc' },
+  });
+
   // "Use in job" from the price book: pre-fill title + price, link the job
-  // to the service. Tenant-scoped — another business's service is ignored.
+  // to the service. Tenant-scoped - another business's service is ignored.
   const initial: JobFormInitial = {};
   if (serviceParam) {
     const service = await prisma.service.findFirst({
@@ -77,13 +83,13 @@ export default async function NewJobPage({
         {customers.length === 0 ? (
           <div className="space-y-5">
             <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium rounded-xl px-4 py-3">
-              You don&apos;t have any customers yet. Add the customer inline below —
+              You don&apos;t have any customers yet. Add the customer inline below -
               they&apos;ll be saved automatically.
             </div>
-            <JobForm customers={[]} initial={initial} action={createJobWithOfflineFallback} submitLabel="Create job" />
+            <JobForm customers={[]} crews={crews} initial={initial} action={createJobWithOfflineFallback} submitLabel="Create job" />
           </div>
         ) : (
-          <JobForm customers={customers} initial={initial} action={createJobWithOfflineFallback} submitLabel="Create job" />
+          <JobForm customers={customers} crews={crews} initial={initial} action={createJobWithOfflineFallback} submitLabel="Create job" />
         )}
       </Card>
 

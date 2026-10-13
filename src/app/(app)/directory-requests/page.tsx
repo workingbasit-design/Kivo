@@ -12,9 +12,9 @@ export const metadata = { title: 'Directory demand | EveryJob' };
 
 /**
  * Unmatched directory demand queue. Every public quote request that matched
- * no providers is saved here as an OPEN lead draft — admins see real demand
+ * no providers is saved here as an OPEN lead draft - admins see real demand
  * by city/service instead of silently dropped requests. Super-admin only,
- * gated by the KIVO_ADMIN_EMAILS env var. Not linked in the nav — reach it
+ * gated by the KIVO_ADMIN_EMAILS env var. Not linked in the nav - reach it
  * directly at /directory-requests.
  */
 export default async function DirectoryRequestsPage() {

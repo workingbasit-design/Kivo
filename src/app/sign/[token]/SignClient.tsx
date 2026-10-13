@@ -6,7 +6,7 @@ import { Card } from '@/components/ui';
 /**
  * Client-side signing widget for the public /sign/[token] page.
  * Draw a signature on canvas (pointer events), or type a name and let it
- * act as the signature. The typed/typed-name input is always required —
+ * act as the signature. The typed/typed-name input is always required -
  * it doubles as the legal signer name.
  */
 
@@ -105,7 +105,7 @@ export default function SignClient({
   const sign = async () => {
     const signerName = name.trim();
     if (!signerName || status === 'sending') return;
-    // Either a drawn signature or the typed name counts as signature data —
+    // Either a drawn signature or the typed name counts as signature data -
     // one of the two must be present.
     const drawn =
       hasInk && canvasRef.current ? canvasRef.current.toDataURL('image/png') : null;
@@ -143,7 +143,7 @@ export default function SignClient({
 
   return (
     <Card className="p-5">
-      {/* Draw / type mode toggle — labels reuse existing i18n keys in both languages. */}
+      {/* Draw / type mode toggle - labels reuse existing i18n keys in both languages. */}
       <div className="mb-4 grid grid-cols-2 gap-1 rounded-lg bg-zinc-100 p-1">
         <button
           type="button"

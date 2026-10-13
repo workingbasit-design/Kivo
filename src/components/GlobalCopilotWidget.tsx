@@ -25,7 +25,7 @@ type Message = {
   /** Which kind of record the preview would create. */
   previewKind?: 'job' | 'customer' | null;
   created?: boolean;
-  /** Client-generated idempotency key for this preview — replayed confirms collapse onto one record. */
+  /** Client-generated idempotency key for this preview - replayed confirms collapse onto one record. */
   idempotencyKey?: string | null;
 };
 
@@ -364,7 +364,7 @@ function PreviewCard({
   );
 }
 
-/** Preview card for adding a brand-new customer — explicit confirm, never silent. */
+/** Preview card for adding a brand-new customer - explicit confirm, never silent. */
 function CustomerPreviewCard({
   preview,
   onConfirm,

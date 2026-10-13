@@ -17,15 +17,16 @@ import { cn } from "@/lib/utils";
 import { formatMoney } from "@/lib/money";
 import { getLocale } from "@/lib/i18n/server";
 import { PageHeader, Card, StatCard, StatusBadge, EmptyState } from "@/components/ui";
+import { ReportBuilder, type SavedReportLite } from "@/components/ReportBuilder";
 
 const JOB_STATUS_ORDER = ["NEW", "SCHEDULED", "IN PROGRESS", "COMPLETED", "PAID", "CANCELLED"];
 
 const frReports = {
   title: 'Rapports',
-  subtitle: 'La santé de votre entreprise — 6 derniers mois',
+  subtitle: 'La santé de votre entreprise - 6 derniers mois',
   emptyTitle: 'Aucune donnée pour le moment',
   emptyDesc:
-    'Ajoutez des travaux, envoyez des factures et enregistrez des paiements — vos rapports se construiront ici.',
+    'Ajoutez des travaux, envoyez des factures et enregistrez des paiements - vos rapports se construiront ici.',
   createFirstJob: 'Créez votre premier travail',
   collectedLabel: 'Encaissé · 6 mois',
   paymentsReceived: 'Paiements reçus',
@@ -55,7 +56,7 @@ const frReports = {
   reviewInvoices: 'Voir les factures',
   revenueByService: 'Revenus par service',
   revenueByServiceSub: 'Tâches terminées et payées',
-  noServiceRevenue: 'Aucune tâche terminée pour le moment — liez vos tâches à votre carnet de prix pour voir la répartition.',
+  noServiceRevenue: 'Aucune tâche terminée pour le moment - liez vos tâches à votre carnet de prix pour voir la répartition.',
   upcomingWorkload: 'Charge de travail à venir',
   upcomingWorkloadSub: '14 prochains jours',
   jobsScheduled: 'tâches planifiées',
@@ -68,10 +69,10 @@ const frReports = {
 
 const enReports = {
   title: 'Reports',
-  subtitle: 'How your business is doing — last 6 months',
+  subtitle: 'How your business is doing - last 6 months',
   emptyTitle: 'No data yet',
   emptyDesc:
-    'Add jobs, send invoices and record payments — your reports will build themselves here.',
+    'Add jobs, send invoices and record payments - your reports will build themselves here.',
   createFirstJob: 'Create your first job',
   collectedLabel: 'Collected · 6 months',
   paymentsReceived: 'Payments received',
@@ -101,7 +102,7 @@ const enReports = {
   reviewInvoices: 'Review invoices',
   revenueByService: 'Revenue by service',
   revenueByServiceSub: 'Completed & paid jobs',
-  noServiceRevenue: 'No completed jobs yet — link jobs to your price book to see the breakdown.',
+  noServiceRevenue: 'No completed jobs yet - link jobs to your price book to see the breakdown.',
   upcomingWorkload: 'Upcoming workload',
   upcomingWorkloadSub: 'Next 14 days',
   jobsScheduled: 'jobs scheduled',
@@ -120,6 +121,19 @@ export default async function ReportsPage() {
   const business = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } });
   const currency = business?.currency;
   const stats = await getReportStats(businessId, locale);
+  const savedDb = await prisma.savedReport.findMany({
+    where: { businessId },
+    orderBy: { updatedAt: 'desc' },
+    take: 50,
+    select: { id: true, name: true, prompt: true, configJson: true, updatedAt: true },
+  });
+  const savedReports: SavedReportLite[] = savedDb.map((s) => ({
+    id: s.id,
+    name: s.name,
+    prompt: s.prompt,
+    configJson: s.configJson,
+    updatedAt: s.updatedAt.toISOString(),
+  }));
 
   const maxRevenue = Math.max(1, ...stats.months.map((m) => m.revenue));
   const maxServiceRevenue = Math.max(1, ...stats.revenueByService.map((s) => s.revenue));
@@ -139,6 +153,9 @@ export default async function ReportsPage() {
         title={r.title}
         subtitle={r.subtitle}
       />
+
+      {/* Natural-language report builder */}
+      <ReportBuilder locale={locale} currency={currency ?? null} savedReports={savedReports} />
 
       {!hasData ? (
         <Card>
@@ -183,7 +200,7 @@ export default async function ReportsPage() {
             />
             <StatCard
               label={r.winRateLabel}
-              value={stats.quoteWinRate === null ? "—" : `${stats.quoteWinRate}%`}
+              value={stats.quoteWinRate === null ? "-" : `${stats.quoteWinRate}%`}
               sub={`${stats.quotesSent} ${stats.quotesSent === 1 ? r.quote : r.quotes} ${r.quoteTotalSuffix}`}
               icon={<Target size={16} />}
               accent="bg-blue-100 text-blue-700"

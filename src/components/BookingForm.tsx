@@ -50,7 +50,7 @@ export default function BookingForm({
 
   // Bot protection: hidden timestamp set when the form first renders; the
   // server rejects impossibly fast submissions and filled honeypots.
-  // (Lazy initializer — the component already uses non-deterministic lazy
+  // (Lazy initializer - the component already uses non-deterministic lazy
   // init for the idempotency key above.)
   const [formStartedAt] = useState(() => String(Date.now()));
 
@@ -174,7 +174,7 @@ export default function BookingForm({
             {services.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name}
-                {s.price > 0 ? ` — ${formatMoney(s.price, currency)}` : ''}
+                {s.price > 0 ? ` - ${formatMoney(s.price, currency)}` : ''}
               </option>
             ))}
           </select>
@@ -192,7 +192,7 @@ export default function BookingForm({
           <p className="text-xs text-graphite py-2">{strings.loadingSlots}</p>
         )}
         {!slotsLoading && !slotsResult && (
-          <p className="text-xs text-graphite py-2">—</p>
+          <p className="text-xs text-graphite py-2">-</p>
         )}
         {slotsResult?.error && (
           <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">

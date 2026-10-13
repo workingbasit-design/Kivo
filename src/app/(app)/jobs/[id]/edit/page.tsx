@@ -21,7 +21,7 @@ export default async function EditJobPage({
   const locale = await getLocale();
   const T = (k: string) => t(locale, `t10work.${k}`);
 
-  const [job, customers, business] = await Promise.all([
+  const [job, customers, business, crews] = await Promise.all([
     prisma.job.findFirst({ where: { id, businessId } }),
     prisma.customer.findMany({
       where: { businessId },
@@ -29,6 +29,11 @@ export default async function EditJobPage({
       orderBy: { name: 'asc' },
     }),
     prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } }),
+    prisma.crew.findMany({
+      where: { businessId },
+      select: { id: true, name: true },
+      orderBy: { name: 'asc' },
+    }),
   ]);
   if (!job) notFound();
 
@@ -46,6 +51,7 @@ export default async function EditJobPage({
       <Card className="p-5 md:p-6">
         <JobForm
           customers={customers}
+          crews={crews}
           locale={locale}
           currency={business?.currency}
           initial={{
@@ -58,6 +64,7 @@ export default async function EditJobPage({
             price: job.price,
             notes: job.notes,
             technician: job.technician,
+            crewId: job.crewId,
           }}
           action={updateJob}
           submitLabel={t(locale, 'common.save')}

@@ -13,7 +13,7 @@ import {
 } from '@/components/customer/ui';
 
 /**
- * Messages inbox — one thread per quote request with replies.
+ * Messages inbox - one thread per quote request with replies.
  */
 export default async function CustomerMessagesPage() {
   const session = await requireCustomerAuth();

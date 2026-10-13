@@ -29,7 +29,7 @@ export async function generateMetadata({
 
 /**
  * Public booking page. No authentication.
- * Only ever loads the single BookingPage (and business) matching the slug —
+ * Only ever loads the single BookingPage (and business) matching the slug -
  * nothing else from any business is reachable here.
  */
 export default async function PublicBookingPage({

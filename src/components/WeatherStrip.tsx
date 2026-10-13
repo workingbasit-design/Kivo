@@ -57,7 +57,7 @@ export default function WeatherStrip({
           return (
             <div
               key={d.dateISO}
-              title={w ? `${d.label}: ${weatherLabel(w.code)}, ${w.lowC}–${w.highC}°C, ${w.precipProb}% rain` : d.label}
+              title={w ? `${d.label}: ${weatherLabel(w.code)}, ${w.lowC}-${w.highC}°C, ${w.precipProb}% rain` : d.label}
               className="flex flex-col items-center rounded-xl bg-white/70 border border-white px-1 py-2"
             >
               <span className="text-[10px] font-bold uppercase tracking-wide text-zinc-500">{d.label}</span>
@@ -81,7 +81,7 @@ export default function WeatherStrip({
                   </span>
                 </>
               ) : (
-                <span className="text-[10px] font-semibold text-zinc-300">—</span>
+                <span className="text-[10px] font-semibold text-zinc-300">-</span>
               )}
             </div>
           );

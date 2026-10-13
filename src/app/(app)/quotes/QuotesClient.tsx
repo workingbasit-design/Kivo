@@ -36,7 +36,7 @@ export type StaleQuoteItem = {
 
 /**
  * Quote list with instant client-side tab filtering. The server sends all
- * quotes once; switching tabs filters in memory — no navigation, no
+ * quotes once; switching tabs filters in memory - no navigation, no
  * server roundtrip, no lag.
  */
 export default function QuotesClient({
@@ -151,7 +151,7 @@ export default function QuotesClient({
         ))}
       </div>
 
-      {/* Quote follow-up queue — revenue recovery. Only the user sends
+      {/* Quote follow-up queue - revenue recovery. Only the user sends
           anything: buttons open their own SMS/WhatsApp apps prefilled. */}
       {staleQuotes.length > 0 && activeFilter === 'ALL' && (
         <Card className="!p-0 overflow-hidden">

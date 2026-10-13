@@ -13,7 +13,7 @@ import PortalNotice from '@/components/PortalNotice';
 import { clientIpFromHeaders } from '@/lib/client-ip';
 
 /**
- * Public customer portal. No authentication — the magic-link token in the
+ * Public customer portal. No authentication - the magic-link token in the
  * URL is the only capability. The page loads exactly one customer and
  * their own jobs/quotes/invoices, always scoped to the token's
  * (businessId, customerId). Nothing else from any business is reachable.

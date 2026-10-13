@@ -10,7 +10,7 @@ import { t } from '@/lib/i18n';
 import PrintButton from './PrintButton';
 
 /**
- * Owner-only print view of a signed quote — the target of the
+ * Owner-only print view of a signed quote - the target of the
  * "Download signed PDF" link. The owner prints/saves it as PDF via the
  * browser. Only renders when the request belongs to the owner's business
  * AND its status is 'signed'.
@@ -60,7 +60,7 @@ export default async function SignedDocumentPrintPage({
     },
   });
   if (!request || request.quoteId !== id) notFound();
-  // A print view only exists for completed signatures — unsigned links
+  // A print view only exists for completed signatures - unsigned links
   // must never render a "signed document".
   if (request.status !== 'signed') notFound();
 

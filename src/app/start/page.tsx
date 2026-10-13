@@ -5,7 +5,7 @@ import { t } from '@/lib/i18n';
 import EveryJobLogo from '@/components/EveryJobLogo';
 
 export const metadata = {
-  title: 'Get started — EveryJob',
+  title: 'Get started - EveryJob',
   description:
     'Find a trusted local pro or run your home-service business with EveryJob.',
 };
@@ -63,7 +63,7 @@ export default async function StartPage() {
           </h2>
           <p className="text-sm text-zinc-600 mb-6 leading-relaxed">
             {t(locale, 'start.businessDesc') ??
-              'Jobs, scheduling, quotes, invoices, and payments — free for Canadian pros.'}
+              'Jobs, scheduling, quotes, invoices, and payments - free for Canadian pros.'}
           </p>
           <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink group-hover:gap-2.5 transition-all">
             {t(locale, 'start.businessCta') ?? 'Continue as business'}

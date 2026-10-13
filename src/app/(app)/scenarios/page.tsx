@@ -18,7 +18,7 @@ export default async function ScenariosPage() {
     select: { currency: true },
   });
   const money = (n: number | null) =>
-    n == null ? "—" : formatMoney(n, business?.currency, moneyLocale);
+    n == null ? "-" : formatMoney(n, business?.currency, moneyLocale);
 
   let data = null;
   try {
@@ -51,8 +51,8 @@ export default async function ScenariosPage() {
         {
           title: t(locale, "scenarios.hireTech.title"),
           rows: [
-            [t(locale, "scenarios.hireTech.capacity"), data!.hireTech.jobsPerTechPerMonth ?? "—"],
-            [t(locale, "scenarios.hireTech.extraCapacity"), data!.hireTech.extraCapacityJobs ?? "—"],
+            [t(locale, "scenarios.hireTech.capacity"), data!.hireTech.jobsPerTechPerMonth ?? "-"],
+            [t(locale, "scenarios.hireTech.extraCapacity"), data!.hireTech.extraCapacityJobs ?? "-"],
             [t(locale, "scenarios.hireTech.revenuePotential"), money(data!.hireTech.revenuePotential)],
           ],
           note: t(locale, "scenarios.hireTech.note"),

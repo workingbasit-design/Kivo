@@ -85,7 +85,7 @@ export default function ShareTokenManager({
 
   const error = regenState?.error || revokeState?.error || expiryState?.error;
   const okMsg =
-    (regenState?.ok && 'New share link created — the old one no longer works.') ||
+    (regenState?.ok && 'New share link created - the old one no longer works.') ||
     (revokeState?.ok && 'Share link revoked.') ||
     (expiryState?.ok && 'Expiry updated.') ||
     null;

@@ -21,7 +21,7 @@ const TONES = [
 ];
 
 /**
- * Animated "today's schedule" product mock (server component — motion is pure
+ * Animated "today's schedule" product mock (server component - motion is pure
  * CSS): gentle float, a pulsing live dot, and a shimmer sweep on the
  * payment-recorded strip.
  */

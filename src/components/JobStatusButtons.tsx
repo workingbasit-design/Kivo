@@ -24,7 +24,7 @@ type PendingAction = 'cancel' | 'delete' | null;
  * components calling router.refresh(). On flaky mobile connections the
  * refresh could return stale data, so the toast said "Job marked COMPLETED"
  * while the badge still showed the old status. Now the badge updates
- * instantly from local state on success — no waiting on a server re-render.
+ * instantly from local state on success - no waiting on a server re-render.
  *
  * Also offers a one-step "back" undo (COMPLETED -> IN PROGRESS, etc.) so a
  * mistaken tap can be reversed. The server still enforces the transition
@@ -114,7 +114,7 @@ export default function JobStatusButtons({
 
   return (
     <div className="space-y-4">
-      {/* Badge — updates instantly with the buttons below. */}
+      {/* Badge - updates instantly with the buttons below. */}
       <div className="flex items-center gap-3 flex-wrap">
         <StatusBadge status={jobDisplayStatus(status, jobDate)} />
         <span className="text-xs text-zinc-400">{createdLabel}</span>

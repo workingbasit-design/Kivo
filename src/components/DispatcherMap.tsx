@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 /**
- * Live map — Leaflet loaded from CDN (no npm dependency, no API key, free
+ * Live map - Leaflet loaded from CDN (no npm dependency, no API key, free
  * OpenStreetMap tiles). Renders pins for jobs with technician locations; safe
  * for SSR (the map only initialises in the browser).
  *
@@ -20,7 +20,7 @@ export interface MapPin {
   status?: string;
   /** Green pin when the tech has arrived, blue otherwise. */
   tone?: 'active' | 'arrived';
-  /** ISO timestamp of the ping — shown as "updated Xm ago" in the popup. */
+  /** ISO timestamp of the ping - shown as "updated Xm ago" in the popup. */
   updatedAt?: string;
 }
 
@@ -90,7 +90,7 @@ function loadLeaflet(): Promise<void> {
       return;
     }
     // Timeout: on slow/blocked networks the script tag may never fire
-    // onload/onerror — don't leave the UI spinning forever.
+    // onload/onerror - don't leave the UI spinning forever.
     const timer = setTimeout(() => {
       leafletLoadPromise = null; // allow a later retry
       reject(new Error('Leaflet load timed out'));
@@ -151,13 +151,13 @@ export default function DispatcherMap({
   const mapRef = useRef<LeafletMap | null>(null);
   const layerRef = useRef<LeafletLayerGroup | null>(null);
   const pinsRef = useRef<MapPin[]>(pins);
-  // (pinsRef sync moved below, next to drawRef — effects only, never during render)
+  // (pinsRef sync moved below, next to drawRef - effects only, never during render)
   const [mapReady, setMapReady] = useState(false);
   const [mapFailed, setMapFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
 
   // Draw (or redraw) the current pins. Called after init and whenever pins change.
-  // fitBounds only runs when pins first appear or the pin set changes — never
+  // fitBounds only runs when pins first appear or the pin set changes - never
   // on plain position updates, so the map doesn't snap the user's view away
   // every 30 seconds while a tech is moving.
   const fittedRef = useRef(false);
@@ -189,7 +189,7 @@ export default function DispatcherMap({
     if (pts.length === 0) fittedRef.current = false;
   };
   const drawRef = useRef(drawPins);
-  // Keep the "latest value" mirrors in effects — reading/writing refs during
+  // Keep the "latest value" mirrors in effects - reading/writing refs during
   // render is not allowed. Declared before the init/redraw effects so they
   // always see fresh values (effects run in declaration order).
   useEffect(() => {
@@ -268,7 +268,7 @@ export default function DispatcherMap({
       {mapFailed && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl bg-zinc-100 px-6 text-center">
           <p className="text-sm text-zinc-500">
-            Map unavailable — check your connection. The job list below is still up to date.
+            Map unavailable - check your connection. The job list below is still up to date.
           </p>
           <button
             type="button"

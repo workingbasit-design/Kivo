@@ -1,5 +1,5 @@
 /**
- * /a/[token] — the human-confirmation page for the EveryJob Agent Protocol.
+ * /a/[token] - the human-confirmation page for the EveryJob Agent Protocol.
  *
  * A customer's AI assistant proposes a quote request and hands this link
  * to its user. NOTHING was sent to the business yet: the request is

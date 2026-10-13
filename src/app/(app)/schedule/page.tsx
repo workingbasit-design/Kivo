@@ -8,7 +8,7 @@ import ScheduleClient from '@/components/ScheduleClient';
 import WeatherStrip, { type StripDay } from '@/components/WeatherStrip';
 import { getWeatherForDates, geocodeLocation } from '@/lib/weather';
 import { getHolidays } from '@/lib/holidays';
-import { toISODateLocal, todayInTimezone, cn, localeDateTag } from '@/lib/utils';
+import { toISODateLocal, todayInTimezone, cn, localeDateTag, formatDateShort } from '@/lib/utils';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 
@@ -29,7 +29,7 @@ function addDays(d: Date, n: number): Date {
 
 /** Calendar-day key of a job in the business (server-local) timezone.
  *  Stored job timestamps are server-local midnight / 9 AM, so the local
- *  calendar date is the date the user picked — never derive it from
+ *  calendar date is the date the user picked - never derive it from
  *  toISOString() (UTC), which shifts the day for timezones ahead of UTC. */
 function dayKey(date: Date): string {
   return toISODateLocal(new Date(date));
@@ -67,7 +67,7 @@ export default async function SchedulePage({
 
   const activeDay = day && /^\d{4}-\d{2}-\d{2}$/.test(day) ? day : null;
 
-  const [jobs, totalCount] = await Promise.all([
+  const [jobs, totalCount, overdueJobs] = await Promise.all([
     prisma.job.findMany({
       where: { businessId, date: { gte: weekStart, lt: weekEnd } },
       include: {
@@ -77,6 +77,25 @@ export default async function SchedulePage({
       orderBy: [{ date: 'asc' }, { createdAt: 'asc' }],
     }),
     prisma.job.count({ where: { businessId } }),
+    // Overdue: past date, still open. These are invisible in the week grid
+    // (they're not in the current week) but the owner must see them here -
+    // otherwise Schedule says "0" while Jobs shows overdue work.
+    prisma.job.findMany({
+      where: {
+        businessId,
+        date: { lt: weekStart },
+        status: { in: ['NEW', 'SCHEDULED', 'IN PROGRESS'] },
+      },
+      select: {
+        id: true,
+        title: true,
+        date: true,
+        status: true,
+        customer: { select: { name: true } },
+      },
+      orderBy: { date: 'asc' },
+      take: 10,
+    }),
   ]);
 
   const countryCode = 'CA' as const;
@@ -86,14 +105,14 @@ export default async function SchedulePage({
 
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
-  // Localized day/month names (EN + fr-CA) — never hardcode English names.
+  // Localized day/month names (EN + fr-CA) - never hardcode English names.
   const dayName = (d: Date) => d.toLocaleDateString(dateLocale, { weekday: 'short' });
   const dayMonth = (d: Date) =>
     d.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short' });
   const yearOf = (d: Date) => d.getFullYear();
 
   // Weather strip: geocode the business address (Nominatim, cached) then fetch
-  // a 5-day Open-Meteo forecast. Fails silently — no location or no data means
+  // a 5-day Open-Meteo forecast. Fails silently - no location or no data means
   // no strip, never an error.
   const geo = business?.address ? await geocodeLocation(business.address) : null;
   let stripDays: StripDay[] = [];
@@ -120,7 +139,7 @@ export default async function SchedulePage({
     id: j.id,
     title: j.title,
     date: j.date.toISOString(),
-    /** Server-local calendar date — the day the user booked. Used for all
+    /** Server-local calendar date - the day the user booked. Used for all
      *  day filtering/counting so UTC conversion can never shift the day. */
     dateKey: dayKey(j.date),
     time: j.time,
@@ -138,7 +157,7 @@ export default async function SchedulePage({
     counts.set(key, (counts.get(key) ?? 0) + 1);
   }
 
-  const weekLabel = `${dayMonth(days[0])} – ${dayMonth(days[6])} ${yearOf(days[6])}`;
+  const weekLabel = `${dayMonth(days[0])} - ${dayMonth(days[6])} ${yearOf(days[6])}`;
 
   const weekLink = (monday: Date) => `/schedule?week=${toISODateLocal(monday)}`;
   const dayLink = (d: Date) =>
@@ -158,6 +177,42 @@ export default async function SchedulePage({
 
       {stripDays.length > 0 && (
         <WeatherStrip days={stripDays} placeName={geo?.name.split(',').slice(0, 2).join(',') ?? ''} />
+      )}
+
+      {/* Overdue jobs - past date, still open. Not in the week grid above,
+          but the owner must see them here. */}
+      {overdueJobs.length > 0 && (
+        <Card className="p-4 border-red-200 bg-red-50/60">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="w-2 h-2 rounded-full bg-red-500" aria-hidden />
+            <h2 className="text-sm font-bold text-red-900">
+              {T('schedOverdueTitle')} · {overdueJobs.length}
+            </h2>
+          </div>
+          <p className="text-xs text-red-700 mb-3">{T('schedOverdueDesc')}</p>
+          <ul className="divide-y divide-red-100">
+            {overdueJobs.map((j) => (
+              <li key={j.id}>
+                <Link
+                  href={`/jobs/${j.id}`}
+                  className="flex items-center justify-between gap-3 py-2.5 min-h-[44px]"
+                >
+                  <span className="min-w-0">
+                    <span className="block text-sm font-semibold text-zinc-900 truncate">
+                      {j.title}
+                    </span>
+                    <span className="block text-xs text-zinc-500 truncate">
+                      {j.customer.name} · {formatDateShort(j.date)}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-xs font-bold text-red-700 bg-red-100 px-2 py-1 rounded-full">
+                    {T('schedOverdueBadge')}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Card>
       )}
 
       {/* Week navigator */}
@@ -210,18 +265,19 @@ export default async function SchedulePage({
                 key={key}
                 href={dayLink(d)}
                 aria-current={isActive ? 'date' : undefined}
+                aria-label={`${dayName(d)} ${d.getDate()}${isToday ? `, ${T('schedToday')}` : ''}`}
                 className={cn(
-                  'flex flex-col items-center rounded-xl border py-2 md:py-3 transition-colors min-h-[64px]',
+                  'flex flex-col items-center rounded-xl border-2 py-2 md:py-3 transition-colors min-h-[64px]',
                   isActive
                     ? 'bg-ink text-white border-ink shadow-sm'
                     : 'bg-white border-zinc-200 hover:border-smoke hover:bg-paper',
-                  isToday && !isActive && 'border-smoke'
+                  isToday && !isActive && 'border-lime-500 bg-lime-50'
                 )}
               >
                 <span
                   className={cn(
                     'text-[10px] font-bold uppercase tracking-wide',
-                    isActive ? 'text-white/80' : 'text-zinc-400'
+                    isActive ? 'text-white/80' : isToday ? 'text-lime-700' : 'text-zinc-400'
                   )}
                 >
                   {dayName(d)}
@@ -229,7 +285,7 @@ export default async function SchedulePage({
                 <span
                   className={cn(
                     'text-sm md:text-base font-bold mt-0.5',
-                    isActive ? 'text-white' : 'text-zinc-900'
+                    isActive ? 'text-white' : isToday ? 'text-lime-800' : 'text-zinc-900'
                   )}
                 >
                   {d.getDate()}
@@ -249,14 +305,16 @@ export default async function SchedulePage({
                 {holiday && (
                   <span
                     title={holiday}
+                    aria-label={holiday}
                     className={cn(
-                      'mt-1 max-w-full truncate rounded-full border px-1.5 py-px text-[9px] font-bold',
+                      'mt-1 inline-flex items-center gap-0.5 rounded-full border px-1.5 py-px text-[9px] font-bold leading-tight',
                       isActive
                         ? 'border-white/40 bg-white/20 text-white'
                         : 'border-amber-200 bg-amber-50 text-amber-700'
                     )}
                   >
-                    {holiday}
+                    <span aria-hidden>🎉</span>
+                    <span className="hidden sm:inline max-w-[72px] truncate">{holiday}</span>
                   </span>
                 )}
               </Link>

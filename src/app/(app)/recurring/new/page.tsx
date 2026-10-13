@@ -50,7 +50,7 @@ export default async function NewRecurringPage() {
               <Link href="/customers" className="font-bold underline">
                 Add one
               </Link>{' '}
-              — it takes a few seconds.
+              - it takes a few seconds.
             </div>
           </div>
         ) : (

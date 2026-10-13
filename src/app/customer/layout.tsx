@@ -7,7 +7,7 @@ import Logo from '@/components/Logo';
 import Link from 'next/link';
 
 /**
- * Customer area layout — mobile-first shell for homeowners.
+ * Customer area layout - mobile-first shell for homeowners.
  * Redirects to login when no customer session exists.
  */
 export default async function CustomerLayout({ children }: { children: React.ReactNode }) {

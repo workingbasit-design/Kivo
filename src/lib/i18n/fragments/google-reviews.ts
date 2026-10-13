@@ -17,9 +17,9 @@ const fragment = {
       setupStep4:
         'Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET as environment variables on Vercel, then redeploy.',
       setupNote:
-        'Only the business owner needs to do this once — afterwards, syncing is one tap.',
+        'Only the business owner needs to do this once - afterwards, syncing is one tap.',
       connectDesc:
-        'Import your Google reviews with one tap. You’ll sign in with Google and pick your business — nothing is imported until you press Sync now.',
+        'Import your Google reviews with one tap. You’ll sign in with Google and pick your business - nothing is imported until you press Sync now.',
       connectButton: 'Connect Google',
       pickTitle: 'Which Google business is yours?',
       loadingLocations: 'Loading your locations…',
@@ -37,17 +37,17 @@ const fragment = {
         'Disconnect Google? Your imported reviews stay, but syncing will stop until you reconnect.',
       disconnected: 'Google disconnected.',
       syncNote:
-        'Sync imports only new reviews — your manual reviews are never changed or duplicated.',
+        'Sync imports only new reviews - your manual reviews are never changed or duplicated.',
       synced: 'Synced',
       newReviews: 'new reviews',
       alreadyHere: 'already here',
       syncFailed: 'Sync failed.',
-      locationSaved: 'Business selected — press Sync now to import reviews.',
+      locationSaved: 'Business selected - press Sync now to import reviews.',
       couldNotSave: 'Could not save.',
       statusConnected:
         'Google connected. Choose your business location below, then sync.',
       statusDenied:
-        'You declined the Google consent screen — nothing was connected.',
+        'You declined the Google consent screen - nothing was connected.',
       statusNotConfigured:
         'Google sign-in is not configured on this install yet.',
       statusError: 'Something went wrong with Google. Please try again.',
@@ -66,9 +66,9 @@ const fragment = {
       setupStep4:
         'Définissez GOOGLE_CLIENT_ID et GOOGLE_CLIENT_SECRET comme variables d’environnement sur Vercel, puis redéployez.',
       setupNote:
-        'Seul le propriétaire de l’entreprise doit le faire une fois — ensuite, la synchro se fait en un clic.',
+        'Seul le propriétaire de l’entreprise doit le faire une fois - ensuite, la synchro se fait en un clic.',
       connectDesc:
-        'Importez vos avis Google en un clic. Vous vous connecterez avec Google et choisirez votre établissement — rien n’est importé avant d’appuyer sur Synchroniser.',
+        'Importez vos avis Google en un clic. Vous vous connecterez avec Google et choisirez votre établissement - rien n’est importé avant d’appuyer sur Synchroniser.',
       connectButton: 'Connecter Google',
       pickTitle: 'Quel est votre établissement Google ?',
       loadingLocations: 'Chargement de vos établissements…',
@@ -86,18 +86,18 @@ const fragment = {
         'Déconnecter Google ? Vos avis importés restent, mais la synchro s’arrêtera jusqu’à votre reconnexion.',
       disconnected: 'Google déconnecté.',
       syncNote:
-        'La synchro n’importe que les nouveaux avis — vos avis manuels ne sont jamais modifiés ni dupliqués.',
+        'La synchro n’importe que les nouveaux avis - vos avis manuels ne sont jamais modifiés ni dupliqués.',
       synced: 'Synchro terminée',
       newReviews: 'nouveaux avis',
       alreadyHere: 'déjà ici',
       syncFailed: 'Échec de la synchro.',
       locationSaved:
-        'Établissement sélectionné — appuyez sur Synchroniser pour importer les avis.',
+        'Établissement sélectionné - appuyez sur Synchroniser pour importer les avis.',
       couldNotSave: 'Enregistrement impossible.',
       statusConnected:
         'Google connecté. Choisissez votre établissement ci-dessous, puis synchronisez.',
       statusDenied:
-        'Vous avez refusé l’écran de consentement Google — rien n’a été connecté.',
+        'Vous avez refusé l’écran de consentement Google - rien n’a été connecté.',
       statusNotConfigured:
         'La connexion Google n’est pas encore configurée sur cette installation.',
       statusError: 'Un problème est survenu avec Google. Veuillez réessayer.',

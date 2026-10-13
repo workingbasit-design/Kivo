@@ -37,7 +37,7 @@ function useResultToast<T extends { ok?: boolean; error?: string }>(
 
 const PROVIDERS = ['CASH', 'INTERAC', 'CHEQUE', 'STRIPE', 'OTHER'] as const;
 
-/** Human labels for payment providers (record-only — EveryJob never processes payments). */
+/** Human labels for payment providers (record-only - EveryJob never processes payments). */
 function providerLabel(p: string, locale: Locale): string {
   if (p === 'CASH') return t(locale, 't10money.invProviderCash');
   if (p === 'CHEQUE') return t(locale, 't10money.invProviderCheque');
@@ -81,7 +81,7 @@ export default function InvoiceActions({
   useResultToast(emailState, {
     success: t(locale, 't10money.invoiceEmailSent'),
   });
-  // deleteInvoice redirects to the invoices list on success — toast on failure only.
+  // deleteInvoice redirects to the invoices list on success - toast on failure only.
   useResultToast(deleteState, {});
 
   const error = payState?.error || emailState?.error || deleteState?.error;
@@ -147,7 +147,7 @@ export default function InvoiceActions({
       <div className="flex flex-wrap items-center gap-2">
         {/* NOTE: the old "Mark partially paid" button was removed 2026-09-28.
             It flipped the status to PARTIALLY PAID without recording any
-            payment (Paid $0.00) — a dishonest state. Partial payments are
+            payment (Paid $0.00) - a dishonest state. Partial payments are
             recorded through "Record payment" above, which sets the status
             from the actual amounts. */}
 

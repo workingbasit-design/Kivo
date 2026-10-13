@@ -9,12 +9,12 @@
  * Dependency-free: uses global fetch.
  */
 
-import type { CopilotIntent, JobDraft, CustomerDraft } from './engine';
+import type { CopilotIntent, JobDraft, CustomerDraft, QuoteDraft } from './engine';
 
 export interface LlmContext {
   intent: CopilotIntent;
   dataSummary: string; // plain-text summary of real fetched data (never invented)
-  preview?: JobDraft | CustomerDraft;
+  preview?: JobDraft | CustomerDraft | QuoteDraft;
   /** The business's UI language ('en' | 'fr'). The LLM must reply in this language. */
   uiLocale?: 'en' | 'fr';
 }

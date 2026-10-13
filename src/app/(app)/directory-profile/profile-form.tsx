@@ -19,7 +19,7 @@ export type ProfileInitial = {
   enabled: boolean;
 };
 
-/** Editable public directory profile — EN + Canadian French. */
+/** Editable public directory profile - EN + Canadian French. */
 export default function DirectoryProfileForm({ initial }: { initial: ProfileInitial }) {
   const { t } = useResolvedT();
   const [state, formAction, isPending] = useActionState(updateDirectoryProfile, {});

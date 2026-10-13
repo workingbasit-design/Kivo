@@ -24,7 +24,7 @@ export type BusinessFormData = {
   directoryHideAddress: boolean;
 };
 
-/** Curated IANA timezones — the business's "today" for schedule + dashboard. */
+/** Curated IANA timezones - the business's "today" for schedule + dashboard. */
 const TIMEZONES = [
   { value: 'America/Toronto', label: 'Toronto (ET)' },
   { value: 'America/Halifax', label: 'Halifax (AT)' },
@@ -95,16 +95,16 @@ function WorkingHoursEditor({
                   value={state.open}
                   onChange={(e) => setDay(d.key, { open: e.target.value, close: state.close })}
                   className={`${inputClass} flex-1`}
-                  aria-label={`${label} — ${t('t10misc.settings.workingHoursSetHours')}`}
+                  aria-label={`${label} - ${t('t10misc.settings.workingHoursSetHours')}`}
                 />
-                <span className="text-xs text-zinc-400" aria-hidden="true">–</span>
+                <span className="text-xs text-zinc-400" aria-hidden="true">-</span>
                 <input
                   type="time"
                   name={`wh_${d.key}_close`}
                   value={state.close}
                   onChange={(e) => setDay(d.key, { open: state.open, close: e.target.value })}
                   className={`${inputClass} flex-1`}
-                  aria-label={`${label} — ${t('t10misc.settings.workingHoursSetClosed')}`}
+                  aria-label={`${label} - ${t('t10misc.settings.workingHoursSetClosed')}`}
                 />
               </div>
             ) : (
@@ -137,7 +137,7 @@ export default function SettingsForm({ business }: { business: BusinessFormData 
           <input name="name" type="text" required defaultValue={business.name} maxLength={200} className={inputClass} />
         </Field>
 
-        {/* Tax settings — Canada only */}
+        {/* Tax settings - Canada only */}
         <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 space-y-4">
           <div className="flex items-center gap-2">
             <Globe size={14} className="text-zinc-500" />

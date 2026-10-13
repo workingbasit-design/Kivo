@@ -36,7 +36,7 @@ function escapeHtml(s: string): string {
 
 /**
  * Minimal markdown-ish renderer: ## headings, - bullets, paragraphs.
- * All text is HTML-escaped first — article bodies are trusted data, but
+ * All text is HTML-escaped first - article bodies are trusted data, but
  * escaping keeps the renderer safe by construction.
  */
 function renderBody(body: string): string {

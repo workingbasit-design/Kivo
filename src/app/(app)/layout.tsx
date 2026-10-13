@@ -20,7 +20,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   let session: Awaited<ReturnType<typeof getSession>>;
   let locale: Awaited<ReturnType<typeof getLocale>>;
   try {
-    // Session (DB) and locale (cookie) are independent — fetch together.
+    // Session (DB) and locale (cookie) are independent - fetch together.
     [session, locale] = await Promise.all([getSession(), getLocale()]);
   } catch (err) {
     if (isDatabaseUnavailable(err)) return <PortalNotice variant="unavailable" />;
@@ -31,7 +31,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const businessId = session.user.businessId;
 
   // Shell data for the sidebar/stats. A database outage here renders the
-  // same honest "try again" notice as a failed session lookup — never a
+  // same honest "try again" notice as a failed session lookup - never a
   // login redirect and never a generic 500.
   const loadShell = async () => {
     const business = await prisma.business.findUnique({
@@ -53,13 +53,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     ]);
     return { business, todayJobs, newLeads };
   };
-  // Shell data and notification sync are independent — start them together
+  // Shell data and notification sync are independent - start them together
   // instead of one after the other. The shell keeps its exact error
   // semantics: a database outage still renders the honest "try again"
   // notice (never a login redirect, never a generic 500).
   const shellPromise = loadShell();
   // Notification center: generate from real records (never seeded), then
-  // count unread for the bell badge. Best-effort — a sync failure must never
+  // count unread for the bell badge. Best-effort - a sync failure must never
   // break the app shell.
   const notifPromise = (async () => {
     try {
@@ -80,7 +80,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const { business, todayJobs, newLeads } = shell;
 
   // Shared with the dashboard stats (2026-09-24: cancelled jobs no longer
-  // count as booked revenue here either — same helper, same totals).
+  // count as booked revenue here either - same helper, same totals).
   const { bookedToday, jobsLeftToday } = summarizeTodayJobs(todayJobs);
 
   const unreadCount = await notifPromise;
@@ -100,7 +100,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       />
       <div className="flex-1 min-w-0 flex flex-col">
         <MobileNav locale={locale} unreadCount={unreadCount} />
-        <main id="main-content" className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-8 pb-28 md:pb-8">
+        <main id="main-content" className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-8 pb-36 md:pb-8">
           {children}
         </main>
         <BottomNav user={user} locale={locale} />

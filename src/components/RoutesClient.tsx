@@ -25,7 +25,7 @@ import { t, type Locale } from '@/lib/i18n';
  * - Up/down buttons let the user fine-tune the order manually
  *   (manual moves clear the per-leg driving figures).
  * - "Start route" walks through one stop at a time with a complete button.
- * - The order lives in UI state for this session — nothing is persisted
+ * - The order lives in UI state for this session - nothing is persisted
  *   to the database.
  */
 export default function RoutesClient({
@@ -122,7 +122,7 @@ export default function RoutesClient({
         prev.map((s) => (s.id === jobId ? { ...s, status: 'COMPLETED' } : s))
       );
       // The completed stop drops out of `remaining`, so the next stop slides
-      // into the current index — clamp rather than advancing.
+      // into the current index - clamp rather than advancing.
       setCurrentIdx((i) => {
         const newRemaining = stops.filter(
           (s) => s.id !== jobId && s.status !== 'COMPLETED'
@@ -142,7 +142,7 @@ export default function RoutesClient({
     stop.legKm != null || stop.legMinutes != null ? (
       <p className="flex items-center gap-1.5 text-[11px] font-semibold text-ink">
         <Car size={13} className="shrink-0" />
-        {stop.legKm != null ? `${stop.legKm} km` : '—'}
+        {stop.legKm != null ? `${stop.legKm} km` : '-'}
         {stop.legMinutes != null ? ` · ~${stop.legMinutes} min` : ''}
       </p>
     ) : null;
@@ -227,7 +227,7 @@ export default function RoutesClient({
               <li key={s.id} className="text-xs text-zinc-600">
                 <span className="font-semibold text-zinc-800">{s.title}</span>
                 <span className="text-zinc-400">
-                  {' '}— {s.address ? T('routesGeocodeFailed') : T('routesNoAddress')}
+                  {' '}- {s.address ? T('routesGeocodeFailed') : T('routesNoAddress')}
                 </span>
               </li>
             ))}

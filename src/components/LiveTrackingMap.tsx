@@ -56,7 +56,7 @@ export default function LiveTrackingMap({ locale = 'en' }: { locale?: Locale }) 
         setSharing(next.length);
         setLoaded(true);
       } catch {
-        // Offline or transient — keep the last known pins.
+        // Offline or transient - keep the last known pins.
         setLoaded(true);
       }
     };
@@ -148,7 +148,7 @@ export default function LiveTrackingMap({ locale = 'en' }: { locale?: Locale }) 
     );
   }
 
-  // Active sharing — show map + job list
+  // Active sharing - show map + job list
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">

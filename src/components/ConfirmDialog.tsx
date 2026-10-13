@@ -7,7 +7,7 @@ import { dangerBtnClass, secondaryBtnClass } from '@/components/ui';
 
 /**
  * Shared in-app confirmation dialog. Never use the native `confirm()`
- * (auto-dismissed — silently cancelled — in automated browsers and some
+ * (auto-dismissed - silently cancelled - in automated browsers and some
  * mobile webviews, making buttons appear to do nothing).
  *
  * Labels are locale-aware: pass translated `confirmLabel`/`cancelLabel`

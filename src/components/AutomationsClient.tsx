@@ -58,7 +58,7 @@ function RuleSwitch({
       type="button"
       role="switch"
       aria-checked={enabled}
-      aria-label={`${label} — ${enabled ? t(locale, 'track8.enabled') : t(locale, 'track8.disabled')}`}
+      aria-label={`${label} - ${enabled ? t(locale, 'track8.enabled') : t(locale, 'track8.disabled')}`}
       disabled={disabled}
       onClick={onToggle}
       className="shrink-0 inline-flex items-center gap-2 min-h-[44px] rounded-full px-2 disabled:opacity-60"
@@ -124,7 +124,7 @@ export default function AutomationsClient({
         toast.error(res.error);
       } else {
         toast.success(
-          `${t(locale, `track8.trigger_${rule.trigger}`)} — ${
+          `${t(locale, `track8.trigger_${rule.trigger}`)} - ${
             enabled ? t(locale, 'track8.enabled') : t(locale, 'track8.disabled')
           }`
         );

@@ -19,7 +19,7 @@ const fragment = {
         delete: 'Delete',
         deleteConfirm: 'Delete this add-on?',
         empty:
-          'No add-ons yet — add extras like rush service or an extended warranty.',
+          'No add-ons yet - add extras like rush service or an extended warranty.',
         locked: 'Add-ons are locked once a quote is approved.',
         errorInvalid: 'Enter a name and a price of 0 or more.',
       },
@@ -27,7 +27,7 @@ const fragment = {
         baseTotal: 'Quote total',
         addonsTitle: 'Optional add-ons',
         addonsHint:
-          'Tick any extras to include — your total updates instantly.',
+          'Tick any extras to include - your total updates instantly.',
         yourTotal: 'Your total',
         includedAddons: 'Included add-ons',
         quoteFor: 'Quote for',
@@ -36,7 +36,7 @@ const fragment = {
         approved: 'You approved this quote.',
         approvedNote: 'The business will be in touch to schedule the work.',
         declined: 'You declined this quote.',
-        declinedNote: 'No problem — contact the business if you change your mind.',
+        declinedNote: 'No problem - contact the business if you change your mind.',
         notReady: "This quote isn't ready yet.",
         notReadyNote: 'Please check back once the business sends it.',
         whatsappCta: 'Questions? Chat on WhatsApp',
@@ -63,12 +63,12 @@ const fragment = {
         filterDeclined: 'Declined',
         emptyTitle: 'No quotes yet',
         emptyDesc:
-          'Send your first quote in under a minute — line items in, a clean total out.',
+          'Send your first quote in under a minute - line items in, a clean total out.',
       },
       new: {
         title: 'New quote',
         subtitle:
-          'Line items in, total out — {taxLabel} is added automatically from your region settings.',
+          'Line items in, total out - {taxLabel} is added automatically from your region settings.',
       },
     },
   } as Dictionary,
@@ -86,7 +86,7 @@ const fragment = {
         delete: 'Supprimer',
         deleteConfirm: 'Supprimer cette option?',
         empty:
-          'Aucune option pour le moment — ajoutez des extras comme un service express ou une garantie prolongée.',
+          'Aucune option pour le moment - ajoutez des extras comme un service express ou une garantie prolongée.',
         locked: 'Les options sont verrouillées une fois le devis approuvé.',
         errorInvalid: 'Entrez un nom et un prix de 0 ou plus.',
       },
@@ -94,7 +94,7 @@ const fragment = {
         baseTotal: 'Total du devis',
         addonsTitle: 'Options supplémentaires',
         addonsHint:
-          'Cochez les extras à inclure — votre total se met à jour instantanément.',
+          'Cochez les extras à inclure - votre total se met à jour instantanément.',
         yourTotal: 'Votre total',
         includedAddons: 'Options incluses',
         quoteFor: 'Devis pour',
@@ -103,7 +103,7 @@ const fragment = {
         approved: 'Vous avez approuvé ce devis.',
         approvedNote: 'L’entreprise vous contactera pour planifier les travaux.',
         declined: 'Vous avez refusé ce devis.',
-        declinedNote: 'Aucun problème — contactez l’entreprise si vous changez d’avis.',
+        declinedNote: 'Aucun problème - contactez l’entreprise si vous changez d’avis.',
         notReady: 'Ce devis n’est pas encore prêt.',
         notReadyNote: 'Veuillez revenir une fois que l’entreprise l’aura envoyé.',
         whatsappCta: 'Des questions? Discutez sur WhatsApp',
@@ -130,12 +130,12 @@ const fragment = {
         filterDeclined: 'Refusé',
         emptyTitle: 'Aucun devis pour le moment',
         emptyDesc:
-          'Envoyez votre premier devis en moins d\u2019une minute — articles entrés, total clair en sortie.',
+          'Envoyez votre premier devis en moins d\u2019une minute - articles entrés, total clair en sortie.',
       },
       new: {
         title: 'Nouveau devis',
         subtitle:
-          'Articles entrés, total en sortie — {taxLabel} est ajouté automatiquement selon vos paramètres régionaux.',
+          'Articles entrés, total en sortie - {taxLabel} est ajouté automatiquement selon vos paramètres régionaux.',
       },
     },
   } as Dictionary,

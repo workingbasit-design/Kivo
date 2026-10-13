@@ -5,7 +5,7 @@ import { Card } from '@/components/ui';
 
 /**
  * Friendly, data-free notice for the public quote/invoice portals.
- * Never reveals whether a document exists — invalid, expired and revoked
+ * Never reveals whether a document exists - invalid, expired and revoked
  * tokens all get the same safe message. The 'unavailable' variant is for
  * OUR side failing (e.g. the database is unreachable): it must never say
  * "expired", or customers will think their link is dead and ask the

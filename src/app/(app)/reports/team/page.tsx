@@ -157,7 +157,7 @@ export default async function TeamPerformancePage({
         />
         <StatCard
           label={tr('t10misc.teamreport.statMostHours')}
-          value={top && top.minutes > 0 ? top.name || top.email : '—'}
+          value={top && top.minutes > 0 ? top.name || top.email : '-'}
           sub={top && top.minutes > 0 ? formatDuration(top.minutes) : tr('t10misc.teamreport.noHoursLogged')}
           icon={<Trophy size={16} />}
           accent="bg-sky-100 text-sky-700"

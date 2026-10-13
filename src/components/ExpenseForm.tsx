@@ -142,7 +142,7 @@ export default function ExpenseForm({
               <option value="">{T('noJob')}</option>
               {jobs.map((j) => (
                 <option key={j.id} value={j.id}>
-                  {j.title} — {formatDateShort(j.date, locale)}
+                  {j.title} - {formatDateShort(j.date, locale)}
                 </option>
               ))}
             </select>

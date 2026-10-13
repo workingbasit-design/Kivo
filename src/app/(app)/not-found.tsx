@@ -4,7 +4,7 @@ import { getLocale } from '@/lib/i18n/server';
 
 /**
  * Branded 404 for the authenticated app ((app) segment).
- * Rendered when notFound() is called — e.g. opening a job, customer,
+ * Rendered when notFound() is called - e.g. opening a job, customer,
  * quote or invoice that was deleted or never existed. Replaces the
  * generic Next.js 404 with a bilingual, on-brand message inside the
  * normal app shell.

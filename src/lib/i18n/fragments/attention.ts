@@ -21,23 +21,23 @@ const fragment = {
       briefingSubtitle: 'Good morning. Here’s what needs you first.',
       items: {
         overdueInvoice: {
-          title: 'Invoice {number} overdue — {customer}',
+          title: 'Invoice {number} overdue - {customer}',
           detail: '{days} days overdue',
         },
         quoteFollowUp: {
-          title: 'Quote {number} waiting — {customer}',
+          title: 'Quote {number} waiting - {customer}',
           detail: 'No response in {days} days',
         },
         jobAtRisk: {
-          title: '“{title}” never started — {customer}',
+          title: '“{title}” never started - {customer}',
           detail: 'Was scheduled for {date} and is still not started',
         },
         jobUnassigned: {
-          title: '“{title}” has no technician — {date}',
+          title: '“{title}” has no technician - {date}',
           detail: 'For {customer}. Assign someone before the day slips.',
         },
         jobUnbilled: {
-          title: '“{title}” finished but not invoiced — {customer}',
+          title: '“{title}” finished but not invoiced - {customer}',
           detail: 'Completed work with no invoice yet',
         },
         leadIdle: {
@@ -46,7 +46,7 @@ const fragment = {
         },
         lowStock: {
           title: 'Low stock: {name}',
-          detail: '{quantity} left — at or below your reorder point',
+          detail: '{quantity} left - at or below your reorder point',
         },
         paidThisWeek: {
           title: '{count} invoices paid this week',
@@ -68,6 +68,15 @@ const fragment = {
         attention: 'Needs attention',
         info: 'Info',
         positive: 'Good news',
+      },
+      filterAll: 'All',
+      category: {
+        jobs: 'Jobs',
+        money: 'Money',
+        leads: 'Leads',
+        quotes: 'Quotes',
+        inventory: 'Inventory',
+        schedule: 'Schedule',
       },
     },
     owner: {
@@ -94,7 +103,7 @@ const fragment = {
     },
     leaks: {
       title: 'Money leaks',
-      subtitle: 'Where money is slipping away — measured from your real data.',
+      subtitle: 'Where money is slipping away - measured from your real data.',
       overdue: {
         title: 'Overdue invoices',
         detail: '{count} invoices {days}+ days past due',
@@ -105,11 +114,11 @@ const fragment = {
       },
       idleQuotes: {
         title: 'Quotes going cold',
-        detail: '{count} quotes waiting {days}+ days — {amount} in play',
+        detail: '{count} quotes waiting {days}+ days - {amount} in play',
       },
       totalAtRisk: 'Total at risk',
       measuredNote: 'Measured from invoices and jobs on your books.',
-      estimateNote: 'Estimate — pipeline value, not money lost.',
+      estimateNote: 'Estimate - pipeline value, not money lost.',
     },
     health: {
       title: 'Business health',
@@ -131,7 +140,7 @@ const fragment = {
         monthlyRevenue: 'Average monthly revenue',
         projected: 'Projected monthly revenue',
         shortfall: 'Monthly shortfall',
-        note: 'Based on your trailing 90-day average. Fixed costs are not modelled — treat this as a top-line sketch.',
+        note: 'Based on your trailing 90-day average. Fixed costs are not modelled - treat this as a top-line sketch.',
       },
       priceRise: {
         title: 'What if you raise prices 5%?',
@@ -154,7 +163,7 @@ const fragment = {
       startListening: 'Start listening',
       stopListening: 'Stop listening',
       listening: 'Listening…',
-      notSupported: 'Voice recognition isn’t supported in this browser. Use the big buttons below instead — they do the same thing.',
+      notSupported: 'Voice recognition isn’t supported in this browser. Use the big buttons below instead - they do the same thing.',
       todayJobs: 'Today’s jobs',
       noJobs: 'No jobs scheduled for today.',
       heard: 'Heard',
@@ -172,7 +181,7 @@ const fragment = {
       addMaterial: 'Add material',
       startJob: 'Start job',
       completeJob: 'Complete job',
-      tapHint: 'You can also just tap — every voice command has a button.',
+      tapHint: 'You can also just tap - every voice command has a button.',
       micPermission: 'Allow microphone access when the browser asks.',
     },
     cmdbar: {
@@ -199,23 +208,23 @@ const fragment = {
       briefingSubtitle: 'Bonjour. Voici ce qui mérite votre attention en premier.',
       items: {
         overdueInvoice: {
-          title: 'Facture {number} en retard — {customer}',
+          title: 'Facture {number} en retard - {customer}',
           detail: '{days} jours de retard',
         },
         quoteFollowUp: {
-          title: 'Soumission {number} en attente — {customer}',
+          title: 'Soumission {number} en attente - {customer}',
           detail: 'Sans réponse depuis {days} jours',
         },
         jobAtRisk: {
-          title: '« {title} » jamais commencé — {customer}',
+          title: '« {title} » jamais commencé - {customer}',
           detail: 'Prévu le {date} et toujours pas commencé',
         },
         jobUnassigned: {
-          title: '« {title} » sans technicien — {date}',
+          title: '« {title} » sans technicien - {date}',
           detail: 'Pour {customer}. Assignez quelqu’un avant que la journée dérape.',
         },
         jobUnbilled: {
-          title: '« {title} » terminé mais non facturé — {customer}',
+          title: '« {title} » terminé mais non facturé - {customer}',
           detail: 'Travail terminé sans facture',
         },
         leadIdle: {
@@ -224,7 +233,7 @@ const fragment = {
         },
         lowStock: {
           title: 'Stock bas : {name}',
-          detail: '{quantity} restant — au seuil de réapprovisionnement ou en dessous',
+          detail: '{quantity} restant - au seuil de réapprovisionnement ou en dessous',
         },
         paidThisWeek: {
           title: '{count} factures payées cette semaine',
@@ -246,6 +255,15 @@ const fragment = {
         attention: 'À surveiller',
         info: 'Info',
         positive: 'Bonne nouvelle',
+      },
+      filterAll: 'Tout',
+      category: {
+        jobs: 'Jobs',
+        money: 'Argent',
+        leads: 'Prospects',
+        quotes: 'Devis',
+        inventory: 'Inventaire',
+        schedule: 'Horaire',
       },
     },
     owner: {
@@ -272,7 +290,7 @@ const fragment = {
     },
     leaks: {
       title: 'Fuites d’argent',
-      subtitle: 'Où l’argent s’échappe — mesuré à partir de vos vraies données.',
+      subtitle: 'Où l’argent s’échappe - mesuré à partir de vos vraies données.',
       overdue: {
         title: 'Factures en retard',
         detail: '{count} factures en retard de {days}+ jours',
@@ -283,11 +301,11 @@ const fragment = {
       },
       idleQuotes: {
         title: 'Soumissions qui refroidissent',
-        detail: '{count} soumissions en attente depuis {days}+ jours — {amount} en jeu',
+        detail: '{count} soumissions en attente depuis {days}+ jours - {amount} en jeu',
       },
       totalAtRisk: 'Total à risque',
       measuredNote: 'Mesuré à partir de vos factures et travaux.',
-      estimateNote: 'Estimation — valeur du pipeline, pas de l’argent perdu.',
+      estimateNote: 'Estimation - valeur du pipeline, pas de l’argent perdu.',
     },
     health: {
       title: 'Santé de l’entreprise',
@@ -309,7 +327,7 @@ const fragment = {
         monthlyRevenue: 'Revenu mensuel moyen',
         projected: 'Revenu mensuel projeté',
         shortfall: 'Manque à gagner mensuel',
-        note: 'Basé sur votre moyenne des 90 derniers jours. Les coûts fixes ne sont pas modélisés — considérez ceci comme une esquisse.',
+        note: 'Basé sur votre moyenne des 90 derniers jours. Les coûts fixes ne sont pas modélisés - considérez ceci comme une esquisse.',
       },
       priceRise: {
         title: 'Et si vous augmentiez vos prix de 5 % ?',
@@ -332,7 +350,7 @@ const fragment = {
       startListening: 'Commencer l’écoute',
       stopListening: 'Arrêter l’écoute',
       listening: 'Écoute en cours…',
-      notSupported: 'La reconnaissance vocale n’est pas supportée dans ce navigateur. Utilisez les gros boutons ci-dessous — ils font la même chose.',
+      notSupported: 'La reconnaissance vocale n’est pas supportée dans ce navigateur. Utilisez les gros boutons ci-dessous - ils font la même chose.',
       todayJobs: 'Travaux d’aujourd’hui',
       noJobs: 'Aucun travail prévu aujourd’hui.',
       heard: 'Entendu',
@@ -350,7 +368,7 @@ const fragment = {
       addMaterial: 'Ajouter du matériel',
       startJob: 'Commencer le travail',
       completeJob: 'Terminer le travail',
-      tapHint: 'Vous pouvez aussi simplement toucher — chaque commande vocale a un bouton.',
+      tapHint: 'Vous pouvez aussi simplement toucher - chaque commande vocale a un bouton.',
       micPermission: 'Autorisez l’accès au micro quand le navigateur le demande.',
     },
     cmdbar: {

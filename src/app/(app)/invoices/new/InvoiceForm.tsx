@@ -77,9 +77,9 @@ export default function InvoiceForm({
   const [taxType, setTaxType] = useState<string>(defaultTaxType(taxConfig));
 
   const options = taxTypeOptions(taxConfig);
-  // Breakdown preview through the shared tax engine — createInvoice
+  // Breakdown preview through the shared tax engine - createInvoice
   // recomputes with the exact same call, so the previewed total is always
-  // the stored total. (Quebec QST is 9.975% on the price before GST —
+  // the stored total. (Quebec QST is 9.975% on the price before GST -
   // Revenu Québec changed this from GST-inclusive on 2013-01-01.)
   const { taxAmount, breakdown: lines } = calcTax(subtotal, {
     taxes: splitStoredTax(taxType, taxRate),
@@ -105,7 +105,7 @@ export default function InvoiceForm({
             </select>
             {customers.length === 0 && (
               <p className="text-[11px] text-zinc-400 mt-1">
-                No customers yet —{' '}
+                No customers yet -{' '}
                 <Link href="/customers/new" className="text-ink font-semibold hover:underline">
                   add one first
                 </Link>

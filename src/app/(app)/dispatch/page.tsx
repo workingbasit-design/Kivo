@@ -13,7 +13,7 @@ import DispatchDatePicker from '@/components/DispatchDatePicker';
 export const dynamic = 'force-dynamic';
 
 /**
- * Dispatch board — kanban-style daily dispatch view.
+ * Dispatch board - kanban-style daily dispatch view.
  * Shows today's jobs grouped by status (Scheduled / In Progress / Completed)
  * so dispatchers can see the whole day at a glance. Status changes happen
  * inline via the client component; full job details are one tap away.

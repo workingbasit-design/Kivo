@@ -14,7 +14,7 @@ import { navSections, navBadgeKeys, advancedNavItems, type NavItem } from '@/com
 import { NavIconView } from '@/components/animated-icons/nav-icon';
 import { useAutoExpandFlag } from '@/hooks/useStoredFlag';
 
-/** Shared with the mobile More sheet — one persisted preference per device. */
+/** Shared with the mobile More sheet - one persisted preference per device. */
 const ADVANCED_OPEN_KEY = 'ej-advanced-open';
 
 export interface SidebarStats {
@@ -155,7 +155,7 @@ export default function AppSidebar({
             </div>
           );
         })}
-        {/* Advanced — deferred Phase-1 features, collapsed by default */}
+        {/* Advanced - deferred Phase-1 features, collapsed by default */}
         <div>
           <button
             type="button"

@@ -9,14 +9,14 @@ const fragment = {
     pwa: {
       install: {
         title: 'Install EveryJob',
-        body: 'Add EveryJob to your home screen for quick access — no app store download needed.',
+        body: 'Add EveryJob to your home screen for quick access - no app store download needed.',
         installBtn: 'Install',
         dismissBtn: 'Not now',
       },
       push: {
         cardTitle: 'Push notifications',
         cardDesc:
-          'Get notified on this device about new jobs, messages and reminders. Free — no app store download.',
+          'Get notified on this device about new jobs, messages and reminders. Free - no app store download.',
         enableBtn: 'Enable notifications',
         disableBtn: 'Disable notifications',
         testBtn: 'Send test notification',
@@ -32,7 +32,7 @@ const fragment = {
         enabledToast: 'Notifications enabled on this device.',
         disabledToast: 'Notifications disabled on this device.',
         subscribeFailed: "Couldn't enable notifications. Please try again.",
-        testSent: 'Test notification sent — check your device.',
+        testSent: 'Test notification sent - check your device.',
         testFailed: "Couldn't send the test notification.",
         testTitle: 'EveryJob test notification',
         testBody: 'Push notifications are working on this device.',
@@ -43,14 +43,14 @@ const fragment = {
     pwa: {
       install: {
         title: 'Installer EveryJob',
-        body: 'Ajoutez EveryJob à votre écran d’accueil pour un accès rapide — sans passer par une boutique d’applications.',
+        body: 'Ajoutez EveryJob à votre écran d’accueil pour un accès rapide - sans passer par une boutique d’applications.',
         installBtn: 'Installer',
         dismissBtn: 'Pas maintenant',
       },
       push: {
         cardTitle: 'Notifications push',
         cardDesc:
-          'Recevez des notifications sur cet appareil pour les nouveaux travaux, messages et rappels. Gratuit — aucun téléchargement requis.',
+          'Recevez des notifications sur cet appareil pour les nouveaux travaux, messages et rappels. Gratuit - aucun téléchargement requis.',
         enableBtn: 'Activer les notifications',
         disableBtn: 'Désactiver les notifications',
         testBtn: 'Envoyer une notification d’essai',
@@ -67,7 +67,7 @@ const fragment = {
         enabledToast: 'Notifications activées sur cet appareil.',
         disabledToast: 'Notifications désactivées sur cet appareil.',
         subscribeFailed: 'Impossible d’activer les notifications. Veuillez réessayer.',
-        testSent: 'Notification d’essai envoyée — vérifiez votre appareil.',
+        testSent: 'Notification d’essai envoyée - vérifiez votre appareil.',
         testFailed: 'Impossible d’envoyer la notification d’essai.',
         testTitle: 'Notification d’essai EveryJob',
         testBody: 'Les notifications push fonctionnent sur cet appareil.',

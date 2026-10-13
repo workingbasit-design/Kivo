@@ -18,7 +18,7 @@ export type ProCardData = {
 };
 
 /**
- * Shared pro card for the customer experience — used on search results
+ * Shared pro card for the customer experience - used on search results
  * and the saved pros page. Clean EveryJob theme: white card, indigo
  * accents, refined hover and press micro-interactions.
  */

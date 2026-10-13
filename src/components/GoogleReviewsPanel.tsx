@@ -112,7 +112,7 @@ export default function GoogleReviewsPanel({
       if (res.ok) {
         const imported = res.imported ?? 0;
         const skipped = res.skipped ?? 0;
-        const text = `${G(locale, 'synced')} — ${imported} ${G(locale, 'newReviews')}${
+        const text = `${G(locale, 'synced')} - ${imported} ${G(locale, 'newReviews')}${
           skipped ? `, ${skipped} ${G(locale, 'alreadyHere')}` : ''
         }.`;
         setMsg({ ok: true, text });

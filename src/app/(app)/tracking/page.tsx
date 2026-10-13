@@ -9,7 +9,7 @@ export const metadata = { title: 'Live tracking | EveryJob' };
 /**
  * Dispatcher view (Phase 1, Advanced): the live map of today's active jobs.
  * Per-job location-sharing controls moved to the job detail page
- * (/jobs/[id]) — they only make sense in the context of a single job.
+ * (/jobs/[id]) - they only make sense in the context of a single job.
  */
 export default async function TrackingPage() {
   await requireAuth();

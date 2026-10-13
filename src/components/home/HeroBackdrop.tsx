@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 
 /**
- * HeroBackdrop — reel-inspired premium hero background.
+ * HeroBackdrop - reel-inspired premium hero background.
  * Layered, slowly-drifting organic gradient blobs (Haikei-style) that give
  * the hero depth and motion without any image assets or JS.
  * Pure CSS animation; disabled under prefers-reduced-motion.

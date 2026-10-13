@@ -15,7 +15,7 @@ import PayDepositButton from '@/components/PayDepositButton';
 import { clientIpFromHeaders } from '@/lib/client-ip';
 
 /**
- * Public client portal for a quote. No authentication — the share token in
+ * Public client portal for a quote. No authentication - the share token in
  * the URL is the only capability. The page loads exactly one quote and its
  * own business/customer, nothing else.
  */
@@ -39,7 +39,7 @@ export default async function QuotePortalPage({
   const rl = rateLimit(`portal:quote:${await clientIp()}`, PORTAL_LIMIT);
   if (!rl.ok) return <PortalNotice variant="rate-limited" />;
 
-  // Old cuid-based links are retired — friendly message, no data lookup.
+  // Old cuid-based links are retired - friendly message, no data lookup.
   if (isLegacyCuid(token)) return <PortalNotice variant="legacy" />;
 
   const resolved = await resolveShareToken(token, 'QUOTE');

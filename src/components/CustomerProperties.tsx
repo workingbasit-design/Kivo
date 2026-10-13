@@ -18,7 +18,7 @@ import {
 
 /**
  * A customer's properties (home, cottage, job sites). The owner can add,
- * edit, delete, and mark one primary — all tenant-scoped server-side.
+ * edit, delete, and mark one primary - all tenant-scoped server-side.
  */
 export default function CustomerProperties({
   customerId,

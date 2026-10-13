@@ -21,6 +21,74 @@ export function hasJobTime(time: string | null | undefined): time is string {
   return t !== "" && t.toUpperCase() !== "TBD";
 }
 
+/**
+ * Normalize a user-entered time to 24-hour "HH:MM" for storage.
+ *
+ * Accepts "10:00 AM", "10:00AM", "2pm", "2:30 pm", "09:00", "9:00", "21:30".
+ * Returns null for blank/TBD/unparseable input — never stores garbage.
+ * All job writes go through this so the column holds one canonical format.
+ */
+export function normalizeJobTime(input: string | null | undefined): string | null {
+  if (!hasJobTime(input)) return null;
+  const t = input!.trim().toUpperCase().replace(/\s+/g, ' ');
+  // 24h "HH:MM" or "H:MM"
+  let m = /^([01]?\d|2[0-3]):([0-5]\d)$/.exec(t);
+  if (m) {
+    return `${m[1].padStart(2, '0')}:${m[2]}`;
+  }
+  // 12h with AM/PM: "10:00 AM", "2 PM", "2:30pm"
+  m = /^(\d{1,2})(?::([0-5]\d))?\s*(AM|PM|A\.M\.|P\.M\.)$/.exec(t);
+  if (m) {
+    let h = parseInt(m[1], 10);
+    if (h < 1 || h > 12) return null;
+    const min = m[2] ?? '00';
+    if (m[3].startsWith('P') && h !== 12) h += 12;
+    if (m[3].startsWith('A') && h === 12) h = 0;
+    return `${String(h).padStart(2, '0')}:${min}`;
+  }
+  return null;
+}
+
+/**
+ * Display a stored "HH:MM" time for a locale.
+ * en → "10:00 AM" (12h, familiar to most Canadians); fr → "10 h 00".
+ * Falls back to the raw value when it isn't in canonical form (legacy data).
+ */
+export function formatJobTime(
+  time: string | null | undefined,
+  locale: 'en' | 'fr' = 'en'
+): string {
+  if (!hasJobTime(time)) return '';
+  const t = time!.trim();
+  const m = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(t);
+  if (!m) return t; // legacy free text — show as-is rather than blanking
+  const h24 = parseInt(m[1], 10);
+  if (locale === 'fr') {
+    return `${h24} h ${m[2]}`;
+  }
+  const suffix = h24 < 12 ? 'AM' : 'PM';
+  const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+  return `${h12}:${m[2]} ${suffix}`;
+}
+
+/** Human-readable job status label. Stored values are SCREAMING_CASE;
+ *  users see "In progress" / "En cours". */
+const JOB_STATUS_LABELS: Record<string, { en: string; fr: string }> = {
+  NEW: { en: 'New', fr: 'Nouveau' },
+  SCHEDULED: { en: 'Scheduled', fr: 'Planifié' },
+  'IN PROGRESS': { en: 'In progress', fr: 'En cours' },
+  COMPLETED: { en: 'Completed', fr: 'Terminé' },
+  PAID: { en: 'Paid', fr: 'Payé' },
+  CANCELLED: { en: 'Cancelled', fr: 'Annulé' },
+};
+
+export function formatStatusLabel(status: string, locale: 'en' | 'fr' = 'en'): string {
+  const entry = JOB_STATUS_LABELS[status];
+  if (entry) return locale === 'fr' ? entry.fr : entry.en;
+  // Fallback: title-case the raw value.
+  return status.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 /** Date locale for a business region: en-CA (Canada-only). */
 export function dateLocaleForRegion(_regionCode?: string | null): string {
   return 'en-CA';

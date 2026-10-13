@@ -39,7 +39,7 @@ type RegenResult = PortalActionResult;
  * Customer portal link manager (customer detail page).
  *
  * Generates a magic-link portal URL for the customer and a wa.me deep link
- * with the invite prefilled — the business owner taps it and sends from
+ * with the invite prefilled - the business owner taps it and sends from
  * their own WhatsApp app. EveryJob never sends anything automatically.
  * Renders nothing useful without a customer phone number.
  */

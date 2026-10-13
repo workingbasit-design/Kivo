@@ -27,10 +27,10 @@ type Step = 'describe' | 'match' | 'preview' | 'done';
 
 /**
  * "Get it done for me" flow.
- * 1. Describe — job description + editable name/phone/city (prefilled).
- * 2. Match — up to 3 verified pros, all selected by default.
- * 3. Preview — exact recipients, exact message, details shared. One tap sends.
- * 4. Done — confirmation + link to Requests.
+ * 1. Describe - job description + editable name/phone/city (prefilled).
+ * 2. Match - up to 3 verified pros, all selected by default.
+ * 3. Preview - exact recipients, exact message, details shared. One tap sends.
+ * 4. Done - confirmation + link to Requests.
  *
  * The idempotency key is generated ONCE when the preview is shown and reused
  * for the send, so double-taps and retries never duplicate requests.
@@ -81,7 +81,7 @@ export default function ConciergeClient({
       setServiceLabel(res.serviceLabel);
       setPros(res.pros);
       setSelected(new Set(res.pros.map((p) => p.id)));
-      // One idempotency key per match session — generated here, used at send.
+      // One idempotency key per match session - generated here, used at send.
       setIdempotencyKey(
         typeof crypto !== 'undefined' && 'randomUUID' in crypto
           ? crypto.randomUUID()
@@ -203,7 +203,7 @@ export default function ConciergeClient({
         </div>
       )}
 
-      {/* STEP 1 — describe */}
+      {/* STEP 1 - describe */}
       {step === 'describe' && (
         <div className="space-y-4">
           <div>
@@ -266,7 +266,7 @@ export default function ConciergeClient({
         </div>
       )}
 
-      {/* STEP 2 — match */}
+      {/* STEP 2 - match */}
       {step === 'match' && (
         <div>
           {pros.length === 0 ? (
@@ -320,7 +320,7 @@ export default function ConciergeClient({
                         <span className="block text-[12px] text-zinc-500 truncate">
                           {[p.locality, p.serviceNames.slice(0, 2).join(' · ')]
                             .filter(Boolean)
-                            .join(' — ')}
+                            .join(' - ')}
                         </span>
                       </span>
                     </button>
@@ -340,7 +340,7 @@ export default function ConciergeClient({
         </div>
       )}
 
-      {/* STEP 3 — preview */}
+      {/* STEP 3 - preview */}
       {step === 'preview' && (
         <div className="space-y-4">
           <div>
@@ -402,7 +402,7 @@ export default function ConciergeClient({
         </div>
       )}
 
-      {/* STEP 4 — done */}
+      {/* STEP 4 - done */}
       {step === 'done' && (
         <div className="rounded-3xl bg-white border border-zinc-200/80 shadow-sm p-8 text-center">
           <span className="mx-auto w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center mb-4">

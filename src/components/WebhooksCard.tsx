@@ -157,7 +157,7 @@ export default function WebhooksCard({
       toast.success(tr('integrations.copied'));
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      /* clipboard unavailable — the secret is selectable */
+      /* clipboard unavailable - the secret is selectable */
     }
   };
 

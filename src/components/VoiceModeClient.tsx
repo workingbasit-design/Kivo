@@ -140,7 +140,7 @@ export default function VoiceModeClient({
           if (res.error) throw new Error(res.error);
           const msg =
             fill("voice.didAction", locale) +
-            " — " +
+            " - " +
             fill(action.kind === "material" ? "voice.confirmMaterial" : "voice.confirmNote", locale) +
             ` ${jobLabel}`;
           pushLog(transcript, msg, true);
@@ -161,13 +161,13 @@ export default function VoiceModeClient({
   const handleTranscript = useCallback(
     (transcript: string) => {
       setHeard(transcript);
-      // Follow-up: we asked "what should the note say?" — treat this as the text.
+      // Follow-up: we asked "what should the note say?" - treat this as the text.
       if (pending && "jobId" in pending && !("needJob" in pending)) {
         const p = pending as { action: "note" | "material"; jobId: string };
         runAction({ kind: p.action, jobId: p.jobId, text: transcript }, transcript);
         return;
       }
-      // Follow-up: we asked "which job?" — re-parse with the job name.
+      // Follow-up: we asked "which job?" - re-parse with the job name.
       if (pending && "needJob" in pending) {
         const p = pending as { action: "start" | "complete" | "note" | "material"; needJob: true; text?: string };
         const retry = p.text ? `${p.action} ${transcript} ${p.text}` : `${p.action} ${transcript}`;
@@ -234,7 +234,7 @@ export default function VoiceModeClient({
     };
   }, []);
 
-  const tap = (action: VoiceAction) => runAction(action, "—");
+  const tap = (action: VoiceAction) => runAction(action, "-");
 
   return (
     <div className="space-y-5">
@@ -268,7 +268,7 @@ export default function VoiceModeClient({
         )}
       </Card>
 
-      {/* Today's jobs — big tap targets */}
+      {/* Today's jobs - big tap targets */}
       <section>
         <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2 px-1">
           {t(locale, "voice.todayJobs")}

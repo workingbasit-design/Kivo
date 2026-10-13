@@ -18,7 +18,7 @@ function nowMs(): number {
 
 /**
  * Public live-tracking page: /track/[token].
- * No authentication — the unguessable token in the URL is the only
+ * No authentication - the unguessable token in the URL is the only
  * capability, and it auto-expires (12h). The server validates the token
  * and renders the initial snapshot; the client component then polls
  * /api/track/[token]/ping every 15 seconds and formats times in the
@@ -51,7 +51,7 @@ export default async function TrackPage({
     share = await unsafeUnscoped('track:page:resolveShare', (db) =>
       // findUnique (not findFirst): matches the working quote/invoice token
       // pattern in lib/share.ts. The token column is @unique, so this is
-      // the correct query — and works around a production issue where
+      // the correct query - and works around a production issue where
       // findFirst by token returned no rows (2026-09-30).
       db.trackingShare.findUnique({
         where: { token },
@@ -74,7 +74,7 @@ export default async function TrackPage({
       })
     );
   } catch {
-    // Our side failed (e.g. database unreachable) — never label this
+    // Our side failed (e.g. database unreachable) - never label this
     // "expired", or the customer will think their link is dead.
     return (
       <div data-track-diag="lookup-failed">

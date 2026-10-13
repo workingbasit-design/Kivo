@@ -36,7 +36,7 @@ function stepKey(
 /**
  * Six-step setup checklist for new businesses.
  *
- * Completion comes from REAL server data — the parent passes `completed`
+ * Completion comes from REAL server data - the parent passes `completed`
  * computed from the business's actual state (logo set, customer count,
  * job count, quote/invoice count, Google linked, team size). Dismissal is
  * remembered per business in localStorage.

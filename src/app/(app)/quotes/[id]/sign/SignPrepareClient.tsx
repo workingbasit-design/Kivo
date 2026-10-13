@@ -133,7 +133,7 @@ export default function SignPrepareClient({
         ))}
       </div>
 
-      {/* Document — click to place the active field */}
+      {/* Document - click to place the active field */}
       <div onClick={placeField} className="relative cursor-crosshair">
         {children}
         {fields.map((f, i) => (
@@ -175,7 +175,7 @@ export default function SignPrepareClient({
         </div>
       )}
 
-      {/* Optional signer contact — the link is shared manually by the owner,
+      {/* Optional signer contact - the link is shared manually by the owner,
           so this is just a note stored on the request record. */}
       <div>
         <label className="block text-xs font-bold text-zinc-700 mb-1.5">
@@ -209,7 +209,7 @@ export default function SignPrepareClient({
 }
 
 /**
- * Shown after the link is created. WhatsApp opens a prefilled DRAFT —
+ * Shown after the link is created. WhatsApp opens a prefilled DRAFT -
  * the owner taps send from their own WhatsApp; nothing is sent automatically.
  */
 function SignShareSheet({
@@ -239,7 +239,7 @@ function SignShareSheet({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Clipboard API unavailable — the user can still select the text.
+      // Clipboard API unavailable - the user can still select the text.
     }
   }
 

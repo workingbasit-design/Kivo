@@ -38,7 +38,7 @@ export default function CommandPalette({ locale = "en" }: { locale?: Locale }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   // Reset the highlighted entry whenever the query changes or the palette
-  // (re)opens — render-phase adjustment instead of an effect.
+  // (re)opens - render-phase adjustment instead of an effect.
   const [prevQueryOpenKey, setPrevQueryOpenKey] = useState<string | null>(null);
   const queryOpenKey = `${open}|${query}`;
   if (prevQueryOpenKey !== queryOpenKey) {

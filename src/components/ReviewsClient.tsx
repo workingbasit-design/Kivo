@@ -101,7 +101,7 @@ function AddReviewForm({
                 <option value="" disabled>
                   {eligibleJobs.length === 0
                     ? t(locale, 't10money.reviewNoEligibleJobs')
-                    : '—'}
+                    : '-'}
                 </option>
                 {eligibleJobs.map((j) => (
                   <option key={j.id} value={j.id}>

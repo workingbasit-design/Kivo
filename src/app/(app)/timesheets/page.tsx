@@ -176,7 +176,7 @@ export default async function TimesheetsPage({
             {T('tsPeriod')}
           </p>
           <p className="text-sm font-bold text-zinc-900 mt-2">
-            {formatDateLabel(fromDate, dateLocale)} — {formatDateLabel(toDate, dateLocale)}
+            {formatDateLabel(fromDate, dateLocale)} - {formatDateLabel(toDate, dateLocale)}
           </p>
         </Card>
       </div>
@@ -218,7 +218,7 @@ export default async function TimesheetsPage({
                     </div>
                     <p className="text-xs text-zinc-500 mt-0.5">
                       {formatDateLabel(e.clockIn, dateLocale)} · {formatClockTime(e.clockIn)}
-                      {e.clockOut ? ` – ${formatClockTime(e.clockOut)}` : ` – ${T('tsNow')}`}
+                      {e.clockOut ? ` - ${formatClockTime(e.clockOut)}` : ` - ${T('tsNow')}`}
                       {e.job ? (
                         <>
                           {' · '}

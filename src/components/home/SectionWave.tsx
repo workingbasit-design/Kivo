@@ -1,5 +1,5 @@
 /**
- * SectionWave — Haikei-style organic wave divider.
+ * SectionWave - Haikei-style organic wave divider.
  * Renders a smooth SVG wave filled with `fillClass` that sits on the
  * boundary between two sections. Pass flip to mirror it vertically.
  */

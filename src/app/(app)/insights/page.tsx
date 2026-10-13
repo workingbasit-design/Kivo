@@ -27,14 +27,14 @@ import { cn } from "@/lib/utils";
 
 const fr = {
   title: "Perspectives",
-  subtitle: "Calculé à partir de vos propres données — rien n'est inventé.",
+  subtitle: "Calculé à partir de vos propres données - rien n'est inventé.",
   basis: "Basé sur vos propres enregistrements",
   jobsWord: "tâches",
   paymentsWord: "paiements",
   quotesWord: "devis",
   noDataTitle: "Pas encore de perspectives",
   noDataDesc:
-    "Terminez quelques tâches, enregistrez des paiements et envoyez des devis — vos perspectives apparaîtront ici, calculées à partir de votre activité réelle.",
+    "Terminez quelques tâches, enregistrez des paiements et envoyez des devis - vos perspectives apparaîtront ici, calculées à partir de votre activité réelle.",
   createJob: "Créer votre première tâche",
   momentum: "Dynamique des revenus",
   momentumSub: "Dernier mois complet vs le précédent",
@@ -64,14 +64,14 @@ const fr = {
   bestDay: "Votre journée la plus occupée",
   bestValue: "meilleure valeur moyenne",
   suggestionBusy: (d: string) =>
-    `Historiquement, le ${d} est votre journée la plus chargée — réservez les grosses tâches tôt ce jour-là.`,
+    `Historiquement, le ${d} est votre journée la plus chargée - réservez les grosses tâches tôt ce jour-là.`,
   suggestionValue: (d: string) =>
-    `La valeur moyenne par tâche est la plus élevée le ${d} — idéal pour les tâches à forte valeur.`,
+    `La valeur moyenne par tâche est la plus élevée le ${d} - idéal pour les tâches à forte valeur.`,
   suggestionSpread: (d: string) =>
-    `Le ${d} est généralement plus calme — une bonne fenêtre pour les tâches flexibles ou les rattrapages.`,
+    `Le ${d} est généralement plus calme - une bonne fenêtre pour les tâches flexibles ou les rattrapages.`,
   followups: "Relances de devis",
   followupsSub: "Envoyés il y a plus de 7 jours, sans réponse",
-  noFollowups: "Aucun devis en attente — belle réactivité.",
+  noFollowups: "Aucun devis en attente - belle réactivité.",
   winRate: "Taux de conversion des devis",
   daysWaiting: (n: number) => `en attente depuis ${n} j`,
   followUpCta: "Relancer",
@@ -85,14 +85,14 @@ const fr = {
 
 const en = {
   title: "Insights",
-  subtitle: "Computed from your own data — nothing is made up.",
+  subtitle: "Computed from your own data - nothing is made up.",
   basis: "Based on your own records",
   jobsWord: "jobs",
   paymentsWord: "payments",
   quotesWord: "quotes",
   noDataTitle: "No insights yet",
   noDataDesc:
-    "Complete some jobs, record payments and send quotes — your insights will appear here, computed from your real activity.",
+    "Complete some jobs, record payments and send quotes - your insights will appear here, computed from your real activity.",
   createJob: "Create your first job",
   momentum: "Revenue momentum",
   momentumSub: "Last complete month vs the one before",
@@ -122,14 +122,14 @@ const en = {
   bestDay: "Your busiest day",
   bestValue: "best average value",
   suggestionBusy: (d: string) =>
-    `Historically, ${d} is your busiest day — book big jobs early that day.`,
+    `Historically, ${d} is your busiest day - book big jobs early that day.`,
   suggestionValue: (d: string) =>
-    `Average job value peaks on ${d} — a good slot for high-value work.`,
+    `Average job value peaks on ${d} - a good slot for high-value work.`,
   suggestionSpread: (d: string) =>
-    `${d} is usually quieter — a good window for flexible jobs or catch-up.`,
+    `${d} is usually quieter - a good window for flexible jobs or catch-up.`,
   followups: "Quote follow-ups",
   followupsSub: "Sent 7+ days ago, no response",
-  noFollowups: "No quotes waiting — nice responsiveness.",
+  noFollowups: "No quotes waiting - nice responsiveness.",
   winRate: "Quote win rate",
   daysWaiting: (n: number) => `waiting ${n}d`,
   followUpCta: "Follow up",
@@ -237,7 +237,7 @@ export default async function InsightsPage() {
                   size={22}
                   className={momentum !== null && momentum > 0 ? "text-emerald-600" : momentum !== null && momentum < 0 ? "text-red-600" : "text-zinc-400"}
                 />
-                {momentum === null ? "—" : `${momentum > 0 ? "+" : ""}${momentum}%`}
+                {momentum === null ? "-" : `${momentum > 0 ? "+" : ""}${momentum}%`}
               </p>
               <p className="text-[11px] text-zinc-400 mt-1">
                 {momentum === null ? r.momentumNone : `${r.momentumSub} · ${momentum === 0 ? r.momentumFlat : momentum > 0 ? r.momentumUp : r.momentumDown}`}
@@ -246,7 +246,7 @@ export default async function InsightsPage() {
             <Card className="p-5">
               <p className="text-xs font-semibold text-zinc-500">{r.winRate}</p>
               <p className="mt-2 text-2xl font-bold text-zinc-900">
-                {ins.quoteWinRatePct === null ? "—" : `${ins.quoteWinRatePct}%`}
+                {ins.quoteWinRatePct === null ? "-" : `${ins.quoteWinRatePct}%`}
               </p>
               <p className="text-[11px] text-zinc-400 mt-1">{ins.staleQuotes.length > 0 ? `${ins.staleQuotes.length} ${r.followupsSub.toLowerCase()}` : r.noFollowups}</p>
             </Card>
@@ -255,7 +255,7 @@ export default async function InsightsPage() {
               <p className="mt-2 text-2xl font-bold text-zinc-900">
                 {ins.customerLifetimeValue
                   ? formatMoney(ins.customerLifetimeValue.avgValue, currency, moneyLocale)
-                  : "—"}
+                  : "-"}
               </p>
               <p className="text-[11px] text-zinc-400 mt-1">
                 {ins.customerLifetimeValue
@@ -266,7 +266,7 @@ export default async function InsightsPage() {
             <Card className="p-5">
               <p className="text-xs font-semibold text-zinc-500">{r.bestDay}</p>
               <p className="mt-2 text-2xl font-bold text-zinc-900 capitalize">
-                {ins.busiestWeekday === null ? "—" : weekdayName(ins.busiestWeekday, locale)}
+                {ins.busiestWeekday === null ? "-" : weekdayName(ins.busiestWeekday, locale)}
               </p>
               <p className="text-[11px] text-zinc-400 mt-1">{r.schedulingSub}</p>
             </Card>
@@ -448,7 +448,7 @@ export default async function InsightsPage() {
                           <ChevronRight size={14} className="text-zinc-400 shrink-0 mt-0.5" />
                           <span>
                             <span className="font-semibold">{t(locale, `growth.checks.${c.key}`)}</span>
-                            <span className="text-zinc-500"> — {t(locale, `growth.checkActions.${c.key}`)}</span>
+                            <span className="text-zinc-500"> - {t(locale, `growth.checkActions.${c.key}`)}</span>
                           </span>
                         </li>
                       ))}
@@ -493,7 +493,7 @@ export default async function InsightsPage() {
                 </ul>
               </div>
 
-              {/* How you compare — benchmarks only, honestly labelled */}
+              {/* How you compare - benchmarks only, honestly labelled */}
               <div className="mt-6 pt-5 border-t border-zinc-100">
                 <h3 className="text-sm font-bold text-zinc-900">{t(locale, "growth.compareTitle")}</h3>
                 <p className="text-[11px] text-zinc-400 font-medium mt-0.5 mb-3">{t(locale, "growth.compareSub")}</p>
@@ -533,8 +533,8 @@ export default async function InsightsPage() {
                   <li className="text-sm text-zinc-700 flex gap-2">
                     <Wrench size={14} className="text-zinc-400 shrink-0 mt-0.5" />
                     {locale === "fr"
-                      ? `« ${bestService.name} » a votre meilleure marge (${bestService.marginPct}%), « ${worstService.name} » la plus faible (${worstService.marginPct}%) — revoyez vos prix ou vos coûts.`
-                      : `“${bestService.name}” has your best margin (${bestService.marginPct}%), “${worstService.name}” the lowest (${worstService.marginPct}%) — review pricing or costs.`}
+                      ? `« ${bestService.name} » a votre meilleure marge (${bestService.marginPct}%), « ${worstService.name} » la plus faible (${worstService.marginPct}%) - revoyez vos prix ou vos coûts.`
+                      : `“${bestService.name}” has your best margin (${bestService.marginPct}%), “${worstService.name}” the lowest (${worstService.marginPct}%) - review pricing or costs.`}
                   </li>
                 )}
               </ul>

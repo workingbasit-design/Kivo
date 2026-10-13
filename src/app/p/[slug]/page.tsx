@@ -94,11 +94,11 @@ export async function generateMetadata({
   const name = page.business.name;
   const locality = localityFromAddress(page.business.address);
   const serviceWords = services.slice(0, 3).map((s) => s.name).join(', ');
-  const title = `${name}${locality ? ` — ${locality}` : ''} | EveryJob Directory`;
+  const title = `${name}${locality ? ` - ${locality}` : ''} | EveryJob Directory`;
   const description = [
     page.headline,
     serviceWords ? `Services: ${serviceWords}.` : '',
-    'Book free, read real reviews, request quotes — no commission.',
+    'Book free, read real reviews, request quotes - no commission.',
   ]
     .filter(Boolean)
     .join(' ');

@@ -113,7 +113,7 @@ export function JobCostingCard({
             <dd className="font-bold text-ink tabular-nums text-right">
               {formatDuration(laborMinutes)}{' '}
               <span className="text-[11px] font-semibold text-graphite">
-                × {effectiveRate !== null ? formatMoney(effectiveRate, currency) : '—'}/h
+                × {effectiveRate !== null ? formatMoney(effectiveRate, currency) : '-'}/h
               </span>
             </dd>
           </div>
@@ -152,7 +152,7 @@ export function JobCostingCard({
             </div>
           )}
 
-          {/* Per-job rate override (not saved — job-only view) */}
+          {/* Per-job rate override (not saved - job-only view) */}
           <div className="mt-2">
             <label className="flex items-center gap-2 text-[11px] font-semibold text-graphite cursor-pointer">
               <input
@@ -226,7 +226,7 @@ export function JobCostingCard({
           </dd>
         </div>
 
-        {/* Visual profit bar — margin fill, color by health */}
+        {/* Visual profit bar - margin fill, color by health */}
         {liveSummary.marginPct !== null && (
           <div className="pt-1">
             <div

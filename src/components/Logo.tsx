@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
  * Contrast rule: lime is reserved for dark surfaces. On dark backgrounds the
  * wordmark is white with a lime full-stop; on light backgrounds the wordmark
  * is ink and the full-stop stays lime only when large enough to be purely
- * decorative — the readable text itself always meets contrast.
+ * decorative - the readable text itself always meets contrast.
  */
 export default function Logo({
   size = 32,

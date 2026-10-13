@@ -18,7 +18,7 @@ export const dynamic = 'force-dynamic';
 /**
  * The business's public directory listing: claim/verification status plus
  * the editable public profile (services areas, hours display, contact
- * prefs — EN + FR). Tenant-scoped: a business only ever sees its own.
+ * prefs - EN + FR). Tenant-scoped: a business only ever sees its own.
  */
 export default async function DirectoryProfilePage() {
   const { businessId } = await requireAuth();

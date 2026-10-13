@@ -4,7 +4,7 @@
  * PWA install prompt banner.
  *
  * Listens for the browser's `beforeinstallprompt` event (Chrome/Edge/Android)
- * and shows a small banner offering one-tap install — no app store, no
+ * and shows a small banner offering one-tap install - no app store, no
  * download fees. Hidden when already installed, dismissed, or unsupported
  * (iOS Safari: no event; the banner simply never appears).
  *
@@ -27,7 +27,7 @@ export default function PwaInstallPrompt({ locale = 'en' }: { locale?: Locale })
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    // Already running as an installed PWA — nothing to offer.
+    // Already running as an installed PWA - nothing to offer.
     const standalone =
       window.matchMedia('(display-mode: standalone)').matches ||
       (window.navigator as unknown as { standalone?: boolean }).standalone === true;
@@ -35,7 +35,7 @@ export default function PwaInstallPrompt({ locale = 'en' }: { locale?: Locale })
     try {
       if (window.localStorage.getItem(DISMISS_KEY) === '1') return;
     } catch {
-      /* private mode — just don't persist the dismissal */
+      /* private mode - just don't persist the dismissal */
     }
 
     const onPrompt = (e: Event) => {

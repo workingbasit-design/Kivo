@@ -11,7 +11,7 @@ export interface PlaceSuggestion {
 }
 
 interface AddressAutocompleteProps {
-  /** Form field name — rendered as a hidden input so forms keep working. */
+  /** Form field name - rendered as a hidden input so forms keep working. */
   name: string;
   defaultValue?: string;
   value?: string;
@@ -31,7 +31,7 @@ interface AddressAutocompleteProps {
  * via our /api/places/search proxy (no API key needed).
  *
  * Controlled when `value` is provided, uncontrolled with `defaultValue` otherwise.
- * Manual typing always works — suggestions are optional and never submitted.
+ * Manual typing always works - suggestions are optional and never submitted.
  */
 export default function AddressAutocomplete({
   name,
@@ -173,7 +173,7 @@ export default function AddressAutocomplete({
 
   return (
     <div ref={wrapRef} className="relative">
-      {/* The real form field — the visible input never carries the name. */}
+      {/* The real form field - the visible input never carries the name. */}
       <input type="hidden" name={name} value={value} />
       {rows ? (
         <textarea rows={rows} className={className} {...sharedProps} />

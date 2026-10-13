@@ -473,7 +473,7 @@ export default function MessagingSettingsClient({
                       <td className="py-1.5 pr-2">{row.direction === 'IN' ? '←' : '→'} {row.type}</td>
                       <td className="py-1.5 pr-2">{row.customerName ?? row.recipient}</td>
                       <td className="py-1.5 pr-2">
-                        {row.template ? t(locale, `messaging.tpl_${row.template}` as Parameters<typeof t>[1]) : '—'}
+                        {row.template ? t(locale, `messaging.tpl_${row.template}` as Parameters<typeof t>[1]) : '-'}
                       </td>
                       <td className="py-1.5 font-semibold">{statusLabel(row.status)}</td>
                     </tr>

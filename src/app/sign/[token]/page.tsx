@@ -17,7 +17,7 @@ import SignClient from './SignClient';
 import { clientIpFromHeaders } from '@/lib/client-ip';
 
 /**
- * Public signing page. No authentication — the signing token in the URL
+ * Public signing page. No authentication - the signing token in the URL
  * is the only capability, exactly like the customer portal. All data is
  * loaded strictly through the resolved token (never a quoteId from the
  * URL), so one business's quote can never leak to another token holder.

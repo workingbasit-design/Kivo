@@ -10,6 +10,7 @@ import { jobSchema, JOB_STATUSES } from '@/lib/validations';
 import { isValidTransition } from '@/lib/job-status';
 import { validatePhone, INVALID_PHONE_MESSAGE } from '@/lib/phone';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { normalizeJobTime } from '@/lib/utils';
 
 export type JobActionResult = { error?: string; ok?: boolean; queued?: boolean };
 
@@ -105,18 +106,31 @@ export async function createJob(
     if (service) serviceId = service.id;
   }
 
+  // Optional crew link: tenant-scoped — a crew that doesn't belong to this
+  // business is ignored rather than failing the whole job.
+  let crewId: string | null = null;
+  const rawCrewId = String(formData.get('crewId') ?? '').trim();
+  if (rawCrewId) {
+    const crew = await prisma.crew.findFirst({
+      where: { id: rawCrewId, businessId },
+      select: { id: true },
+    });
+    if (crew) crewId = crew.id;
+  }
+
   const job = await prisma.job.create({
     data: {
       title: parsed.data.title,
       customerId: parsed.data.customerId,
       businessId,
       date: parseDateInput(parsed.data.date),
-      time: parsed.data.time || null,
+      time: normalizeJobTime(parsed.data.time),
       address: parsed.data.address || null,
       price: Number(parsed.data.price.toFixed(2)), // cents, avoids float artifacts
       status: 'SCHEDULED',
       notes: parsed.data.notes || null,
       technician: parsed.data.technician || null,
+      crewId,
       serviceId,
     },
   });
@@ -191,17 +205,35 @@ export async function updateJob(
   });
   if (!customer) return { error: 'Selected customer not found.' };
 
+  // Optional crew link: tenant-scoped — a crew that doesn't belong to this
+  // business is ignored rather than failing the whole update. Only touched
+  // when the form actually rendered the crew select (formData.has).
+  const crewUpdate: { crewId?: string | null } = {};
+  if (formData.has('crewId')) {
+    let crewId: string | null = null;
+    const rawCrewId = String(formData.get('crewId') ?? '').trim();
+    if (rawCrewId) {
+      const crew = await prisma.crew.findFirst({
+        where: { id: rawCrewId, businessId },
+        select: { id: true },
+      });
+      if (crew) crewId = crew.id;
+    }
+    crewUpdate.crewId = crewId;
+  }
+
   await prisma.job.update({
     where: { id, businessId },
     data: {
       title: parsed.data.title,
       customerId: parsed.data.customerId,
       date: parseDateInput(parsed.data.date),
-      time: parsed.data.time || null,
+      time: normalizeJobTime(parsed.data.time),
       address: parsed.data.address || null,
       price: Number(parsed.data.price.toFixed(2)), // cents, avoids float artifacts
       notes: parsed.data.notes || null,
       technician: parsed.data.technician || null,
+      ...crewUpdate,
     },
   });
 
@@ -294,7 +326,7 @@ export async function updateJobSchedule(
       where: { id: jobId, businessId },
       data: {
         date: parseDateInput(dateStr),
-        time: time.trim() || null,
+        time: normalizeJobTime(time),
         status,
       },
     });
@@ -426,9 +458,9 @@ export async function seedSampleJobs(): Promise<JobActionResult> {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const samples = [
-    { title: 'Furnace and AC tune-up', days: 0, time: '10:00 AM', price: 299 },
-    { title: 'Bathroom faucet leak repair', days: 0, time: '2:00 PM', price: 189 },
-    { title: 'Full home deep cleaning', days: 1, time: '9:00 AM', price: 349 },
+    { title: 'Furnace and AC tune-up', days: 0, time: '10:00', price: 299 },
+    { title: 'Bathroom faucet leak repair', days: 0, time: '14:00', price: 189 },
+    { title: 'Full home deep cleaning', days: 1, time: '09:00', price: 349 },
   ];
 
   for (const s of samples) {

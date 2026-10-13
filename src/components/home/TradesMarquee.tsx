@@ -1,5 +1,5 @@
 /**
- * Infinite CSS trades marquee (server component — animation is pure CSS).
+ * Infinite CSS trades marquee (server component - animation is pure CSS).
  * The list is duplicated once so the -50% translate loop is seamless.
  * Pauses on hover; disabled under prefers-reduced-motion.
  */

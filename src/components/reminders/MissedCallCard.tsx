@@ -13,7 +13,7 @@ import type { ReminderUiStrings } from './ReminderRow';
  * Missed-call text-back quick action.
  *
  * Honest by design: this is a MANUAL quick-draft. EveryJob has no phone /
- * telephony integration and does not detect missed calls — the owner picks
+ * telephony integration and does not detect missed calls - the owner picks
  * a customer and sends the text themselves from their own apps.
  */
 export default function MissedCallCard({
@@ -86,7 +86,7 @@ export default function MissedCallCard({
               <option value="">{pickCustomerLabel}</option>
               {customers.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.name} — {c.phone}
+                  {c.name} - {c.phone}
                 </option>
               ))}
             </select>
@@ -114,7 +114,7 @@ export default function MissedCallCard({
         <div className="mt-3 bg-ink rounded-2xl p-4">
           <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
             <p className="text-[11px] font-bold uppercase tracking-wider text-lime">
-              {ui.draftReady} — {selected.name}
+              {ui.draftReady} - {selected.name}
             </p>
             <div className="flex items-center gap-2 shrink-0 flex-wrap">
               <WhatsAppButton

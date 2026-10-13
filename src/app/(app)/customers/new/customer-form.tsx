@@ -70,7 +70,7 @@ export default function NewCustomerForm() {
           <div className="grid sm:grid-cols-2 gap-5">
             <Field label={t('t10money.custProvince')}>
               <select name="province" defaultValue="" className={inputClass}>
-                <option value="">—</option>
+                <option value="">-</option>
                 {CA_PROVINCES.map((p) => (
                   <option key={p.code} value={p.code}>
                     {p.name}

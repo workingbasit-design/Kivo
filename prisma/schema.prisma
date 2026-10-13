@@ -24,6 +24,7 @@ model User {
   jobNotes      JobNote[]   @relation("JobNoteAuthor")
   jobPhotos     JobPhoto[]  @relation("JobPhotoUploadedBy")
   timeEntries   TimeEntry[]
+  crewMemberships CrewMember[]
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 }
@@ -65,6 +66,9 @@ model Business {
   timezone             String? // IANA timezone, e.g. "America/Toronto"; null = region default
   defaultHourlyRate    Float? // default labor rate (CAD/hr) for job costing; null = not set
   logoUrl              String?
+  tagline              String? // brand kit tagline shown on quotes / social templates
+  brandColors          String? // JSON: { primary: "#rrggbb", accent: "#rrggbb" }; null = defaults
+  brandServices        String? // JSON array of service names for social templates; null = none set
   portalTokens         CustomerPortalToken[]
   users                User[]
   customers            Customer[]
@@ -124,6 +128,10 @@ model Business {
   supportTickets       SupportTicket[]
   equipment            Equipment[]
   parts                Part[]
+  projects             Project[]
+  crews                Crew[]
+  savedReports         SavedReport[]
+  digestSetting        DigestSetting?
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
 }
@@ -157,6 +165,7 @@ model Customer {
   recurringJobs        RecurringJob[]
   portalTokens         CustomerPortalToken[]
   equipment            Equipment[]
+  projects             Project[]
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
 
@@ -208,6 +217,12 @@ model Job {
   trackingShare       TrackingShare?
   reviewRequests      ReviewRequest[]
   reviews             Review[]
+  projectId      String?
+  project        Project?      @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  projectPhaseId String?
+  projectPhase   ProjectPhase? @relation(fields: [projectPhaseId], references: [id], onDelete: SetNull)
+  crewId         String?
+  crew           Crew?         @relation(fields: [crewId], references: [id], onDelete: SetNull)
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
 
@@ -1360,4 +1375,98 @@ model ConciergeSend {
   createdAt      DateTime @default(now())
 
   @@index([customerId])
+}
+
+/// Projects: container for larger, longer, multi-visit work. A project groups
+/// jobs into phases (milestones), giving office + field one shared structure.
+model Project {
+  id          String         @id @default(cuid())
+  businessId  String
+  business    Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  customerId  String?
+  customer    Customer?      @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  title       String
+  description String?
+  status      String         @default("ACTIVE") // ACTIVE, ON_HOLD, COMPLETED, CANCELLED
+  budgetCents Int?
+  startDate   DateTime?
+  endDate     DateTime?
+  phases      ProjectPhase[]
+  jobs        Job[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([businessId, status])
+}
+
+/// A phase (milestone) inside a project. Jobs attach to a phase; phases order
+/// the work from kickoff to handoff.
+model ProjectPhase {
+  id        String    @id @default(cuid())
+  projectId String
+  project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name      String
+  order     Int       @default(0)
+  status    String    @default("TODO") // TODO, IN_PROGRESS, DONE
+  dueDate   DateTime?
+  jobs      Job[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([projectId, order])
+}
+
+/// Crews: named groups of technicians scheduled as a unit instead of one by one.
+model Crew {
+  id         String       @id @default(cuid())
+  businessId String
+  business   Business     @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  name       String
+  color      String?
+  members    CrewMember[]
+  jobs       Job[]
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@index([businessId])
+}
+
+model CrewMember {
+  id        String   @id @default(cuid())
+  crewId    String
+  crew      Crew     @relation(fields: [crewId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  name      String // display name; falls back to linked user's name
+  role      String?
+  createdAt DateTime @default(now())
+
+  @@index([crewId])
+}
+
+/// Saved reports from the natural-language report builder: the prompt plus the
+/// resolved config, so a report can be re-run without re-asking.
+model SavedReport {
+  id         String   @id @default(cuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  name       String
+  prompt     String
+  configJson String // { type, dateRange, groupBy, ... }
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([businessId])
+}
+
+/// Morning briefing digest preferences: one row per business.
+model DigestSetting {
+  id         String   @id @default(cuid())
+  businessId String   @unique
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  enabled    Boolean  @default(true)
+  sendTime   String   @default("07:00") // local HH:mm
+  channels   String   @default("IN_APP") // comma list: IN_APP, PUSH
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }

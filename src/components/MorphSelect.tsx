@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ChevronDown, Check } from 'lucide-react';
 
 /**
- * MorphSelect — the trigger button physically expands into the dropdown
+ * MorphSelect - the trigger button physically expands into the dropdown
  * via a shared-element layout transition, instead of a disconnected popover.
  */
 export default function MorphSelect<T extends string>({

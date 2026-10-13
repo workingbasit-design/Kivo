@@ -16,7 +16,7 @@ import { t } from '@/lib/i18n';
 import { clientIpFromHeaders } from '@/lib/client-ip';
 
 /**
- * Public client portal for an invoice. No authentication — the share token
+ * Public client portal for an invoice. No authentication - the share token
  * in the URL is the only capability. The page loads exactly one invoice
  * and its own business/customer, nothing else. Display only: no payment is
  * processed or marked here.
@@ -41,7 +41,7 @@ export default async function InvoicePortalPage({
   const rl = rateLimit(`portal:invoice:${await clientIp()}`, PORTAL_LIMIT);
   if (!rl.ok) return <PortalNotice variant="rate-limited" />;
 
-  // Old cuid-based links are retired — friendly message, no data lookup.
+  // Old cuid-based links are retired - friendly message, no data lookup.
   if (isLegacyCuid(token)) return <PortalNotice variant="legacy" />;
 
   const resolved = await resolveShareToken(token, 'INVOICE');

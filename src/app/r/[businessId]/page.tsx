@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 
-// Public page — no auth. This URL no longer accepts reviews (review moat):
+// Public page - no auth. This URL no longer accepts reviews (review moat):
 // it explains that EveryJob reviews come only from verified customers via
 // personal single-use links. Only the business name is ever shown here.
 
@@ -31,7 +31,7 @@ export default async function PublicReviewInfoPage({
 }) {
   const { businessId } = await params;
 
-  // Tenant-safe: only the business name is selected — nothing else leaks.
+  // Tenant-safe: only the business name is selected - nothing else leaks.
   const business = await prisma.business.findUnique({
     where: { id: businessId },
     select: { name: true },

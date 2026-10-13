@@ -38,7 +38,7 @@ export type CustomerRow = {
 
 /**
  * Customer list with a live search box and tag filter chips. Typing filters
- * the list client-side across name, phone, email and address — no submit or
+ * the list client-side across name, phone, email and address - no submit or
  * page reload needed.
  */
 export default function CustomersClient({
