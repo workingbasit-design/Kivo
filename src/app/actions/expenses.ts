@@ -187,19 +187,23 @@ export async function deleteExpense(id: string): Promise<ExpenseResult> {
   const limited = await checkLimit(user.id);
   if (limited) return limited;
 
-  const existing = await prisma.jobExpense.findFirst({
-    where: { id, businessId },
-    select: { id: true, receiptUrl: true, jobId: true },
-  });
-  if (!existing) return { ok: false, error: 'notFound' };
+  try {
+    const existing = await prisma.jobExpense.findFirst({
+      where: { id, businessId },
+      select: { id: true, receiptUrl: true, jobId: true },
+    });
+    if (!existing) return { ok: false, error: 'notFound' };
 
-  if (existing.receiptUrl) {
-    const token = process.env.BLOB_READ_WRITE_TOKEN;
-    if (token) await del(existing.receiptUrl, { token }).catch(() => {});
+    if (existing.receiptUrl) {
+      const token = process.env.BLOB_READ_WRITE_TOKEN;
+      if (token) await del(existing.receiptUrl, { token }).catch(() => {});
+    }
+
+    await prisma.jobExpense.delete({ where: { id: existing.id } });
+    revalidateExpenses();
+    if (existing.jobId) revalidatePath(`/jobs/${existing.jobId}`);
+    return { ok: true };
+  } catch {
+    return { ok: false, error: 'deleteFailed' };
   }
-
-  await prisma.jobExpense.delete({ where: { id: existing.id } });
-  revalidateExpenses();
-  if (existing.jobId) revalidatePath(`/jobs/${existing.jobId}`);
-  return { ok: true };
 }

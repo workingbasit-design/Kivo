@@ -128,7 +128,7 @@ export default async function SettingsPage() {
         </p>
         {bookingPage?.enabled && bookingPage.slug ? (
           <div className="mb-4 p-3 bg-zinc-50 rounded-lg border border-zinc-200">
-            <p className="text-[11px] text-zinc-500 mb-1">{tr('t10misc.booking.publicUrlLabel')}</p>
+            <p className="text-xs text-zinc-500 mb-1">{tr('t10misc.booking.publicUrlLabel')}</p>
             <a
               href={`/book/${bookingPage.slug}`}
               target="_blank"

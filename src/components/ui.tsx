@@ -203,19 +203,19 @@ export function Field({
         {required && <span className="text-rose-500 ml-1" aria-hidden="true">*</span>}
       </label>
       {children}
-      {hint && <p className="text-[11px] text-zinc-400 mt-1">{hint}</p>}
+      {hint && <p className="text-xs text-zinc-400 mt-1">{hint}</p>}
     </div>
   );
 }
 
 export const inputClass =
-  'w-full min-h-[44px] px-4 py-2.5 rounded-xl border border-zinc-200 bg-white text-sm text-zinc-900 placeholder:text-zinc-400 shadow-[inset_0_1px_2px_rgba(22,22,22,0.04)] focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/40 focus-visible:border-ink transition-shadow';
+  'w-full min-h-[44px] px-4 py-2.5 rounded-xl border border-zinc-200 bg-white text-base md:text-sm text-zinc-900 placeholder:text-zinc-400 shadow-[inset_0_1px_2px_rgba(22,22,22,0.04)] focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/40 focus-visible:border-ink transition-shadow';
 
 export const textareaClass =
-  'w-full min-h-[88px] px-4 py-2.5 rounded-xl border border-zinc-200 bg-white text-sm text-zinc-900 placeholder:text-zinc-400 shadow-[inset_0_1px_2px_rgba(22,22,22,0.04)] focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/40 focus-visible:border-ink transition-shadow';
+  'w-full min-h-[88px] px-4 py-2.5 rounded-xl border border-zinc-200 bg-white text-base md:text-sm text-zinc-900 placeholder:text-zinc-400 shadow-[inset_0_1px_2px_rgba(22,22,22,0.04)] focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/40 focus-visible:border-ink transition-shadow';
 
 export const selectClass =
-  'w-full min-h-[44px] px-4 py-2.5 rounded-xl border border-zinc-200 bg-white text-sm text-zinc-900 shadow-[inset_0_1px_2px_rgba(22,22,22,0.04)] focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/40 focus-visible:border-ink transition-shadow';
+  'w-full min-h-[44px] px-4 py-2.5 rounded-xl border border-zinc-200 bg-white text-base md:text-sm text-zinc-900 shadow-[inset_0_1px_2px_rgba(22,22,22,0.04)] focus:outline-none focus-visible:ring-2 focus-visible:ring-ink/40 focus-visible:border-ink transition-shadow';
 
 export const checkboxClass =
   'w-5 h-5 rounded-md border-zinc-300 accent-[#161616] focus-visible:ring-2 focus-visible:ring-ink/40 focus-visible:ring-offset-2';
