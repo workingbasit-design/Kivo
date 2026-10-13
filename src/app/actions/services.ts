@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { serviceSchema } from '@/lib/validations';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { dollarsToCents } from '@/lib/money';
 
 export type ServiceResult = { error?: string; ok?: boolean };
 
@@ -76,6 +77,7 @@ export async function createService(formData: FormData): Promise<ServiceResult> 
     data: {
       name: data.name,
       price: data.price,
+      priceCents: dollarsToCents(data.price),
       durationMin: data.durationMin ?? null,
       description: nullIfBlank(data.description),
       businessId,

@@ -7,6 +7,7 @@ import { requireAuth } from '@/lib/auth';
 import { recurringSchema } from '@/lib/validations';
 import { generateDueJobs } from '@/lib/recurring';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { dollarsToCents } from '@/lib/money';
 
 export type RecurringActionResult = { error?: string; ok?: boolean; created?: number };
 
@@ -72,7 +73,8 @@ export async function createRecurring(
       nextRun: parseDateInput(parsed.data.startDate),
       time: parsed.data.time || null,
       address: parsed.data.address || null,
-      price: Math.round(parsed.data.price * 100) / 100, // cents (2026-09-24)
+      price: Math.round(parsed.data.price * 100) / 100, // legacy Float
+      priceCents: dollarsToCents(parsed.data.price),
       notes: parsed.data.notes || null,
       customerId: parsed.data.customerId,
       businessId,
