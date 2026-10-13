@@ -74,3 +74,20 @@ export function formatCents(
   const dollars = cents === null || cents === undefined ? 0 : Number(cents) / 100;
   return formatMoney(dollars, _currency, locale);
 }
+
+/**
+ * Format money from cents (BigInt) with Float dollar fallback.
+ * Use during migration: prefers priceCents, falls back to price.
+ * formatMoneySmart(job.priceCents, job.price, currency, locale)
+ */
+export function formatMoneySmart(
+  cents: bigint | number | null | undefined,
+  dollarsFallback: number | null | undefined,
+  _currency: string | null | undefined,
+  locale: 'en' | 'fr' = 'en'
+): string {
+  if (cents !== null && cents !== undefined) {
+    return formatCents(cents, _currency, locale);
+  }
+  return formatMoney(dollarsFallback, _currency, locale);
+}
