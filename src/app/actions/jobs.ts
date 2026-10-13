@@ -11,6 +11,7 @@ import { isValidTransition } from '@/lib/job-status';
 import { validatePhone, INVALID_PHONE_MESSAGE } from '@/lib/phone';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { normalizeJobTime } from '@/lib/utils';
+import { dollarsToCents } from '@/lib/money';
 
 export type JobActionResult = { error?: string; ok?: boolean; queued?: boolean };
 
@@ -126,7 +127,8 @@ export async function createJob(
       date: parseDateInput(parsed.data.date),
       time: normalizeJobTime(parsed.data.time),
       address: parsed.data.address || null,
-      price: Number(parsed.data.price.toFixed(2)), // cents, avoids float artifacts
+      price: Number(parsed.data.price.toFixed(2)), // legacy Float; remove after migration
+      priceCents: dollarsToCents(parsed.data.price),
       status: 'SCHEDULED',
       notes: parsed.data.notes || null,
       technician: parsed.data.technician || null,
@@ -230,7 +232,8 @@ export async function updateJob(
       date: parseDateInput(parsed.data.date),
       time: normalizeJobTime(parsed.data.time),
       address: parsed.data.address || null,
-      price: Number(parsed.data.price.toFixed(2)), // cents, avoids float artifacts
+      price: Number(parsed.data.price.toFixed(2)), // legacy Float; remove after migration
+      priceCents: dollarsToCents(parsed.data.price),
       notes: parsed.data.notes || null,
       technician: parsed.data.technician || null,
       ...crewUpdate,
