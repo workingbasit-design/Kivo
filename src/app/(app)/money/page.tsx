@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { Plus, ClipboardList, FileText, ArrowRight, BellRing } from 'lucide-react';
+import { Plus, ClipboardList, FileText, BellRing } from 'lucide-react';
 import { getSession } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
@@ -123,7 +123,6 @@ export default async function MoneyPage() {
           <div className="mt-4 flex flex-wrap gap-2">
             <Link href="/quotes" className={secondaryBtnClass}>
               {L('t10money.money.viewQuotes')}
-              <ArrowRight className="h-4 w-4" aria-hidden />
             </Link>
             <Link href="/quotes/new" className={primaryBtnClass}>
               <Plus className="h-4 w-4" aria-hidden />
@@ -153,7 +152,6 @@ export default async function MoneyPage() {
           <div className="mt-4 flex flex-wrap gap-2">
             <Link href="/invoices" className={secondaryBtnClass}>
               {L('t10money.money.viewInvoices')}
-              <ArrowRight className="h-4 w-4" aria-hidden />
             </Link>
             <Link href="/invoices/new" className={primaryBtnClass}>
               <Plus className="h-4 w-4" aria-hidden />

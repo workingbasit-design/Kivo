@@ -65,6 +65,7 @@ model Business {
   interacEmail         String? // Interac e-Transfer email for CA businesses; shown on invoices (record-only, EveryJob never processes payments)
   timezone             String? // IANA timezone, e.g. "America/Toronto"; null = region default
   defaultHourlyRate    Float? // default labor rate (CAD/hr) for job costing; null = not set
+  defaultHourlyRateCents BigInt? // cents; migration from defaultHourlyRate
   logoUrl              String?
   tagline              String? // brand kit tagline shown on quotes / social templates
   brandColors          String? // JSON: { primary: "#rrggbb", accent: "#rrggbb" }; null = defaults
@@ -177,6 +178,7 @@ model Service {
   id          String   @id @default(cuid())
   name        String
   price       Float
+  priceCents BigInt // cents; migration from price
   durationMin Int? // typical job duration in minutes; pre-fills scheduling estimates
   description String? // short plain-language description shown on quotes/booking
   businessId  String
@@ -193,6 +195,7 @@ model Job {
   time           String?
   address        String?
   price          Float
+  priceCents BigInt // cents; migration from price
   status         String // NEW, SCHEDULED, IN PROGRESS, COMPLETED, PAID, CANCELLED
   notes          String?
   technician     String?
@@ -238,10 +241,13 @@ model Invoice {
   number         String
   date           DateTime
   subtotal       Float             @default(0)
+  subtotalCents BigInt // cents; migration from subtotal
   taxRate        Float             @default(0)
   taxType        String? // "GST", "HST", "PST", "CGST", "SGST", "IGST"
   taxAmount      Float             @default(0)
+  taxAmountCents BigInt // cents; migration from taxAmount
   total          Float
+  totalCents BigInt // cents; migration from total
   status         String // UNPAID, PARTIALLY PAID, PAID
   sentAt         DateTime? // set when the pro emails the invoice to the customer (not a payment state)
   notes          String?
@@ -275,6 +281,7 @@ model InvoiceLineItem {
   description String
   qty         Float
   unitPrice   Float
+  unitPriceCents BigInt // cents; migration from unitPrice
   position    Int // display order
   createdAt   DateTime @default(now())
 }
@@ -313,6 +320,7 @@ model CustomerPortalToken {
 model Payment {
   id                      String   @id @default(cuid())
   amount                  Float
+  amountCents BigInt // cents; migration from amount
   provider                String // "STRIPE", "INTERAC", "CASH", "CHEQUE"
   transactionId           String?
   status                  String // "PENDING", "COMPLETED", "FAILED"
@@ -361,6 +369,7 @@ model Communication {
   content      String? // Message body or call summary
   jobCategory  String? // e.g. "AC repair"
   estValue     Float? // Estimated value
+  estValueCents BigInt? // cents; migration from estValue
   businessId   String
   business     Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
   createdAt    DateTime @default(now())
@@ -412,6 +421,7 @@ model Quote {
   number            String
   title             String
   total             Float
+  totalCents BigInt // cents; migration from total
   status            String // "DRAFT", "SENT", "APPROVED", "DECLINED"
   customerId        String
   customer          Customer           @relation(fields: [customerId], references: [id], onDelete: Cascade)
@@ -422,8 +432,10 @@ model Quote {
   addons            QuoteAddon[]
   lineItems         QuoteLineItem[]
   depositAmount     Float? // requested deposit (CAD); null = no deposit requested
+  depositAmountCents BigInt? // cents; migration from depositAmount
   discountType      String? // "PERCENT" | "AMOUNT"; null = no discount
   discountValue     Float? // percent (0-100) or CAD amount, per discountType
+  discountValueCents BigInt? // cents; migration from discountValue
   deposits          QuoteDeposit[]
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
@@ -515,6 +527,7 @@ model RecurringJob {
   time       String?
   address    String?
   price      Float
+  priceCents BigInt // cents; migration from price
   notes      String?
   active     Boolean  @default(true)
   customerId String
@@ -677,6 +690,7 @@ model JobExpense {
   business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
   description String
   amount      Float
+  amountCents BigInt // cents; migration from amount
   category    String   @default("MATERIALS") // MATERIALS, TRAVEL, OTHER
   spentAt     DateTime @default(now())
   note        String? // optional longer note
@@ -692,6 +706,7 @@ model QuoteAddon {
   quote     Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
   title     String
   price     Float
+  priceCents BigInt // cents; migration from price
   selected  Boolean  @default(false)
   sortOrder Int      @default(0)
   createdAt DateTime @default(now())
@@ -703,6 +718,7 @@ model ChecklistTemplate {
   business    Business                @relation(fields: [businessId], references: [id], onDelete: Cascade)
   name        String
   price       Float? // optional default price when used as a job template
+  priceCents BigInt? // cents; migration from price
   durationMin Int? // optional default duration (minutes) when used as a job template
   notes       String? // optional default job notes when used as a job template
   items       ChecklistTemplateItem[]
@@ -883,6 +899,7 @@ model QuoteDeposit {
   businessId              String
   business                Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
   amount                  Float
+  amountCents BigInt // cents; migration from amount
   provider                String   @default("STRIPE") // "STRIPE" | "INTERAC" | "CASH" | "CHEQUE"
   status                  String   @default("PENDING") // "PENDING" | "COMPLETED" | "FAILED"
   stripePaymentIntentId   String?  @unique
@@ -965,6 +982,7 @@ model QuoteLineItem {
   description String
   qty         Float
   unitPrice   Float
+  unitPriceCents BigInt // cents; migration from unitPrice
   position    Int // display order
   createdAt   DateTime @default(now())
 
@@ -1223,6 +1241,7 @@ model Part {
   quantity     Float    @default(0)
   reorderPoint Float? // alert when quantity <= reorderPoint
   unitCost     Float? // cost per unit (for job costing)
+  unitCostCents BigInt? // cents; migration from unitCost
   unit         String? // e.g. "each", "ft", "box"
   notes        String?
   businessId   String

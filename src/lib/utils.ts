@@ -80,6 +80,7 @@ const JOB_STATUS_LABELS: Record<string, { en: string; fr: string }> = {
   COMPLETED: { en: 'Completed', fr: 'Terminé' },
   PAID: { en: 'Paid', fr: 'Payé' },
   CANCELLED: { en: 'Cancelled', fr: 'Annulé' },
+  LATE: { en: 'Late', fr: 'En retard' },
 };
 
 export function formatStatusLabel(status: string, locale: 'en' | 'fr' = 'en'): string {
@@ -196,7 +197,7 @@ export function dayRange(dateStr: string): { gte: Date; lte: Date } {
 /** Status -> badge color classes */
 export function statusClasses(status: string): string {
   switch (status) {
-    case 'OVERDUE':
+    case 'LATE':
       // Computed display state (see jobDisplayStatus): past-due and still
       // open. Loud red so it can't be missed on a phone screen.
       return 'bg-red-100 text-red-800 border-red-300';
@@ -268,7 +269,7 @@ export function isJobOverdue(
 }
 
 /**
- * Display label for a job status badge: 'OVERDUE' when the date has passed
+ * Display label for a job status badge: 'LATE' when the date has passed
  * and the job is still open, otherwise the stored status. Display-only —
  * the stored status is never rewritten, so the badge auto-heals when the
  * date moves or the job is completed/cancelled. (2026-09-26: users reported
@@ -279,5 +280,5 @@ export function jobDisplayStatus(
   date: Date | string | null | undefined,
   now?: Date,
 ): string {
-  return isJobOverdue(status, date, now) ? 'OVERDUE' : status;
+  return isJobOverdue(status, date, now) ? 'LATE' : status;
 }
