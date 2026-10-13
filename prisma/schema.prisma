@@ -178,7 +178,7 @@ model Service {
   id          String   @id @default(cuid())
   name        String
   price       Float
-  priceCents BigInt // cents; migration from price
+  priceCents BigInt? // cents; migration from price
   durationMin Int? // typical job duration in minutes; pre-fills scheduling estimates
   description String? // short plain-language description shown on quotes/booking
   businessId  String
@@ -195,7 +195,7 @@ model Job {
   time           String?
   address        String?
   price          Float
-  priceCents BigInt // cents; migration from price
+  priceCents BigInt? // cents; migration from price
   status         String // NEW, SCHEDULED, IN PROGRESS, COMPLETED, PAID, CANCELLED
   notes          String?
   technician     String?
@@ -241,13 +241,13 @@ model Invoice {
   number         String
   date           DateTime
   subtotal       Float             @default(0)
-  subtotalCents BigInt // cents; migration from subtotal
+  subtotalCents BigInt? // cents; migration from subtotal
   taxRate        Float             @default(0)
   taxType        String? // "GST", "HST", "PST", "CGST", "SGST", "IGST"
   taxAmount      Float             @default(0)
-  taxAmountCents BigInt // cents; migration from taxAmount
+  taxAmountCents BigInt? // cents; migration from taxAmount
   total          Float
-  totalCents BigInt // cents; migration from total
+  totalCents BigInt? // cents; migration from total
   status         String // UNPAID, PARTIALLY PAID, PAID
   sentAt         DateTime? // set when the pro emails the invoice to the customer (not a payment state)
   notes          String?
@@ -281,7 +281,7 @@ model InvoiceLineItem {
   description String
   qty         Float
   unitPrice   Float
-  unitPriceCents BigInt // cents; migration from unitPrice
+  unitPriceCents BigInt? // cents; migration from unitPrice
   position    Int // display order
   createdAt   DateTime @default(now())
 }
@@ -320,7 +320,7 @@ model CustomerPortalToken {
 model Payment {
   id                      String   @id @default(cuid())
   amount                  Float
-  amountCents BigInt // cents; migration from amount
+  amountCents BigInt? // cents; migration from amount
   provider                String // "STRIPE", "INTERAC", "CASH", "CHEQUE"
   transactionId           String?
   status                  String // "PENDING", "COMPLETED", "FAILED"
@@ -421,7 +421,7 @@ model Quote {
   number            String
   title             String
   total             Float
-  totalCents BigInt // cents; migration from total
+  totalCents BigInt? // cents; migration from total
   status            String // "DRAFT", "SENT", "APPROVED", "DECLINED"
   customerId        String
   customer          Customer           @relation(fields: [customerId], references: [id], onDelete: Cascade)
@@ -527,7 +527,7 @@ model RecurringJob {
   time       String?
   address    String?
   price      Float
-  priceCents BigInt // cents; migration from price
+  priceCents BigInt? // cents; migration from price
   notes      String?
   active     Boolean  @default(true)
   customerId String
@@ -690,7 +690,7 @@ model JobExpense {
   business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
   description String
   amount      Float
-  amountCents BigInt // cents; migration from amount
+  amountCents BigInt? // cents; migration from amount
   category    String   @default("MATERIALS") // MATERIALS, TRAVEL, OTHER
   spentAt     DateTime @default(now())
   note        String? // optional longer note
@@ -706,7 +706,7 @@ model QuoteAddon {
   quote     Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
   title     String
   price     Float
-  priceCents BigInt // cents; migration from price
+  priceCents BigInt? // cents; migration from price
   selected  Boolean  @default(false)
   sortOrder Int      @default(0)
   createdAt DateTime @default(now())
@@ -899,7 +899,7 @@ model QuoteDeposit {
   businessId              String
   business                Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
   amount                  Float
-  amountCents BigInt // cents; migration from amount
+  amountCents BigInt? // cents; migration from amount
   provider                String   @default("STRIPE") // "STRIPE" | "INTERAC" | "CASH" | "CHEQUE"
   status                  String   @default("PENDING") // "PENDING" | "COMPLETED" | "FAILED"
   stripePaymentIntentId   String?  @unique
@@ -982,7 +982,7 @@ model QuoteLineItem {
   description String
   qty         Float
   unitPrice   Float
-  unitPriceCents BigInt // cents; migration from unitPrice
+  unitPriceCents BigInt? // cents; migration from unitPrice
   position    Int // display order
   createdAt   DateTime @default(now())
 
