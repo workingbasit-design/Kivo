@@ -42,6 +42,14 @@ Session log for AI agents working on EveryJob (Kivo). Required by AGENTS.md sect
 - Quebec French terms: already in use (facture, etc.)
 
 **Not done:**
-- Float to integer-cents migration (awaiting approval)
+- Float to integer-cents migration (IN PROGRESS - user approved 2026-10-13)
+  - Phase 1 DONE: Schema with *Cents BigInt columns deployed (remote a8e3edd)
+  - Phase 2 IN PROGRESS: Dual-write to cents columns
+    - DONE: src/lib/money.ts (dollarsToCents, centsToDollars, formatCents helpers)
+    - DONE: src/app/actions/jobs.ts (dual-write price/priceCents)
+    - TODO: invoices, payments, quotes, expenses, services, etc. (15 more fields)
+  - Phase 3 TODO: Backfill historical data via /api/admin/backfill-cents-7f3a9b2e (waiting for Vercel deploy)
+  - Phase 4 TODO: Switch reads to Cents columns
+  - Phase 5 TODO: Remove Float columns
 - WCAG 2.2 AA audit
 - Mobile screenshots at 375px/390px

@@ -9,6 +9,7 @@ import { logger } from '@/lib/logger';
 import { requireAuth } from '@/lib/auth';
 import { invoiceSchema, paymentSchema, INVOICE_STATUSES } from '@/lib/validations';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { dollarsToCents } from '@/lib/money';
 import {
   getTaxConfig,
   defaultTaxType,
@@ -213,10 +214,13 @@ export async function createInvoice(
         number,
         date: new Date(`${parsed.data.date}T00:00:00`),
         subtotal,
+        subtotalCents: dollarsToCents(subtotal),
         taxRate: parsed.data.taxRate,
         taxType,
         taxAmount,
+        taxAmountCents: dollarsToCents(taxAmount),
         total,
+        totalCents: dollarsToCents(total),
         status: 'UNPAID',
         notes: notesParts.join('\n\n') || null,
         customerId: customer.id,
@@ -394,6 +398,7 @@ export async function recordPayment(
     const payment = await tx.payment.create({
       data: {
         amount: round2(parsed.data.amount),
+        amountCents: dollarsToCents(parsed.data.amount),
         provider: parsed.data.provider,
         transactionId: parsed.data.transactionId || null,
         status: 'COMPLETED',
