@@ -233,6 +233,7 @@ export async function createInvoice(
         description: item.desc,
         qty: item.qty,
         unitPrice: item.rate,
+        unitPriceCents: dollarsToCents(item.rate),
         position: idx,
       })),
     });
@@ -525,6 +526,7 @@ async function settleJobPaidTx(tx: PrismaTx, businessId: string, jobId: string):
         description: job.title,
         qty: 1,
         unitPrice: price,
+        unitPriceCents: dollarsToCents(price),
         position: 0,
       },
     });

@@ -6,6 +6,7 @@ import { requireAuth } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { dollarsToCents } from '@/lib/money';
 import {
   validateExpenseInput,
   parseHourlyRateInput,
@@ -94,6 +95,7 @@ export async function createChecklistTemplate(
       businessId,
       name,
       price: fields.price,
+      priceCents: fields.price != null ? dollarsToCents(fields.price) : null,
       durationMin: fields.durationMin,
       notes: fields.notes,
       items: { create: items.map((label, i) => ({ label, sortOrder: i })) },
@@ -317,7 +319,7 @@ export async function saveHourlyRate(
 
   await prisma.business.update({
     where: { id: businessId },
-    data: { defaultHourlyRate: parsed.data },
+    data: { defaultHourlyRate: parsed.data, defaultHourlyRateCents: dollarsToCents(parsed.data) },
   });
   revalidatePath('/jobs');
   revalidatePath('/dashboard');

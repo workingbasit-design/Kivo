@@ -5,6 +5,7 @@ import { requireAuth } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { dollarsToCents } from '@/lib/money';
 
 export interface ActionResult {
   ok: boolean;
@@ -56,6 +57,7 @@ export async function createPart(formData: FormData): Promise<ActionResult> {
         quantity: parsed.quantity,
         reorderPoint: parsed.reorderPoint ?? null,
         unitCost: parsed.unitCost ?? null,
+        unitCostCents: parsed.unitCost != null ? dollarsToCents(parsed.unitCost) : null,
         unit: parsed.unit || null,
         notes: parsed.notes || null,
         businessId,

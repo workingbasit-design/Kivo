@@ -5,6 +5,7 @@ import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { dollarsToCents } from '@/lib/money';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
 import { getTaxConfig, totalTaxRate, calcTax, type TaxConfig } from '@/lib/tax';
@@ -176,7 +177,9 @@ export async function confirmBatchInvoices(
           subtotal,
           taxRate,
           taxAmount,
-          total,
+        taxAmountCents: dollarsToCents(taxAmount),
+        total,
+        totalCents: dollarsToCents(total),
           status: 'UNPAID',
           notes: `Batch invoice for job "${job.title}"`,
           customerId: job.customer.id,
@@ -191,6 +194,7 @@ export async function confirmBatchInvoices(
           description: job.title,
           qty: 1,
           unitPrice: round2(job.price),
+          unitPriceCents: dollarsToCents(job.price),
           position: 0,
         },
       });
