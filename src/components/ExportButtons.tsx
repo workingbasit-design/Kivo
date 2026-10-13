@@ -54,6 +54,14 @@ export default function ExportButtons({
     return Number.isFinite(n) ? formatMoney(n, currency, moneyLocale) : '';
   };
 
+  // Clean cell values for consistent export layout: trim whitespace,
+  // remove trailing commas, normalize empty values.
+  const cleanText = (v: unknown): string => {
+    if (v === null || v === undefined) return '';
+    const s = String(v).trim().replace(/,+\s*$/, '').trim();
+    return s;
+  };
+
   const disabled = busy !== null || rows.length === 0;
 
   function downloadCsv() {
@@ -64,7 +72,8 @@ export default function ExportButtons({
         columns
           .map((c) => {
             const v = r[c.key];
-            return escapeCsvCell(c.kind === 'money' ? moneyText(v) : (v ?? ''));
+            const cellValue = c.kind === 'money' ? moneyText(v) : cleanText(v);
+            return escapeCsvCell(cellValue);
           })
           .join(',')
       );
@@ -96,7 +105,8 @@ export default function ExportButtons({
             // Neutralize formula injection: a raw string starting with `=`
             // would become an executable formula cell in Excel (worse than
             // the CSV case — no quoting ambiguity at all).
-            const cell = v === undefined ? null : (v as string | number | null);
+            const cleaned = cleanText(v);
+            const cell = cleaned === '' ? null : cleaned;
             return typeof cell === 'string' ? (neutralizeFormulaPrefix(cell) as string) : cell;
           })
         ),
