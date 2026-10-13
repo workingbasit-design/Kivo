@@ -14,7 +14,9 @@ export function parseDepositAmount(
   const s = (raw ?? '').trim();
   if (!s) return { amount: null };
   const amount = Math.round(Number(s) * 100) / 100;
-  if (!Number.isFinite(amount) || amount <= 0) {
+  // $0 is treated as "no deposit requested" (same as blank).
+  if (amount === 0) return { amount: null };
+  if (!Number.isFinite(amount) || amount < 0) {
     return { amount: null, error: 'Deposit must be a positive amount.' };
   }
   if (amount > total) {
