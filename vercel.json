@@ -23,7 +23,7 @@
     },
     {
       "path": "/api/cron/error-alerts",
-      "schedule": "*/10 * * * *"
+      "schedule": "0 7 * * *"
     }
   ]
 }
