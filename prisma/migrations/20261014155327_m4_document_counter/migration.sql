@@ -5,7 +5,7 @@
 -- migration works on tables that already have rows.
 
 -- AlterTable (hand-edited for backfill safety)
-ALTER TABLE "CreditNote" ADD COLUMN     "number" TEXT;
+ALTER TABLE "CreditNote" ADD COLUMN IF NOT EXISTS "number" TEXT;
 
 -- CreateTable
 CREATE TABLE IF NOT EXISTS "DocumentCounter" (

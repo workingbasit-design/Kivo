@@ -1,17 +1,17 @@
 -- IDEMPOTENT (2026-10-14): safe to re-run. DDL uses IF NOT EXISTS /
 -- IF EXISTS guards and DO blocks; DML was already idempotent.
 -- AlterTable
-ALTER TABLE "Business" ADD COLUMN     "filingFrequency" TEXT,
-ADD COLUMN     "gstHstRegistered" BOOLEAN NOT NULL DEFAULT false,
-ADD COLUMN     "qstNumber" TEXT;
+ALTER TABLE "Business" ADD COLUMN IF NOT EXISTS "filingFrequency" TEXT,
+ADD COLUMN IF NOT EXISTS "gstHstRegistered" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN IF NOT EXISTS "qstNumber" TEXT;
 
 -- AlterTable
-ALTER TABLE "InvoiceLineItem" ADD COLUMN     "taxRateBps" INTEGER,
-ADD COLUMN     "taxType" TEXT;
+ALTER TABLE "InvoiceLineItem" ADD COLUMN IF NOT EXISTS "taxRateBps" INTEGER,
+ADD COLUMN IF NOT EXISTS "taxType" TEXT;
 
 -- AlterTable
-ALTER TABLE "QuoteLineItem" ADD COLUMN     "taxRateBps" INTEGER,
-ADD COLUMN     "taxType" TEXT;
+ALTER TABLE "QuoteLineItem" ADD COLUMN IF NOT EXISTS "taxRateBps" INTEGER,
+ADD COLUMN IF NOT EXISTS "taxType" TEXT;
 
 -- CreateTable
 CREATE TABLE IF NOT EXISTS "TaxRate" (
