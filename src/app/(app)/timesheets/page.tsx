@@ -19,8 +19,8 @@ import { formatDateLabel, localeDateTag } from '@/lib/utils';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 
-function formatClockTime(d: Date | string): string {
-  return new Date(d).toLocaleTimeString('en-CA', {
+function formatClockTime(d: Date | string, locale: string): string {
+  return new Date(d).toLocaleTimeString(localeDateTag(locale), {
     hour: '2-digit',
     minute: '2-digit',
   });
@@ -217,8 +217,8 @@ export default async function TimesheetsPage({
                       )}
                     </div>
                     <p className="text-xs text-zinc-500 mt-0.5">
-                      {formatDateLabel(e.clockIn, dateLocale)} · {formatClockTime(e.clockIn)}
-                      {e.clockOut ? ` - ${formatClockTime(e.clockOut)}` : ` - ${T('tsNow')}`}
+                      {formatDateLabel(e.clockIn, dateLocale)} · {formatClockTime(e.clockIn, locale)}
+                      {e.clockOut ? ` - ${formatClockTime(e.clockOut, locale)}` : ` - ${T('tsNow')}`}
                       {e.job ? (
                         <>
                           {' · '}

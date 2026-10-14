@@ -6,7 +6,7 @@ import { Clock, MapPin, Phone, User, ChevronRight } from 'lucide-react';
 import { t, type Locale } from '@/lib/i18n';
 import { StatusBadge } from '@/components/ui';
 import { formatMoney } from '@/lib/money';
-import { hasJobTime, cn } from '@/lib/utils';
+import { hasJobTime, formatJobTime, cn } from '@/lib/utils';
 import { updateJobStatus, assignJobTechnician } from '@/app/actions/dispatch';
 
 export interface DispatchJob {
@@ -115,7 +115,7 @@ export default function DispatchBoardClient({
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-500">
                       {hasJobTime(job.time) && (
                         <span className="inline-flex items-center gap-1">
-                          <Clock size={12} /> {job.time}
+                          <Clock size={12} /> {formatJobTime(job.time, locale)}
                         </span>
                       )}
                       {job.address && (

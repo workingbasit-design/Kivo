@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card, StatusBadge, primaryBtnClass, secondaryBtnClass, inputClass } from '@/components/ui';
-import { hasJobTime, cn, jobDisplayStatus } from '@/lib/utils';
+import { hasJobTime, formatJobTime, cn, jobDisplayStatus } from '@/lib/utils';
 import type { RouteStop } from '@/lib/routes';
 import { googleMapsRouteUrl } from '@/lib/routes';
 import { optimizeDayRoute } from '@/app/actions/routes';
@@ -309,7 +309,7 @@ export default function RoutesClient({
                     {hasJobTime(stop.time) && (
                       <p className="flex items-center gap-2 text-zinc-700">
                         <Clock size={15} className="text-zinc-400 shrink-0" />
-                        {stop.time}
+                        {formatJobTime(stop.time, locale)}
                       </p>
                     )}
                     <p className="font-bold text-zinc-900 tabular-nums">{formatMoney(stop.price, currency)}</p>
@@ -364,7 +364,7 @@ export default function RoutesClient({
                 <p className="text-xs text-zinc-500 truncate">
                   {stop.customerName}
                   {stop.address ? ` · ${stop.address}` : ''}
-                  {hasJobTime(stop.time) ? ` · ${stop.time}` : ''}
+                  {hasJobTime(stop.time) ? ` · ${formatJobTime(stop.time, locale)}` : ''}
                 </p>
                 {i > 0 && legLine(stop)}
               </div>

@@ -3,7 +3,8 @@
 import { useState, useTransition } from 'react';
 import { t, type Locale } from '@/lib/i18n';
 import { saveDigestSettings } from '@/app/actions/digest';
-import { inputClass, primaryBtnClass } from '@/components/ui';
+import { primaryBtnClass } from '@/components/ui';
+import { TimeField } from '@/components/TimeField';
 
 export function DigestSettingsForm({
   locale,
@@ -51,12 +52,12 @@ export function DigestSettingsForm({
           <span className="text-xs font-semibold text-zinc-600 block mb-1">
             {t(locale, 'digest.sendTime')}
           </span>
-          <input
-            type="time"
+          <TimeField
             value={sendTime}
-            onChange={(e) => setSendTime(e.target.value)}
-            className={inputClass}
+            onChange={setSendTime}
+            locale={locale}
             disabled={!enabled}
+            ariaLabel={t(locale, 'digest.sendTime')}
           />
         </label>
         <fieldset>

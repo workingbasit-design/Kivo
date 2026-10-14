@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import PwaRegister from "@/components/PwaRegister";
+import { getLocale } from "@/lib/i18n/server";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -67,10 +68,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Document language follows the app locale (kivo-locale cookie).
+  // Native date/time inputs (<input type="time|date|datetime-local">) render
+  // per the document lang in browsers: a hardcoded lang="en" made iOS show
+  // "9:00 AM" even when the whole UI was French. The locale toggle does a
+  // full reload, so the server-rendered lang stays in sync.
+  const locale = await getLocale();
   return (
     <html
-      lang="en"
+      lang={locale === 'fr' ? 'fr-CA' : 'en-CA'}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>

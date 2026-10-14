@@ -219,7 +219,7 @@ export default async function JobDetailPage({
             <WhatsAppButton
               phone={job.customer.phone}
               regionCode={business?.regionCode}
-              message={`Hi ${job.customer.name}! ${business?.name ?? 'We'} have your "${job.title}" booking scheduled for ${formatDateLabel(jobDateKey, dateLocale)}${hasJobTime(job.time) ? ` at ${job.time}` : ''}.`}
+              message={`Hi ${job.customer.name}! ${business?.name ?? 'We'} have your "${job.title}" booking scheduled for ${formatDateLabel(jobDateKey, dateLocale)}${hasJobTime(job.time) ? ` at ${formatJobTime(job.time, locale)}` : ''}.`}
               label={T('jobWhatsAppLabel')}
             />
             {/* Free SMS: opens the phone's SMS app with the same message
@@ -227,7 +227,7 @@ export default async function JobDetailPage({
             <SmsButton
               phone={job.customer.phone}
               regionCode={business?.regionCode}
-              message={`Hi ${job.customer.name}! ${business?.name ?? 'We'} have your "${job.title}" booking scheduled for ${formatDateLabel(jobDateKey, dateLocale)}${hasJobTime(job.time) ? ` at ${job.time}` : ''}.`}
+              message={`Hi ${job.customer.name}! ${business?.name ?? 'We'} have your "${job.title}" booking scheduled for ${formatDateLabel(jobDateKey, dateLocale)}${hasJobTime(job.time) ? ` at ${formatJobTime(job.time, locale)}` : ''}.`}
               label={T('jobSmsLabel')}
             />
             {/* Review moat: a single-use review link is offered only when the

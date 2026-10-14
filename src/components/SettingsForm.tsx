@@ -8,6 +8,8 @@ import { Card, Field, inputClass, primaryBtnClass } from '@/components/ui';
 import { CA_PROVINCES } from '@/lib/tax';
 import { WEEK_DAYS, parseWorkingHours, type DayKey } from '@/lib/working-hours';
 import { useResolvedT } from '@/hooks/useResolvedLocale';
+import { TimeField } from '@/components/TimeField';
+import type { Locale } from '@/lib/i18n';
 
 export type BusinessFormData = {
   name: string;
@@ -50,9 +52,11 @@ function initialDayState(raw: string): Record<DayKey, DayState> {
 function WorkingHoursEditor({
   initial,
   t,
+  locale,
 }: {
   initial: string;
   t: (path: string) => string;
+  locale: Locale;
 }) {
   const [days, setDays] = useState<Record<DayKey, DayState>>(() =>
     initialDayState(initial)
@@ -89,22 +93,20 @@ function WorkingHoursEditor({
             </div>
             {open ? (
               <div className="flex items-center gap-2 mt-1.5">
-                <input
-                  type="time"
-                  name={`wh_${d.key}_open`}
+                <TimeField
                   value={state.open}
-                  onChange={(e) => setDay(d.key, { open: e.target.value, close: state.close })}
-                  className={`${inputClass} flex-1`}
-                  aria-label={`${label} - ${t('t10misc.settings.workingHoursSetHours')}`}
+                  onChange={(v) => setDay(d.key, { open: v, close: state.close })}
+                  locale={locale}
+                  name={`wh_${d.key}_open`}
+                  ariaLabel={`${label} - ${t('t10misc.settings.workingHoursSetHours')}`}
                 />
                 <span className="text-xs text-zinc-400" aria-hidden="true">-</span>
-                <input
-                  type="time"
-                  name={`wh_${d.key}_close`}
+                <TimeField
                   value={state.close}
-                  onChange={(e) => setDay(d.key, { open: state.open, close: e.target.value })}
-                  className={`${inputClass} flex-1`}
-                  aria-label={`${label} - ${t('t10misc.settings.workingHoursSetClosed')}`}
+                  onChange={(v) => setDay(d.key, { open: state.open, close: v })}
+                  locale={locale}
+                  name={`wh_${d.key}_close`}
+                  ariaLabel={`${label} - ${t('t10misc.settings.workingHoursSetClosed')}`}
                 />
               </div>
             ) : (
@@ -119,7 +121,7 @@ function WorkingHoursEditor({
 }
 
 export default function SettingsForm({ business }: { business: BusinessFormData }) {
-  const { t } = useResolvedT();
+  const { t, locale } = useResolvedT();
   const [state, formAction, isPending] = useActionState<SettingsResult, FormData>(
     updateBusinessSettings,
     {}
@@ -185,7 +187,7 @@ export default function SettingsForm({ business }: { business: BusinessFormData 
         </div>
 
         <Field label={t('t10misc.settings.hoursLabel')}>
-          <WorkingHoursEditor initial={business.workingHours} t={t} />
+          <WorkingHoursEditor initial={business.workingHours} t={t} locale={locale} />
         </Field>
 
         <Field label={t('t10misc.settings.addressLabel')} hint={t('t10misc.settings.addressHint')}>

@@ -72,21 +72,21 @@ export default async function DigestPage() {
 
   return (
     <div className="space-y-6">
-      {/* Hero */}
-      <div className="rounded-[24px] p-6 bg-gradient-to-br from-[#2e2e30] via-[#3a3a3d] to-[#232326] text-white border border-white/10 shadow-[0_16px_40px_rgba(22,22,22,0.25)]">
+      {/* Hero - light per DESIGN.md (no dark gradient on work screens) */}
+      <div className="rounded-[24px] p-6 bg-white border border-ej-smoke">
         <div className="flex items-center gap-3 mb-1">
-          <span className="w-10 h-10 rounded-2xl bg-lime/20 text-lime flex items-center justify-center">
+          <span className="w-10 h-10 rounded-2xl bg-ej-lime/40 text-ej-ink flex items-center justify-center">
             <Sunrise size={20} aria-hidden />
           </span>
-          <p className="text-xs font-bold text-white/60">
+          <p className="text-xs font-bold text-ej-muted">
             {dateLabel}
           </p>
         </div>
-        <h1 className="text-2xl font-bold tracking-tight mt-2">
+        <h1 className="text-2xl font-bold tracking-tight mt-2 text-ej-ink">
           {t(locale, greetingKey(data.dayPart))}
           {data.greeting ? `, ${data.greeting}` : ''} 👋
         </h1>
-        <p className="text-sm text-white/70 mt-1">
+        <p className="text-sm text-ej-muted mt-1">
           {data.todayJobs.length === 0
             ? t(locale, 'digest.noJobsToday')
             : t(locale, 'digest.jobCount').replace('{count}', String(data.todayJobs.length)) +

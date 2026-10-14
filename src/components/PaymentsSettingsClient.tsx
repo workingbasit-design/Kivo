@@ -61,9 +61,11 @@ function PaymentCards({
 export default function PaymentsSettingsClient({
   initial,
   locale,
+  connectFailed,
 }: {
   initial: Dashboard;
   locale: Locale;
+  connectFailed?: boolean;
 }) {
   const [liveState, liveAction] = useActionState(confirmLivePaymentsAction, {});
   const [, startDisconnect] = useTransition();
@@ -91,6 +93,11 @@ export default function PaymentsSettingsClient({
 
   return (
     <div className="space-y-6">
+      {connectFailed && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
+          {t(locale, 'payments.connectFailed')}
+        </div>
+      )}
       {!initial.stripeConfigured && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
           {t(locale, 'payments.notConfigured')}

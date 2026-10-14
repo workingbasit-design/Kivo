@@ -68,7 +68,7 @@ const fragment = {
       settings: 'Paramètres du briefing',
       settingsDesc: 'Recevez ce briefing par notification et push chaque matin.',
       enabled: 'Briefing du matin',
-      sendTime: 'Envoyer à',
+      sendTime: "Heure d'envoi",
       channels: 'Envoyer via',
       channelInApp: 'Notification dans l’app',
       channelPush: 'Notification push',

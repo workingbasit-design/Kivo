@@ -67,6 +67,22 @@ test('formatJobTime: en shows 12h, fr shows 24h', () => {
   assert.equal(formatJobTime('14:00', 'fr'), '14 h 00');
 });
 
+test('formatJobTime: screenshot cases - 6 PM closing time (en 12h / fr 24h)', () => {
+  // Working-hours close + briefing times from real phone screenshots:
+  // French UI showed "6:00 PM" (English AM/PM) instead of "18 h 00".
+  assert.equal(formatJobTime('18:00', 'en'), '6:00 PM');
+  assert.equal(formatJobTime('18:00', 'fr'), '18 h 00');
+  assert.equal(formatJobTime('07:00', 'en'), '7:00 AM');
+  assert.equal(formatJobTime('07:00', 'fr'), '7 h 00');
+});
+
+test('formatJobTime: noon and midnight edges', () => {
+  assert.equal(formatJobTime('12:00', 'en'), '12:00 PM');
+  assert.equal(formatJobTime('12:00', 'fr'), '12 h 00');
+  assert.equal(formatJobTime('00:00', 'en'), '12:00 AM');
+  assert.equal(formatJobTime('00:00', 'fr'), '0 h 00');
+});
+
 test('formatJobTime: blank -> empty, legacy text passes through', () => {
   assert.equal(formatJobTime(null, 'en'), '');
   assert.equal(formatJobTime('TBD', 'en'), '');

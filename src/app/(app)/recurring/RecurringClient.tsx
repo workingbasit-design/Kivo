@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Plus, Repeat, Clock, MapPin } from 'lucide-react';
 import { PageHeader, Card, EmptyState, Badge, limeBtnClass, secondaryBtnClass } from '@/components/ui';
-import { formatDateShort, cn } from '@/lib/utils';
+import { formatDateShort, formatJobTime, cn } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import { t, type Locale } from '@/lib/i18n';
 import RecurringRowActions from './RecurringRowActions';
@@ -170,7 +170,7 @@ export default function RecurringClient({
                   <span className="font-semibold text-zinc-900">
                     {formatDateShort(plan.nextRun)}
                   </span>
-                  {plan.time && <span className="text-zinc-500">· {plan.time}</span>}
+                  {plan.time && <span className="text-zinc-500">· {formatJobTime(plan.time, locale)}</span>}
                 </p>
                 {plan.address && (
                   <p className="flex items-center gap-2">

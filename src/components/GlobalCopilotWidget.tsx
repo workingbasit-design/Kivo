@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import type { JobDraft, CustomerDraft } from '@/lib/copilot/engine';
 import VoiceInputButton from '@/components/copilot/VoiceInputButton';
+import { TimeField } from '@/components/TimeField';
 import ThinkingOrb from '@/components/ThinkingOrb';
 import { useRouter } from 'next/navigation';
 
@@ -306,12 +307,11 @@ function PreviewCard({
           />
         </EditRow>
         <EditRow icon={<Clock size={15} />} label={t(locale, 'copilot.fieldTime')}>
-          <input
-            type="time"
+          <TimeField
             value={draft.time ?? ''}
-            onChange={(e) => set({ time: e.target.value || null })}
-            aria-label={t(locale, 'copilot.fieldTime')}
-            className={innerField}
+            onChange={(v) => set({ time: v || null })}
+            locale={locale}
+            ariaLabel={t(locale, 'copilot.fieldTime')}
           />
         </EditRow>
         <EditRow icon={<Phone size={15} />} label={t(locale, 'copilot.fieldPhone')}>
@@ -972,12 +972,11 @@ export default function GlobalCopilotWidget({
             </div>
             {f.showTimeInput && (
               <div className="space-y-3">
-                <input
-                  type="time"
+                <TimeField
                   value={f.time ?? ''}
-                  onChange={(e) => set({ time: e.target.value || null })}
-                  aria-label={t(lang, 't10misc.copilot.bookPickTime')}
-                  className={fieldClass}
+                  onChange={(v) => set({ time: v || null })}
+                  locale={lang}
+                  ariaLabel={t(lang, 't10misc.copilot.bookPickTime')}
                 />
                 <PrimaryButton onClick={() => advance()} disabled={!f.time}>
                   {t(lang, 't10misc.copilot.continue')}
