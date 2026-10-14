@@ -25,7 +25,8 @@ const STATUS_STYLE: Record<string, string> = {
 };
 
 export default function DemandRow({ request }: { request: DemandRequest }) {
-  const { t } = useResolvedT();
+  const { t, locale } = useResolvedT();
+  const dateLocale = locale === 'fr' ? 'fr-CA' : 'en-CA';
   const [status, setStatus] = useState(request.status);
   const [busy, setBusy] = useState(false);
 
@@ -70,7 +71,7 @@ export default function DemandRow({ request }: { request: DemandRequest }) {
             <p className="text-xs text-zinc-500 mt-1 whitespace-pre-wrap">{request.details}</p>
           )}
           <p className="text-[11px] text-zinc-400 mt-1">
-            {new Date(request.createdAt).toLocaleString()}
+            {new Date(request.createdAt).toLocaleString(dateLocale, { dateStyle: 'medium', timeStyle: 'short' })}
           </p>
         </div>
         {status === 'OPEN' && (

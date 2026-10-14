@@ -85,7 +85,7 @@ const fragment = {
       type: {
         revenue: 'Revenus',
         expenses: 'Dépenses',
-        jobs: 'Jobs',
+        jobs: 'Travaux',
         quotes: 'Devis',
         invoices: 'Factures',
         customers: 'Clients',

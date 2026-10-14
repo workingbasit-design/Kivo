@@ -17,5 +17,6 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npx tsc --noEmit
+      - run: node --experimental-strip-types scripts/check-i18n-parity.mjs
       - run: npm test
       - run: npm run build

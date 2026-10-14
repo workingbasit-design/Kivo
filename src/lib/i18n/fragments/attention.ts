@@ -258,7 +258,7 @@ const fragment = {
       },
       filterAll: 'Tout',
       category: {
-        jobs: 'Jobs',
+        jobs: 'Travaux',
         money: 'Argent',
         leads: 'Prospects',
         quotes: 'Devis',

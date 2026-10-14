@@ -149,7 +149,7 @@ const fragment: { en: Dictionary; fr: Dictionary } = {
         done: 'Terminé',
         revoke: 'Révoquer',
         revoked: 'Révoquée',
-        active: 'Active',
+        active: 'Actif',
         lastUsed: 'Dernière utilisation : {when}',
         neverUsed: 'Jamais utilisée',
         empty: 'Aucun assistant IA connecté pour le moment.',

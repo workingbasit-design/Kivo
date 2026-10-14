@@ -301,7 +301,7 @@ const fragment = {
         headlineEn: 'Headline (EN)',
         headlineFr: 'Headline (FR)',
         headlineEnHint: 'e.g. Reliable plumbing, done right',
-        headlineFrHint: 'p. ex. Plomberie fiable, bien faite',
+        headlineFrHint: 'e.g. Reliable plumbing, done right',
         introEn: 'Short intro (EN)',
         introEnHint: 'One or two sentences',
         introFr: 'Short intro (FR)',
@@ -760,7 +760,7 @@ const fragment = {
         stopListening: 'Arrêter l’écoute',
         speakMessage: 'Dictez votre message',
         language: 'Langue vocale',
-        langEn: 'English (Canada)',
+        langEn: 'Anglais (Canada)',
         langFr: 'Français (Canada)',
       },
       trigger: {

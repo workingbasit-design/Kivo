@@ -7,7 +7,7 @@ import type { Dictionary } from '../en';
 const fragment = {
   en: {
     support: {
-      helpTitle: 'Help center',
+      helpTitle: 'Help Centre',
       helpSub:
         'Real guides for the real app - searchable, in English and French.',
       searchPh: 'Search articles…',
@@ -18,7 +18,7 @@ const fragment = {
       noResults: 'No articles match your search.',
       noResultsHint: 'Try different words, or ask the AI assistant (bottom-right).',
       relatedTitle: 'Related articles',
-      backToHelp: 'Back to help center',
+      backToHelp: 'Back to help centre',
       updatedNote: 'Written from the app as it works today.',
       ticketTitle: 'Still stuck? Talk to a human.',
       ticketDesc:
@@ -47,7 +47,7 @@ const fragment = {
       onboardingDismiss: 'Do later',
       onboardingShow: 'Show setup checklist',
       inboxTitle: 'Support inbox',
-      inboxSub: 'Tickets sent from the help center. Reply by email - nothing is sent automatically.',
+      inboxSub: 'Tickets sent from the help centre. Reply by email - nothing is sent automatically.',
       inboxEmpty: 'No tickets yet.',
       inboxRestricted: 'The support inbox is only visible to the product owner. Set OWNER_EMAILS to your email to open it.',
       inboxOpen: 'Open',

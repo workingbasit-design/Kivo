@@ -23,7 +23,8 @@ const STATUS_STYLE: Record<string, string> = {
 };
 
 export default function ReportRow({ report }: { report: Report }) {
-  const { t } = useResolvedT();
+  const { t, locale } = useResolvedT();
+  const dateLocale = locale === 'fr' ? 'fr-CA' : 'en-CA';
   const [status, setStatus] = useState(report.status);
   const [busy, setBusy] = useState(false);
 
@@ -71,7 +72,7 @@ export default function ReportRow({ report }: { report: Report }) {
             {report.details && <span> - {report.details}</span>}
           </p>
           <p className="text-[11px] text-zinc-400 mt-1">
-            {new Date(report.createdAt).toLocaleString()}
+            {new Date(report.createdAt).toLocaleString(dateLocale, { dateStyle: 'medium', timeStyle: 'short' })}
             {report.reporterContact && ` · ${t('t10misc.reports.reporter')}: ${report.reporterContact}`}
           </p>
         </div>

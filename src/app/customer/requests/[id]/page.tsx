@@ -70,7 +70,7 @@ export default async function CustomerRequestDetailPage({
                 >
                   <p className="whitespace-pre-wrap">{msg.body}</p>
                   <p className={cn('text-[10px] mt-1', mine ? 'text-indigo-200' : 'text-zinc-400')}>
-                    {new Date(msg.createdAt).toLocaleString()}
+                    {new Date(msg.createdAt).toLocaleString(locale === 'fr' ? 'fr-CA' : 'en-CA', { dateStyle: 'medium', timeStyle: 'short' })}
                   </p>
                 </div>
               </div>

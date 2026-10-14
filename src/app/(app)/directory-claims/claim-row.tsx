@@ -28,7 +28,8 @@ const STATUS_STYLE: Record<string, string> = {
 };
 
 export default function ClaimRow({ claim }: { claim: Claim }) {
-  const { t } = useResolvedT();
+  const { t, locale } = useResolvedT();
+  const dateLocale = locale === 'fr' ? 'fr-CA' : 'en-CA';
   const [status, setStatus] = useState(claim.status);
   const [busy, setBusy] = useState(false);
   const [rejecting, setRejecting] = useState(false);
@@ -108,7 +109,7 @@ export default function ClaimRow({ claim }: { claim: Claim }) {
             </p>
           )}
           <p className="text-[11px] text-zinc-400 mt-1">
-            {t('t10misc.claims.requested')} {new Date(claim.createdAt).toLocaleString()}
+            {t('t10misc.claims.requested')} {new Date(claim.createdAt).toLocaleString(dateLocale, { dateStyle: 'medium', timeStyle: 'short' })}
             {claim.decidedBy ? ` · ${t('t10misc.claims.decidedBy')} ${claim.decidedBy}` : ''}
           </p>
         </div>

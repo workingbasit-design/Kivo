@@ -37,7 +37,7 @@ const fragment = {
     },
     bookkeeping: {
       title: 'Comptabilité',
-      subtitle: 'Profits et pertes à partir de vos vrais jobs, factures et dépenses.',
+      subtitle: 'Profits et pertes à partir de vos vrais travaux, factures et dépenses.',
       revenue: 'Revenus',
       expenses: 'Dépenses',
       profit: 'Profit',

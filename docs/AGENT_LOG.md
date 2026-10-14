@@ -118,3 +118,27 @@ Session log for AI agents working on EveryJob (Kivo). Required by AGENTS.md sect
 - Locale persistence stays cookie-only (`kivo-locale`, 1 year). No Business.locale column; DB persistence would need schema change.
 - Page title: MobileNav shows brand logo, not per-page title; titles rendered by each page header.
 - `schedAllDates` i18n key now unused, left in place for en/fr parity.
+
+## 2026-10-14 - Prompt 2 Part C: Deliberate visual design (C1-C2)
+
+**Goal:** Write DESIGN.md, apply it. User said keep building until all done.
+
+**Files changed (18 files, +252/-72):**
+- `docs/DESIGN.md`: phone-in-one-hand principle, 6 named tokens (ink #14181A, paper #FFFFFF, smoke #F2F4F3, muted #5A6366, lime #C8F542, alert #C0392B), 1 system typeface, tabular figures, lists not card grids, today timeline
+- `src/app/globals.css`: all 6 tokens as Tailwind utilities, body paper/ink, focus outline ink
+- Jobs + Schedule agenda: card rows -> divided lists (0 radius, 1px border, no shadow)
+- `src/components/ui.tsx`: Card now grouping card (12px, border, no shadow)
+- Tabular figures on money/times across Jobs, Schedule, Money, Customers, Invoices, Quotes, Quote/Invoice detail
+- Primary buttons 44px -> 48px min height
+- Today timeline: 2px lime line + 10px ink dot at current time (business timezone) in ScheduleClient
+- Glass blur removed from work screens; header white with ink text; StatCard light style; PageHeader 24px ink
+
+**Verified:**
+- tsc --noEmit: 0 errors
+- npm test: 1062 pass, 0 fail
+- npm run build: succeeds
+- Pushed as 051e572
+
+**Not done:**
+- Before/after screenshots at 375px/390px EN/FR (no live browser in subagent; Vercel deploy stalled, blocks live verification)
+- Desktop sidebar + mobile bottom nav stay dark glass (separate chrome, not header)

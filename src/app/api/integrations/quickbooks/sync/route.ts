@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { formatMoney } from '@/lib/money';
 import { rateLimit } from '@/lib/rate-limit';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 import {
@@ -157,7 +158,7 @@ export async function POST(req: Request) {
       const qbCustomerId = customerQbIds.get(p.invoice.customerId) ?? knownQbId('customer', p.invoice.customerId);
       const qbInvoiceId = invoiceQbIds.get(p.invoiceId) ?? knownQbId('invoice', p.invoiceId);
       const outcome = await syncPayment(base, p, qbCustomerId, qbInvoiceId);
-      items.push({ ...outcome, label: `Payment $${p.amount.toFixed(2)}` });
+      items.push({ ...outcome, label: `Payment ${formatMoney(p.amount, 'CAD', 'en')}` });
     }
 
     await prisma.quickBooksConnection.update({

@@ -440,7 +440,7 @@ const fragment = {
         emptyDesc: 'Aucun devis ouvert, aucune facture impayée et rien à facturer.',
         emptyAction: 'Créer un devis',
         unbilledTitle: 'Prêt à facturer',
-        unbilledDesc: 'Jobs terminés sans facture. Facturez-les avant de les oublier.',
+        unbilledDesc: 'Travaux terminés sans facture. Facturez-les avant de les oublier.',
         noQuotesYet: 'Aucun devis ouvert.',
         noInvoicesYet: 'Aucune facture impayée.',
       },
