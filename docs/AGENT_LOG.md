@@ -290,3 +290,38 @@ i18n parity, part of the suite). Nothing pushed; production untouched.
 **Final state:** `npx tsc --noEmit` clean; `npm test` **1205/1205 green**. Nothing pushed; production untouched. `docs/SECURITY_REPORT.md` extended with one row per B-check (ID, OWASP category, status, evidence).
 
 **Open (user decisions/actions):** Sentry, sharp, Turnstile, privacy officer contact, staging project/DB, Google OAuth console, Vercel preview protection, npm audit (proxy-blocked), ZAP (blocked on staging), production token backfill + rollout approval.
+
+## 2026-10-14 ~22:50 UTC — Prompt 3 production rollout (deploy fixes)
+
+Production deployment **READY**: `dpl_8p19ZAUMxv225iigAqUzmrtc7bAb` (commit `486d0e4d`), aliased to
+`kivo-nine-silk.vercel.app`. All Prompt 3 migrations m1–m13 applied to production.
+
+### What the rollout took (4 failed builds → 1 good)
+
+1. **Secret-scanning rejection**: security report quoted Stripe's public docs example key (`sk_test_4eC39Hq...`).
+   Redacted to a fake placeholder; 11 affected tests updated. Never a real secret.
+2. **Vercel Hobby cron limit**: new `error-alerts` cron at `*/10 * * * *` blocked ALL deploys
+   (`cron_jobs_limits_reached` — Hobby allows crons at most once/day). Changed to daily `0 7 * * *`;
+   SECURITY_REPORT B9.2 documents the degraded cadence.
+3. **Double-build race** (twice): the delayed GitHub webhook fired an auto-deploy ~8-10s before each manual
+   `create_deployment`. First race: build 2 died on m1 `relation "Membership" already exists`.
+   Fix: made all m1–m13 statements idempotent (`IF NOT EXISTS` / `IF EXISTS` / pg_constraint DO-blocks /
+   `DROP POLICY IF EXISTS`); `scripts/apply-migrations.sh` header documents the race.
+4. **Idempotency gap — irregular spacing**: m3/m4 had `ADD COLUMN     "col"` (multiple spaces); the first
+   transform's single-space pattern missed 8 occurrences. Fixed with `\s+` pattern; m3 then applied.
+5. **m9 data surprise**: `Payment.businessId SET NOT NULL` failed — production had orphan payments with NULL
+   businessId (scratch DB had 0; never assume scratch == production). Fix: backfill from the invoice's
+   businessId (`UPDATE ... FROM "Invoice"`), plus a loud `RAISE EXCEPTION` if any orphans remain unattributable.
+6. **m8 re-run hazard**: backfill UPDATEs referenced Float columns that m8 itself drops. On re-run after a
+   partial apply: `column "defaultHourlyRate" does not exist`. Fix: wrapped all 19 backfills in
+   `information_schema.columns` existence DO-blocks. Same guard applied to m1's backfill (references
+   `User.businessId`/`role`, dropped later by m9).
+7. **Auto-deploy is unreliable**: GitHub webhook fires ~15 min late (when it fires at all). Manual
+   `create_deployment` via the Vercel MCP (`gitSource: {type:'github', repoId:1382065895, ref:'main', sha}`) is
+   the reliable path; expect a duplicate auto-deploy ~10s earlier — now harmless (idempotent).
+
+### Live verification (2026-10-14 ~22:52 UTC, Playwright, qatest-morning-20261009 account)
+- Login works; dashboard renders with data; "Do later" present on setup card.
+- Invoices page works; CSP nonce header + HSTS + X-Frame-Options live (B2 verified in production headers).
+- Settings → Online payments: "Connect with Stripe" button present and rendered.
+- No invoice rows deleted by any migration (m1–m13 contain no DELETEs on business data).
