@@ -191,3 +191,17 @@ Still blocked: Vercel deploy stalled (user action needed) — live verification 
 
 **Tradeoff:** Businesses with sendTime later than their local time at 12:00 UTC won't get a digest that day. Hourly per-timezone delivery needs Vercel Pro ($20/mo) — NOT done per $0 rule.
 **Still open:** GitHub-Vercel auto-deploy link is still null. Future pushes won't auto-deploy until the repo is re-linked in Vercel dashboard (Project Settings -> Git) or via `create_git_project`. Manual deployments via MCP work.
+
+## 2026-10-14 - Prompt 2 gap closure + release (A3 wiring, A2/B8 formatters)
+
+**Gap found on re-verification (2026-10-14):** `job-queries.ts` had 0 production importers; `DateTimeText`/`MoneyText` had 0 usages. Components existed but were not wired in.
+
+**Fix (commit e87ac1f, 18 files, +503/-215):**
+- A3: Dashboard, Jobs, Schedule, Money, Owner now use shared job-queries functions. Extended with byStatus, voided exclusion, outstandingCount, getScheduleWeekJobs, getTodayJobs, getUpcomingJobs, getOverdueJobs, getTomorrowJobs, getJobs. Fixes: voided invoices leaking into outstanding, ready-to-invoice underreporting beyond 10 rows, stale invoicedAt.
+- A2/B8: MoneyText 33 sites + DateTimeText 12 sites across Jobs, Schedule, Money, Dashboard, Customers, Invoices, Quotes, Quote detail, Invoice detail. DateTimeText calendar-day rule (UTC-midnight dates render exact day, never shifted). Dashboard subtitle now business-timezone (was server UTC).
+
+**Verified:**
+- tsc --noEmit: 0 errors
+- npm test: 1070 pass, 0 fail
+- Production deploy dpl_4JAp61zZVRHXVRYYKDjAZGHWk6NR — READY, old chunk gone from live homepage
+- C2 screenshots: "after" shots at 375/390px EN/FR in progress (see shots-c2/)
