@@ -24,7 +24,7 @@ export default function PaletteTrigger({
         type="button"
         onClick={openPalette}
         aria-label={`${label} (⌘K)`}
-        className="p-2.5 rounded-xl hover:bg-white/10 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70"
+        className="p-2.5 rounded-xl hover:bg-zinc-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ej-ink/70"
       >
         <Search size={20} />
       </button>

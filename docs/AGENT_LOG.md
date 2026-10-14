@@ -93,3 +93,28 @@ Session log for AI agents working on EveryJob (Kivo). Required by AGENTS.md sect
 **Not done:**
 - Part B, C, D (in progress — user said keep building until all done)
 - Vercel deploy still stalled (user action needed) — live verification blocked
+
+## 2026-10-14 - Prompt 2 Part B: Fix mobile experience (B1-B8)
+
+**Goal:** Implement Part B. User said "Keep build all of it until all gets done."
+
+**Files changed (348 files, +1855/-1388):**
+- B1: Removed `<JobiMascot />` from `src/app/layout.tsx` (component file kept for reuse)
+- B2: Removed floating Copilot FAB from GlobalCopilotWidget, Copilot icon in top bar (MobileNav + AppSidebar), bottom padding `pb-[calc(9rem+env(safe-area-inset-bottom))]`
+- B3: Schedule — one week strip, one New job, count badge only when >0, holiday chip removed (emoji marker), full holiday in agenda header, empty day -> `/jobs/new?date=...`, "This week" disabled pill
+- B4: Jobs — JOB_STATUSES order, sentence case chips with counts, edge fade hint, JobsExportMenu (mobile overflow), shared StatusBadge with isLate
+- B5: Money — single EmptyState when all caught up
+- B6: EN/FR moved to More menu + Settings, kept on public pages, Copilot in top bar
+- B7: Copy pass — 1021 em dashes + 23 en dashes + 45 escaped forms -> 1 em + 1 en (parser regex in invoice-notes.ts only), 264 files, 1089 replacements. Sentence case (63 files, uppercase classes removed). Arrows removed from buttons. Middle dots -> two-line layout (Jobs, Schedule, Money, working-hours)
+- B8: New MoneyText, DateTimeText, PageHeader, EmptyState, JobsExportMenu. ConfirmDialog onCancel alias. StatusBadge consolidated (ui.tsx re-exports canonical)
+
+**Verified:**
+- tsc --noEmit: 0 errors
+- npm test: 1062 pass, 0 fail
+- npm run build: succeeds
+- Pushed as 4f20688
+
+**Caveats:**
+- Locale persistence stays cookie-only (`kivo-locale`, 1 year). No Business.locale column; DB persistence would need schema change.
+- Page title: MobileNav shows brand logo, not per-page title; titles rendered by each page header.
+- `schedAllDates` i18n key now unused, left in place for en/fr parity.

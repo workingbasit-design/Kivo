@@ -14,8 +14,8 @@ import { t, type Locale } from '@/lib/i18n';
  */
 export default function MobileNav({ locale = 'en', unreadCount = 0 }: { locale?: Locale; unreadCount?: number }) {
   return (
-    <header className="md:hidden sticky top-0 z-40 text-white">
-      <div className="ej-glass-dark pt-[env(safe-area-inset-top)]">
+    <header className="md:hidden sticky top-0 z-40 text-ej-ink">
+      <div className="bg-ej-paper border-b border-ej-smoke pt-[env(safe-area-inset-top)]">
       <div className="flex items-center justify-between px-4 py-3">
         <Link href="/dashboard" className="flex items-center gap-2 min-h-[44px]">
           <EveryJobLogo size={28} />
@@ -24,7 +24,7 @@ export default function MobileNav({ locale = 'en', unreadCount = 0 }: { locale?:
         <div className="flex items-center gap-2">
           <CopilotTriggerButton
             ariaLabel={t(locale, 'copilot.openLabel')}
-            className="p-2.5 rounded-xl hover:bg-white/10 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70"
+            className="p-2.5 rounded-xl hover:bg-zinc-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ej-ink/70"
           >
             <Bot size={20} />
           </CopilotTriggerButton>
@@ -36,13 +36,13 @@ export default function MobileNav({ locale = 'en', unreadCount = 0 }: { locale?:
                 ? `${t(locale, 'notifications.title')} (${unreadCount} ${t(locale, 'notifications.unread')})`
                 : t(locale, 'notifications.title')
             }
-            className="relative p-2.5 rounded-xl hover:bg-white/10 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70"
+            className="relative p-2.5 rounded-xl hover:bg-zinc-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ej-ink/70"
           >
             <Bell size={20} />
             {unreadCount > 0 && (
               <span
                 aria-hidden
-                className="absolute top-1 right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-lime px-1 text-[9px] font-bold text-ink"
+                className="absolute top-1 right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-ej-lime px-1 text-[9px] font-bold text-ej-ink"
               >
                 {unreadCount > 99 ? '99+' : unreadCount}
               </span>

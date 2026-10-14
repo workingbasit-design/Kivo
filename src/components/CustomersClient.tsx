@@ -240,7 +240,7 @@ export default function CustomersClient({
                       )}
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="font-bold text-sm text-zinc-900">
+                      <p className="font-bold text-sm text-zinc-900 tabular-nums">
                         {formatMoney(c.revenue, currency)}
                       </p>
                       <p className="text-[11px] text-zinc-500">

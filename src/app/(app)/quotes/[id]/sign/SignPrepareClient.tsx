@@ -244,7 +244,7 @@ function SignShareSheet({
   }
 
   return (
-    <div className="ej-glass-card rounded-[20px] p-6 space-y-4">
+    <div className="rounded-xl border border-zinc-200 bg-white p-6 space-y-4">
       <h3 className="text-sm font-bold text-zinc-900">{s.shareTitle}</h3>
 
       <div className="flex gap-2">

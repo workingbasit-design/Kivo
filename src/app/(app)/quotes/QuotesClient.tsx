@@ -189,7 +189,7 @@ export default function QuotesClient({
                         </Link>
                         <span className="font-normal text-zinc-500"> · {q.customer.name}</span>
                       </p>
-                      <p className="text-xs text-zinc-500 mt-1">
+                      <p className="text-xs text-zinc-500 mt-1 tabular-nums">
                         <span className="font-semibold text-violet-700">
                           {t(locale, 't10money.followups.daysWaiting').replace(
                             '{days}',
@@ -276,7 +276,7 @@ export default function QuotesClient({
                     </p>
                   </div>
                   <div className="flex flex-col items-end gap-1.5 shrink-0">
-                    <span className="text-sm font-bold text-zinc-900">{formatMoney(q.total, business?.currency)}</span>
+                    <span className="text-sm font-bold text-zinc-900 tabular-nums">{formatMoney(q.total, business?.currency)}</span>
                     <StatusBadge status={q.status} />
                   </div>
                 </Link>

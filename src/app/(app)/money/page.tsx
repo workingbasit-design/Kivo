@@ -120,18 +120,18 @@ export default async function MoneyPage() {
       <div className="grid gap-4 md:grid-cols-2">
         <Card className="p-6">
           <div className="flex items-center gap-3">
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--ej-primary-soft)] text-[var(--ej-primary)]">
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-ej-smoke text-ej-muted">
               <ClipboardList className="h-5 w-5" aria-hidden />
             </span>
             <div>
               <h2 className="font-semibold">{L('t10money.money.quotesCardTitle')}</h2>
-              <p className="text-sm text-[var(--ej-muted)]">{L('t10money.money.quotesCardDesc')}</p>
+              <p className="text-sm text-ej-muted">{L('t10money.money.quotesCardDesc')}</p>
             </div>
           </div>
           <p className="mt-4 text-3xl font-bold tabular-nums">
             {formatMoney(Math.round(openQuoteValue * 100) / 100, currency)}
           </p>
-          <p className="mt-1 text-sm text-[var(--ej-muted)]">
+          <p className="mt-1 text-sm text-ej-muted">
             {openQuotes.length === 0
               ? L('t10money.money.noQuotesYet')
               : L('t10money.money.quotesCount').replace('{count}', String(openQuotes.length))}
@@ -149,18 +149,18 @@ export default async function MoneyPage() {
 
         <Card className="p-6">
           <div className="flex items-center gap-3">
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--ej-primary-soft)] text-[var(--ej-primary)]">
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-ej-smoke text-ej-muted">
               <FileText className="h-5 w-5" aria-hidden />
             </span>
             <div>
               <h2 className="font-semibold">{L('t10money.money.invoicesCardTitle')}</h2>
-              <p className="text-sm text-[var(--ej-muted)]">{L('t10money.money.invoicesCardDesc')}</p>
+              <p className="text-sm text-ej-muted">{L('t10money.money.invoicesCardDesc')}</p>
             </div>
           </div>
           <p className="mt-4 text-3xl font-bold tabular-nums">
             {formatMoney(Math.round(unpaidBalance * 100) / 100, currency)}
           </p>
-          <p className="mt-1 text-sm text-[var(--ej-muted)]">
+          <p className="mt-1 text-sm text-ej-muted">
             {unpaidInvoices.length === 0
               ? L('t10money.money.noInvoicesYet')
               : L('t10money.money.invoicesCount').replace('{count}', String(unpaidInvoices.length))}
@@ -187,7 +187,7 @@ export default async function MoneyPage() {
               </span>
               <div>
                 <h2 className="font-semibold">{L('t10money.money.unbilledTitle')}</h2>
-                <p className="text-xs text-[var(--ej-muted)]">{L('t10money.money.unbilledDesc')}</p>
+                <p className="text-xs text-ej-muted">{L('t10money.money.unbilledDesc')}</p>
               </div>
               <span className="ml-auto text-lg font-bold tabular-nums text-emerald-700">
                 {formatMoney(Math.round(unbilledValue * 100) / 100, currency)}
@@ -243,7 +243,7 @@ export default async function MoneyPage() {
               </span>
               <div>
                 <h2 className="font-semibold">{L('t10money.reminders.title')}</h2>
-                <p className="text-xs text-[var(--ej-muted)]">{L('t10money.reminders.desc')}</p>
+                <p className="text-xs text-ej-muted">{L('t10money.reminders.desc')}</p>
               </div>
             </div>
           </div>
@@ -273,7 +273,7 @@ export default async function MoneyPage() {
                         </Link>
                       </p>
                       <p className="text-xs text-zinc-500 truncate">{inv.customer.name}</p>
-                      <p className="text-xs text-zinc-500 mt-1">
+                      <p className="text-xs text-zinc-500 mt-1 tabular-nums">
                         <span className="font-semibold text-amber-700">
                           {L('t10money.reminders.daysOverdue').replace('{days}', String(overdueDays))}
                         </span>

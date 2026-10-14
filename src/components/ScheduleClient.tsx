@@ -13,7 +13,7 @@ import { formatMoney } from '@/lib/money';
 import { toISODateLocal, formatDateLabel, hasJobTime, formatStatusLabel, jobDisplayStatus, localeDateTag, cn } from '@/lib/utils';
 import { t, type Locale } from '@/lib/i18n';
 import {
-  Card, StatusBadge, EmptyState, Field, glassClass,
+  Card, StatusBadge, EmptyState, Field,
   primaryBtnClass, secondaryBtnClass, dangerBtnClass, inputClass, selectClass, Dialog,
 } from '@/components/ui';
 
@@ -59,6 +59,30 @@ function timeToMinutes(time: string | null): number {
   return h * 60 + min;
 }
 
+/**
+ * Minutes since midnight "now" in the business timezone (DESIGN.md today
+ * timeline). Falls back to the browser's local time when the timezone is
+ * invalid - never throws on a bad IANA name.
+ */
+function nowMinutesInTimezone(timezone: string): number {
+  try {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: timezone,
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: false,
+    }).formatToParts(new Date());
+    const hour = Number(parts.find((p) => p.type === 'hour')?.value ?? 0);
+    const minute = Number(parts.find((p) => p.type === 'minute')?.value ?? 0);
+    if (Number.isNaN(hour) || Number.isNaN(minute)) return 0;
+    // hour12:false can yield hour "24" at midnight in some runtimes.
+    return ((hour % 24) * 60 + minute) % 1440;
+  } catch {
+    const now = new Date();
+    return now.getHours() * 60 + now.getMinutes();
+  }
+}
+
 export default function ScheduleClient({
   initialJobs,
   initialDateFilter,
@@ -67,6 +91,7 @@ export default function ScheduleClient({
   todayKey,
   locale,
   activeDayHoliday,
+  timezone,
 }: {
   initialJobs: Job[];
   /** Override the default date filter ('TODAY'). Use 'ALL' to show everything passed in. */
@@ -81,6 +106,8 @@ export default function ScheduleClient({
   /** Full holiday name for the selected day, shown in the agenda header
    *  (never truncated). Null when the day is not a holiday. */
   activeDayHoliday?: string | null;
+  /** Business IANA timezone - drives the today-timeline dot position. */
+  timezone?: string;
 }) {
   const [selectedDate, setSelectedDate] = useState<string>(initialDateFilter ?? 'TODAY'); // 'TODAY', 'ALL', or YYYY-MM-DD
   const canSeed = allowSeed ?? initialJobs.length === 0;
@@ -144,6 +171,9 @@ export default function ScheduleClient({
   const agendaJobs = isAgendaDay
     ? [...filteredJobs].sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time))
     : filteredJobs;
+
+  // Today's view (filter or explicit day) gets the DESIGN.md timeline.
+  const isTodayView = selectedDate === 'TODAY' || selectedDate === todayStr;
 
   const handleStatusChange = (jobId: string, newStatus: string) => {
     setActionError(null);
@@ -342,13 +372,32 @@ export default function ScheduleClient({
           />
         </Card>
       ) : (
-        <div className="space-y-3">
+        // DESIGN.md: work screens are vertical lists with dividers, not card
+        // grids. On today's view the list carries the one memorable element:
+        // a 2px lime line down the left with a 10px ink dot at the current
+        // time (business timezone). Other days show a plain list. The dot
+        // lives in the outer wrapper so divide-y still treats the first
+        // row as the first child (no double top border).
+        <div className="relative">
+          {isTodayView && (
+            <span
+              aria-hidden
+              className="absolute left-[-1px] z-10 block h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-ej-ink"
+              style={{ top: `${(nowMinutesInTimezone(timezone ?? 'America/Toronto') / 1440) * 100}%` }}
+            />
+          )}
+          <div
+            className={cn(
+              'bg-white rounded-xl border border-zinc-200 overflow-hidden divide-y divide-ej-smoke',
+              isTodayView && 'border-l-2 border-l-ej-lime'
+            )}
+          >
           {agendaJobs.map((job, i) => {
             const isEditing = editingJobId === job.id;
             const nextStatuses = validNextStatuses(job.status);
 
             return (
-              <Card
+              <div
                 key={job.id}
                 className="p-4 md:p-5 ej-row-in"
                 style={{ '--row-delay': `${Math.min(i, 10) * 40}ms` } as React.CSSProperties}
@@ -358,7 +407,7 @@ export default function ScheduleClient({
                   <Link href={`/jobs/${job.id}`} className="flex-1 min-w-0 space-y-2.5 py-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <StatusBadge status={jobDisplayStatus(job.status, job.date)} />
-                      <span className="inline-flex items-center gap-1.5 text-xs font-bold text-ink bg-smoke px-2.5 py-1 rounded-md">
+                      <span className="inline-flex items-center gap-1.5 text-xs font-bold text-ink bg-smoke px-2.5 py-1 rounded-md tabular-nums">
                         <Clock size={12} />
                         {hasJobTime(job.time) ? job.time : T('schedTimeTbd')}
                       </span>
@@ -413,10 +462,7 @@ export default function ScheduleClient({
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => startEdit(job)}
-                        className={cn(
-                          'min-w-[44px] min-h-[44px] flex items-center justify-center text-zinc-600 rounded-full transition-all hover:scale-105 active:scale-95',
-                          glassClass('zinc')
-                        )}
+                        className="min-w-[44px] min-h-[44px] flex items-center justify-center text-zinc-600 rounded-full transition-all hover:scale-105 active:scale-95 bg-white border border-zinc-200 shadow-sm"
                         title={T('schedRescheduleTitle')}
                         aria-label={T('schedRescheduleTitle')}
                       >
@@ -425,10 +471,7 @@ export default function ScheduleClient({
                       <button
                         onClick={() => setRemovingJobId(job.id)}
                         disabled={isPending}
-                        className={cn(
-                          'min-w-[44px] min-h-[44px] flex items-center justify-center text-rose-600 rounded-full transition-all hover:scale-105 active:scale-95 disabled:opacity-50',
-                          glassClass('zinc')
-                        )}
+                        className="min-w-[44px] min-h-[44px] flex items-center justify-center text-rose-600 rounded-full transition-all hover:scale-105 active:scale-95 disabled:opacity-50 bg-white border border-zinc-200 shadow-sm"
                         title={jobsL('removeFromSchedule')}
                         aria-label={jobsL('removeFromSchedule')}
                       >
@@ -492,9 +535,10 @@ export default function ScheduleClient({
                     </div>
                   </div>
                 )}
-              </Card>
+              </div>
             );
           })}
+          </div>
         </div>
       )}
 

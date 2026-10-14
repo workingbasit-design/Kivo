@@ -7,6 +7,16 @@
   --color-paper: #fafaf7; /* page background */
   --color-smoke: #e8e8e3; /* borders, dividers */
   --color-graphite: #55554e; /* secondary text */
+
+  /* DESIGN.md (Part C) - deliberate tokens. Use these on work screens:
+     bg-ej-paper, text-ej-ink, text-ej-muted, border-ej-smoke, bg-ej-lime,
+     text-ej-alert. Lime is a fill behind dark text, never text on white. */
+  --color-ej-ink: #14181a;
+  --color-ej-paper: #ffffff;
+  --color-ej-smoke: #f2f4f3;
+  --color-ej-muted: #5a6366;
+  --color-ej-lime: #c8f542;
+  --color-ej-alert: #c0392b;
   /* 2026-10-01 accessibility: zinc-400 (#a1a1aa) is ~2.3:1 on paper -
      unreadable for secondary text. Remapped to the zinc-500 value (#71717a,
      ~4.8:1, passes WCAG 2.1 AA) so all 300+ muted-text usages stay legible. */
@@ -15,8 +25,9 @@
 
 :root {
   color-scheme: light;
-  --background: #fafaf7;
-  --foreground: #161616;
+  /* DESIGN.md: paper white background, ink text. */
+  --background: #ffffff;
+  --foreground: #14181a;
 }
 
 @theme inline {
@@ -55,7 +66,7 @@ body {
      carry their own rings; this is the fallback for links and custom
      interactive elements). */
   :where(a, [role='button'], [role='tab'], [role='radio'], summary):focus-visible {
-    outline: 2px solid #161616;
+    outline: 2px solid #14181a;
     outline-offset: 2px;
     border-radius: 6px;
   }

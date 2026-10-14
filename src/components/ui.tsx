@@ -15,8 +15,9 @@ export function PageHeader({
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-zinc-900 tracking-tight">{title}</h1>
-        {subtitle && <p className="text-zinc-500 mt-1 text-sm">{subtitle}</p>}
+        {/* DESIGN.md page title: 24px / 1.25, weight 700. */}
+        <h1 className="text-2xl font-bold text-ej-ink tracking-tight">{title}</h1>
+        {subtitle && <p className="text-ej-muted mt-1 text-sm">{subtitle}</p>}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
     </div>
@@ -32,8 +33,10 @@ export function Card({
   className?: string;
   style?: React.CSSProperties;
 }) {
+  // DESIGN.md grouping card: 12px radius, 1px border, no shadow, no glass.
+  // Cards group related data; they are not a default container.
   return (
-    <div className={cn('ej-card-lift ej-glass-card rounded-[20px]', className)} style={style}>
+    <div className={cn('rounded-xl border border-zinc-200 bg-white', className)} style={style}>
       {children}
     </div>
   );
@@ -133,24 +136,24 @@ export function StatCard({
 }) {
   return (
     <div
-      className="ej-card-lift ej-rise ej-premium ej-premium-dark rounded-[20px] p-5 bg-[#2e2e30] text-white border border-white/10 shadow-[0_16px_40px_rgba(22,22,22,0.25)]"
+      className="rounded-xl border border-zinc-200 bg-white p-5 text-ej-ink"
       style={{ ['--ej-d' as string]: `${Math.min(index, 8) * 0.07}s` }}
     >
       <div className="flex items-center justify-between gap-2 mb-3">
-        <p className="text-[11px] font-bold text-white/60 leading-tight text-balance">{label}</p>
+        <p className="text-[11px] font-bold text-ej-muted leading-tight text-balance">{label}</p>
         {icon &&
           (tone ? (
             <GlassIcon icon={icon} tone={tone} size="md" />
           ) : (
-            <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center', accent ?? 'bg-white/10 text-lime')}>
+            <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center', accent ?? 'bg-ej-smoke text-ej-muted')}>
               {icon}
             </div>
           ))}
       </div>
-      <p className="text-[26px] font-bold text-white tracking-tight tabular-nums">
+      <p className="text-[26px] font-bold text-ej-ink tracking-tight tabular-nums">
         {value}
       </p>
-      {sub && <p className="text-xs text-white/60 mt-1">{sub}</p>}
+      {sub && <p className="text-xs text-ej-muted mt-1">{sub}</p>}
     </div>
   );
 }
@@ -168,7 +171,10 @@ export function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center p-12 md:p-16 text-center">
-      <GlassIcon icon={icon} tone="zinc" size="lg" className="mb-4" />
+      {/* DESIGN.md: no glass blur on work screens - plain muted icon chip. */}
+      <span className="inline-flex items-center justify-center shrink-0 w-14 h-14 rounded-[20px] bg-ej-smoke text-ej-muted mb-4">
+        {icon}
+      </span>
       <h3 className="text-base font-bold text-zinc-900 mb-1">{title}</h3>
       <p className="text-sm text-zinc-500 max-w-sm mb-6">{description}</p>
       {action}
@@ -212,7 +218,7 @@ export const checkboxClass =
   'w-5 h-5 rounded-md border-zinc-300 accent-[#161616] focus-visible:ring-2 focus-visible:ring-ink/40 focus-visible:ring-offset-2';
 
 export const primaryBtnClass =
-  'ej-squircle bg-gradient-to-b from-[#2a2a2a] to-ink hover:from-graphite hover:to-[#2a2a2a] active:from-ink active:to-ink text-white min-h-[44px] px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 inline-flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(22,22,22,0.2),inset_0_1px_0_rgba(255,255,255,0.08)] hover:shadow-[0_4px_12px_rgba(22,22,22,0.25),inset_0_1px_0_rgba(255,255,255,0.08)] disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/50 focus-visible:ring-offset-2';
+  'ej-squircle bg-gradient-to-b from-[#2a2a2a] to-ink hover:from-graphite hover:to-[#2a2a2a] active:from-ink active:to-ink text-white min-h-12 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 inline-flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(22,22,22,0.2),inset_0_1px_0_rgba(255,255,255,0.08)] hover:shadow-[0_4px_12px_rgba(22,22,22,0.25),inset_0_1px_0_rgba(255,255,255,0.08)] disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/50 focus-visible:ring-offset-2';
 
 export const secondaryBtnClass =
   'ej-squircle bg-gradient-to-b from-white to-zinc-50 hover:to-white active:from-zinc-50 active:to-zinc-100 text-zinc-700 min-h-[44px] px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 inline-flex items-center justify-center gap-2 border border-zinc-200 shadow-[0_1px_2px_rgba(22,22,22,0.06),inset_0_1px_0_rgba(255,255,255,0.8)] hover:shadow-[0_4px_12px_rgba(22,22,22,0.08)] disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/40 focus-visible:ring-offset-2';
@@ -224,7 +230,7 @@ export const ghostBtnClass =
   'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 active:bg-zinc-200 min-h-[44px] min-w-[44px] px-4 py-2.5 rounded-xl font-semibold text-sm transition-colors inline-flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/40 focus-visible:ring-offset-2';
 
 export const limeBtnClass =
-  'ej-squircle bg-gradient-to-b from-[#d4f55e] to-lime hover:brightness-105 active:brightness-95 text-ink min-h-[44px] px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 inline-flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(22,22,22,0.15),inset_0_1px_0_rgba(255,255,255,0.5)] hover:shadow-[0_4px_14px_rgba(200,240,74,0.4)] disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/60 focus-visible:ring-offset-2';
+  'ej-squircle bg-gradient-to-b from-[#d4f55e] to-lime hover:brightness-105 active:brightness-95 text-ink min-h-12 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 inline-flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(22,22,22,0.15),inset_0_1px_0_rgba(255,255,255,0.5)] hover:shadow-[0_4px_14px_rgba(200,240,74,0.4)] disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/60 focus-visible:ring-offset-2';
 
 /* ---------- Loading skeletons (never blank screens) ---------- */
 

@@ -189,7 +189,7 @@ export default async function InvoiceDetailPage({
                   className="rounded-xl border border-zinc-100 bg-zinc-50/40 px-3 py-2.5 print:bg-transparent"
                 >
                   <p className="text-sm font-semibold text-zinc-800">{item.description}</p>
-                  <p className="text-xs text-zinc-500 mt-1">
+                  <p className="text-xs text-zinc-500 mt-1 tabular-nums">
                     {item.qty} × {formatMoney(item.unitPrice, currency, moneyLocale)}
                     <span className="font-bold text-zinc-800">
                       {' '}· {formatMoney(round2(item.qty * item.unitPrice), currency, moneyLocale)}
@@ -201,7 +201,7 @@ export default async function InvoiceDetailPage({
           </div>
         )}
 
-        <dl className="mt-6 space-y-1.5 text-sm max-w-xs ml-auto">
+        <dl className="mt-6 space-y-1.5 text-sm max-w-xs ml-auto tabular-nums">
           <div className="flex justify-between text-zinc-600">
             <dt>{L('invoices.subtotal')}</dt>
             <dd className="font-semibold">{formatMoney(invoice.subtotal, currency, moneyLocale)}</dd>
@@ -255,7 +255,7 @@ export default async function InvoiceDetailPage({
             {invoice.payments.map((p) => (
               <li key={p.id} className="flex items-center justify-between py-2.5 text-sm">
                 <div>
-                  <p className="font-semibold text-zinc-900">{formatMoney(p.amount, currency, moneyLocale)}</p>
+                  <p className="font-semibold text-zinc-900 tabular-nums">{formatMoney(p.amount, currency, moneyLocale)}</p>
                   <p className="text-xs text-zinc-500">
                     {p.provider}
                     {p.transactionId ? ` · Ref ${p.transactionId}` : ''} ·{' '}

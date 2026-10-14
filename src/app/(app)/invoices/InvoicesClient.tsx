@@ -185,7 +185,7 @@ export default function InvoicesClient({
                       <p className="text-sm font-semibold text-zinc-900 truncate">
                         {inv.number} · {inv.customer.name}
                       </p>
-                      <p className="text-xs text-zinc-500 mt-1">
+                      <p className="text-xs text-zinc-500 mt-1 tabular-nums">
                         {formatDateShort(inv.date)}
                         {due > 0 && inv.status !== 'PAID' && (
                           <span className="text-amber-700 font-semibold"> · {t(locale, 'billing.dueSuffix').replace('{amount}', formatMoney(due, currency))}</span>
@@ -193,7 +193,7 @@ export default function InvoicesClient({
                       </p>
                     </div>
                     <div className="flex flex-col items-end gap-1.5 shrink-0">
-                      <span className="text-sm font-bold text-zinc-900">{formatMoney(inv.total, currency)}</span>
+                      <span className="text-sm font-bold text-zinc-900 tabular-nums">{formatMoney(inv.total, currency)}</span>
                       <span className="flex items-center gap-1.5">
                         {overdue && (
                           <Badge tone="danger">{t(locale, 't10money.overdue')}</Badge>

@@ -142,7 +142,7 @@ export default async function QuoteDetailPage({
               </div>
             </div>
           </div>
-          <p className="text-2xl font-bold text-zinc-900 sm:text-right">{formatMoney(quote.total, currency, moneyLocale)}</p>
+          <p className="text-2xl font-bold text-zinc-900 sm:text-right tabular-nums">{formatMoney(quote.total, currency, moneyLocale)}</p>
         </div>
 
         {hasLineItems && (
@@ -155,7 +155,7 @@ export default async function QuoteDetailPage({
                   className="rounded-xl border border-zinc-100 bg-zinc-50/50 px-3 py-2.5"
                 >
                   <p className="text-sm font-semibold text-zinc-900">{item.description}</p>
-                  <p className="text-xs text-zinc-500 mt-1">
+                  <p className="text-xs text-zinc-500 mt-1 tabular-nums">
                     {item.qty} × {formatMoney(item.unitPrice, currency, moneyLocale)}
                     <span className="font-bold text-zinc-800">
                       {' '}· {formatMoney(round2(item.qty * item.unitPrice), currency, moneyLocale)}
@@ -167,7 +167,7 @@ export default async function QuoteDetailPage({
           </div>
         )}
 
-        <dl className="border-t border-zinc-100 pt-4 space-y-1.5 text-sm">
+        <dl className="border-t border-zinc-100 pt-4 space-y-1.5 text-sm tabular-nums">
           <div className="flex justify-between text-zinc-600">
             <dt>{L('t10money.subtotalLabel')}</dt>
             <dd className="font-semibold">{formatMoney(subtotal, currency, moneyLocale)}</dd>

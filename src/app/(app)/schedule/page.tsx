@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { PageHeader, Card, limeBtnClass, glassClass } from '@/components/ui';
+import { PageHeader, Card, limeBtnClass } from '@/components/ui';
 import ScheduleClient from '@/components/ScheduleClient';
 import WeatherStrip, { type StripDay } from '@/components/WeatherStrip';
 import { getWeatherForDates, geocodeLocation } from '@/lib/weather';
@@ -227,10 +227,7 @@ export default async function SchedulePage({
         <div className="flex items-center justify-between gap-2 mb-4">
           <Link
             href={weekLink(addDays(weekStart, -7))}
-            className={cn(
-              'min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-zinc-700 transition-all hover:scale-105 active:scale-95',
-              glassClass('zinc')
-            )}
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-zinc-700 transition-all hover:scale-105 active:scale-95 bg-white border border-zinc-200 shadow-sm"
             aria-label={T('schedPrevWeek')}
           >
             <ChevronLeft size={18} />
@@ -246,10 +243,7 @@ export default async function SchedulePage({
             ) : (
               <Link
                 href="/schedule"
-                className={cn(
-                  'text-xs font-bold text-zinc-800 px-4 py-2 min-h-[44px] inline-flex items-center rounded-full transition-all hover:scale-[1.03] active:scale-95',
-                  glassClass('zinc')
-                )}
+                className="text-xs font-bold text-zinc-800 px-4 py-2 min-h-[44px] inline-flex items-center rounded-full transition-all hover:scale-[1.03] active:scale-95 bg-white border border-zinc-200 shadow-sm"
               >
                 {T('schedThisWeek')}
               </Link>
@@ -258,10 +252,7 @@ export default async function SchedulePage({
           </div>
           <Link
             href={weekLink(addDays(weekStart, 7))}
-            className={cn(
-              'min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-zinc-700 transition-all hover:scale-105 active:scale-95',
-              glassClass('zinc')
-            )}
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-zinc-700 transition-all hover:scale-105 active:scale-95 bg-white border border-zinc-200 shadow-sm"
             aria-label={T('schedNextWeek')}
           >
             <ChevronRight size={18} />
@@ -354,6 +345,7 @@ export default async function SchedulePage({
         todayKey={todayKey}
         locale={locale}
         activeDayHoliday={activeHoliday}
+        timezone={business?.timezone ?? 'America/Toronto'}
       />
     </div>
   );
