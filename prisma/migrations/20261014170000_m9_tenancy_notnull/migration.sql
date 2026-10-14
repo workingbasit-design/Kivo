@@ -2,8 +2,32 @@
 -- IF EXISTS guards and DO blocks; DML was already idempotent.
 -- M9: tenancy NOT NULL + drop legacy User.role / User.businessId.
 --
--- Payment.businessId NOT NULL: no NULL rows exist on any migrated database
--- (M8 backfill covered it; verified 0 NULLs on the scratch DB 2026-10-14).
+-- Payment.businessId NOT NULL.
+-- Backfill: attribute orphan payments via their invoice's business. Every
+-- payment has a required invoiceId, and invoices are always tenant-scoped,
+-- so this is exact attribution, not a guess. (The scratch DB had 0 NULLs,
+-- but production had orphan rows - e.g. older/CASH payments recorded
+-- without a businessId. Never assume scratch data == production data.)
+UPDATE "Payment" p
+SET "businessId" = i."businessId"
+FROM "Invoice" i
+WHERE p."businessId" IS NULL
+  AND p."invoiceId" = i."id"
+  AND i."businessId" IS NOT NULL;
+
+-- Fail loudly if any payment still cannot be attributed, instead of
+-- assigning it to a wrong business or leaving the column nullable.
+DO $$
+DECLARE
+  orphan_count INT;
+BEGIN
+  SELECT COUNT(*) INTO orphan_count FROM "Payment" WHERE "businessId" IS NULL;
+  IF orphan_count > 0 THEN
+    RAISE EXCEPTION 'M9 blocked: % Payment rows still have NULL businessId with no attributable invoice', orphan_count;
+  END IF;
+END $$;
+
+ALTER TABLE "Payment" ALTER COLUMN "businessId" SET NOT NULL;
 -- Business.timezone NOT NULL with default 'America/Toronto' (Canada-only app).
 -- User.role / User.businessId dropped: Membership (M1, backfilled 1:1 from
 -- User rows) is now the authority for role + business assignment. The session's
