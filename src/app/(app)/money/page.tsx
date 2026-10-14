@@ -1,14 +1,13 @@
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
 import { Plus, ClipboardList, FileText, BellRing } from 'lucide-react';
-import { getSession } from '@/lib/auth';
+import { requireAuth } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { prisma } from '@/lib/prisma';
 import { PageHeader, Card, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
 import EmptyState from '@/components/EmptyState';
 import MoneyText from '@/components/MoneyText';
-import { formatMoney } from '@/lib/money';
+import { formatMoney, centsToDollars } from '@/lib/money';
 import SmsButton from '@/components/SmsButton';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import { fillTemplate, daysOverdue, remainingBalance, OVERDUE_AFTER_DAYS, DAY_MS } from '@/lib/revenue';
@@ -28,9 +27,7 @@ function overdueThreshold(): Date {
  * into /quotes and /invoices. Reachable from the mobile bottom bar.
  */
 export default async function MoneyPage() {
-  const session = await getSession();
-  if (!session?.user?.businessId) redirect('/login');
-  const businessId = session.user.businessId;
+  const { businessId } = await requireAuth();
   const locale = await getLocale();
   const L = (path: string) => t(locale, path);
 
@@ -41,11 +38,11 @@ export default async function MoneyPage() {
     }),
     prisma.quote.findMany({
       where: { businessId, status: 'SENT' },
-      select: { total: true },
+      select: { totalCents: true },
     }),
     prisma.invoice.findMany({
       where: { businessId, status: { not: 'PAID' }, voidedAt: null },
-      select: { total: true, payments: { select: { amount: true } } },
+      select: { id: true },
     }),
     // Overdue queue: unpaid/partially-paid invoices older than Net-30, oldest first.
     // Excludes voided invoices.
@@ -59,10 +56,10 @@ export default async function MoneyPage() {
       select: {
         id: true,
         number: true,
-        total: true,
+        totalCents: true,
         date: true,
         customer: { select: { name: true, phone: true } },
-        payments: { select: { amount: true } },
+        payments: { select: { amountCents: true } },
       },
       orderBy: { date: 'asc' },
       take: 10,
@@ -80,7 +77,6 @@ export default async function MoneyPage() {
       select: {
         id: true,
         title: true,
-        price: true,
         priceCents: true,
         noCharge: true,
         customer: { select: { name: true } },
@@ -93,7 +89,7 @@ export default async function MoneyPage() {
     getMoneySummary(businessId),
   ]);
 
-  const openQuoteValue = openQuotes.reduce((s, q) => s + q.total, 0);
+  const openQuoteValue = openQuotes.reduce((s, q) => s + centsToDollars(q.totalCents), 0);
   // Outstanding total from the shared summary (cents-aware, voided
   // excluded). The unpaid list above is still used for its count.
   const unpaidBalance = moneySummary.outstanding;
@@ -221,7 +217,7 @@ export default async function MoneyPage() {
                         No charge
                       </span>
                     ) : (
-                      <MoneyText dollars={j.price} locale={locale} />
+                      <MoneyText dollars={j.priceCents != null ? centsToDollars(j.priceCents) : null} locale={locale} />
                     )}
                   </span>
                   <Link
@@ -256,8 +252,8 @@ export default async function MoneyPage() {
           <ul className="divide-y divide-zinc-100">
             {overdueInvoices.map((inv) => {
               const remaining = remainingBalance(
-                inv.total,
-                inv.payments.map((p) => p.amount)
+                centsToDollars(inv.totalCents),
+                inv.payments.map((p) => centsToDollars(p.amountCents))
               );
               // Overdue badge flips at local midnight in the business's timezone.
               const overdueDays = Math.max(1, daysOverdue(new Date(inv.date), new Date(), business?.timezone));

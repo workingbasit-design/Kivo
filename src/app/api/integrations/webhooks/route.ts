@@ -12,9 +12,11 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
+import { getActiveMembershipForUser } from '@/lib/membership';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { WEBHOOK_EVENTS, generateWebhookSecret, type WebhookEvent } from '@/lib/webhooks';
+import { assertPublicUrl, SsrfError } from '@/lib/ssrf';
 
 const idSchema = z.object({ id: z.string().min(1) });
 
@@ -45,7 +47,9 @@ function guard(req: Request) {
 
 async function authedBusinessId() {
   const session = await getSession();
-  return session?.user?.businessId ?? null;
+  if (!session) return null;
+  const membership = await getActiveMembershipForUser(session.user.id);
+  return membership?.businessId ?? null;
 }
 
 function limited(businessId: string) {
@@ -108,6 +112,20 @@ export async function POST(req: Request) {
       { error: parsed.error.issues[0]?.message ?? 'Invalid payload.' },
       { status: 422 }
     );
+  }
+  // B1.5 SSRF: reject non-localhost URLs that resolve to private/internal
+  // addresses at creation time (delivery-time check in webhooks.ts is the
+  // enforcement point; this gives immediate feedback). http://localhost
+  // stays allowed for local receiver testing.
+  if (!/^http:\/\/localhost(?::\d+)?\//i.test(parsed.data.url)) {
+    try {
+      await assertPublicUrl(parsed.data.url);
+    } catch (err) {
+      return NextResponse.json(
+        { error: err instanceof SsrfError ? `URL rejected: ${err.message}` : 'URL rejected.' },
+        { status: 422 }
+      );
+    }
   }
   const secret = generateWebhookSecret();
   const created = await prisma.webhookEndpoint.create({

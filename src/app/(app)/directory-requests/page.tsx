@@ -1,6 +1,5 @@
-import { redirect } from 'next/navigation';
 import { Inbox } from 'lucide-react';
-import { getSession } from '@/lib/auth';
+import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { PageHeader, Card, EmptyState } from '@/components/ui';
 import { isDirectoryAdminEmail } from '@/lib/directory';
@@ -18,11 +17,10 @@ export const metadata = { title: 'Directory demand | EveryJob' };
  * directly at /directory-requests.
  */
 export default async function DirectoryRequestsPage() {
-  const session = await getSession();
-  if (!session?.user?.businessId) redirect('/login');
+  const { user } = await requireAuth();
   const locale = await getLocale();
   const tr = (path: string) => t(locale, path);
-  if (!isDirectoryAdminEmail(session.user.email)) {
+  if (!isDirectoryAdminEmail(user.email)) {
     return (
       <div className="space-y-6">
         <PageHeader title={tr('t10misc.demand.title')} subtitle={tr('t10misc.demand.subtitle')} />

@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getLocale } from "@/lib/i18n/server";
 import { t } from "@/lib/i18n";
 import { localeMoneyTag } from "@/lib/utils";
-import { formatMoney } from "@/lib/money";
+import { formatMoney, centsToDollars } from "@/lib/money";
 import { PageHeader, Card, EmptyState } from "@/components/ui";
 import { FolderKanban, Plus, ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -38,7 +38,7 @@ export default async function ProjectsPage() {
       endDate: true,
       customer: { select: { name: true } },
       phases: { select: { id: true, status: true } },
-      jobs: { select: { id: true, price: true } },
+      jobs: { select: { id: true, priceCents: true } },
     },
     orderBy: { updatedAt: "desc" },
   }).catch(() => []);
@@ -78,7 +78,7 @@ export default async function ProjectsPage() {
         <div className="grid gap-3 sm:grid-cols-2">
           {projects.map((p) => {
             const donePhases = p.phases.filter((ph) => ph.status === "DONE").length;
-            const jobValue = p.jobs.reduce((s, j) => s + j.price, 0);
+            const jobValue = p.jobs.reduce((s, j) => s + centsToDollars(j.priceCents), 0);
             return (
               <Link key={p.id} href={`/projects/${p.id}`}>
                 <Card className="p-5 hover:shadow-lg transition-shadow h-full">

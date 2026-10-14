@@ -9,20 +9,30 @@ import { t } from '@/lib/i18n';
 export const metadata = { title: 'Team | EveryJob' };
 
 export default async function TeamPage() {
-  const { user, businessId } = await requireAuth();
+  const { user, businessId, role } = await requireAuth();
   const locale = await getLocale();
   const tr = (path: string) => t(locale, path);
 
   // Only admins can manage the team.
-  if (user.role !== 'ADMIN') {
+  if (role !== 'ADMIN') {
     redirect('/settings');
   }
 
-  const members = await prisma.user.findMany({
-    where: { businessId },
-    orderBy: { createdAt: 'asc' },
-    select: { id: true, name: true, email: true, role: true, createdAt: true },
-  });
+  const members = (
+    await prisma.membership.findMany({
+      where: { businessId, status: 'ACTIVE' },
+      include: {
+        user: { select: { id: true, name: true, email: true, createdAt: true } },
+      },
+      orderBy: { user: { createdAt: 'asc' } },
+    })
+  ).map((m) => ({
+    id: m.user.id,
+    name: m.user.name,
+    email: m.user.email,
+    role: m.role,
+    createdAt: m.user.createdAt,
+  }));
 
   return (
     <div className="space-y-6">

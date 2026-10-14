@@ -4,6 +4,9 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
+
+// B4.2: token refresh encrypts at rest - the test env needs a 32-byte key.
+process.env.ENCRYPTION_KEY ??= Buffer.from('test-key-32-bytes-long-123456789').toString('base64');
 import {
   buildAuthorizeUrl,
   exchangeCode,
@@ -268,7 +271,10 @@ test('getValidAccessToken refreshes an expiring token and persists it', async ()
   const r = await getValidAccessToken(c, 'biz1', CREDS, db, fetchFn);
   assert.equal(r.ok, true);
   assert.equal(r.accessToken, 'NEW');
-  assert.equal((saved as { accessToken: string }).accessToken, 'NEW');
+  // B4.2: the refreshed token is encrypted at rest, never plaintext.
+  const savedAccess = (saved as { accessToken: string }).accessToken;
+  assert.notEqual(savedAccess, 'NEW');
+  assert.ok(savedAccess.startsWith('enc:v1:'), 'must use the enc:v1: envelope');
 });
 
 test('getValidAccessToken reports reconnect when refresh fails', async () => {

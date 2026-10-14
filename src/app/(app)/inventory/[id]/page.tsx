@@ -9,6 +9,7 @@ import { t } from '@/lib/i18n';
 import { ArrowLeft } from 'lucide-react';
 import PartForm from '@/components/PartForm';
 import DeletePartButton from '@/components/DeletePartButton';
+import { centsToDollars } from '@/lib/money';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,7 +51,7 @@ export default async function PartDetailPage({
             sku: part.sku,
             quantity: part.quantity,
             reorderPoint: part.reorderPoint,
-            unitCost: part.unitCost,
+            unitCost: part.unitCostCents == null ? null : centsToDollars(part.unitCostCents),
             unit: part.unit,
             notes: part.notes,
           }}

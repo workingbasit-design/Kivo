@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { randomBytes } from 'node:crypto';
 import { getSession } from '@/lib/auth';
+import { getActiveMembershipForUser } from '@/lib/membership';
 import {
   googleOAuthConfigured,
   googleRedirectUri,
@@ -18,7 +19,8 @@ export const GOOGLE_BP_STATE_COOKIE = 'google_bp_oauth_state';
  */
 export async function GET(req: Request) {
   const session = await getSession();
-  const businessId = session?.user?.businessId;
+  const membership = session ? await getActiveMembershipForUser(session.user.id) : null;
+  const businessId = membership?.businessId;
   if (!businessId) {
     return NextResponse.redirect(new URL('/login', req.url));
   }

@@ -9,7 +9,8 @@ import { logger } from '@/lib/logger';
 import { requireAuth } from '@/lib/auth';
 import { invoiceSchema, paymentSchema, INVOICE_STATUSES } from '@/lib/validations';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
-import { dollarsToCents } from '@/lib/money';
+import { dollarsToCents, centsToDollars, formatCents } from '@/lib/money';
+import { nextDocumentNumber } from '@/lib/numbering';
 import {
   getTaxConfig,
   defaultTaxType,
@@ -18,7 +19,6 @@ import {
   splitStoredTax,
   type TaxConfig,
 } from '@/lib/tax';
-import { formatMoney } from '@/lib/money';
 import {
   getActiveShareToken,
   issueShareToken,
@@ -28,7 +28,7 @@ import {
 import { sendPlatformEmail } from '@/lib/messaging/platform-email';
 import { invoiceEmail } from '@/lib/messaging/email-templates';
 import { appBaseUrl } from '@/lib/app-url';
-import { invoicePaidUpdate } from '@/lib/invoice-paid';
+import { invoicePaidUpdate, invoiceDueAt } from '@/lib/invoice-paid';
 
 export type ActionResult = { error?: string; ok?: boolean; id?: string };
 
@@ -80,31 +80,6 @@ function checkLimit(key: string): ActionResult | null {
 }
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
-
-/** Next INV-0001 style number, scoped per business, retry-safe. */
-async function nextInvoiceNumber(
-  businessId: string,
-  db: Pick<typeof prisma, 'invoice'> = prisma
-): Promise<string> {
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const existing = await db.invoice.findMany({
-      where: { businessId },
-      select: { number: true },
-    });
-    let max = 0;
-    for (const r of existing) {
-      const m = /^INV-(\d+)$/.exec(r.number);
-      if (m) max = Math.max(max, parseInt(m[1], 10));
-    }
-    const number = `INV-${String(max + 1 + attempt).padStart(4, '0')}`;
-    const clash = await db.invoice.findFirst({
-      where: { businessId, number },
-      select: { id: true },
-    });
-    if (!clash) return number;
-  }
-  return `INV-${Date.now().toString().slice(-6)}`;
-}
 
 function parseLineItems(raw: string | null): { items?: LineItem[]; error?: string } {
   if (!raw) return { items: [] };
@@ -206,21 +181,19 @@ export async function createInvoice(
   const userNotes = parsed.data.notes?.trim();
   if (userNotes) notesParts.push(userNotes);
 
-  const number = await nextInvoiceNumber(businessId);
-
   const invoice = await prisma.$transaction(async (tx) => {
+    // Number generated inside the same transaction as the insert (M4).
+    const number = await nextDocumentNumber(tx, businessId, 'INVOICE');
     const inv = await tx.invoice.create({
       data: {
         number,
         date: new Date(`${parsed.data.date}T00:00:00`),
-        subtotal,
-        subtotalCents: dollarsToCents(subtotal),
+        dueAt: invoiceDueAt(new Date(`${parsed.data.date}T00:00:00`)),
+        subtotalCents: dollarsToCents(subtotal) ?? BigInt(0),
         taxRate: parsed.data.taxRate,
         taxType,
-        taxAmount,
-        taxAmountCents: dollarsToCents(taxAmount),
-        total,
-        totalCents: dollarsToCents(total),
+        taxAmountCents: dollarsToCents(taxAmount) ?? BigInt(0),
+        totalCents: dollarsToCents(total) ?? BigInt(0),
         status: 'UNPAID',
         notes: notesParts.join('\n\n') || null,
         customerId: customer.id,
@@ -232,8 +205,7 @@ export async function createInvoice(
         invoiceId: inv.id,
         description: item.desc,
         qty: item.qty,
-        unitPrice: item.rate,
-        unitPriceCents: dollarsToCents(item.rate),
+        unitPriceCents: dollarsToCents(item.rate) ?? BigInt(0),
         position: idx,
       })),
     });
@@ -248,7 +220,7 @@ export async function createInvoice(
     await emitWebhookEvent(businessId, 'invoice.created', {
       invoice_id: invoice.id,
       number: invoice.number,
-      total: invoice.total,
+      total: centsToDollars(invoice.totalCents),
     });
   } catch (err) {
     logger.error('invoices: invoice.created webhook failed', { businessId, invoiceId: invoice.id, error: err });
@@ -367,13 +339,15 @@ export async function voidInvoice(
   if (invoice.status === 'DRAFT') {
     return { error: 'Draft invoices can be deleted directly - no need to void.' };
   }
-  if ((invoice as { voidedAt?: Date | null }).voidedAt) {
+  if ((invoice as { voidedAt?: Date | null }).voidedAt || invoice.status === 'VOID') {
     return { error: 'This invoice is already voided.' };
   }
 
   await prisma.invoice.update({
     where: { id, businessId },
-    data: { voidedAt: new Date(), voidReason: reason },
+    // M10: status='VOID' is the single source of truth; voidedAt/voidReason
+    // stay as the audit fields.
+    data: { status: 'VOID', voidedAt: new Date(), voidReason: reason },
   });
 
   revalidatePath('/invoices');
@@ -407,14 +381,16 @@ export async function voidPayment(
 
   const payment = await prisma.payment.findFirst({
     where: { id, invoice: { businessId } },
-    select: { id: true, voidedAt: true },
+    select: { id: true, voidedAt: true, status: true },
   });
   if (!payment) return { error: 'Payment not found.' };
-  if (payment.voidedAt) return { error: 'This payment is already voided.' };
+  if (payment.voidedAt || payment.status === 'VOID') return { error: 'This payment is already voided.' };
 
   await prisma.payment.update({
     where: { id },
-    data: { voidedAt: new Date(), voidReason: reason },
+    // M10: status='VOID' is the single source of truth; voidedAt/voidReason
+    // stay as the audit fields.
+    data: { status: 'VOID', voidedAt: new Date(), voidReason: reason },
   });
 
   revalidatePath('/invoices');
@@ -454,22 +430,27 @@ export async function createCreditNote(
   const invoice = await ownedInvoice(businessId, invoiceId);
   if (!invoice) return { error: 'Invoice not found.' };
 
-  await prisma.creditNote.create({
-    data: {
-      invoiceId,
-      businessId,
-      amountCents: BigInt(Math.round(amountDollars * 100)),
-      reason,
-    },
+  // Number generated inside the same transaction as the insert (M4).
+  await prisma.$transaction(async (tx) => {
+    const number = await nextDocumentNumber(tx, businessId, 'CREDIT_NOTE');
+    await tx.creditNote.create({
+      data: {
+        number,
+        invoiceId,
+        businessId,
+        amountCents: BigInt(Math.round(amountDollars * 100)),
+        reason,
+      },
+    });
   });
 
   revalidatePath('/invoices');
   return { ok: true };
 }
 
-function deriveStatus(total: number, paid: number): string {
-  if (paid >= total - 0.009) return 'PAID';
-  if (paid > 0) return 'PARTIALLY PAID';
+function deriveStatus(totalCents: bigint, paidCents: bigint): string {
+  if (paidCents >= totalCents) return 'PAID';
+  if (paidCents > BigInt(0)) return 'PARTIALLY PAID';
   return 'UNPAID';
 }
 
@@ -511,27 +492,27 @@ export async function recordPayment(
     const invoice = await tx.invoice.findFirst({
       where: { id: parsed.data.invoiceId, businessId },
       include: {
-        payments: { select: { amount: true } },
+        payments: { select: { amountCents: true } },
         business: { select: { currency: true } },
       },
     });
     if (!invoice) return { error: 'Invoice not found.' };
 
-    const alreadyPaid = round2(invoice.payments.reduce((s, p) => s + p.amount, 0));
-    const remaining = round2(invoice.total - alreadyPaid);
-    if (remaining <= 0) {
+    const alreadyPaidCents = invoice.payments.reduce((s, p) => s + p.amountCents, BigInt(0));
+    const remainingCents = invoice.totalCents - alreadyPaidCents;
+    if (remainingCents <= BigInt(0)) {
       return { error: 'This invoice is already paid in full.' };
     }
-    if (parsed.data.amount > remaining + 0.009) {
+    const amountCents = dollarsToCents(parsed.data.amount) ?? BigInt(0);
+    if (amountCents > remainingCents) {
       return {
-        error: `Amount exceeds the remaining balance of ${formatMoney(remaining, invoice.business.currency)}.`,
+        error: `Amount exceeds the remaining balance of ${formatCents(remainingCents, invoice.business.currency)}.`,
       };
     }
 
     const payment = await tx.payment.create({
       data: {
-        amount: round2(parsed.data.amount),
-        amountCents: dollarsToCents(parsed.data.amount),
+        amountCents,
         provider: parsed.data.provider,
         transactionId: parsed.data.transactionId || null,
         status: 'COMPLETED',
@@ -540,8 +521,8 @@ export async function recordPayment(
       },
     });
 
-    const newPaid = round2(alreadyPaid + payment.amount);
-    const newStatus = deriveStatus(invoice.total, newPaid);
+    const newPaidCents = alreadyPaidCents + payment.amountCents;
+    const newStatus = deriveStatus(invoice.totalCents, newPaidCents);
     await tx.invoice.update({
       where: { id: invoice.id, businessId },
       // invoicePaidUpdate stamps paidAt exactly when the invoice becomes
@@ -562,21 +543,21 @@ export async function recordPayment(
     await emitWebhookEvent(businessId, 'payment.recorded', {
       payment_id: payment.id,
       invoice_id: invoice.id,
-      amount: payment.amount,
+      amount: centsToDollars(payment.amountCents),
       provider: payment.provider,
     });
     if (newStatus === 'PAID') {
       await emitWebhookEvent(businessId, 'invoice.paid', {
         invoice_id: invoice.id,
         number: invoice.number,
-        total: invoice.total,
+        total: centsToDollars(invoice.totalCents),
       });
     }
     // Push notification: money in. Best-effort, bilingual copy.
     const { pushToBusiness } = await import('@/lib/webpush');
     await pushToBusiness(businessId, {
       title: 'Payment received · Paiement reçu',
-      body: `${formatMoney(payment.amount, invoice.business.currency)} - ${invoice.number}`,
+      body: `${formatCents(payment.amountCents, invoice.business.currency)} - ${invoice.number}`,
       url: `/invoices/${invoice.id}`,
       tag: `payment-${payment.id}`,
     });
@@ -609,7 +590,7 @@ type PrismaTx = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
 async function settleJobPaidTx(tx: PrismaTx, businessId: string, jobId: string): Promise<void> {
   const job = await tx.job.findFirst({
     where: { id: jobId, businessId },
-    select: { id: true, price: true, title: true, customerId: true },
+    select: { id: true, priceCents: true, title: true, customerId: true },
   });
   if (!job) return;
 
@@ -617,16 +598,16 @@ async function settleJobPaidTx(tx: PrismaTx, businessId: string, jobId: string):
     where: { jobId: job.id, businessId },
     select: {
       id: true,
-      total: true,
-      payments: { select: { amount: true } },
+      totalCents: true,
+      payments: { select: { amountCents: true } },
     },
     orderBy: { createdAt: 'desc' },
   });
 
   if (invoices.length === 0) {
-    const price = round2(job.price ?? 0);
-    if (price <= 0 || !job.customerId) return;
-    const number = await nextInvoiceNumber(businessId, tx);
+    const priceCents = job.priceCents;
+    if (priceCents <= BigInt(0) || !job.customerId) return;
+    const number = await nextDocumentNumber(tx, businessId, 'INVOICE');
     // NOTE (2026-10-04, reviewed): this auto-invoice is a RECEIPT for cash
     // already in hand (the owner just marked the job paid), not a fresh
     // bill - so it records the amount received (price) with zero tax, and
@@ -640,10 +621,10 @@ async function settleJobPaidTx(tx: PrismaTx, businessId: string, jobId: string):
       data: {
         number,
         date: new Date(),
-        subtotal: price,
+        subtotalCents: priceCents,
         taxRate: 0,
-        taxAmount: 0,
-        total: price,
+        taxAmountCents: BigInt(0),
+        totalCents: priceCents,
         status: 'PAID',
         notes: `Auto-created when job "${job.title}" was marked paid.`,
         customerId: job.customerId,
@@ -657,8 +638,7 @@ async function settleJobPaidTx(tx: PrismaTx, businessId: string, jobId: string):
         invoiceId: inv.id,
         description: job.title,
         qty: 1,
-        unitPrice: price,
-        unitPriceCents: dollarsToCents(price),
+        unitPriceCents: priceCents,
         position: 0,
       },
     });
@@ -669,7 +649,7 @@ async function settleJobPaidTx(tx: PrismaTx, businessId: string, jobId: string):
     });
     await tx.payment.create({
       data: {
-        amount: price,
+        amountCents: priceCents,
         provider: 'OTHER',
         status: 'COMPLETED',
         invoiceId: inv.id,
@@ -680,12 +660,12 @@ async function settleJobPaidTx(tx: PrismaTx, businessId: string, jobId: string):
   }
 
   for (const inv of invoices) {
-    const paid = round2(inv.payments.reduce((s, p) => s + p.amount, 0));
-    const outstanding = round2(inv.total - paid);
-    if (outstanding > 0) {
+    const paidCents = inv.payments.reduce((s, p) => s + p.amountCents, BigInt(0));
+    const outstandingCents = inv.totalCents - paidCents;
+    if (outstandingCents > BigInt(0)) {
       await tx.payment.create({
         data: {
-          amount: outstanding,
+          amountCents: outstandingCents,
           provider: 'OTHER',
           status: 'COMPLETED',
           invoiceId: inv.id,
@@ -862,7 +842,7 @@ export async function sendInvoiceEmail(
   }
   const link = `${base}/i/${token}`;
 
-  const total = formatMoney(invoice.total, currency);
+  const total = formatCents(invoice.totalCents, currency);
   const tpl = invoiceEmail({
     customerName: invoice.customer.name,
     businessName,
@@ -883,7 +863,14 @@ export async function sendInvoiceEmail(
     };
   }
 
-  await prisma.invoice.update({ where: { id, businessId }, data: { sentAt: new Date() } });
+  await prisma.invoice.update({
+    where: { id, businessId },
+    data: {
+      sentAt: new Date(),
+      // M10: stamp the net-30 due date on send if it isn't set yet.
+      ...(invoice.dueAt ? {} : { dueAt: invoiceDueAt(new Date()) }),
+    },
+  });
   revalidatePath('/invoices');
   revalidatePath(`/invoices/${id}`);
   return { ok: true };

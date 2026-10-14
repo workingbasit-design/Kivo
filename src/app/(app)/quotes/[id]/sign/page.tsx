@@ -1,11 +1,11 @@
 import Link from 'next/link';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
-import { getSession } from '@/lib/auth';
+import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { PageHeader, Card } from '@/components/ui';
 import { getTaxConfig, totalTaxRate } from '@/lib/tax';
-import { formatMoney } from '@/lib/money';
+import { formatMoney, centsToDollars } from '@/lib/money';
 import { formatDateShort } from '@/lib/utils';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
@@ -19,9 +19,7 @@ export default async function SignPreparePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const session = await getSession();
-  if (!session?.user?.businessId) redirect('/login');
-  const businessId = session.user.businessId;
+  const { businessId } = await requireAuth();
   const { id } = await params;
 
   const locale = await getLocale();
@@ -45,8 +43,9 @@ export default async function SignPreparePage({
     quote.business.taxRegion
   );
   const rate = totalTaxRate(taxConfig);
-  const taxAmount = rate > 0 ? round2((quote.total * rate) / (100 + rate)) : 0;
-  const subtotal = round2(quote.total - taxAmount);
+  const totalDollars = centsToDollars(quote.totalCents);
+  const taxAmount = rate > 0 ? round2((totalDollars * rate) / (100 + rate)) : 0;
+  const subtotal = round2(totalDollars - taxAmount);
   const taxLines = taxConfig.taxes.map((tx) => ({
     ...tx,
     amount:
@@ -130,7 +129,7 @@ export default async function SignPreparePage({
             <div className="flex justify-between text-base pt-1">
               <dt className="font-bold text-zinc-900">Total</dt>
               <dd className="font-bold text-zinc-900">
-                {formatMoney(quote.total, 'CAD')}
+                {formatMoney(totalDollars, 'CAD')}
               </dd>
             </div>
           </dl>

@@ -72,7 +72,7 @@ export default async function DashboardPage() {
       prisma.customer.count({ where: { businessId } }),
       prisma.quote.count({ where: { businessId } }),
       prisma.invoice.count({ where: { businessId } }),
-      prisma.user.count({ where: { businessId } }),
+      prisma.membership.count({ where: { businessId, status: 'ACTIVE' } }),
       prisma.googleConnection.findUnique({ where: { businessId }, select: { id: true } }),
     ]),
     (async () => {

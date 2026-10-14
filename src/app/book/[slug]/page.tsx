@@ -7,6 +7,7 @@ import { formatWorkingHoursSummary } from '@/lib/working-hours';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
+import { centsToDollars } from '@/lib/money';
 
 export async function generateMetadata({
   params,
@@ -57,7 +58,7 @@ export default async function PublicBookingPage({
 
   const services = await prisma.service.findMany({
     where: { businessId: page.businessId },
-    select: { id: true, name: true, price: true },
+    select: { id: true, name: true, priceCents: true },
     orderBy: { name: 'asc' },
   });
 
@@ -96,7 +97,7 @@ export default async function PublicBookingPage({
 
         <BookingForm
           slug={slug}
-          services={services}
+          services={services.map((s) => ({ id: s.id, name: s.name, price: centsToDollars(s.priceCents) }))}
           businessPhone={business.phone}
           currency={business.currency}
           hoursSummary={formatWorkingHoursSummary(business.workingHours)}

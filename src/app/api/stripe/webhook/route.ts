@@ -6,8 +6,7 @@ import {
   retrieveCompletedPayment,
   deriveInvoiceStatus,
 } from '@/lib/stripe';
-
-const round2 = (n: number) => Math.round(n * 100) / 100;
+import { centsToDollars } from '@/lib/money';
 
 interface StripeEventPayload {
   id: string;
@@ -23,8 +22,8 @@ interface StripeEventPayload {
  *
  * Security: the raw body is verified against STRIPE_WEBHOOK_SECRET before
  * anything is parsed. Idempotency: each Stripe event id is processed once
- * (StripeEvent unique key) and Payment.stripePaymentIntentId is unique, so
- * duplicate deliveries can never double-record money.
+ * (WebhookEvent's unique provider+event id) and Payment.stripePaymentIntentId
+ * is unique, so duplicate deliveries can never double-record money.
  */
 export async function POST(req: Request) {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -56,14 +55,16 @@ export async function POST(req: Request) {
 
   // Idempotency first: claim this event before doing any work. The claim is
   // released (deleted) if the handler fails, so Stripe's redelivery retries
-  // the work instead of being silently swallowed.
+  // the work instead of being silently swallowed. Events land in
+  // WebhookEvent (M6); StripeEvent is kept read-only (deprecated).
   try {
-    await prisma.stripeEvent.create({
+    await prisma.webhookEvent.create({
       data: {
+        provider: 'STRIPE',
+        providerEventId: event.id,
         businessId,
-        stripeEventId: event.id,
         type: event.type,
-        livemode: event.livemode === true,
+        payloadJson: rawBody,
       },
     });
   } catch {
@@ -77,8 +78,8 @@ export async function POST(req: Request) {
     } else if (event.type === 'checkout.session.expired') {
       await handleCheckoutExpired(session);
     }
-    await prisma.stripeEvent.update({
-      where: { stripeEventId: event.id, businessId },
+    await prisma.webhookEvent.updateMany({
+      where: { provider: 'STRIPE', providerEventId: event.id, businessId },
       data: { processedAt: new Date() },
     });
   } catch (err) {
@@ -87,8 +88,8 @@ export async function POST(req: Request) {
     // checkout-session lookups) make retries safe. Returning 500 tells
     // Stripe to retry instead of dropping the payment.
     logger.error('stripe-webhook: handler error', { eventId: event.id, error: err });
-    await prisma.stripeEvent
-      .delete({ where: { stripeEventId: event.id } })
+    await prisma.webhookEvent
+      .deleteMany({ where: { provider: 'STRIPE', providerEventId: event.id, businessId } })
       .catch(() => undefined);
     return NextResponse.json({ error: 'Handler failed; Stripe will retry.' }, { status: 500 });
   }
@@ -131,7 +132,7 @@ async function handleCheckoutCompleted(
     const invoice = await prisma.invoice.findFirst({
       where: { id: invoiceId, businessId },
       include: {
-        payments: { where: { status: 'COMPLETED' }, select: { amount: true } },
+        payments: { where: { status: 'COMPLETED' }, select: { amountCents: true } },
         customer: { select: { name: true } },
       },
     });
@@ -149,11 +150,13 @@ async function handleCheckoutCompleted(
     }
 
     // Unique paymentIntentId → duplicate deliveries can't double-record.
+    // Stripe reports amounts in integer cents - stored directly as BigInt cents.
+    const paymentCents = BigInt(info.amountCents ?? 0);
     let paymentId: string | null = null;
     try {
       const payment = await prisma.payment.create({
         data: {
-          amount: round2((info.amountCents ?? 0) / 100),
+          amountCents: paymentCents,
           provider: 'STRIPE',
           status: 'COMPLETED',
           stripePaymentIntentId: info.paymentIntentId ?? undefined,
@@ -168,11 +171,9 @@ async function handleCheckoutCompleted(
       return; // already recorded (unique payment intent)
     }
 
-    const paid = round2(
-      invoice.payments.reduce((s, p) => s + p.amount, 0) +
-        round2((info.amountCents ?? 0) / 100)
-    );
-    const status = deriveInvoiceStatus(invoice.total, paid);
+    const paidCents =
+      invoice.payments.reduce((s, p) => s + p.amountCents, BigInt(0)) + paymentCents;
+    const status = deriveInvoiceStatus(centsToDollars(invoice.totalCents), centsToDollars(paidCents));
     await prisma.invoice.update({
       where: { id: invoice.id, businessId: invoice.businessId },
       data: {
@@ -199,7 +200,7 @@ async function handleCheckoutCompleted(
             dedupeKey: `payment_recorded:${paymentId}`,
             href: `/invoices/${invoice.id}`,
             data: JSON.stringify({
-              amount: String(round2((info.amountCents ?? 0) / 100)),
+              amount: String(centsToDollars(paymentCents)),
               number: invoice.number,
               customer: invoice.customer.name,
             }),
@@ -212,14 +213,14 @@ async function handleCheckoutCompleted(
         await emitWebhookEvent(businessId, 'payment.recorded', {
           payment_id: paymentId,
           invoice_id: invoice.id,
-          amount: round2((info.amountCents ?? 0) / 100),
+          amount: centsToDollars(paymentCents),
           provider: 'STRIPE',
         });
         if (status === 'PAID') {
           await emitWebhookEvent(businessId, 'invoice.paid', {
             invoice_id: invoice.id,
             number: invoice.number,
-            total: invoice.total,
+            total: centsToDollars(invoice.totalCents),
           });
         }
       } catch (err) {
@@ -230,7 +231,7 @@ async function handleCheckoutCompleted(
         const { pushToBusiness } = await import('@/lib/webpush');
         await pushToBusiness(businessId, {
           title: 'Payment received · Paiement reçu',
-          body: `${round2((info.amountCents ?? 0) / 100).toFixed(2)} CAD - ${invoice.number}`,
+          body: `${centsToDollars(paymentCents).toFixed(2)} CAD - ${invoice.number}`,
           url: `/invoices/${invoice.id}`,
           tag: `payment-${paymentId}`,
         });
@@ -278,7 +279,7 @@ async function handleCheckoutCompleted(
         dedupeKey: `quote_deposit:${deposit.id}`,
         href: `/quotes/${deposit.quoteId}`,
         data: JSON.stringify({
-          amount: String(deposit.amount),
+          amount: String(centsToDollars(deposit.amountCents)),
           number: `deposit ${deposit.quote.number}`,
           customer: deposit.quote.customer.name,
         }),

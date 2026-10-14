@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
+import { getActiveMembershipForUser } from '@/lib/membership';
 import { prisma } from '@/lib/prisma';
-import { formatMoney } from '@/lib/money';
+import { centsToDollars, formatCents } from '@/lib/money';
 import { rateLimit } from '@/lib/rate-limit';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 import {
@@ -36,7 +37,8 @@ function summarize(outcomes: SyncOutcome[]) {
  */
 export async function POST(req: Request) {
   const session = await getSession();
-  const businessId = session?.user?.businessId;
+  const membership = session ? await getActiveMembershipForUser(session.user.id) : null;
+  const businessId = membership?.businessId;
   if (!businessId) {
     return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   }
@@ -112,7 +114,7 @@ export async function POST(req: Request) {
         orderBy: { date: 'asc' },
         take: PER_TYPE_LIMIT * 2,
         include: {
-          lineItems: { orderBy: { position: 'asc' }, select: { description: true, qty: true, unitPrice: true } },
+          lineItems: { orderBy: { position: 'asc' }, select: { description: true, qty: true, unitPriceCents: true } },
         },
       })
     ).filter((i) => notSynced('invoice', i.id)).slice(0, PER_TYPE_LIMIT);
@@ -126,13 +128,17 @@ export async function POST(req: Request) {
           id: inv.id,
           number: inv.number,
           date: inv.date,
-          taxAmount: inv.taxAmount,
-          total: inv.total,
+          taxAmount: centsToDollars(inv.taxAmountCents),
+          total: centsToDollars(inv.totalCents),
           status: inv.status,
           notes: inv.notes,
           customerId: inv.customerId,
         },
-        inv.lineItems,
+        inv.lineItems.map((l) => ({
+          description: l.description,
+          qty: l.qty,
+          unitPrice: centsToDollars(l.unitPriceCents),
+        })),
         customerQbIds.get(inv.customerId) ?? knownQbId('customer', inv.customerId),
         itemRef
       );
@@ -147,7 +153,7 @@ export async function POST(req: Request) {
         orderBy: { createdAt: 'asc' },
         take: PER_TYPE_LIMIT * 2,
         select: {
-          id: true, amount: true, provider: true, transactionId: true,
+          id: true, amountCents: true, provider: true, transactionId: true,
           invoiceId: true, createdAt: true, status: true,
           invoice: { select: { customerId: true } },
         },
@@ -157,8 +163,8 @@ export async function POST(req: Request) {
     for (const p of payments) {
       const qbCustomerId = customerQbIds.get(p.invoice.customerId) ?? knownQbId('customer', p.invoice.customerId);
       const qbInvoiceId = invoiceQbIds.get(p.invoiceId) ?? knownQbId('invoice', p.invoiceId);
-      const outcome = await syncPayment(base, p, qbCustomerId, qbInvoiceId);
-      items.push({ ...outcome, label: `Payment ${formatMoney(p.amount, 'CAD', 'en')}` });
+      const outcome = await syncPayment(base, { ...p, amount: centsToDollars(p.amountCents) }, qbCustomerId, qbInvoiceId);
+      items.push({ ...outcome, label: `Payment ${formatCents(p.amountCents, 'CAD', 'en')}` });
     }
 
     await prisma.quickBooksConnection.update({

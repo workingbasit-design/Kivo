@@ -1,17 +1,20 @@
 "use client";
 
 import Link from 'next/link';
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 import { UserPlus, AlertCircle, Search } from 'lucide-react';
 import { customerSignup } from '@/app/actions/customer-auth';
 import { t, type Locale } from '@/lib/i18n';
 import { Field, inputClass, primaryBtnClass } from '@/components/ui';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import Logo from '@/components/Logo';
+import { HONEYPOT_FIELD, FORM_STARTED_FIELD } from '@/lib/bot-check';
 
 export default function CustomerSignupForm({ locale }: { locale: Locale }) {
   const [state, formAction, isPending] = useActionState(customerSignup, { error: '' });
   const tr = (path: string) => t(locale, path as never);
+  // B11.1: honeypot + fill-time timestamp for the server-side bot check.
+  const [formStartedAt] = useState(() => String(Date.now()));
 
   return (
     <div className="min-h-dvh bg-gradient-to-b from-indigo-50 to-white flex flex-col -m-4 -mt-4">
@@ -36,6 +39,23 @@ export default function CustomerSignupForm({ locale }: { locale: Locale }) {
           </p>
 
           <form action={formAction} className="space-y-4">
+            {/* Honeypot: invisible to humans (off-screen + aria-hidden); bots that
+                fill it are rejected server-side. */}
+            <div
+              aria-hidden="true"
+              className="absolute -left-[9999px] top-auto h-px w-px overflow-hidden"
+            >
+              <label htmlFor="cs-website">Website</label>
+              <input
+                id="cs-website"
+                name={HONEYPOT_FIELD}
+                type="text"
+                tabIndex={-1}
+                autoComplete="off"
+                defaultValue=""
+              />
+            </div>
+            <input type="hidden" name={FORM_STARTED_FIELD} value={formStartedAt} />
             <Field label={tr('customer.auth.fullName')}>
               <input
                 id="name"

@@ -452,6 +452,7 @@ const fr: Dictionary = {
     DECLINED: 'Refusé',
     CANCELLED: 'Annulé',
     OVERDUE: 'En retard',
+    LATE: 'En retard',
     CONVERTED: 'Converti',
     CONTACTED: 'Contacté',
   },

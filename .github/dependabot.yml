@@ -1,0 +1,30 @@
+# B3.3: automated dependency updates (security patches).
+# Reviewed weekly; Next.js/React security updates are fast-tracked.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Toronto"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "security"
+    commit-message:
+      prefix: "deps"
+    # Group non-breaking patches to keep the PR queue small; security
+    # updates still arrive as their own PRs via GitHub's alerting.
+    groups:
+      minor-patches:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

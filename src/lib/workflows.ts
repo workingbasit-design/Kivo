@@ -12,6 +12,7 @@
  */
 
 import { prisma } from '@/lib/prisma';
+import { centsToDollars } from '@/lib/money';
 
 export const WORKFLOW_TRIGGERS = ['JOB_COMPLETED', 'QUOTE_AWAITING', 'INVOICE_OVERDUE'] as const;
 export type WorkflowTrigger = (typeof WORKFLOW_TRIGGERS)[number];
@@ -181,7 +182,7 @@ export async function runWorkflowsForBusiness(businessId: string): Promise<Workf
       const followUpDays = Math.max(1, Math.min(90, config.followUpDays ?? 3));
       const quotes = await prisma.quote.findMany({
         where: { businessId, status: 'SENT' },
-        select: { id: true, number: true, title: true, total: true, updatedAt: true, customer: { select: { name: true } } },
+        select: { id: true, number: true, title: true, totalCents: true, updatedAt: true, customer: { select: { name: true } } },
         orderBy: { updatedAt: 'asc' },
         take: 100,
       });
@@ -193,7 +194,7 @@ export async function runWorkflowsForBusiness(businessId: string): Promise<Workf
           number: q.number,
           title: q.title,
           customerName: q.customer.name,
-          total: q.total.toFixed(2),
+          total: centsToDollars(q.totalCents).toFixed(2),
         });
         if (await fireOnce(rule.id, 'QUOTE', q.id, businessId, 'workflow_quote_followup', data, `/quotes/${q.id}`)) {
           fired++;
@@ -204,7 +205,7 @@ export async function runWorkflowsForBusiness(businessId: string): Promise<Workf
       const graceDays = Math.max(1, Math.min(365, config.graceDays ?? 14));
       const invoices = await prisma.invoice.findMany({
         where: { businessId, status: { in: ['UNPAID', 'PARTIALLY PAID'] } },
-        select: { id: true, number: true, total: true, date: true, status: true, customer: { select: { name: true } } },
+        select: { id: true, number: true, totalCents: true, date: true, status: true, customer: { select: { name: true } } },
         orderBy: { date: 'asc' },
         take: 100,
       });
@@ -215,7 +216,7 @@ export async function runWorkflowsForBusiness(businessId: string): Promise<Workf
         const data = JSON.stringify({
           number: inv.number,
           customerName: inv.customer.name,
-          total: inv.total.toFixed(2),
+          total: centsToDollars(inv.totalCents).toFixed(2),
         });
         if (await fireOnce(rule.id, 'INVOICE', inv.id, businessId, 'workflow_invoice_overdue', data, `/invoices/${inv.id}`)) {
           fired++;

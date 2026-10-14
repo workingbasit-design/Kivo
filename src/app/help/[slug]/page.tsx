@@ -9,6 +9,7 @@ import {
   type HelpArticle,
 } from '@/lib/help-articles';
 import { Card } from '@/components/ui';
+import { renderHelpBody } from '@/lib/help-render';
 
 export async function generateStaticParams() {
   return listArticles().map((a) => ({ slug: a.slug }));
@@ -24,64 +25,6 @@ export async function generateMetadata({
   if (!article) return { title: 'Not found | EveryJob' };
   // Locale is cookie-based; metadata can't read it reliably here, so use EN.
   return { title: `${article.en.title} | EveryJob Help` };
-}
-
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-/**
- * Minimal markdown-ish renderer: ## headings, - bullets, paragraphs.
- * All text is HTML-escaped first - article bodies are trusted data, but
- * escaping keeps the renderer safe by construction.
- */
-function renderBody(body: string): string {
-  const lines = body.split('\n');
-  const out: string[] = [];
-  let inList = false;
-  for (const raw of lines) {
-    const line = raw.trim();
-    if (line.startsWith('## ')) {
-      if (inList) {
-        out.push('</ul>');
-        inList = false;
-      }
-      out.push(
-        `<h2 class="mt-6 mb-2 text-base font-bold text-zinc-900">${escapeHtml(line.slice(3))}</h2>`
-      );
-    } else if (/^[-*] /.test(line)) {
-      if (!inList) {
-        out.push('<ul class="my-2 space-y-1.5 list-disc pl-5 text-sm text-zinc-700">');
-        inList = true;
-      }
-      out.push(`<li>${escapeHtml(line.slice(2))}</li>`);
-    } else if (line === '') {
-      if (inList) {
-        out.push('</ul>');
-        inList = false;
-      }
-    } else if (/^\d+\. /.test(line)) {
-      if (inList) {
-        out.push('</ul>');
-        inList = false;
-      }
-      out.push(
-        `<p class="my-1.5 text-sm text-zinc-700">${escapeHtml(line)}</p>`
-      );
-    } else {
-      if (inList) {
-        out.push('</ul>');
-        inList = false;
-      }
-      out.push(`<p class="my-2 text-sm leading-6 text-zinc-700">${escapeHtml(line)}</p>`);
-    }
-  }
-  if (inList) out.push('</ul>');
-  return out.join('\n');
 }
 
 export default async function HelpArticlePage({
@@ -113,7 +56,7 @@ export default async function HelpArticlePage({
         {loc.title}
       </h1>
       <Card className="mt-6">
-        <div dangerouslySetInnerHTML={{ __html: renderBody(loc.body) }} />
+        <div dangerouslySetInnerHTML={{ __html: renderHelpBody(loc.body) }} />
         <p className="mt-6 border-t border-zinc-100 pt-4 text-xs text-zinc-400">
           {t(locale, 'support.updatedNote')}
         </p>

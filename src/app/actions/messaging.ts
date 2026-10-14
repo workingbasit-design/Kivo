@@ -2,10 +2,13 @@
 
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
+import { randomBytes, createHash } from 'node:crypto';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { encryptSecret } from '@/lib/messaging/crypto';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { sendPlatformEmail } from '@/lib/messaging/platform-email';
+import { appBaseUrl } from '@/lib/app-url';
 import {
   runMessagingCycle,
   getMessagingOverview,
@@ -263,6 +266,8 @@ export async function setCustomerConsentAction(
         channel: 'WHATSAPP',
         action: consent ? 'OPT_IN' : 'OPT_OUT',
         source: 'settings-ui',
+        // B14: pin the wording version for CASL evidence.
+        wording: 'v2026-10',
       },
     }),
   ]);
@@ -310,4 +315,89 @@ export async function runMessagingNowAction(): Promise<{
   const report = await runMessagingCycle(businessId);
   revalidatePath('/settings/messaging');
   return { ok: true, report };
+}
+
+/* ------------------------------------------------------------------ */
+/* B7.6 - business email verification (24h link, gate in engine.ts).  */
+/* ------------------------------------------------------------------ */
+
+function hashVerifyToken(token: string): string {
+  return createHash('sha256').update(token, 'utf8').digest('hex');
+}
+
+/**
+ * Send the verification link to the business's own sending address. The
+ * engine refuses customer emails until the link is clicked.
+ */
+export async function sendBusinessEmailVerification(): Promise<ActionResult> {
+  const limited = checkLimit(await clientKey('messaging:verify-email'));
+  if (limited) return limited;
+  let businessId: string;
+  try {
+    ({ businessId } = await requireAuth());
+  } catch {
+    return { error: 'Please log in again.' };
+  }
+  const conn = await prisma.messagingConnection.findUnique({
+    where: { businessId_channel: { businessId, channel: 'EMAIL' } },
+    select: { emailFromAddress: true },
+  });
+  if (!conn?.emailFromAddress) {
+    return { error: 'Connect an email provider first.' };
+  }
+  // 128-bit token, SHA-256 hashed at rest, single-use, 24h expiry.
+  const token = randomBytes(16).toString('hex');
+  await prisma.emailVerificationToken.create({
+    data: {
+      businessId,
+      email: conn.emailFromAddress,
+      tokenHash: hashVerifyToken(token),
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    },
+  });
+  const base = await appBaseUrl();
+  const link = `${base}/verify-email?token=${token}`;
+  try {
+    await sendPlatformEmail(
+      conn.emailFromAddress,
+      'Verify your EveryJob sending email',
+      [
+        `Click this link within 24 hours to verify ${conn.emailFromAddress}:`,
+        '',
+        link,
+        '',
+        'Until verified, EveryJob will not send emails to your customers on your behalf.',
+      ].join('\n'),
+      { fromName: 'EveryJob' }
+    );
+  } catch {
+    return { error: 'Could not send the verification email. Try again later.' };
+  }
+  return { ok: true };
+}
+
+/**
+ * Verify a business email token (called by the public /verify-email page).
+ * Single-use: marks the token used and stamps emailVerifiedAt.
+ */
+export async function verifyBusinessEmailToken(
+  token: string
+): Promise<{ ok: boolean; error?: string }> {
+  const row = await prisma.emailVerificationToken.findUnique({
+    where: { tokenHash: hashVerifyToken(token) },
+  });
+  if (!row || row.usedAt || row.expiresAt < new Date()) {
+    return { ok: false, error: 'This verification link is invalid or has expired.' };
+  }
+  await prisma.$transaction([
+    prisma.emailVerificationToken.update({
+      where: { id: row.id },
+      data: { usedAt: new Date() },
+    }),
+    prisma.messagingConnection.update({
+      where: { businessId_channel: { businessId: row.businessId, channel: 'EMAIL' } },
+      data: { emailVerifiedAt: new Date() },
+    }),
+  ]);
+  return { ok: true };
 }

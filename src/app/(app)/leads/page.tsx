@@ -1,7 +1,6 @@
 import React from 'react';
-import { redirect } from 'next/navigation';
 import { UserPlus } from 'lucide-react';
-import { getSession } from '@/lib/auth';
+import { requireAuth } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { prisma } from '@/lib/prisma';
@@ -9,9 +8,7 @@ import { PageHeader, Card, EmptyState } from '@/components/ui';
 import { AddLeadForm, LeadsBoard, type LeadItem } from './leads-client';
 
 export default async function LeadsPage() {
-  const session = await getSession();
-  if (!session?.user?.businessId) redirect('/login');
-  const businessId = session.user.businessId;
+  const { businessId } = await requireAuth();
   const locale = await getLocale();
   const T = (k: string, vars?: Record<string, string | number>) => {
     let s = t(locale, `leads.${k}`);

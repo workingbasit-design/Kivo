@@ -82,7 +82,7 @@ export async function GET(req: Request) {
     : null;
   const byEmail = await prisma.user.findUnique({
     where: { email: claims.email.toLowerCase() },
-    select: { id: true, businessId: true },
+    select: { id: true },
   });
 
   const resolution = resolveGoogleAccount(claims, byGoogleId, byEmail);
@@ -116,25 +116,32 @@ export async function GET(req: Request) {
       regionCode: 'CA',
       currency: 'CAD',
       timezone: 'America/Toronto',
-      users: {
-        create: {
-          name,
-          email,
-          // Unusable password: this account signs in via Google only.
-          // 64 random bytes through bcrypt so no password can ever match.
-          passwordHash: await bcrypt.hash(
-            `google-only:${crypto.randomUUID()}:${Date.now()}`,
-            12
-          ),
-          role: 'ADMIN',
-          googleId: claims.sub,
-        },
-      },
     },
-    include: { users: true },
   });
 
-  const owner = business.users[0];
+  // M9: role + business assignment live on Membership, not the User row.
+  const owner = await prisma.user.create({
+    data: {
+      name,
+      email,
+      // Unusable password: this account signs in via Google only.
+      // 64 random bytes through bcrypt so no password can ever match.
+      passwordHash: await bcrypt.hash(
+        `google-only:${crypto.randomUUID()}:${Date.now()}`,
+        12
+      ),
+      googleId: claims.sub,
+    },
+  });
+  await prisma.membership.create({
+    data: {
+      userId: owner.id,
+      businessId: business.id,
+      role: 'ADMIN',
+      status: 'ACTIVE',
+    },
+  });
+
   await createSession(owner.id);
   // New Google users are asked for a Canadian contact number (skippable).
   return NextResponse.redirect(new URL('/welcome', req.url));

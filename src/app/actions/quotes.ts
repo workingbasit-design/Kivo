@@ -8,7 +8,8 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { quoteSchema, QUOTE_STATUSES } from '@/lib/validations';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
-import { dollarsToCents } from '@/lib/money';
+import { dollarsToCents, centsToDollars, formatCents } from '@/lib/money';
+import { nextDocumentNumber } from '@/lib/numbering';
 import { getTaxConfig } from '@/lib/tax';
 import { computeQuoteTotals, type DiscountType } from '@/lib/quote-totals';
 import { parseDepositAmount } from '@/lib/quote-deposit';
@@ -20,7 +21,6 @@ import {
   resolveShareToken,
 } from '@/lib/share';
 import { convertedJobDetails } from '@/lib/quotes';
-import { formatMoney } from '@/lib/money';
 import { sendPlatformEmail } from '@/lib/messaging/platform-email';
 import { quoteEmail } from '@/lib/messaging/email-templates';
 import { appBaseUrl } from '@/lib/app-url';
@@ -73,29 +73,6 @@ function checkLimit(key: string): ActionResult | null {
     return { error: `Too many requests. Try again in ${secs}s.` };
   }
   return null;
-}
-
-/** Next Q-0001 style number, scoped per business, retry-safe. */
-async function nextQuoteNumber(businessId: string): Promise<string> {
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const existing = await prisma.quote.findMany({
-      where: { businessId },
-      select: { number: true },
-    });
-    let max = 0;
-    for (const r of existing) {
-      const m = /^Q-(\d+)$/.exec(r.number);
-      if (m) max = Math.max(max, parseInt(m[1], 10));
-    }
-    const number = `Q-${String(max + 1 + attempt).padStart(4, '0')}`;
-    const clash = await prisma.quote.findFirst({
-      where: { businessId, number },
-      select: { id: true },
-    });
-    if (!clash) return number;
-  }
-  // Fallback: timestamp-based, guaranteed unique.
-  return `Q-${Date.now().toString().slice(-6)}`;
 }
 
 function parseLineItems(raw: string | null): { items?: LineItem[]; error?: string } {
@@ -190,21 +167,20 @@ export async function createQuote(
   });
   if (!customer) return { error: 'Customer not found.' };
 
-  const number = await nextQuoteNumber(businessId);
-
   // The quote and its line items are created atomically; `position` is the
   // display order on the detail page.
   const quote = await prisma.$transaction(async (tx) => {
+    // Number generated inside the same transaction as the insert (M4).
+    const number = await nextDocumentNumber(tx, businessId, 'QUOTE');
     const q = await tx.quote.create({
       data: {
         number,
         title: parsed.data.title,
-        total,
-        totalCents: dollarsToCents(total),
+        totalCents: dollarsToCents(total) ?? BigInt(0),
         discountType: discount.type,
         discountValue: discount.value,
-        discountValueCents: dollarsToCents(discount.value),
-        depositAmount: deposit.amount,
+        discountValueCents:
+          discount.type === 'AMOUNT' ? dollarsToCents(discount.value) : null,
         depositAmountCents: dollarsToCents(deposit.amount),
         status: 'DRAFT',
         customerId: customer.id,
@@ -216,8 +192,7 @@ export async function createQuote(
         quoteId: q.id,
         description: item.desc,
         qty: item.qty,
-        unitPrice: item.rate,
-        unitPriceCents: dollarsToCents(item.rate),
+        unitPriceCents: dollarsToCents(item.rate) ?? BigInt(0),
         position: index,
       })),
     });
@@ -280,8 +255,7 @@ export async function updateQuoteItems(
         quoteId: id,
         description: item.desc,
         qty: item.qty,
-        unitPrice: item.rate,
-        unitPriceCents: dollarsToCents(item.rate),
+        unitPriceCents: dollarsToCents(item.rate) ?? BigInt(0),
         position: index,
       })),
     }),
@@ -290,7 +264,9 @@ export async function updateQuoteItems(
       data: {
         discountType: discount.type,
         discountValue: discount.value,
-        total: totals.total,
+        discountValueCents:
+          discount.type === 'AMOUNT' ? dollarsToCents(discount.value) : null,
+        totalCents: dollarsToCents(totals.total) ?? BigInt(0),
       },
     }),
   ]);
@@ -333,15 +309,16 @@ export async function recordQuoteDeposit(
   // alone would let two 60% deposits over-collect on the same quote.
   const existing = await prisma.quoteDeposit.aggregate({
     where: { quoteId, businessId, status: 'COMPLETED' },
-    _sum: { amount: true },
+    _sum: { amountCents: true },
   });
-  const alreadyPaid = existing._sum.amount ?? 0;
-  if (alreadyPaid + amount > quote.total + 0.009) {
-    const remaining = Math.max(0, Math.round((quote.total - alreadyPaid) * 100) / 100);
+  const alreadyPaidCents = existing._sum?.amountCents ?? BigInt(0);
+  const amountCents = dollarsToCents(amount) ?? BigInt(0);
+  if (alreadyPaidCents + amountCents > quote.totalCents) {
+    const remainingCents = quote.totalCents - alreadyPaidCents;
     return {
       error:
-        remaining > 0
-          ? `Only $${remaining.toFixed(2)} remains on this quote.`
+        remainingCents > BigInt(0)
+          ? `Only ${formatCents(remainingCents, null)} remains on this quote.`
           : 'This quote is already fully paid by deposits.',
     };
   }
@@ -360,8 +337,7 @@ export async function recordQuoteDeposit(
     data: {
       quoteId,
       businessId,
-      amount,
-      amountCents: dollarsToCents(amount),
+      amountCents,
       provider,
       status: 'COMPLETED',
       note: noteRaw ? noteRaw : null,
@@ -471,7 +447,7 @@ export async function sendQuoteEmail(
   }
   const link = `${base}/q/${token}`;
 
-  const total = formatMoney(quote.total, currency);
+  const total = formatCents(quote.totalCents, currency);
   const tpl = quoteEmail({
     customerName: quote.customer.name,
     businessName,
@@ -521,8 +497,8 @@ export async function convertQuoteToJob(
     where: { id, businessId },
     include: {
       customer: true,
-      lineItems: { select: { qty: true, unitPrice: true } },
-      addons: { select: { title: true, price: true, selected: true } },
+      lineItems: { select: { qty: true, unitPriceCents: true } },
+      addons: { select: { title: true, priceCents: true, selected: true } },
     },
   });
   if (!quote) return { error: 'Quote not found.' };
@@ -538,22 +514,26 @@ export async function convertQuoteToJob(
   // `.subtotal` is pre-discount and would silently drop the discount.
   // The client-approved tax-inclusive total is preserved in the job notes.
   const preTax = computeQuoteTotals(
-    quote.lineItems.map((i) => ({ qty: i.qty, unitPrice: i.unitPrice })),
+    quote.lineItems.map((i) => ({ qty: i.qty, unitPrice: centsToDollars(i.unitPriceCents) })),
     { type: quote.discountType as DiscountType, value: quote.discountValue },
     []
   ).taxable;
   const { price: jobPrice, notes: jobNotes } = convertedJobDetails(
     quote.number,
     preTax,
-    quote.addons,
-    quote.total
+    quote.addons.map((a) => ({
+      title: a.title,
+      price: centsToDollars(a.priceCents),
+      selected: a.selected,
+    })),
+    centsToDollars(quote.totalCents)
   );
 
   const job = await prisma.job.create({
     data: {
       title: quote.title,
       date: new Date(),
-      price: jobPrice,
+      priceCents: dollarsToCents(jobPrice) ?? BigInt(0),
       status: 'SCHEDULED',
       notes: jobNotes,
       customerId: quote.customerId,
@@ -654,8 +634,7 @@ export async function createQuoteAddon(
     data: {
       quoteId,
       title: parsed.data.title,
-      price: parsed.data.price,
-      priceCents: dollarsToCents(parsed.data.price),
+      priceCents: dollarsToCents(parsed.data.price) ?? BigInt(0),
       selected: false,
       sortOrder,
     },
@@ -697,7 +676,10 @@ export async function updateQuoteAddon(
 
   await prisma.quoteAddon.update({
     where: { id },
-    data: { title: parsed.data.title, price: parsed.data.price },
+    data: {
+      title: parsed.data.title,
+      priceCents: dollarsToCents(parsed.data.price) ?? BigInt(0),
+    },
   });
 
   revalidatePath(`/quotes/${addon.quote.id}`);

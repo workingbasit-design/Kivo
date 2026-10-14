@@ -14,6 +14,7 @@ import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import ExportButtons, { type ExportColumn, type ExportRow } from '@/components/ExportButtons';
 import JobsExportMenu from '@/components/JobsExportMenu';
+import { centsToDollars } from '@/lib/money';
 
 export default async function JobsPage({
   searchParams,
@@ -86,7 +87,7 @@ export default async function JobsPage({
     date: formatDateShort(j.date),
     time: j.time ?? '',
     status: j.status,
-    price: j.price,
+    price: centsToDollars(j.priceCents),
     address: j.address ?? '',
   }));
   const exportFileBase = `everyjob-jobs-${new Date().toISOString().slice(0, 10)}`;
@@ -225,7 +226,7 @@ export default async function JobsPage({
                 </p>
               </div>
               <p className="font-bold text-zinc-900 text-sm whitespace-nowrap tabular-nums">
-                <MoneyText dollars={job.price} locale={locale} />
+                <MoneyText dollars={centsToDollars(job.priceCents)} locale={locale} />
               </p>
             </Link>
           ))}

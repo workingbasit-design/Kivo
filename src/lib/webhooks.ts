@@ -17,6 +17,7 @@
  */
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { prisma } from '@/lib/prisma';
+import { assertPublicUrl, isSafeRedirectTarget, SsrfError } from './ssrf.ts';
 
 /** The full event catalog EveryJob can emit. Add new events here. */
 export const WEBHOOK_EVENTS = [
@@ -209,10 +210,23 @@ async function postDelivery(
 ): Promise<{ ok: boolean; error?: string }> {
   const signature = signWebhookPayload(secret, rawPayload);
   try {
+    // B1.5 SSRF: the endpoint URL is business-user-controlled. Validate it
+    // resolves to a public address before every delivery, and handle
+    // redirects manually so a 3xx to an internal host can't bypass the check.
+    let safeUrl: string;
+    try {
+      safeUrl = await assertPublicUrl(url);
+    } catch (err) {
+      return {
+        ok: false,
+        error: err instanceof SsrfError ? `SSRF blocked: ${err.message}` : 'SSRF blocked: invalid URL.',
+      };
+    }
     const res = await postWithTimeout(
-      url,
+      safeUrl,
       {
         method: 'POST',
+        redirect: 'manual',
         headers: {
           'Content-Type': 'application/json',
           [WEBHOOK_SIGNATURE_HEADER]: signature,
@@ -224,6 +238,36 @@ async function postDelivery(
       },
       timeoutMs
     );
+    if (res.status >= 300 && res.status < 400) {
+      const location = res.headers.get('location');
+      if (!location || !(await isSafeRedirectTarget(location))) {
+        return { ok: false, error: 'SSRF blocked: unsafe redirect target.' };
+      }
+      // One safe hop is enough for webhook receivers (they don't chain
+      // redirects); re-validate the final target before following it.
+      const finalUrl = await assertPublicUrl(location);
+      const res2 = await postWithTimeout(
+        finalUrl,
+        {
+          method: 'POST',
+          redirect: 'manual',
+          headers: {
+            'Content-Type': 'application/json',
+            [WEBHOOK_SIGNATURE_HEADER]: signature,
+            [WEBHOOK_EVENT_HEADER]: event,
+            [WEBHOOK_DELIVERY_HEADER]: deliveryId,
+            'User-Agent': 'EveryJob-Webhooks/1.0',
+          },
+          body: rawPayload,
+        },
+        timeoutMs
+      );
+      if (res2.status >= 300 && res2.status < 400) {
+        return { ok: false, error: 'SSRF blocked: redirect chain too long.' };
+      }
+      if (!res2.ok) return { ok: false, error: `Receiver returned HTTP ${res2.status}` };
+      return { ok: true };
+    }
     if (!res.ok) return { ok: false, error: `Receiver returned HTTP ${res.status}` };
     return { ok: true };
   } catch (err) {

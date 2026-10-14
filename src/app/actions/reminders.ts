@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
-import { formatMoney } from '@/lib/money';
+import { formatCents } from '@/lib/money';
 import {
   buildJobReminderDraft,
   buildInvoiceFollowupDraft,
@@ -54,22 +54,22 @@ export async function draftInvoiceFollowup(invoiceId: string): Promise<DraftResu
     where: { id: invoiceId, businessId },
     include: {
       customer: { select: { name: true } },
-      payments: { select: { amount: true } },
+      payments: { select: { amountCents: true } },
       business: { select: { name: true, interacEmail: true, currency: true } },
     },
   });
   if (!invoice) return { error: t(locale, 'reminders.errors.notFound') };
 
-  const paid = Math.round(invoice.payments.reduce((s, p) => s + p.amount, 0) * 100) / 100;
-  const remaining = Math.round((invoice.total - paid) * 100) / 100;
-  if (remaining <= 0) return { error: t(locale, 'reminders.errors.alreadyPaid') };
+  const paid = invoice.payments.reduce((s, p) => s + p.amountCents, BigInt(0));
+  const remaining = invoice.totalCents - paid;
+  if (remaining <= BigInt(0)) return { error: t(locale, 'reminders.errors.alreadyPaid') };
 
   const text = buildInvoiceFollowupDraft({
     locale,
     businessName: invoice.business.name,
     customerName: invoice.customer.name,
     invoiceNumber: invoice.number,
-    amountLabel: formatMoney(remaining, invoice.business.currency, locale),
+    amountLabel: formatCents(remaining, invoice.business.currency, locale),
     interacEmail: invoice.business.interacEmail,
   });
   return { text };

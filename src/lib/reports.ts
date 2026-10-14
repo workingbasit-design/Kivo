@@ -9,6 +9,7 @@
  */
 import { prisma } from '@/lib/prisma';
 import type { Locale } from '@/lib/i18n';
+import { centsToDollars } from './money.ts';
 
 export type ReportType =
   | 'revenue'
@@ -297,7 +298,7 @@ export async function runReport(
           status: 'COMPLETED',
           ...(dateFilter ? { invoice: { date: dateFilter } } : {}),
         },
-        select: { amount: true, invoice: { select: { date: true } } },
+        select: { amountCents: true, invoice: { select: { date: true } } },
         take: 5000,
       });
       if (config.groupBy === 'month') {
@@ -305,43 +306,43 @@ export async function runReport(
         items = payments.map((p) => ({
           key: monthKey(p.invoice.date),
           label: monthLabel(p.invoice.date, locale),
-          amount: p.amount,
+          amount: centsToDollars(p.amountCents),
         }));
       } else {
         const label = locale === 'fr' ? 'Revenus' : 'Revenue';
-        items = payments.map((p) => ({ key: 'all', label, amount: p.amount }));
+        items = payments.map((p) => ({ key: 'all', label, amount: centsToDollars(p.amountCents) }));
       }
       break;
     }
     case 'expenses': {
       const expenses = await prisma.jobExpense.findMany({
         where: { businessId, ...(dateFilter ? { spentAt: dateFilter } : {}) },
-        select: { amount: true, category: true, spentAt: true },
+        select: { amountCents: true, category: true, spentAt: true },
         take: 5000,
       });
       if (config.groupBy === 'category') {
         items = expenses.map((e) => ({
           key: e.category,
           label: categoryLabel(e.category),
-          amount: e.amount,
+          amount: centsToDollars(e.amountCents),
         }));
       } else if (config.groupBy === 'month') {
         chronological = true;
         items = expenses.map((e) => ({
           key: monthKey(e.spentAt),
           label: monthLabel(e.spentAt, locale),
-          amount: e.amount,
+          amount: centsToDollars(e.amountCents),
         }));
       } else {
         const label = locale === 'fr' ? 'Dépenses' : 'Expenses';
-        items = expenses.map((e) => ({ key: 'all', label, amount: e.amount }));
+        items = expenses.map((e) => ({ key: 'all', label, amount: centsToDollars(e.amountCents) }));
       }
       break;
     }
     case 'jobs': {
       const jobs = await prisma.job.findMany({
         where: { businessId, ...(dateFilter ? { date: dateFilter } : {}) },
-        select: { price: true, status: true, date: true },
+        select: { priceCents: true, status: true, date: true },
         take: 5000,
       });
       if (config.groupBy === 'status') {
@@ -349,24 +350,24 @@ export async function runReport(
         items = jobs.map((j) => ({
           key: j.status,
           label: statusLabel(j.status),
-          amount: j.price,
+          amount: centsToDollars(j.priceCents),
         }));
       } else if (config.groupBy === 'month') {
         chronological = true;
         items = jobs.map((j) => ({
           key: monthKey(j.date),
           label: monthLabel(j.date, locale),
-          amount: j.price,
+          amount: centsToDollars(j.priceCents),
         }));
       } else {
-        items = jobs.map((j) => ({ key: 'all', label: 'Jobs', amount: j.price }));
+        items = jobs.map((j) => ({ key: 'all', label: 'Jobs', amount: centsToDollars(j.priceCents) }));
       }
       break;
     }
     case 'quotes': {
       const quotes = await prisma.quote.findMany({
         where: { businessId, ...(dateFilter ? { createdAt: dateFilter } : {}) },
-        select: { total: true, status: true, createdAt: true },
+        select: { totalCents: true, status: true, createdAt: true },
         take: 5000,
       });
       if (config.groupBy === 'status') {
@@ -374,25 +375,25 @@ export async function runReport(
         items = quotes.map((q) => ({
           key: q.status,
           label: statusLabel(q.status),
-          amount: q.total,
+          amount: centsToDollars(q.totalCents),
         }));
       } else if (config.groupBy === 'month') {
         chronological = true;
         items = quotes.map((q) => ({
           key: monthKey(q.createdAt),
           label: monthLabel(q.createdAt, locale),
-          amount: q.total,
+          amount: centsToDollars(q.totalCents),
         }));
       } else {
         const label = locale === 'fr' ? 'Devis' : 'Quotes';
-        items = quotes.map((q) => ({ key: 'all', label, amount: q.total }));
+        items = quotes.map((q) => ({ key: 'all', label, amount: centsToDollars(q.totalCents) }));
       }
       break;
     }
     case 'invoices': {
       const invoices = await prisma.invoice.findMany({
         where: { businessId, ...(dateFilter ? { date: dateFilter } : {}) },
-        select: { total: true, status: true, date: true },
+        select: { totalCents: true, status: true, date: true },
         take: 5000,
       });
       if (config.groupBy === 'status') {
@@ -400,18 +401,18 @@ export async function runReport(
         items = invoices.map((i) => ({
           key: i.status,
           label: statusLabel(i.status),
-          amount: i.total,
+          amount: centsToDollars(i.totalCents),
         }));
       } else if (config.groupBy === 'month') {
         chronological = true;
         items = invoices.map((i) => ({
           key: monthKey(i.date),
           label: monthLabel(i.date, locale),
-          amount: i.total,
+          amount: centsToDollars(i.totalCents),
         }));
       } else {
         const label = locale === 'fr' ? 'Factures' : 'Invoices';
-        items = invoices.map((i) => ({ key: 'all', label, amount: i.total }));
+        items = invoices.map((i) => ({ key: 'all', label, amount: centsToDollars(i.totalCents) }));
       }
       break;
     }

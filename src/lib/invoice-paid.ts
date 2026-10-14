@@ -18,3 +18,12 @@ export function invoicePaidUpdate(newStatus: string): { status: string; paidAt?:
     ? { status: newStatus, paidAt: new Date() }
     : { status: newStatus };
 }
+
+/**
+ * Due date for a newly issued invoice: issue date + 30 days (net-30).
+ * M10 added Invoice.dueAt (nullable; null for drafts). Set at creation for
+ * non-draft invoices and when a draft is sent.
+ */
+export function invoiceDueAt(fromDate: Date): Date {
+  return new Date(fromDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+}

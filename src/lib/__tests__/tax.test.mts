@@ -15,7 +15,7 @@ import {
 } from '../tax.ts';
 
 test('HST provinces get a single HST line at the right rate', () => {
-  for (const [code, rate] of [['ON', 13], ['NB', 15], ['NL', 15], ['NS', 15], ['PE', 15]] as const) {
+  for (const [code, rate] of [['ON', 13], ['NB', 15], ['NL', 15], ['NS', 14], ['PE', 15]] as const) {
     const c = getTaxConfig('CA', code);
     assert.equal(c.currency, 'CAD');
     assert.equal(c.regionCode, 'CA');

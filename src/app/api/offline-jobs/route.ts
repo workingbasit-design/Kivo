@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
+import { getActiveMembershipForUser } from '@/lib/membership';
 import { jobSchema } from '@/lib/validations';
 import { validatePhone, INVALID_PHONE_MESSAGE } from '@/lib/phone';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { dollarsToCents } from '@/lib/money';
 
 const offlineJobSchema = z.object({
   title: jobSchema.shape.title,
@@ -35,7 +37,8 @@ export async function POST(req: NextRequest) {
   if (!originCheck.ok) return originForbidden();
 
   const session = await getSession();
-  const businessId = session?.user?.businessId;
+  const membership = session ? await getActiveMembershipForUser(session.user.id) : null;
+  const businessId = membership?.businessId;
   if (!businessId) {
     return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   }
@@ -96,13 +99,14 @@ export async function POST(req: NextRequest) {
 
   // Idempotency: same customer/title/date/time/price created in the last
   // 15 minutes (e.g. a retry after a lost response) is already synced.
+  const priceCents = dollarsToCents(p.price) ?? BigInt(0);
   const recent = await prisma.job.findFirst({
     where: {
       businessId,
       customerId,
       title: p.title.trim(),
       date,
-      price: p.price,
+      priceCents,
       createdAt: { gte: new Date(Date.now() - 15 * 60 * 1000) },
     },
     select: { id: true },
@@ -119,7 +123,7 @@ export async function POST(req: NextRequest) {
       date,
       time: p.time || null,
       address: p.address || null,
-      price: p.price,
+      priceCents,
       status: 'SCHEDULED',
       notes: p.notes || null,
       technician: p.technician || null,

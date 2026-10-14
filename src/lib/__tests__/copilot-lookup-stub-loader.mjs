@@ -50,6 +50,16 @@ export async function resolve(specifier, context, nextResolve) {
     context.parentURL.startsWith('file:')
   ) {
     const base = path.resolve(fileURLToPath(new URL(specifier, context.parentURL)));
+    const normalized = base.split(path.sep).join('/');
+    // M9: src/lib/membership.ts imports './prisma.ts' and '@/lib/auth'
+    // (real modules). Route them to the stub so the in-memory prisma (with
+    // the canned membership row) backs membership lookups in these tests.
+    if (
+      normalized.endsWith('/src/lib/prisma.ts') ||
+      normalized.endsWith('/src/lib/auth.ts')
+    ) {
+      return { url: stubUrl, shortCircuit: true };
+    }
     const url = tryTs(base);
     if (url) return { url, shortCircuit: true };
   }

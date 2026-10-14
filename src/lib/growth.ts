@@ -37,7 +37,7 @@ export async function getGrowthData(businessId: string): Promise<GrowthData> {
     }),
     prisma.designation.count({ where: { businessId } }),
     prisma.service.count({ where: { businessId } }),
-    prisma.user.count({ where: { businessId } }),
+    prisma.membership.count({ where: { businessId, status: 'ACTIVE' } }),
     prisma.bookingPage.findUnique({ where: { businessId }, select: { enabled: true } }),
   ]);
 

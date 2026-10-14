@@ -1,11 +1,11 @@
 import Link from 'next/link';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { ArrowLeft, Printer, User, AlertTriangle } from 'lucide-react';
-import { getSession } from '@/lib/auth';
+import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { PageHeader, Card, StatusBadge, Badge } from '@/components/ui';
 import { localeMoneyTag } from '@/lib/utils';
-import { formatMoney } from '@/lib/money';
+import { formatMoney, centsToDollars } from '@/lib/money';
 import MoneyText from '@/components/MoneyText';
 import DateTimeText from '@/components/DateTimeText';
 import { splitStoredTax, taxIdLabelForRegion } from '@/lib/tax';
@@ -41,9 +41,7 @@ export default async function InvoiceDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const session = await getSession();
-  if (!session?.user?.businessId) redirect('/login');
-  const businessId = session.user.businessId;
+  const { businessId } = await requireAuth();
 
   const { id } = await params;
   const invoice = await prisma.invoice.findFirst({
@@ -65,8 +63,10 @@ export default async function InvoiceDetailPage({
 
   const shareState = await getInvoiceShareState(invoice.id);
 
-  const paid = Math.round(invoice.payments.reduce((s, p) => s + p.amount, 0) * 100) / 100;
-  const remaining = Math.round((invoice.total - paid) * 100) / 100;
+  const paidCents = invoice.payments.reduce((s, p) => s + p.amountCents, BigInt(0));
+  const paid = centsToDollars(paidCents);
+  const remainingCents = invoice.totalCents - paidCents;
+  const remaining = centsToDollars(remainingCents);
   // Usual 30-day payment terms - the Invoice model stores no contractual
   // due date, so this is a follow-up hint, not a legal state.
   const overdue =
@@ -90,14 +90,16 @@ export default async function InvoiceDetailPage({
   // Per-line tax breakdown from the stored tax type + rate. Lines are
   // rounded individually and the last line absorbs any rounding difference
   // so they always sum exactly to the stored tax amount.
+  const subtotalDollars = centsToDollars(invoice.subtotalCents);
+  const taxAmountDollars = centsToDollars(invoice.taxAmountCents);
   const taxLines = splitStoredTax(invoice.taxType ?? '', invoice.taxRate).map((l) => ({
     ...l,
-    amount: round2((invoice.subtotal * l.rate) / 100),
+    amount: round2((subtotalDollars * l.rate) / 100),
   }));
   const linesSum = round2(taxLines.reduce((s, l) => s + l.amount, 0));
   if (taxLines.length > 0) {
     taxLines[taxLines.length - 1].amount = round2(
-      taxLines[taxLines.length - 1].amount + (invoice.taxAmount - linesSum)
+      taxLines[taxLines.length - 1].amount + (taxAmountDollars - linesSum)
     );
   }
 
@@ -116,13 +118,13 @@ export default async function InvoiceDetailPage({
           <WhatsAppButton
             phone={invoice.customer.phone}
             regionCode={invoice.business.regionCode}
-            message={`Hi ${invoice.customer.name}! Here is invoice ${invoice.number} from ${invoice.business.name} (${formatMoney(invoice.total, currency, moneyLocale)}).`}
+            message={`Hi ${invoice.customer.name}! Here is invoice ${invoice.number} from ${invoice.business.name} (${formatMoney(centsToDollars(invoice.totalCents), currency, moneyLocale)}).`}
             label="WhatsApp"
           />
           <SmsButton
             phone={invoice.customer.phone}
             regionCode={invoice.business.regionCode}
-            message={`Hi ${invoice.customer.name}! Here is invoice ${invoice.number} from ${invoice.business.name} (${formatMoney(invoice.total, currency, moneyLocale)}).`}
+            message={`Hi ${invoice.customer.name}! Here is invoice ${invoice.number} from ${invoice.business.name} (${formatMoney(centsToDollars(invoice.totalCents), currency, moneyLocale)}).`}
             label="SMS"
           />
           <PrintButton />
@@ -191,9 +193,9 @@ export default async function InvoiceDetailPage({
                 >
                   <p className="text-sm font-semibold text-zinc-800">{item.description}</p>
                   <p className="text-xs text-zinc-500 mt-1 tabular-nums">
-                    {item.qty} × <MoneyText dollars={item.unitPrice} locale={locale} />
+                    {item.qty} × <MoneyText dollars={centsToDollars(item.unitPriceCents)} locale={locale} />
                     <span className="font-bold text-zinc-800">
-                      {' '}· <MoneyText dollars={round2(item.qty * item.unitPrice)} locale={locale} />
+                      {' '}· <MoneyText dollars={round2(item.qty * centsToDollars(item.unitPriceCents))} locale={locale} />
                     </span>
                   </p>
                 </li>
@@ -205,7 +207,7 @@ export default async function InvoiceDetailPage({
         <dl className="mt-6 space-y-1.5 text-sm max-w-xs ml-auto tabular-nums">
           <div className="flex justify-between text-zinc-600">
             <dt>{L('invoices.subtotal')}</dt>
-            <dd className="font-semibold"><MoneyText dollars={invoice.subtotal} locale={locale} /></dd>
+            <dd className="font-semibold"><MoneyText dollars={centsToDollars(invoice.subtotalCents)} locale={locale} /></dd>
           </div>
           {taxLines.map((l) => (
             <div key={l.name} className="flex justify-between text-zinc-600">
@@ -217,7 +219,7 @@ export default async function InvoiceDetailPage({
           ))}
           <div className="flex justify-between text-base border-t border-zinc-200 pt-2 mt-2">
             <dt className="font-bold text-zinc-900">{L('invoices.total')}</dt>
-            <dd className="font-bold text-zinc-900"><MoneyText dollars={invoice.total} locale={locale} /></dd>
+            <dd className="font-bold text-zinc-900"><MoneyText dollars={centsToDollars(invoice.totalCents)} locale={locale} /></dd>
           </div>
           <div className="flex justify-between text-emerald-700">
             <dt>{L('invoices.paid')}</dt>
@@ -256,7 +258,7 @@ export default async function InvoiceDetailPage({
             {invoice.payments.map((p) => (
               <li key={p.id} className="flex items-center justify-between py-2.5 text-sm">
                 <div>
-                  <p className="font-semibold text-zinc-900 tabular-nums"><MoneyText dollars={p.amount} locale={locale} /></p>
+                  <p className="font-semibold text-zinc-900 tabular-nums"><MoneyText dollars={centsToDollars(p.amountCents)} locale={locale} /></p>
                   <p className="text-xs text-zinc-500">
                     {p.provider}
                     {p.transactionId ? ` · Ref ${p.transactionId}` : ''} ·{' '}

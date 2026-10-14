@@ -30,6 +30,19 @@ export const prisma = {
       return null;
     },
   },
+  // M9: dispatch.ts checks team membership via Membership, not User.
+  membership: {
+    findFirst: async ({ where }) => {
+      if (
+        where?.userId === 'user_1' &&
+        where?.businessId === 'biz_1' &&
+        where?.status === 'ACTIVE'
+      ) {
+        return { id: 'mem_1', user: { id: 'user_1', name: 'QA Agent' } };
+      }
+      return null;
+    },
+  },
 };
 
 export function resetDispatchStub() {

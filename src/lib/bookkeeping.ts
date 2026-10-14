@@ -6,6 +6,7 @@
  * owners actually need, grouped by month and category.
  */
 import { prisma } from '@/lib/prisma';
+import { centsToDollars } from '@/lib/money';
 
 export interface MonthlyPL {
   monthKey: string; // YYYY-MM
@@ -61,19 +62,19 @@ export async function getBookkeeping(
   const [payments, expenses, invoices] = await Promise.all([
     prisma.payment.findMany({
       where: { businessId, status: 'COMPLETED', createdAt: { gte: start } },
-      select: { amount: true, createdAt: true },
+      select: { amountCents: true, createdAt: true },
       take: 5000,
     }),
     prisma.jobExpense.findMany({
       where: { businessId, spentAt: { gte: start } },
-      select: { amount: true, spentAt: true, category: true },
+      select: { amountCents: true, spentAt: true, category: true },
       take: 5000,
     }),
     prisma.invoice.findMany({
       where: { businessId, status: { in: ['UNPAID', 'PARTIALLY_PAID', 'PARTIALLY PAID'] } },
       select: {
-        total: true,
-        payments: { where: { status: 'COMPLETED' }, select: { amount: true } },
+        totalCents: true,
+        payments: { where: { status: 'COMPLETED' }, select: { amountCents: true } },
       },
       take: 2000,
     }),
@@ -106,12 +107,12 @@ export async function getBookkeeping(
   for (const p of payments) {
     const key = monthKeyInTz(p.createdAt, timezone);
     const slot = byMonth.get(key);
-    if (slot) slot.revenue += p.amount;
+    if (slot) slot.revenue += centsToDollars(p.amountCents);
   }
   for (const e of expenses) {
     const key = monthKeyInTz(e.spentAt, timezone);
     const slot = byMonth.get(key);
-    if (slot) slot.expenses += e.amount;
+    if (slot) slot.expenses += centsToDollars(e.amountCents);
   }
 
   const months: MonthlyPL[] = [...byMonth.entries()]
@@ -132,7 +133,7 @@ export async function getBookkeeping(
   for (const e of expenses) {
     const c = e.category || 'OTHER';
     const slot = catMap.get(c) ?? { total: 0, count: 0 };
-    slot.total += e.amount;
+    slot.total += centsToDollars(e.amountCents);
     slot.count += 1;
     catMap.set(c, slot);
   }
@@ -141,8 +142,8 @@ export async function getBookkeeping(
     .sort((a, b) => b.total - a.total);
 
   const receivables = invoices.reduce((s, inv) => {
-    const paid = inv.payments.reduce((ss, p) => ss + p.amount, 0);
-    return s + Math.max(0, inv.total - paid);
+    const paid = inv.payments.reduce((ss, p) => ss + centsToDollars(p.amountCents), 0);
+    return s + Math.max(0, centsToDollars(inv.totalCents) - paid);
   }, 0);
 
   return {

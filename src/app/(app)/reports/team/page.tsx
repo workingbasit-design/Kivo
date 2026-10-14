@@ -8,7 +8,7 @@ import { t, type Locale } from '@/lib/i18n';
 import { PageHeader, Card, StatCard, EmptyState } from '@/components/ui';
 import { entryMinutes, formatDuration } from '@/lib/timesheets';
 import { cn } from '@/lib/utils';
-import { formatMoney } from '@/lib/money';
+import { formatMoney, centsToDollars } from '@/lib/money';
 
 type MemberRow = { id: string; name: string | null; email: string; role: string };
 
@@ -66,11 +66,18 @@ export default async function TeamPerformancePage({
   const period = sp.period === 'month' ? 'month' : 'week';
   const { start, end, label } = getRange(period, locale);
 
-  const members = await prisma.user.findMany({
-    where: { businessId },
-    select: { id: true, name: true, email: true, role: true },
-    orderBy: { name: 'asc' },
-  });
+  const members: MemberRow[] = (
+    await prisma.membership.findMany({
+      where: { businessId, status: 'ACTIVE' },
+      include: { user: { select: { id: true, name: true, email: true } } },
+      orderBy: { user: { name: 'asc' } },
+    })
+  ).map((m) => ({
+    id: m.user.id,
+    name: m.user.name,
+    email: m.user.email,
+    role: m.role,
+  }));
 
   const [entries, completedJobs] = await Promise.all([
     prisma.timeEntry.findMany({
@@ -83,11 +90,18 @@ export default async function TeamPerformancePage({
         status: { in: ['COMPLETED', 'PAID'] },
         date: { gte: start, lte: end },
       },
-      select: { assignedToId: true, price: true },
+      select: { assignedToId: true, priceCents: true },
     }),
   ]);
 
-  const rows = buildPerformanceRows(members, entries, completedJobs);
+  const rows = buildPerformanceRows(
+    members,
+    entries,
+    completedJobs.map((j) => ({
+      assignedToId: j.assignedToId,
+      price: centsToDollars(j.priceCents),
+    }))
+  );
 
   const ranked = [...rows].sort((a, b) => b.minutes - a.minutes);
   const totalMinutes = rows.reduce((s, r) => s + r.minutes, 0);

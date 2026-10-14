@@ -13,6 +13,7 @@ import {
   serializeSettings,
 } from './notification-prefs.ts';
 import type { NotificationType, NotificationSettings } from './notification-prefs.ts';
+import { centsToDollars } from './money.ts';
 export {
   NOTIFICATION_TYPES,
   defaultSettings,
@@ -345,7 +346,7 @@ export async function syncNotifications(businessId: string): Promise<number> {
         id: true,
         number: true,
         date: true,
-        total: true,
+        totalCents: true,
         status: true,
         customer: { select: { name: true } },
       },
@@ -357,7 +358,7 @@ export async function syncNotifications(businessId: string): Promise<number> {
           id: i.id,
           number: i.number,
           date: i.date,
-          total: i.total,
+          total: centsToDollars(i.totalCents),
           status: i.status,
           customerName: i.customer.name,
         })),
@@ -372,7 +373,7 @@ export async function syncNotifications(businessId: string): Promise<number> {
       select: {
         id: true,
         number: true,
-        total: true,
+        totalCents: true,
         status: true,
         createdAt: true,
         customer: { select: { name: true } },
@@ -384,7 +385,7 @@ export async function syncNotifications(businessId: string): Promise<number> {
         quotes.map((q) => ({
           id: q.id,
           number: q.number,
-          total: q.total,
+          total: centsToDollars(q.totalCents),
           status: q.status,
           createdAt: q.createdAt,
           customerName: q.customer.name,
@@ -437,7 +438,7 @@ export async function syncNotifications(businessId: string): Promise<number> {
       },
       select: {
         id: true,
-        amount: true,
+        amountCents: true,
         createdAt: true,
         invoiceId: true,
         invoice: {
@@ -450,7 +451,7 @@ export async function syncNotifications(businessId: string): Promise<number> {
       ...buildPaymentRecorded(
         payments.map((p) => ({
           id: p.id,
-          amount: p.amount,
+          amount: centsToDollars(p.amountCents),
           createdAt: p.createdAt,
           invoiceId: p.invoiceId,
           invoiceNumber: p.invoice.number,

@@ -33,6 +33,24 @@ export async function headers() {
   };
 }
 
+// next/headers — cookie store used by src/lib/auth.ts (createSession /
+// destroySession / getSession). In-memory; only the shape matters here.
+const _cookieJar = new Map();
+export async function cookies() {
+  return {
+    get: (name) => {
+      const value = _cookieJar.get(String(name));
+      return value === undefined ? undefined : { name: String(name), value };
+    },
+    set: (name, value) => {
+      _cookieJar.set(String(name), String(value));
+    },
+    delete: (name) => {
+      _cookieJar.delete(String(name));
+    },
+  };
+}
+
 // next/navigation
 export function redirect() {
   throw new Error('NEXT_REDIRECT');

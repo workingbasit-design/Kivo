@@ -1,6 +1,5 @@
-import { redirect } from 'next/navigation';
 import { Flag } from 'lucide-react';
-import { getSession } from '@/lib/auth';
+import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card, EmptyState } from '@/components/ui';
 import { isDirectoryAdminEmail } from '@/lib/directory';
 import { getLocale } from '@/lib/i18n/server';
@@ -16,11 +15,10 @@ export const metadata = { title: 'Directory reports | EveryJob' };
  * reach it directly at /directory-reports.
  */
 export default async function DirectoryReportsPage() {
-  const session = await getSession();
-  if (!session?.user?.businessId) redirect('/login');
+  const { user } = await requireAuth();
   const locale = await getLocale();
   const tr = (path: string) => t(locale, path);
-  if (!isDirectoryAdminEmail(session.user.email)) {
+  if (!isDirectoryAdminEmail(user.email)) {
     return (
       <div className="space-y-6">
         <PageHeader title={tr('t10misc.reports.title')} subtitle={tr('t10misc.reports.subtitle')} />

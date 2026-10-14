@@ -7,6 +7,7 @@
  */
 import { prisma } from '@/lib/prisma';
 import { daysOverdue, remainingBalance } from './revenue.ts';
+import { centsToDollars } from './money.ts';
 
 export type HealthSubKey = 'cashFlow' | 'pipeline' | 'operations' | 'profitability';
 
@@ -143,8 +144,8 @@ export async function getHealthScore(businessId: string): Promise<HealthScore> {
         where: { businessId, status: { in: ['UNPAID', 'PARTIALLY PAID'] } },
         select: {
           date: true,
-          total: true,
-          payments: { where: { status: 'COMPLETED' }, select: { amount: true } },
+          totalCents: true,
+          payments: { where: { status: 'COMPLETED' }, select: { amountCents: true } },
         },
         take: 500,
       }),
@@ -157,12 +158,12 @@ export async function getHealthScore(businessId: string): Promise<HealthScore> {
       }),
       prisma.invoice.findMany({
         where: { businessId, status: 'PAID', paidAt: { gte: d90 } },
-        select: { total: true },
+        select: { totalCents: true },
         take: 500,
       }),
       prisma.jobExpense.aggregate({
         where: { businessId, spentAt: { gte: d90 } },
-        _sum: { amount: true },
+        _sum: { amountCents: true },
       }),
     ]);
 
@@ -172,21 +173,24 @@ export async function getHealthScore(businessId: string): Promise<HealthScore> {
     .reduce((s, g) => s + g._count.status, 0);
 
   return computeHealthScore({
-    receivables: invoices.map((inv) => ({
-      total: inv.total,
-      overdueBalance:
-        daysOverdue(inv.date, now, timezone) > 0
-          ? remainingBalance(
-              inv.total,
-              inv.payments.map((p) => p.amount)
-            )
-          : 0,
-    })),
+    receivables: invoices.map((inv) => {
+      const total = centsToDollars(inv.totalCents);
+      return {
+        total,
+        overdueBalance:
+          daysOverdue(inv.date, now, timezone) > 0
+            ? remainingBalance(
+                total,
+                inv.payments.map((p) => centsToDollars(p.amountCents))
+              )
+            : 0,
+      };
+    }),
     newLeads14d: newLeads,
     openQuotes,
     jobsCompleted60d: completed,
     jobsScheduled60d: scheduled,
-    revenue90d: paidInvoices90.reduce((s, i) => s + i.total, 0),
-    expenses90d: expenses90._sum.amount ?? 0,
+    revenue90d: paidInvoices90.reduce((s, i) => s + centsToDollars(i.totalCents), 0),
+    expenses90d: centsToDollars(expenses90._sum?.amountCents),
   });
 }

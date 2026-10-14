@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
+import { getActiveMembershipForUser } from '@/lib/membership';
 import { rateLimit, AUTH_LIMIT } from '@/lib/rate-limit';
 import { buildAuthorizeUrl } from '@/lib/quickbooks';
 import crypto from 'crypto';
@@ -24,7 +25,8 @@ export function quickbooksRedirectUri(origin: string): string {
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const session = await getSession();
-  if (!session?.user?.businessId) {
+  const membership = session ? await getActiveMembershipForUser(session.user.id) : null;
+  if (!membership?.businessId) {
     return NextResponse.redirect(new URL('/login', req.url));
   }
 

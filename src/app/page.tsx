@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react';
 import Link from 'next/link';
 import Logo from '@/components/Logo';
 import { getLocale } from '@/lib/i18n/server';
+import { getCspNonce } from '@/lib/csp-nonce';
 import { t } from '@/lib/i18n';
 import Reveal from '@/components/home/Reveal';
 import TradesMarquee from '@/components/home/TradesMarquee';
@@ -563,6 +564,7 @@ export default async function LandingPage() {
         </section>
         <script
           type="application/ld+json"
+          nonce={await getCspNonce()}
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
         />
 

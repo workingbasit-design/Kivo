@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { t, type Locale } from '@/lib/i18n';
 import { Field, inputClass, textareaClass, primaryBtnClass } from '@/components/ui';
+import { HONEYPOT_FIELD, FORM_STARTED_FIELD } from '@/lib/bot-check';
 
 /** Public support ticket form. Posts to /api/support/ticket; shows a success state. */
 export default function SupportTicketForm({ locale }: { locale: Locale }) {
@@ -12,6 +13,9 @@ export default function SupportTicketForm({ locale }: { locale: Locale }) {
   const [message, setMessage] = useState('');
   const [bad, setBad] = useState<string[]>([]);
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error' | 'limited'>('idle');
+  // B11.1: honeypot + fill-time carriers for the server-side bot check.
+  const [honeypot, setHoneypot] = useState('');
+  const [formStartedAt] = useState(() => String(Date.now()));
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +39,8 @@ export default function SupportTicketForm({ locale }: { locale: Locale }) {
           email: email.trim(),
           subject: subject.trim(),
           message: message.trim(),
+          [HONEYPOT_FIELD]: honeypot,
+          [FORM_STARTED_FIELD]: formStartedAt,
         }),
       });
       if (res.status === 429) {
@@ -65,6 +71,23 @@ export default function SupportTicketForm({ locale }: { locale: Locale }) {
 
   return (
     <form onSubmit={submit} noValidate className="space-y-4">
+      {/* Honeypot: invisible to humans (off-screen + aria-hidden); bots that
+          fill it are rejected server-side. */}
+      <div
+        aria-hidden="true"
+        className="absolute -left-[9999px] top-auto h-px w-px overflow-hidden"
+      >
+        <label htmlFor="support-website">Website</label>
+        <input
+          id="support-website"
+          name={HONEYPOT_FIELD}
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          value={honeypot}
+          onChange={(e) => setHoneypot(e.target.value)}
+        />
+      </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label={t(locale, 'support.formName')}>
           <input

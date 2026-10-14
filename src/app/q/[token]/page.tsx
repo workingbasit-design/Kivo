@@ -5,8 +5,7 @@ import { rateLimit } from '@/lib/rate-limit';
 import { isLegacyCuid, resolveShareToken } from '@/lib/share';
 import { waLink } from '@/lib/whatsapp';
 import { Card, StatusBadge } from '@/components/ui';
-import { formatMoney } from '@/lib/money';
-import { addonQuoteTotal } from '@/lib/quotes';
+import { formatCents, centsToDollars } from '@/lib/money';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import QuotePortalActions from '@/components/QuotePortalActions';
@@ -54,18 +53,18 @@ export default async function QuotePortalPage({
       id: true,
       number: true,
       title: true,
-      total: true,
+      totalCents: true,
       status: true,
-      depositAmount: true,
+      depositAmountCents: true,
       createdAt: true,
       customer: { select: { name: true } },
       addons: {
-        select: { id: true, title: true, price: true, selected: true },
+        select: { id: true, title: true, priceCents: true, selected: true },
         orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
       },
       deposits: {
         where: { status: 'COMPLETED' },
-        select: { amount: true },
+        select: { amountCents: true },
       },
       business: {
         select: {
@@ -92,19 +91,22 @@ export default async function QuotePortalPage({
   const dateLocale = locale === 'fr' ? 'fr-CA' : 'en-CA';
 
   const selectedAddons = quote.addons.filter((a) => a.selected);
-  const approvedTotal =
-    selectedAddons.length > 0 ? addonQuoteTotal(quote.total, quote.addons) : quote.total;
+  // Live client total: base quote total (cents) + prices of selected add-ons.
+  // Unselected add-ons never affect the total.
+  const addonExtraCents = selectedAddons.reduce((s, a) => s + (a.priceCents ?? BigInt(0)), BigInt(0));
+  const approvedTotalCents =
+    selectedAddons.length > 0 ? quote.totalCents + addonExtraCents : quote.totalCents;
 
   // Deposit state: owner-set deposit amount minus completed/recorded deposits.
-  const depositTarget = quote.depositAmount ?? 0;
-  const depositPaid = quote.deposits.reduce((s, d) => s + d.amount, 0);
-  const depositRemaining = Math.max(0, depositTarget - depositPaid);
+  const depositTarget = quote.depositAmountCents ?? BigInt(0);
+  const depositPaid = quote.deposits.reduce((s, d) => s + d.amountCents, BigInt(0));
+  const depositRemaining = depositTarget > depositPaid ? depositTarget - depositPaid : BigInt(0);
   const stripeConn = quote.business.stripeConnection;
   const stripeLive = stripeConn?.livemode === true;
   const canPayDepositOnline =
     stripeConn?.chargesEnabled === true && (!stripeLive || !!stripeConn?.liveConfirmedAt);
   const showDeposit =
-    quote.status === 'APPROVED' && depositTarget > 0 && depositRemaining > 0 && canPayDepositOnline;
+    quote.status === 'APPROVED' && depositTarget > BigInt(0) && depositRemaining > BigInt(0) && canPayDepositOnline;
 
   const whatsappHref = waLink(
     quote.business.whatsappNumber || quote.business.phone,
@@ -154,7 +156,7 @@ export default async function QuotePortalPage({
 
           <div className="border-t border-zinc-100 pt-4 flex items-center justify-between">
             <span className="text-sm text-zinc-500">{L('quotes.portal.total')}</span>
-            <span className="text-2xl font-bold text-zinc-900 tracking-tight">{formatMoney(quote.total, quote.business.currency, moneyLocale)}</span>
+            <span className="text-2xl font-bold text-zinc-900 tracking-tight">{formatCents(quote.totalCents, quote.business.currency, moneyLocale)}</span>
           </div>
         </Card>
 
@@ -162,8 +164,13 @@ export default async function QuotePortalPage({
           <Card className="p-6">
             <QuotePortalActions
               token={token}
-              addons={quote.addons}
-              baseTotal={quote.total}
+              addons={quote.addons.map((a) => ({
+                id: a.id,
+                title: a.title,
+                price: centsToDollars(a.priceCents),
+                selected: a.selected,
+              }))}
+              baseTotal={centsToDollars(quote.totalCents)}
               currency={quote.business.currency}
               strings={{
                 addonsTitle: L('quotes.portal.addonsTitle'),
@@ -195,7 +202,7 @@ export default async function QuotePortalPage({
                         <li key={a.id} className="flex items-center justify-between text-sm">
                           <span className="text-graphite">{a.title}</span>
                           <span className="font-semibold text-ink">
-                            +{formatMoney(a.price, quote.business.currency, moneyLocale)}
+                            +{formatCents(a.priceCents, quote.business.currency, moneyLocale)}
                           </span>
                         </li>
                       ))}
@@ -203,7 +210,7 @@ export default async function QuotePortalPage({
                     <div className="flex items-center justify-between border-t border-smoke mt-3 pt-3">
                       <span className="text-sm font-bold text-ink">{L('quotes.portal.yourTotal')}</span>
                       <span className="text-lg font-bold text-ink tracking-tight">
-                        {formatMoney(approvedTotal, quote.business.currency, moneyLocale)}
+                        {formatCents(approvedTotalCents, quote.business.currency, moneyLocale)}
                       </span>
                     </div>
                   </div>
@@ -230,13 +237,13 @@ export default async function QuotePortalPage({
           <Card className="p-6">
             <h2 className="text-sm font-bold text-zinc-900 mb-1">{L('payments.depositTitle')}</h2>
             <p className="text-xs text-zinc-500 mb-3">
-              {depositPaid > 0
-                ? `${L('payments.depositRemaining')} ${formatMoney(depositRemaining, quote.business.currency, moneyLocale)}`
+              {depositPaid > BigInt(0)
+                ? `${L('payments.depositRemaining')} ${formatCents(depositRemaining, quote.business.currency, moneyLocale)}`
                 : L('payments.depositDesc')}
             </p>
             <PayDepositButton
               token={token}
-              amount={depositRemaining}
+              amount={centsToDollars(depositRemaining)}
               testMode={!stripeLive}
               locale={moneyLocale}
             />

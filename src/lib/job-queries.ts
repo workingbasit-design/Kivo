@@ -107,15 +107,14 @@ export async function getMoneySummary(
   const invoices = await db.invoice.findMany({
     where: { businessId, status: { in: ['UNPAID', 'PARTIALLY PAID'] }, voidedAt: null },
     select: {
-      total: true,
       totalCents: true,
       status: true,
-      payments: { select: { amount: true, amountCents: true, status: true } },
+      payments: { select: { amountCents: true, status: true } },
     },
   });
   let outstanding = 0;
   for (const inv of invoices) {
-    const total = inv.totalCents != null ? centsToDollars(inv.totalCents) : inv.total;
+    const total = centsToDollars(inv.totalCents);
     if (inv.status === 'UNPAID') {
       outstanding += total;
     } else {
@@ -123,7 +122,7 @@ export async function getMoneySummary(
       let paid = 0;
       for (const p of inv.payments) {
         if (p.status !== 'COMPLETED') continue;
-        paid += p.amountCents != null ? centsToDollars(p.amountCents) : p.amount;
+        paid += centsToDollars(p.amountCents);
       }
       outstanding += Math.max(0, total - paid);
     }
@@ -131,11 +130,11 @@ export async function getMoneySummary(
 
   const readyJobs = await db.job.findMany({
     where: { businessId, status: 'COMPLETED', invoices: { none: {} } },
-    select: { price: true, priceCents: true },
+    select: { priceCents: true },
   });
   let readyToInvoice = 0;
   for (const j of readyJobs) {
-    readyToInvoice += j.priceCents != null ? centsToDollars(j.priceCents) : j.price;
+    readyToInvoice += centsToDollars(j.priceCents);
   }
 
   const openQuotes = await db.quote.count({

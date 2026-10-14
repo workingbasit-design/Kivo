@@ -1,9 +1,9 @@
-import { redirect } from 'next/navigation';
-import { getSession } from '@/lib/auth';
+import { requireAuth } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { prisma } from '@/lib/prisma';
 import { INVOICE_STATUSES } from '@/lib/validations';
+import { centsToDollars } from '@/lib/money';
 import InvoicesClient, { type InvoiceListItem } from './InvoicesClient';
 import type { ExportColumn } from '@/components/ExportButtons';
 
@@ -14,9 +14,7 @@ export default async function InvoicesPage({
 }: {
   searchParams: Promise<{ status?: string }>;
 }) {
-  const session = await getSession();
-  if (!session?.user?.businessId) redirect('/login');
-  const businessId = session.user.businessId;
+  const { businessId } = await requireAuth();
 
   const { status } = await searchParams;
   const initialFilter = FILTERS.includes(status as (typeof FILTERS)[number])
@@ -32,34 +30,37 @@ export default async function InvoicesPage({
       where: { businessId },
       include: {
         customer: { select: { name: true } },
-        payments: { select: { amount: true } },
+        payments: { select: { amountCents: true } },
       },
       orderBy: { createdAt: 'desc' },
     }),
     prisma.invoice.findMany({
       where: { businessId },
-      select: { total: true, status: true, payments: { select: { amount: true } } },
+      select: { totalCents: true, status: true, payments: { select: { amountCents: true } } },
     }),
   ]);
 
   const invoices: InvoiceListItem[] = invoiceRows.map((inv) => ({
     id: inv.id,
     number: inv.number,
-    total: inv.total,
+    total: centsToDollars(inv.totalCents),
     status: inv.status,
     date: inv.date.toISOString(),
     customer: { name: inv.customer.name },
-    payments: inv.payments.map((p) => ({ amount: p.amount })),
+    payments: inv.payments.map((p) => ({ amount: centsToDollars(p.amountCents) })),
   }));
 
   const outstanding = aggregates
     .filter((i) => i.status !== 'PAID')
     .reduce(
-      (s, i) => s + (i.total - i.payments.reduce((p, pay) => p + pay.amount, 0)),
+      (s, i) =>
+        s +
+        (centsToDollars(i.totalCents) -
+          i.payments.reduce((p, pay) => p + centsToDollars(pay.amountCents), 0)),
       0
     );
   const collected = aggregates.reduce(
-    (s, i) => s + i.payments.reduce((p, pay) => p + pay.amount, 0),
+    (s, i) => s + i.payments.reduce((p, pay) => p + centsToDollars(pay.amountCents), 0),
     0
   );
 

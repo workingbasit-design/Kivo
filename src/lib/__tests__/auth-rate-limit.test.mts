@@ -29,6 +29,11 @@ const stub = await import('./auth-stub.mjs');
 function fd(fields) {
   const f = new FormData();
   for (const [k, v] of Object.entries(fields)) f.set(k, String(v));
+  // B11.1: the register/signup actions enforce the server-side bot check;
+  // include valid honeypot + fill-time fields so the tests exercise the
+  // rate limiter rather than the bot gate.
+  f.set('company_website', '');
+  f.set('form_started_at', String(Date.now() - 5000));
   return f;
 }
 

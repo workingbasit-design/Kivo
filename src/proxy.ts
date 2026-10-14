@@ -7,16 +7,72 @@ import { isPublicPath } from '@/lib/public-paths';
 // verification happens in the (app) layout via getSession().
 // Public route table lives in @/lib/public-paths (pure, unit-tested).
 
+/**
+ * Nonce-based Content-Security-Policy (Prompt 3, B2.1).
+ *
+ * A per-request nonce is generated here, stamped on the `x-nonce` request
+ * header (server components read it via `headers()` → `@/lib/csp-nonce` and
+ * put it on the app's inline scripts), and enforced through the
+ * Content-Security-Policy response header.
+ *
+ * Policy notes:
+ * - script-src is nonce-only (no 'unsafe-inline'): the app's inline scripts
+ *   carry the nonce; Next.js framework scripts are covered by the
+ *   framework's own handling of the x-nonce request header.
+ * - style-src keeps 'unsafe-inline': React SSR emits `style=""` attributes
+ *   and CSP nonces do not apply to style attributes - a nonce-only
+ *   style-src would break rendering. Standard trade-off for React apps.
+ * - frame-ancestors 'none' (B2.2 decision): stricter wins; the booking-page
+ *   embedding idea is not a live feature.
+ *
+ * Staging gate (per plan): the full manual QA pass must run against staging
+ * before this is considered verified. If inline scripts break, fix the nonce
+ * plumbing - never weaken to 'unsafe-inline'.
+ */
+function buildCsp(nonce: string): string {
+  return [
+    "default-src 'self'",
+    `script-src 'self' 'nonce-${nonce}'`,
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' https://fonts.gstatic.com data:",
+    "img-src 'self' blob: data: https:",
+    "connect-src 'self' https:",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "object-src 'none'",
+  ].join('; ');
+}
+
+/**
+ * Attach the CSP headers to a response. For `NextResponse.next()` the nonce
+ * is also forwarded on the request headers so downstream server components
+ * can read it; for redirects/responses the CSP header alone is enough.
+ */
+function withCsp(response: NextResponse, nonce: string): NextResponse {
+  response.headers.set('Content-Security-Policy', buildCsp(nonce));
+  response.headers.set('x-nonce', nonce);
+  return response;
+}
+
+/** NextResponse.next() with the CSP nonce forwarded on the request headers. */
+function nextWithNonce(request: NextRequest, nonce: string): NextResponse {
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-nonce', nonce);
+  return NextResponse.next({ request: { headers: requestHeaders } });
+}
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionCookie = request.cookies.get('kivo_session');
   const customerCookie = request.cookies.get('kivo_customer_session');
 
   const isPublic = isPublicPath(pathname);
+  const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
 
   // Allow API routes and static assets through (matcher already excludes most)
   if (pathname.startsWith('/api/')) {
-    return NextResponse.next();
+    return withCsp(NextResponse.next(), nonce);
   }
 
   // Customer area: allow with either a customer session or public path.
@@ -24,20 +80,20 @@ export function proxy(request: NextRequest) {
   const isCustomerRoute = pathname === '/customer' || pathname.startsWith('/customer/');
   if (isCustomerRoute) {
     if (customerCookie || isPublic) {
-      return NextResponse.next();
+      return withCsp(nextWithNonce(request, nonce), nonce);
     }
     // No customer session and not a public customer route: send to customer login
     const url = request.nextUrl.clone();
     url.pathname = '/customer/login';
     url.searchParams.set('next', pathname);
-    return NextResponse.redirect(url);
+    return withCsp(NextResponse.redirect(url), nonce);
   }
 
   if (!sessionCookie && !isPublic) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     url.searchParams.set('next', pathname);
-    return NextResponse.redirect(url);
+    return withCsp(NextResponse.redirect(url), nonce);
   }
 
   // NOTE (2026-09-26): there used to be a redirect here sending anyone
@@ -49,7 +105,7 @@ export function proxy(request: NextRequest) {
   // Authenticated users are bounced to /dashboard by the (auth) layout
   // below, which only redirects on a fully validated session.
 
-  return NextResponse.next();
+  return withCsp(nextWithNonce(request, nonce), nonce);
 }
 
 export const config = {

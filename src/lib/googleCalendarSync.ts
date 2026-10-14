@@ -28,12 +28,14 @@
  */
 import { createHash } from 'node:crypto';
 import { prisma } from '@/lib/prisma';
+import { encryptSecret, decryptSecret } from './crypto.ts';
 import { refreshAccessToken } from '@/lib/google-reviews';
 import {
   GOOGLE_CALENDAR_EVENTS_URL,
   type GoogleApiCalendarEvent,
 } from '@/lib/google-calendar';
 import { defaultTimezoneForRegion } from '@/lib/utils';
+import { centsToDollars } from '@/lib/money';
 
 /** Write scope needed for create/update/delete. Readonly is not enough. */
 export const SCOPE_CALENDAR_WRITE = 'https://www.googleapis.com/auth/calendar';
@@ -63,7 +65,7 @@ type JobForSync = {
   date: Date;
   time: string | null;
   address: string | null;
-  price: number;
+  priceCents: bigint;
   status: string;
   notes: string | null;
   technician: string | null;
@@ -118,7 +120,7 @@ export function jobToCalendarEvent(
   const descLines = [
     `EveryJob job · ${job.status}`,
     `Customer: ${customerName}`,
-    `Price: $${job.price.toFixed(2)}`,
+    `Price: $${centsToDollars(job.priceCents).toFixed(2)}`,
     job.technician ? `Technician: ${job.technician}` : '',
     job.notes ? `Notes: ${job.notes.slice(0, 500)}` : '',
   ].filter(Boolean);
@@ -241,16 +243,20 @@ async function getWriteAccessToken(businessId: string): Promise<string> {
     });
   }
 
+  // B4.2: tokens are encrypted at rest; decrypt for the in-memory flow.
+  // decryptSecret passes through legacy plaintext rows unchanged.
+  const accessToken = decryptSecret(conn.accessToken);
+  const refreshToken = decryptSecret(conn.refreshToken);
   const stillValid = conn.expiresAt && conn.expiresAt.getTime() > Date.now() + 60_000;
-  if (stillValid) return conn.accessToken;
-  if (!conn.refreshToken) throw Object.assign(new Error('No refresh token'), { kind: 'no-refresh-token' });
+  if (stillValid) return accessToken as string;
+  if (!refreshToken) throw Object.assign(new Error('No refresh token'), { kind: 'no-refresh-token' });
   const refreshed = await refreshAccessToken(
-    { clientId: env.clientId, clientSecret: env.clientSecret, refreshToken: conn.refreshToken },
+    { clientId: env.clientId, clientSecret: env.clientSecret, refreshToken },
     fetch
   );
   await prisma.googleConnection.update({
     where: { id: conn.id, businessId },
-    data: { accessToken: refreshed.accessToken, expiresAt: refreshed.expiresAt },
+    data: { accessToken: encryptSecret(refreshed.accessToken), expiresAt: refreshed.expiresAt },
   });
   return refreshed.accessToken;
 }
@@ -289,7 +295,7 @@ export async function syncJobsToGoogleCalendar(
     where: { businessId, date: { gte: min, lte: max } },
     select: {
       id: true, title: true, date: true, time: true, address: true,
-      price: true, status: true, notes: true, technician: true,
+      priceCents: true, status: true, notes: true, technician: true,
       customer: { select: { name: true } },
     },
   })) as JobForSync[];

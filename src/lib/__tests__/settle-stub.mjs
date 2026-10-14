@@ -23,10 +23,13 @@ export function setScenario(s) {
   scenario = s;
 }
 
-const JOB = { id: 'job_1', price: 299, title: 'Test job', customerId: 'cus_1' };
+const JOB = { id: 'job_1', priceCents: BigInt(29900), title: 'Test job', customerId: 'cus_1' };
 
 export function makeTx() {
   return {
+    // nextDocumentNumber() (M4) uses raw SQL inside the transaction
+    $executeRaw: async () => 1,
+    $queryRaw: async () => [{ nextNumber: 1, prefix: 'INV-', padding: 4 }],
     job: {
       findFirst: async ({ where }) => {
         if (where?.id === 'job_1' && where?.businessId === 'biz_1') return { ...JOB };
@@ -44,9 +47,9 @@ export function makeTx() {
         if (where?.jobId !== 'job_1' || where?.businessId !== 'biz_1') return [];
         if (scenario === 'no-invoice') return [];
         if (scenario === 'open-invoice')
-          return [{ id: 'inv_1', total: 299, payments: [{ amount: 100 }] }];
+          return [{ id: 'inv_1', totalCents: BigInt(29900), payments: [{ amountCents: BigInt(10000) }] }];
         if (scenario === 'paid-invoice')
-          return [{ id: 'inv_1', total: 299, payments: [{ amount: 299 }] }];
+          return [{ id: 'inv_1', totalCents: BigInt(29900), payments: [{ amountCents: BigInt(29900) }] }];
         return [];
       },
       create: async ({ data }) => {

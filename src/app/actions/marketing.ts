@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
-import { formatMoney } from '@/lib/money';
+import { formatCents } from '@/lib/money';
 import {
   type Audience,
   AUDIENCE_LABELS,
@@ -189,22 +189,22 @@ export async function draftPaymentReminder(
     where: { id: invoiceId, businessId },
     include: {
       customer: { select: { name: true } },
-      payments: { select: { amount: true } },
+      payments: { select: { amountCents: true } },
       business: { select: { name: true, interacEmail: true, phone: true, currency: true } },
     },
   });
   if (!invoice) return { error: 'Invoice not found.' };
 
-  const paid = Math.round(invoice.payments.reduce((s, p) => s + p.amount, 0) * 100) / 100;
-  const remaining = Math.round((invoice.total - paid) * 100) / 100;
-  if (remaining <= 0) return { error: 'This invoice is already fully paid.' };
+  const paid = invoice.payments.reduce((s, p) => s + p.amountCents, BigInt(0));
+  const remaining = invoice.totalCents - paid;
+  if (remaining <= BigInt(0)) return { error: 'This invoice is already fully paid.' };
 
   const interacLine = invoice.business.interacEmail
     ? ` You can pay by Interac e-Transfer to ${invoice.business.interacEmail}.`
     : '';
   const text =
     `Hi ${invoice.customer.name}, this is a gentle reminder from ${invoice.business.name} ` +
-    `that invoice ${invoice.number} for ${formatMoney(remaining, invoice.business.currency)} is still pending.${interacLine} ` +
+    `that invoice ${invoice.number} for ${formatCents(remaining, invoice.business.currency)} is still pending.${interacLine} ` +
     `Thank you!`;
   return { text };
 }

@@ -11,6 +11,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
+import { getActiveMembershipForUser } from '@/lib/membership';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { createApiKey, type ApiScope } from '@/lib/apiKeys';
@@ -30,7 +31,9 @@ function guard(req: Request) {
 
 async function authedBusinessId() {
   const session = await getSession();
-  return session?.user?.businessId ?? null;
+  if (!session) return null;
+  const membership = await getActiveMembershipForUser(session.user.id);
+  return membership?.businessId ?? null;
 }
 
 function limited(businessId: string) {

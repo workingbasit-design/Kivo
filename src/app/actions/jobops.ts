@@ -94,7 +94,6 @@ export async function createChecklistTemplate(
     data: {
       businessId,
       name,
-      price: fields.price,
       priceCents: fields.price != null ? dollarsToCents(fields.price) : null,
       durationMin: fields.durationMin,
       notes: fields.notes,
@@ -130,7 +129,7 @@ export async function updateChecklistTemplate(
       where: { id, businessId },
       data: {
         name,
-        price: fields.price,
+        priceCents: fields.price != null ? dollarsToCents(fields.price) : null,
         durationMin: fields.durationMin,
         notes: fields.notes,
         items: { create: items.map((label, i) => ({ label, sortOrder: i })) },
@@ -280,7 +279,14 @@ export async function addExpense(
   if (!parsed.ok) return err(parsed.error);
 
   await prisma.jobExpense.create({
-    data: { jobId, businessId, ...parsed.data },
+    data: {
+      jobId,
+      businessId,
+      description: parsed.data.description,
+      amountCents: dollarsToCents(parsed.data.amount) ?? BigInt(0),
+      category: parsed.data.category,
+      spentAt: parsed.data.spentAt,
+    },
   });
   revalidateJob(jobId);
   return { ok: true };
@@ -319,7 +325,7 @@ export async function saveHourlyRate(
 
   await prisma.business.update({
     where: { id: businessId },
-    data: { defaultHourlyRate: parsed.data, defaultHourlyRateCents: dollarsToCents(parsed.data) },
+    data: { defaultHourlyRateCents: parsed.data != null ? dollarsToCents(parsed.data) : null },
   });
   revalidatePath('/jobs');
   revalidatePath('/dashboard');

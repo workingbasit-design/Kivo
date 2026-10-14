@@ -64,7 +64,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
     unsafeUnscoped('agent:proServices', (db) =>
       db.service.findMany({
         where: { businessId: b.id },
-        select: { name: true, price: true },
+        select: { name: true, priceCents: true },
         orderBy: { name: 'asc' },
         take: 25,
       })
@@ -96,7 +96,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
       currency: b.currency,
       rating: avg,
       reviewCount: count,
-      services: services.map((s) => ({ name: s.name, price: s.price })),
+      services: services.map((s) => ({ name: s.name, priceCents: s.priceCents.toString() })),
       profileUrl: `${url.origin}/p/${slug}`,
       quoteHint: `POST ${url.origin}/api/agent/v1/proposals with { "businessSlug": "${slug}", ... } to propose a quote request.`,
     },

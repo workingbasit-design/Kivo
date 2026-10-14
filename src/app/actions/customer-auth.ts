@@ -33,6 +33,12 @@ export async function customerSignup(_prev: unknown, formData: FormData) {
   const rl = rateLimit(await clientKey('customer-signup'), AUTH_LIMIT);
   if (!rl.ok) return tooMany();
 
+  // B11.1: honeypot + fill-time bot check on customer signup.
+  const { botCheckFailed } = await import('@/lib/bot-check');
+  if (botCheckFailed(formData)) {
+    return { error: 'Please try again.' };
+  }
+
   const name = String(formData.get('name') || '').trim();
   const email = String(formData.get('email') || '').trim().toLowerCase();
   const password = String(formData.get('password') || '');
@@ -49,6 +55,13 @@ export async function customerSignup(_prev: unknown, formData: FormData) {
 
   const existing = await prisma.customerUser.findUnique({ where: { email } }).catch(() => null);
   if (existing) return { error: 'An account with this email already exists. Please log in.' };
+
+  // B7.3a: reject breached passwords (fail-open on HIBP outage).
+  const { isPasswordBreached } = await import('@/lib/breached-passwords');
+  const breach = await isPasswordBreached(password);
+  if (breach.breached) {
+    return { error: 'This password has appeared in a data breach. Please choose a different one.' };
+  }
 
   const customer = await prisma.customerUser.create({
     data: {
@@ -70,8 +83,9 @@ export async function customerLogin(_prev: unknown, formData: FormData) {
 
   const email = String(formData.get('email') || '').trim().toLowerCase();
   const password = String(formData.get('password') || '');
-  const rawNext = String(formData.get('next') || '').trim();
-  const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/customer';
+  // B7.7: shared open-redirect guard (also blocks backslash tricks).
+  const { safeNext } = await import('@/lib/redirect');
+  const next = safeNext(String(formData.get('next') || '')) ?? '/customer';
 
   if (!isValidEmail(email) || !password) {
     return { error: 'Please enter your email and password.' };

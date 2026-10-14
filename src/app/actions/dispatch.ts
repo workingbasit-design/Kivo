@@ -69,14 +69,14 @@ export async function assignJobTechnician(jobId: string, technicianUserId: strin
     });
   } else {
     // The technician must belong to the same business.
-    const member = await prisma.user.findFirst({
-      where: { id: technicianUserId, businessId },
-      select: { id: true, name: true },
+    const member = await prisma.membership.findFirst({
+      where: { userId: technicianUserId, businessId, status: 'ACTIVE' },
+      select: { user: { select: { id: true, name: true } } },
     });
     if (!member) return { ok: false, error: 'Team member not found' };
     await prisma.job.update({
       where: { id: jobId, businessId },
-      data: { assignedToId: technicianUserId, technician: member.name },
+      data: { assignedToId: technicianUserId, technician: member.user.name },
     });
   }
   revalidatePath('/dispatch');

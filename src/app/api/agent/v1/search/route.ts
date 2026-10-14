@@ -55,7 +55,7 @@ export async function GET(req: Request) {
         regionCode: true,
         directoryHideAddress: true,
         bookingPage: { select: { slug: true, showPhone: true } },
-        services: { select: { name: true, price: true }, orderBy: { name: 'asc' }, take: 12 },
+        services: { select: { name: true, priceCents: true }, orderBy: { name: 'asc' }, take: 12 },
         reviews: { select: { rating: true } },
       },
       orderBy: { name: 'asc' },
@@ -84,7 +84,7 @@ export async function GET(req: Request) {
         regionCode: b.regionCode,
         rating: avg,
         reviewCount: count,
-        services: b.services.map((s) => ({ name: s.name, price: s.price })),
+        services: b.services.map((s) => ({ name: s.name, priceCents: s.priceCents.toString() })),
         profileUrl: `${origin}/p/${slug}`,
       };
     });

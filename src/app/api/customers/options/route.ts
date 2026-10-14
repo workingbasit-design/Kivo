@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
+import { getActiveMembershipForUser } from '@/lib/membership';
 
 /**
  * Fresh tenant-scoped customer id+name list for comboboxes.
@@ -9,7 +10,8 @@ import { getSession } from '@/lib/auth';
  */
 export async function GET() {
   const session = await getSession();
-  const businessId = session?.user?.businessId;
+  const membership = session ? await getActiveMembershipForUser(session.user.id) : null;
+  const businessId = membership?.businessId;
   if (!businessId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }

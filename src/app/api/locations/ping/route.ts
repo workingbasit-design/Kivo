@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
+import { getActiveMembershipForUser } from '@/lib/membership';
 import { rateLimit } from '@/lib/rate-limit';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 
@@ -32,7 +33,8 @@ export async function POST(req: Request) {
   if (!originCheck.ok) return originForbidden(originCheck.reason);
 
   const session = await getSession();
-  const businessId = session?.user?.businessId;
+  const membership = session ? await getActiveMembershipForUser(session.user.id) : null;
+  const businessId = membership?.businessId;
   const userId = session?.user?.id;
   if (!session || !businessId || !userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

@@ -7,6 +7,7 @@
  */
 import { prisma } from '@/lib/prisma';
 import { daysOverdue, needsFollowUp, daysWaiting, remainingBalance } from './revenue.ts';
+import { centsToDollars } from './money.ts';
 
 export type LeakKind = 'overdue' | 'unbilled' | 'idleQuotes';
 
@@ -98,14 +99,14 @@ export async function getMoneyLeaks(businessId: string): Promise<MoneyLeak[]> {
       where: { businessId, status: { in: ['UNPAID', 'PARTIALLY PAID'] } },
       select: {
         date: true,
-        total: true,
-        payments: { where: { status: 'COMPLETED' }, select: { amount: true } },
+        totalCents: true,
+        payments: { where: { status: 'COMPLETED' }, select: { amountCents: true } },
       },
       take: 200,
     }),
     prisma.job.findMany({
       where: { businessId, status: 'COMPLETED' },
-      select: { id: true, price: true },
+      select: { id: true, priceCents: true },
       take: 200,
     }),
     prisma.invoice.findMany({
@@ -114,7 +115,7 @@ export async function getMoneyLeaks(businessId: string): Promise<MoneyLeak[]> {
     }),
     prisma.quote.findMany({
       where: { businessId, status: 'SENT' },
-      select: { total: true, updatedAt: true },
+      select: { totalCents: true, updatedAt: true },
       take: 200,
     }),
   ]);
@@ -129,18 +130,18 @@ export async function getMoneyLeaks(businessId: string): Promise<MoneyLeak[]> {
     overdueInvoices: invoices
       .map((inv) => ({
         balance: remainingBalance(
-          inv.total,
-          inv.payments.map((p) => p.amount)
+          centsToDollars(inv.totalCents),
+          inv.payments.map((p) => centsToDollars(p.amountCents))
         ),
         daysOverdue: daysOverdue(inv.date, now, timezone),
       }))
       .filter((i) => i.balance > 0 && i.daysOverdue > 0),
     unbilledJobs: jobs
-      .filter((j) => !invoiced.has(j.id) && j.price > 0)
-      .map((j) => ({ price: j.price })),
+      .filter((j) => !invoiced.has(j.id) && j.priceCents > BigInt(0))
+      .map((j) => ({ price: centsToDollars(j.priceCents) })),
     idleQuotes: quotes
       .filter((q) => needsFollowUp(q.updatedAt, now))
-      .map((q) => ({ total: q.total, daysWaiting: daysWaiting(q.updatedAt, now) })),
+      .map((q) => ({ total: centsToDollars(q.totalCents), daysWaiting: daysWaiting(q.updatedAt, now) })),
   });
 }
 

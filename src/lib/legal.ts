@@ -82,6 +82,22 @@ export const PRIVACY: { en: LegalPage; fr: LegalPage } = {
           'EveryJob is a business tool for adults. You must be 18 or older to create an account. We do not knowingly collect information from anyone under 18.',
         ],
       },
+      {
+        heading: 'For customers (Directory)',
+        body: [
+          'If you use EveryJob as a customer - to find a service business, request quotes, or message a business - we collect your name, contact details, and the details of your request so the business can respond. Your information is shared only with the businesses you contact.',
+          'You can ask any business to delete your information, or contact us and we will pass the request on.',
+        ],
+      },
+      {
+        // B14: privacy officer contact is a PENDING user decision.
+        // Placeholder - replace with the real name/email once decided.
+        heading: 'Privacy officer',
+        body: [
+          'Our privacy officer can be reached at: [PRIVACY OFFICER NAME], [PRIVACY OFFICER EMAIL]. (Contact details to be confirmed.)',
+          'If you have a privacy question or complaint, contact the privacy officer first. If you are not satisfied with the response, you can complain to the Office of the Privacy Commissioner of Canada (priv.gc.ca).',
+        ],
+      },
     ],
   },
   fr: {
@@ -145,6 +161,22 @@ export const PRIVACY: { en: LegalPage; fr: LegalPage } = {
         heading: 'Enfants',
         body: [
           'EveryJob est un outil d\u2019entreprise pour adultes. Vous devez avoir 18 ans ou plus pour créer un compte. Nous ne recueillons sciemment aucune information de personnes de moins de 18 ans.',
+        ],
+      },
+      {
+        heading: 'Pour les clients (Répertoire)',
+        body: [
+          'Si vous utilisez EveryJob comme client - pour trouver une entreprise de services, demander des devis ou écrire à une entreprise - nous recueillons votre nom, vos coordonnées et les détails de votre demande afin que l\u2019entreprise puisse répondre. Vos renseignements ne sont partagés qu\u2019avec les entreprises que vous contactez.',
+          'Vous pouvez demander à toute entreprise de supprimer vos renseignements, ou nous contacter et nous transmettrons la demande.',
+        ],
+      },
+      {
+        // B14 : les coordonnées du responsable de la protection des
+        // renseignements personnels sont en attente d\u2019une décision de l\u2019utilisateur.
+        heading: 'Responsable de la protection des renseignements personnels',
+        body: [
+          'Notre responsable de la protection des renseignements personnels est joignable à : [NOM DU RESPONSABLE], [COURRIEL DU RESPONSABLE]. (Coordonnées à confirmer.)',
+          'Pour toute question ou plainte concernant la confidentialité, contactez d\u2019abord le responsable. Si la réponse ne vous satisfait pas, vous pouvez porter plainte au Commissariat à la protection de la vie privée du Canada (priv.gc.ca).',
         ],
       },
     ],

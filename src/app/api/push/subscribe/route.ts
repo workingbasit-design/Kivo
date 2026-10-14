@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
+import { getActiveMembershipForUser } from '@/lib/membership';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
@@ -26,7 +27,9 @@ export async function POST(req: NextRequest) {
   if (!originCheck.ok) return originForbidden();
 
   const session = await getSession();
-  const businessId = session?.user?.businessId;
+  const membership = session ? await getActiveMembershipForUser(session.user.id) : null;
+  const businessId = membership?.businessId;
+  const userId = session?.userId ?? null;
   if (!businessId) {
     return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   }
@@ -57,10 +60,10 @@ export async function POST(req: NextRequest) {
   await unsafeUnscoped('push:subscribe:upsert', (db) =>
     db.pushSubscription.upsert({
       where: { endpoint },
-      update: { businessId, userId: session.userId ?? null, p256dh: keys.p256dh, auth: keys.auth },
+      update: { businessId, userId, p256dh: keys.p256dh, auth: keys.auth },
       create: {
         businessId,
-        userId: session.userId ?? null,
+        userId,
         endpoint,
         p256dh: keys.p256dh,
         auth: keys.auth,

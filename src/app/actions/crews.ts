@@ -84,8 +84,8 @@ export async function addMember(crewId: string, name: string, userId?: string): 
   // Optional team-user link: only link users on the same business.
   let linkUserId: string | null = null;
   if (userId) {
-    const teamUser = await prisma.user.findFirst({
-      where: { id: userId, businessId },
+    const teamUser = await prisma.membership.findFirst({
+      where: { userId, businessId, status: 'ACTIVE' },
       select: { id: true },
     });
     if (teamUser) linkUserId = teamUser.id;

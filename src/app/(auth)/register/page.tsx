@@ -1,16 +1,19 @@
 "use client";
 
 import Link from 'next/link';
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 import { BadgeCheck, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { register } from '@/app/actions/auth';
 import { useT } from '@/components/LanguageToggle';
 import { Field, inputClass, primaryBtnClass } from '@/components/ui';
 import GoogleAuthSection from '@/components/GoogleAuthSection';
+import { HONEYPOT_FIELD, FORM_STARTED_FIELD } from '@/lib/bot-check';
 
 export default function RegisterPage() {
   const { t } = useT();
   const [state, formAction, isPending] = useActionState(register, {});
+  // B11.1: honeypot + fill-time timestamp for the server-side bot check.
+  const [formStartedAt] = useState(() => String(Date.now()));
 
   return (
     <div className="bg-white rounded-3xl border border-zinc-200/70 shadow-xl shadow-zinc-200/50 p-6 sm:p-8">
@@ -23,6 +26,23 @@ export default function RegisterPage() {
       <GoogleAuthSection />
 
       <form action={formAction} className="space-y-4">
+        {/* Honeypot: invisible to humans (off-screen + aria-hidden); bots that
+            fill it are rejected server-side. */}
+        <div
+          aria-hidden="true"
+          className="absolute -left-[9999px] top-auto h-px w-px overflow-hidden"
+        >
+          <label htmlFor="reg-website">Website</label>
+          <input
+            id="reg-website"
+            name={HONEYPOT_FIELD}
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+            defaultValue=""
+          />
+        </div>
+        <input type="hidden" name={FORM_STARTED_FIELD} value={formStartedAt} />
         <Field label={t('t10misc.auth.yourName')}>
           <input
             id="name"

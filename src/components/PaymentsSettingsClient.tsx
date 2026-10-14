@@ -67,7 +67,8 @@ export default function PaymentsSettingsClient({
   locale: Locale;
   connectFailed?: boolean;
 }) {
-  const [liveState, liveAction] = useActionState(confirmLivePaymentsAction, {});
+  // B10.4 double-submit protection on the live-payments confirmation.
+  const [liveState, liveAction, livePending] = useActionState(confirmLivePaymentsAction, {});
   const [, startDisconnect] = useTransition();
   const [confirmingDisconnect, setConfirmingDisconnect] = useState(false);
 
@@ -153,7 +154,7 @@ export default function PaymentsSettingsClient({
                 </label>
                 {liveState.error && <p className="text-xs font-semibold text-rose-600">{liveState.error}</p>}
                 {liveState.ok && <p className="text-xs font-semibold text-emerald-600">{t(locale, 'payments.liveConfirmed')}</p>}
-                <button type="submit" className={primaryBtnClass}>
+                <button type="submit" disabled={livePending} className={primaryBtnClass}>
                   {t(locale, 'payments.liveConfirmButton')}
                 </button>
               </form>

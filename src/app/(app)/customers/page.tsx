@@ -1,8 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
 import { AlertCircle, Plus } from 'lucide-react';
-import { getSession } from '@/lib/auth';
+import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { logPiiAccess } from '@/lib/pii-audit';
 import { PageHeader, Card, primaryBtnClass } from '@/components/ui';
@@ -10,6 +9,7 @@ import CustomersClient from '@/components/CustomersClient';
 import type { CustomerRow } from '@/components/CustomersClient';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
+import { centsToDollars } from '@/lib/money';
 
 /**
  * Customers list - defensive by design (production incident 2026-09-23:
@@ -17,9 +17,7 @@ import { t } from '@/lib/i18n';
  * and a DB failure renders an inline error card instead of a 500 page.
  */
 export default async function CustomersPage() {
-  const session = await getSession();
-  if (!session?.user?.businessId) redirect('/login');
-  const businessId = session.user.businessId;
+  const { businessId, user } = await requireAuth();
   const locale = await getLocale();
   const custL = (k: string) => t(locale, 'customers.' + k);
 
@@ -44,7 +42,7 @@ export default async function CustomersPage() {
         address: true,
         tags: true,
         _count: { select: { jobs: true } },
-        jobs: { select: { price: true } },
+        jobs: { select: { priceCents: true } },
       },
       orderBy: { name: 'asc' },
     });
@@ -52,7 +50,7 @@ export default async function CustomersPage() {
     // PIPEDA accountability: log PII list access (fire-and-forget).
     logPiiAccess({
       businessId,
-      userId: session.user.id,
+      userId: user.id,
       action: 'view',
       entityType: 'customer',
       metadata: { count: rows.length, view: 'list' },
@@ -69,7 +67,7 @@ export default async function CustomersPage() {
       tags: (c.tags ?? '').split(',').map((t) => t.trim()).filter(Boolean),
       jobCount: c._count?.jobs ?? 0,
       revenue: (c.jobs ?? []).reduce(
-        (s, j) => s + (typeof j?.price === 'number' ? j.price : 0),
+        (s, j) => s + centsToDollars(j?.priceCents),
         0
       ),
     }));

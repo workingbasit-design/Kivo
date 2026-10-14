@@ -1,4 +1,5 @@
 import { getSession } from '@/lib/auth';
+import { getActiveMembershipForUser } from '@/lib/membership';
 import { csvTemplate, type CsvType } from '@/lib/csv';
 
 const TYPES: CsvType[] = ['customers', 'services', 'jobs'];
@@ -6,7 +7,8 @@ const TYPES: CsvType[] = ['customers', 'services', 'jobs'];
 /** Download a CSV import template: GET /api/imports/template?type=customers */
 export async function GET(req: Request) {
   const session = await getSession();
-  if (!session?.user?.businessId) {
+  const membership = session ? await getActiveMembershipForUser(session.user.id) : null;
+  if (!membership?.businessId) {
     return new Response('Not signed in.', { status: 401 });
   }
   const { searchParams } = new URL(req.url);

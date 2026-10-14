@@ -17,7 +17,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { formatDateShort, toISODateLocal, dayRange } from '@/lib/utils';
-import { formatMoney } from '@/lib/money';
+import { formatMoney, centsToDollars } from '@/lib/money';
 import { getCertificationRoadmap, type TradeKey } from '@/lib/certifications';
 import {
   detectIntent,
@@ -141,18 +141,18 @@ async function revenueBetween(businessId: string, start: Date, end: Date): Promi
       createdAt: { gte: start, lte: end },
       businessId,
     },
-    _sum: { amount: true },
+    _sum: { amountCents: true },
   });
-  return agg._sum.amount ?? 0;
+  return centsToDollars(agg._sum?.amountCents);
 }
 
 /** All-time completed payment total for "total revenue" questions. */
 async function totalRevenue(businessId: string): Promise<number> {
   const agg = await prisma.payment.aggregate({
     where: { status: 'COMPLETED', businessId },
-    _sum: { amount: true },
+    _sum: { amountCents: true },
   });
-  return agg._sum.amount ?? 0;
+  return centsToDollars(agg._sum?.amountCents);
 }
 
 /**
@@ -167,9 +167,9 @@ async function bookedRevenueBetween(businessId: string, start: Date, end: Date):
       date: { gte: start, lte: end },
       status: { not: 'CANCELLED' },
     },
-    _sum: { price: true },
+    _sum: { priceCents: true },
   });
-  return agg._sum.price ?? 0;
+  return centsToDollars(agg._sum?.priceCents);
 }
 
 /** Calendar-month range (local time) containing `now`. */
@@ -180,15 +180,26 @@ function monthRange(now: Date): { gte: Date; lte: Date } {
 }
 
 async function unpaidInvoices(businessId: string, limit = 20): Promise<UnpaidInvoiceRow[]> {
-  return prisma.invoice.findMany({
+  const rows = await prisma.invoice.findMany({
     where: { businessId, status: { in: ['UNPAID', 'PARTIALLY PAID'] } },
     include: {
       customer: { select: { name: true, phone: true } },
-      payments: { where: { status: 'COMPLETED' }, select: { amount: true } },
+      payments: { where: { status: 'COMPLETED' }, select: { amountCents: true } },
     },
     orderBy: { date: 'desc' },
     take: limit,
   });
+  // UnpaidInvoiceRow stays in dollars (invoiceBalance and reply formatters
+  // are pure dollar math) - map the cent columns at the DB boundary.
+  return rows.map((r) => ({
+    id: r.id,
+    number: r.number,
+    total: centsToDollars(r.totalCents),
+    status: r.status,
+    date: r.date,
+    customer: r.customer,
+    payments: r.payments.map((p) => ({ amount: centsToDollars(p.amountCents) })),
+  }));
 }
 
 async function findCustomers(businessId: string, query: string, limit = 5): Promise<CustomerSearchRow[]> {
@@ -510,11 +521,11 @@ export async function runCopilot(
               businessId,
               OR: words.map((w) => ({ title: { contains: w, mode: 'insensitive' } })),
             },
-            select: { total: true },
+            select: { totalCents: true },
             take: 20,
             orderBy: { createdAt: 'desc' },
           });
-          const totals = past.map((q) => q.total).filter((t) => t > 0).sort((a, b) => a - b);
+          const totals = past.map((q) => centsToDollars(q.totalCents)).filter((t) => t > 0).sort((a, b) => a - b);
           if (totals.length > 0) {
             price = totals[Math.floor(totals.length / 2)];
             priceSource = 'history';

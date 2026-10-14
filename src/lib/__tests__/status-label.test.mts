@@ -20,6 +20,8 @@ const CASES: Array<[string, string, string]> = [
   ['IN PROGRESS', 'fr', 'En cours'],
   ['COMPLETED', 'fr', 'Terminé'],
   ['OVERDUE', 'fr', 'En retard'],
+  ['LATE', 'en', 'Late'],
+  ['LATE', 'fr', 'En retard'],
   ['ALL', 'fr', 'Tous'],
   ['DRAFT', 'fr', 'Brouillon'],
 ];

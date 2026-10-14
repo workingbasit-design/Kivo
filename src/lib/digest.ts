@@ -14,6 +14,7 @@
 import { prisma } from '@/lib/prisma';
 import { getAttentionItems, type AttentionItem } from './attention.ts';
 import { pushToBusiness, isPushConfigured, type PushPayload } from './webpush.ts';
+import { centsToDollars } from './money.ts';
 
 export interface DigestJob {
   id: string;
@@ -107,7 +108,7 @@ export async function getDigestData(businessId: string): Promise<DigestData> {
           title: true,
           time: true,
           status: true,
-          price: true,
+          priceCents: true,
           address: true,
           technician: true,
           customer: { select: { name: true } },
@@ -129,7 +130,7 @@ export async function getDigestData(businessId: string): Promise<DigestData> {
           date: { gte: todayStart, lt: weekEnd },
           status: { notIn: ['CANCELLED'] },
         },
-        select: { price: true },
+        select: { priceCents: true },
       }),
       getAttentionItems(businessId, 5),
       prisma.invoice.findMany({
@@ -138,16 +139,16 @@ export async function getDigestData(businessId: string): Promise<DigestData> {
           status: { in: ['UNPAID', 'PARTIALLY_PAID', 'PARTIALLY PAID'] },
         },
         select: {
-          total: true,
+          totalCents: true,
           date: true,
           status: true,
-          payments: { where: { status: 'COMPLETED' }, select: { amount: true } },
+          payments: { where: { status: 'COMPLETED' }, select: { amountCents: true } },
         },
         take: 200,
       }),
       prisma.invoice.findMany({
         where: { businessId, status: 'PAID', paidAt: { gte: weekAgo } },
-        select: { total: true },
+        select: { totalCents: true },
       }),
     ]);
 
@@ -156,7 +157,7 @@ export async function getDigestData(businessId: string): Promise<DigestData> {
     title: j.title,
     time: j.time,
     status: j.status,
-    price: j.price,
+    price: centsToDollars(j.priceCents),
     customerName: j.customer.name,
     address: j.address,
     technician: j.technician,
@@ -167,8 +168,8 @@ export async function getDigestData(businessId: string): Promise<DigestData> {
   let overdueCount = 0;
   let outstandingTotal = 0;
   for (const inv of invoices) {
-    const paid = inv.payments.reduce((s, p) => s + p.amount, 0);
-    const balance = Math.max(0, inv.total - paid);
+    const paid = inv.payments.reduce((s, p) => s + centsToDollars(p.amountCents), 0);
+    const balance = Math.max(0, centsToDollars(inv.totalCents) - paid);
     if (balance <= 0) continue;
     outstandingTotal += balance;
     // Overdue = invoice date more than 0 days past in business tz (simple: date < today)
@@ -183,7 +184,7 @@ export async function getDigestData(businessId: string): Promise<DigestData> {
     overdueCount,
     outstandingTotal,
     outstandingCount: invoices.length,
-    paidThisWeek: paidWeek.reduce((s, i) => s + i.total, 0),
+    paidThisWeek: paidWeek.reduce((s, i) => s + centsToDollars(i.totalCents), 0),
     paidThisWeekCount: paidWeek.length,
   };
 
@@ -203,7 +204,7 @@ export async function getDigestData(businessId: string): Promise<DigestData> {
     todayJobs,
     tomorrowCount: tomorrowJobs,
     weekJobsCount: weekJobs.length,
-    weekScheduledRevenue: weekJobs.reduce((s, j) => s + j.price, 0),
+    weekScheduledRevenue: weekJobs.reduce((s, j) => s + centsToDollars(j.priceCents), 0),
     actions,
     actionsTotal: actions.length,
     money,

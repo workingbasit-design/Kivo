@@ -85,3 +85,13 @@ test('honeypot wins over a bad timestamp', () => {
   ]);
   assert.equal(botCheckFailed(fd), 'honeypot');
 });
+
+test('botCheckFailedJson mirrors the FormData checks for API routes', async () => {
+  const { botCheckFailedJson, HONEYPOT_FIELD: HP, FORM_STARTED_FIELD: FS } =
+    await import('../bot-check.ts');
+  const human = { [HP]: '', [FS]: String(Date.now() - 5000), name: 'x' };
+  assert.equal(botCheckFailedJson(human), null);
+  assert.equal(botCheckFailedJson({ ...human, [HP]: 'bot' }), 'honeypot');
+  assert.equal(botCheckFailedJson({ ...human, [FS]: String(Date.now()) }), 'too-fast');
+  assert.equal(botCheckFailedJson({ name: 'x' }), 'missing-timestamp');
+});

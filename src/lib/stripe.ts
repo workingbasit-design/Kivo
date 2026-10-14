@@ -152,6 +152,11 @@ export interface CheckoutSessionOptions {
    * and Stripe, shown transparently to the owner.
    */
   applicationFeeCents?: number;
+  /**
+   * B10.3: idempotency key for safe retries. Sent as the Idempotency-Key
+   * header so a retried request can never create two Checkout Sessions.
+   */
+  idempotencyKey?: string;
 }
 
 export interface CheckoutSessionResult {
@@ -198,6 +203,7 @@ export async function createCheckoutSession(
         Authorization: `Bearer ${opts.platformSecret}`,
         'Stripe-Account': opts.stripeAccountId,
         'Content-Type': 'application/x-www-form-urlencoded',
+        ...(opts.idempotencyKey ? { 'Idempotency-Key': opts.idempotencyKey } : {}),
       },
       body: form.toString(),
     });

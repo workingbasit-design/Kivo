@@ -1,12 +1,12 @@
 import React from 'react';
 import Link from 'next/link';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { ArrowLeft, Phone, Mail, MapPin, StickyNote, Briefcase, FileText, Star, Wrench } from 'lucide-react';
-import { getSession } from '@/lib/auth';
+import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { logPiiAccess } from '@/lib/pii-audit';
 import { formatDateShort, jobDisplayStatus } from '@/lib/utils';
-import { formatMoney } from '@/lib/money';
+import { formatMoney, formatCents, centsToDollars } from '@/lib/money';
 import { PageHeader, Card, StatusBadge, Badge } from '@/components/ui';
 import { secondaryBtnClass } from '@/components/ui';
 import { EditCustomerForm, DeleteCustomerButton } from './customer-forms';
@@ -44,12 +44,12 @@ async function loadCustomer(id: string, businessId: string) {
       jobs: {
         orderBy: { date: 'desc' },
         take: 10,
-        select: { id: true, title: true, date: true, time: true, price: true, status: true },
+        select: { id: true, title: true, date: true, time: true, priceCents: true, status: true },
       },
       invoices: {
         orderBy: { date: 'desc' },
         take: 10,
-        select: { id: true, number: true, total: true, status: true, date: true },
+        select: { id: true, number: true, totalCents: true, status: true, date: true },
       },
       reviews: {
         orderBy: { createdAt: 'desc' },
@@ -76,9 +76,7 @@ export default async function CustomerDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const session = await getSession();
-  if (!session?.user?.businessId) redirect('/login');
-  const businessId = session.user.businessId;
+  const { businessId, user } = await requireAuth();
 
   // Defensive: any DB failure (bad row, schema drift) renders the friendly
   // error boundary instead of a raw 500 - see the 2026-09-23 /customers incident.
@@ -97,7 +95,7 @@ export default async function CustomerDetailPage({
     // PIPEDA accountability: log PII detail access (fire-and-forget).
     logPiiAccess({
       businessId,
-      userId: session.user.id,
+      userId: user.id,
       action: 'view',
       entityType: 'customer',
       entityId: customer.id,
@@ -133,7 +131,7 @@ export default async function CustomerDetailPage({
   const custL = (k: string) => t(locale, 'customers.' + k);
   const customerName = customer.name ?? custL('unnamed');
   const totalRevenue = (customer.jobs ?? []).reduce(
-    (s, j) => s + (typeof j?.price === 'number' ? j.price : 0),
+    (s, j) => s + centsToDollars(j?.priceCents),
     0
   );
   const initial = (customerName || '?').charAt(0).toUpperCase();
@@ -350,7 +348,7 @@ export default async function CustomerDetailPage({
                   <p className="text-xs text-zinc-500">{formatDateShort(j.date)}</p>
                 </div>
                 <div className="flex flex-col items-end gap-1 shrink-0">
-                  <span className="text-sm font-bold text-zinc-900">{formatMoney(j.price, currency)}</span>
+                  <span className="text-sm font-bold text-zinc-900">{formatCents(j.priceCents, currency)}</span>
                   <StatusBadge status={jobDisplayStatus(j.status, j.date)} />
                 </div>
               </li>
@@ -386,7 +384,7 @@ export default async function CustomerDetailPage({
                     <p className="text-xs text-zinc-500">{formatDateShort(inv.date)}</p>
                   </div>
                   <div className="flex flex-col items-end gap-1 shrink-0">
-                    <span className="text-sm font-bold text-zinc-900">{formatMoney(inv.total, currency)}</span>
+                    <span className="text-sm font-bold text-zinc-900">{formatCents(inv.totalCents, currency)}</span>
                     <StatusBadge status={inv.status} />
                   </div>
                 </Link>

@@ -6,22 +6,29 @@ import HeroBackdrop from '@/components/home/HeroBackdrop';
 import { LocaleProvider, LanguageToggle } from '@/components/LanguageToggle';
 import { getLocale } from '@/lib/i18n/server';
 import { getSession } from '@/lib/auth';
+import { getActiveMembershipForUser } from '@/lib/membership';
 import { isDatabaseUnavailable } from '@/lib/db-errors';
 
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
-  // Already signed in (validated session) -> skip the auth pages. This uses
-  // a real session check, unlike the old proxy cookie-presence redirect
-  // which caused a redirect loop for stale cookies (2026-09-26).
+  // Already signed in (validated session + ACTIVE membership) -> skip the
+  // auth pages. This uses a real session check, unlike the old proxy
+  // cookie-presence redirect which caused a redirect loop for stale
+  // cookies (2026-09-26). We inline requireAuth()'s membership check here
+  // because requireAuth() redirects anonymous visitors to /login - which
+  // is this layout's own page, and that would loop.
   // If the database is unreachable we cannot validate anything: render the
   // login form anyway instead of crashing or bouncing to /dashboard (the
   // bounce was half of the /login <-> /dashboard refresh loop on outages).
-  let session = null;
+  let authed = false;
   try {
-    session = await getSession();
+    const session = await getSession();
+    authed = session
+      ? (await getActiveMembershipForUser(session.user.id)) !== null
+      : false;
   } catch (err) {
     if (!isDatabaseUnavailable(err)) throw err;
   }
-  if (session?.user?.businessId) redirect('/dashboard');
+  if (authed) redirect('/dashboard');
 
   const locale = await getLocale();
   return (

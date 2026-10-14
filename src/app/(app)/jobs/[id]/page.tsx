@@ -9,7 +9,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card, StatusBadge, SectionTitle } from '@/components/ui';
 import { formatDateLabel, toISODateLocal, hasJobTime, formatJobTime, localeDateTag, localeMoneyTag } from '@/lib/utils';
-import { formatMoney } from '@/lib/money';
+import { formatMoney, centsToDollars } from '@/lib/money';
 import { entryMinutes, formatDuration } from '@/lib/timesheets';
 import { sumLaborMinutes, summarizeJobCost } from '@/lib/costing';
 import JobStatusButtons from '@/components/JobStatusButtons';
@@ -57,13 +57,13 @@ export default async function JobDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { businessId, user } = await requireAuth();
+  const { businessId, user, role } = await requireAuth();
   const locale = await getLocale();
   const T = (k: string) => t(locale, `t10work.${k}`);
   const jobsL = (k: string) => t(locale, `jobs.${k}`);
   const dateLocale = localeDateTag(locale);
   const moneyLocale = localeMoneyTag(locale);
-  const business = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true, name: true, regionCode: true, defaultHourlyRate: true } });
+  const business = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true, name: true, regionCode: true, defaultHourlyRateCents: true } });
   const currency = business?.currency;
 
   const job = await prisma.job.findFirst({
@@ -90,7 +90,7 @@ export default async function JobDetailPage({
         select: {
           id: true,
           number: true,
-          total: true,
+          totalCents: true,
           status: true,
           milestoneLabel: true,
         },
@@ -99,13 +99,15 @@ export default async function JobDetailPage({
   });
   if (!job) notFound();
 
-  // Team members for the per-job time-entry form (tenant-scoped).
-  const members = await prisma.user.findMany({
-    where: { businessId },
-    select: { id: true, name: true, email: true },
-    orderBy: { name: 'asc' },
-  });
-  const isAdmin = user.role === 'ADMIN';
+  // Team members for the per-job time-entry form (tenant-scoped, via Membership).
+  const members = (
+    await prisma.membership.findMany({
+      where: { businessId, status: 'ACTIVE' },
+      include: { user: { select: { id: true, name: true, email: true } } },
+      orderBy: { user: { name: 'asc' } },
+    })
+  ).map((m) => ({ id: m.user.id, name: m.user.name, email: m.user.email }));
+  const isAdmin = role === 'ADMIN';
 
   // Review-moat eligibility: show the review-link button only for completed
   // jobs with a paid invoice. Re-checked server-side at generation time.
@@ -120,7 +122,10 @@ export default async function JobDetailPage({
   // Labor minutes for costing exclude still-running sessions (null clockOut);
   // the entry list below still shows live elapsed time for transparency.
   const laborMinutes = sumLaborMinutes(job.timeEntries);
-  const hourlyRate = business?.defaultHourlyRate ?? null;
+  const hourlyRate =
+    business?.defaultHourlyRateCents != null
+      ? centsToDollars(business.defaultHourlyRateCents)
+      : null;
 
   // Profitability - read-only P&L snapshot. Revenue is what has actually been
   // invoiced to date (quoted price shown as reference); costs are labor
@@ -128,17 +133,17 @@ export default async function JobDetailPage({
   // summarizeJobCost math, which never divides by zero (marginPct is null
   // when revenue is 0). Only rendered when at least one input is non-zero.
   const invoicedToDate = job.invoices.reduce(
-    (s, inv) => s + (Number.isFinite(inv.total) ? inv.total : 0),
+    (s, inv) => s + centsToDollars(inv.totalCents),
     0
   );
   const plSummary = summarizeJobCost({
     price: invoicedToDate,
     laborMinutes,
     hourlyRate,
-    expenses: job.expenses.map((e) => ({ category: e.category, amount: e.amount })),
+    expenses: job.expenses.map((e) => ({ category: e.category, amount: centsToDollars(e.amountCents) })),
   });
   const showProfitability =
-    (job.price ?? 0) > 0 ||
+    centsToDollars(job.priceCents) > 0 ||
     invoicedToDate > 0 ||
     laborMinutes > 0 ||
     plSummary.expensesTotal > 0;
@@ -162,7 +167,7 @@ export default async function JobDetailPage({
     {
       icon: <DollarSign size={14} className="text-zinc-400" />,
       label: jobsL('price'),
-      value: <span className="font-bold text-zinc-900 tabular-nums">{formatMoney(job.price, currency, moneyLocale)}</span>,
+      value: <span className="font-bold text-zinc-900 tabular-nums">{formatMoney(centsToDollars(job.priceCents), currency, moneyLocale)}</span>,
     },
     {
       icon: <User size={14} className="text-zinc-400" />,
@@ -367,7 +372,7 @@ export default async function JobDetailPage({
           expenses={job.expenses.map((e) => ({
             id: e.id,
             description: e.description,
-            amount: e.amount,
+            amount: centsToDollars(e.amountCents),
             category: e.category,
             spentAt: formatDateLabel(e.spentAt, dateLocale),
           }))}
@@ -389,11 +394,11 @@ export default async function JobDetailPage({
         jobId={job.id}
         locale={locale}
         currency={currency}
-        price={job.price ?? 0}
+        price={centsToDollars(job.priceCents)}
         laborMinutes={laborMinutes}
         timeEntryCount={job.timeEntries.length}
         hourlyRate={hourlyRate}
-        expenses={job.expenses.map((e) => ({ category: e.category, amount: e.amount }))}
+        expenses={job.expenses.map((e) => ({ category: e.category, amount: centsToDollars(e.amountCents) }))}
         entries={job.timeEntries.slice(0, 8).map((e) => ({
           name: e.user.name || e.user.email,
           dateLabel: formatDateLabel(e.clockIn, dateLocale),
@@ -419,7 +424,7 @@ export default async function JobDetailPage({
           <dl className="space-y-2.5 text-sm">
             <ProfitRow
               label={t(locale, 'jobops.profitability.quotedPrice')}
-              value={formatMoney(job.price ?? 0, currency, moneyLocale)}
+              value={formatMoney(centsToDollars(job.priceCents), currency, moneyLocale)}
             />
             <ProfitRow
               label={t(locale, 'jobops.profitability.invoiced')}
@@ -520,7 +525,7 @@ export default async function JobDetailPage({
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     <span className="text-sm font-bold text-zinc-900 tabular-nums">
-                      {formatMoney(inv.total, currency, moneyLocale)}
+                      {formatMoney(centsToDollars(inv.totalCents), currency, moneyLocale)}
                     </span>
                     <StatusBadge status={inv.status} />
                   </div>

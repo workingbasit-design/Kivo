@@ -1,6 +1,7 @@
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { getLocale } from '@/lib/i18n/server';
+import { centsToDollars } from '@/lib/money';
 import RecurringClient, { type RecurringPlanItem } from './RecurringClient';
 
 type Filter = 'ALL' | 'active' | 'paused';
@@ -37,7 +38,7 @@ export default async function RecurringPage({
     id: plan.id,
     title: plan.title,
     frequency: plan.frequency,
-    price: plan.price,
+    price: centsToDollars(plan.priceCents),
     active: plan.active,
     nextRun: plan.nextRun.toISOString(),
     time: plan.time,

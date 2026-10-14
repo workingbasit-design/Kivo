@@ -10,6 +10,7 @@
  */
 import { daysOverdue, needsFollowUp, daysWaiting, remainingBalance } from './revenue.ts';
 import { prisma } from '@/lib/prisma';
+import { centsToDollars } from './money.ts';
 
 export type AttentionSeverity = 'critical' | 'attention' | 'info' | 'positive';
 export type AttentionCategory =
@@ -289,12 +290,12 @@ export async function getAttentionItems(
           id: true,
           number: true,
           date: true,
-          total: true,
+          totalCents: true,
           status: true,
           customer: { select: { name: true } },
           payments: {
             where: { status: 'COMPLETED' },
-            select: { amount: true },
+            select: { amountCents: true },
           },
         },
         orderBy: { date: 'asc' },
@@ -306,7 +307,7 @@ export async function getAttentionItems(
           id: true,
           number: true,
           title: true,
-          total: true,
+          totalCents: true,
           status: true,
           updatedAt: true,
           customer: { select: { name: true } },
@@ -324,7 +325,7 @@ export async function getAttentionItems(
           title: true,
           date: true,
           status: true,
-          price: true,
+          priceCents: true,
           technician: true,
           customer: { select: { name: true } },
         },
@@ -344,7 +345,7 @@ export async function getAttentionItems(
       }),
       prisma.invoice.findMany({
         where: { businessId, status: 'PAID', paidAt: { gte: weekAgo } },
-        select: { total: true },
+        select: { totalCents: true },
       }),
       prisma.invoice.findMany({
         where: { businessId, jobId: { not: null } },
@@ -363,8 +364,8 @@ export async function getAttentionItems(
       id: inv.id,
       number: inv.number,
       date: inv.date,
-      total: inv.total,
-      paidTotal: inv.payments.reduce((s, p) => s + p.amount, 0),
+      total: centsToDollars(inv.totalCents),
+      paidTotal: inv.payments.reduce((s, p) => s + centsToDollars(p.amountCents), 0),
       status: inv.status,
       customerName: inv.customer.name,
     })),
@@ -372,7 +373,7 @@ export async function getAttentionItems(
       id: q.id,
       number: q.number,
       title: q.title,
-      total: q.total,
+      total: centsToDollars(q.totalCents),
       status: q.status,
       updatedAt: q.updatedAt,
       customerName: q.customer.name,
@@ -382,7 +383,7 @@ export async function getAttentionItems(
       title: j.title,
       date: j.date,
       status: j.status,
-      price: j.price,
+      price: centsToDollars(j.priceCents),
       technician: j.technician,
       customerName: j.customer.name,
       hasInvoice: invoicedJobIdSet.has(j.id),
@@ -402,7 +403,7 @@ export async function getAttentionItems(
     })),
     paidThisWeek: {
       count: paidInvoices.length,
-      total: paidInvoices.reduce((s, i) => s + i.total, 0),
+      total: paidInvoices.reduce((s, i) => s + centsToDollars(i.totalCents), 0),
     },
   });
 

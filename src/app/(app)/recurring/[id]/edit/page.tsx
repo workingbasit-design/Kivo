@@ -8,6 +8,7 @@ import { PageHeader, Card } from '@/components/ui';
 import RecurringForm from '@/components/RecurringForm';
 import { updateRecurring } from '@/app/actions/recurring';
 import { toISODateLocal } from '@/lib/utils';
+import { centsToDollars } from '@/lib/money';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 
@@ -31,7 +32,7 @@ export default async function EditRecurringPage({
     }),
     prisma.service.findMany({
       where: { businessId },
-      select: { id: true, name: true, price: true },
+      select: { id: true, name: true, priceCents: true },
       orderBy: { name: 'asc' },
     }),
   ]);
@@ -52,7 +53,11 @@ export default async function EditRecurringPage({
       <Card className="p-6">
         <RecurringForm
           customers={customers}
-          services={services}
+          services={services.map((s) => ({
+            id: s.id,
+            name: s.name,
+            price: centsToDollars(s.priceCents),
+          }))}
           action={updateRecurring}
           submitLabel="Save changes"
           currency={currency}
@@ -64,7 +69,7 @@ export default async function EditRecurringPage({
             startDate: toISODateLocal(plan.nextRun),
             time: plan.time,
             address: plan.address,
-            price: plan.price,
+            price: centsToDollars(plan.priceCents),
             notes: plan.notes,
           }}
         />

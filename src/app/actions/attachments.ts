@@ -125,6 +125,16 @@ export async function uploadAttachment(formData: FormData): Promise<AttachmentRe
   const fileError = validateAttachmentFile({ size: file.size, type: file.type });
   if (fileError) return { ok: false, error: fileError };
 
+  // B12: magic-byte validation - never trust the client-supplied MIME type.
+  // Rejects renamed executables, SVGs with scripts, type mismatches, and
+  // GPS-tagged photos (sharp re-encoding is a pending user decision).
+  const { validateUploadBytes } = await import('@/lib/upload-validate');
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const verdict = validateUploadBytes(bytes, file.type);
+  if (!verdict.ok) {
+    return { ok: false, error: 'badContent' };
+  }
+
   if (!(await entityBelongsToBusiness(entityType, entityId, businessId))) {
     return { ok: false, error: 'entityNotFound' };
   }
@@ -141,7 +151,9 @@ export async function uploadAttachment(formData: FormData): Promise<AttachmentRe
       uid,
       fileName: file.name || 'file',
     });
-    const blob = await put(pathname, file, { access: 'public', token });
+    // B12: private blobs - bytes are served only through the tenant-scoped
+    // /api/attachments/[id] route, never via a public URL.
+    const blob = await put(pathname, file, { access: 'private', token });
 
     const row = await prisma.attachment.create({
       data: {

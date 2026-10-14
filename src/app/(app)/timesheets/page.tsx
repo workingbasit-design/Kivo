@@ -31,9 +31,9 @@ export default async function TimesheetsPage({
 }: {
   searchParams: Promise<{ member?: string; from?: string; to?: string }>;
 }) {
-  const { businessId, user } = await requireAuth();
+  const { businessId, user, role } = await requireAuth();
   const sp = await searchParams;
-  const isAdmin = user.role === 'ADMIN';
+  const isAdmin = role === 'ADMIN';
   const locale = await getLocale();
   const T = (k: string) => t(locale, `t10work.${k}`);
   const dateLocale = localeDateTag(locale);
@@ -56,11 +56,13 @@ export default async function TimesheetsPage({
     take: 50,
   });
 
-  const members = await prisma.user.findMany({
-    where: { businessId },
-    select: { id: true, name: true, email: true },
-    orderBy: { name: 'asc' },
-  });
+  const members = (
+    await prisma.membership.findMany({
+      where: { businessId, status: 'ACTIVE' },
+      include: { user: { select: { id: true, name: true, email: true } } },
+      orderBy: { user: { name: 'asc' } },
+    })
+  ).map((m) => m.user);
 
   // Filters: members see only themselves; admins can filter the team.
   const memberFilter = isAdmin ? sp.member || '' : user.id;

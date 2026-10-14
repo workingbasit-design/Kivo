@@ -11,6 +11,7 @@ import { prisma } from '@/lib/prisma';
 import { authenticateV1Request, hasScope } from '@/lib/apiKeys';
 import { emitWebhookEvent } from '@/lib/webhooks';
 import { jobSchema } from '@/lib/validations';
+import { centsToDollars, dollarsToCents } from '@/lib/money';
 
 const createSchema = jobSchema.pick({
   title: true,
@@ -30,7 +31,7 @@ const select = {
   date: true,
   time: true,
   address: true,
-  price: true,
+  priceCents: true,
   status: true,
   notes: true,
   technician: true,
@@ -40,6 +41,14 @@ const select = {
 function localMidnight(dayStr: string): Date {
   const [y, m, d] = dayStr.split('-').map(Number);
   return new Date(y, m - 1, d, 0, 0, 0, 0);
+}
+
+/**
+ * Serialize a job row to the v1 API shape: the public contract stays
+ * `price` in dollars; the database holds bigint cents (M8 cutover).
+ */
+function toJobJson<T extends { priceCents: bigint }>({ priceCents, ...rest }: T) {
+  return { ...rest, price: centsToDollars(priceCents) };
 }
 
 export async function GET(req: Request) {
@@ -57,7 +66,7 @@ export async function GET(req: Request) {
     take: limit,
     select,
   });
-  return NextResponse.json({ data: jobs });
+  return NextResponse.json({ data: jobs.map(toJobJson) });
 }
 
 export async function POST(req: Request) {
@@ -96,7 +105,7 @@ export async function POST(req: Request) {
       date: localMidnight(d.date),
       time: d.time || null,
       address: d.address || null,
-      price: d.price,
+      priceCents: dollarsToCents(d.price) ?? BigInt(0),
       status: 'SCHEDULED',
       notes: d.notes || null,
       technician: d.technician || null,
@@ -108,7 +117,7 @@ export async function POST(req: Request) {
     title: created.title,
     customer_id: customer.id,
     date: d.date,
-    price: created.price,
+    price: centsToDollars(created.priceCents),
   }).catch(() => {});
-  return NextResponse.json({ data: created }, { status: 201 });
+  return NextResponse.json({ data: toJobJson(created) }, { status: 201 });
 }

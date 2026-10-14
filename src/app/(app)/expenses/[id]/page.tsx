@@ -6,7 +6,7 @@ import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card, limeBtnClass, secondaryBtnClass } from '@/components/ui';
 import ExpenseForm, { type ExpenseFormInitial } from '@/components/ExpenseForm';
 import DeleteExpenseButton from '@/components/DeleteExpenseButton';
-import { formatMoney } from '@/lib/money';
+import { formatMoney, centsToDollars } from '@/lib/money';
 import { formatDateShort } from '@/lib/utils';
 import { toDateInputValue } from '@/lib/timesheets';
 import { getLocale } from '@/lib/i18n/server';
@@ -46,7 +46,7 @@ export default async function ExpenseDetailPage({
   const initial: ExpenseFormInitial = {
     id: expense.id,
     description: expense.description,
-    amount: expense.amount,
+    amount: centsToDollars(expense.amountCents),
     category: expense.category,
     spentAt: toDateInputValue(expense.spentAt),
     jobId: expense.jobId,
@@ -65,7 +65,7 @@ export default async function ExpenseDetailPage({
 
       <PageHeader
         title={T('editTitle')}
-        subtitle={`${formatMoney(expense.amount, currency)} · ${formatDateShort(
+        subtitle={`${formatMoney(centsToDollars(expense.amountCents), currency)} · ${formatDateShort(
           expense.spentAt.toISOString(),
           locale as Locale
         )}`}

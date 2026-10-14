@@ -132,8 +132,7 @@ export async function createJob(
       date: parseDateInput(parsed.data.date),
       time: normalizeJobTime(parsed.data.time),
       address: parsed.data.address || null,
-      price: Number(parsed.data.price.toFixed(2)), // legacy Float; remove after migration
-      priceCents: dollarsToCents(parsed.data.price),
+      priceCents: dollarsToCents(parsed.data.price) ?? BigInt(0),
       noCharge,
       status: 'SCHEDULED',
       notes: parsed.data.notes || null,
@@ -242,8 +241,7 @@ export async function updateJob(
       date: parseDateInput(parsed.data.date),
       time: normalizeJobTime(parsed.data.time),
       address: parsed.data.address || null,
-      price: Number(parsed.data.price.toFixed(2)), // legacy Float; remove after migration
-      priceCents: dollarsToCents(parsed.data.price),
+      priceCents: dollarsToCents(parsed.data.price) ?? BigInt(0),
       noCharge,
       notes: parsed.data.notes || null,
       technician: parsed.data.technician || null,
@@ -487,7 +485,7 @@ export async function seedSampleJobs(): Promise<JobActionResult> {
         businessId,
         date: d,
         time: s.time,
-        price: s.price,
+        priceCents: dollarsToCents(s.price) ?? BigInt(0),
         status: 'SCHEDULED',
         address: customer.address,
       },

@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getLocale } from "@/lib/i18n/server";
 import { t } from "@/lib/i18n";
 import { localeMoneyTag } from "@/lib/utils";
-import { formatMoney } from "@/lib/money";
+import { formatMoney, centsToDollars } from "@/lib/money";
 import { Card } from "@/components/ui";
 import { PhaseCard, AddPhaseForm, type Phase } from "@/components/ProjectPhases";
 import { ProjectHeaderForm } from "@/components/ProjectHeaderForm";
@@ -43,7 +43,7 @@ export default async function ProjectDetailPage({
               id: true,
               title: true,
               status: true,
-              price: true,
+              priceCents: true,
               date: true,
               customer: { select: { name: true } },
             },
@@ -65,7 +65,7 @@ export default async function ProjectDetailPage({
       id: j.id,
       title: j.title,
       status: j.status,
-      price: j.price,
+      price: centsToDollars(j.priceCents),
       customerName: j.customer.name,
       date: new Intl.DateTimeFormat(locale === "fr" ? "fr-CA" : "en-CA", {
         month: "short",

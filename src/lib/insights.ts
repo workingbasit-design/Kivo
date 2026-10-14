@@ -9,6 +9,7 @@
  */
 
 import { prisma } from './prisma';
+import { centsToDollars } from './money.ts';
 import {
   computeInsights,
   type InsightPayment,
@@ -33,15 +34,15 @@ export async function getInsights(businessId: string, locale: 'en' | 'fr' = 'en'
   const now = new Date();
   const rangeStart = new Date(now.getFullYear(), now.getMonth() - 5, 1, 0, 0, 0, 0);
 
-  const [payments, jobs, quotes] = await Promise.all([
+  const [paymentsRaw, jobsRaw, quotesRaw] = await Promise.all([
     prisma.payment.findMany({
       where: { status: 'COMPLETED', createdAt: { gte: rangeStart }, businessId },
-      select: { amount: true, createdAt: true },
+      select: { amountCents: true, createdAt: true },
     }),
     prisma.job.findMany({
       where: { businessId },
       select: {
-        price: true,
+        priceCents: true,
         status: true,
         date: true,
         customerId: true,
@@ -49,7 +50,7 @@ export async function getInsights(businessId: string, locale: 'en' | 'fr' = 'en'
         assignedTo: { select: { name: true } },
         serviceId: true,
         service: { select: { name: true } },
-        expenses: { select: { amount: true } },
+        expenses: { select: { amountCents: true } },
       },
     }),
     prisma.quote.findMany({
@@ -57,7 +58,7 @@ export async function getInsights(businessId: string, locale: 'en' | 'fr' = 'en'
       select: {
         id: true,
         number: true,
-        total: true,
+        totalCents: true,
         status: true,
         createdAt: true,
         customer: { select: { name: true } },
@@ -65,6 +66,31 @@ export async function getInsights(businessId: string, locale: 'en' | 'fr' = 'en'
       orderBy: { createdAt: 'desc' },
     }),
   ]);
+
+  // computeInsights works in dollars; convert BigInt cents at the boundary.
+  const payments: InsightPayment[] = paymentsRaw.map((p) => ({
+    amount: centsToDollars(p.amountCents),
+    createdAt: p.createdAt,
+  }));
+  const jobs: InsightJob[] = jobsRaw.map((j) => ({
+    price: centsToDollars(j.priceCents),
+    status: j.status,
+    date: j.date,
+    customerId: j.customerId,
+    technician: j.technician,
+    assignedTo: j.assignedTo,
+    serviceId: j.serviceId,
+    service: j.service,
+    expenses: j.expenses.map((e) => ({ amount: centsToDollars(e.amountCents) })),
+  }));
+  const quotes: InsightQuote[] = quotesRaw.map((q) => ({
+    id: q.id,
+    number: q.number,
+    total: centsToDollars(q.totalCents),
+    status: q.status,
+    createdAt: q.createdAt,
+    customer: q.customer,
+  }));
 
   return computeInsights(payments, jobs, quotes, locale, now);
 }

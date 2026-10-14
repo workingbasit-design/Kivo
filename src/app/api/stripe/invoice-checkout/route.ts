@@ -2,13 +2,13 @@ import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
+import { getActiveMembershipForUser } from '@/lib/membership';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
-import { createInvoiceCheckout, toCents } from '@/lib/stripe';
+import { createInvoiceCheckout } from '@/lib/stripe';
+import { centsToDollars } from '@/lib/money';
 import { getLocale } from '@/lib/i18n/server';
 import { clientIpFromHeaders } from '@/lib/client-ip';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
-
-const round2 = (n: number) => Math.round(n * 100) / 100;
 
 async function rateLimited(businessId: string): Promise<boolean> {
   const h = await headers();
@@ -28,7 +28,8 @@ export async function POST(req: Request) {
   const originCheck = checkSameOrigin(req);
   if (!originCheck.ok) return originForbidden();
   const session = await getSession();
-  const businessId = session?.user?.businessId;
+  const membership = session ? await getActiveMembershipForUser(session.user.id) : null;
+  const businessId = membership?.businessId;
   if (!session || !businessId) {
     return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   }
@@ -52,7 +53,7 @@ export async function POST(req: Request) {
     include: {
       business: { include: { stripeConnection: true } },
       customer: { select: { email: true } },
-      payments: { where: { status: 'COMPLETED' }, select: { amount: true } },
+      payments: { where: { status: 'COMPLETED' }, select: { amountCents: true } },
     },
   });
   if (!invoice) {
@@ -73,9 +74,9 @@ export async function POST(req: Request) {
     );
   }
 
-  const paid = round2(invoice.payments.reduce((s, p) => s + p.amount, 0));
-  const remaining = round2(invoice.total - paid);
-  if (remaining <= 0) {
+  const paidCents = invoice.payments.reduce((s, p) => s + p.amountCents, BigInt(0));
+  const remainingCents = invoice.totalCents - paidCents;
+  if (remainingCents <= BigInt(0)) {
     return NextResponse.json({ error: 'This invoice is already paid in full.' }, { status: 409 });
   }
 
@@ -106,7 +107,7 @@ export async function POST(req: Request) {
       name: invoice.business.name,
       currency: invoice.business.currency,
     },
-    amountCents: toCents(remaining),
+    amountCents: Number(remainingCents),
     successUrl,
     cancelUrl,
     customerEmail: invoice.customer.email ?? undefined,
@@ -121,5 +122,5 @@ export async function POST(req: Request) {
     data: { stripeCheckoutSessionId: created.sessionId },
   });
 
-  return NextResponse.json({ url: created.url, testMode: !conn.livemode, amount: remaining });
+  return NextResponse.json({ url: created.url, testMode: !conn.livemode, amount: centsToDollars(remainingCents) });
 }

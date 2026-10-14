@@ -3,13 +3,14 @@ import { z } from 'zod';
 import crypto from 'crypto';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
+import { getActiveMembershipForUser } from '@/lib/membership';
 import { rateLimit } from '@/lib/rate-limit';
 import { runCopilot, type JobDraft, type CustomerDraft, type QuoteDraft, type CopilotHistoryItem } from '@/lib/copilot/engine';
 import { tryAnthropicReply } from '@/lib/copilot/anthropic';
 import { buildConfirmReply } from '@/lib/copilot/confirm-reply';
 import { findCustomerNameCandidates, exactNameMatch } from '@/lib/copilot/match-customer';
 import { formatDateShort } from '@/lib/utils';
-import { formatMoney } from '@/lib/money';
+import { formatMoney, centsToDollars, dollarsToCents } from '@/lib/money';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 import { getLocale } from '@/lib/i18n/server';
 
@@ -31,7 +32,8 @@ export async function GET(req: Request) {
   if (!originCheck.ok) return originForbidden(originCheck.reason);
 
   const session = await getSession();
-  const businessId = session?.user?.businessId;
+  const membership = session ? await getActiveMembershipForUser(session.user.id) : null;
+  const businessId = membership?.businessId;
   if (!session || !businessId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -53,11 +55,19 @@ export async function GET(req: Request) {
   if (parsed.data.type === 'services') {
     const services = await prisma.service.findMany({
       where: { businessId },
-      select: { id: true, name: true, price: true },
+      select: { id: true, name: true, priceCents: true },
       orderBy: { name: 'asc' },
       take: 12,
     });
-    return NextResponse.json({ services });
+    // API contract stays in dollars (the copilot widget renders s.price as
+    // $X) - map the cent column at the DB boundary.
+    return NextResponse.json({
+      services: services.map((s) => ({
+        id: s.id,
+        name: s.name,
+        price: centsToDollars(s.priceCents),
+      })),
+    });
   }
 
   const q = parsed.data.q;
@@ -134,7 +144,8 @@ export async function POST(req: Request) {
   if (!originCheck.ok) return originForbidden(originCheck.reason);
 
   const session = await getSession();
-  const businessId = session?.user?.businessId;
+  const membership = session ? await getActiveMembershipForUser(session.user.id) : null;
+  const businessId = membership?.businessId;
   if (!session || !businessId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -146,6 +157,15 @@ export async function POST(req: Request) {
   if (!rl.ok) {
     return NextResponse.json(
       { error: tr('Too many requests - please wait a moment and try again.', 'Trop de requêtes - attendez un moment et réessayez.') },
+      { status: 429 }
+    );
+  }
+  // B13.5: per-business daily usage cap (200/day) - bounds LLM spend and
+  // abuse even when spread across many users of one business.
+  const rlDay = rateLimit(`copilot-day:${businessId}`, { limit: 200, windowMs: 24 * 60 * 60_000 });
+  if (!rlDay.ok) {
+    return NextResponse.json(
+      { error: tr("This business has reached today's copilot limit. Try again tomorrow.", "Cette entreprise a atteint la limite quotidienne de l'assistant. Réessayez demain.") },
       { status: 429 }
     );
   }
@@ -213,6 +233,22 @@ export async function POST(req: Request) {
     (asMessage.data.history ?? []) as CopilotHistoryItem[],
     { locale: fr ? 'fr' : 'en' }
   );
+
+  // B13.6: tool-call logging - every copilot invocation is audited (intent,
+  // never the raw message which may hold PII).
+  try {
+    const { writeAuditEvent } = await import('@/lib/audit');
+    await writeAuditEvent(prisma, {
+      businessId,
+      actorType: 'USER',
+      actorId: session.user.id,
+      action: 'COPILOT_ACTION',
+      entityType: 'copilot',
+      entityId: result.intent,
+    });
+  } catch {
+    // Audit failure must not break the reply.
+  }
 
   // Optional LLM polish: grounded on the engine's real data. Falls back silently.
   let reply = result.reply;
@@ -545,7 +581,7 @@ async function runConfirm(
       date,
       // A missing time is stored as NULL (never the display string "TBD").
       time: draft.time ?? null,
-      price: draft.price ?? 0,
+      priceCents: dollarsToCents(draft.price) ?? BigInt(0),
       notes: 'Created via EveryJob Copilot',
       createdAt: { gte: new Date(Date.now() - DUPLICATE_WINDOW_MS) },
     },
@@ -570,7 +606,7 @@ async function runConfirm(
       // Store NULL when no time was parsed - "TBD" is display text, not data.
       time: draft.time ?? null,
       address: draft.address ?? undefined,
-      price: draft.price ?? 0,
+      priceCents: dollarsToCents(draft.price) ?? BigInt(0),
       status: 'SCHEDULED',
       notes: 'Created via EveryJob Copilot',
     },

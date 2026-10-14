@@ -1,9 +1,9 @@
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { PenLine } from 'lucide-react';
-import { getSession } from '@/lib/auth';
+import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { Card, PageHeader } from '@/components/ui';
-import { formatMoney } from '@/lib/money';
+import { formatMoney, centsToDollars } from '@/lib/money';
 import { formatDateShort } from '@/lib/utils';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
@@ -47,9 +47,7 @@ export default async function SignedDocumentPrintPage({
 }: {
   params: Promise<{ id: string; requestId: string }>;
 }) {
-  const session = await getSession();
-  if (!session?.user?.businessId) redirect('/login');
-  const businessId = session.user.businessId;
+  const { businessId } = await requireAuth();
   const { id, requestId } = await params;
 
   const request = await prisma.signatureRequest.findFirst({
@@ -98,7 +96,7 @@ export default async function SignedDocumentPrintPage({
               {quote.customer ? ` · ${quote.customer.name}` : ''}
             </p>
             <p className="mt-3 text-3xl font-bold text-zinc-900">
-              {formatMoney(quote.total, 'CAD', moneyLocale)}
+              {formatMoney(centsToDollars(quote.totalCents), 'CAD', moneyLocale)}
             </p>
           </div>
 

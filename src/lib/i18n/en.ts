@@ -451,6 +451,7 @@ const en: Dict = {
     DECLINED: 'Declined',
     CANCELLED: 'Cancelled',
     OVERDUE: 'Overdue',
+    LATE: 'Late',
     CONVERTED: 'Converted',
     CONTACTED: 'Contacted',
   },

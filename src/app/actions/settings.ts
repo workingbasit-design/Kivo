@@ -149,7 +149,7 @@ export async function updateBusinessSettings(
       address: address || null,
       taxId: taxId ? taxId.toUpperCase() : null,
       interacEmail: interacEmail ? interacEmail.toLowerCase() : null,
-      timezone: timezone || null,
+      timezone: timezone || 'America/Toronto', // NOT NULL since M9; empty input falls back to the Canada default
       whatsappNumber: whatsappNumber || null,
       workingHours: hours,
       currency,
@@ -226,8 +226,8 @@ export async function inviteTeamMember(
   _prev: SettingsResult,
   formData: FormData
 ): Promise<SettingsResult> {
-  const { user, businessId } = await requireAuth();
-  const notAdmin = requireAdminRole(user.role);
+  const { user, businessId, role: callerRole } = await requireAuth();
+  const notAdmin = requireAdminRole(callerRole);
   if (notAdmin) return notAdmin;
   const hit = limited(`team:${businessId}`);
   if (hit) return hit;
@@ -248,9 +248,25 @@ export async function inviteTeamMember(
     return { error: 'A user with this email already exists.' };
   }
 
+  // B7.3a: reject breached passwords (fail-open on HIBP outage).
+  const { isPasswordBreached } = await import('@/lib/breached-passwords');
+  const breach = await isPasswordBreached(password);
+  if (breach.breached) {
+    return { error: 'This password has appeared in a data breach. Please choose a different one.' };
+  }
+
   const passwordHash = await bcrypt.hash(password, 12);
-  await prisma.user.create({
-    data: { name, email, passwordHash, role, businessId },
+  // M9: role + business assignment live on Membership, not the User row.
+  const newUser = await prisma.user.create({
+    data: { name, email, passwordHash },
+  });
+  await prisma.membership.create({
+    data: {
+      userId: newUser.id,
+      businessId,
+      role,
+      status: 'ACTIVE',
+    },
   });
   revalidatePath('/settings/team');
   return { ok: true };
@@ -258,8 +274,8 @@ export async function inviteTeamMember(
 
 /** Remove a team member (admin only). Cannot remove self or the last admin. */
 export async function removeTeamMember(id: string): Promise<SettingsResult> {
-  const { user, businessId } = await requireAuth();
-  const notAdmin = requireAdminRole(user.role);
+  const { user, businessId, role: callerRole } = await requireAuth();
+  const notAdmin = requireAdminRole(callerRole);
   if (notAdmin) return notAdmin;
   const hit = limited(`team:${businessId}`);
   if (hit) return hit;
@@ -268,19 +284,32 @@ export async function removeTeamMember(id: string): Promise<SettingsResult> {
     return { error: 'You cannot remove yourself.' };
   }
 
-  const target = await prisma.user.findFirst({ where: { id, businessId } });
+  // M9: team membership lives on Membership, not the User row.
+  const target = await prisma.membership.findFirst({
+    where: { userId: id, businessId, status: 'ACTIVE' },
+  });
   if (!target) return { error: 'Team member not found.' };
 
   if (target.role === 'ADMIN') {
-    const adminCount = await prisma.user.count({
-      where: { businessId, role: 'ADMIN' },
+    const adminCount = await prisma.membership.count({
+      where: { businessId, role: 'ADMIN', status: 'ACTIVE' },
     });
     if (adminCount <= 1) {
       return { error: 'Cannot remove the last admin.' };
     }
   }
 
-  await prisma.user.delete({ where: { id, businessId } });
+  await prisma.membership.delete({ where: { id: target.id } });
+  // B7.5: removing a team member ends their sessions immediately - a
+  // removed member must not keep using an existing session.
+  const { invalidateUserSessions } = await import('@/lib/auth');
+  await invalidateUserSessions(id);
+  // Mirror the old full-removal semantics: if the user has no remaining
+  // memberships anywhere, delete the identity row too.
+  const remaining = await prisma.membership.count({ where: { userId: id } });
+  if (remaining === 0) {
+    await prisma.user.delete({ where: { id } }).catch(() => {});
+  }
   revalidatePath('/settings/team');
   return { ok: true };
 }

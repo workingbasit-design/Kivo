@@ -1,11 +1,9 @@
-import { redirect } from 'next/navigation';
-import { getSession } from '@/lib/auth';
+import { requireAuth } from '@/lib/auth';
 import NewCustomerForm from './customer-form';
 
 /** Canada-only customer form. */
 export default async function NewCustomerPage() {
-  const session = await getSession();
-  if (!session?.user?.businessId) redirect('/login');
+  await requireAuth();
 
   return <NewCustomerForm />;
 }

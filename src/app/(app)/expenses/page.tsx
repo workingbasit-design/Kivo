@@ -10,7 +10,7 @@ import {
   inputClass,
   secondaryBtnClass,
 } from '@/components/ui';
-import { formatMoney } from '@/lib/money';
+import { formatMoney, centsToDollars } from '@/lib/money';
 import { formatDateShort, cn } from '@/lib/utils';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
@@ -76,7 +76,7 @@ export default async function ExpensesPage({
       )
     : expenses;
 
-  const total = filtered.reduce((s, e) => s + e.amount, 0);
+  const total = filtered.reduce((s, e) => s + centsToDollars(e.amountCents), 0);
   const hasFilters =
     filters.category !== 'ALL' ||
     filters.jobId !== 'ALL' ||
@@ -201,7 +201,7 @@ export default async function ExpensesPage({
                     </p>
                   </div>
                   <p className="text-sm font-bold text-ink tabular-nums shrink-0">
-                    {formatMoney(e.amount, currency)}
+                    {formatMoney(centsToDollars(e.amountCents), currency)}
                   </p>
                 </div>
               </Card>

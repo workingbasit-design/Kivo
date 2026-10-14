@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { escapeCsvCell, summarizeLineItems } from './costing';
+import { centsToDollars } from './money.ts';
 
 export type ExportType =
   | 'customers'
@@ -61,7 +62,7 @@ export async function buildExportCsv(businessId: string, type: ExportType): Prom
       return csv(
         ['title', 'customer', 'date', 'time', 'status', 'price', 'address', 'technician', 'notes'],
         rows.map((j) => [
-          j.title, j.customer.name, d(j.date), j.time, j.status, j.price, j.address, j.technician, j.notes,
+          j.title, j.customer.name, d(j.date), j.time, j.status, centsToDollars(j.priceCents), j.address, j.technician, j.notes,
         ])
       );
     }
@@ -74,7 +75,7 @@ export async function buildExportCsv(businessId: string, type: ExportType): Prom
       return csv(
         ['number', 'title', 'customer', 'status', 'total', 'created'],
         rows.map((q) => [
-          q.number, q.title, q.customer.name, q.status, q.total, d(q.createdAt),
+          q.number, q.title, q.customer.name, q.status, centsToDollars(q.totalCents), d(q.createdAt),
         ])
       );
     }
@@ -84,7 +85,7 @@ export async function buildExportCsv(businessId: string, type: ExportType): Prom
         include: {
           customer: { select: { name: true } },
           lineItems: { orderBy: { position: 'asc' } },
-          payments: { where: { status: 'COMPLETED' }, select: { amount: true } },
+          payments: { where: { status: 'COMPLETED' }, select: { amountCents: true } },
         },
         orderBy: { createdAt: 'asc' },
       });
@@ -93,9 +94,9 @@ export async function buildExportCsv(businessId: string, type: ExportType): Prom
         // columns (lineItems summary, amount paid) are appended.
         ['number', 'customer', 'status', 'subtotal', 'tax', 'total', 'taxType', 'taxRate', 'date', 'created', 'lineItems', 'amountPaid'],
         rows.map((i) => [
-          i.number, i.customer.name, i.status, i.subtotal, i.taxAmount, i.total, i.taxType, i.taxRate, d(i.date), d(i.createdAt),
-          summarizeLineItems(i.lineItems),
-          Math.round(i.payments.reduce((s, p) => s + p.amount, 0) * 100) / 100,
+          i.number, i.customer.name, i.status, centsToDollars(i.subtotalCents), centsToDollars(i.taxAmountCents), centsToDollars(i.totalCents), i.taxType, i.taxRate, d(i.date), d(i.createdAt),
+          summarizeLineItems(i.lineItems.map((li) => ({ description: li.description, qty: li.qty, unitPrice: centsToDollars(li.unitPriceCents) }))),
+          Math.round(i.payments.reduce((s, p) => s + centsToDollars(p.amountCents), 0) * 100) / 100,
         ])
       );
     }
@@ -108,7 +109,7 @@ export async function buildExportCsv(businessId: string, type: ExportType): Prom
       return csv(
         ['invoice', 'customer', 'amount', 'provider', 'status', 'transactionId', 'created'],
         rows.map((p) => [
-          p.invoice.number, p.invoice.customer.name, p.amount, p.provider, p.status, p.transactionId, d(p.createdAt),
+          p.invoice.number, p.invoice.customer.name, centsToDollars(p.amountCents), p.provider, p.status, p.transactionId, d(p.createdAt),
         ])
       );
     }
@@ -119,7 +120,7 @@ export async function buildExportCsv(businessId: string, type: ExportType): Prom
       });
       return csv(
         ['name', 'price'],
-        rows.map((s) => [s.name, s.price])
+        rows.map((s) => [s.name, centsToDollars(s.priceCents)])
       );
     }
     case 'reviews': {

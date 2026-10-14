@@ -8,6 +8,7 @@ import RoutesClient from '@/components/RoutesClient';
 import type { RouteStop } from '@/lib/routes';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
+import { centsToDollars } from '@/lib/money';
 
 const ROUTE_STATUSES = ['SCHEDULED', 'IN PROGRESS'];
 
@@ -44,7 +45,7 @@ export default async function RoutesPage({
     customerName: j.customer.name,
     address: j.address,
     time: j.time,
-    price: j.price,
+    price: centsToDollars(j.priceCents),
     status: j.status,
   }));
 

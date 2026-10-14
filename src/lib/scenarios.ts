@@ -4,6 +4,7 @@
  * arithmetic. Pure and tested.
  */
 import { prisma } from '@/lib/prisma';
+import { centsToDollars } from '@/lib/money';
 
 export interface ScenarioInput {
   /** Paid invoice totals, trailing 90 days. */
@@ -65,16 +66,16 @@ export async function getScenarioData(businessId: string): Promise<ScenarioInput
   const [paid, jobs, team] = await Promise.all([
     prisma.invoice.findMany({
       where: { businessId, status: 'PAID', paidAt: { gte: d90 } },
-      select: { total: true },
+      select: { totalCents: true },
       take: 1000,
     }),
     prisma.job.count({
       where: { businessId, status: { in: ['COMPLETED', 'PAID'] }, date: { gte: d90 } },
     }),
-    prisma.user.count({ where: { businessId } }),
+    prisma.membership.count({ where: { businessId, status: 'ACTIVE' } }),
   ]);
   return {
-    revenue90d: paid.reduce((s, i) => s + i.total, 0),
+    revenue90d: paid.reduce((s, i) => s + centsToDollars(i.totalCents), 0),
     jobs90d: jobs,
     teamSize: team,
   };

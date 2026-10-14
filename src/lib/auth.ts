@@ -1,15 +1,16 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { prisma } from './prisma';
-import { DatabaseUnavailableError } from './db-errors';
+import { prisma } from './prisma.ts';
+import { DatabaseUnavailableError } from './db-errors.ts';
+import { getActiveMembershipForUser } from './membership.ts';
 import crypto from 'crypto';
 
 export async function createSession(userId: string) {
-  // Scoped cleanup on login: purge this user's expired sessions so repeated
-  // logins can't accumulate dead rows for active users.
-  await prisma.session
-    .deleteMany({ where: { userId, expiresAt: { lt: new Date() } } })
-    .catch(() => {});
+  // B7.5 session rotation on login: invalidate ALL of this user's prior
+  // sessions before issuing the new one, so a fresh login always rotates
+  // the session id and kills sessions from other devices. (The old code
+  // only purged expired rows.)
+  await prisma.session.deleteMany({ where: { userId } }).catch(() => {});
 
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
   const session = await prisma.session.create({
@@ -40,7 +41,7 @@ export async function getSession() {
   try {
     session = await prisma.session.findUnique({
       where: { id: sessionId },
-      include: { user: { include: { business: true } } },
+      include: { user: true },
     });
   } catch {
     // Database unreachable: the session might be perfectly valid, so
@@ -76,16 +77,35 @@ export async function getSession() {
 
 export async function requireAuth() {
   const session = await getSession();
-  if (!session || !session.user.businessId) {
+  if (!session) {
     // Pages and server actions: send the visitor to sign in instead of
     // rendering the generic error page. (API routes must NOT use this -
     // they need a 401 JSON response, so they call getSession() directly.)
     redirect('/login');
   }
+  // M9: the business context comes from the user's ACTIVE membership
+  // (Membership is the authority for role + business assignment since M1;
+  // User.role / User.businessId were dropped in M9). A user with no active
+  // membership has no business context and is sent back to sign in.
+  const membership = await getActiveMembershipForUser(session.user.id);
+  if (!membership) {
+    redirect('/login');
+  }
   return {
     user: session.user,
-    businessId: session.user.businessId,
+    businessId: membership.businessId,
+    role: membership.role,
+    membershipId: membership.id,
   };
+}
+
+/**
+ * B7.5: end ALL of a user's sessions immediately. Called when a team
+ * member is removed (or their role changes, when a role-change path
+ * exists) so a removed member cannot keep using an existing session.
+ */
+export async function invalidateUserSessions(userId: string): Promise<void> {
+  await prisma.session.deleteMany({ where: { userId } }).catch(() => {});
 }
 
 export async function destroySession() {

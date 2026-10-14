@@ -76,8 +76,7 @@ export async function createService(formData: FormData): Promise<ServiceResult> 
   await prisma.service.create({
     data: {
       name: data.name,
-      price: data.price,
-      priceCents: dollarsToCents(data.price),
+      priceCents: dollarsToCents(data.price) ?? BigInt(0),
       durationMin: data.durationMin ?? null,
       description: nullIfBlank(data.description),
       businessId,
@@ -108,7 +107,7 @@ export async function updateService(id: string, formData: FormData): Promise<Ser
     where: { id, businessId },
     data: {
       name: data.name,
-      price: data.price,
+      priceCents: dollarsToCents(data.price) ?? BigInt(0),
       durationMin: data.durationMin ?? null,
       description: nullIfBlank(data.description),
     },
@@ -150,7 +149,11 @@ export async function seedDefaultServices(): Promise<ServiceResult> {
   if (count > 0) return { error: 'Price book already has services.' };
 
   await prisma.service.createMany({
-    data: DEFAULT_SERVICES.map((s) => ({ ...s, businessId })),
+    data: DEFAULT_SERVICES.map((s) => ({
+      name: s.name,
+      priceCents: dollarsToCents(s.price) ?? BigInt(0),
+      businessId,
+    })),
   });
   revalidatePath('/pricebook');
   return { ok: true };

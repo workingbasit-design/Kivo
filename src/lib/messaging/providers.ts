@@ -19,6 +19,9 @@
  * `fetchFn` is injectable so tests run with zero live provider calls.
  */
 
+import { sanitizeHeader } from '../header-sanitize.ts';
+import { withRetry, newIdempotencyKey } from '../retry.ts';
+
 export type ProviderChannel = 'WHATSAPP' | 'EMAIL';
 
 export type SendErrorKind =
@@ -154,21 +157,34 @@ export async function sendResendEmail(
   fetchFn: FetchFn = fetch,
   htmlBody?: string
 ): Promise<SendResult> {
+  // B5.5: fromName is business-configured (user content) - sanitize before it
+  // reaches the email headers/API fields. Subject is sanitized too.
   const from = creds.fromName
-    ? `${creds.fromName} <${creds.fromAddress}>`
+    ? `${sanitizeHeader(creds.fromName)} <${creds.fromAddress}>`
     : creds.fromAddress;
+  subject = sanitizeHeader(subject);
   const emailPayload: Record<string, unknown> = { from, to: [to], subject, text: textBody };
   if (htmlBody) emailPayload.html = htmlBody;
+  // B10.3: safe retries with an idempotency key (Resend honors
+  // Idempotency-Key) - a retried send can never deliver twice.
+  const idemKey = newIdempotencyKey('resend');
   let res: Response;
   try {
-    res = await fetchFn('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${creds.apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(emailPayload),
-    });
+    res = (await withRetry(
+      async (_attempt, key, signal) =>
+        fetchFn('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${creds.apiKey}`,
+            'Content-Type': 'application/json',
+            'Idempotency-Key': key,
+          },
+          body: JSON.stringify(emailPayload),
+          signal,
+        }),
+      idemKey,
+      { timeoutMs: 15_000 }
+    )) as Response;
   } catch (err) {
     return {
       ok: false,

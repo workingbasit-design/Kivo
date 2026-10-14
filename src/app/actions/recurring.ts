@@ -73,7 +73,6 @@ export async function createRecurring(
       nextRun: parseDateInput(parsed.data.startDate),
       time: parsed.data.time || null,
       address: parsed.data.address || null,
-      price: Math.round(parsed.data.price * 100) / 100, // legacy Float
       priceCents: dollarsToCents(parsed.data.price),
       notes: parsed.data.notes || null,
       customerId: parsed.data.customerId,
@@ -123,7 +122,7 @@ export async function updateRecurring(
       nextRun: parseDateInput(parsed.data.startDate),
       time: parsed.data.time || null,
       address: parsed.data.address || null,
-      price: Math.round(parsed.data.price * 100) / 100, // cents (2026-09-24)
+      priceCents: dollarsToCents(parsed.data.price),
       notes: parsed.data.notes || null,
       customerId: parsed.data.customerId,
     },

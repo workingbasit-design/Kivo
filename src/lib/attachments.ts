@@ -32,7 +32,7 @@ export const ATTACHMENT_MIME_TYPES: readonly string[] = [
 ] as const;
 
 /** Error codes returned by file validation (mapped to i18n in the client). */
-export type AttachmentFileError = 'empty' | 'tooLarge' | 'badType';
+export type AttachmentFileError = 'empty' | 'tooLarge' | 'badType' | 'badContent';
 
 export function isAttachmentEntityType(value: string): value is AttachmentEntityType {
   return (ATTACHMENT_ENTITY_TYPES as readonly string[]).includes(value);

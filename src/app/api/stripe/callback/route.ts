@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getSession } from '@/lib/auth';
+import { getActiveMembershipForUser } from '@/lib/membership';
 import { prisma } from '@/lib/prisma';
 import { exchangeConnectCode, getConnectAccountStatus } from '@/lib/stripe';
 
@@ -16,7 +17,8 @@ export async function GET(req: NextRequest) {
     NextResponse.redirect(new URL(`/settings/payments?stripe=${reason}`, req.url));
 
   const session = await getSession();
-  const businessId = session?.user?.businessId;
+  const membership = session ? await getActiveMembershipForUser(session.user.id) : null;
+  const businessId = membership?.businessId;
   if (!businessId) {
     return NextResponse.redirect(new URL('/login', req.url));
   }

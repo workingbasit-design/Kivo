@@ -6,6 +6,7 @@ import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card } from '@/components/ui';
 import RecurringForm from '@/components/RecurringForm';
 import { createRecurring } from '@/app/actions/recurring';
+import { centsToDollars } from '@/lib/money';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 
@@ -23,7 +24,7 @@ export default async function NewRecurringPage() {
     }),
     prisma.service.findMany({
       where: { businessId },
-      select: { id: true, name: true, price: true },
+      select: { id: true, name: true, priceCents: true },
       orderBy: { name: 'asc' },
     }),
   ]);
@@ -54,7 +55,17 @@ export default async function NewRecurringPage() {
             </div>
           </div>
         ) : (
-          <RecurringForm customers={customers} services={services} action={createRecurring} submitLabel="Create plan" currency={currency} />
+          <RecurringForm
+            customers={customers}
+            services={services.map((s) => ({
+              id: s.id,
+              name: s.name,
+              price: centsToDollars(s.priceCents),
+            }))}
+            action={createRecurring}
+            submitLabel="Create plan"
+            currency={currency}
+          />
         )}
       </Card>
     </div>

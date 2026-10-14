@@ -3,6 +3,7 @@ import { MapPin, Search, Star, BadgeCheck, MessageSquareQuote, User } from 'luci
 import Logo from '@/components/Logo';
 import { prisma } from '@/lib/prisma';
 import { getLocale } from '@/lib/i18n/server';
+import { getCspNonce } from '@/lib/csp-nonce';
 import { t } from '@/lib/i18n';
 import { getCustomerSession } from '@/lib/customer-auth';
 import DirectoryRatingFilter from '@/components/DirectoryRatingFilter';
@@ -115,6 +116,7 @@ export default async function DirectoryPage({
     <div className="min-h-screen bg-paper font-sans">
       <script
         type="application/ld+json"
+        nonce={await getCspNonce()}
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <header className="bg-ink text-white">

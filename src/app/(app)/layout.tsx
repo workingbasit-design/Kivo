@@ -1,6 +1,5 @@
 import React from 'react';
-import { redirect } from 'next/navigation';
-import { getSession } from '@/lib/auth';
+import { requireAuth } from '@/lib/auth';
 import { isDatabaseUnavailable } from '@/lib/db-errors';
 import { prisma } from '@/lib/prisma';
 import { dayRange, toISODateLocal, todayInTimezone } from '@/lib/utils';
@@ -12,23 +11,25 @@ import LazyOverlays from '@/components/LazyOverlays';
 import PortalNotice from '@/components/PortalNotice';
 import { getLocale } from '@/lib/i18n/server';
 import { syncNotifications, getUnreadCount } from '@/lib/notifications';
+import { centsToDollars } from '@/lib/money';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   // A database outage must NEVER look like a logout: if we can't validate
   // the session, show "try again" instead of bouncing to /login (which used
   // to cause a /login <-> /dashboard redirect loop on pool exhaustion).
-  let session: Awaited<ReturnType<typeof getSession>>;
+  let auth: Awaited<ReturnType<typeof requireAuth>>;
   let locale: Awaited<ReturnType<typeof getLocale>>;
   try {
     // Session (DB) and locale (cookie) are independent - fetch together.
-    [session, locale] = await Promise.all([getSession(), getLocale()]);
+    // requireAuth redirects to /login when there is no session or no ACTIVE
+    // membership; a database outage still renders the "try again" notice.
+    [auth, locale] = await Promise.all([requireAuth(), getLocale()]);
   } catch (err) {
     if (isDatabaseUnavailable(err)) return <PortalNotice variant="unavailable" />;
     throw err;
   }
-  if (!session?.user?.businessId) redirect('/login');
 
-  const businessId = session.user.businessId;
+  const businessId = auth.businessId;
 
   // Shell data for the sidebar/stats. A database outage here renders the
   // same honest "try again" notice as a failed session lookup - never a
@@ -47,7 +48,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     const [todayJobs, newLeads] = await Promise.all([
       prisma.job.findMany({
         where: { businessId, date: { gte: start, lt: end } },
-        select: { price: true, status: true },
+        select: { priceCents: true, status: true },
       }),
       prisma.lead.count({ where: { businessId, status: 'NEW' } }),
     ]);
@@ -81,13 +82,19 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   // Shared with the dashboard stats (2026-09-24: cancelled jobs no longer
   // count as booked revenue here either - same helper, same totals).
-  const { bookedToday, jobsLeftToday } = summarizeTodayJobs(todayJobs);
+  // summarizeTodayJobs still takes dollar numbers - convert at the boundary.
+  const { bookedToday, jobsLeftToday } = summarizeTodayJobs(
+    todayJobs.map((j) => ({
+      status: j.status,
+      price: j.priceCents === null ? null : centsToDollars(j.priceCents),
+    }))
+  );
 
   const unreadCount = await notifPromise;
 
   const user = {
-    name: session.user.name ?? null,
-    email: session.user.email,
+    name: auth.user.name ?? null,
+    email: auth.user.email,
   };
 
   return (

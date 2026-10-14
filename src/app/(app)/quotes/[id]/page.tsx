@@ -1,11 +1,11 @@
 import Link from 'next/link';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { ArrowLeft, User } from 'lucide-react';
-import { getSession } from '@/lib/auth';
+import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { PageHeader, Card, StatusBadge } from '@/components/ui';
 import { localeMoneyTag } from '@/lib/utils';
-import { formatMoney } from '@/lib/money';
+import { formatMoney, centsToDollars } from '@/lib/money';
 import MoneyText from '@/components/MoneyText';
 import DateTimeText from '@/components/DateTimeText';
 import { getTaxConfig, totalTaxRate } from '@/lib/tax';
@@ -34,9 +34,7 @@ export default async function QuoteDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const session = await getSession();
-  if (!session?.user?.businessId) redirect('/login');
-  const businessId = session.user.businessId;
+  const { businessId } = await requireAuth();
 
   const { id } = await params;
   const quote = await prisma.quote.findFirst({
@@ -66,12 +64,13 @@ export default async function QuoteDetailPage({
 
   // The stored total is tax-inclusive (see createQuote). Back out the tax
   // lines so they sum exactly to the total.
-  const taxAmount = rate > 0 ? round2((quote.total * rate) / (100 + rate)) : 0;
-  const taxable = round2(quote.total - taxAmount);
+  const totalDollars = centsToDollars(quote.totalCents);
+  const taxAmount = rate > 0 ? round2((totalDollars * rate) / (100 + rate)) : 0;
+  const taxable = round2(totalDollars - taxAmount);
   // Track 8D quotes persist their line items; older quotes only have a total.
   const hasLineItems = quote.lineItems.length > 0;
   const itemsSubtotal = round2(
-    quote.lineItems.reduce((s, i) => s + i.qty * i.unitPrice, 0)
+    quote.lineItems.reduce((s, i) => s + i.qty * centsToDollars(i.unitPriceCents), 0)
   );
   const subtotal = hasLineItems ? itemsSubtotal : taxable;
   const discountAmount = hasLineItems
@@ -131,19 +130,19 @@ export default async function QuoteDetailPage({
                 <WhatsAppButton
                   phone={quote.customer.phone}
                   regionCode={quote.business.regionCode}
-                  message={`Hi ${quote.customer.name}! ${quote.business.name ?? 'We'} prepared quote ${quote.number} (${quote.title}) for you - total ${formatMoney(quote.total, currency, moneyLocale)}. Just reply if you have any questions.`}
+                  message={`Hi ${quote.customer.name}! ${quote.business.name ?? 'We'} prepared quote ${quote.number} (${quote.title}) for you - total ${formatMoney(centsToDollars(quote.totalCents), currency, moneyLocale)}. Just reply if you have any questions.`}
                   label="WhatsApp"
                 />
                 <SmsButton
                   phone={quote.customer.phone}
                   regionCode={quote.business.regionCode}
-                  message={`Hi ${quote.customer.name}! ${quote.business.name ?? 'We'} prepared quote ${quote.number} (${quote.title}) for you - total ${formatMoney(quote.total, currency, moneyLocale)}. Just reply if you have any questions.`}
+                  message={`Hi ${quote.customer.name}! ${quote.business.name ?? 'We'} prepared quote ${quote.number} (${quote.title}) for you - total ${formatMoney(centsToDollars(quote.totalCents), currency, moneyLocale)}. Just reply if you have any questions.`}
                   label="SMS"
                 />
               </div>
             </div>
           </div>
-          <p className="text-2xl font-bold text-zinc-900 sm:text-right tabular-nums"><MoneyText dollars={quote.total} locale={locale} /></p>
+          <p className="text-2xl font-bold text-zinc-900 sm:text-right tabular-nums"><MoneyText dollars={centsToDollars(quote.totalCents)} locale={locale} /></p>
         </div>
 
         {hasLineItems && (
@@ -157,9 +156,9 @@ export default async function QuoteDetailPage({
                 >
                   <p className="text-sm font-semibold text-zinc-900">{item.description}</p>
                   <p className="text-xs text-zinc-500 mt-1 tabular-nums">
-                    {item.qty} × <MoneyText dollars={item.unitPrice} locale={locale} />
+                    {item.qty} × <MoneyText dollars={centsToDollars(item.unitPriceCents)} locale={locale} />
                     <span className="font-bold text-zinc-800">
-                      {' '}· <MoneyText dollars={round2(item.qty * item.unitPrice)} locale={locale} />
+                      {' '}· <MoneyText dollars={round2(item.qty * centsToDollars(item.unitPriceCents))} locale={locale} />
                     </span>
                   </p>
                 </li>
@@ -189,7 +188,7 @@ export default async function QuoteDetailPage({
           ))}
           <div className="flex justify-between items-center text-base bg-ink text-white rounded-xl px-4 py-3 -mx-1 mt-2">
             <dt className="font-bold">{L('t10money.totalLabel')}</dt>
-            <dd className="font-bold"><MoneyText dollars={quote.total} locale={locale} /></dd>
+            <dd className="font-bold"><MoneyText dollars={centsToDollars(quote.totalCents)} locale={locale} /></dd>
           </div>
         </dl>
 
@@ -213,7 +212,7 @@ export default async function QuoteDetailPage({
             items: quote.lineItems.map((item) => ({
               desc: item.description,
               qty: String(item.qty),
-              rate: String(item.unitPrice),
+              rate: String(centsToDollars(item.unitPriceCents)),
             })),
             discountType:
               quote.discountType === 'PERCENT' || quote.discountType === 'AMOUNT'
@@ -232,7 +231,7 @@ export default async function QuoteDetailPage({
           addons={quote.addons.map((a) => ({
             id: a.id,
             title: a.title,
-            price: a.price,
+            price: centsToDollars(a.priceCents),
             selected: a.selected,
           }))}
           strings={{
@@ -258,10 +257,10 @@ export default async function QuoteDetailPage({
 
       <QuoteDepositCard
         quoteId={quote.id}
-        depositAmount={quote.depositAmount}
+        depositAmount={quote.depositAmountCents != null ? centsToDollars(quote.depositAmountCents) : null}
         deposits={quote.deposits.map((d) => ({
           id: d.id,
-          amount: d.amount,
+          amount: centsToDollars(d.amountCents),
           provider: d.provider,
           status: d.status,
           note: d.note,
@@ -272,7 +271,7 @@ export default async function QuoteDetailPage({
       />
 
       {/* Record-only deposits: Interac/cash/cheque collected outside EveryJob. */}
-      <RecordDepositForm quoteId={quote.id} locale={locale} maxAmount={quote.total} />
+      <RecordDepositForm quoteId={quote.id} locale={locale} maxAmount={centsToDollars(quote.totalCents)} />
 
       <Card className="p-6">
         <ShareTokenManager
@@ -303,9 +302,7 @@ async function SignatureRequestsCard({
   L: (path: string) => string;
   locale: string;
 }) {
-  const session = await getSession();
-  if (!session?.user?.businessId) return null;
-  const businessId = session.user.businessId;
+  const { businessId } = await requireAuth();
 
   const requests = await prisma.signatureRequest.findMany({
     where: { quoteId, businessId },

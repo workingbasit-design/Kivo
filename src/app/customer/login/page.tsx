@@ -1,14 +1,8 @@
 import { redirect } from 'next/navigation';
 import { getCustomerSession } from '@/lib/customer-auth';
 import { getLocale } from '@/lib/i18n/server';
+import { safeNext } from '@/lib/redirect';
 import CustomerLoginForm from './form';
-
-/** Only allow relative in-app redirects (no protocol-relative or external). */
-function safeNext(raw: string | undefined): string | null {
-  if (!raw) return null;
-  const v = raw.trim();
-  return v.startsWith('/') && !v.startsWith('//') ? v : null;
-}
 
 export default async function CustomerLoginPage({
   searchParams,

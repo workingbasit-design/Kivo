@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
+import { getActiveMembershipForUser } from '@/lib/membership';
 import { rateLimit } from '@/lib/rate-limit';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 import { logPiiAccess } from '@/lib/pii-audit';
@@ -18,7 +19,8 @@ export async function GET(req: Request) {
   if (!originCheck.ok) return originForbidden(originCheck.reason);
 
   const session = await getSession();
-  const businessId = session?.user?.businessId;
+  const membership = session ? await getActiveMembershipForUser(session.user.id) : null;
+  const businessId = membership?.businessId;
   if (!session || !businessId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }

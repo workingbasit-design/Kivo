@@ -27,18 +27,18 @@ test('no invoice + priced job: creates a PAID invoice and a COMPLETED payment', 
 
   assert.equal(stub.calls.invoiceCreate.length, 1);
   const inv = stub.calls.invoiceCreate[0];
-  assert.equal(inv.total, 299);
+  assert.equal(inv.totalCents, BigInt(29900));
   assert.equal(inv.status, 'PAID');
   assert.equal(inv.businessId, 'biz_1');
   assert.equal(inv.jobId, 'job_1');
   assert.match(inv.number, /^INV-\d+$/);
 
   assert.equal(stub.calls.lineItemCreate.length, 1);
-  assert.equal(stub.calls.lineItemCreate[0].unitPrice, 299);
+  assert.equal(stub.calls.lineItemCreate[0].unitPriceCents, BigInt(29900));
 
   assert.equal(stub.calls.paymentCreate.length, 1);
   const pay = stub.calls.paymentCreate[0];
-  assert.equal(pay.amount, 299);
+  assert.equal(pay.amountCents, BigInt(29900));
   assert.equal(pay.status, 'COMPLETED');
   assert.equal(pay.provider, 'OTHER');
   assert.equal(pay.businessId, 'biz_1');
@@ -51,7 +51,7 @@ test('open invoice: records payment for the outstanding balance and marks it PAI
 
   assert.equal(stub.calls.invoiceCreate.length, 0);
   assert.equal(stub.calls.paymentCreate.length, 1);
-  assert.equal(stub.calls.paymentCreate[0].amount, 199); // 299 - 100 already paid
+  assert.equal(stub.calls.paymentCreate[0].amountCents, BigInt(19900)); // 29900 - 10000 already paid
   assert.equal(stub.calls.paymentCreate[0].status, 'COMPLETED');
 
   assert.equal(stub.calls.invoiceUpdate.length, 1);

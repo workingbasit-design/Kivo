@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { dayRange, todayInTimezone } from "@/lib/utils";
+import { centsToDollars } from "@/lib/money";
 import {
   bucketRevenueByService,
   type ServiceRevenueRow,
@@ -47,7 +48,7 @@ interface JobWithCustomer {
   title: string;
   time: string | null;
   status: string;
-  price: number | null;
+  priceCents: bigint | null;
   date: Date;
   customerId: string;
   customer: { name: string };
@@ -56,13 +57,10 @@ interface JobWithCustomer {
 interface InvoiceWithPayments {
   id: string;
   number: string;
-  total: number;
-  /** Present when the query selects it (dashboard due-invoice list). */
-  totalCents?: bigint | null;
+  totalCents: bigint | null;
   date: Date;
   customer: { name: string };
-  /** Present when the query selects it (dashboard due-invoice list). */
-  payments: { amount: number; amountCents?: bigint | null }[];
+  payments: { amountCents: bigint | null }[];
 }
 
 interface StatusCount {
@@ -140,7 +138,7 @@ export async function getDashboardStats(
     { total: number; byStatus: Record<string, number> },
     { outstanding: number; outstandingCount: number },
     InvoiceWithPayments[],
-    { _sum: { amount: number | null } },
+    { _sum: { amountCents: bigint | null } },
     number,
     number,
   ] = await Promise.all([
@@ -153,13 +151,12 @@ export async function getDashboardStats(
       select: {
         id: true,
         number: true,
-        total: true,
         totalCents: true,
         date: true,
         customer: { select: { name: true } },
         payments: {
           where: { status: 'COMPLETED' },
-          select: { amount: true, amountCents: true },
+          select: { amountCents: true },
         },
       },
       orderBy: { date: 'asc' },
@@ -171,7 +168,7 @@ export async function getDashboardStats(
         createdAt: { gte: weekStart },
         businessId,
       },
-      _sum: { amount: true },
+      _sum: { amountCents: true },
     }),
     prisma.lead.count({ where: { businessId, status: 'NEW' } }),
     prisma.customer.count({ where: { businessId } }),
@@ -183,7 +180,7 @@ export async function getDashboardStats(
     time: j.time,
     status: j.status,
     date: j.date,
-    price: j.price ?? 0,
+    price: centsToDollars(j.priceCents),
     customerName: j.customer.name,
   });
 
@@ -194,10 +191,9 @@ export async function getDashboardStats(
   // Per-invoice balances, cents-aware to match the shared money summary.
   const dueInvoices: DueInvoice[] = dueInvoicesRaw
     .map((inv: InvoiceWithPayments) => {
-      const total = inv.totalCents != null ? Number(inv.totalCents) / 100 : inv.total;
+      const total = centsToDollars(inv.totalCents);
       const paid = inv.payments.reduce(
-        (s: number, p: { amount: number; amountCents?: bigint | null }) =>
-          s + (p.amountCents != null ? Number(p.amountCents) / 100 : p.amount),
+        (s: number, p: { amountCents: bigint | null }) => s + centsToDollars(p.amountCents),
         0
       );
       return {
@@ -213,7 +209,7 @@ export async function getDashboardStats(
   return {
     bookedToday,
     jobsLeftToday,
-    collectedThisWeek: paymentsThisWeek._sum.amount ?? 0,
+    collectedThisWeek: centsToDollars(paymentsThisWeek._sum.amountCents),
     outstanding: moneySummary.outstanding,
     outstandingCount: moneySummary.outstandingCount,
     newLeads,
@@ -261,7 +257,7 @@ export interface ReportStats {
 
 interface ReportJob {
   id: string;
-  price: number | null;
+  priceCents: bigint | null;
   status: string;
   date: Date;
   customerId: string;
@@ -270,7 +266,7 @@ interface ReportJob {
 }
 
 interface ReportPayment {
-  amount: number;
+  amountCents: bigint | null;
   createdAt: Date;
 }
 
@@ -308,7 +304,7 @@ export async function getReportStats(
     StatusCount[],
     InvoiceWithPayments[],
     StatusCount[],
-    { price: number | null }[],
+    { priceCents: bigint | null }[],
   ] = await Promise.all([
     prisma.payment.findMany({
       where: {
@@ -316,13 +312,13 @@ export async function getReportStats(
         createdAt: { gte: rangeStart },
         businessId,
       },
-      select: { amount: true, createdAt: true },
+      select: { amountCents: true, createdAt: true },
     }),
     prisma.job.findMany({
       where: { businessId, date: { gte: rangeStart } },
       select: {
         id: true,
-        price: true,
+        priceCents: true,
         status: true,
         date: true,
         customerId: true,
@@ -338,7 +334,7 @@ export async function getReportStats(
     prisma.invoice.findMany({
       where: { businessId, status: { in: OPEN_INVOICE_STATUSES } },
       include: {
-        payments: { where: { status: "COMPLETED" }, select: { amount: true } },
+        payments: { where: { status: "COMPLETED" }, select: { amountCents: true } },
         customer: { select: { name: true } },
       },
     }),
@@ -353,21 +349,24 @@ export async function getReportStats(
         date: { gte: todayStart, lt: workloadEnd },
         status: { in: OPEN_JOB_STATUSES },
       },
-      select: { price: true },
+      select: { priceCents: true },
     }),
   ]);
 
   const months: MonthBucket[] = buckets.map((b) => {
     const revenue = payments
       .filter((p: ReportPayment) => p.createdAt >= b.start && p.createdAt <= b.end)
-      .reduce((s: number, p: ReportPayment) => s + p.amount, 0);
+      .reduce((s: number, p: ReportPayment) => s + centsToDollars(p.amountCents), 0);
     const jobsCount = jobs.filter(
       (j: ReportJob) => j.date >= b.start && j.date <= b.end
     ).length;
     return { key: b.key, label: b.label, revenue, jobs: jobsCount };
   });
 
-  const totalCollected = payments.reduce((s: number, p: ReportPayment) => s + p.amount, 0);
+  const totalCollected = payments.reduce(
+    (s: number, p: ReportPayment) => s + centsToDollars(p.amountCents),
+    0
+  );
 
   // Top customers by completed/paid job value in range
   const byCustomer = new Map<string, { name: string; revenue: number; jobs: number }>();
@@ -378,7 +377,7 @@ export async function getReportStats(
       revenue: 0,
       jobs: 0,
     };
-    cur.revenue += j.price ?? 0;
+    cur.revenue += centsToDollars(j.priceCents);
     cur.jobs += 1;
     byCustomer.set(j.customerId, cur);
   }
@@ -388,21 +387,25 @@ export async function getReportStats(
     .slice(0, 5);
 
   const outstanding = openInvoices.reduce((s: number, inv: InvoiceWithPayments) => {
-    const paid = inv.payments.reduce((p: number, pay: { amount: number }) => p + pay.amount, 0);
-    return s + Math.max(0, inv.total - paid);
+    const paid = inv.payments.reduce(
+      (p: number, pay: { amountCents: bigint | null }) => p + centsToDollars(pay.amountCents),
+      0
+    );
+    return s + Math.max(0, centsToDollars(inv.totalCents) - paid);
   }, 0);
 
   const doneJobs = jobs.filter((j: ReportJob) => DONE_JOB_STATUSES.includes(j.status));
   const avgJobValue =
     doneJobs.length > 0
-      ? doneJobs.reduce((s: number, j: ReportJob) => s + (j.price ?? 0), 0) / doneJobs.length
+      ? doneJobs.reduce((s: number, j: ReportJob) => s + centsToDollars(j.priceCents), 0) /
+        doneJobs.length
       : 0;
 
   // Revenue grouped by price-book service; jobs with no linked service
   // bucket under the localized "Other" label.
   const revenueByService = bucketRevenueByService(
     doneJobs.map((j) => ({
-      price: j.price,
+      price: centsToDollars(j.priceCents),
       serviceName: j.service?.name ?? null,
     })),
     locale === "fr" ? "Autre" : "Other"
@@ -410,7 +413,10 @@ export async function getReportStats(
 
   const upcomingWorkload = {
     count: upcoming.length,
-    totalPrice: upcoming.reduce((s: number, j: { price: number | null }) => s + (j.price ?? 0), 0),
+    totalPrice: upcoming.reduce(
+      (s: number, j: { priceCents: bigint | null }) => s + centsToDollars(j.priceCents),
+      0
+    ),
   };
 
   const approved = quotes.find((q: StatusCount) => q.status === "APPROVED")?._count.status ?? 0;

@@ -12,9 +12,10 @@ import {
 } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { waLink } from '@/lib/whatsapp';
-import { formatMoney } from '@/lib/money';
+import { formatCents } from '@/lib/money';
 import { formatWorkingHoursSummary } from '@/lib/working-hours';
 import { getLocale } from '@/lib/i18n/server';
+import { getCspNonce } from '@/lib/csp-nonce';
 import { t } from '@/lib/i18n';
 import {
   localityFromAddress,
@@ -69,7 +70,7 @@ async function getProfile(slug: string) {
   const [services, reviews] = await Promise.all([
     prisma.service.findMany({
       where: { businessId },
-      select: { name: true, price: true },
+      select: { name: true, priceCents: true },
       orderBy: { name: 'asc' },
     }),
     prisma.review.findMany({
@@ -196,6 +197,7 @@ export default async function PublicProfilePage({
     <div className="min-h-screen bg-paper font-sans">
       <script
         type="application/ld+json"
+        nonce={await getCspNonce()}
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <header className="bg-ink text-white">
@@ -300,7 +302,7 @@ export default async function PublicProfilePage({
                 <li key={s.name} className="flex items-center justify-between py-2.5">
                   <span className="text-sm text-zinc-700 font-medium">{s.name}</span>
                   <span className="text-sm font-bold text-zinc-900">
-                    {formatMoney(s.price, b.currency)}
+                    {formatCents(s.priceCents, b.currency)}
                   </span>
                 </li>
               ))}

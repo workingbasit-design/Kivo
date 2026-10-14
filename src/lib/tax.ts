@@ -53,7 +53,7 @@ const CA_TAXES: Record<string, TaxLine[]> = {
   ON: [{ name: 'HST', rate: 13 }],
   NB: [{ name: 'HST', rate: 15 }],
   NL: [{ name: 'HST', rate: 15 }],
-  NS: [{ name: 'HST', rate: 15 }],
+  NS: [{ name: 'HST', rate: 14 }], // 15% until 2025-03-31, 14% from 2025-04-01 (M3 fix)
   PE: [{ name: 'HST', rate: 15 }],
   // GST + provincial tax
   QC: [
@@ -131,6 +131,47 @@ export function calcTax(
   }));
   const taxAmount = round2(breakdown.reduce((s, b) => s + b.amount, 0));
   return { taxAmount, totalRate: totalTaxRate(config), breakdown };
+}
+
+/**
+ * Allowed tax types (matches the TaxRate / InvoiceTaxLine CHECK constraints).
+ */
+export const TAX_ROUTES = ['GST', 'HST', 'PST', 'RST', 'QST'] as const;
+export type TaxRoute = (typeof TAX_ROUTES)[number];
+
+/** A rate row as read from the TaxRate table. */
+export interface TaxRateRow {
+  taxType: string;
+  /** Thousandths of a percent: 5000 = 5%, 9975 = 9.975% */
+  rateBps: number;
+}
+
+export interface TaxCentsBreakdownLine {
+  taxType: string;
+  rateBps: number;
+  amountCents: number;
+}
+
+/**
+ * Integer-cents tax calculation from TaxRate rows (M3).
+ *
+ * Each tax line is computed on the pre-tax subtotal and rounded to the
+ * cent with Math.round — no floating point anywhere. Note the Quebec
+ * rule: QST is computed on the selling price EXCLUDING GST (in force
+ * since 2013-01-01); because every line here is computed on the same
+ * pre-tax subtotal, QST-on-pre-GST-base falls out naturally.
+ */
+export function calcTaxCents(
+  subtotalCents: number,
+  rates: TaxRateRow[]
+): { taxCents: number; breakdown: TaxCentsBreakdownLine[] } {
+  const breakdown: TaxCentsBreakdownLine[] = rates.map((r) => ({
+    taxType: r.taxType,
+    rateBps: r.rateBps,
+    amountCents: Math.round((subtotalCents * r.rateBps) / 100000),
+  }));
+  const taxCents = breakdown.reduce((s, b) => s + b.amountCents, 0);
+  return { taxCents, breakdown };
 }
 
 /**

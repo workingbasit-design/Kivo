@@ -310,11 +310,11 @@ async function runBookingWithTime(
   // When hours aren't configured (or the day is closed and the customer
   // submitted a stale form), store no time - the owner confirms by phone.
 
-  let service: { id: string; name: string; price: number } | null = null;
+  let service: { id: string; name: string; priceCents: bigint } | null = null;
   if (serviceId) {
     service = await db.service.findFirst({
       where: { id: serviceId, businessId },
-      select: { id: true, name: true, price: true },
+      select: { id: true, name: true, priceCents: true },
     });
     if (!service) return { error: 'Selected service is not available.' };
   }
@@ -353,7 +353,7 @@ async function runBookingWithTime(
       // Canonical 24h "HH:MM" - parseable by the slot logic everywhere.
       time: validatedTime,
       address: address || null,
-      price: service ? service.price : 0,
+      priceCents: service ? service.priceCents : BigInt(0),
       status: 'NEW',
       notes:
         (notes ? `Booked online. Customer notes: ${notes}` : 'Booked online via booking page.') +

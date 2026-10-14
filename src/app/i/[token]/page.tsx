@@ -6,7 +6,7 @@ import { isLegacyCuid, resolveShareToken } from '@/lib/share';
 import { waLink } from '@/lib/whatsapp';
 import { displayNotes } from '@/lib/invoice-notes';
 import { Card, StatusBadge } from '@/components/ui';
-import { formatMoney } from '@/lib/money';
+import { formatCents, centsToDollars, dollarsToCents } from '@/lib/money';
 import { taxIdLabelForRegion } from '@/lib/tax';
 import CopyButton from '@/components/CopyButton';
 import PortalNotice from '@/components/PortalNotice';
@@ -56,15 +56,15 @@ export default async function InvoicePortalPage({
       id: true,
       number: true,
       date: true,
-      subtotal: true,
+      subtotalCents: true,
       taxRate: true,
       taxType: true,
-      taxAmount: true,
-      total: true,
+      taxAmountCents: true,
+      totalCents: true,
       status: true,
       notes: true,
       lineItems: {
-        select: { description: true, qty: true, unitPrice: true },
+        select: { description: true, qty: true, unitPriceCents: true },
         orderBy: { position: 'asc' },
       },
       customer: { select: { name: true } },
@@ -85,7 +85,7 @@ export default async function InvoicePortalPage({
         },
       },
       payments: {
-        select: { amount: true, createdAt: true },
+        select: { amountCents: true, createdAt: true },
         orderBy: { createdAt: 'desc' },
       },
     },
@@ -93,9 +93,11 @@ export default async function InvoicePortalPage({
 
   if (!invoice) return <PortalNotice variant="expired" />;
 
-  const paid = invoice.payments.reduce((s, p) => s + p.amount, 0);
-  const balance = Math.max(0, invoice.total - paid);
-  const round2 = (n: number) => Math.round(n * 100) / 100;
+  const paid = invoice.payments.reduce((s, p) => s + p.amountCents, BigInt(0));
+  const rawBalance = invoice.totalCents - paid;
+  const balance = rawBalance < BigInt(0) ? BigInt(0) : rawBalance;
+  const lineTotalCents = (qty: number, unitPriceCents: bigint) =>
+    dollarsToCents(qty * centsToDollars(unitPriceCents)) ?? BigInt(0);
 
   // Online card payments: only when the business connected Stripe with
   // charges enabled. Live accounts additionally need the owner's explicit
@@ -156,9 +158,9 @@ export default async function InvoicePortalPage({
                 >
                   <p className="text-sm font-semibold text-zinc-800">{item.description}</p>
                   <p className="text-xs text-zinc-500 mt-1">
-                    {item.qty} × {formatMoney(item.unitPrice, invoice.business.currency)}
+                    {item.qty} × {formatCents(item.unitPriceCents, invoice.business.currency)}
                     <span className="font-bold text-zinc-800">
-                      {' '}· {formatMoney(round2(item.qty * item.unitPrice), invoice.business.currency)}
+                      {' '}· {formatCents(lineTotalCents(item.qty, item.unitPriceCents), invoice.business.currency)}
                     </span>
                   </p>
                 </li>
@@ -169,29 +171,29 @@ export default async function InvoicePortalPage({
           <dl className="space-y-2 text-sm border-t border-zinc-100 pt-4">
             <div className="flex justify-between">
               <dt className="text-zinc-500">{t(locale, 't10money.invPortalSubtotal')}</dt>
-              <dd className="font-semibold text-zinc-900">{formatMoney(invoice.subtotal, invoice.business.currency)}</dd>
+              <dd className="font-semibold text-zinc-900">{formatCents(invoice.subtotalCents, invoice.business.currency)}</dd>
             </div>
-            {invoice.taxAmount > 0 && (
+            {invoice.taxAmountCents > BigInt(0) && (
               <div className="flex justify-between">
                 <dt className="text-zinc-500">
                   {t(locale, 't10money.invPortalTax')}{invoice.taxType ? ` (${invoice.taxType}${invoice.taxRate ? ` ${invoice.taxRate}%` : ''})` : ''}
                 </dt>
-                <dd className="font-semibold text-zinc-900">{formatMoney(invoice.taxAmount, invoice.business.currency)}</dd>
+                <dd className="font-semibold text-zinc-900">{formatCents(invoice.taxAmountCents, invoice.business.currency)}</dd>
               </div>
             )}
             <div className="flex justify-between border-t border-zinc-100 pt-2">
               <dt className="font-bold text-zinc-900">{t(locale, 't10money.invPortalTotal')}</dt>
-              <dd className="text-xl font-bold text-zinc-900 tracking-tight">{formatMoney(invoice.total, invoice.business.currency)}</dd>
+              <dd className="text-xl font-bold text-zinc-900 tracking-tight">{formatCents(invoice.totalCents, invoice.business.currency)}</dd>
             </div>
-            {paid > 0 && (
+            {paid > BigInt(0) && (
               <>
                 <div className="flex justify-between">
                   <dt className="text-zinc-500">{t(locale, 't10money.invPortalPaid')}</dt>
-                  <dd className="font-semibold text-emerald-700">{formatMoney(paid, invoice.business.currency)}</dd>
+                  <dd className="font-semibold text-emerald-700">{formatCents(paid, invoice.business.currency)}</dd>
                 </div>
                 <div className="flex justify-between items-center bg-ink text-white rounded-xl px-4 py-3 -mx-1">
                   <dt className="font-bold">{t(locale, 't10money.invPortalBalance')}</dt>
-                  <dd className="font-bold">{formatMoney(balance, invoice.business.currency)}</dd>
+                  <dd className="font-bold">{formatCents(balance, invoice.business.currency)}</dd>
                 </div>
               </>
             )}
@@ -202,15 +204,15 @@ export default async function InvoicePortalPage({
           )}
         </Card>
 
-        {paidParam === '1' && balance <= 0 && (
+        {paidParam === '1' && balance <= BigInt(0) && (
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 text-center">
             {t(locale, 'payments.paidThanks')}
           </div>
         )}
 
-        {balance > 0 && canPayOnline && (
+        {balance > BigInt(0) && canPayOnline && (
           <Card className="p-6">
-            <PayNowButton token={token} amount={balance} testMode={!stripeLive} locale={locale} />
+            <PayNowButton token={token} amount={centsToDollars(balance)} testMode={!stripeLive} locale={locale} />
             {invoice.business.interacEmail && (
               <p className="text-[11px] text-zinc-400 mt-2 text-center">
                 {t(locale, 'payments.cardAlso')}
@@ -219,7 +221,7 @@ export default async function InvoicePortalPage({
           </Card>
         )}
 
-        {balance > 0 && invoice.business.interacEmail && (
+        {balance > BigInt(0) && invoice.business.interacEmail && (
           <Card className="p-6">
             <h2 className="text-sm font-bold text-zinc-900 mb-1">{t(locale, 't10money.invPortalInteracTitle')}</h2>
             <p className="text-xs text-zinc-500 mb-3">

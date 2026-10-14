@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
+import { getActiveMembershipForUser } from '@/lib/membership';
 import { prisma } from '@/lib/prisma';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 import { revokeTokens } from '@/lib/quickbooks';
+import { decryptSecret } from '@/lib/crypto';
 
 /**
  * POST /api/integrations/quickbooks/disconnect - drop the business's
@@ -12,7 +14,8 @@ import { revokeTokens } from '@/lib/quickbooks';
  */
 export async function POST(req: Request) {
   const session = await getSession();
-  const businessId = session?.user?.businessId;
+  const membership = session ? await getActiveMembershipForUser(session.user.id) : null;
+  const businessId = membership?.businessId;
   if (!businessId) {
     return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   }
@@ -25,7 +28,8 @@ export async function POST(req: Request) {
 
   const conn = await prisma.quickBooksConnection.findUnique({ where: { businessId } });
   if (conn && process.env.QUICKBOOKS_CLIENT_ID && process.env.QUICKBOOKS_CLIENT_SECRET) {
-    await revokeTokens(conn.refreshToken, process.env.QUICKBOOKS_CLIENT_ID, process.env.QUICKBOOKS_CLIENT_SECRET);
+    // B4.2: stored tokens are encrypted - decrypt before sending to Intuit.
+    await revokeTokens(decryptSecret(conn.refreshToken) ?? '', process.env.QUICKBOOKS_CLIENT_ID, process.env.QUICKBOOKS_CLIENT_SECRET);
   }
   await prisma.quickBooksConnection.deleteMany({ where: { businessId } });
   return NextResponse.json({ ok: true });

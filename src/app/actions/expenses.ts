@@ -37,6 +37,10 @@ async function uploadReceipt(
 ): Promise<{ url?: string; error?: string }> {
   if (!isReceiptMime(file.type)) return { error: 'receiptBadType' };
   if (file.size > RECEIPT_MAX_BYTES) return { error: 'receiptTooLarge' };
+  // B12: magic-byte validation (never trust the client MIME) + GPS rejection.
+  const { validateUploadBytes } = await import('@/lib/upload-validate');
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  if (!validateUploadBytes(bytes, file.type).ok) return { error: 'receiptBadContent' };
   const token = process.env.BLOB_READ_WRITE_TOKEN;
   if (!token) return { error: 'notConfigured' };
   try {
@@ -46,7 +50,8 @@ async function uploadReceipt(
       uid,
       fileName: file.name || 'receipt',
     });
-    const blob = await put(pathname, file, { access: 'public', token });
+    // B12: private blobs - served only through tenant-scoped routes.
+    const blob = await put(pathname, file, { access: 'private', token });
     return { url: blob.url };
   } catch (e) {
     console.error('[expenses] receipt upload failed', e);
@@ -97,8 +102,7 @@ export async function createExpense(fd: FormData): Promise<ExpenseResult> {
       businessId,
       jobId: parsed.data.jobId,
       description: parsed.data.description,
-      amount: parsed.data.amount,
-      amountCents: dollarsToCents(parsed.data.amount),
+      amountCents: dollarsToCents(parsed.data.amount) ?? BigInt(0),
       category: parsed.data.category,
       spentAt: new Date(parsed.data.spentAt + 'T00:00:00'),
       note: parsed.data.note,
@@ -169,7 +173,7 @@ export async function updateExpense(
     data: {
       jobId: parsed.data.jobId,
       description: parsed.data.description,
-      amount: parsed.data.amount,
+      amountCents: dollarsToCents(parsed.data.amount) ?? BigInt(0),
       category: parsed.data.category,
       spentAt: new Date(parsed.data.spentAt + 'T00:00:00'),
       note: parsed.data.note,

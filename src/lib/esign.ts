@@ -22,6 +22,7 @@
 import { createHash, randomBytes } from 'crypto';
 import { prisma } from '@/lib/prisma';
 import { unsafeUnscoped } from './tenant-guard.ts';
+import { centsToDollars } from './money.ts';
 
 export type SignFieldType = 'signature' | 'date' | 'initials';
 export type SignField = { type: SignFieldType; x: number; y: number; page: number };
@@ -199,12 +200,12 @@ export async function issueSignatureRequest(
       id: true,
       number: true,
       title: true,
-      total: true,
+      totalCents: true,
       customerId: true,
       businessId: true,
       // Selected add-ons are part of the signed snapshot (tamper evidence).
       addons: {
-        select: { title: true, price: true, selected: true },
+        select: { title: true, priceCents: true, selected: true },
         orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
       },
     },
@@ -225,7 +226,21 @@ export async function issueSignatureRequest(
       status: 'sent',
       fieldsJson: JSON.stringify(fields),
       signerContact,
-      docHash: signatureDocHash(quote),
+      // The canonical snapshot is in dollars (see signatureDocPayload) -
+      // map the BigInt cent columns back at the DB boundary.
+      docHash: signatureDocHash({
+        id: quote.id,
+        number: quote.number,
+        title: quote.title,
+        total: centsToDollars(quote.totalCents),
+        customerId: quote.customerId,
+        businessId: quote.businessId,
+        addons: quote.addons.map((a) => ({
+          title: a.title,
+          price: centsToDollars(a.priceCents),
+          selected: a.selected,
+        })),
+      }),
       auditJson: appendAudit('[]', 'sent', 'owner'),
       expiresAt,
       quoteId: quote.id,
@@ -271,12 +286,12 @@ export async function resolveSignatureRequest(
             id: true,
             number: true,
             title: true,
-            total: true,
+            totalCents: true,
             customerId: true,
             businessId: true,
             // Same add-on snapshot the hash was computed from at send time.
             addons: {
-              select: { title: true, price: true, selected: true },
+              select: { title: true, priceCents: true, selected: true },
               orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
             },
             customer: { select: { id: true, name: true, phone: true } },
@@ -287,7 +302,26 @@ export async function resolveSignatureRequest(
     })
   );
   if (!rec || !isSignRequestActive(rec)) return null;
-  return rec;
+  // Map the BigInt cent columns back to the dollar-unit snapshot shape
+  // ResolvedSignatureRequest (and verifyDocHash) are defined in.
+  return {
+    ...rec,
+    quote: {
+      id: rec.quote.id,
+      number: rec.quote.number,
+      title: rec.quote.title,
+      total: centsToDollars(rec.quote.totalCents),
+      customerId: rec.quote.customerId,
+      businessId: rec.quote.businessId,
+      addons: rec.quote.addons.map((a) => ({
+        title: a.title,
+        price: centsToDollars(a.priceCents),
+        selected: a.selected,
+      })),
+      customer: rec.quote.customer,
+    },
+    business: rec.business,
+  };
 }
 
 /**

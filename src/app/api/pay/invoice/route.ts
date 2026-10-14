@@ -2,11 +2,10 @@ import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
-import { createCheckoutSession, toCents } from '@/lib/stripe';
+import { createCheckoutSession, type CheckoutSessionResult } from '@/lib/stripe';
+import { withRetry, newIdempotencyKey } from '@/lib/retry';
 import { clientIpFromHeaders } from '@/lib/client-ip';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
-
-const round2 = (n: number) => Math.round(n * 100) / 100;
 
 async function rateLimited(): Promise<boolean> {
   const h = await headers();
@@ -29,6 +28,7 @@ export async function POST(req: Request) {
   if (!process.env.STRIPE_SECRET_KEY) {
     return NextResponse.json({ error: 'Online payments are not configured.' }, { status: 503 });
   }
+  const platformSecret = process.env.STRIPE_SECRET_KEY;
 
   let token = '';
   try {
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
           include: {
             business: { include: { stripeConnection: true } },
             customer: { select: { email: true } },
-            payments: { where: { status: 'COMPLETED' }, select: { amount: true } },
+            payments: { where: { status: 'COMPLETED' }, select: { amountCents: true } },
           },
         },
       },
@@ -80,24 +80,33 @@ export async function POST(req: Request) {
     );
   }
 
-  const paid = round2(invoice.payments.reduce((s, p) => s + p.amount, 0));
-  const remaining = round2(invoice.total - paid);
-  if (remaining <= 0) {
+  const paidCents = invoice.payments.reduce((s, p) => s + p.amountCents, BigInt(0));
+  const remainingCents = invoice.totalCents - paidCents;
+  if (remainingCents <= BigInt(0)) {
     return NextResponse.json({ error: 'This invoice is already paid in full.' }, { status: 409 });
   }
 
   const base = process.env.APP_BASE_URL ?? new URL(req.url).origin;
-  const created = await createCheckoutSession({
-    platformSecret: process.env.STRIPE_SECRET_KEY,
-    stripeAccountId: conn.stripeAccountId,
-    amountCents: toCents(remaining),
-    currency: invoice.business.currency || 'CAD',
-    productName: `Invoice ${invoice.number} - ${invoice.business.name}`,
-    successUrl: `${base}/i/${token}?paid=1`,
-    cancelUrl: `${base}/i/${token}`,
-    customerEmail: invoice.customer.email ?? undefined,
-    metadata: { kind: 'invoice', invoice_id: invoice.id, business_id: invoice.businessId },
-  });
+  // B10.3: safe retries with an idempotency key - a retried request can
+  // never create two Checkout Sessions (Stripe honors Idempotency-Key).
+  const idemKey = newIdempotencyKey('checkout');
+  const created = (await withRetry(
+    async () =>
+      createCheckoutSession({
+        platformSecret,
+        stripeAccountId: conn.stripeAccountId,
+        amountCents: Number(remainingCents),
+        currency: invoice.business.currency || 'CAD',
+        productName: `Invoice ${invoice.number} - ${invoice.business.name}`,
+        successUrl: `${base}/i/${token}?paid=1`,
+        cancelUrl: `${base}/i/${token}`,
+        customerEmail: invoice.customer.email ?? undefined,
+        metadata: { kind: 'invoice', invoice_id: invoice.id, business_id: invoice.businessId },
+        idempotencyKey: idemKey,
+      }),
+    idemKey,
+    { timeoutMs: 15_000 }
+  )) as CheckoutSessionResult;
   if (!created.ok || !created.url) {
     return NextResponse.json({ error: created.error ?? 'Could not start checkout.' }, { status: 502 });
   }

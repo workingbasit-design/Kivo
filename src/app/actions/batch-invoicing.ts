@@ -5,7 +5,9 @@ import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
-import { dollarsToCents } from '@/lib/money';
+import { dollarsToCents, centsToDollars } from '@/lib/money';
+import { invoiceDueAt } from '@/lib/invoice-paid';
+import { nextDocumentNumber } from '@/lib/numbering';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
 import { getTaxConfig, totalTaxRate, calcTax, type TaxConfig } from '@/lib/tax';
@@ -48,33 +50,6 @@ async function businessTaxConfig(businessId: string): Promise<TaxConfig> {
   return getTaxConfig(business?.regionCode, business?.taxRegion);
 }
 
-type DbClient = Pick<typeof prisma, 'invoice'>;
-
-/** Next INV-0001 style number, scoped per business, retry-safe. */
-async function nextInvoiceNumber(
-  businessId: string,
-  db: DbClient = prisma
-): Promise<string> {
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const existing = await db.invoice.findMany({
-      where: { businessId },
-      select: { number: true },
-    });
-    let max = 0;
-    for (const r of existing) {
-      const m = /^INV-(\d+)$/.exec(r.number);
-      if (m) max = Math.max(max, parseInt(m[1], 10));
-    }
-    const number = `INV-${String(max + 1 + attempt).padStart(4, '0')}`;
-    const clash = await db.invoice.findFirst({
-      where: { businessId, number },
-      select: { id: true },
-    });
-    if (!clash) return number;
-  }
-  return `INV-${Date.now().toString().slice(-6)}`;
-}
-
 /**
  * Preview: completed jobs with NO invoice yet, tenant-scoped.
  * Pure read - nothing is created.
@@ -104,7 +79,7 @@ export async function previewBatchInvoices(): Promise<BatchPreviewResult> {
       jobs.map((j) => ({
         id: j.id,
         title: j.title,
-        price: j.price,
+        price: centsToDollars(j.priceCents),
         customerName: j.customer.name,
         date: toISODateLocal(j.date),
       })),
@@ -165,21 +140,23 @@ export async function confirmBatchInvoices(
     for (const job of jobs) {
       // Server-side money math - never trusts client values. Per-line tax
       // through the shared engine, identical to the batch preview.
-      const subtotal = round2(job.price);
+      // job.priceCents is the pre-tax subtotal in cents; tax is computed on
+      // the dollar value and stored back as cents.
+      const subtotalCents = job.priceCents;
+      const subtotal = centsToDollars(subtotalCents);
       const taxAmount = calcTax(subtotal, taxConfig).taxAmount;
       const total = round2(subtotal + taxAmount);
-      const number = await nextInvoiceNumber(businessId, tx);
+      const number = await nextDocumentNumber(tx, businessId, 'INVOICE');
 
       const invoice = await tx.invoice.create({
         data: {
           number,
           date: invoiceDate,
-          subtotal,
+          dueAt: invoiceDueAt(invoiceDate),
+          subtotalCents,
           taxRate,
-          taxAmount,
-        taxAmountCents: dollarsToCents(taxAmount),
-        total,
-        totalCents: dollarsToCents(total),
+          taxAmountCents: dollarsToCents(taxAmount) ?? BigInt(0),
+          totalCents: dollarsToCents(total) ?? BigInt(0),
           status: 'UNPAID',
           notes: `Batch invoice for job "${job.title}"`,
           customerId: job.customer.id,
@@ -193,8 +170,7 @@ export async function confirmBatchInvoices(
           invoiceId: invoice.id,
           description: job.title,
           qty: 1,
-          unitPrice: round2(job.price),
-          unitPriceCents: dollarsToCents(job.price),
+          unitPriceCents: subtotalCents,
           position: 0,
         },
       });
@@ -264,20 +240,22 @@ export async function createMilestoneInvoice(
   // Per-line tax through the shared engine (see confirmBatchInvoices).
   const taxAmount = calcTax(subtotal, taxConfig).taxAmount;
   const total = round2(subtotal + taxAmount);
-  const number = await nextInvoiceNumber(businessId);
   const invoiceDate = localMidnight(
     todayInTimezone(business?.timezone, business?.regionCode)
   );
 
   const invoice = await prisma.$transaction(async (tx) => {
+    // Number generated inside the same transaction as the insert (M4).
+    const number = await nextDocumentNumber(tx, businessId, 'INVOICE');
     const inv = await tx.invoice.create({
       data: {
         number,
         date: invoiceDate,
-        subtotal,
+        dueAt: invoiceDueAt(invoiceDate),
+        subtotalCents: dollarsToCents(subtotal) ?? BigInt(0),
         taxRate,
-        taxAmount,
-        total,
+        taxAmountCents: dollarsToCents(taxAmount) ?? BigInt(0),
+        totalCents: dollarsToCents(total) ?? BigInt(0),
         status: 'UNPAID',
         notes: `Milestone invoice: ${label}`,
         customerId: job.customer.id,
@@ -291,7 +269,7 @@ export async function createMilestoneInvoice(
         invoiceId: inv.id,
         description: `${label} - ${description || job.title}`,
         qty: 1,
-        unitPrice: subtotal,
+        unitPriceCents: dollarsToCents(subtotal) ?? BigInt(0),
         position: 0,
       },
     });

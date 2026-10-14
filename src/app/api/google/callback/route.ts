@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { getSession } from '@/lib/auth';
+import { getActiveMembershipForUser } from '@/lib/membership';
 import { prisma } from '@/lib/prisma';
+import { encryptSecret } from '@/lib/crypto';
 import {
   googleRedirectUri,
   GOOGLE_TOKEN_URL,
@@ -18,7 +20,8 @@ import { GOOGLE_BP_STATE_COOKIE } from '../connect/route';
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const session = await getSession();
-  const businessId = session?.user?.businessId;
+  const membership = session ? await getActiveMembershipForUser(session.user.id) : null;
+  const businessId = membership?.businessId;
   if (!businessId) {
     return NextResponse.redirect(new URL('/login', req.url));
   }
@@ -92,16 +95,17 @@ export async function GET(req: Request) {
       create: {
         businessId,
         googleAccountId,
-        accessToken: tokens.access_token,
-        refreshToken: tokens.refresh_token ?? null,
+        // B4.2: OAuth tokens encrypted at rest (AES-256-GCM).
+        accessToken: encryptSecret(tokens.access_token),
+        refreshToken: tokens.refresh_token ? encryptSecret(tokens.refresh_token) : null,
         expiresAt: new Date(Date.now() + (tokens.expires_in ?? 3600) * 1000),
         scopes: tokens.scope ?? null,
       },
       update: {
         googleAccountId,
-        accessToken: tokens.access_token,
+        accessToken: encryptSecret(tokens.access_token),
         // Only overwrite the refresh token when Google actually returns one.
-        ...(tokens.refresh_token ? { refreshToken: tokens.refresh_token } : {}),
+        ...(tokens.refresh_token ? { refreshToken: encryptSecret(tokens.refresh_token) } : {}),
         expiresAt: new Date(Date.now() + (tokens.expires_in ?? 3600) * 1000),
         scopes: tokens.scope ?? null,
       },

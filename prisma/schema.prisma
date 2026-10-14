@@ -12,12 +12,12 @@ model User {
   email         String      @unique
   passwordHash  String
   name          String?
-  role          String      @default("ADMIN")
   googleId      String?     @unique // Google OIDC `sub` for "Continue with Google" linking
   phone         String? // Canadian contact number (NANP), user-editable
   phonePrompted Boolean     @default(false) // onboarding contact-number prompt shown/skipped
-  business      Business?   @relation(fields: [businessId], references: [id])
-  businessId    String?
+  // M9: role + business assignment moved to Membership (the authority).
+  // A user's current business context resolves via their ACTIVE membership
+  // in requireAuth() (src/lib/auth.ts).
   sessions      Session[]
   passwordResetTokens PasswordResetToken[]
   assignedJobs  Job[]       @relation("JobAssignedTo")
@@ -25,8 +25,37 @@ model User {
   jobPhotos     JobPhoto[]  @relation("JobPhotoUploadedBy")
   timeEntries   TimeEntry[]
   crewMemberships CrewMember[]
+  memberships   Membership[]
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
+  // B7.4 TOTP 2FA: totpSecret is the base32 secret ENCRYPTED at rest
+  // (src/lib/crypto.ts); totpBackupCodes is a JSON array of SHA-256 hashes
+  // of single-use backup codes. Opt-in, except owners must enable before
+  // connecting payments (enforced in the Stripe Connect route).
+  totpSecret      String?
+  totpEnabled     Boolean  @default(false)
+  totpBackupCodes String?
+}
+
+// Per-business team membership (Prompt 3, M1). This is the authority for
+// permission checks — `User.role` / `User.businessId` are legacy single-
+// business fields kept until M9, when they are dropped. A user can belong
+// to several businesses with a different role in each.
+model Membership {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessId  String
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  role        String // OWNER | ADMIN | DISPATCHER | TECHNICIAN (CHECK in migration)
+  status      String // ACTIVE | INVITED | SUSPENDED | REMOVED (CHECK in migration)
+  invitedById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, businessId])
+  @@index([businessId, status])
+  @@index([userId])
 }
 
 model Session {
@@ -61,17 +90,25 @@ model Business {
   workingHours         String? // JSON string: {"mon":["09:00","18:00"],"tue":[...],...}; null = not configured
   address              String?
   taxId                String?               @map("gstin") // Canadian GST/HST number (CRA business number); DB column kept as gstin
+  gstHstRegistered     Boolean               @default(false) // registered to collect GST/HST — invoices show tax lines only when true (M3)
+  qstNumber            String? // Revenu Québec QST number (QC businesses)
+  filingFrequency      String? // CHECK: MONTHLY|QUARTERLY|ANNUAL (M3 migration)
   upiId                String?
   interacEmail         String? // Interac e-Transfer email for CA businesses; shown on invoices (record-only, EveryJob never processes payments)
-  timezone             String?               @default("America/Toronto") // IANA timezone; null (legacy rows) = region default America/Toronto
-  defaultHourlyRate    Float? // default labor rate (CAD/hr) for job costing; null = not set
-  defaultHourlyRateCents BigInt? // cents; migration from defaultHourlyRate
+  timezone             String                @default("America/Toronto") // IANA timezone; NOT NULL since M9 (Canada-only app)
+  defaultHourlyRateCents BigInt? // cents (M8 cutover); null = not set
   logoUrl              String?
   tagline              String? // brand kit tagline shown on quotes / social templates
   brandColors          String? // JSON: { primary: "#rrggbb", accent: "#rrggbb" }; null = defaults
   brandServices        String? // JSON array of service names for social templates; null = none set
   portalTokens         CustomerPortalToken[]
-  users                User[]
+  memberships          Membership[]
+  customerLinks        CustomerLink[]
+  documentCounters     DocumentCounter[]
+  auditEvents          AuditEvent[]
+  idempotencyKeys      IdempotencyKey[]
+  webhookEvents        WebhookEvent[]
+  confidentialityIncidents ConfidentialityIncident[]
   customers            Customer[]
   jobs                 Job[]
   services             Service[]
@@ -79,6 +116,7 @@ model Business {
   creditNotes          CreditNote[]
   shareTokens          ShareToken[]
   messageLogs          MessageLog[]
+  emailVerificationTokens EmailVerificationToken[]
   communications       Communication[]
   leads                Lead[]
   savedByCustomers   SavedPro[]
@@ -154,6 +192,7 @@ model Customer {
   messageConsentSource String? // "settings-ui" | "whatsapp-inbound" | "customer-import"
   preferredLocale      String? // "en" | "fr"; null = business default
   archivedAt           DateTime? // soft-delete: hidden from lists, restorable; only unlinked customers can be hard-deleted
+  archivedBy           String? // M7: User.id that archived the customer
   consentLogs          ConsentLog[]
   messageLogs          MessageLog[]
   properties           CustomerProperty[]
@@ -169,18 +208,21 @@ model Customer {
   portalTokens         CustomerPortalToken[]
   equipment            Equipment[]
   projects             Project[]
+  customerLinks        CustomerLink[]
+  createdBy            String? // M7: User.id of the acting membership user; 'system' for system/cron writes
+  updatedBy            String? // M7: User.id of the last acting membership user
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
 
   @@index([businessId])
   @@index([businessId, createdAt])
+  @@index([businessId, archivedAt, name]) // M12: customer list filtering
 }
 
 model Service {
   id          String   @id @default(cuid())
   name        String
-  price       Float
-  priceCents BigInt? // cents; migration from price
+  priceCents BigInt // cents (M8 cutover: Float column dropped)
   durationMin Int? // typical job duration in minutes; pre-fills scheduling estimates
   description String? // short plain-language description shown on quotes/booking
   businessId  String
@@ -201,8 +243,7 @@ model Job {
   invoicedAt     DateTime? // set when the first non-voided invoice links to this job
   noCharge       Boolean            @default(false) // explicit $0 opt-in (warranty, goodwill)
   address        String?
-  price          Float
-  priceCents BigInt? // cents; migration from price
+  priceCents BigInt // cents (M8 cutover: Float column dropped)
   status         String // NEW, SCHEDULED, IN PROGRESS, COMPLETED, PAID, CANCELLED
   notes          String?
   technician     String?
@@ -233,28 +274,32 @@ model Job {
   projectPhase   ProjectPhase? @relation(fields: [projectPhaseId], references: [id], onDelete: SetNull)
   crewId         String?
   crew           Crew?         @relation(fields: [crewId], references: [id], onDelete: SetNull)
-  createdAt      DateTime           @default(now())
+  createdBy            String? // M7: User.id of the acting membership user; 'system' for system/cron writes
+  updatedBy            String? // M7: User.id of the last acting membership user
+  createdAt            DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
 
   // Backstop for recurring auto-generation idempotency: one job per plan per day.
   // NULL recurringJobId values never conflict, so manual jobs are unaffected.
+  archivedAt   DateTime? // M7: soft-delete timestamp
+  archivedBy   String?   // M7: User.id that archived the job
+
   @@unique([recurringJobId, date])
   @@index([businessId, status, date])
   @@index([businessId, date])
+  @@index([businessId, status, startAt]) // M12: schedule/status lists
+  @@index([businessId, customerId, startAt]) // M12: customer job history
 }
 
 model Invoice {
   id             String            @id @default(cuid())
   number         String
   date           DateTime
-  subtotal       Float             @default(0)
-  subtotalCents BigInt? // cents; migration from subtotal
+  subtotalCents BigInt // cents (M8 cutover: Float column dropped)
   taxRate        Float             @default(0)
   taxType        String? // "GST", "HST", "PST", "CGST", "SGST", "IGST"
-  taxAmount      Float             @default(0)
-  taxAmountCents BigInt? // cents; migration from taxAmount
-  total          Float
-  totalCents BigInt? // cents; migration from total
+  taxAmountCents BigInt // cents (M8 cutover: Float column dropped)
+  totalCents BigInt // cents (M8 cutover: Float column dropped)
   status         String // UNPAID, PARTIALLY PAID, PAID
   sentAt         DateTime? // set when the pro emails the invoice to the customer (not a payment state)
   notes          String?
@@ -267,6 +312,7 @@ model Invoice {
   milestoneLabel String? // e.g. "Deposit", "Milestone 2 — rough-in", "Final"
   payments       Payment[]
   lineItems      InvoiceLineItem[]
+  taxLines       InvoiceTaxLine[] // immutable per-invoice tax snapshot (M3)
   shareTokens    ShareToken[]
   creditNotes    CreditNote[]
   stripeCheckoutSessionId String? // latest Checkout session for online payment
@@ -274,11 +320,16 @@ model Invoice {
   paidAt         DateTime? // set when fully paid (any channel)
   voidedAt       DateTime? // set when voided; voided invoices keep number, excluded from reports
   voidReason     String? // required reason for voiding
-  createdAt      DateTime          @default(now())
+  dueAt          DateTime? // net-30 due date; set on issue/send, null for drafts (M10)
+  createdBy            String? // M7: User.id of the acting membership user; 'system' for system/cron writes
+  updatedBy            String? // M7: User.id of the last acting membership user
+  createdAt            DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
 
+  @@unique([businessId, number]) // M10: document numbers unique per business
   @@index([businessId, status])
   @@index([businessId, createdAt])
+  @@index([businessId, status, dueAt]) // M12: money outstanding / overdue lists
 }
 
 // Structured line items for an invoice. Items were previously stored as
@@ -290,10 +341,64 @@ model InvoiceLineItem {
   invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
   description String
   qty         Float
-  unitPrice   Float
-  unitPriceCents BigInt? // cents; migration from unitPrice
+  unitPriceCents BigInt // cents (M8 cutover: Float column dropped)
+  taxRateBps  Int? // snapshot of the applicable tax rate (basis points) at creation (M3)
+  taxType     String? // snapshot of the tax type(s), e.g. "HST", "GST+QST" (M3)
   position    Int // display order
   createdAt   DateTime @default(now())
+}
+
+// Canonical Canadian sales-tax rates, versioned by effective date (M3).
+// Rows are IMMUTABLE: corrections = insert a new row with a new
+// effectiveFrom and close the old row's effectiveTo. A database trigger
+// (tax_rates_no_update) rejects UPDATEs. Sent documents never read this
+// table — they render from InvoiceTaxLine snapshots.
+model TaxRate {
+  id            String    @id @default(cuid())
+  jurisdiction  String // province/territory code: AB, BC, MB, NB, NL, NS, NT, NU, ON, PE, QC, SK, YT
+  taxType       String // CHECK: GST|HST|PST|RST|QST
+  rateBps       Int // thousandths of a percent: 5000 = 5%, 9975 = 9.975% (see M3 migration note)
+  effectiveFrom DateTime  @db.Date
+  effectiveTo   DateTime? @db.Date // null = still in force
+  createdAt     DateTime  @default(now())
+
+  @@unique([jurisdiction, taxType, effectiveFrom])
+  @@index([jurisdiction, effectiveFrom])
+}
+
+// Per-invoice tax snapshot (M3). Written once when the invoice is
+// finalized/sent; sent documents render ONLY from these rows — changing
+// TaxRate later never changes a sent document.
+model InvoiceTaxLine {
+  id          String  @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
+  taxType     String // CHECK: GST|HST|PST|RST|QST
+  rateBps     Int
+  baseCents   BigInt
+  amountCents BigInt
+  createdAt   DateTime @default(now())
+
+  @@index([invoiceId])
+}
+
+// Per-(business, document type) number counter (M4). Number generation
+// happens inside the same transaction as the document insert:
+// SELECT ... FOR UPDATE on the counter row -> format -> insert document ->
+// nextNumber + 1. The row lock serializes per (business, type): no
+// duplicates under concurrency; gaps only from rolled-back transactions.
+model DocumentCounter {
+  id         String   @id @default(cuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  docType    String // CHECK: QUOTE|INVOICE|CREDIT_NOTE
+  nextNumber Int      @default(1)
+  prefix     String // "INV-", "Q-", "CN-"
+  padding    Int      @default(4) // zero-pad width; grows beyond 9999
+  updatedAt  DateTime @updatedAt
+
+  @@unique([businessId, docType])
+  @@index([businessId])
 }
 
 // Revocable, expirable capability tokens for public quote/invoice portals.
@@ -329,8 +434,7 @@ model CustomerPortalToken {
 
 model Payment {
   id                      String   @id @default(cuid())
-  amount                  Float
-  amountCents BigInt? // cents; migration from amount
+  amountCents BigInt // cents (M8 cutover: Float column dropped)
   provider                String // "STRIPE", "INTERAC", "CASH", "CHEQUE"
   transactionId           String?
   status                  String // "PENDING", "COMPLETED", "FAILED"
@@ -339,27 +443,35 @@ model Payment {
   receiptUrl              String? // Stripe receipt URL, when available
   invoiceId               String
   invoice                 Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
-  businessId              String? // tenant scope; nullable during backfill, then required
-  business                Business? @relation(fields: [businessId], references: [id], onDelete: Restrict)
+  businessId              String // tenant scope; NOT NULL since M9
+  business                Business @relation(fields: [businessId], references: [id], onDelete: Restrict)
   voidedAt                DateTime? // set when voided; payments are never deleted
   voidReason              String? // required reason for voiding
-  createdAt               DateTime @default(now())
+  createdBy            String? // M7: User.id of the acting membership user; 'system' for system/cron writes
+  updatedBy            String? // M7: User.id of the last acting membership user
+  createdAt            DateTime @default(now())
   updatedAt               DateTime @updatedAt
 
   @@index([businessId])
+  @@index([businessId, invoiceId, createdAt]) // M12: invoice payment history
+  @@index([businessId, status]) // M12: revenue reports
 }
 
 // Credit note for post-send invoice corrections. Linked to the original invoice.
 model CreditNote {
   id         String   @id @default(cuid())
+  number     String // CN-0001 style, via DocumentCounter (M4)
   invoiceId  String
   invoice    Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
   businessId String
-  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Restrict)
   amountCents BigInt // credit amount in cents
   reason     String // required reason for the credit
-  createdAt  DateTime @default(now())
+  createdBy            String? // M7: User.id of the acting membership user; 'system' for system/cron writes
+  updatedBy            String? // M7: User.id of the last acting membership user
+  createdAt            DateTime @default(now())
 
+  @@unique([businessId, number]) // M10: document numbers unique per business
   @@index([businessId])
   @@index([invoiceId])
 }
@@ -380,7 +492,9 @@ model MessageLog {
   providerMessageId String? // WhatsApp wamid / Resend id
   businessId        String
   business          Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  createdAt         DateTime  @default(now())
+  createdBy            String? // M7: User.id of the acting membership user; 'system' for system/cron writes
+  updatedBy            String? // M7: User.id of the last acting membership user
+  createdAt            DateTime  @default(now())
 
   @@index([businessId, eventKey])
   @@index([businessId, createdAt])
@@ -395,8 +509,7 @@ model Communication {
   waitingSince DateTime @default(now())
   content      String? // Message body or call summary
   jobCategory  String? // e.g. "AC repair"
-  estValue     Float? // Estimated value
-  estValueCents BigInt? // cents; migration from estValue
+  estValueCents BigInt? // cents (M8 cutover); null = not set
   businessId   String
   business     Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
   createdAt    DateTime @default(now())
@@ -411,6 +524,8 @@ model JobNote {
   authorId  String
   author    User     @relation("JobNoteAuthor", fields: [authorId], references: [id])
   createdAt DateTime @default(now())
+
+  @@index([authorId]) // M10: FK index
 }
 
 model JobPhoto {
@@ -422,6 +537,8 @@ model JobPhoto {
   uploadedById String
   uploadedBy   User     @relation("JobPhotoUploadedBy", fields: [uploadedById], references: [id])
   createdAt    DateTime @default(now())
+
+  @@index([uploadedById]) // M10: FK index
 }
 
 model Lead {
@@ -436,7 +553,9 @@ model Lead {
   businessId String
   business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
   expiresAt  DateTime? // directory quote-request leads expire after 30 days if not contacted
-  createdAt  DateTime @default(now())
+  createdBy            String? // M7: User.id of the acting membership user; 'system' for system/cron writes
+  updatedBy            String? // M7: User.id of the last acting membership user
+  createdAt            DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
   @@index([businessId, status])
@@ -447,8 +566,7 @@ model Quote {
   id                String             @id @default(cuid())
   number            String
   title             String
-  total             Float
-  totalCents BigInt? // cents; migration from total
+  totalCents BigInt // cents (M8 cutover: Float column dropped)
   status            String // "DRAFT", "SENT", "APPROVED", "DECLINED"
   customerId        String
   customer          Customer           @relation(fields: [customerId], references: [id], onDelete: Cascade)
@@ -458,17 +576,20 @@ model Quote {
   signatureRequests SignatureRequest[]
   addons            QuoteAddon[]
   lineItems         QuoteLineItem[]
-  depositAmount     Float? // requested deposit (CAD); null = no deposit requested
-  depositAmountCents BigInt? // cents; migration from depositAmount
+  depositAmountCents BigInt? // cents (M8 cutover); null = not set
   discountType      String? // "PERCENT" | "AMOUNT"; null = no discount
-  discountValue     Float? // percent (0-100) or CAD amount, per discountType
-  discountValueCents BigInt? // cents; migration from discountValue
+  discountValue     Float? // percent (0-100) when discountType=PERCENT — not money, never in cents (M8 keeps this column)
+  discountValueCents BigInt? // cents (M8 cutover); null = not set (always null for PERCENT)
   deposits          QuoteDeposit[]
-  createdAt         DateTime           @default(now())
+  createdBy            String? // M7: User.id of the acting membership user; 'system' for system/cron writes
+  updatedBy            String? // M7: User.id of the last acting membership user
+  createdAt            DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
 
   @@index([businessId, status])
   @@index([businessId, createdAt])
+  @@index([businessId, status, createdAt]) // M12: quote list by status
+  @@unique([businessId, number]) // M10: document numbers unique per business
 }
 
 model SignatureRequest {
@@ -553,8 +674,7 @@ model RecurringJob {
   nextRun    DateTime
   time       String?
   address    String?
-  price      Float
-  priceCents BigInt? // cents; migration from price
+  priceCents BigInt? // cents (M8 cutover); null = not set
   notes      String?
   active     Boolean  @default(true)
   customerId String
@@ -577,7 +697,9 @@ model TimeEntry {
   job        Job?      @relation(fields: [jobId], references: [id], onDelete: SetNull)
   businessId String
   business   Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  createdAt  DateTime  @default(now())
+  createdBy            String? // M7: User.id of the acting membership user; 'system' for system/cron writes
+  updatedBy            String? // M7: User.id of the last acting membership user
+  createdAt            DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 }
 
@@ -716,13 +838,14 @@ model JobExpense {
   businessId  String
   business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
   description String
-  amount      Float
-  amountCents BigInt? // cents; migration from amount
+  amountCents BigInt // cents (M8 cutover: Float column dropped)
   category    String   @default("MATERIALS") // MATERIALS, TRAVEL, OTHER
   spentAt     DateTime @default(now())
   note        String? // optional longer note
   receiptUrl  String? // Vercel Blob URL of the receipt photo, when uploaded
-  createdAt   DateTime @default(now())
+  createdBy            String? // M7: User.id of the acting membership user; 'system' for system/cron writes
+  updatedBy            String? // M7: User.id of the last acting membership user
+  createdAt            DateTime @default(now())
 
   @@index([businessId, spentAt])
 }
@@ -732,11 +855,12 @@ model QuoteAddon {
   quoteId   String
   quote     Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
   title     String
-  price     Float
-  priceCents BigInt? // cents; migration from price
+  priceCents BigInt // cents (M8 cutover: Float column dropped)
   selected  Boolean  @default(false)
   sortOrder Int      @default(0)
   createdAt DateTime @default(now())
+
+  @@index([quoteId]) // M10: FK index
 }
 
 model ChecklistTemplate {
@@ -744,8 +868,7 @@ model ChecklistTemplate {
   businessId  String
   business    Business                @relation(fields: [businessId], references: [id], onDelete: Cascade)
   name        String
-  price       Float? // optional default price when used as a job template
-  priceCents BigInt? // cents; migration from price
+  priceCents BigInt? // cents (M8 cutover); null = not set
   durationMin Int? // optional default duration (minutes) when used as a job template
   notes       String? // optional default job notes when used as a job template
   items       ChecklistTemplateItem[]
@@ -758,6 +881,8 @@ model ChecklistTemplateItem {
   template   ChecklistTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
   label      String
   sortOrder  Int               @default(0)
+
+  @@index([templateId]) // M10: FK index
 }
 
 model JobChecklistItem {
@@ -768,6 +893,8 @@ model JobChecklistItem {
   done      Boolean  @default(false)
   sortOrder Int      @default(0)
   createdAt DateTime @default(now())
+
+  @@index([jobId]) // M10: FK index
 }
 
 // In-app notification center (Track 3). Notifications are GENERATED from real
@@ -845,6 +972,9 @@ model MessagingConnection {
   emailApiKey      String? // Resend API key (secret)
   enabled          Boolean   @default(true)
   verifiedAt       DateTime?
+  // B7.6: set when the business verifies its sending email via the 24h
+  // verification link. The engine refuses customer emails until this is set.
+  emailVerifiedAt  DateTime?
   businessId       String
   business         Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
   createdAt        DateTime  @default(now())
@@ -855,6 +985,52 @@ model MessagingConnection {
 
 // Monthly per-business usage counters. The engine atomically reserves one
 // unit per send and refuses to send past the free-quota limit (hard stop).
+// B7.6: single-use business email verification tokens (128-bit, SHA-256
+// hashed at rest, 24h expiry). The raw token is emailed once and never stored.
+model EmailVerificationToken {
+  id         String    @id @default(cuid())
+  businessId String
+  business   Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  email      String
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  usedAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([businessId])
+}
+
+// B9.1: in-house error log (no Sentry - decision pending). Repeats are
+// grouped by fingerprint; message/stack are PII-scrubbed before storage.
+model ErrorLog {
+  id          String   @id @default(cuid())
+  fingerprint String
+  kind        String // error | login_failure | webhook_failure | export_spike
+  message     String
+  stack       String?
+  route       String?
+  businessId  String?
+  userId      String?
+  count       Int      @default(1)
+  firstSeen   DateTime @default(now())
+  lastSeen    DateTime @updatedAt
+
+  @@index([fingerprint, lastSeen])
+  @@index([kind, lastSeen])
+}
+
+// B9.2: alert dedup - one unresolved alert per key.
+model MonitorAlert {
+  id         String    @id @default(cuid())
+  key        String
+  businessId String?
+  detail     String
+  firedAt    DateTime  @default(now())
+  resolvedAt DateTime?
+
+  @@index([key, resolvedAt])
+}
+
 model MessageQuota {
   id            String   @id @default(cuid())
   businessId    String
@@ -881,6 +1057,7 @@ model ConsentLog {
   channel    String // "WHATSAPP" | "EMAIL"
   action     String // "OPT_IN" | "OPT_OUT" | "STOP_RECEIVED" | "HELP_RECEIVED"
   source     String? // "settings-ui" | "whatsapp-inbound" | "customer-import"
+  wording    String? // B14: consent text version shown (e.g. "v2026-10")
   createdAt  DateTime @default(now())
 
   @@index([businessId, customerId])
@@ -925,15 +1102,16 @@ model QuoteDeposit {
   quote                   Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
   businessId              String
   business                Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  amount                  Float
-  amountCents BigInt? // cents; migration from amount
+  amountCents BigInt // cents (M8 cutover: Float column dropped)
   provider                String   @default("STRIPE") // "STRIPE" | "INTERAC" | "CASH" | "CHEQUE"
   status                  String   @default("PENDING") // "PENDING" | "COMPLETED" | "FAILED"
   stripePaymentIntentId   String?  @unique
   stripeCheckoutSessionId String?  @unique
   receiptUrl              String?
   note                    String?
-  createdAt               DateTime @default(now())
+  createdBy            String? // M7: User.id of the acting membership user; 'system' for system/cron writes
+  updatedBy            String? // M7: User.id of the last acting membership user
+  createdAt            DateTime @default(now())
   updatedAt               DateTime @updatedAt
 
   @@index([quoteId])
@@ -1008,8 +1186,9 @@ model QuoteLineItem {
   quote       Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
   description String
   qty         Float
-  unitPrice   Float
-  unitPriceCents BigInt? // cents; migration from unitPrice
+  unitPriceCents BigInt // cents (M8 cutover: Float column dropped)
+  taxRateBps  Int? // snapshot of the applicable tax rate (basis points) at creation (M3)
+  taxType     String? // snapshot of the tax type(s), e.g. "HST", "GST+QST" (M3)
   position    Int // display order
   createdAt   DateTime @default(now())
 
@@ -1223,6 +1402,96 @@ model RateLimit {
 
 // PII access audit log. Records when authenticated users view/export
 // customer PII (names, phones, emails, addresses). PIPEDA accountability.
+// General audit log (M5) — every consequential action in the app writes
+// one row here. APPEND-ONLY: a database trigger (audit_events_no_update_delete)
+// rejects UPDATE/DELETE, and RLS policies allow only SELECT/INSERT.
+// PiaAuditLog (above) stays as-is for PII view/export/search logging.
+model AuditEvent {
+  id         String   @id @default(cuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  actorId    String // User.id, or 'system'
+  actorType  String // CHECK: USER|SYSTEM|WEBHOOK|COPILOT
+  action     String // CHECK: action vocabulary (see migration)
+  entityType String // e.g. "Invoice", "Payment", "Customer"
+  entityId   String?
+  beforeJson String? // JSON snapshot before the change (secrets scrubbed)
+  afterJson  String? // JSON snapshot after the change (secrets scrubbed)
+  ip         String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([businessId, createdAt])
+  @@index([businessId, entityType, entityId])
+}
+
+// Idempotency keys for payment + message-send endpoints (M6). First call
+// with a key executes and stores the response; a replay with the same key
+// returns the stored response WITHOUT re-executing. Keys expire after 24h.
+// businessId is nullable for pre-auth endpoints (public quote requests) —
+// null-business rows are scoped by (endpoint, key) via a partial unique
+// index (see migration); they must be read/written through unsafeUnscoped
+// because the tenant guard requires a non-empty businessId.
+model IdempotencyKey {
+  id           String    @id @default(cuid())
+  businessId   String?
+  business     Business? @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  key          String // client-supplied UUID from the Idempotency-Key header
+  endpoint     String // e.g. "POST /api/v1/payments"
+  responseJson String? // stored response for replays
+  statusCode   Int?
+  createdAt    DateTime  @default(now())
+  expiresAt    DateTime // createdAt + 24h
+
+  @@unique([businessId, endpoint, key])
+  @@index([expiresAt])
+}
+
+// Inbound webhook events from all providers (M6). StripeEvent rows were
+// migrated here; StripeEvent is kept read-only (deprecated) — new events
+// land in this table. Handler: insert (on conflict → skip as duplicate),
+// process, set processedAt. businessId is nullable because webhooks may
+// arrive before the business is resolved (same unsafeUnscoped note as
+// IdempotencyKey).
+model WebhookEvent {
+  id              String    @id @default(cuid())
+  provider        String // CHECK: STRIPE|QUICKBOOKS|RESEND|META
+  providerEventId String
+  businessId      String?
+  business        Business? @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  type            String // e.g. "checkout.session.completed"
+  payloadJson     String // raw provider payload
+  processedAt     DateTime? // set only after the handler succeeded
+  createdAt       DateTime  @default(now())
+
+  @@unique([provider, providerEventId])
+  @@index([businessId, createdAt])
+}
+
+// Quebec Law 25 confidentiality-incident register (M7). One row per
+// incident: detect → contain → assess → notify → record → review (see
+// docs/INCIDENT_RUNBOOK.md). businessId is nullable for platform-level
+// incidents (same null-business handling as WebhookEvent).
+model ConfidentialityIncident {
+  id                 String    @id @default(cuid())
+  businessId         String?
+  business           Business? @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  occurredAt         DateTime
+  discoveredAt       DateTime
+  summary            String
+  dataTypes          String // JSON array of affected data types
+  affectedCount      Int?
+  notifiedCommission Boolean   @default(false) // CAQ notified (serious harm risk)
+  notifiedAffected   Boolean   @default(false) // affected persons notified
+  measuresTaken      String?
+  status             String // CHECK: OPEN|CONTAINED|CLOSED
+  createdBy          String? // User.id that recorded the incident
+  createdAt          DateTime  @default(now())
+
+  @@index([businessId, createdAt])
+  @@index([status])
+}
+
 model PiaAuditLog {
   id         String   @id @default(cuid())
   businessId String
@@ -1257,6 +1526,9 @@ model Equipment {
 
   @@index([businessId])
   @@index([customerId])
+  archivedAt DateTime? // M7: soft-delete timestamp
+  archivedBy String?   // M7: User.id that archived the equipment
+
 }
 
 // Parts inventory — track stock quantities for materials/parts.
@@ -1267,8 +1539,7 @@ model Part {
   sku          String?
   quantity     Float    @default(0)
   reorderPoint Float? // alert when quantity <= reorderPoint
-  unitCost     Float? // cost per unit (for job costing)
-  unitCostCents BigInt? // cents; migration from unitCost
+  unitCostCents BigInt? // cents (M8 cutover); null = not set
   unit         String? // e.g. "each", "ft", "box"
   notes        String?
   businessId   String
@@ -1297,8 +1568,33 @@ model CustomerUser {
   savedPros     SavedPro[]
   quoteRequests QuoteRequest[]
   agentKeys     CustomerAgentKey[]
+  customerLinks CustomerLink[]
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
+}
+
+// Explicit, optional link between a consumer account (CustomerUser) and a
+// business's contact record (Customer) — Prompt 3, M2. Links are created
+// ONLY by explicit user action (customer taps "This is me" on a portal
+// page and confirms, or the owner links after the customer confirms).
+// Never auto-matched by email/phone. No data is merged by linking — it
+// only grants the consumer portal access to that business's records for
+// that customer. Deleting either side removes the link (Cascade).
+model CustomerLink {
+  id             String       @id @default(cuid())
+  customerUserId String
+  customerUser   CustomerUser @relation(fields: [customerUserId], references: [id], onDelete: Cascade)
+  customerId     String
+  customer       Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  businessId     String
+  business       Business     @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  createdBy      String? // user id (membership user or customer) that created the link
+  createdAt      DateTime     @default(now())
+
+  @@unique([customerUserId, customerId, businessId])
+  @@index([customerUserId])
+  @@index([customerId])
+  @@index([businessId])
 }
 
 model CustomerSession {
@@ -1439,7 +1735,9 @@ model Project {
   endDate     DateTime?
   phases      ProjectPhase[]
   jobs        Job[]
-  createdAt   DateTime       @default(now())
+  createdBy            String? // M7: User.id of the acting membership user; 'system' for system/cron writes
+  updatedBy            String? // M7: User.id of the last acting membership user
+  createdAt            DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 
   @@index([businessId, status])

@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { encryptSecret, decryptSecret } from '@/lib/crypto';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
@@ -21,6 +22,7 @@ import {
 } from '@/lib/google-calendar';
 import { parseCsv, validateCsvRows, excelRowsToStrings, customerDedupeKey, type CsvType, type CsvRecord, type CustomerRecord, type ServiceRecord, type JobRecord } from '@/lib/csv';
 import { validatePhone } from '@/lib/phone';
+import { dollarsToCents } from '@/lib/money';
 
 /**
  * Maximum rows per import. Bounds serverless memory/CPU and stays far under
@@ -93,19 +95,22 @@ async function getCalendarAccessToken(businessId: string): Promise<string> {
     });
   }
 
+  // B4.2: tokens encrypted at rest - decrypt for the in-memory flow.
+  const accessToken = decryptSecret(conn.accessToken);
+  const refreshToken = decryptSecret(conn.refreshToken);
   const stillValid = conn.expiresAt && conn.expiresAt.getTime() > Date.now() + 60_000;
-  if (stillValid) return conn.accessToken;
+  if (stillValid) return accessToken as string;
 
-  if (!conn.refreshToken) {
+  if (!refreshToken) {
     throw Object.assign(new Error('No refresh token'), { kind: 'reauth' as GoogleErrorKind });
   }
   const refreshed = await refreshAccessToken(
-    { clientId: env.clientId, clientSecret: env.clientSecret, refreshToken: conn.refreshToken },
+    { clientId: env.clientId, clientSecret: env.clientSecret, refreshToken },
     fetch
   );
   await prisma.googleConnection.update({
     where: { id: conn.id, businessId },
-    data: { accessToken: refreshed.accessToken, expiresAt: refreshed.expiresAt },
+    data: { accessToken: encryptSecret(refreshed.accessToken), expiresAt: refreshed.expiresAt },
   });
   return refreshed.accessToken;
 }
@@ -239,7 +244,7 @@ export async function confirmCalendarImport(items: CalendarImportItem[]): Promis
           title: i.title.trim().slice(0, 200),
           date: localMidnight(day),
           time: hhmm,
-          price: 0,
+          priceCents: BigInt(0),
           address: i.location?.trim().slice(0, 300) || null,
           notes: notes || null,
           status: 'NEW',
@@ -377,7 +382,7 @@ export async function commitCsvImport(type: CsvType, records: CsvRecord[]): Prom
             return {
               businessId,
               name: s.name.slice(0, 200),
-              price: s.price,
+              priceCents: dollarsToCents(s.price) ?? BigInt(0),
               durationMin: s.durationMin,
               description: s.description?.slice(0, 500) ?? null,
             };
@@ -479,7 +484,7 @@ export async function commitCsvImport(type: CsvType, records: CsvRecord[]): Prom
           title: rec.title.slice(0, 200),
           date: new Date(Date.UTC(y, mo - 1, d, hh, mm)),
           time: rec.time ?? null,
-          price: rec.price,
+          priceCents: dollarsToCents(rec.price) ?? BigInt(0),
           address: rec.address?.slice(0, 500) ?? null,
           notes: rec.notes?.slice(0, 2000) ?? null,
           status: 'NEW',

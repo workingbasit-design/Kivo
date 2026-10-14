@@ -9,7 +9,14 @@
  *
  * The REAL rate limiter and CSRF check are used (no Origin header in test
  * requests passes checkSameOrigin).
+ *
+ * M9: also backs src/lib/membership.ts (imported for real by the route) —
+ * the stub prisma carries a canned ACTIVE membership row, and it is
+ * registered as the tenant-guard's unscoped client so unsafeUnscoped()
+ * blocks resolve against it instead of a real database.
  */
+import { setUnscopedClient } from '../tenant-guard.ts';
+
 export const calls = {
   customerFindMany: [],
   serviceFindMany: [],
@@ -45,6 +52,22 @@ function pick(row, select) {
 }
 
 export const prisma = {
+  // M9: the copilot route resolves the tenant via the ACTIVE membership.
+  membership: {
+    findFirst: async ({ where }) => {
+      // Any signed-in stub user has one ACTIVE membership in biz_1.
+      if (where?.userId && where?.status === 'ACTIVE') {
+        return {
+          id: 'mem_1',
+          userId: where.userId,
+          businessId: 'biz_1',
+          role: 'ADMIN',
+          status: 'ACTIVE',
+        };
+      }
+      return null;
+    },
+  },
   customer: {
     findMany: async (args) => {
       calls.customerFindMany.push(args);
@@ -69,6 +92,22 @@ export const prisma = {
 
 export async function getSession() {
   return session;
+}
+
+// Register the stub prisma as the tenant-guard's unscoped client so
+// unsafeUnscoped() blocks (e.g. membership lookups by userId) run against
+// the in-memory stub instead of throwing "unscoped client not initialized".
+setUnscopedClient(prisma);
+
+// M9: requireAuth() now resolves via the ACTIVE membership; the stubbed
+// membership row above keeps the canned biz_1 context.
+export async function requireAuth() {
+  return {
+    user: { id: 'user_1' },
+    businessId: 'biz_1',
+    role: 'ADMIN',
+    membershipId: 'mem_1',
+  };
 }
 
 export async function getLocale() {

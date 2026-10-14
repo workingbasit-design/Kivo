@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import PwaRegister from "@/components/PwaRegister";
 import { getLocale } from "@/lib/i18n/server";
+import { getCspNonce } from "@/lib/csp-nonce";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -83,6 +84,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <head>
         <script
           type="application/ld+json"
+          nonce={await getCspNonce()}
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",

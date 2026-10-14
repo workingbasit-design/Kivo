@@ -5,7 +5,7 @@ import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card, EmptyState } from '@/components/ui';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
-import { formatMoney } from '@/lib/money';
+import { formatMoney, centsToDollars } from '@/lib/money';
 import { Package, Plus } from 'lucide-react';
 import InventoryClient from '@/components/InventoryClient';
 
@@ -45,7 +45,7 @@ export default async function InventoryPage({
   });
 
   const totalValue = parts.reduce(
-    (sum, p) => sum + (p.quantity * (p.unitCost ?? 0)),
+    (sum, p) => sum + p.quantity * centsToDollars(p.unitCostCents),
     0
   );
 
@@ -55,7 +55,7 @@ export default async function InventoryPage({
     sku: p.sku,
     quantity: p.quantity,
     reorderPoint: p.reorderPoint,
-    unitCost: p.unitCost,
+    unitCost: p.unitCostCents == null ? null : centsToDollars(p.unitCostCents),
     unit: p.unit,
     lowStock: p.reorderPoint != null && p.quantity <= p.reorderPoint,
     outOfStock: p.quantity <= 0,

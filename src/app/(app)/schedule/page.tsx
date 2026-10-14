@@ -12,6 +12,7 @@ import { toISODateLocal, todayInTimezone, cn, localeDateTag, formatDateShort } f
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { getJobCounts, getOverdueJobs, getScheduleWeekJobs } from '@/lib/job-queries';
+import { centsToDollars } from '@/lib/money';
 
 /** Monday of the week containing `d` (local time). */
 function mondayOf(d: Date): Date {
@@ -126,7 +127,7 @@ export default async function SchedulePage({
     dateKey: dayKey(j.date),
     time: j.time,
     address: j.address,
-    price: j.price,
+    price: centsToDollars(j.priceCents),
     status: j.status,
     notes: j.notes,
     customer: j.customer,

@@ -5,7 +5,7 @@ import { requireAuth } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
 import { PageHeader, Card, EmptyState, StatusBadge } from '@/components/ui';
-import { formatMoney } from '@/lib/money';
+import { formatMoney, centsToDollars } from '@/lib/money';
 import { formatWhenLabel } from '@/lib/reminders';
 import { todayInTimezone } from '@/lib/utils';
 import ReminderRow, { type ReminderUiStrings } from '@/components/reminders/ReminderRow';
@@ -69,7 +69,7 @@ export default async function RemindersPage() {
       where: { businessId, status: { in: ['UNPAID', 'PARTIALLY PAID'] } },
       include: {
         customer: { select: { name: true, phone: true, email: true } },
-        payments: { select: { amount: true } },
+        payments: { select: { amountCents: true } },
       },
       orderBy: { date: 'asc' },
       take: 50,
@@ -89,8 +89,9 @@ export default async function RemindersPage() {
 
   const invoices = invoiceRows
     .map((inv) => {
-      const paid = Math.round(inv.payments.reduce((s, p) => s + p.amount, 0) * 100) / 100;
-      const remaining = Math.round((inv.total - paid) * 100) / 100;
+      const paidCents = inv.payments.reduce((s, p) => s + p.amountCents, BigInt(0));
+      const remainingCents = inv.totalCents - paidCents;
+      const remaining = centsToDollars(remainingCents);
       return { ...inv, remaining };
     })
     .filter((inv) => inv.remaining > 0);

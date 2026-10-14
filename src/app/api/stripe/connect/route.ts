@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { randomBytes } from 'crypto';
 import { getSession } from '@/lib/auth';
+import { getActiveMembershipForUser } from '@/lib/membership';
 import { connectOAuthUrl } from '@/lib/stripe';
 
 const STATE_COOKIE = 'stripe_oauth_state';
@@ -17,7 +18,8 @@ function baseUrl(req: Request): string {
  */
 export async function GET(req: Request) {
   const session = await getSession();
-  const businessId = session?.user?.businessId;
+  const membership = session ? await getActiveMembershipForUser(session.user.id) : null;
+  const businessId = membership?.businessId;
   if (!businessId) {
     return NextResponse.redirect(new URL('/login', req.url));
   }
@@ -25,6 +27,12 @@ export async function GET(req: Request) {
     return NextResponse.redirect(
       new URL('/settings/payments?stripe=not-configured', req.url)
     );
+  }
+
+  // B7.4: owners must enable TOTP two-factor authentication before they can
+  // connect payments. (The check is on the OWNER role specifically.)
+  if (membership.role === 'OWNER' && session && !session.user.totpEnabled) {
+    return NextResponse.redirect(new URL('/settings/security?totp=required', req.url));
   }
 
   const state = randomBytes(24).toString('hex');

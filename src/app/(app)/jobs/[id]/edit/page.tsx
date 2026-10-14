@@ -10,6 +10,7 @@ import { updateJob } from '@/app/actions/jobs';
 import { toISODateLocal } from '@/lib/utils';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
+import { centsToDollars } from '@/lib/money';
 
 export default async function EditJobPage({
   params,
@@ -61,7 +62,7 @@ export default async function EditJobPage({
             date: toISODateLocal(job.date),
             time: job.time,
             address: job.address,
-            price: job.price,
+            price: centsToDollars(job.priceCents),
             noCharge: job.noCharge,
             notes: job.notes,
             technician: job.technician,

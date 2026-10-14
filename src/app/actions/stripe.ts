@@ -6,6 +6,7 @@ import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { clientIpFromHeaders } from '@/lib/client-ip';
+import { centsToDollars, dollarsToCents, formatCents } from '@/lib/money';
 
 export type ActionResult = { error?: string; ok?: boolean };
 
@@ -33,7 +34,7 @@ export async function getStripeDashboard() {
     orderBy: { createdAt: 'desc' },
     take: 25,
     select: {
-      id: true, amount: true, status: true, receiptUrl: true, createdAt: true,
+      id: true, amountCents: true, status: true, receiptUrl: true, createdAt: true,
       invoice: { select: { number: true, customer: { select: { name: true } } } },
     },
   });
@@ -42,7 +43,7 @@ export async function getStripeDashboard() {
     orderBy: { createdAt: 'desc' },
     take: 25,
     select: {
-      id: true, amount: true, status: true, receiptUrl: true, createdAt: true,
+      id: true, amountCents: true, status: true, receiptUrl: true, createdAt: true,
       quote: { select: { number: true, customer: { select: { name: true } } } },
     },
   });
@@ -61,7 +62,7 @@ export async function getStripeDashboard() {
     stripeConfigured: !!(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_CLIENT_ID),
     payments: payments.map((p) => ({
       id: p.id,
-      amount: p.amount,
+      amount: centsToDollars(p.amountCents),
       status: p.status,
       receiptUrl: p.receiptUrl,
       createdAt: p.createdAt.toISOString(),
@@ -70,7 +71,7 @@ export async function getStripeDashboard() {
     })),
     deposits: deposits.map((d) => ({
       id: d.id,
-      amount: d.amount,
+      amount: centsToDollars(d.amountCents),
       status: d.status,
       receiptUrl: d.receiptUrl,
       createdAt: d.createdAt.toISOString(),
@@ -145,20 +146,24 @@ export async function setQuoteDepositAction(
   const raw = String(formData.get('depositAmount') ?? '').trim();
   const quote = await prisma.quote.findFirst({
     where: { id: quoteId, businessId },
-    select: { id: true, total: true },
+    select: { id: true, totalCents: true },
   });
   if (!quote) return { error: 'Quote not found.' };
   if (raw === '') {
-    await prisma.quote.update({ where: { id: quoteId, businessId }, data: { depositAmount: null } });
+    await prisma.quote.update({ where: { id: quoteId, businessId }, data: { depositAmountCents: null } });
   } else {
     const amount = Math.round(Number(raw) * 100) / 100;
     if (!Number.isFinite(amount) || amount <= 0) {
       return { error: 'Deposit must be a positive amount.' };
     }
-    if (amount > quote.total) {
+    const depositCents = dollarsToCents(amount);
+    if (!depositCents) {
+      return { error: 'Deposit must be a positive amount.' };
+    }
+    if (depositCents > quote.totalCents) {
       return { error: 'Deposit cannot exceed the quote total.' };
     }
-    await prisma.quote.update({ where: { id: quoteId, businessId }, data: { depositAmount: amount } });
+    await prisma.quote.update({ where: { id: quoteId, businessId }, data: { depositAmountCents: depositCents } });
   }
   revalidatePath(`/quotes/${quoteId}`);
   return { ok: true };
@@ -190,18 +195,22 @@ export async function recordManualQuoteDepositAction(
   if (!Number.isFinite(amount) || amount <= 0) {
     return { error: 'Amount must be positive.' };
   }
+  const depositCents = dollarsToCents(amount);
+  if (!depositCents || depositCents <= BigInt(0)) {
+    return { error: 'Amount must be positive.' };
+  }
   const quote = await prisma.quote.findFirst({
     where: { id: quoteId, businessId },
-    include: { deposits: { where: { status: 'COMPLETED' }, select: { amount: true } } },
+    include: { deposits: { where: { status: 'COMPLETED' }, select: { amountCents: true } } },
   });
   if (!quote) return { error: 'Quote not found.' };
-  const alreadyPaid = quote.deposits.reduce((s, d) => s + d.amount, 0);
-  const requested = quote.depositAmount ?? quote.total;
-  if (alreadyPaid + amount > requested + 0.009) {
-    return { error: `That exceeds the requested deposit of $${requested.toFixed(2)}.` };
+  const alreadyPaidCents = quote.deposits.reduce((s, d) => s + d.amountCents, BigInt(0));
+  const requestedCents = quote.depositAmountCents ?? quote.totalCents;
+  if (alreadyPaidCents + depositCents > requestedCents) {
+    return { error: `That exceeds the requested deposit of ${formatCents(requestedCents, 'CAD', 'en')}.` };
   }
   await prisma.quoteDeposit.create({
-    data: { quoteId, businessId, amount, provider, status: 'COMPLETED', note: note || undefined },
+    data: { quoteId, businessId, amountCents: depositCents, provider, status: 'COMPLETED', note: note || undefined },
   });
   revalidatePath(`/quotes/${quoteId}`);
   return { ok: true };

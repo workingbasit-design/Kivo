@@ -2,11 +2,10 @@ import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
-import { createCheckoutSession, toCents } from '@/lib/stripe';
+import { createCheckoutSession, type CheckoutSessionResult } from '@/lib/stripe';
+import { withRetry, newIdempotencyKey } from '@/lib/retry';
 import { clientIpFromHeaders } from '@/lib/client-ip';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
-
-const round2 = (n: number) => Math.round(n * 100) / 100;
 
 async function rateLimited(): Promise<boolean> {
   const h = await headers();
@@ -29,6 +28,7 @@ export async function POST(req: Request) {
   if (!process.env.STRIPE_SECRET_KEY) {
     return NextResponse.json({ error: 'Online payments are not configured.' }, { status: 503 });
   }
+  const platformSecret = process.env.STRIPE_SECRET_KEY;
 
   let token = '';
   try {
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
           include: {
             business: { include: { stripeConnection: true } },
             customer: { select: { email: true } },
-            deposits: { where: { status: 'COMPLETED' }, select: { amount: true } },
+            deposits: { where: { status: 'COMPLETED' }, select: { amountCents: true } },
           },
         },
       },
@@ -80,10 +80,10 @@ export async function POST(req: Request) {
     );
   }
 
-  const requested = quote.depositAmount ?? quote.total;
-  const paid = round2(quote.deposits.reduce((s, d) => s + d.amount, 0));
-  const remaining = round2(requested - paid);
-  if (remaining <= 0) {
+  const requestedCents = quote.depositAmountCents ?? quote.totalCents;
+  const paidCents = quote.deposits.reduce((s, d) => s + d.amountCents, BigInt(0));
+  const remainingCents = requestedCents - paidCents;
+  if (remainingCents <= BigInt(0)) {
     return NextResponse.json({ error: 'The deposit is already paid in full.' }, { status: 409 });
   }
 
@@ -91,24 +91,32 @@ export async function POST(req: Request) {
     data: {
       quoteId: quote.id,
       businessId: quote.businessId,
-      amount: remaining,
+      amountCents: remainingCents,
       provider: 'STRIPE',
       status: 'PENDING',
     },
   });
 
   const base = process.env.APP_BASE_URL ?? new URL(req.url).origin;
-  const created = await createCheckoutSession({
-    platformSecret: process.env.STRIPE_SECRET_KEY,
-    stripeAccountId: conn.stripeAccountId,
-    amountCents: toCents(remaining),
-    currency: quote.business.currency || 'CAD',
-    productName: `Deposit - Quote ${quote.number} (${quote.business.name})`,
-    successUrl: `${base}/q/${token}?paid=1`,
-    cancelUrl: `${base}/q/${token}`,
-    customerEmail: quote.customer.email ?? undefined,
-    metadata: { kind: 'quote_deposit', quote_deposit_id: deposit.id, business_id: quote.businessId },
-  });
+  // B10.3: safe retries with an idempotency key (see /api/pay/invoice).
+  const idemKey = newIdempotencyKey('checkout');
+  const created = (await withRetry(
+    async () =>
+      createCheckoutSession({
+        platformSecret,
+        stripeAccountId: conn.stripeAccountId,
+        amountCents: Number(remainingCents),
+        currency: quote.business.currency || 'CAD',
+        productName: `Deposit - Quote ${quote.number} (${quote.business.name})`,
+        successUrl: `${base}/q/${token}?paid=1`,
+        cancelUrl: `${base}/q/${token}`,
+        customerEmail: quote.customer.email ?? undefined,
+        metadata: { kind: 'quote_deposit', quote_deposit_id: deposit.id, business_id: quote.businessId },
+        idempotencyKey: idemKey,
+      }),
+    idemKey,
+    { timeoutMs: 15_000 }
+  )) as CheckoutSessionResult;
   if (!created.ok || !created.url) {
     await prisma.quoteDeposit.update({
       where: { id: deposit.id, businessId: quote.businessId },

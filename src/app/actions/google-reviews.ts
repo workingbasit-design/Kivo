@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { encryptSecret, decryptSecret } from '@/lib/crypto';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import {
   googleOAuthConfigured,
@@ -75,19 +76,22 @@ async function getValidAccessToken(businessId: string): Promise<{ token: string;
   const conn = await prisma.googleConnection.findUnique({ where: { businessId } });
   if (!conn) throw Object.assign(new Error('Not connected'), { kind: 'reauth' as GoogleErrorKind });
 
+  // B4.2: tokens encrypted at rest - decrypt for the in-memory flow.
+  const accessToken = decryptSecret(conn.accessToken);
+  const refreshToken = decryptSecret(conn.refreshToken);
   const stillValid = conn.expiresAt && conn.expiresAt.getTime() > Date.now() + 60_000;
-  if (stillValid) return { token: conn.accessToken, connId: conn.id };
+  if (stillValid) return { token: accessToken as string, connId: conn.id };
 
-  if (!conn.refreshToken) {
+  if (!refreshToken) {
     throw Object.assign(new Error('No refresh token'), { kind: 'reauth' as GoogleErrorKind });
   }
   const refreshed = await refreshAccessToken(
-    { clientId: env.clientId, clientSecret: env.clientSecret, refreshToken: conn.refreshToken },
+    { clientId: env.clientId, clientSecret: env.clientSecret, refreshToken },
     fetch
   );
   await prisma.googleConnection.update({
     where: { id: conn.id, businessId },
-    data: { accessToken: refreshed.accessToken, expiresAt: refreshed.expiresAt },
+    data: { accessToken: encryptSecret(refreshed.accessToken), expiresAt: refreshed.expiresAt },
   });
   return { token: refreshed.accessToken, connId: conn.id };
 }
@@ -215,8 +219,9 @@ export async function disconnectGoogle(): Promise<GoogleActionResult> {
   if (!conn) return { ok: true };
 
   // Best-effort revocation; local deletion always happens.
-  await revokeGoogleToken(conn.accessToken, fetch);
-  if (conn.refreshToken) await revokeGoogleToken(conn.refreshToken, fetch);
+  // (Stored tokens are encrypted - decrypt before sending to Google.)
+  await revokeGoogleToken(decryptSecret(conn.accessToken) ?? '', fetch);
+  if (conn.refreshToken) await revokeGoogleToken(decryptSecret(conn.refreshToken) ?? '', fetch);
   await prisma.googleConnection.delete({ where: { id: conn.id, businessId } });
 
   revalidatePath('/reviews');

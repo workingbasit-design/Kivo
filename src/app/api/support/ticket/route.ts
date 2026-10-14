@@ -4,7 +4,9 @@ import { prisma } from '@/lib/prisma';
 import { rateLimit } from '@/lib/rate-limit';
 import { publicClientIp } from '@/lib/directory';
 import { getSession } from '@/lib/auth';
+import { getActiveMembershipForUser } from '@/lib/membership';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
+import { botCheckFailedJson } from '@/lib/bot-check';
 import { isProductOwner } from '@/lib/owner';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
 
@@ -84,9 +86,15 @@ export async function POST(req: Request) {
     );
   }
 
+  // B11.1: honeypot + fill-time bot check (generic error - don't educate bots).
+  if (botCheckFailedJson((json ?? {}) as Record<string, unknown>)) {
+    return NextResponse.json({ error: 'invalid' }, { status: 400 });
+  }
+
   // Optional tenant context - the form is public, so never require auth.
   const session = await getSession();
-  const businessId: string | null = session?.user?.businessId ?? null;
+  const membership = session ? await getActiveMembershipForUser(session.user.id) : null;
+  const businessId: string | null = membership?.businessId ?? null;
 
   const d = parsed.data;
   await prisma.supportTicket.create({

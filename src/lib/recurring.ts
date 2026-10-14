@@ -165,7 +165,7 @@ async function generateDueJobsInner(
             date: new Date(fresh.nextRun),
             time: fresh.time,
             address: fresh.address,
-            price: fresh.price,
+            priceCents: fresh.priceCents ?? BigInt(0),
             status: 'SCHEDULED',
             notes: fresh.notes,
             customerId: fresh.customerId,

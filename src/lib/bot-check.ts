@@ -23,6 +23,24 @@ const MIN_FILL_MS = 2000;
 /** Stale-tab guard: a form left open for hours then submitted is suspicious. */
 const MAX_FILL_MS = 6 * 60 * 60 * 1000;
 
+/** JSON-body variant for API routes (support ticket, etc.). */
+export function botCheckFailedJson(
+  body: Record<string, unknown>
+): BotCheckFailure | null {
+  const honeypot = body[HONEYPOT_FIELD];
+  if (typeof honeypot === 'string' && honeypot.trim() !== '') return 'honeypot';
+
+  const started = Number(body[FORM_STARTED_FIELD]);
+  if (!body[FORM_STARTED_FIELD] || !Number.isFinite(started) || started <= 0) {
+    return 'missing-timestamp';
+  }
+
+  const age = Date.now() - started;
+  if (age < MIN_FILL_MS) return 'too-fast';
+  if (age > MAX_FILL_MS) return 'stale';
+  return null;
+}
+
 /**
  * Returns null when the submission looks human, otherwise the failure reason.
  * Callers should return a GENERIC retry error (no `values` echo, so the form

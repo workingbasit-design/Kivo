@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { rateLimit } from '@/lib/rate-limit';
 import { resolveCustomerPortalToken } from '@/lib/portal';
 import { Card, StatusBadge } from '@/components/ui';
-import { formatMoney } from '@/lib/money';
+import { formatCents } from '@/lib/money';
 import { formatDateShort, formatJobTime, jobDisplayStatus } from '@/lib/utils';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
@@ -56,13 +56,13 @@ export default async function CustomerPortalPage({
   const [jobs, quotes, invoices] = await Promise.all([
     prisma.job.findMany({
       where: { customerId, businessId },
-      select: { id: true, title: true, date: true, time: true, price: true, status: true },
+      select: { id: true, title: true, date: true, time: true, priceCents: true, status: true },
       orderBy: { date: 'desc' },
       take: 10,
     }),
     prisma.quote.findMany({
       where: { customerId, businessId },
-      select: { id: true, number: true, title: true, total: true, status: true },
+      select: { id: true, number: true, title: true, totalCents: true, status: true },
       orderBy: { createdAt: 'desc' },
       take: 10,
     }),
@@ -72,9 +72,9 @@ export default async function CustomerPortalPage({
         id: true,
         number: true,
         date: true,
-        total: true,
+        totalCents: true,
         status: true,
-        payments: { select: { amount: true } },
+        payments: { select: { amountCents: true } },
       },
       orderBy: { date: 'desc' },
       take: 10,
@@ -83,10 +83,11 @@ export default async function CustomerPortalPage({
 
   const currency = customer.business.currency;
   const balances = invoices.map((inv) => {
-    const paid = inv.payments.reduce((s, p) => s + p.amount, 0);
-    return { ...inv, balance: Math.max(0, inv.total - paid) };
+    const paid = inv.payments.reduce((s, p) => s + p.amountCents, BigInt(0));
+    const balance = inv.totalCents > paid ? inv.totalCents - paid : BigInt(0);
+    return { ...inv, balance };
   });
-  const totalOwed = balances.reduce((s, i) => s + i.balance, 0);
+  const totalOwed = balances.reduce((s, i) => s + i.balance, BigInt(0));
 
   const locale = await getLocale();
   const L = (path: string) => t(locale, path);
@@ -111,13 +112,13 @@ export default async function CustomerPortalPage({
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-6 space-y-5 pb-12">
-        {totalOwed > 0 && (
+        {totalOwed > BigInt(0) && (
           <Card className="p-5 bg-amber-50/60 border-amber-200">
             <div className="flex items-center justify-between">
               <p className="text-sm font-semibold text-zinc-700 flex items-center gap-2">
                 <Wallet size={15} className="text-amber-600" /> {L('portal.balanceDue')}
               </p>
-              <p className="text-xl font-bold text-zinc-900">{formatMoney(totalOwed, currency, moneyLocale)}</p>
+              <p className="text-xl font-bold text-zinc-900">{formatCents(totalOwed, currency, moneyLocale)}</p>
             </div>
             {customer.business.phone && (
               <p className="text-xs text-zinc-500 mt-2 flex items-center gap-1.5">
@@ -141,7 +142,7 @@ export default async function CustomerPortalPage({
                     <div className="flex items-start justify-between gap-3">
                       <p className="text-sm font-semibold text-zinc-900 flex-1 min-w-0">{j.title}</p>
                       <span className="text-sm font-bold text-zinc-900 shrink-0">
-                        {formatMoney(j.price, currency, moneyLocale)}
+                        {formatCents(j.priceCents, currency, moneyLocale)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between gap-3 mt-1.5">
@@ -171,7 +172,7 @@ export default async function CustomerPortalPage({
                     <div className="flex items-start justify-between gap-3">
                       <p className="text-sm font-semibold text-zinc-900 flex-1 min-w-0">{q.title}</p>
                       <span className="text-sm font-bold text-zinc-900 shrink-0">
-                        {formatMoney(q.total, currency, moneyLocale)}
+                        {formatCents(q.totalCents, currency, moneyLocale)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between gap-3 mt-1.5">
@@ -201,10 +202,10 @@ export default async function CustomerPortalPage({
                       <p className="text-xs text-zinc-500">{formatDateShort(inv.date, dateLocale)}</p>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="text-sm font-bold text-zinc-900">{formatMoney(inv.total, currency, moneyLocale)}</p>
-                      {inv.balance > 0 ? (
+                      <p className="text-sm font-bold text-zinc-900">{formatCents(inv.totalCents, currency, moneyLocale)}</p>
+                      {inv.balance > BigInt(0) ? (
                         <p className="text-[11px] font-semibold text-amber-700">
-                          {L('portal.dueAmount').replace('{amount}', formatMoney(inv.balance, currency, moneyLocale))}
+                          {L('portal.dueAmount').replace('{amount}', formatCents(inv.balance, currency, moneyLocale))}
                         </p>
                       ) : (
                         <p className="text-[11px] font-semibold text-emerald-700">{L('portal.paid')}</p>

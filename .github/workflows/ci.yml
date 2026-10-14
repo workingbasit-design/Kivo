@@ -19,4 +19,10 @@ jobs:
       - run: npx tsc --noEmit
       - run: node --experimental-strip-types scripts/check-i18n-parity.mjs
       - run: npm test
+      # B5.1: raw SQL must stay parameterized. The only allowlisted use is the
+      # no-interpolation health check; any new $queryRaw/$executeRaw fails CI.
+      - run: |
+          ALLOW="src/app/api/health/route.ts"
+          HITS=$(grep -rn '\$queryRaw\|\$executeRaw' src/ --include='*.ts' --include='*.tsx' | grep -v __tests__ | grep -v "$ALLOW" || true)
+          if [ -n "$HITS" ]; then echo "Unallowlisted raw SQL:"; echo "$HITS"; exit 1; fi
       - run: npm run build

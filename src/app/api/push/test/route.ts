@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
+import { getActiveMembershipForUser } from '@/lib/membership';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { normalizeLocale, t } from '@/lib/i18n';
@@ -25,7 +26,8 @@ export async function POST(req: NextRequest) {
   if (!originCheck.ok) return originForbidden();
 
   const session = await getSession();
-  const businessId = session?.user?.businessId;
+  const membership = session ? await getActiveMembershipForUser(session.user.id) : null;
+  const businessId = membership?.businessId;
   if (!businessId) {
     return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   }

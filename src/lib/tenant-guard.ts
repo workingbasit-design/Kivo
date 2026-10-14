@@ -95,32 +95,41 @@ export const TENANT_MODELS: ReadonlySet<string> = new Set([
   'AgentProposal',
   'ApiKey',
   'Attachment',
+  'AuditEvent',
   'AutomationLog',
   'BookingPage',
   'Campaign',
   'ChecklistTemplate',
   'Communication',
+  'ConfidentialityIncident',
   'ConsentLog',
   'Crew',
   'CreditNote',
   'CustomFieldDef',
   'Customer',
+  'CustomerLink',
   'CustomerPortalToken',
   'CustomerProperty',
   'Designation',
   'DigestSetting',
   'DirectoryClaim',
   'DirectoryReport',
+  'DocumentCounter',
+  'EmailVerificationToken',
   'Equipment',
+  'ErrorLog',
   'GoogleConnection',
+  'IdempotencyKey',
   'Invoice',
   'Job',
   'JobExpense',
   'Lead',
+  'Membership',
   'MessageLog',
   'MessageQuota',
   'MessagingConnection',
   'MessagingSettings',
+  'MonitorAlert',
   'Notification',
   'Part',
   'Payment',
@@ -147,6 +156,7 @@ export const TENANT_MODELS: ReadonlySet<string> = new Set([
   'TimeEntry',
   'TrackingShare',
   'WebhookEndpoint',
+  'WebhookEvent',
   'WorkflowRule',
 ]);
 
@@ -230,9 +240,23 @@ export function assertTenantScope(params: GuardParams): void {
     for (const row of rows) {
       const businessId = row?.businessId;
       // Allow undefined businessId only for models where it's optional
-      // in the schema: Payment (nullable during backfill, then required)
-      // and SupportTicket (public form allows unauthenticated submissions).
-      if ((model === 'Payment' || model === 'SupportTicket') && (businessId === undefined || businessId === null)) continue;
+      // in the schema: Payment (nullable during backfill, then required),
+      // SupportTicket (public form allows unauthenticated submissions),
+      // IdempotencyKey + WebhookEvent (M6) + ConfidentialityIncident (M7):
+      // null-business rows are legitimate for pre-auth endpoints,
+      // pre-resolution webhooks, and platform-level incidents.
+      // MonitorAlert (B9): platform-wide alerts (error spikes) have no
+      // businessId by design.
+      if (
+        (model === 'Payment' ||
+          model === 'SupportTicket' ||
+          model === 'IdempotencyKey' ||
+          model === 'WebhookEvent' ||
+          model === 'ConfidentialityIncident' ||
+          model === 'MonitorAlert') &&
+        (businessId === undefined || businessId === null)
+      )
+        continue;
       if (typeof businessId !== 'string' || businessId.length === 0) {
         throw new TenantScopeError(model, action);
       }
@@ -251,10 +275,11 @@ export function assertTenantScope(params: GuardParams): void {
   // tenant exactly as well:
   // - MessageQuota: { businessId_month: { businessId, month } }
   // - MessagingConnection: { businessId_channel: { businessId, channel } }
+  // - IdempotencyKey: { businessId_endpoint_key: { businessId, endpoint, key } }
   // (2026-10-01: without this, /settings/messaging crashed to the error
   // boundary on every load - getMessagingOverview upserts the monthly quota
   // row - and the messaging scheduler + WhatsApp webhook hit the same wall.)
-  for (const key of ['businessId_month', 'businessId_channel'] as const) {
+  for (const key of ['businessId_month', 'businessId_channel', 'businessId_endpoint_key'] as const) {
     const compound = where?.[key] as Record<string, unknown> | undefined;
     if (
       compound &&

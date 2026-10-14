@@ -1,11 +1,11 @@
-import { redirect } from 'next/navigation';
-import { getSession } from '@/lib/auth';
+import { requireAuth } from '@/lib/auth';
 import { FOLLOWUP_AFTER_DAYS, DAY_MS } from '@/lib/revenue';
 import { prisma } from '@/lib/prisma';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
 import { getActiveShareToken } from '@/lib/share';
 import { QUOTE_STATUSES } from '@/lib/validations';
+import { centsToDollars } from '@/lib/money';
 import QuotesClient, { type QuoteListItem, type StaleQuoteItem } from './QuotesClient';
 import type { ExportColumn } from '@/components/ExportButtons';
 
@@ -24,9 +24,7 @@ export default async function QuotesPage({
 }: {
   searchParams: Promise<{ status?: string }>;
 }) {
-  const session = await getSession();
-  if (!session?.user?.businessId) redirect('/login');
-  const businessId = session.user.businessId;
+  const { businessId } = await requireAuth();
 
   const { status } = await searchParams;
   const initialFilter = FILTERS.includes(status as (typeof FILTERS)[number])
@@ -56,7 +54,7 @@ export default async function QuotesPage({
       select: {
         id: true,
         number: true,
-        total: true,
+        totalCents: true,
         updatedAt: true,
         customer: { select: { name: true, phone: true } },
       },
@@ -69,7 +67,7 @@ export default async function QuotesPage({
     id: q.id,
     number: q.number,
     title: q.title,
-    total: q.total,
+    total: centsToDollars(q.totalCents),
     status: q.status,
     createdAt: q.createdAt.toISOString(),
     customer: { name: q.customer.name },
@@ -78,7 +76,7 @@ export default async function QuotesPage({
   const staleQuotes: StaleQuoteItem[] = staleRows.map((q) => ({
     id: q.id,
     number: q.number,
-    total: q.total,
+    total: centsToDollars(q.totalCents),
     updatedAt: q.updatedAt.toISOString(),
     customer: { name: q.customer.name, phone: q.customer.phone },
   }));

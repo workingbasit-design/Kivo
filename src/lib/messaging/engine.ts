@@ -37,6 +37,7 @@ import {
   type SendResult,
 } from './providers.ts';
 import { normalizeWaDigits } from '../reminders.ts';
+import { centsToDollars } from '../money.ts';
 
 /** SendErrorKinds that will never succeed on retry (don't re-attempt). */
 const PERMANENT_KINDS = new Set([
@@ -165,6 +166,7 @@ type ConnRow = {
   emailFromName: string | null;
   emailFromAddress: string | null;
   emailApiKey: string | null;
+  emailVerifiedAt: Date | null;
 };
 
 /** True when the connection exists and holds usable (decryptable) credentials. */
@@ -209,6 +211,27 @@ async function sendOnChannel(
 ): Promise<SendAttemptOutcome> {
   const { candidate, rendered, businessId, quotaId, month, dayKey, settings, getConn, report } = input;
   const conn = getConn(channel);
+  // B7.6: the business must verify its sending email (24h verification link)
+  // before the platform sends emails to its customers on its behalf.
+  // Transactional mail TO the business itself (password resets etc.) does
+  // not go through this engine and is not gated.
+  if (channel === 'EMAIL' && conn && !conn.emailVerifiedAt) {
+    await prisma.messageLog.create({
+      data: {
+        type: channel,
+        recipient: candidate.toEmail ?? '',
+        content: '', status: 'FAILED',
+        customerId: candidate.customerId, template: candidate.template,
+        locale: candidate.locale, eventKey,
+        error: '[verification] Business email not verified.',
+        businessId,
+      },
+    });
+    return {
+      sentChannel: null, quotaBlocked: false, providerQuotaHit: false,
+      detail: 'Verify your email first. We sent a verification link to your sending address - check Settings → Messaging.',
+    };
+  }
   if (!connReady(channel, conn)) {
     await prisma.messageLog.create({
       data: {
@@ -453,7 +476,7 @@ export async function runMessagingCycle(
   const invoices = await prisma.invoice.findMany({
     where: { businessId, status: { in: UNPAID_STATUSES } },
     select: {
-      id: true, number: true, total: true, date: true, status: true,
+      id: true, number: true, totalCents: true, date: true, status: true,
       customerId: true,
       customer: { select: { name: true, phone: true, phoneNorm: true, email: true, messageConsent: true, preferredLocale: true } },
     },
@@ -466,7 +489,7 @@ export async function runMessagingCycle(
       createdAt: { gte: new Date(now.getTime() - 9 * 24 * 60 * 60 * 1000) },
     },
     select: {
-      id: true, number: true, total: true, status: true, createdAt: true,
+      id: true, number: true, totalCents: true, status: true, createdAt: true,
       customerId: true,
       customer: { select: { name: true, phone: true, phoneNorm: true, email: true, messageConsent: true, preferredLocale: true } },
     },
@@ -482,7 +505,7 @@ export async function runMessagingCycle(
     locale: localeOf(j.customer.preferredLocale),
   });
   const toSchedInvoice = (i: (typeof invoices)[number]): SchedInvoice => ({
-    id: i.id, number: i.number, total: i.total, date: i.date, status: i.status,
+    id: i.id, number: i.number, total: centsToDollars(i.totalCents), date: i.date, status: i.status,
     customerId: i.customerId, customerName: i.customer.name,
     phone: i.customer.phoneNorm || i.customer.phone,
     email: i.customer.email,
@@ -490,7 +513,7 @@ export async function runMessagingCycle(
     locale: localeOf(i.customer.preferredLocale),
   });
   const toSchedQuote = (q: (typeof quotes)[number]): SchedQuote => ({
-    id: q.id, number: q.number, total: q.total, status: q.status, createdAt: q.createdAt,
+    id: q.id, number: q.number, total: centsToDollars(q.totalCents), status: q.status, createdAt: q.createdAt,
     customerId: q.customerId, customerName: q.customer.name,
     phone: q.customer.phoneNorm || q.customer.phone,
     email: q.customer.email,

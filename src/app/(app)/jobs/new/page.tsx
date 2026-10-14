@@ -8,6 +8,7 @@ import JobForm, { type JobFormInitial } from '@/components/JobForm';
 import { createJobWithOfflineFallback } from '@/lib/offline/job-action';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
+import { centsToDollars } from '@/lib/money';
 
 // Always render fresh: the customer list must include customers created
 // moments ago (client-side navigation can otherwise reuse a cached render).
@@ -40,11 +41,11 @@ export default async function NewJobPage({
   if (serviceParam) {
     const service = await prisma.service.findFirst({
       where: { id: serviceParam, businessId },
-      select: { id: true, name: true, price: true, description: true },
+      select: { id: true, name: true, priceCents: true, description: true },
     });
     if (service) {
       initial.title = service.name;
-      initial.price = service.price;
+      initial.price = centsToDollars(service.priceCents);
       initial.serviceId = service.id;
       if (service.description) initial.notes = service.description;
     }
@@ -55,11 +56,11 @@ export default async function NewJobPage({
   if (templateParam) {
     const template = await prisma.checklistTemplate.findFirst({
       where: { id: templateParam, businessId },
-      select: { id: true, name: true, price: true, notes: true },
+      select: { id: true, name: true, priceCents: true, notes: true },
     });
     if (template) {
       initial.title = template.name;
-      if (typeof template.price === 'number') initial.price = template.price;
+      if (template.priceCents !== null) initial.price = centsToDollars(template.priceCents);
       if (template.notes) initial.notes = template.notes;
       initial.templateId = template.id;
     }

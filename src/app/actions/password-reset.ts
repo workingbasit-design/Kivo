@@ -135,6 +135,13 @@ export async function resetPassword(
     };
   }
 
+  // B7.3a: reject breached passwords (fail-open on HIBP outage).
+  const { isPasswordBreached } = await import('@/lib/breached-passwords');
+  const breach = await isPasswordBreached(parsed.data.password);
+  if (breach.breached) {
+    return { error: 'This password has appeared in a data breach. Please choose a different one.' };
+  }
+
   const passwordHash = await bcrypt.hash(parsed.data.password, 12);
   await prisma.$transaction([
     prisma.user.update({

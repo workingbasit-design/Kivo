@@ -13,6 +13,9 @@ import { authenticateV1Request, hasScope } from '@/lib/apiKeys';
 import { emitWebhookEvent } from '@/lib/webhooks';
 import { invoiceSchema } from '@/lib/validations';
 import { calcTax, splitStoredTax } from '@/lib/tax';
+import { dollarsToCents, centsToDollars } from '@/lib/money';
+import { invoiceDueAt } from '@/lib/invoice-paid';
+import { nextDocumentNumber } from '@/lib/numbering';
 
 // Mirrors the server action's whitelist (src/app/actions/invoices.ts) so a
 // garbage taxType can't be stored with mismatched rate semantics.
@@ -49,11 +52,11 @@ const select = {
   number: true,
   customerId: true,
   date: true,
-  subtotal: true,
+  subtotalCents: true,
   taxRate: true,
   taxType: true,
-  taxAmount: true,
-  total: true,
+  taxAmountCents: true,
+  totalCents: true,
   status: true,
   notes: true,
   createdAt: true,
@@ -61,28 +64,6 @@ const select = {
 
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
-}
-
-/** Mirror the app's INV-XXXX numbering with clash-retry (see src/app/actions/invoices.ts). */
-async function nextInvoiceNumber(businessId: string): Promise<string> {
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const numbers = await prisma.invoice.findMany({
-      where: { businessId },
-      select: { number: true },
-    });
-    let max = 0;
-    for (const r of numbers) {
-      const m = /^INV-(\d+)$/.exec(r.number);
-      if (m) max = Math.max(max, parseInt(m[1], 10));
-    }
-    const number = `INV-${String(max + 1 + attempt).padStart(4, '0')}`;
-    const clash = await prisma.invoice.findFirst({
-      where: { businessId, number },
-      select: { id: true },
-    });
-    if (!clash) return number;
-  }
-  return `INV-${Date.now().toString().slice(-6)}`;
 }
 
 export async function GET(req: Request) {
@@ -145,20 +126,22 @@ export async function POST(req: Request) {
     taxes: splitStoredTax(taxType, d.taxRate),
   }).taxAmount;
   const total = round2(subtotal + taxAmount);
-  const number = await nextInvoiceNumber(auth.key.businessId);
 
   const created = await prisma.$transaction(async (tx) => {
+    // Number generated inside the same transaction as the insert (M4).
+    const number = await nextDocumentNumber(tx, auth.key.businessId, 'INVOICE');
     const inv = await tx.invoice.create({
       data: {
         businessId: auth.key.businessId,
         customerId: customer.id,
         number,
         date: new Date(`${d.date}T00:00:00`),
-        subtotal,
+        dueAt: invoiceDueAt(new Date(`${d.date}T00:00:00`)),
+        subtotalCents: dollarsToCents(subtotal) ?? BigInt(0),
         taxRate: d.taxRate,
         taxType,
-        taxAmount,
-        total,
+        taxAmountCents: dollarsToCents(taxAmount) ?? BigInt(0),
+        totalCents: dollarsToCents(total) ?? BigInt(0),
         status: 'UNPAID',
         notes: d.notes || null,
       },
@@ -170,7 +153,7 @@ export async function POST(req: Request) {
           invoiceId: inv.id,
           description: item.desc,
           qty: item.qty,
-          unitPrice: item.rate,
+          unitPriceCents: dollarsToCents(item.rate) ?? BigInt(0),
           position: idx,
         })),
       });
@@ -182,7 +165,7 @@ export async function POST(req: Request) {
     id: created.id,
     number: created.number,
     customer_id: customer.id,
-    total: created.total,
+    total: centsToDollars(created.totalCents),
   }).catch(() => {});
   return NextResponse.json({ data: created }, { status: 201 });
 }

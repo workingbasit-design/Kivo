@@ -20,6 +20,8 @@
  *  - sandbox:   https://sandbox-quickbooks.api.intuit.com
  */
 
+import { encryptSecret, decryptSecret } from './crypto.ts';
+
 export const QB_AUTHORIZE_URL = 'https://appcenter.intuit.com/connect/oauth2';
 export const QB_TOKEN_URL = 'https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer';
 export const QB_REVOKE_URL = 'https://developer.api.intuit.com/v2/oauth2/tokens/revoke';
@@ -268,6 +270,10 @@ export async function getValidAccessToken(
   db: QBSyncDb,
   fetchFn: FetchFn = fetch
 ): Promise<{ ok: boolean; accessToken?: string; error?: string }> {
+  // B4.2: tokens are encrypted at rest; decrypt for the in-memory flow.
+  // decryptSecret passes through legacy plaintext rows unchanged.
+  conn.accessToken = decryptSecret(conn.accessToken) ?? '';
+  conn.refreshToken = decryptSecret(conn.refreshToken) ?? '';
   const msLeft = conn.expiresAt.getTime() - Date.now();
   if (msLeft > REFRESH_BUFFER_MS) return { ok: true, accessToken: conn.accessToken };
   const refreshed = await refreshAccessToken(conn.refreshToken, creds.clientId, creds.clientSecret, fetchFn);
@@ -278,9 +284,10 @@ export async function getValidAccessToken(
     await db.quickBooksConnection.update({
       where: { businessId },
       data: {
-        accessToken: refreshed.accessToken,
+        accessToken: encryptSecret(refreshed.accessToken),
         // Intuit may rotate the refresh token; keep the old one when absent.
-        refreshToken: refreshed.refreshToken ?? conn.refreshToken,
+        // (conn.refreshToken is decrypted in memory above - re-encrypt it.)
+        refreshToken: encryptSecret(refreshed.refreshToken ?? conn.refreshToken),
         expiresAt: new Date(Date.now() + (refreshed.expiresIn ?? 3600) * 1000),
       },
     });

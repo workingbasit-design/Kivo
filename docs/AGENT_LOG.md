@@ -219,3 +219,74 @@ Still blocked: Vercel deploy stalled (user action needed) — live verification 
 **Verified:** tsc clean, npm test 1072 pass / 0 fail, i18n parity PASSED.
 **Deploy:** both commits auto-deployed from GitHub push (source: git) — `dpl_H8iArbam6NBhWDe6ZhaCzUZfWJP5` (fixes) READY, `dpl_D53NRHHVXBhLJCpFuXMP8dqkWWVn` (plans) READY. Production now at 6a4bd56. Note: auto-deploy worked this time, contradicting the earlier `link: null` finding — the link state is now unverified either way; pushes auto-deployed, which is what matters.
 **Still open:** Prompt 3 plans await user OK (`docs/plans/database.md`, `docs/plans/security.md`). C2 pro-profile screenshots (4) still missing — screenshot subagent stalled, to be retried. Stripe platform keys still need to be added by the owner in Vercel.
+
+---
+
+## 2026-10-14: Prompt 3 Part A — database hardening (M1–M12), all local
+
+**DB used:** local scratch Postgres 18.4.0-beta.17 at `127.0.0.1:54333/kivo_scratch`
+(loopback only). Production (`DATABASE_URL` in `.env`) was never touched;
+every DB command overrode the URL per-command. No pushes to GitHub (local
+commits only). `prisma migrate dev` hangs in this sandbox, so M6+ migrations
+are hand-written and each verified with zero drift
+(`prisma migrate diff --from-url … --to-schema-datamodel` → empty migration).
+
+| Migration | Commit | Evidence |
+|---|---|---|
+| M1 Membership table + backfill + `requireMembership` (`src/lib/membership.ts`) | `2b09a07` | tsc clean; suite green |
+| M2 CustomerLink table (explicit optional consumer↔customer link, no backfill) | `4f8c54e` | tsc clean; suite green |
+| M3 TaxRate + InvoiceTaxLine + Business tax settings + `docs/TAX_NOTES.md` | `3f206c4` | tax-calc, tax-immutability tests green |
+| M4 DocumentCounter + transactional numbering (`src/lib/numbering.ts`) | `89351ff` | numbering-concurrency: 20 parallel invoices → 20 distinct sequential numbers |
+| M5 AuditEvent + append-only trigger + RLS policies (`src/lib/audit.ts`) | `e705950` | audit-append-only: UPDATE/DELETE blocked |
+| M6 IdempotencyKey + WebhookEvent; Stripe webhook switch (`src/lib/idempotency.ts`) | `75067a6` | idempotency-replay: double-submit → one row |
+| M7 ConfidentialityIncident + archivedBy + createdBy/updatedBy (12 tables) | `1acf2a8` | tsc clean; suite green |
+| M8 cents cutover (Float → NOT NULL BigInt, boundary-converted, ~50 files) | `96c0204` | tsc clean; 1094/1094 green |
+| M9 tenancy NOT NULL + drop User.role/User.businessId | `aae89e6` | 1094/1094 green. `Job.date`/`Job.time` drop BLOCKED: 17 files still read them (plan made the drop conditional on zero reads) |
+| M10 constraints (CHECKs, UNIQUE(businessId,number), RESTRICT, FK indexes, Invoice.dueAt) | `87e9c3e` | new constraints.test.mts (10 DB tests); 1104/1104 green |
+| M11 RLS policies staged (not forced) + staging-gate test | `fee1c61` | new rls.test.mts 8/8; full suite 1086/1086. DELIBERATE: policies ENABLED not FORCED (app connects as owner; per-request set_config wiring is the activation prerequisite). See `docs/SECURITY_REPORT.md` |
+| M12 composite indexes + 10k-job seed + EXPLAIN ANALYZE | `c61a7ea` | `docs/PERF.md`: all 10 queries ≤ 1.3 ms (target < 50 ms); suite 1086/1086 against seeded DB |
+
+**Docs written:** `TAX_NOTES.md` (M3), `PERF.md` (M12), `DATA_RETENTION.md`,
+`INCIDENT_RUNBOOK.md`, `DATA_MAP.md`, `BACKUP_RESTORE.md`, `SECURITY_REPORT.md`.
+**Scripts:** `scripts/seed-perf.ts` (10k-job perf seed, local-only guard),
+`scripts/explain-perf.sql` + `scripts/run-explain.mts`,
+`scripts/seed-staging.ts` (idempotent, `SEED_ALLOW_PROD=false` guard — verified:
+refuses production-like hosts, re-run safe), `scripts/restore-drill.ts`.
+
+**Restore drill (2026-10-14, scratch):** 88 tables / 15,267 rows extracted,
+fresh DB + `migrate deploy` clean in ~2.3 s, load ~1.4 s, verify 0 mismatches —
+DRILL PASSED in 4.9 s. No staging DB exists: staging setup + production-backup
+restore remain user-action items (`BACKUP_RESTORE.md`).
+
+**Final state:** `npx tsc --noEmit` clean; `npm test` 1086/1086 green (incl.
+i18n parity, part of the suite). Nothing pushed; production untouched.
+
+## Part B — security audit & fixes (2026-10-14, subagent session)
+
+**Baseline:** `npx tsc --noEmit` clean; `npm test` 1086/1086 green before changes.
+
+| Fix group | Commit | Evidence |
+|-----------|--------|----------|
+| B3.1 supply-chain upgrades (Next.js 16.4.1, React 19.3.1 per today's CVEs) | `41fc106` | tsc + tests green |
+| B1.5 SSRF protection (`src/lib/ssrf.ts`) | `34443ba` | 11 new tests pass |
+| B2.1/B2.2 nonce CSP + frame-ancestors none (via `src/proxy.ts`) | `d09ee67` | verified on local prod server |
+| B4.2 OAuth token encryption at rest (AES-256-GCM) | `48bacda` | 7 new tests pass |
+| B5 injection (fixed real stored-XSS in email preheader; header sanitizer; CI raw-SQL guard) | `8d492f2` | 23 new tests pass |
+| B7 auth (TOTP RFC 6238, HIBP, session rotation, safeNext, email-verification gate; M13 schema) | `76a3a07` | 13+4+7 new tests pass |
+| B8 webhook replay test (B8 verified already-implemented) + B9 in-house ErrorLog + alert cron | `328d00f` | 6+10 new tests pass |
+| B10 withRetry (Stripe/Resend/Anthropic) + double-submit fixes | `e997430` | 7 new tests pass |
+| B11 honeypot on signup/customer-signup/support-ticket | `b6de197` | bot-check JSON tests pass |
+| B12 magic-byte upload validation + private blobs via streaming routes | `7efb50e` | 14 new tests pass |
+| B13 copilot injection defense + daily cap + audit logging | `83cff1a` | 8 new tests pass |
+| B14 privacy officer placeholder + consumer section + consent wording | `002e67f` | i18n parity pass |
+| B3.3 Dependabot config | `6e2a37a` | — |
+| B1 access-control tests (cross-tenant, role matrix, mass-assignment, directory filter) | `64ac0a2` | 15 new tests pass |
+| Test/guard fixes (tenant-guard model set, B4.2/B11 env + assertions) | `78e8e56` | full suite green |
+
+**M13 migration** (`20261014190000_m13_totp`): `User.totpSecret/totpEnabled/totpBackupCodes`, `MessagingConnection.emailVerifiedAt`, `EmailVerificationToken`, `ErrorLog`, `MonitorAlert`, `ConsentLog.wording` — each with ROLLBACK.md per project rules.
+
+**Real bugs found & fixed:** stored-XSS in email preheader (B5); plaintext QB refresh-token re-save (B4.2); 2 forms missing double-submit protection (B10.4); public blob URLs for attachments/receipts (B12.3).
+
+**Final state:** `npx tsc --noEmit` clean; `npm test` **1205/1205 green**. Nothing pushed; production untouched. `docs/SECURITY_REPORT.md` extended with one row per B-check (ID, OWASP category, status, evidence).
+
+**Open (user decisions/actions):** Sentry, sharp, Turnstile, privacy officer contact, staging project/DB, Google OAuth console, Vercel preview protection, npm audit (proxy-blocked), ZAP (blocked on staging), production token backfill + rollout approval.

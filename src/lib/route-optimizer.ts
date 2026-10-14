@@ -26,6 +26,7 @@ import {
   type GeocodedPoint,
 } from './maps';
 import { parseTimeToMinutes, type RouteStop } from './routes';
+import { centsToDollars } from '@/lib/money';
 
 const ROUTE_STATUSES = ['SCHEDULED', 'IN PROGRESS'];
 
@@ -55,7 +56,7 @@ function toRouteStop(j: {
   title: string;
   address: string | null;
   time: string | null;
-  price: number;
+  priceCents: bigint;
   status: string;
   customer: { name: string };
 }): RouteStop {
@@ -65,7 +66,7 @@ function toRouteStop(j: {
     customerName: j.customer.name,
     address: j.address,
     time: j.time,
-    price: j.price,
+    price: centsToDollars(j.priceCents),
     status: j.status,
   };
 }

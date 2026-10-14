@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useActionState } from 'react';
 import { LogIn, AlertCircle } from 'lucide-react';
 import { login } from '@/app/actions/auth';
+import { verifyTotpLogin } from '@/app/actions/totp';
 import { useT } from '@/components/LanguageToggle';
 import { Field, inputClass, primaryBtnClass } from '@/components/ui';
 import GoogleAuthSection from '@/components/GoogleAuthSection';
@@ -12,6 +13,55 @@ import GoogleAuthSection from '@/components/GoogleAuthSection';
 export default function LoginPage() {
   const { t } = useT();
   const [state, formAction, isPending] = useActionState(login, {});
+  // B7.4: second-factor step. Bound to the login result so the challenge
+  // issued by the password step is submitted with the code.
+  const verifyAction = async (_prev: unknown, formData: FormData) =>
+    verifyTotpLogin(String(formData.get('challenge') ?? ''), String(formData.get('code') ?? ''));
+  const [totpState, totpFormAction, totpPending] = useActionState(verifyAction, null as unknown as { error?: string } | null);
+
+  if (state?.totpRequired && state.challenge) {
+    return (
+      <div className="bg-white rounded-3xl border border-zinc-200/70 shadow-xl shadow-zinc-200/50 p-6 sm:p-8">
+        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
+          {t('t10misc.auth.totpTitle') ?? 'Check your authenticator app'}
+        </h1>
+        <p className="text-sm text-zinc-500 mt-1 mb-6">
+          {t('t10misc.auth.totpSubtitle') ?? 'Enter the 6-digit code from your authenticator app.'}
+        </p>
+        <form action={totpFormAction} className="space-y-4">
+          <input type="hidden" name="challenge" value={state.challenge} />
+          <Field label={t('t10misc.auth.totpLabel') ?? 'Verification code'}>
+            <input
+              id="code"
+              name="code"
+              type="text"
+              required
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              placeholder="123456"
+              maxLength={9}
+              className={inputClass}
+            />
+          </Field>
+          {(totpState as { error?: string } | null)?.error && (
+            <div
+              role="alert"
+              className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5"
+            >
+              <AlertCircle size={14} className="mt-0.5 shrink-0" />
+              <span>{(totpState as { error?: string }).error}</span>
+            </div>
+          )}
+          <button type="submit" disabled={totpPending} className={`${primaryBtnClass} w-full`}>
+            <LogIn size={16} />
+            {totpPending
+              ? (t('t10misc.auth.verifying') ?? 'Verifying…')
+              : (t('t10misc.auth.verifyButton') ?? 'Verify')}
+          </button>
+        </form>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-3xl border border-zinc-200/70 shadow-xl shadow-zinc-200/50 p-6 sm:p-8">

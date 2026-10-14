@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { getSession } from '@/lib/auth';
+import { getActiveMembershipForUser } from '@/lib/membership';
 import { prisma } from '@/lib/prisma';
 import { rateLimit, AUTH_LIMIT } from '@/lib/rate-limit';
 import { exchangeCode } from '@/lib/quickbooks';
+import { encryptSecret } from '@/lib/crypto';
 import { QB_STATE_COOKIE, quickbooksConfigured, quickbooksRedirectUri } from '../connect/route';
 import { clientIpFromHeaders } from '@/lib/client-ip';
 
@@ -16,7 +18,8 @@ import { clientIpFromHeaders } from '@/lib/client-ip';
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const session = await getSession();
-  const businessId = session?.user?.businessId;
+  const membership = session ? await getActiveMembershipForUser(session.user.id) : null;
+  const businessId = membership?.businessId;
   if (!businessId) {
     return NextResponse.redirect(new URL('/login', req.url));
   }
@@ -62,14 +65,15 @@ export async function GET(req: Request) {
       create: {
         businessId,
         realmId,
-        accessToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken,
+        // B4.2: OAuth tokens encrypted at rest (AES-256-GCM).
+        accessToken: encryptSecret(tokens.accessToken),
+        refreshToken: encryptSecret(tokens.refreshToken),
         expiresAt: new Date(Date.now() + (tokens.expiresIn ?? 3600) * 1000),
       },
       update: {
         realmId,
-        accessToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken,
+        accessToken: encryptSecret(tokens.accessToken),
+        refreshToken: encryptSecret(tokens.refreshToken),
         expiresAt: new Date(Date.now() + (tokens.expiresIn ?? 3600) * 1000),
         lastSyncAt: null, // fresh connection - nothing synced yet
       },

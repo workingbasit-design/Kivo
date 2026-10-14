@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { centsToDollars } from '@/lib/money';
 import { PageHeader } from '@/components/ui';
 import { ChecklistTemplatesClient } from '@/components/ChecklistTemplatesClient';
 import { getLocale } from '@/lib/i18n/server';
@@ -37,7 +38,7 @@ export default async function ChecklistTemplatesPage() {
           id: tpl.id,
           name: tpl.name,
           items: tpl.items.map((i) => i.label),
-          price: tpl.price,
+          price: tpl.priceCents == null ? null : centsToDollars(tpl.priceCents),
           durationMin: tpl.durationMin,
           notes: tpl.notes,
         }))}

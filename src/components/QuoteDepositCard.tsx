@@ -55,10 +55,11 @@ export default function QuoteDepositCard({
   locale: Locale;
 }) {
   const [showRecord, setShowRecord] = useState(false);
-  const [amtState, amtAction] = useActionState(setQuoteDepositAction, {});
+  // B10.4 double-submit protection: both submit buttons disable while pending.
+  const [amtState, amtAction, amtPending] = useActionState(setQuoteDepositAction, {});
   // Wrap so the record form closes on success in the submission handler
   // (user-initiated) instead of syncing via an effect.
-  const [recState, recAction] = useActionState(
+  const [recState, recAction, recPending] = useActionState(
     async (prev: ActionResult, formData: FormData) => {
       const result = await recordManualQuoteDepositAction(prev, formData);
       if (result?.ok) setShowRecord(false);
@@ -123,7 +124,7 @@ export default function QuoteDepositCard({
             className={`${inputClass} w-36`}
           />
         </Field>
-        <button type="submit" className={secondaryBtnClass}>
+        <button type="submit" disabled={amtPending} className={secondaryBtnClass}>
           {t(locale, 'messaging.saveSettings')}
         </button>
       </form>
@@ -179,7 +180,7 @@ export default function QuoteDepositCard({
           </Field>
           {recState.error && <p className="text-xs font-semibold text-rose-600">{recState.error}</p>}
           <div className="flex gap-2">
-            <button type="submit" className={primaryBtnClass}>
+            <button type="submit" disabled={recPending} className={primaryBtnClass}>
               {t(locale, 'payments.recordDepositButton')}
             </button>
             <button type="button" onClick={() => setShowRecord(false)} className={secondaryBtnClass}>

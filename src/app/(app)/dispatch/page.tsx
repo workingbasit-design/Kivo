@@ -9,6 +9,7 @@ import { t } from '@/lib/i18n';
 import { CalendarDays } from 'lucide-react';
 import DispatchBoardClient from '@/components/DispatchBoardClient';
 import DispatchDatePicker from '@/components/DispatchDatePicker';
+import { centsToDollars } from '@/lib/money';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,18 +51,20 @@ export default async function DispatchPage({
     orderBy: [{ time: 'asc' }, { createdAt: 'asc' }],
   });
 
-  const team = await prisma.user.findMany({
-    where: { businessId },
-    select: { id: true, name: true },
-    orderBy: { name: 'asc' },
-  });
+  const team = (
+    await prisma.membership.findMany({
+      where: { businessId, status: 'ACTIVE' },
+      include: { user: { select: { id: true, name: true } } },
+      orderBy: { user: { name: 'asc' } },
+    })
+  ).map((m) => m.user);
 
   const serialized = jobs.map((j) => ({
     id: j.id,
     title: j.title,
     time: j.time,
     status: j.status,
-    price: j.price,
+    price: centsToDollars(j.priceCents),
     address: j.address,
     technician: j.technician,
     assignedToId: j.assignedToId,

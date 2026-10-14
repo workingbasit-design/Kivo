@@ -116,7 +116,7 @@ export async function createManualEntry(input: {
   jobId?: string;
   notes?: string;
 }): Promise<TimesheetResult> {
-  const { businessId, user } = await requireAuth();
+  const { businessId, user, role } = await requireAuth();
   const limited = await checkLimit(user.id, 'createManualEntry');
   if (limited) return limited;
 
@@ -125,12 +125,12 @@ export async function createManualEntry(input: {
     return { error: parsed.error.issues[0]?.message ?? 'Invalid entry details.' };
   }
 
-  if (!isAdmin(user.role) && parsed.data.userId !== user.id) {
+  if (!isAdmin(role) && parsed.data.userId !== user.id) {
     return { error: 'You can only add time entries for yourself.' };
   }
 
-  const member = await prisma.user.findFirst({
-    where: { id: parsed.data.userId, businessId },
+  const member = await prisma.membership.findFirst({
+    where: { userId: parsed.data.userId, businessId, status: 'ACTIVE' },
   });
   if (!member) return { error: 'Team member not found.' };
 
@@ -173,7 +173,7 @@ export async function createManualEntry(input: {
 
 /** Delete a time entry. Admins can delete any; members only their own. */
 export async function deleteEntry(entryId: string): Promise<TimesheetResult> {
-  const { businessId, user } = await requireAuth();
+  const { businessId, user, role } = await requireAuth();
   const limited = await checkLimit(user.id, 'deleteEntry');
   if (limited) return limited;
 
@@ -181,7 +181,7 @@ export async function deleteEntry(entryId: string): Promise<TimesheetResult> {
     where: { id: entryId, businessId },
   });
   if (!entry) return { error: 'Entry not found.' };
-  if (!isAdmin(user.role) && entry.userId !== user.id) {
+  if (!isAdmin(role) && entry.userId !== user.id) {
     return { error: 'You can only delete your own entries.' };
   }
 
