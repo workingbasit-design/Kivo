@@ -50,6 +50,11 @@ Session log for AI agents working on EveryJob (Kivo). Required by AGENTS.md sect
   - Phase 4 DEFERRED: Switch 164 read sites to Cents (app works correctly via Float reads; large refactoring risk; deferred as future optimization)
   - Phase 5 DEFERRED: Remove Float columns (requires Phase 4; deferred)
   - Status: All new financial data stored as integer cents. No float rounding issues. Migration functionally complete.
-- Prompt 1: Truth audit (STARTING NOW - user said "Then work on these")
+- Prompt 1: Truth audit (STARTING NOW - user said "Do these changes now")
 - WCAG 2.2 AA audit
 - Mobile screenshots at 375px/390px
+
+## 2026-10-13 - CI fixes
+- Fixed 7 failing CI tests: TENANT_MODELS sync (added Project, SavedReport, DigestSetting, Crew), updated LATE terminology tests, 15-char password tests, quote intent test
+- All 1029 tests pass, tsc clean, lint clean, build succeeds
+- Pushed as 5898475
