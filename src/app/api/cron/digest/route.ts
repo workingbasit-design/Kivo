@@ -4,9 +4,10 @@ import { sendDigestForBusiness } from '@/lib/digest';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
 
 /**
- * Cron entry point for the morning digest. Scheduled hourly in vercel.json.
- * Each business opts in via DigestSetting (enabled + sendTime in its own
- * timezone); this route only sends when the business's local hour matches.
+ * Cron entry point for the morning digest. Scheduled once daily in
+ * vercel.json (12:00 UTC). Each business opts in via DigestSetting
+ * (enabled + sendTime in its own timezone); this route only sends when
+ * the business's local time has reached its sendTime.
  *
  * Same secret pattern as the other cron routes: CRON_SECRET via Bearer or
  * ?secret=. Delivery is in-app Notification + VAPID web push - $0.
@@ -56,10 +57,14 @@ export async function GET(req: Request) {
         minute: '2-digit',
         hour12: false,
       }).format(now);
-      // sendTime is "HH:MM"; fire when the local hour matches (cron runs hourly).
-      const [wantH] = s.sendTime.split(':');
-      const [nowH] = localHourMin.split(':');
-      if (wantH !== nowH) continue;
+      // sendTime is "HH:MM"; fire when local time has reached sendTime.
+      // Cron runs once daily (Vercel Hobby allows at most once per day), so
+      // use >= instead of exact hour match - exact match would miss across
+      // DST changes. Idempotency per (business, date) via dedupeKey
+      // prevents double-sends.
+      const [wantH, wantM] = s.sendTime.split(':').map(Number);
+      const [nowH, nowM] = localHourMin.split(':').map(Number);
+      if (nowH * 60 + nowM < wantH * 60 + wantM) continue;
 
       const channels = s.channels.split(',').map((c: string) => c.trim());
       const r = await sendDigestForBusiness(s.businessId, channels);
