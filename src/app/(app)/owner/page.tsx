@@ -6,6 +6,7 @@ import { getAttentionItems } from "@/lib/attention";
 import { getMoneyLeaks, measuredLeakTotal } from "@/lib/money-leaks";
 import { getHealthScore } from "@/lib/health-score";
 import { getDashboardStats } from "@/lib/dashboard";
+import { getTomorrowJobs } from "@/lib/job-queries";
 import { formatMoney } from "@/lib/money";
 import { getLocale } from "@/lib/i18n/server";
 import { t, type Locale } from "@/lib/i18n";
@@ -87,21 +88,11 @@ export default async function OwnerPage() {
     }),
   ]);
 
-  // Tomorrow's schedule (business-local day).
+  // Tomorrow's schedule (business-local day) - shared job query.
   const { start: tomorrowStart, end: tomorrowEnd } = tomorrowRange(
     business?.timezone || 'America/Toronto',
   );
-  const tomorrowJobs = await prisma.job
-    .findMany({
-      where: {
-        businessId,
-        date: { gte: tomorrowStart, lt: tomorrowEnd },
-        status: { in: ["NEW", "SCHEDULED"] },
-      },
-      select: { id: true, title: true, time: true, customer: { select: { name: true } } },
-      orderBy: { time: "asc" },
-      take: 10,
-    })
+  const tomorrowJobs = await getTomorrowJobs(businessId, tomorrowStart, tomorrowEnd)
     .catch(() => []);
 
   const leakTotal = measuredLeakTotal(leaks);

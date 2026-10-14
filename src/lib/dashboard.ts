@@ -4,6 +4,7 @@ import {
   bucketRevenueByService,
   type ServiceRevenueRow,
 } from "@/lib/revenue-by-service";
+import { getJobCounts, getMoneySummary, getTodayJobs, getUpcomingJobs } from "@/lib/job-queries";
 
 export interface TodayJob {
   id: string;
@@ -31,6 +32,8 @@ export interface DashboardStats {
   outstandingCount: number;
   newLeads: number;
   totalCustomers: number;
+  /** Total job count (from the shared getJobCounts). */
+  totalJobs: number;
   jobsByStatus: { status: string; count: number }[];
   todayJobs: TodayJob[];
   upcomingJobs: TodayJob[];
@@ -54,9 +57,12 @@ interface InvoiceWithPayments {
   id: string;
   number: string;
   total: number;
+  /** Present when the query selects it (dashboard due-invoice list). */
+  totalCents?: bigint | null;
   date: Date;
   customer: { name: string };
-  payments: { amount: number }[];
+  /** Present when the query selects it (dashboard due-invoice list). */
+  payments: { amount: number; amountCents?: bigint | null }[];
 }
 
 interface StatusCount {
@@ -113,60 +119,61 @@ export async function getDashboardStats(
   const { gte: todayStart, lte: todayEnd } = dayRange(todayStr);
   const weekStart = daysAgo(6); // last 7 days incl. today
 
+  // Job counts, job lists, and the money summary come from the shared
+  // query functions (src/lib/job-queries) so Dashboard, Jobs, Schedule,
+  // and Money all agree. Only genuinely dashboard-specific stats
+  // (payments this week, leads, customers) are queried here, plus the
+  // top-5 due-invoice list for rendering (the aggregate comes from the
+  // shared summary).
   const [
     todayJobsRaw,
     upcomingRaw,
-    jobsByStatusRaw,
+    jobCounts,
+    moneySummary,
+    dueInvoicesRaw,
     paymentsThisWeek,
-    openInvoices,
     newLeads,
     totalCustomers,
   ]: [
     JobWithCustomer[],
     JobWithCustomer[],
-    StatusCount[],
-    { _sum: { amount: number | null } },
+    { total: number; byStatus: Record<string, number> },
+    { outstanding: number; outstandingCount: number },
     InvoiceWithPayments[],
+    { _sum: { amount: number | null } },
     number,
     number,
   ] = await Promise.all([
-    prisma.job.findMany({
-      where: { businessId, date: { gte: todayStart, lte: todayEnd } },
-      include: { customer: { select: { name: true } } },
-      orderBy: [{ time: "asc" }, { createdAt: "asc" }],
-    }),
-    prisma.job.findMany({
-      where: {
-        businessId,
-        date: { gt: todayEnd },
-        status: { in: OPEN_JOB_STATUSES },
+    getTodayJobs(businessId, todayStart, todayEnd),
+    getUpcomingJobs(businessId, todayEnd),
+    getJobCounts(businessId, { timezone: b?.timezone ?? 'America/Toronto' }),
+    getMoneySummary(businessId),
+    prisma.invoice.findMany({
+      where: { businessId, status: { in: OPEN_INVOICE_STATUSES }, voidedAt: null },
+      select: {
+        id: true,
+        number: true,
+        total: true,
+        totalCents: true,
+        date: true,
+        customer: { select: { name: true } },
+        payments: {
+          where: { status: 'COMPLETED' },
+          select: { amount: true, amountCents: true },
+        },
       },
-      include: { customer: { select: { name: true } } },
-      orderBy: { date: "asc" },
+      orderBy: { date: 'asc' },
       take: 5,
-    }),
-    prisma.job.groupBy({
-      by: ["status"],
-      where: { businessId },
-      _count: { status: true },
     }),
     prisma.payment.aggregate({
       where: {
-        status: "COMPLETED",
+        status: 'COMPLETED',
         createdAt: { gte: weekStart },
         businessId,
       },
       _sum: { amount: true },
     }),
-    prisma.invoice.findMany({
-      where: { businessId, status: { in: OPEN_INVOICE_STATUSES } },
-      include: {
-        customer: { select: { name: true } },
-        payments: { where: { status: "COMPLETED" }, select: { amount: true } },
-      },
-      orderBy: { date: "asc" },
-    }),
-    prisma.lead.count({ where: { businessId, status: "NEW" } }),
+    prisma.lead.count({ where: { businessId, status: 'NEW' } }),
     prisma.customer.count({ where: { businessId } }),
   ]);
 
@@ -184,34 +191,37 @@ export async function getDashboardStats(
   // Shared with the app shell so the dashboard and sidebar always agree.
   const { bookedToday, jobsLeftToday } = summarizeTodayJobs(todayJobs);
 
-  const allOutstanding: DueInvoice[] = openInvoices.map((inv: InvoiceWithPayments) => {
-    const paid = inv.payments.reduce((s: number, p: { amount: number }) => s + p.amount, 0);
-    return {
-      id: inv.id,
-      number: inv.number,
-      customerName: inv.customer.name,
-      outstanding: Math.max(0, inv.total - paid),
-      date: inv.date,
-    };
-  });
-
-  const dueInvoices: DueInvoice[] = allOutstanding
-    .filter((inv: DueInvoice) => inv.outstanding > 0)
-    .slice(0, 5);
-
-  const outstanding = allOutstanding.reduce((s: number, inv: DueInvoice) => s + inv.outstanding, 0);
+  // Per-invoice balances, cents-aware to match the shared money summary.
+  const dueInvoices: DueInvoice[] = dueInvoicesRaw
+    .map((inv: InvoiceWithPayments) => {
+      const total = inv.totalCents != null ? Number(inv.totalCents) / 100 : inv.total;
+      const paid = inv.payments.reduce(
+        (s: number, p: { amount: number; amountCents?: bigint | null }) =>
+          s + (p.amountCents != null ? Number(p.amountCents) / 100 : p.amount),
+        0
+      );
+      return {
+        id: inv.id,
+        number: inv.number,
+        customerName: inv.customer.name,
+        outstanding: Math.max(0, total - paid),
+        date: inv.date,
+      };
+    })
+    .filter((inv: DueInvoice) => inv.outstanding > 0);
 
   return {
     bookedToday,
     jobsLeftToday,
     collectedThisWeek: paymentsThisWeek._sum.amount ?? 0,
-    outstanding,
-    outstandingCount: openInvoices.length,
+    outstanding: moneySummary.outstanding,
+    outstandingCount: moneySummary.outstandingCount,
     newLeads,
     totalCustomers,
-    jobsByStatus: jobsByStatusRaw.map((g: StatusCount) => ({
-      status: g.status,
-      count: g._count.status,
+    totalJobs: jobCounts.total,
+    jobsByStatus: Object.entries(jobCounts.byStatus).map(([status, count]) => ({
+      status,
+      count,
     })),
     todayJobs,
     upcomingJobs: upcomingRaw.map(mapJob),

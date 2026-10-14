@@ -39,7 +39,7 @@ export default async function QuotesPage({
   const [business, quoteRows, staleRows] = await Promise.all([
     prisma.business.findUnique({
       where: { id: businessId },
-      select: { currency: true, name: true, regionCode: true },
+      select: { currency: true, name: true, regionCode: true, timezone: true },
     }),
     prisma.quote.findMany({
       where: { businessId },

@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Users, Plus, Search, Phone, Upload } from 'lucide-react';
 import { t, type Locale } from '@/lib/i18n';
-import { formatMoney } from '@/lib/money';
+import MoneyText from '@/components/MoneyText';
 import {
   Avatar,
   Badge,
@@ -241,7 +241,7 @@ export default function CustomersClient({
                     </div>
                     <div className="text-right shrink-0">
                       <p className="font-bold text-sm text-zinc-900 tabular-nums">
-                        {formatMoney(c.revenue, currency)}
+                        <MoneyText dollars={c.revenue} locale={locale} />
                       </p>
                       <p className="text-[11px] text-zinc-500">
                         {fill(L(c.jobCount === 1 ? 'custListJobOne' : 'custListJobMany'), {

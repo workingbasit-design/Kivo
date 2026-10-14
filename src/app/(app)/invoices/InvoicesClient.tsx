@@ -7,6 +7,8 @@ import { PageHeader, Card, StatusBadge, EmptyState, StatCard, Badge, primaryBtnC
 import { statusLabel } from '@/lib/utils';
 import { formatDateShort, cn } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
+import MoneyText from '@/components/MoneyText';
+import DateTimeText from '@/components/DateTimeText';
 import { t, type Locale } from '@/lib/i18n';
 import { INVOICE_STATUSES } from '@/lib/validations';
 import ExportButtons, { type ExportColumn, type ExportRow } from '@/components/ExportButtons';
@@ -113,14 +115,14 @@ export default function InvoicesClient({
       <div className="grid grid-cols-2 gap-4">
         <StatCard
           label={t(locale, 'billing.statOutstanding')}
-          value={formatMoney(Math.round(outstanding * 100) / 100, currency)}
+          value={<MoneyText dollars={Math.round(outstanding * 100) / 100} locale={locale} />}
           sub={t(locale, 'billing.statYetToCollect')}
           icon={<Wallet size={16} />}
           accent="bg-amber-100 text-amber-700"
         />
         <StatCard
           label={t(locale, 'billing.statCollected')}
-          value={formatMoney(Math.round(collected * 100) / 100, currency)}
+          value={<MoneyText dollars={Math.round(collected * 100) / 100} locale={locale} />}
           sub={t(locale, 'billing.statPaymentsRecorded')}
           icon={<FileText size={16} />}
           accent="bg-emerald-100 text-emerald-700"
@@ -186,14 +188,14 @@ export default function InvoicesClient({
                         {inv.number} · {inv.customer.name}
                       </p>
                       <p className="text-xs text-zinc-500 mt-1 tabular-nums">
-                        {formatDateShort(inv.date)}
+                        <DateTimeText date={inv.date} variant="short" locale={locale} />
                         {due > 0 && inv.status !== 'PAID' && (
                           <span className="text-amber-700 font-semibold"> · {t(locale, 'billing.dueSuffix').replace('{amount}', formatMoney(due, currency))}</span>
                         )}
                       </p>
                     </div>
                     <div className="flex flex-col items-end gap-1.5 shrink-0">
-                      <span className="text-sm font-bold text-zinc-900 tabular-nums">{formatMoney(inv.total, currency)}</span>
+                      <span className="text-sm font-bold text-zinc-900 tabular-nums"><MoneyText dollars={inv.total} locale={locale} /></span>
                       <span className="flex items-center gap-1.5">
                         {overdue && (
                           <Badge tone="danger">{t(locale, 't10money.overdue')}</Badge>

@@ -4,8 +4,10 @@ import { ArrowLeft, Printer, User, AlertTriangle } from 'lucide-react';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { PageHeader, Card, StatusBadge, Badge } from '@/components/ui';
-import { formatDateShort, localeDateTag, localeMoneyTag } from '@/lib/utils';
+import { localeMoneyTag } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
+import MoneyText from '@/components/MoneyText';
+import DateTimeText from '@/components/DateTimeText';
 import { splitStoredTax, taxIdLabelForRegion } from '@/lib/tax';
 import { displayNotes } from '@/lib/invoice-notes';
 import { getLocale } from '@/lib/i18n/server';
@@ -82,7 +84,6 @@ export default async function InvoiceDetailPage({
   // French (fr) locale renders invoice labels in French and formats CAD
   // amounts in fr-CA style (e.g. "1 234,56 $").
   const locale = await getLocale();
-  const dateLocale = localeDateTag(locale);
   const moneyLocale = localeMoneyTag(locale);
   const L = (path: string) => t(locale, path);
 
@@ -130,7 +131,7 @@ export default async function InvoiceDetailPage({
 
       <PageHeader
         title={`${L('invoices.invoice')} ${invoice.number}`}
-        subtitle={`${L('invoices.dated')} ${formatDateShort(invoice.date, dateLocale)}`}
+        subtitle={<>{L('invoices.dated')} <DateTimeText date={invoice.date} variant="short" timezone={invoice.business.timezone ?? 'America/Toronto'} locale={locale} /></>}
         actions={
           <span className="flex items-center gap-1.5">
             {overdue && <Badge tone="danger">{t(locale, 't10money.overdue')}</Badge>}
@@ -144,7 +145,7 @@ export default async function InvoiceDetailPage({
           <span className="mt-0.5 text-rose-500 shrink-0" aria-hidden><AlertTriangle size={18} /></span>
           <div>
             <p className="text-sm font-bold text-rose-700">
-              {t(locale, 't10money.overdue')} - {formatMoney(remaining, currency, moneyLocale)} {L('invoices.balanceDue').toLowerCase()}
+              {t(locale, 't10money.overdue')} - <MoneyText dollars={remaining} locale={locale} /> {L('invoices.balanceDue').toLowerCase()}
             </p>
             <p className="text-xs text-rose-600 mt-0.5">{t(locale, 't10money.overdueNote')}</p>
           </div>
@@ -190,9 +191,9 @@ export default async function InvoiceDetailPage({
                 >
                   <p className="text-sm font-semibold text-zinc-800">{item.description}</p>
                   <p className="text-xs text-zinc-500 mt-1 tabular-nums">
-                    {item.qty} × {formatMoney(item.unitPrice, currency, moneyLocale)}
+                    {item.qty} × <MoneyText dollars={item.unitPrice} locale={locale} />
                     <span className="font-bold text-zinc-800">
-                      {' '}· {formatMoney(round2(item.qty * item.unitPrice), currency, moneyLocale)}
+                      {' '}· <MoneyText dollars={round2(item.qty * item.unitPrice)} locale={locale} />
                     </span>
                   </p>
                 </li>
@@ -204,27 +205,27 @@ export default async function InvoiceDetailPage({
         <dl className="mt-6 space-y-1.5 text-sm max-w-xs ml-auto tabular-nums">
           <div className="flex justify-between text-zinc-600">
             <dt>{L('invoices.subtotal')}</dt>
-            <dd className="font-semibold">{formatMoney(invoice.subtotal, currency, moneyLocale)}</dd>
+            <dd className="font-semibold"><MoneyText dollars={invoice.subtotal} locale={locale} /></dd>
           </div>
           {taxLines.map((l) => (
             <div key={l.name} className="flex justify-between text-zinc-600">
               <dt>
                 {l.name} {l.rate}%
               </dt>
-              <dd className="font-semibold">{formatMoney(l.amount, currency, moneyLocale)}</dd>
+              <dd className="font-semibold"><MoneyText dollars={l.amount} locale={locale} /></dd>
             </div>
           ))}
           <div className="flex justify-between text-base border-t border-zinc-200 pt-2 mt-2">
             <dt className="font-bold text-zinc-900">{L('invoices.total')}</dt>
-            <dd className="font-bold text-zinc-900">{formatMoney(invoice.total, currency, moneyLocale)}</dd>
+            <dd className="font-bold text-zinc-900"><MoneyText dollars={invoice.total} locale={locale} /></dd>
           </div>
           <div className="flex justify-between text-emerald-700">
             <dt>{L('invoices.paid')}</dt>
-            <dd className="font-semibold">{formatMoney(paid, currency, moneyLocale)}</dd>
+            <dd className="font-semibold"><MoneyText dollars={paid} locale={locale} /></dd>
           </div>
           <div className="flex justify-between items-center text-base bg-ink text-white rounded-xl px-4 py-3 -mx-1 mt-2">
             <dt className="font-bold">{L('invoices.balanceDue')}</dt>
-            <dd className="font-bold">{formatMoney(remaining, currency, moneyLocale)}</dd>
+            <dd className="font-bold"><MoneyText dollars={remaining} locale={locale} /></dd>
           </div>
         </dl>
 
@@ -255,11 +256,11 @@ export default async function InvoiceDetailPage({
             {invoice.payments.map((p) => (
               <li key={p.id} className="flex items-center justify-between py-2.5 text-sm">
                 <div>
-                  <p className="font-semibold text-zinc-900 tabular-nums">{formatMoney(p.amount, currency, moneyLocale)}</p>
+                  <p className="font-semibold text-zinc-900 tabular-nums"><MoneyText dollars={p.amount} locale={locale} /></p>
                   <p className="text-xs text-zinc-500">
                     {p.provider}
                     {p.transactionId ? ` · Ref ${p.transactionId}` : ''} ·{' '}
-                    {formatDateShort(p.createdAt, dateLocale)}
+                    <DateTimeText date={p.createdAt} variant="short" timezone={invoice.business.timezone ?? 'America/Toronto'} locale={locale} />
                   </p>
                 </div>
                 <StatusBadge status={p.status} locale={locale} />

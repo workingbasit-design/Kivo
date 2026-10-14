@@ -16,8 +16,9 @@ import { prisma } from "@/lib/prisma";
 import { getDashboardStats } from "@/lib/dashboard";
 import { getGrowthData } from "@/lib/growth";
 import { generateDueJobs } from "@/lib/recurring";
-import { formatDateLabel, hasJobTime, formatJobTime, jobDisplayStatus, localeDateTag, localeMoneyTag } from "@/lib/utils";
-import { formatMoney } from "@/lib/money";
+import { hasJobTime, formatJobTime, jobDisplayStatus, localeMoneyTag } from "@/lib/utils";
+import MoneyText from "@/components/MoneyText";
+import DateTimeText from "@/components/DateTimeText";
 import { getLocale } from "@/lib/i18n/server";
 import { t } from "@/lib/i18n";
 import {
@@ -38,7 +39,6 @@ export default async function DashboardPage() {
   const locale = await getLocale();
   const L = (path: string) => t(locale, path);
   const moneyLocale = localeMoneyTag(locale);
-  const dateLocale = localeDateTag(locale);
   const QUICK_ACTIONS = [
     { label: L("dashboard.newJob"), href: "/jobs/new", icon: Plus },
     { label: L("dashboard.newCustomer"), href: "/customers/new", icon: Plus },
@@ -70,7 +70,6 @@ export default async function DashboardPage() {
     getDashboardStats(businessId, business),
     Promise.all([
       prisma.customer.count({ where: { businessId } }),
-      prisma.job.count({ where: { businessId } }),
       prisma.quote.count({ where: { businessId } }),
       prisma.invoice.count({ where: { businessId } }),
       prisma.user.count({ where: { businessId } }),
@@ -85,7 +84,8 @@ export default async function DashboardPage() {
       }
     })(),
   ]);
-  const [customerCount, jobCount, quoteCount, invoiceCount, teamCount, googleConn] = counts;
+  const [customerCount, quoteCount, invoiceCount, teamCount, googleConn] = counts;
+  const jobCount = stats.totalJobs; // shared getJobCounts, not a parallel count query
   const onboardingCompleted = {
     logo: !!business?.logoUrl,
     customer: customerCount > 0,
@@ -96,7 +96,9 @@ export default async function DashboardPage() {
   };
   // Best-effort: profile strength (already resolved above, in parallel
   // with the stats) must never break the dashboard.
-  const todayLabel = formatDateLabel(new Date(), dateLocale);
+  const todayLabel = (
+    <DateTimeText date={new Date()} variant="weekday" timezone={business?.timezone ?? 'America/Toronto'} locale={locale} />
+  );
   const rowDelay = (i: number) => ({ ["--row-delay" as string]: `${Math.min(i, 8) * 45}ms` });
 
   return (
@@ -120,7 +122,7 @@ export default async function DashboardPage() {
           [
             {
               label: L("dashboard.bookedToday"),
-              value: formatMoney(stats.bookedToday, currency, moneyLocale),
+              value: <MoneyText dollars={stats.bookedToday} locale={locale} />,
               numericValue: stats.bookedToday,
               formatKind: 'money' as const,
               sub: L(stats.jobsLeftToday === 1 ? "dashboard.jobStillOpen" : "dashboard.jobsStillOpen").replace("{count}", String(stats.jobsLeftToday)),
@@ -129,7 +131,7 @@ export default async function DashboardPage() {
             },
             {
               label: L("dashboard.collected7"),
-              value: formatMoney(stats.collectedThisWeek, currency, moneyLocale),
+              value: <MoneyText dollars={stats.collectedThisWeek} locale={locale} />,
               numericValue: stats.collectedThisWeek,
               formatKind: 'money' as const,
               sub: L("dashboard.paymentsReceived"),
@@ -138,7 +140,7 @@ export default async function DashboardPage() {
             },
             {
               label: L("dashboard.outstanding"),
-              value: formatMoney(stats.outstanding, currency, moneyLocale),
+              value: <MoneyText dollars={stats.outstanding} locale={locale} />,
               numericValue: stats.outstanding,
               formatKind: 'money' as const,
               sub: L(stats.outstandingCount === 1 ? "dashboard.unpaidInvoice" : "dashboard.unpaidInvoices").replace("{count}", String(stats.outstandingCount)),
@@ -301,9 +303,9 @@ export default async function DashboardPage() {
                       <p className="text-sm font-semibold text-zinc-900 truncate">
                         {inv.number} · {inv.customerName}
                       </p>
-                      <p className="text-xs text-zinc-700">{formatDateLabel(inv.date, dateLocale)}</p>
+                      <p className="text-xs text-zinc-700"><DateTimeText date={inv.date} variant="weekday" timezone={business?.timezone ?? 'America/Toronto'} locale={locale} /></p>
                     </div>
-                    <p className="text-sm font-bold text-zinc-900 tabular-nums">{formatMoney(inv.outstanding, currency, moneyLocale)}</p>
+                    <p className="text-sm font-bold text-zinc-900 tabular-nums"><MoneyText dollars={inv.outstanding} locale={locale} /></p>
                   </Link>
                 </li>
               ))}

@@ -7,6 +7,8 @@ import { fillTemplate, daysWaiting } from '@/lib/revenue';
 import { PageHeader, Card, StatusBadge, EmptyState, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
 import { formatDateShort, cn } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
+import MoneyText from '@/components/MoneyText';
+import DateTimeText from '@/components/DateTimeText';
 import { QUOTE_STATUSES } from '@/lib/validations';
 import { t, type Locale } from '@/lib/i18n';
 import SmsButton from '@/components/SmsButton';
@@ -53,7 +55,7 @@ export default function QuotesClient({
   quotes: QuoteListItem[];
   staleQuotes: StaleQuoteItem[];
   followupLinks: Record<string, string>;
-  business: { currency?: string | null; name?: string | null; regionCode?: string | null } | null;
+  business: { currency?: string | null; name?: string | null; regionCode?: string | null; timezone?: string | null } | null;
   locale: Locale;
   exportColumns: ExportColumn[];
   exportFileBase: string;
@@ -197,7 +199,7 @@ export default function QuotesClient({
                           )}
                         </span>
                         {' · '}
-                        {formatMoney(q.total, business?.currency)}
+                        <MoneyText dollars={q.total} locale={locale} />
                       </p>
                     </div>
                   </div>
@@ -272,11 +274,11 @@ export default function QuotesClient({
                       {q.number} · {q.title}
                     </p>
                     <p className="text-xs text-zinc-500 mt-1">
-                      {q.customer.name} · {formatDateShort(q.createdAt)}
+                      {q.customer.name} · <DateTimeText date={q.createdAt} variant="short" timezone={business?.timezone ?? 'America/Toronto'} locale={locale} />
                     </p>
                   </div>
                   <div className="flex flex-col items-end gap-1.5 shrink-0">
-                    <span className="text-sm font-bold text-zinc-900 tabular-nums">{formatMoney(q.total, business?.currency)}</span>
+                    <span className="text-sm font-bold text-zinc-900 tabular-nums"><MoneyText dollars={q.total} locale={locale} /></span>
                     <StatusBadge status={q.status} />
                   </div>
                 </Link>

@@ -11,6 +11,7 @@ import { getHolidays } from '@/lib/holidays';
 import { toISODateLocal, todayInTimezone, cn, localeDateTag, formatDateShort } from '@/lib/utils';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
+import { getJobCounts, getOverdueJobs, getScheduleWeekJobs } from '@/lib/job-queries';
 
 /** Monday of the week containing `d` (local time). */
 function mondayOf(d: Date): Date {
@@ -51,9 +52,8 @@ export default async function SchedulePage({
   // `new Date()` is the wrong day for Toronto evenings).
   const business = await prisma.business.findUnique({
     where: { id: businessId },
-    select: { currency: true, regionCode: true, taxRegion: true, address: true, timezone: true },
+    select: { regionCode: true, taxRegion: true, address: true, timezone: true },
   });
-  const currency = business?.currency;
 
   /** "Today" in the business's timezone (defaults to America/Toronto). */
   const todayKey = todayInTimezone(business?.timezone, business?.regionCode);
@@ -67,35 +67,17 @@ export default async function SchedulePage({
 
   const activeDay = day && /^\d{4}-\d{2}-\d{2}$/.test(day) ? day : null;
 
+  // Week jobs, total count, and overdue jobs from the shared queries (one
+  // source of truth with Dashboard / Jobs / Money).
   const [jobs, totalCount, overdueJobs] = await Promise.all([
-    prisma.job.findMany({
-      where: { businessId, date: { gte: weekStart, lt: weekEnd } },
-      include: {
-        customer: { select: { id: true, name: true, phone: true } },
-        assignedTo: { select: { id: true, name: true, email: true } },
-      },
-      orderBy: [{ date: 'asc' }, { createdAt: 'asc' }],
-    }),
-    prisma.job.count({ where: { businessId } }),
+    getScheduleWeekJobs(businessId, weekStart, weekEnd),
+    getJobCounts(businessId, { timezone: business?.timezone ?? 'America/Toronto' }).then(
+      (c) => c.total
+    ),
     // Overdue: past date, still open. These are invisible in the week grid
     // (they're not in the current week) but the owner must see them here -
     // otherwise Schedule says "0" while Jobs shows overdue work.
-    prisma.job.findMany({
-      where: {
-        businessId,
-        date: { lt: weekStart },
-        status: { in: ['NEW', 'SCHEDULED', 'IN PROGRESS'] },
-      },
-      select: {
-        id: true,
-        title: true,
-        date: true,
-        status: true,
-        customer: { select: { name: true } },
-      },
-      orderBy: { date: 'asc' },
-      take: 10,
-    }),
+    getOverdueJobs(businessId, weekStart, 10),
   ]);
 
   const countryCode = 'CA' as const;
@@ -341,7 +323,6 @@ export default async function SchedulePage({
         initialJobs={serialized}
         initialDateFilter={activeDay ?? 'ALL'}
         allowSeed={totalCount === 0}
-        currency={currency}
         todayKey={todayKey}
         locale={locale}
         activeDayHoliday={activeHoliday}

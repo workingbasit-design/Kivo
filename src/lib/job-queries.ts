@@ -1,10 +1,22 @@
 /**
  * Shared job/money queries (Part A3) - one source of truth for counts.
  *
- * Dashboard, Jobs, Schedule, and Money must all import from here so the
- * same jobs are counted the same way on every screen. The `db` parameter
- * is dependency injection for tests: production call sites omit it and the
- * real Prisma client is used.
+ * Dashboard, Jobs, Schedule, Money, and Owner must all import from here so
+ * the same jobs are counted the same way on every screen. The `db`
+ * parameter is dependency injection for tests: production call sites omit
+ * it and the real Prisma client is used.
+ *
+ * Functions:
+ * - getJobsInRange: jobs whose date falls in [start, end] (closed).
+ * - getJobCounts: total / scheduled / late / completed / uninvoiced /
+ *   per-status counts, from one fetch.
+ * - getMoneySummary: outstanding / readyToInvoice / openQuotes (+ counts).
+ * - getScheduleWeekJobs: Schedule week view ([gte, lt), with assignee).
+ * - getTodayJobs: today's jobs ordered by time (Dashboard).
+ * - getUpcomingJobs: next open jobs after a date (Dashboard).
+ * - getOverdueJobs: past-date open jobs (Schedule overdue section).
+ * - getTomorrowJobs: tomorrow's NEW/SCHEDULED jobs (Owner page).
+ * - getJobs: Jobs page list, optional status filter.
  */
 import { prisma as defaultPrisma } from '@/lib/prisma';
 import { isJobLate } from './job-status.ts';
@@ -24,12 +36,16 @@ export interface JobCounts {
   completed: number;
   /** COMPLETED jobs with no linked invoice. */
   uninvoiced: number;
+  /** Per-status counts, from the same fetch (only statuses present). */
+  byStatus: Record<string, number>;
 }
 
 export interface MoneySummary {
   /** Sum of unpaid balances: full total for UNPAID, total minus COMPLETED
-   *  payments for PARTIALLY PAID. Dollars. */
+   *  payments for PARTIALLY PAID. Dollars. Voided invoices excluded. */
   outstanding: number;
+  /** Count of UNPAID / PARTIALLY PAID non-voided invoices. */
+  outstandingCount: number;
   /** Sum of COMPLETED jobs with no linked invoice. Dollars. */
   readyToInvoice: number;
   /** Count of DRAFT + SENT quotes. */
@@ -68,7 +84,9 @@ export async function getJobCounts(
   let late = 0;
   let completed = 0;
   let uninvoiced = 0;
+  const byStatus: Record<string, number> = {};
   for (const j of jobs) {
+    byStatus[j.status] = (byStatus[j.status] ?? 0) + 1;
     if (j.status === 'NEW' || j.status === 'SCHEDULED') scheduled++;
     if (j.status === 'COMPLETED') {
       completed++;
@@ -76,7 +94,7 @@ export async function getJobCounts(
     }
     if (isJobLate(j, now, timezone)) late++;
   }
-  return { total: jobs.length, scheduled, late, completed, uninvoiced };
+  return { total: jobs.length, scheduled, late, completed, uninvoiced, byStatus };
 }
 
 export async function getMoneySummary(
@@ -85,8 +103,9 @@ export async function getMoneySummary(
 ): Promise<MoneySummary> {
   const { db = defaultPrisma } = opts;
 
+  // Voided invoices are excluded from reports (Part A7).
   const invoices = await db.invoice.findMany({
-    where: { businessId, status: { in: ['UNPAID', 'PARTIALLY PAID'] } },
+    where: { businessId, status: { in: ['UNPAID', 'PARTIALLY PAID'] }, voidedAt: null },
     select: {
       total: true,
       totalCents: true,
@@ -123,5 +142,126 @@ export async function getMoneySummary(
     where: { businessId, status: { in: ['DRAFT', 'SENT'] } },
   });
 
-  return { outstanding, readyToInvoice, openQuotes };
+  return { outstanding, outstandingCount: invoices.length, readyToInvoice, openQuotes };
+}
+
+/** Schedule week view: jobs in [weekStart, weekEnd) with customer + assignee,
+ *  ordered by date then creation. The half-open range is what makes the week
+ *  grid exact (a job on Monday 00:00 belongs to this week, not last). */
+export async function getScheduleWeekJobs(
+  businessId: string,
+  weekStart: Date,
+  weekEnd: Date,
+  db: Db = defaultPrisma,
+) {
+  return db.job.findMany({
+    where: { businessId, date: { gte: weekStart, lt: weekEnd } },
+    include: {
+      customer: { select: { id: true, name: true, phone: true } },
+      assignedTo: { select: { id: true, name: true, email: true } },
+    },
+    orderBy: [{ date: 'asc' }, { createdAt: 'asc' }],
+  });
+}
+
+/** Today's jobs ordered by start time — Dashboard "Today's schedule".
+ *  Time lives in the separate `time` string field, so ordering by `date`
+ *  alone would not order by time within the day. */
+export async function getTodayJobs(
+  businessId: string,
+  dayStart: Date,
+  dayEnd: Date,
+  db: Db = defaultPrisma,
+) {
+  return db.job.findMany({
+    where: { businessId, date: { gte: dayStart, lte: dayEnd } },
+    include: { customer: { select: { name: true } } },
+    orderBy: [{ time: 'asc' }, { createdAt: 'asc' }],
+  });
+}
+
+const OPEN_JOB_STATUSES = ['NEW', 'SCHEDULED', 'IN PROGRESS'];
+
+/** Next open jobs after `after` — Dashboard "Upcoming". */
+export async function getUpcomingJobs(
+  businessId: string,
+  after: Date,
+  db: Db = defaultPrisma,
+) {
+  return db.job.findMany({
+    where: {
+      businessId,
+      date: { gt: after },
+      status: { in: OPEN_JOB_STATUSES },
+    },
+    include: { customer: { select: { name: true } } },
+    orderBy: { date: 'asc' },
+    take: 5,
+  });
+}
+
+/** Past-date open jobs — Schedule overdue section. These are invisible in
+ *  the week grid (they are not in the current week) but the owner must see
+ *  them. Includes IN PROGRESS (unlike isJobLate, which is NEW/SCHEDULED
+ *  only) so in-progress work that slipped is not hidden. */
+export async function getOverdueJobs(
+  businessId: string,
+  before: Date,
+  take: number = 10,
+  db: Db = defaultPrisma,
+) {
+  return db.job.findMany({
+    where: {
+      businessId,
+      date: { lt: before },
+      status: { in: OPEN_JOB_STATUSES },
+    },
+    select: {
+      id: true,
+      title: true,
+      date: true,
+      status: true,
+      customer: { select: { name: true } },
+    },
+    orderBy: { date: 'asc' },
+    take,
+  });
+}
+
+/** Tomorrow's NEW/SCHEDULED jobs — Owner page. */
+export async function getTomorrowJobs(
+  businessId: string,
+  start: Date,
+  end: Date,
+  db: Db = defaultPrisma,
+) {
+  return db.job.findMany({
+    where: {
+      businessId,
+      date: { gte: start, lt: end },
+      status: { in: ['NEW', 'SCHEDULED'] },
+    },
+    select: { id: true, title: true, time: true, customer: { select: { name: true } } },
+    orderBy: { time: 'asc' },
+    take: 10,
+  });
+}
+
+/** Jobs page list: all jobs, optionally filtered by one status, newest
+ *  first. Customer phone is included to match the previous inline query. */
+export async function getJobs(
+  businessId: string,
+  opts: { status?: string; db?: Db } = {},
+) {
+  const { status, db = defaultPrisma } = opts;
+  return db.job.findMany({
+    where: {
+      businessId,
+      ...(status && status !== 'ALL' ? { status } : {}),
+    },
+    include: {
+      customer: { select: { id: true, name: true, phone: true } },
+    },
+    orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
+  });
 }

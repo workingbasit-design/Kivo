@@ -11,7 +11,17 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { getJobCounts, getMoneySummary, getJobsInRange } from '../job-queries.ts';
+import {
+  getJobCounts,
+  getMoneySummary,
+  getJobsInRange,
+  getScheduleWeekJobs,
+  getTodayJobs,
+  getUpcomingJobs,
+  getOverdueJobs,
+  getTomorrowJobs,
+  getJobs,
+} from '../job-queries.ts';
 import type { JobQueriesDb } from '../job-queries.ts';
 
 const D = (iso: string) => new Date(iso);
@@ -29,14 +39,37 @@ function makeDb(over: Record<string, unknown> = {}): JobQueriesDb {
   return {
     job: {
       findMany: async (args: { where?: Record<string, unknown> }) => {
-        // getJobsInRange: date-range filter.
-        const where = args?.where as { date?: { gte?: Date; lte?: Date } } | undefined;
-        if (where?.date) {
-          const { gte, lte } = where.date;
-          return JOBS.filter((j) => j.date && j.date >= (gte as Date) && j.date <= (lte as Date));
+        // Evaluate the where clause like Prisma would (subset of operators
+        // used by the shared queries): date gte/lte/gt/lt, status string or
+        // { in: [] }, invoices { none: {} }.
+        const where = (args?.where ?? {}) as {
+          date?: { gte?: Date; lte?: Date; gt?: Date; lt?: Date };
+          status?: string | { in?: string[] };
+          invoices?: { none?: object };
+        };
+        let rows = [...JOBS];
+        if (where.date) {
+          const { gte, lte, gt, lt } = where.date;
+          rows = rows.filter((j) => {
+            if (!j.date) return false;
+            if (gte && j.date < (gte as Date)) return false;
+            if (lte && j.date > (lte as Date)) return false;
+            if (gt && j.date <= (gt as Date)) return false;
+            if (lt && j.date >= (lt as Date)) return false;
+            return true;
+          });
         }
-        // getJobCounts / getMoneySummary: return all jobs for the business.
-        return JOBS;
+        if (where.status) {
+          if (typeof where.status === 'string') {
+            rows = rows.filter((j) => j.status === where.status);
+          } else if (where.status.in) {
+            rows = rows.filter((j) => (where.status as { in: string[] }).in.includes(j.status));
+          }
+        }
+        if (where.invoices?.none) {
+          rows = rows.filter((j) => j.invoices.length === 0);
+        }
+        return rows;
       },
     },
     invoice: {
@@ -142,4 +175,72 @@ test('getMoneySummary: outstanding = UNPAID total + PARTIALLY PAID balance', asy
   const summary = await getMoneySummary('biz-1', { db });
   assert.equal(summary.outstanding, 500 + 250 + 300);
   assert.equal(summary.openQuotes, 2);
+});
+
+test('getJobCounts: byStatus groups counts per status', async () => {
+  const counts = await getJobCounts('biz-1', { now: NOW, timezone: 'America/Toronto', db: makeDb() });
+  assert.equal(counts.byStatus.SCHEDULED, 3);
+  assert.equal(counts.byStatus.NEW, 1);
+  assert.equal(counts.byStatus.COMPLETED ?? 0, 0);
+});
+
+test('getMoneySummary: voided invoices excluded from outstanding', async () => {
+  const invoices = [
+    { total: 500, totalCents: 50000n, status: 'UNPAID', voidedAt: null, payments: [] },
+    { total: 700, totalCents: 70000n, status: 'UNPAID', voidedAt: new Date(), payments: [] },
+  ];
+  const db = makeDb({
+    invoice: {
+      findMany: async (args: { where?: { voidedAt?: unknown } }) => {
+        // Mimic the real where: voidedAt null.
+        if (args?.where?.voidedAt === null) return invoices.filter((i) => i.voidedAt === null);
+        return invoices;
+      },
+    },
+    job: { findMany: async () => [] },
+    quote: { count: async () => 0 },
+  });
+  const summary = await getMoneySummary('biz-1', { db });
+  assert.equal(summary.outstanding, 500);
+  assert.equal(summary.outstandingCount, 1);
+});
+
+test('getScheduleWeekJobs: half-open week range', async () => {
+  const rows = await getScheduleWeekJobs('biz-1', D('2026-10-12T00:00:00Z'), D('2026-10-19T00:00:00Z'), makeDb());
+  const ids = (rows as { id: string }[]).map((r) => r.id);
+  assert.ok(ids.includes('j-today'), 'Oct 13 job in [Oct 12, Oct 19)');
+  assert.ok(!ids.includes('j-future'), 'Oct 20 job outside the week');
+  assert.ok(!ids.includes('j-past'), 'Oct 10 job outside the week');
+  assert.ok(!ids.includes('j-nodate'), 'no-date job excluded');
+});
+
+test('getTodayJobs: only jobs on the day', async () => {
+  const rows = await getTodayJobs('biz-1', D('2026-10-13T00:00:00Z'), D('2026-10-13T23:59:59Z'), makeDb());
+  assert.deepEqual((rows as { id: string }[]).map((r) => r.id), ['j-today']);
+});
+
+test('getUpcomingJobs: only open jobs after the date', async () => {
+  const rows = await getUpcomingJobs('biz-1', D('2026-10-13T23:59:59Z'), makeDb());
+  assert.deepEqual((rows as { id: string }[]).map((r) => r.id), ['j-future']);
+});
+
+test('getOverdueJobs: past-date open jobs only', async () => {
+  const rows = await getOverdueJobs('biz-1', D('2026-10-13T00:00:00Z'), 10, makeDb());
+  assert.deepEqual((rows as { id: string }[]).map((r) => r.id), ['j-past']);
+});
+
+test('getTomorrowJobs: NEW/SCHEDULED jobs in the range', async () => {
+  const empty = await getTomorrowJobs('biz-1', D('2026-10-14T00:00:00Z'), D('2026-10-15T00:00:00Z'), makeDb());
+  assert.deepEqual((empty as { id: string }[]).map((r) => r.id), []);
+  const rows = await getTomorrowJobs('biz-1', D('2026-10-13T00:00:00Z'), D('2026-10-14T00:00:00Z'), makeDb());
+  assert.deepEqual((rows as { id: string }[]).map((r) => r.id), ['j-today']);
+});
+
+test('getJobs: status filter + all', async () => {
+  const all = await getJobs('biz-1', { db: makeDb() });
+  assert.equal(all.length, 4);
+  const sched = await getJobs('biz-1', { status: 'SCHEDULED', db: makeDb() });
+  assert.equal(sched.length, 3);
+  const none = await getJobs('biz-1', { status: 'COMPLETED', db: makeDb() });
+  assert.equal(none.length, 0);
 });

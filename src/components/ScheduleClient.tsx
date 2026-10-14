@@ -9,8 +9,9 @@ import {
 import { toast } from 'sonner';
 import { updateJobStatus, deleteJob, seedSampleJobs, updateJobSchedule } from '@/app/actions/jobs';
 import { validNextStatuses, JOB_STATUSES } from '@/lib/job-status';
-import { formatMoney } from '@/lib/money';
-import { toISODateLocal, formatDateLabel, hasJobTime, formatStatusLabel, jobDisplayStatus, localeDateTag, cn } from '@/lib/utils';
+import MoneyText from '@/components/MoneyText';
+import DateTimeText from '@/components/DateTimeText';
+import { toISODateLocal, hasJobTime, formatStatusLabel, jobDisplayStatus, cn } from '@/lib/utils';
 import { t, type Locale } from '@/lib/i18n';
 import {
   Card, StatusBadge, EmptyState, Field,
@@ -87,7 +88,6 @@ export default function ScheduleClient({
   initialJobs,
   initialDateFilter,
   allowSeed,
-  currency,
   todayKey,
   locale,
   activeDayHoliday,
@@ -98,7 +98,6 @@ export default function ScheduleClient({
   initialDateFilter?: string;
   /** Show the sample-data seed button. Defaults to true when no jobs are passed in. */
   allowSeed?: boolean;
-  currency?: string;
   /** Server-local "today" (YYYY-MM-DD) so the Today filter matches the
    *  server-rendered day tiles even if the browser timezone differs. */
   todayKey?: string;
@@ -127,7 +126,6 @@ export default function ScheduleClient({
   const T = (k: string) => t(locale, `t10work.${k}`);
   const common = (k: string) => t(locale, `common.${k}`);
   const jobsL = (k: string) => t(locale, `jobs.${k}`);
-  const dateLocale = localeDateTag(locale);
 
   // Local calendar-day key (YYYY-MM-DD). The server passes its own today so
   // the filter always agrees with the day tiles above.
@@ -136,9 +134,9 @@ export default function ScheduleClient({
     : toISODateLocal(new Date());
 
   // Day filtering/counting uses job.dateKey (server-local calendar date);
-  // display labels use the shared timezone-safe formatDateLabel from
-  // @/lib/utils (never `new Date(iso)` + toLocaleDateString, which shifts
-  // the day for timezones behind UTC).
+  // display labels use the shared DateTimeText component (never
+  // `new Date(iso)` + toLocaleDateString, which shifts the day for
+  // timezones behind UTC).
 
   // Filter jobs logic - compare calendar-day keys, never UTC date strings.
   const filteredJobs = initialJobs.filter((job) => {
@@ -270,7 +268,7 @@ export default function ScheduleClient({
       {isAgendaDay && (
         <div>
           <h2 className="text-base font-bold text-zinc-900">
-            {formatDateLabel(selectedDate, dateLocale)}
+            <DateTimeText date={selectedDate} variant="weekday" timezone={timezone} locale={locale} />
           </h2>
           {activeDayHoliday && (
             <p className="text-sm text-amber-700 mt-0.5">🎉 {activeDayHoliday}</p>
@@ -412,7 +410,7 @@ export default function ScheduleClient({
                         {hasJobTime(job.time) ? job.time : T('schedTimeTbd')}
                       </span>
                       <span className="text-xs font-medium text-zinc-500">
-                        {formatDateLabel(job.dateKey, dateLocale)}
+                        <DateTimeText date={job.dateKey} variant="weekday" timezone={timezone} locale={locale} />
                       </span>
                     </div>
 
@@ -436,7 +434,7 @@ export default function ScheduleClient({
                         {jobsL('technician')}: <strong className="text-zinc-700">{job.assignedTo?.name || T('jobUnassigned')}</strong>
                       </span>
                       <span>
-                        {T('schedAmount')}: <strong className="text-zinc-900 tabular-nums">{formatMoney(job.price, currency)}</strong>
+                        {T('schedAmount')}: <strong className="text-zinc-900 tabular-nums"><MoneyText dollars={job.price} locale={locale} /></strong>
                       </span>
                     </div>
                   </Link>

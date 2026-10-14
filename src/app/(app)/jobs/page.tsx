@@ -6,8 +6,10 @@ import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card, EmptyState, limeBtnClass, inputClass } from '@/components/ui';
 import StatusBadge from '@/components/StatusBadge';
 import { formatDateShort, hasJobTime, formatJobTime, formatStatusLabel, cn } from '@/lib/utils';
-import { formatMoney } from '@/lib/money';
+import MoneyText from '@/components/MoneyText';
+import DateTimeText from '@/components/DateTimeText';
 import { JOB_STATUSES, isJobLate } from '@/lib/job-status';
+import { getJobCounts, getJobs } from '@/lib/job-queries';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import ExportButtons, { type ExportColumn, type ExportRow } from '@/components/ExportButtons';
@@ -33,26 +35,17 @@ export default async function JobsPage({
   });
   const currency = business?.currency;
   const timezone = business?.timezone ?? 'America/Toronto';
-  const jobs = await prisma.job.findMany({
-    where: {
-      businessId,
-      ...(activeStatus !== 'ALL' ? { status: activeStatus } : {}),
-    },
-    include: {
-      customer: { select: { id: true, name: true, phone: true } },
-    },
-    orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
-  });
+  // Job list + per-status counts from the shared queries (one source of
+  // truth with Dashboard / Schedule / Money).
+  const [jobs, jobCounts] = await Promise.all([
+    getJobs(businessId, { status: activeStatus }),
+    getJobCounts(businessId, { timezone }),
+  ]);
 
   // Per-status counts for the filter chips (all jobs, before the search
   // filter - the chips navigate, the search narrows).
-  const statusCounts = await prisma.job.groupBy({
-    by: ['status'],
-    where: { businessId },
-    _count: { _all: true },
-  });
-  const countByStatus = new Map(statusCounts.map((r) => [r.status, r._count._all]));
-  const totalJobs = statusCounts.reduce((s, r) => s + r._count._all, 0);
+  const countByStatus = new Map(Object.entries(jobCounts.byStatus));
+  const totalJobs = jobCounts.total;
 
   const query = (q ?? '').trim().toLowerCase();
   const filtered = query
@@ -227,12 +220,12 @@ export default async function JobsPage({
                 <p className="text-xs text-zinc-500 mt-1 truncate">{job.customer.name}</p>
                 <p className="text-xs text-zinc-500 truncate">
                   {hasJobTime(job.time) ? `${formatJobTime(job.time, locale)}, ` : ''}
-                  {formatDateShort(job.date)}
+                  <DateTimeText date={job.date} variant="short" locale={locale} />
                   {job.address ? `, ${job.address}` : ''}
                 </p>
               </div>
               <p className="font-bold text-zinc-900 text-sm whitespace-nowrap tabular-nums">
-                {formatMoney(job.price, currency)}
+                <MoneyText dollars={job.price} locale={locale} />
               </p>
             </Link>
           ))}

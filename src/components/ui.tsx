@@ -9,7 +9,7 @@ export function PageHeader({
   actions,
 }: {
   title: string;
-  subtitle?: string;
+  subtitle?: React.ReactNode;
   actions?: React.ReactNode;
 }) {
   return (
@@ -119,7 +119,7 @@ export function StatCard({
   index = 0,
 }: {
   label: string;
-  value: string;
+  value: React.ReactNode;
   /** If provided, the value animates as a rolling odometer number */
   numericValue?: number;
   /** How to format the animated number: 'money' or 'number' */

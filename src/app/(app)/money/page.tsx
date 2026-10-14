@@ -7,10 +7,12 @@ import { t } from '@/lib/i18n';
 import { prisma } from '@/lib/prisma';
 import { PageHeader, Card, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
 import EmptyState from '@/components/EmptyState';
+import MoneyText from '@/components/MoneyText';
 import { formatMoney } from '@/lib/money';
 import SmsButton from '@/components/SmsButton';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import { fillTemplate, daysOverdue, remainingBalance, OVERDUE_AFTER_DAYS, DAY_MS } from '@/lib/revenue';
+import { getMoneySummary } from '@/lib/job-queries';
 
 /**
  * "Now" for overdue-threshold math. A plain module helper (not a component),
@@ -32,7 +34,7 @@ export default async function MoneyPage() {
   const locale = await getLocale();
   const L = (path: string) => t(locale, path);
 
-  const [business, openQuotes, unpaidInvoices, overdueInvoices, unbilledJobs] = await Promise.all([
+  const [business, openQuotes, unpaidInvoices, overdueInvoices, unbilledJobs, moneySummary] = await Promise.all([
     prisma.business.findUnique({
       where: { id: businessId },
       select: { currency: true, name: true, regionCode: true, timezone: true },
@@ -67,13 +69,13 @@ export default async function MoneyPage() {
     }),
     // Ready to invoice: completed jobs with no invoice yet - the most common
     // cash leak for small trades. Without this, Money says "all caught up"
-    // while billable work sits unbilled. Uses invoicedAt (set when first
-    // invoice links to the job).
+    // while billable work sits unbilled. Uses the invoice relation (not
+    // invoicedAt, which is never cleared when a draft invoice is deleted).
     prisma.job.findMany({
       where: {
         businessId,
         status: 'COMPLETED',
-        invoicedAt: null,
+        invoices: { none: {} },
       },
       select: {
         id: true,
@@ -86,15 +88,19 @@ export default async function MoneyPage() {
       orderBy: { date: 'asc' },
       take: 10,
     }),
+    // Shared money summary (one source of truth with Dashboard): the
+    // outstanding and ready-to-invoice card totals come from here.
+    getMoneySummary(businessId),
   ]);
 
-  const currency = business?.currency;
   const openQuoteValue = openQuotes.reduce((s, q) => s + q.total, 0);
-  const unpaidBalance = unpaidInvoices.reduce(
-    (s, i) => s + (i.total - i.payments.reduce((p, pay) => p + pay.amount, 0)),
-    0,
-  );
-  const unbilledValue = unbilledJobs.reduce((s, j) => s + j.price, 0);
+  // Outstanding total from the shared summary (cents-aware, voided
+  // excluded). The unpaid list above is still used for its count.
+  const unpaidBalance = moneySummary.outstanding;
+  // Ready-to-invoice total from the shared summary (ALL unbilled jobs, not
+  // just the 10 rows rendered below - the old list-derived total
+  // underreported when more than 10 jobs were waiting).
+  const unbilledValue = moneySummary.readyToInvoice;
   const allCaughtUp = openQuotes.length === 0 && unpaidInvoices.length === 0 && unbilledJobs.length === 0;
 
   return (
@@ -129,7 +135,7 @@ export default async function MoneyPage() {
             </div>
           </div>
           <p className="mt-4 text-3xl font-bold tabular-nums">
-            {formatMoney(Math.round(openQuoteValue * 100) / 100, currency)}
+            <MoneyText dollars={Math.round(openQuoteValue * 100) / 100} locale={locale} />
           </p>
           <p className="mt-1 text-sm text-ej-muted">
             {openQuotes.length === 0
@@ -158,7 +164,7 @@ export default async function MoneyPage() {
             </div>
           </div>
           <p className="mt-4 text-3xl font-bold tabular-nums">
-            {formatMoney(Math.round(unpaidBalance * 100) / 100, currency)}
+            <MoneyText dollars={Math.round(unpaidBalance * 100) / 100} locale={locale} />
           </p>
           <p className="mt-1 text-sm text-ej-muted">
             {unpaidInvoices.length === 0
@@ -190,7 +196,7 @@ export default async function MoneyPage() {
                 <p className="text-xs text-ej-muted">{L('t10money.money.unbilledDesc')}</p>
               </div>
               <span className="ml-auto text-lg font-bold tabular-nums text-emerald-700">
-                {formatMoney(Math.round(unbilledValue * 100) / 100, currency)}
+                <MoneyText dollars={Math.round(unbilledValue * 100) / 100} locale={locale} />
               </span>
             </div>
           </div>
@@ -215,7 +221,7 @@ export default async function MoneyPage() {
                         No charge
                       </span>
                     ) : (
-                      formatMoney(j.price, currency)
+                      <MoneyText dollars={j.price} locale={locale} />
                     )}
                   </span>
                   <Link
@@ -278,7 +284,7 @@ export default async function MoneyPage() {
                           {L('t10money.reminders.daysOverdue').replace('{days}', String(overdueDays))}
                         </span>
                         {', '}
-                        {L('t10money.reminders.balanceDue')}: {formatMoney(remaining, business?.currency)}
+                        {L('t10money.reminders.balanceDue')}: <MoneyText dollars={remaining} locale={locale} />
                       </p>
                     </div>
                   </div>

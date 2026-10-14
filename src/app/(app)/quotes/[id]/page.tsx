@@ -4,8 +4,10 @@ import { ArrowLeft, User } from 'lucide-react';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { PageHeader, Card, StatusBadge } from '@/components/ui';
-import { formatDateShort, localeDateTag, localeMoneyTag } from '@/lib/utils';
+import { localeMoneyTag } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
+import MoneyText from '@/components/MoneyText';
+import DateTimeText from '@/components/DateTimeText';
 import { getTaxConfig, totalTaxRate } from '@/lib/tax';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
@@ -41,7 +43,7 @@ export default async function QuoteDetailPage({
     where: { id, businessId },
     include: {
       customer: true,
-      business: { select: { regionCode: true, taxRegion: true, currency: true, name: true } },
+      business: { select: { regionCode: true, taxRegion: true, currency: true, name: true, timezone: true } },
       addons: { orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }] },
       lineItems: { orderBy: { position: 'asc' } },
       deposits: { orderBy: { createdAt: 'desc' } },
@@ -52,7 +54,6 @@ export default async function QuoteDetailPage({
   const shareState = await getQuoteShareState(quote.id);
 
   const locale = await getLocale();
-  const dateLocale = localeDateTag(locale);
   const moneyLocale = localeMoneyTag(locale);
   const L = (path: string) => t(locale, path);
 
@@ -109,7 +110,7 @@ export default async function QuoteDetailPage({
 
       <PageHeader
         title={`${quote.number} · ${quote.title}`}
-        subtitle={`Created ${formatDateShort(quote.createdAt, dateLocale)}`}
+        subtitle={<>Created <DateTimeText date={quote.createdAt} variant="short" timezone={quote.business.timezone ?? 'America/Toronto'} locale={locale} /></>}
         actions={<StatusBadge status={quote.status} />}
       />
 
@@ -142,7 +143,7 @@ export default async function QuoteDetailPage({
               </div>
             </div>
           </div>
-          <p className="text-2xl font-bold text-zinc-900 sm:text-right tabular-nums">{formatMoney(quote.total, currency, moneyLocale)}</p>
+          <p className="text-2xl font-bold text-zinc-900 sm:text-right tabular-nums"><MoneyText dollars={quote.total} locale={locale} /></p>
         </div>
 
         {hasLineItems && (
@@ -156,9 +157,9 @@ export default async function QuoteDetailPage({
                 >
                   <p className="text-sm font-semibold text-zinc-900">{item.description}</p>
                   <p className="text-xs text-zinc-500 mt-1 tabular-nums">
-                    {item.qty} × {formatMoney(item.unitPrice, currency, moneyLocale)}
+                    {item.qty} × <MoneyText dollars={item.unitPrice} locale={locale} />
                     <span className="font-bold text-zinc-800">
-                      {' '}· {formatMoney(round2(item.qty * item.unitPrice), currency, moneyLocale)}
+                      {' '}· <MoneyText dollars={round2(item.qty * item.unitPrice)} locale={locale} />
                     </span>
                   </p>
                 </li>
@@ -170,12 +171,12 @@ export default async function QuoteDetailPage({
         <dl className="border-t border-zinc-100 pt-4 space-y-1.5 text-sm tabular-nums">
           <div className="flex justify-between text-zinc-600">
             <dt>{L('t10money.subtotalLabel')}</dt>
-            <dd className="font-semibold">{formatMoney(subtotal, currency, moneyLocale)}</dd>
+            <dd className="font-semibold"><MoneyText dollars={subtotal} locale={locale} /></dd>
           </div>
           {showDiscount && (
             <div className="flex justify-between text-emerald-700">
               <dt>{discountLabel}</dt>
-              <dd className="font-semibold">−{formatMoney(discountAmount, currency, moneyLocale)}</dd>
+              <dd className="font-semibold">−<MoneyText dollars={discountAmount} locale={locale} /></dd>
             </div>
           )}
           {taxLines.map((l) => (
@@ -183,12 +184,12 @@ export default async function QuoteDetailPage({
               <dt>
                 {l.name} {l.rate}%
               </dt>
-              <dd className="font-semibold">{formatMoney(l.amount, currency, moneyLocale)}</dd>
+              <dd className="font-semibold"><MoneyText dollars={l.amount} locale={locale} /></dd>
             </div>
           ))}
           <div className="flex justify-between items-center text-base bg-ink text-white rounded-xl px-4 py-3 -mx-1 mt-2">
             <dt className="font-bold">{L('t10money.totalLabel')}</dt>
-            <dd className="font-bold">{formatMoney(quote.total, currency, moneyLocale)}</dd>
+            <dd className="font-bold"><MoneyText dollars={quote.total} locale={locale} /></dd>
           </div>
         </dl>
 
@@ -302,7 +303,6 @@ async function SignatureRequestsCard({
   L: (path: string) => string;
   locale: string;
 }) {
-  const dateLocale = localeDateTag(locale);
   const session = await getSession();
   if (!session?.user?.businessId) return null;
   const businessId = session.user.businessId;
@@ -350,11 +350,11 @@ async function SignatureRequestsCard({
               <div className="flex items-center gap-2">
                 <StatusBadge status={STATUS_LABELS[req.status] ?? req.status} />
                 <span className="text-xs text-zinc-500">
-                  {formatDateShort(req.createdAt, dateLocale)}
+                  <DateTimeText date={req.createdAt} variant="short" locale={locale === 'fr' ? 'fr' : 'en'} />
                 </span>
                 {req.signedAt && (
                   <span className="text-xs text-zinc-500">
-                    · {L('esign.statusSigned')} {formatDateShort(req.signedAt, dateLocale)}
+                    · {L('esign.statusSigned')} <DateTimeText date={req.signedAt} variant="short" locale={locale === 'fr' ? 'fr' : 'en'} />
                   </span>
                 )}
                 {req.signerName && (
