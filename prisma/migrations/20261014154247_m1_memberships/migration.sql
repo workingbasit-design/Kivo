@@ -58,10 +58,17 @@ END $$;
 -- Role maps from the legacy User.role (OWNER->OWNER, ADMIN->ADMIN,
 -- anything else -> TECHNICIAN). Users with NULL businessId (not yet
 -- onboarded) get no row. Idempotent: ON CONFLICT skips re-runs.
-INSERT INTO "Membership" ("id", "userId", "businessId", "role", "status", "createdAt", "updatedAt")
+DO $$
+BEGIN
+  -- Skip when the legacy User.businessId/role columns are already gone (m9 dropped
+  -- them; the backfill already ran). Re-run safe.
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'User' AND column_name = 'businessId') THEN
+    INSERT INTO "Membership" ("id", "userId", "businessId", "role", "status", "createdAt", "updatedAt")
 SELECT gen_random_uuid()::text, "id", "businessId",
        CASE WHEN "role" = 'OWNER' THEN 'OWNER' WHEN "role" = 'ADMIN' THEN 'ADMIN' ELSE 'TECHNICIAN' END,
        'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 FROM "User"
 WHERE "businessId" IS NOT NULL
 ON CONFLICT ("userId", "businessId") DO NOTHING;
+  END IF;
+END $$;
