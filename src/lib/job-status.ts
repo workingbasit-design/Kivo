@@ -50,3 +50,84 @@ export function previousPipelineStatus(current: string): string | null {
   const i = (JOB_PIPELINE as readonly string[]).indexOf(current);
   return i > 0 ? JOB_PIPELINE[i - 1] : null;
 }
+
+/* ------------------------------------------------------------------ */
+/* Part A1: canonical lifecycle display (added 2026-10-14).             */
+/*                                                                     */
+/* Stored status values use the legacy spellings ('IN PROGRESS' with a */
+/* space). Do NOT rename a stored value without a data migration.      */
+/* ------------------------------------------------------------------ */
+
+import { toISODateInTimezone } from './utils.ts';
+
+/**
+ * Canonical job statuses in the one fixed filter order used everywhere
+ * (Jobs list, Schedule, Dashboard). Same values as ALL_JOB_STATUSES.
+ */
+export const JOB_STATUSES: readonly JobStatus[] = ALL_JOB_STATUSES;
+
+/** Statuses for which a past-due date renders the Late badge. Late is
+ *  derived, never stored: a job is Late when its scheduled start is before
+ *  today in the business's time zone and its status is New or Scheduled. */
+const LATE_ELIGIBLE_STATUSES: readonly string[] = ['NEW', 'SCHEDULED'];
+
+const JOB_STATUS_LABELS_EN: Record<string, string> = {
+  NEW: 'New',
+  SCHEDULED: 'Scheduled',
+  'IN PROGRESS': 'In progress',
+  COMPLETED: 'Completed',
+  PAID: 'Paid',
+  CANCELLED: 'Cancelled',
+};
+
+const JOB_STATUS_LABELS_FR: Record<string, string> = {
+  NEW: 'Nouveau',
+  SCHEDULED: 'Planifié',
+  'IN PROGRESS': 'En cours',
+  COMPLETED: 'Terminé',
+  PAID: 'Payé',
+  CANCELLED: 'Annulé',
+};
+
+/** Sentence-case display label for a stored job status. Never show raw
+ *  SCREAMING_CASE to users. */
+export function jobStatusLabel(status: string, locale: 'en' | 'fr' = 'en'): string {
+  const dict = locale === 'fr' ? JOB_STATUS_LABELS_FR : JOB_STATUS_LABELS_EN;
+  const hit = dict[status];
+  if (hit) return hit;
+  return status.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/**
+ * True when a job's date is before today (in the given IANA timezone) and
+ * its status is New or Scheduled. Calendar-day comparison: a job due today
+ * is not late; a job due yesterday or earlier with an open status is.
+ *
+ * Uses the business timezone (not server UTC) so a job dated "today" can't
+ * flip Late in the evening when UTC has already rolled to tomorrow.
+ */
+export function isJobLate(
+  job: { date: Date | string | null | undefined; status: string },
+  now: Date = new Date(),
+  timezone: string = 'America/Toronto',
+): boolean {
+  if (!job.date) return false;
+  if (!LATE_ELIGIBLE_STATUSES.includes(job.status)) return false;
+  let day: string;
+  if (job.date instanceof Date) {
+    if (Number.isNaN(job.date.getTime())) return false;
+    day = toISODateInTimezone(job.date, timezone);
+  } else if (/^\d{4}-\d{2}-\d{2}/.test(job.date)) {
+    // "YYYY-MM-DD" is already a calendar day — use it directly.
+    day = job.date.slice(0, 10);
+  } else {
+    const d = new Date(job.date);
+    if (Number.isNaN(d.getTime())) return false;
+    day = toISODateInTimezone(d, timezone);
+  }
+  const todayDay = toISODateInTimezone(now, timezone);
+  return day < todayDay;
+}
+
+/** Re-exported so call sites have one import location for status display. */
+export { formatStatusLabel } from './utils.ts';

@@ -166,6 +166,63 @@ export async function updateCustomer(
 }
 
 /** Delete a customer (must belong to the current business). */
+/**
+ * Archive a customer (A7). Sets archivedAt — hidden from lists, restorable.
+ * Archiving preserves all linked records (jobs, invoices, quotes).
+ */
+export async function archiveCustomer(
+  _prev: ActionResult,
+  formData: FormData
+): Promise<ActionResult> {
+  const { businessId, user } = await requireAuth();
+  const limited = await checkLimit(user.id);
+  if (limited) return limited;
+  const id = String(formData.get('id') ?? '');
+
+  const existing = await prisma.customer.findFirst({
+    where: { id, businessId },
+    select: { id: true, archivedAt: true },
+  });
+  if (!existing) return { error: 'Customer not found.' };
+  if (existing.archivedAt) return { error: 'Customer is already archived.' };
+
+  await prisma.customer.update({
+    where: { id, businessId },
+    data: { archivedAt: new Date() },
+  });
+
+  revalidatePath('/customers');
+  return { ok: true };
+}
+
+/**
+ * Restore an archived customer.
+ */
+export async function unarchiveCustomer(
+  _prev: ActionResult,
+  formData: FormData
+): Promise<ActionResult> {
+  const { businessId, user } = await requireAuth();
+  const limited = await checkLimit(user.id);
+  if (limited) return limited;
+  const id = String(formData.get('id') ?? '');
+
+  const existing = await prisma.customer.findFirst({
+    where: { id, businessId },
+    select: { id: true, archivedAt: true },
+  });
+  if (!existing) return { error: 'Customer not found.' };
+  if (!existing.archivedAt) return { error: 'Customer is not archived.' };
+
+  await prisma.customer.update({
+    where: { id, businessId },
+    data: { archivedAt: null },
+  });
+
+  revalidatePath('/customers');
+  return { ok: true };
+}
+
 export async function deleteCustomer(
   _prev: ActionResult,
   formData: FormData
@@ -179,12 +236,23 @@ export async function deleteCustomer(
     where: { id, businessId },
     select: {
       id: true,
+      archivedAt: true,
       jobs: { select: { id: true }, take: 1 },
       invoices: { select: { id: true }, take: 1 },
       quotes: { select: { id: true }, take: 1 },
     },
   });
   if (!existing) return { error: 'Customer not found.' };
+
+  // A7: Only archived customers with zero linked records can be deleted.
+  // Archive first, then delete. This prevents accidental destruction of
+  // financial records.
+  if (!existing.archivedAt) {
+    return {
+      error:
+        'Archive this customer first. Only archived customers with no linked records can be deleted.',
+    };
+  }
 
   // CRA requires businesses to keep records for 6 years. Never cascade-delete
   // a customer with jobs, invoices, or quotes — that would destroy records
@@ -193,7 +261,7 @@ export async function deleteCustomer(
     return {
       error:
         'Cannot delete this customer: they have jobs, invoices, or quotes on file. ' +
-        'Tax records must be kept for 6 years. Remove their contact details instead, or contact support.',
+        'Tax records must be kept for 6 years. They will stay archived.',
     };
   }
 

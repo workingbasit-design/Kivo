@@ -75,6 +75,7 @@ export async function createJob(
     customerId = customer.id;
   }
 
+  const noCharge = formData.get('noCharge') === 'on';
   const parsed = jobSchema.safeParse({
     title: formData.get('title'),
     customerId,
@@ -86,6 +87,10 @@ export async function createJob(
     notes: formData.get('notes') ?? '',
     technician: formData.get('technician') ?? '',
   });
+  // Zero-price requires explicit no-charge opt-in
+  if (parsed.success && parsed.data.price === 0 && !noCharge) {
+    return { error: 'Enter a price or tick "No charge" for warranty callbacks and similar.' };
+  }
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? 'Invalid job details.' };
   }
@@ -129,6 +134,7 @@ export async function createJob(
       address: parsed.data.address || null,
       price: Number(parsed.data.price.toFixed(2)), // legacy Float; remove after migration
       priceCents: dollarsToCents(parsed.data.price),
+      noCharge,
       status: 'SCHEDULED',
       notes: parsed.data.notes || null,
       technician: parsed.data.technician || null,
@@ -186,6 +192,7 @@ export async function updateJob(
   const existing = await getOwnedJob(businessId, id);
   if (!existing) return { error: 'Job not found.' };
 
+  const noCharge = formData.get('noCharge') === 'on';
   const parsed = jobSchema
     .omit({ status: true })
     .safeParse({
@@ -200,6 +207,9 @@ export async function updateJob(
     });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? 'Invalid job details.' };
+  }
+  if (parsed.data.price === 0 && !noCharge) {
+    return { error: 'Enter a price or tick "No charge" for warranty callbacks and similar.' };
   }
 
   const customer = await prisma.customer.findFirst({
@@ -234,6 +244,7 @@ export async function updateJob(
       address: parsed.data.address || null,
       price: Number(parsed.data.price.toFixed(2)), // legacy Float; remove after migration
       priceCents: dollarsToCents(parsed.data.price),
+      noCharge,
       notes: parsed.data.notes || null,
       technician: parsed.data.technician || null,
       ...crewUpdate,

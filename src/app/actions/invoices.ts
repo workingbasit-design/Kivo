@@ -313,8 +313,10 @@ export async function deleteInvoice(
   const id = String(formData.get('id') ?? '');
   const invoice = await ownedInvoice(businessId, id);
   if (!invoice) return { error: 'Invoice not found.' };
-  if (invoice.status === 'PAID') {
-    return { error: 'Paid invoices are kept as records and can\'t be deleted.' };
+  // A7: Only DRAFT invoices can be deleted. SENT, PARTIALLY_PAID, and PAID
+  // must be voided (keeps number, audit trail, and totals exclusion).
+  if (invoice.status !== 'DRAFT') {
+    return { error: 'Only draft invoices can be deleted. Void it instead to keep the audit trail.' };
   }
   // Never delete an invoice with payments on file - that destroys the payment
   // record. Void it instead (keeps the audit trail).
@@ -333,6 +335,136 @@ export async function deleteInvoice(
   revalidatePath('/invoices');
   revalidatePath('/dashboard');
   redirect('/invoices');
+}
+
+/**
+ * Void an invoice (A7). Requires a reason (min 10 chars).
+ * SENT, PARTIALLY_PAID, and PAID invoices can be voided. The number is kept,
+ * totals are excluded from reports, and the void is auditable.
+ */
+export async function voidInvoice(
+  _prev: ActionResult,
+  formData: FormData
+): Promise<ActionResult> {
+  const limited = checkLimit(await clientKey('invoice:void'));
+  if (limited) return limited;
+
+  let businessId: string;
+  try {
+    ({ businessId } = await requireAuth());
+  } catch {
+    return { error: 'Please log in again.' };
+  }
+
+  const id = String(formData.get('id') ?? '');
+  const reason = String(formData.get('reason') ?? '').trim();
+  if (reason.length < 10) {
+    return { error: 'Please provide a reason (at least 10 characters) for voiding this invoice.' };
+  }
+
+  const invoice = await ownedInvoice(businessId, id);
+  if (!invoice) return { error: 'Invoice not found.' };
+  if (invoice.status === 'DRAFT') {
+    return { error: 'Draft invoices can be deleted directly — no need to void.' };
+  }
+  if ((invoice as { voidedAt?: Date | null }).voidedAt) {
+    return { error: 'This invoice is already voided.' };
+  }
+
+  await prisma.invoice.update({
+    where: { id, businessId },
+    data: { voidedAt: new Date(), voidReason: reason },
+  });
+
+  revalidatePath('/invoices');
+  revalidatePath('/dashboard');
+  return { ok: true };
+}
+
+/**
+ * Void a payment (A7). Requires a reason (min 10 chars).
+ * Payments are never deleted — voiding keeps the audit trail.
+ */
+export async function voidPayment(
+  _prev: ActionResult,
+  formData: FormData
+): Promise<ActionResult> {
+  const limited = checkLimit(await clientKey('payment:void'));
+  if (limited) return limited;
+
+  let businessId: string;
+  try {
+    ({ businessId } = await requireAuth());
+  } catch {
+    return { error: 'Please log in again.' };
+  }
+
+  const id = String(formData.get('id') ?? '');
+  const reason = String(formData.get('reason') ?? '').trim();
+  if (reason.length < 10) {
+    return { error: 'Please provide a reason (at least 10 characters) for voiding this payment.' };
+  }
+
+  const payment = await prisma.payment.findFirst({
+    where: { id, invoice: { businessId } },
+    select: { id: true, voidedAt: true },
+  });
+  if (!payment) return { error: 'Payment not found.' };
+  if (payment.voidedAt) return { error: 'This payment is already voided.' };
+
+  await prisma.payment.update({
+    where: { id },
+    data: { voidedAt: new Date(), voidReason: reason },
+  });
+
+  revalidatePath('/invoices');
+  revalidatePath('/dashboard');
+  return { ok: true };
+}
+
+/**
+ * Create a credit note for a sent invoice (A7).
+ * Used for post-send corrections instead of editing the invoice.
+ */
+export async function createCreditNote(
+  _prev: ActionResult,
+  formData: FormData
+): Promise<ActionResult> {
+  const limited = checkLimit(await clientKey('credit-note:create'));
+  if (limited) return limited;
+
+  let businessId: string;
+  try {
+    ({ businessId } = await requireAuth());
+  } catch {
+    return { error: 'Please log in again.' };
+  }
+
+  const invoiceId = String(formData.get('invoiceId') ?? '');
+  const reason = String(formData.get('reason') ?? '').trim();
+  const amountDollars = Number(formData.get('amount') ?? 0);
+  if (!invoiceId) return { error: 'Invoice is required.' };
+  if (reason.length < 10) {
+    return { error: 'Please provide a reason (at least 10 characters) for this credit note.' };
+  }
+  if (!Number.isFinite(amountDollars) || amountDollars <= 0) {
+    return { error: 'Credit amount must be greater than zero.' };
+  }
+
+  const invoice = await ownedInvoice(businessId, invoiceId);
+  if (!invoice) return { error: 'Invoice not found.' };
+
+  await prisma.creditNote.create({
+    data: {
+      invoiceId,
+      businessId,
+      amountCents: BigInt(Math.round(amountDollars * 100)),
+      reason,
+    },
+  });
+
+  revalidatePath('/invoices');
+  return { ok: true };
 }
 
 function deriveStatus(total: number, paid: number): string {
@@ -529,6 +661,11 @@ async function settleJobPaidTx(tx: PrismaTx, businessId: string, jobId: string):
         unitPriceCents: dollarsToCents(price),
         position: 0,
       },
+    });
+    // Mark job as invoiced (A1: invoicedAt tracks when first invoice links)
+    await tx.job.update({
+      where: { id: job.id },
+      data: { invoicedAt: new Date() },
     });
     await tx.payment.create({
       data: {

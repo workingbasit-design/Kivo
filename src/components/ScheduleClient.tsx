@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { updateJobStatus, deleteJob, seedSampleJobs, updateJobSchedule } from '@/app/actions/jobs';
-import { validNextStatuses } from '@/lib/job-status';
+import { validNextStatuses, JOB_STATUSES } from '@/lib/job-status';
 import { formatMoney } from '@/lib/money';
 import { toISODateLocal, formatDateLabel, hasJobTime, formatStatusLabel, jobDisplayStatus, localeDateTag, cn } from '@/lib/utils';
 import { t, type Locale } from '@/lib/i18n';
@@ -41,8 +41,6 @@ type Job = {
     email: string;
   } | null;
 };
-
-const STATUS_TABS = ['ALL', 'NEW', 'SCHEDULED', 'IN PROGRESS', 'COMPLETED', 'PAID', 'CANCELLED'] as const;
 
 export default function ScheduleClient({
   initialJobs,
@@ -249,7 +247,7 @@ export default function ScheduleClient({
           aria-label={jobsL('status')}
           className="flex items-center gap-1.5 overflow-x-auto pb-1 flex-1"
         >
-          {STATUS_TABS.map((st) => (
+          {(['ALL', ...JOB_STATUSES] as const).map((st) => (
             <button
               key={st}
               onClick={() => setStatusFilter(st)}

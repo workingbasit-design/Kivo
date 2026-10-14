@@ -23,6 +23,7 @@ export interface JobFormInitial {
   time?: string | null;
   address?: string | null;
   price?: number;
+  noCharge?: boolean;
   notes?: string | null;
   technician?: string | null;
   crewId?: string | null;
@@ -83,10 +84,12 @@ export default function JobForm({
   // always appears in the combobox.
   const [liveCustomers, setLiveCustomers] = useState<JobFormCustomer[]>(customers);
   const [priceValue, setPriceValue] = useState<string>(String(initial?.price ?? ''));
+  const [noCharge, setNoCharge] = useState<boolean>(initial?.noCharge ?? false);
   const priceIsZero = (() => {
     const n = parseFloat(priceValue);
     return priceValue.trim() !== '' && Number.isFinite(n) && n === 0;
   })();
+  const showZeroWarning = priceIsZero && !noCharge;
   useEffect(() => {
     let cancelled = false;
     fetch('/api/customers/options', { cache: 'no-store' })
@@ -211,12 +214,24 @@ export default function JobForm({
               if (Number.isFinite(n)) e.target.value = n.toFixed(2);
             }}
           />
-          {priceIsZero && (
+          {showZeroWarning && (
             <p role="alert" className="mt-2 flex items-start gap-2 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
               <AlertCircle size={14} className="shrink-0 mt-0.5" aria-hidden />
-              {T('formZeroPriceWarning')}
+              No price set — is this a no-charge job?
             </p>
           )}
+          <label className="mt-3 flex items-center gap-2.5 cursor-pointer min-h-[44px]">
+            <input
+              type="checkbox"
+              name="noCharge"
+              checked={noCharge}
+              onChange={(e) => setNoCharge(e.target.checked)}
+              className="h-5 w-5 rounded border-zinc-300 text-lime-600 focus:ring-lime-500"
+            />
+            <span className="text-sm text-zinc-700">
+              No charge <span className="text-zinc-500">(warranty callback, goodwill, etc.)</span>
+            </span>
+          </label>
         </Field>
       </div>
 

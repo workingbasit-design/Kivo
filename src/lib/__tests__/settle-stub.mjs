@@ -32,6 +32,11 @@ export function makeTx() {
         if (where?.id === 'job_1' && where?.businessId === 'biz_1') return { ...JOB };
         return null;
       },
+      update: async (args) => {
+        calls.jobUpdate = calls.jobUpdate || [];
+        calls.jobUpdate.push(args);
+        return { id: args.where.id };
+      },
     },
     invoice: {
       findFirst: async () => null, // no number clash in tests

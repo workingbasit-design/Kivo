@@ -102,6 +102,7 @@ export const TENANT_MODELS: ReadonlySet<string> = new Set([
   'Communication',
   'ConsentLog',
   'Crew',
+  'CreditNote',
   'CustomFieldDef',
   'Customer',
   'CustomerPortalToken',

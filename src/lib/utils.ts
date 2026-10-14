@@ -242,30 +242,37 @@ export function statusLabel(status: string, locale: 'en' | 'fr' = 'en'): string 
 
 /**
  * True when a job's date has passed and it still isn't done/cancelled.
- * Compares calendar days: a job due today is not overdue; a job due
- * yesterday or earlier with an open status is.
+ * Compares calendar days in the given IANA timezone: a job due today is
+ * not overdue; a job due yesterday or earlier with an open status is.
+ *
+ * The timezone parameter fixes the server-UTC bug where a job dated
+ * "today" would flip overdue in the evening once UTC rolled to tomorrow.
+ * Defaults to America/Toronto (Canada-only app); pass the business's
+ * timezone when known.
  */
 export function isJobOverdue(
   status: string,
   date: Date | string | null | undefined,
   now: Date = new Date(),
+  timezone: string = 'America/Toronto',
 ): boolean {
   if (!date) return false;
   if (!(OPEN_JOB_STATUSES as readonly string[]).includes(status)) return false;
-  let d: Date;
+  let day: string;
   if (date instanceof Date) {
-    d = date;
+    if (Number.isNaN(date.getTime())) return false;
+    day = toISODateInTimezone(date, timezone);
   } else if (/^\d{4}-\d{2}-\d{2}/.test(date)) {
-    // "YYYY-MM-DD" (or ISO with time): interpret the calendar day in local
-    // time, not UTC midnight, so "today" isn't off by one in the evening.
-    const [y, m, dd] = date.slice(0, 10).split('-').map(Number);
-    d = new Date(y, m - 1, dd);
+    // "YYYY-MM-DD" (or ISO with time): already a calendar day — use it
+    // directly so "today" isn't off by one in the evening.
+    day = date.slice(0, 10);
   } else {
-    d = new Date(date);
+    const d = new Date(date);
+    if (Number.isNaN(d.getTime())) return false;
+    day = toISODateInTimezone(d, timezone);
   }
-  if (Number.isNaN(d.getTime())) return false;
-  const dayStart = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
-  return dayStart(d) < dayStart(now);
+  const todayDay = toISODateInTimezone(now, timezone);
+  return day < todayDay;
 }
 
 /**
@@ -279,6 +286,7 @@ export function jobDisplayStatus(
   status: string,
   date: Date | string | null | undefined,
   now?: Date,
+  timezone: string = 'America/Toronto',
 ): string {
-  return isJobOverdue(status, date, now) ? 'LATE' : status;
+  return isJobOverdue(status, date, now, timezone) ? 'LATE' : status;
 }

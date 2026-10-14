@@ -41,14 +41,16 @@ export default async function MoneyPage() {
       select: { total: true },
     }),
     prisma.invoice.findMany({
-      where: { businessId, status: { not: 'PAID' } },
+      where: { businessId, status: { not: 'PAID' }, voidedAt: null },
       select: { total: true, payments: { select: { amount: true } } },
     }),
     // Overdue queue: unpaid/partially-paid invoices older than Net-30, oldest first.
+    // Excludes voided invoices.
     prisma.invoice.findMany({
       where: {
         businessId,
         status: { not: 'PAID' },
+        voidedAt: null,
         date: { lt: overdueThreshold() },
       },
       select: {
@@ -64,17 +66,20 @@ export default async function MoneyPage() {
     }),
     // Ready to invoice: completed jobs with no invoice yet - the most common
     // cash leak for small trades. Without this, Money says "all caught up"
-    // while billable work sits unbilled.
+    // while billable work sits unbilled. Uses invoicedAt (set when first
+    // invoice links to the job).
     prisma.job.findMany({
       where: {
         businessId,
         status: 'COMPLETED',
-        invoices: { none: {} },
+        invoicedAt: null,
       },
       select: {
         id: true,
         title: true,
         price: true,
+        priceCents: true,
+        noCharge: true,
         customer: { select: { name: true } },
       },
       orderBy: { date: 'asc' },
@@ -181,22 +186,34 @@ export default async function MoneyPage() {
           <ul className="divide-y divide-zinc-100">
             {unbilledJobs.map((j) => (
               <li key={j.id} className="px-4 sm:px-5 py-3">
-                <Link
-                  href={`/jobs/${j.id}`}
-                  className="flex items-center justify-between gap-4 min-h-[44px]"
-                >
-                  <span className="min-w-0">
+                <div className="flex items-center justify-between gap-4 min-h-[44px]">
+                  <Link
+                    href={`/jobs/${j.id}`}
+                    className="min-w-0 flex-1"
+                  >
                     <span className="block text-sm font-semibold text-zinc-900 truncate">
                       {j.title}
                     </span>
                     <span className="block text-xs text-zinc-500 truncate">
                       {j.customer.name}
                     </span>
-                  </span>
+                  </Link>
                   <span className="shrink-0 text-sm font-bold tabular-nums text-zinc-900">
-                    {formatMoney(j.price, currency)}
+                    {j.noCharge ? (
+                      <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-700">
+                        No charge
+                      </span>
+                    ) : (
+                      formatMoney(j.price, currency)
+                    )}
                   </span>
-                </Link>
+                  <Link
+                    href={`/invoices/new?jobId=${j.id}`}
+                    className={secondaryBtnClass + " shrink-0"}
+                  >
+                    Create invoice
+                  </Link>
+                </div>
               </li>
             ))}
           </ul>

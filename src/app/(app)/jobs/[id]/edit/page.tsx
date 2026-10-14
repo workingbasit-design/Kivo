@@ -62,6 +62,7 @@ export default async function EditJobPage({
             time: job.time,
             address: job.address,
             price: job.price,
+            noCharge: job.noCharge,
             notes: job.notes,
             technician: job.technician,
             crewId: job.crewId,

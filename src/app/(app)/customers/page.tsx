@@ -35,7 +35,7 @@ export default async function CustomersPage() {
     currency = business?.currency ?? undefined;
 
     const rows = await prisma.customer.findMany({
-      where: { businessId },
+      where: { businessId, archivedAt: null },
       select: {
         id: true,
         name: true,
