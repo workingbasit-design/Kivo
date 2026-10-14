@@ -176,3 +176,18 @@ Session log for AI agents working on EveryJob (Kivo). Required by AGENTS.md sect
 
 Final state: tsc clean, 1062 tests pass (was 1029), i18n parity PASSED, all pushed to GitHub main.
 Still blocked: Vercel deploy stalled (user action needed) — live verification of all parts awaits a working deploy.
+
+## 2026-10-14 - DEPLOY FIXED: Vercel stalled deploy unblocked
+
+**Root cause (two problems):**
+1. Vercel project `kivo` has `link: null` — no GitHub link, so pushes never auto-deployed. Latest Vercel deployment was Oct 12 (commit 9a3e50b); all Oct 13-14 pushes never triggered builds.
+2. Launch pack (1188a77) added `/api/cron/digest` with hourly schedule `15 * * * *`. Vercel Hobby rejects cron jobs running more than once per day (`cron_jobs_limits_reached`), so even manual deployments failed.
+
+**Fix:**
+- `vercel.json`: digest cron `15 * * * *` -> `0 12 * * *` (once daily, 12:00 UTC = 7-8 AM Eastern)
+- `src/app/api/cron/digest/route.ts`: exact hour match -> local time >= sendTime (DST-robust for once-daily runs; dedupeKey prevents double-sends)
+- Committed + pushed as 9249dfe, then triggered production deployment via Vercel MCP (dpl_GAePck8SYkcEG38pKPTKAV5tonEV) — state READY
+- Verified live: old chunk 2o3bt00ngd9-o.js gone from production homepage; "Hi! I'm Jobi" string 0 matches in new bundle. Production now serves Parts A-D code.
+
+**Tradeoff:** Businesses with sendTime later than their local time at 12:00 UTC won't get a digest that day. Hourly per-timezone delivery needs Vercel Pro ($20/mo) — NOT done per $0 rule.
+**Still open:** GitHub-Vercel auto-deploy link is still null. Future pushes won't auto-deploy until the repo is re-linked in Vercel dashboard (Project Settings -> Git) or via `create_git_project`. Manual deployments via MCP work.
