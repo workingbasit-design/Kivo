@@ -142,3 +142,37 @@ Session log for AI agents working on EveryJob (Kivo). Required by AGENTS.md sect
 **Not done:**
 - Before/after screenshots at 375px/390px EN/FR (no live browser in subagent; Vercel deploy stalled, blocks live verification)
 - Desktop sidebar + mobile bottom nav stay dark glass (separate chrome, not header)
+
+## 2026-10-14 - Prompt 2 Part D: French (full coverage + CI check)
+
+**Goal:** Every string in en-CA and fr-CA, CI check, Quebec vocabulary, TRANSLATION_REVIEW.md. Final part — all 21 points now done.
+
+**Files changed (21 files, +3516/-33):**
+- i18n fragments (11): agent, attention, bookkeeping, crews, digest, projects, reports, support, track10-misc, track10-money, track10-work
+- Format fixes (5): directory-reports/report-row, directory-requests/demand-row, directory-claims/claim-row, customer/requests/[id], quickbooks sync route
+- New: `scripts/check-i18n-parity.mjs`, `docs/TRANSLATION_REVIEW.md`, `docs/TRANSLATION_REVIEW_FULL.md`
+- Modified: `.github/workflows/ci.yml` (i18n parity step before tests)
+
+**Verified:**
+- i18n parity: 3279/3279 keys, 0 missing, 0 empty — PASSED
+- Strings fixed: 25 total (20 French: job/jobs -> travail/travaux, Active -> Actif; 5 English: Colour, help centre, French text in en dict -> English)
+- fr-CA formats: 4 bare toLocaleString -> explicit fr-CA/en-CA, 1 hardcoded `$` -> Intl formatMoney
+- tsc --noEmit: 0 errors
+- npm test: 1062 pass, 0 fail
+- Pushed as 0a542f2
+
+**Known limitation:** Hardcoded English literals inside components outside the dictionaries were not exhaustively swept. Dictionary surface fully covered.
+
+---
+
+## Prompt 2 COMPLETE — All 21 points done (2026-10-14)
+
+| Part | Points | Commit |
+|---|---|---|
+| A: Data correct | 8 (A1-A8) | 5f67b8f |
+| B: Mobile experience | 8 (B1-B8) | 4f20688 |
+| C: Visual design | 2 (C1-C2) | 051e572 |
+| D: French | 3 | 0a542f2 |
+
+Final state: tsc clean, 1062 tests pass (was 1029), i18n parity PASSED, all pushed to GitHub main.
+Still blocked: Vercel deploy stalled (user action needed) — live verification of all parts awaits a working deploy.
