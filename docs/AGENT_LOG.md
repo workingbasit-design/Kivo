@@ -205,3 +205,17 @@ Still blocked: Vercel deploy stalled (user action needed) — live verification 
 - npm test: 1070 pass, 0 fail
 - Production deploy dpl_4JAp61zZVRHXVRYYKDjAZGHWk6NR — READY, old chunk gone from live homepage
 - C2 screenshots: "after" shots at 375/390px EN/FR in progress (see shots-c2/)
+
+## 2026-10-14 - Screenshot-issue fixes (design, French times, Stripe error) + Prompt 3 plans
+
+**User-reported issues from real phone screenshots (4 shots):**
+1. First screenshot UI "not designed properly" — Digest hero was a dark gradient (violated DESIGN.md light theme; Digest wasn't in Part C's screen list). Fixed: light hero (white bg, border-ej-smoke, ink text, lime icon chip) in `src/app/(app)/digest/page.tsx:75`.
+2. French times in English ("7:00 AM", "9:00 AM", "6:00 PM") — two root causes: (a) `<html lang="en">` hardcoded in `src/app/layout.tsx` — native time inputs render per document lang; now `lang={locale === 'fr' ? 'fr-CA' : 'en-CA'}`. (b) iOS Safari native `<input type="time">` renders in DEVICE locale, not app locale. New `src/components/TimeField.tsx`: locale-aware hour/minute selects (FR 24h "9 h", EN 12h "9 AM"), value stays "HH:MM". All 5 `<input type="time">` usages replaced (DigestSettingsForm, WorkingHoursEditor x2, Copilot draft edit, Copilot booking). (c) `formatJobTime(time, locale)` gained a locale param — FR renders "9 h 00", EN "9:00 AM" — applied to job detail WhatsApp/SMS messages, recurring, timesheets, portal, dispatch, routes, Copilot widget. Test: `src/lib/__tests__/job-time.test.mts` extended.
+3. Bottom nav overlapping content (Settings) — fixed nav is 97%-opaque glass; Part B padding 9rem left only ~14px clearance over a ~96-130px nav. Raised to `pb-[calc(12rem+env(safe-area-inset-bottom))]` (192px, ~60px clearance) in `src/app/(app)/layout.tsx:103`. General fix, no per-page hacks.
+4. "BWAI" mystery text — NOT a bug: the string appears nowhere in `src/`; it is the business name the user/test account entered, shown in the Settings name field. Left untouched.
+5. Stripe "not connecting" — two stacked problems: (a) platform keys missing (owner action: add STRIPE_SECRET_KEY, STRIPE_CLIENT_ID, STRIPE_WEBHOOK_SECRET in Vercel, redeploy); (b) code bug: `/api/stripe/connect` redirects to `?stripe=not-configured` but nothing read the param — the page silently reloaded. Fixed: payments page passes `connectFailed` to the client, which shows a red error banner with new i18n keys `payments.connectFailed` (EN + FR).
+
+**Commits:** `8ea2d41` (fixes, 18 files) + `6a4bd56` (Prompt 3 plans, docs only).
+**Verified:** tsc clean, npm test 1072 pass / 0 fail, i18n parity PASSED.
+**Deploy:** both commits auto-deployed from GitHub push (source: git) — `dpl_H8iArbam6NBhWDe6ZhaCzUZfWJP5` (fixes) READY, `dpl_D53NRHHVXBhLJCpFuXMP8dqkWWVn` (plans) READY. Production now at 6a4bd56. Note: auto-deploy worked this time, contradicting the earlier `link: null` finding — the link state is now unverified either way; pushes auto-deployed, which is what matters.
+**Still open:** Prompt 3 plans await user OK (`docs/plans/database.md`, `docs/plans/security.md`). C2 pro-profile screenshots (4) still missing — screenshot subagent stalled, to be retried. Stripe platform keys still need to be added by the owner in Vercel.
