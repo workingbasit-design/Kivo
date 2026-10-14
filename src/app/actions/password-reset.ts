@@ -47,7 +47,7 @@ function tooMany(ret: { retryAfterMs: number }): ResetResult {
 
 /**
  * Request a password-reset link. ALWAYS returns { ok: true } for a valid
- * email shape — even when no account exists — so the endpoint can never be
+ * email shape - even when no account exists - so the endpoint can never be
  * used to enumerate registered emails.
  */
 export async function requestPasswordReset(
@@ -74,7 +74,7 @@ export async function requestPasswordReset(
   });
 
   // Password resets only make sense for password accounts. Google-only
-  // accounts (no passwordHash) get the same silent success — no enumeration.
+  // accounts (no passwordHash) get the same silent success - no enumeration.
   if (user?.passwordHash) {
     const token = newResetToken();
     const tokenHash = hashResetToken(token);
@@ -94,7 +94,7 @@ export async function requestPasswordReset(
       const link = `${base}/reset-password/${token}`;
       const firstName = (user.name ?? '').trim().split(/\s+/)[0] || 'there';
       // Best-effort: a missing RESEND_API_KEY only skips the email (logged
-      // server-side); the request itself still "succeeds" — no enumeration.
+      // server-side); the request itself still "succeeds" - no enumeration.
       const tpl = passwordResetEmail(firstName, link);
       await sendPlatformEmail(user.email, tpl.subject, tpl.text, {
         fromName: 'EveryJob',

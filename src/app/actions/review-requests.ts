@@ -19,7 +19,7 @@ import { checkBotSignals } from '@/lib/review-guards';
 export type ReviewRequestResult = {
   error?: string;
   ok?: boolean;
-  /** Raw token value — shown to the pro once, never stored. */
+  /** Raw token value - shown to the pro once, never stored. */
   token?: string;
 };
 
@@ -108,7 +108,7 @@ const STALE_LINK_ERROR =
   'This review link is no longer valid. Ask your pro for a fresh one.';
 
 /**
- * Public review submission — NO auth. The ONLY way a review is created
+ * Public review submission - NO auth. The ONLY way a review is created
  * without the pro being signed in is with a valid, unused, unexpired,
  * unrevoked single-use token. There is no open submission path anymore.
  */
@@ -129,9 +129,9 @@ export async function submitTokenReview(
   const { token, rating, comment, honeypot, renderedAtMs } = parsed.data;
 
   // Bot protection (CAPTCHA-or-equivalent): honeypot + minimum fill time,
-  // validated server-side. Deliberately vague error — don't coach bots.
+  // validated server-side. Deliberately vague error - don't coach bots.
   const bot = checkBotSignals({ honeypot, renderedAtMs });
-  if (!bot.ok) return { error: 'Something went wrong — please try again.' };
+  if (!bot.ok) return { error: 'Something went wrong - please try again.' };
 
   const tokenHash = hashReviewToken(token);
   // Public token lookup: the 256-bit review token IS the authorization
@@ -208,7 +208,7 @@ export type TokenReviewContext = {
 
 /**
  * Public-safe context for the /rev/[token] page. Returns null for any
- * invalid, used, revoked, or expired token. Only names/titles are exposed —
+ * invalid, used, revoked, or expired token. Only names/titles are exposed -
  * never emails, phones, addresses, or financials.
  */
 export async function getTokenReviewContext(
@@ -216,7 +216,7 @@ export async function getTokenReviewContext(
 ): Promise<TokenReviewContext> {
   if (!token || token.length > 200) return null;
   // Public token lookup: the review token IS the authorization (capability
-  // URL). Only names/titles are exposed — never emails, phones, addresses,
+  // URL). Only names/titles are exposed - never emails, phones, addresses,
   // or financials.
   const req = await unsafeUnscoped('review-requests:resolveTokenContext', (db) =>
     db.reviewRequest.findUnique({

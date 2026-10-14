@@ -10,7 +10,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 // Regression test (2026-09-28): the password-recovery and legal pages must be
 // reachable without a session. QA found /forgot-password bouncing anonymous
 // users to /login (missing from the proxy's public table), which made the
-// entire password-reset flow unreachable — the emailed /reset-password/[token]
+// entire password-reset flow unreachable - the emailed /reset-password/[token]
 // link bounced too. /terms and /privacy bounced even though the register page
 // links to them.
 
@@ -69,7 +69,7 @@ test('public paths: agent protocol surface is reachable without a session', () =
 });
 
 test('public paths: static PWA assets bypass the proxy without a session', () => {
-  // Regression (2026-10-05): /favicon.svg — the metadata `icon` — bounced
+  // Regression (2026-10-05): /favicon.svg - the metadata `icon` - bounced
   // anonymous browsers to /login because it was missing from the proxy's
   // static-asset bypass list.
   for (const p of [

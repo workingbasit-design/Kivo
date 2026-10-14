@@ -198,7 +198,7 @@ export default function CustomerProperties({
                   <p className="text-sm font-semibold text-zinc-900 flex items-center gap-2 flex-wrap">
                     {p.label}
                     {p.isPrimary && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide bg-amber-100 text-amber-800 rounded-full px-2 py-0.5">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-amber-100 text-amber-800 rounded-full px-2 py-0.5">
                         <Star size={10} /> {L('properties.primary')}
                       </span>
                     )}

@@ -12,7 +12,7 @@ export type ReviewResult = { error?: string; ok?: boolean };
 const reviewSchema = z.object({
   rating: z.coerce.number().int('Rating must be a whole number').min(1, 'Rating must be at least 1').max(5, 'Rating cannot exceed 5'),
   comment: z.string().trim().max(2000).optional().default(''),
-  // The completed, paid job this review is about — required. This is the
+  // The completed, paid job this review is about - required. This is the
   // review moat: even owner-recorded reviews must tie to a real job, never
   // anonymous, never free-floating.
   jobId: z.string().trim().min(1, 'Pick the completed job this review is for.'),

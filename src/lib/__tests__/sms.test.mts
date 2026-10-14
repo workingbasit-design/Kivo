@@ -2,7 +2,7 @@
  * Unit tests for the free SMS deep-link helpers (src/lib/sms.ts).
  * Run: node --test src/lib/__tests__/sms.test.mts
  *
- * These links are user-controlled (they open the phone's SMS app) —
+ * These links are user-controlled (they open the phone's SMS app) -
  * nothing is ever sent automatically, so tests only assert link shape.
  */
 import test from 'node:test';

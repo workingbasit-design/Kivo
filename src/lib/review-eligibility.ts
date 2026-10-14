@@ -12,7 +12,7 @@
  * does), so requiring invoice.jobId would silently block almost every real
  * job. A customer with a paid invoice is provably a real paying customer;
  * that is what the moat needs to stop drive-by fake reviews. If per-job
- * invoice linkage is ever required, tighten `hasPaidInvoice` here — every
+ * invoice linkage is ever required, tighten `hasPaidInvoice` here - every
  * caller goes through checkReviewEligibility.
  */
 import { prisma } from '@/lib/prisma';
@@ -33,7 +33,7 @@ export type EligibilityResult =
   | { ok: false; reason: EligibilityFailureReason };
 
 /**
- * Pure rule check — no I/O, fully unit-testable.
+ * Pure rule check - no I/O, fully unit-testable.
  * `job` is null when the job doesn't exist / doesn't belong to the business.
  */
 export function checkReviewEligibility(
@@ -57,7 +57,7 @@ export type EligibleJob = {
 
 /**
  * Server-side eligibility for one job. Returns the job (with customer)
- * when eligible — callers use it to build the review/request.
+ * when eligible - callers use it to build the review/request.
  */
 export async function getReviewEligibility(
   businessId: string,

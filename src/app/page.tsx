@@ -309,7 +309,7 @@ export default async function LandingPage() {
               {/* Copy */}
               <div className="order-1 lg:order-2">
                 <Reveal>
-                  <p className="text-[13px] font-semibold tracking-[0.18em] text-lime uppercase mb-5">
+                  <p className="text-[13px] font-semibold text-lime mb-5">
                     {h('copilot.eyebrow')}
                   </p>
                   <h2 className="text-4xl md:text-[56px] leading-[1.05] font-bold tracking-[-0.025em] mb-6">
@@ -362,7 +362,7 @@ export default async function LandingPage() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-10 md:gap-8">
               {STATS.map((s, i) => (
                 <Reveal key={s.key} delay={i * 90} className="text-center lg:text-left">
-                  <p className="text-[12px] font-semibold tracking-[0.16em] text-ink uppercase mb-2">
+                  <p className="text-[12px] font-semibold text-ink mb-2">
                     {h(`stats.${s.key}Label`)}
                   </p>
                   <p className="text-5xl md:text-6xl font-bold tracking-[-0.03em] mb-3">{s.value}</p>
@@ -422,7 +422,7 @@ export default async function LandingPage() {
         <section id="regions" className="py-16 md:py-28 scroll-mt-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <Reveal className="text-center max-w-2xl mx-auto mb-14">
-              <p className="text-[13px] font-semibold tracking-[0.18em] text-ink uppercase mb-5 flex items-center justify-center gap-2">
+              <p className="text-[13px] font-semibold text-ink mb-5 flex items-center justify-center gap-2">
                 <Globe2 size={15} /> {h('canada.eyebrow')}
               </p>
               <h2 className="text-4xl md:text-[52px] leading-[1.05] font-bold tracking-[-0.025em] mb-4">
@@ -470,7 +470,7 @@ export default async function LandingPage() {
             <Reveal>
               <div className="grid lg:grid-cols-2 gap-10 items-center bg-paper rounded-[32px] border border-smoke p-8 md:p-14">
                 <div>
-                  <p className="text-[13px] font-semibold tracking-[0.18em] text-ink uppercase mb-5">
+                  <p className="text-[13px] font-semibold text-ink mb-5">
                     {h('directory.eyebrow')}
                   </p>
                   <h2 className="text-3xl md:text-[40px] leading-[1.08] font-bold tracking-[-0.02em] mb-4">
@@ -496,7 +496,7 @@ export default async function LandingPage() {
                   </div>
                 </div>
                 <div className="bg-white rounded-[24px] border border-smoke p-6">
-                  <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-zinc-400 mb-4">
+                  <p className="text-[12px] font-semibold tracking-[0.14em] text-zinc-400 mb-4">
                     {h('directory.cardTitle')}
                   </p>
                   <div className="space-y-3 text-[14px]">
@@ -533,7 +533,7 @@ export default async function LandingPage() {
         <section id="faq" className="py-16 md:py-28 bg-paper border-y border-smoke scroll-mt-16">
           <div className="max-w-3xl mx-auto px-4 sm:px-6">
             <Reveal>
-              <p className="text-[13px] font-semibold uppercase tracking-[0.14em] text-graphite mb-4">
+              <p className="text-[13px] font-semibold tracking-[0.14em] text-graphite mb-4">
                 {hf('eyebrow')}
               </p>
               <h2 className="text-4xl md:text-[52px] leading-[1.05] font-bold tracking-[-0.025em] mb-4">

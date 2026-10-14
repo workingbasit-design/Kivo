@@ -1,11 +1,11 @@
 /**
- * Attention engine — the "5 things that need you today" brain.
+ * Attention engine - the "5 things that need you today" brain.
  *
  * `computeAttention` is a pure function over plain data (fully unit-tested).
  * `getAttentionItems` fetches tenant-scoped data and feeds it in.
  *
  * Rules are deliberately conservative: an item appears only when real data
- * supports it. Nothing here invents facts — a new business with no data gets
+ * supports it. Nothing here invents facts - a new business with no data gets
  * an empty list, not encouraging noise.
  */
 import { daysOverdue, needsFollowUp, daysWaiting, remainingBalance } from './revenue.ts';
@@ -115,7 +115,7 @@ export function computeAttention(input: AttentionInput): AttentionItem[] {
   const todayKey = dayKey(now, timezone);
   const items: AttentionItem[] = [];
 
-  // 1. Overdue invoices — the money that should already be in the bank.
+  // 1. Overdue invoices - the money that should already be in the bank.
   for (const inv of input.invoices) {
     if (inv.status === 'PAID') continue;
     const overdueDays = daysOverdue(inv.date, now, timezone);
@@ -154,8 +154,8 @@ export function computeAttention(input: AttentionInput): AttentionItem[] {
     });
   }
 
-  // 3a. Jobs scheduled in the past that never started — at risk.
-  // 3b. Jobs today/tomorrow with no technician — unassigned.
+  // 3a. Jobs scheduled in the past that never started - at risk.
+  // 3b. Jobs today/tomorrow with no technician - unassigned.
   const tomorrowKey = dayKey(new Date(now.getTime() + 86_400_000), timezone);
   for (const job of input.jobs) {
     const jobKey = dayKey(job.date, timezone);
@@ -191,7 +191,7 @@ export function computeAttention(input: AttentionInput): AttentionItem[] {
         ctaKey: 'actions.assign',
       });
     }
-    // 3c. Completed jobs with no invoice — unbilled work.
+    // 3c. Completed jobs with no invoice - unbilled work.
     if (job.status === 'COMPLETED' && !job.hasInvoice && job.price > 0) {
       items.push({
         id: `job-unbilled-${job.id}`,
@@ -222,7 +222,7 @@ export function computeAttention(input: AttentionInput): AttentionItem[] {
       detailKey: 'items.leadIdle.detail',
       detailParams: {
         hours: Math.floor(ageHrs),
-        source: lead.source ?? '—',
+        source: lead.source ?? '-',
       },
       href: `/leads`,
       ctaKey: 'actions.contactLead',
@@ -246,7 +246,7 @@ export function computeAttention(input: AttentionInput): AttentionItem[] {
     });
   }
 
-  // 6. Positive: money collected this week — the system notices wins too.
+  // 6. Positive: money collected this week - the system notices wins too.
   if (input.paidThisWeek.count > 0) {
     items.push({
       id: 'paid-this-week',

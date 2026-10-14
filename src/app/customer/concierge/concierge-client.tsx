@@ -351,7 +351,7 @@ export default function ConciergeClient({
           </div>
 
           <div className="rounded-2xl bg-white border border-zinc-200/80 shadow-sm p-4">
-            <h3 className="text-[13px] font-bold text-zinc-500 uppercase tracking-wide mb-2.5">
+            <h3 className="text-[13px] font-bold text-zinc-500 mb-2.5">
               {tr('customer.concierge.sendingTo')} ({selected.size})
             </h3>
             <ul className="space-y-1.5">
@@ -367,7 +367,7 @@ export default function ConciergeClient({
           </div>
 
           <div className="rounded-2xl bg-white border border-zinc-200/80 shadow-sm p-4">
-            <h3 className="text-[13px] font-bold text-zinc-500 uppercase tracking-wide mb-2.5">
+            <h3 className="text-[13px] font-bold text-zinc-500 mb-2.5">
               {tr('customer.concierge.exactMessage')}
             </h3>
             <p className="text-[14px] text-zinc-800 whitespace-pre-wrap leading-relaxed">
@@ -376,7 +376,7 @@ export default function ConciergeClient({
           </div>
 
           <div className="rounded-2xl bg-zinc-50 border border-zinc-200/80 p-4">
-            <h3 className="text-[13px] font-bold text-zinc-500 uppercase tracking-wide mb-2.5">
+            <h3 className="text-[13px] font-bold text-zinc-500 mb-2.5">
               {tr('customer.concierge.detailsShared')}
             </h3>
             <dl className="text-[14px] space-y-1">

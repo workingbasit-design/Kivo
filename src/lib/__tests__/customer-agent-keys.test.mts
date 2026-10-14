@@ -1,5 +1,5 @@
 /**
- * Tests for src/lib/customer-agent-keys.ts — the "Connect your AI assistant"
+ * Tests for src/lib/customer-agent-keys.ts - the "Connect your AI assistant"
  * keys customers paste into their AI assistant.
  *
  * Security properties under test:

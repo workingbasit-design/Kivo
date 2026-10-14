@@ -64,7 +64,7 @@ export async function getSession() {
   // expired sessions. Cheap amortized cost (one extra query per ~50
   // requests); guarantees the Session table can't grow unboundedly even if a
   // user never logs in/out again. Fire-and-forget so the request isn't
-  // slowed — a failed sweep just retries on a later request.
+  // slowed - a failed sweep just retries on a later request.
   if (Math.random() < 0.02) {
     void prisma.session
       .deleteMany({ where: { expiresAt: { lt: new Date() } } })
@@ -78,7 +78,7 @@ export async function requireAuth() {
   const session = await getSession();
   if (!session || !session.user.businessId) {
     // Pages and server actions: send the visitor to sign in instead of
-    // rendering the generic error page. (API routes must NOT use this —
+    // rendering the generic error page. (API routes must NOT use this -
     // they need a 401 JSON response, so they call getSession() directly.)
     redirect('/login');
   }

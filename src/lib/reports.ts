@@ -1,5 +1,5 @@
 /**
- * Report Builder — "describe the report, AI builds it" ($0 edition).
+ * Report Builder - "describe the report, AI builds it" ($0 edition).
  *
  * No external AI API: a rule-based EN/FR intent parser turns a natural-language
  * prompt into a ReportConfig, and runReport executes it against real,
@@ -139,7 +139,7 @@ export function parseReportPromptDetailed(prompt: string): ParsedPrompt {
   };
 }
 
-/** Rule-based EN/FR intent parser — thin wrapper; see parseReportPromptDetailed. */
+/** Rule-based EN/FR intent parser - thin wrapper; see parseReportPromptDetailed. */
 export function parseReportPrompt(prompt: string): ReportConfig {
   return parseReportPromptDetailed(prompt).config;
 }

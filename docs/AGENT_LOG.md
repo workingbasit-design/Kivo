@@ -58,3 +58,38 @@ Session log for AI agents working on EveryJob (Kivo). Required by AGENTS.md sect
 - Fixed 7 failing CI tests: TENANT_MODELS sync (added Project, SavedReport, DigestSetting, Crew), updated LATE terminology tests, 15-char password tests, quote intent test
 - All 1029 tests pass, tsc clean, lint clean, build succeeds
 - Pushed as 5898475
+
+## 2026-10-14 - Prompt 2 Part A: Make the data correct (A1-A8)
+
+**Goal:** Implement Part A of Prompt 2. User said "OK implement everything" and "Keep build all of it until all gets done" — proceeding through all parts A-D.
+
+**Files changed (20 files, +1434/-40):**
+- `prisma/schema.prisma`: Job.startAt/endAt/timeTbd/invoicedAt/noCharge, Business.timezone, Customer.archivedAt, Invoice.voidedAt/voidReason, Payment.voidedAt/voidReason, CreditNote model, 5 FK Cascade→Restrict (Invoice.customer, Invoice.business, InvoiceLineItem.invoice, Payment.invoice, Payment.business)
+- `src/lib/job-status.ts`: JOB_STATUSES (canonical order incl PAID), jobStatusLabel (en/fr sentence case), isJobLate (timezone-aware)
+- `src/components/StatusBadge.tsx`: shared badge, sentence case + red Late badge
+- `src/lib/job-queries.ts`: getJobsInRange, getJobCounts, getMoneySummary
+- `src/lib/utils.ts`: isJobOverdue now timezone-aware (was server UTC bug)
+- `src/components/ScheduleClient.tsx`: deleted local STATUS_TABS, uses JOB_STATUSES
+- `src/app/(app)/money/page.tsx`: Ready to invoice section, All caught up logic, voided excluded
+- `src/components/JobForm.tsx`: No charge checkbox, $0 warning
+- `src/app/actions/jobs.ts`: $0 requires noCharge=true
+- `src/app/actions/customers.ts`: archiveCustomer, unarchiveCustomer, deleteCustomer blocks when linked
+- `src/app/actions/invoices.ts`: voidInvoice, voidPayment, createCreditNote, deleteInvoice blocks non-DRAFT
+- `scripts/backfill-startat.ts`: converts date+time to startAt, lists unparseable rows, --dry-run
+- Tests: job-lifecycle (12), job-queries (6), financial-safety (15)
+
+**Verified:**
+- tsc --noEmit: 0 errors (2026-10-14, after rm -rf .next to clear stale types)
+- npm test: 1062 pass, 0 fail (was 1029; +33 new)
+- Pushed as 5f67b8f, tree verified byte-identical
+
+**Deviations from plan:**
+- JOB_STATUSES keeps `IN PROGRESS` (space) not `IN_PROGRESS` — DB and zod use space; renaming needs data migration
+- JOB_STATUSES includes `PAID` (6th status) — exists in real data; removing would hide PAID jobs
+- ScheduleClient lives at `src/components/ScheduleClient.tsx` not `src/app/(app)/schedule/ScheduleClient.tsx`
+- Legacy StatusBadge in `src/components/ui.tsx` still exists (uppercase) — consolidation is Part B (B8)
+- isJobLate eligibility is ['NEW','SCHEDULED'] per plan; legacy isJobOverdue still uses OPEN_JOB_STATUSES (incl IN PROGRESS) for backward compat
+
+**Not done:**
+- Part B, C, D (in progress — user said keep building until all done)
+- Vercel deploy still stalled (user action needed) — live verification blocked

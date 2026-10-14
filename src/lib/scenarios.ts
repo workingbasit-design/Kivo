@@ -1,5 +1,5 @@
 /**
- * What-if scenarios — simple projections from the last 90 days of real data.
+ * What-if scenarios - simple projections from the last 90 days of real data.
  * Every number is labeled an estimate in the UI; this module just does the
  * arithmetic. Pure and tested.
  */

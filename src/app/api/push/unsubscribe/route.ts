@@ -10,7 +10,7 @@ const unsubscribeSchema = z.object({
 });
 
 /**
- * POST /api/push/unsubscribe — remove this device's push subscription.
+ * POST /api/push/unsubscribe - remove this device's push subscription.
  *
  * Tenant-scoped: only deletes rows belonging to the caller's business, so
  * one business can never remove another's device.

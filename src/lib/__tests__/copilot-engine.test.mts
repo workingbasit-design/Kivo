@@ -1,5 +1,5 @@
 /**
- * Copilot engine scenario tests — run realistic EN + Canadian French
+ * Copilot engine scenario tests - run realistic EN + Canadian French
  * messages through the REAL runCopilot() (parser + preview path) with a
  * stubbed prisma. Asserts the explicit-confirm boundary: the copilot must
  * NEVER write to the database, only return previews.
@@ -236,7 +236,7 @@ test('engine: weather question gets an out-of-scope boundary', async () => {
 
 // --- French unpaid question is answered in French even with an English locale ---
 test('engine: "Combien de factures impayées ai-je ?" is answered in French', async () => {
-  const res = await convo('Combien de factures impayées ai-je ?'); // no locale — message language wins
+  const res = await convo('Combien de factures impayées ai-je ?'); // no locale - message language wins
   assert.equal(res.intent, 'ask_unpaid');
   assert.match(res.reply, /impayée/i);
 });

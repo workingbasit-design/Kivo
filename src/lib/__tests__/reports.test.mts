@@ -1,6 +1,6 @@
 /**
  * Tests for the report builder intent parser (src/lib/reports.ts).
- * Pure functions only — parseReportPrompt(Detailed) and resolveDateRange.
+ * Pure functions only - parseReportPrompt(Detailed) and resolveDateRange.
  * runReport hits the DB and is covered by integration checks, not unit tests.
  */
 import test from 'node:test';

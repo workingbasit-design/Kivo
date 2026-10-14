@@ -1,7 +1,7 @@
 /**
  * Tests for the Track 9 provider layer (src/lib/messaging/providers.ts) and
  * Stripe helpers (src/lib/stripe.ts). All provider calls use an injected
- * mock fetch — zero live network calls.
+ * mock fetch - zero live network calls.
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';

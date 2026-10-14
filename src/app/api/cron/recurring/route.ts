@@ -10,7 +10,7 @@ import { defaultTimezoneForRegion, toISODateInTimezone } from '@/lib/utils';
  * is set, so no secret appears in vercel.json or the repo; the `?secret=`
  * query parameter also works for manual runs.
  *
- * The secret is required — without it the route refuses to run.
+ * The secret is required - without it the route refuses to run.
  * Generation is idempotent (per-plan transaction + @@unique backstop),
  * business-timezone aware, and every run is written to AutomationLog.
  */

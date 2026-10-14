@@ -155,14 +155,14 @@ export default function LiveTrackingClient({
       <div className="mx-auto max-w-xl px-4 py-6 sm:py-10 space-y-4">
         {/* Header */}
         <div className="text-center">
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-400">
+          <p className="text-[11px] font-bold tracking-[0.2em] text-zinc-400">
             {businessName}
           </p>
           <div className="mt-2 flex items-center justify-center gap-2">
             <h1 className="text-2xl font-extrabold text-zinc-900 tracking-tight">
               {tr('gps.trackingTitle')}
             </h1>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-100 px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wide text-rose-700">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-100 px-2.5 py-1 text-[11px] font-extrabold text-rose-700">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-500 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-600" />
@@ -194,7 +194,7 @@ export default function LiveTrackingClient({
           <div className="grid grid-cols-2 gap-3">
             {distanceLabel && (
               <Card className="p-4 text-center">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+                <p className="text-[11px] font-bold text-zinc-400">
                   📍 {tr('gps.distance')}
                 </p>
                 <p className="mt-1 text-xl font-extrabold text-zinc-900">
@@ -204,7 +204,7 @@ export default function LiveTrackingClient({
             )}
             {etaLabel && (
               <Card className="p-4 text-center">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+                <p className="text-[11px] font-bold text-zinc-400">
                   ⏱ ETA
                 </p>
                 <p className="mt-1 text-xl font-extrabold text-zinc-900">
@@ -256,7 +256,7 @@ export default function LiveTrackingClient({
         <Card className="p-4 sm:p-5">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+              <p className="text-[11px] font-bold text-zinc-400">
                 {tr('gps.viewJob')}
               </p>
               <p className="font-bold text-zinc-900 truncate">{jobTitle}</p>

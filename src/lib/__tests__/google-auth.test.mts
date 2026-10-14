@@ -1,5 +1,5 @@
 /**
- * Unit tests for Google sign-in (OIDC) pure logic (src/lib/google-auth.ts —
+ * Unit tests for Google sign-in (OIDC) pure logic (src/lib/google-auth.ts -
  * Track 7). All HTTP is mocked; no live Google calls.
  * Run: node --test --import ./src/lib/__tests__/register-loader.mjs src/lib/__tests__/google-auth.test.mts
  */

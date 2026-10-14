@@ -12,7 +12,7 @@ const testSchema = z.object({
 });
 
 /**
- * POST /api/push/test — send a test notification to every device registered
+ * POST /api/push/test - send a test notification to every device registered
  * for this business.
  *
  * Tenant-scoped: only this business's subscriptions are touched. Dead

@@ -30,7 +30,7 @@ test('legacy TBD sentinel does not count as set', () => {
 test('narrows to string for display use', () => {
   const t: string | null = '10:00 AM';
   if (hasJobTime(t)) {
-    // TypeScript narrowing: t is string here — proves the type predicate.
+    // TypeScript narrowing: t is string here - proves the type predicate.
     assert.equal(t.toUpperCase(), '10:00 AM');
   } else {
     assert.fail('should have narrowed');

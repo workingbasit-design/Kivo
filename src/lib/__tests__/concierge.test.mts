@@ -1,5 +1,5 @@
 /**
- * Tests for src/lib/concierge.ts — the "Get it done for me" pure logic.
+ * Tests for src/lib/concierge.ts - the "Get it done for me" pure logic.
  * Interpretation, message building, and idempotency-key validation.
  * No DB, no network.
  *
@@ -40,7 +40,7 @@ test('interpretServiceNeed: electrical, HVAC, cleaning', () => {
 });
 
 test('interpretServiceNeed: mixed services resolve to the first match', () => {
-  // "fix my sink and the light" — plumbing hint comes first in the table.
+  // "fix my sink and the light" - plumbing hint comes first in the table.
   const r = interpretServiceNeed('fix my sink and the light in the hallway');
   assert.equal(r.key, 'plumbing');
 });
@@ -64,7 +64,7 @@ test('buildConciergeMessage: exact English message', () => {
     city: 'Toronto',
     locale: 'en',
   });
-  assert.ok(msg.startsWith('Quote request — Plumbing'), 'service label in header');
+  assert.ok(msg.startsWith('Quote request - Plumbing'), 'service label in header');
   assert.ok(msg.includes('Kitchen faucet is leaking badly.'), 'description included verbatim');
   assert.ok(msg.includes('Name: Alex Carter'), 'name included');
   assert.ok(msg.includes('Phone: (416) 555-0132'), 'phone included');
@@ -81,7 +81,7 @@ test('buildConciergeMessage: French message uses French labels', () => {
     city: 'Toronto',
     locale: 'fr',
   });
-  assert.ok(msg.startsWith('Demande de devis — Plomberie'));
+  assert.ok(msg.startsWith('Demande de devis - Plomberie'));
   assert.ok(msg.includes('Nom : Alex Carter'));
   assert.ok(msg.includes('Téléphone : (416) 555-0132'));
   assert.ok(msg.includes('Ville : Toronto'));
@@ -96,7 +96,7 @@ test('buildConciergeMessage: preview text and sent text are the same builder', (
     city: 'Toronto',
     locale: 'en' as const,
   };
-  // Called twice (preview, then send) — output must be identical.
+  // Called twice (preview, then send) - output must be identical.
   assert.equal(buildConciergeMessage(input), buildConciergeMessage(input));
 });
 
@@ -110,7 +110,7 @@ test('isValidIdempotencyKey: accepts UUID-like keys, rejects junk', () => {
   assert.equal(isValidIdempotencyKey('drop-table;--1234567890'), false);
 });
 
-test('serviceHintKeywords: D1 regression — "leaky faucet repair" resolves to plumbing keywords that match a plumbing business', () => {
+test('serviceHintKeywords: D1 regression - "leaky faucet repair" resolves to plumbing keywords that match a plumbing business', () => {
   // Customer-POV E2E D1: the public /directory/request form lost this lead
   // because every-word literal matching failed. The directory now interprets
   // the need first; lock the mapping this depends on.

@@ -64,7 +64,7 @@ export default function AvailabilityPicker({
                   transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                 />
               )}
-              <span className="relative text-[11px] font-semibold uppercase">{day.label}</span>
+              <span className="relative text-[11px] font-semibold">{day.label}</span>
               <span className="relative text-lg font-bold tabular-nums">{day.dayNum}</span>
               <span className={`relative w-1.5 h-1.5 rounded-full ${hasSlots ? 'bg-emerald-500' : 'bg-zinc-200'}`} />
             </button>

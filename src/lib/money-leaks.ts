@@ -1,5 +1,5 @@
 /**
- * Money leaks — "where are you losing money?", measured from real data.
+ * Money leaks - "where are you losing money?", measured from real data.
  *
  * Two kinds of numbers:
  * - measured: sums of actual records (overdue balances, unbilled work).
@@ -19,7 +19,7 @@ export interface MoneyLeak {
   amount: number;
   count: number;
   href: string;
-  /** false for pipeline estimates — the UI must label them as such. */
+  /** false for pipeline estimates - the UI must label them as such. */
   measured: boolean;
 }
 

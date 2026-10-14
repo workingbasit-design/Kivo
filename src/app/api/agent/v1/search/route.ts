@@ -2,7 +2,7 @@
  * GET /api/agent/v1/search?service=&city=&limit=
  *
  * Public directory search for AI agents. Returns verified, opted-in pros
- * as structured JSON — no HTML scraping needed. Public and rate-limited;
+ * as structured JSON - no HTML scraping needed. Public and rate-limited;
  * no key required (read scope is public data).
  */
 import { NextResponse } from 'next/server';

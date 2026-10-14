@@ -166,7 +166,7 @@ export async function setQuoteDepositAction(
 
 /**
  * Record a MANUAL deposit on a quote (Interac e-Transfer, cash, cheque).
- * Record-only — no money moves through EveryJob.
+ * Record-only - no money moves through EveryJob.
  */
 export async function recordManualQuoteDepositAction(
   _prev: ActionResult,

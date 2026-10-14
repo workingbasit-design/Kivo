@@ -1,5 +1,5 @@
 /**
- * Web Push sender (VAPID) — server only.
+ * Web Push sender (VAPID) - server only.
  *
  * Zero-cost push notifications: the browser's own push service delivers them,
  * no paid provider involved. All functions degrade gracefully when the VAPID
@@ -8,7 +8,7 @@
  *
  * Env vars (all three required):
  *   VAPID_PUBLIC_KEY   base64url public key  (exposed to browsers)
- *   VAPID_PRIVATE_KEY  base64url private key (server only — never ship to client)
+ *   VAPID_PRIVATE_KEY  base64url private key (server only - never ship to client)
  *   VAPID_SUBJECT      "mailto:you@example.com" or an https URL identifying the sender
  *
  * Generate a pair locally (free):  npx web-push generate-vapid-keys
@@ -53,10 +53,10 @@ export function getVapidPublicKey(): string | null {
 
 /**
  * Build the JSON payload the service worker's `push` handler expects.
- * Pure function — safe to unit test, no network.
+ * Pure function - safe to unit test, no network.
  */
 export function buildPushPayload(p: PushPayload): string {
-  // Only same-app paths. Reject protocol-relative ("//evil.example") too —
+  // Only same-app paths. Reject protocol-relative ("//evil.example") too -
   // the service worker would otherwise navigate the user off-site.
   const url = p.url && p.url.startsWith('/') && !p.url.startsWith('//') ? p.url : '/dashboard';
   return JSON.stringify({
@@ -119,7 +119,7 @@ export async function sendPushNotification(  sub: PushKeys,
 
 /**
  * Fan-out helper: push to every subscribed device of a business, pruning
- * dead subscriptions. Never throws — push is best-effort and must never
+ * dead subscriptions. Never throws - push is best-effort and must never
  * fail the business operation that triggered it.
  *
  * Copy is concise bilingual (EN/FR) because a device's language preference

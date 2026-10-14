@@ -4,7 +4,7 @@
  * Keys are generated as `ejk_live_<base64url>`; only the SHA-256 hash is
  * ever stored (keyHash, unique), plus the first 8 characters as an
  * identification prefix. The plaintext key is returned ONCE at creation and
- * never again — there is no way to read it back.
+ * never again - there is no way to read it back.
  *
  * Unlike Jobber (whose API is gated on the $149+/mo Grow plan), EveryJob
  * API access is free for every business on every plan.
@@ -23,13 +23,13 @@ const API_KEY_SECRET_BYTES = 32;
 
 export type ApiScope = 'read' | 'write';
 
-/** SHA-256 hex of the full key — what we store and look up. Pure. */
+/** SHA-256 hex of the full key - what we store and look up. Pure. */
 export function hashApiKey(key: string): string {
   return createHash('sha256').update(key, 'utf8').digest('hex');
 }
 
 /**
- * Generate a new key. Pure — no DB. Returns the plaintext key (show once),
+ * Generate a new key. Pure - no DB. Returns the plaintext key (show once),
  * its hash, and its identification prefix.
  */
 export function generateApiKey(): { key: string; keyHash: string; keyPrefix: string } {
@@ -60,7 +60,7 @@ export type VerifiedApiKey = {
 export async function verifyApiKey(key: string): Promise<VerifiedApiKey | null> {
   if (!key || !key.startsWith(API_KEY_PREFIX)) return null;
   // Identity-root lookup: the presented key (hashed) IS the credential and
-  // resolves the tenant — no business scope can exist before this query.
+  // resolves the tenant - no business scope can exist before this query.
   // Revoked keys are rejected and unknown keys resolve to null, so there
   // is no enumeration vector.
   const rec = await unsafeUnscoped('apiKeys:verifyApiKey', (db) =>

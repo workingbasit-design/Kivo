@@ -1,5 +1,5 @@
 /**
- * Track 8C — batch invoicing + milestone/progress invoicing.
+ * Track 8C - batch invoicing + milestone/progress invoicing.
  * Pure helpers: no DB, no I/O, no auth. Safe to unit-test with plain node.
  */
 import { calcTax, type TaxLine } from './tax.ts';
@@ -27,7 +27,7 @@ export type BatchPreviewRow = {
 
 /**
  * Build one preview row per job. Money math mirrors the server invoice path:
- * subtotal = price, tax per line through the shared tax engine (calcTax —
+ * subtotal = price, tax per line through the shared tax engine (calcTax -
  * the same function the commit path uses), total = subtotal + tax. The
  * preview can never show a total the server won't store.
  */

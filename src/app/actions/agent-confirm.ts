@@ -20,7 +20,7 @@
  *   whole transaction rolls back and the proposal stays pending for a
  *   retry. We never mark "approved" while the business sees nothing.
  * - Identity: a guest proposal whose email matches an existing customer
- *   account requires that customer to be logged in before approving —
+ *   account requires that customer to be logged in before approving -
  *   nobody can attach quote requests to someone else's account via an
  *   agent link.
  * - Decline preserves the row (status = declined) so the page, the
@@ -80,7 +80,7 @@ async function getPendingProposal(token: string) {
 
 /**
  * Approve: the human said yes. Everything below happens in a single
- * transaction — customer resolution, quote request + opening message,
+ * transaction - customer resolution, quote request + opening message,
  * business lead, and the pending → approved claim.
  */
 export async function approveProposal(_prev: unknown, formData: FormData) {
@@ -95,7 +95,7 @@ export async function approveProposal(_prev: unknown, formData: FormData) {
   // Key-based proposals already carry a verified customerId (identity came
   // from the key, never from form fields). Guest proposals that name an
   // email belonging to an existing account require that customer to be
-  // logged in — otherwise anyone with the link could file requests on
+  // logged in - otherwise anyone with the link could file requests on
   // someone else's account.
   let customerId = proposal.customerId;
   if (!customerId) {
@@ -151,14 +151,14 @@ export async function approveProposal(_prev: unknown, formData: FormData) {
           throw new ProposalDecisionError('gone');
         }
         // The pro may have withdrawn directory consent or disabled their
-        // booking page since the proposal was created — revalidate before
+        // booking page since the proposal was created - revalidate before
         // anything is sent.
         if (!p.business.directoryOptIn || !p.business.directoryVerifiedAt || !p.business.bookingPage || !p.business.bookingPage.enabled) {
           throw new ProposalDecisionError('ineligible');
         }
 
         // Resolve the customer (guest find-or-create by email). A unique-
-        // violation race just means someone created it first — re-read.
+        // violation race just means someone created it first - re-read.
         let cid = customerId;
         if (!cid) {
           const email = (p.customerEmail || '').trim().toLowerCase();
@@ -207,7 +207,7 @@ export async function approveProposal(_prev: unknown, formData: FormData) {
 
         // The lead (pro's view). Deliberately NOT swallowed: if this
         // fails, the transaction rolls back and the proposal stays
-        // pending — we never report "approved" while the business got
+        // pending - we never report "approved" while the business got
         // nothing.
         await tx.lead.create({
           data: {
@@ -240,7 +240,7 @@ export async function approveProposal(_prev: unknown, formData: FormData) {
     }
     // Anything else (e.g. the lead write failed): nothing was sent, the
     // proposal is still pending, and the human can retry.
-    return { error: 'Could not send the request. Nothing was sent — please try again.' };
+    return { error: 'Could not send the request. Nothing was sent - please try again.' };
   }
 
   redirect(`/a/${token}`);

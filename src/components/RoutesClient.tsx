@@ -269,7 +269,7 @@ export default function RoutesClient({
               return (
                 <div className="space-y-5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+                    <span className="text-[11px] font-bold text-zinc-400">
                       {T('routesStopOf').replace('{i}', String(idx + 1)).replace('{n}', String(remaining.length))}
                     </span>
                     <button

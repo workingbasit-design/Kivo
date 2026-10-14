@@ -76,8 +76,8 @@ function to12h(t: string): string {
 }
 
 /**
- * Human summary for display, e.g. "Mon–Fri · 9:00 AM – 6:00 PM" or
- * "Mon, Wed, Sat · 10:00 AM – 4:00 PM". Returns null when not configured.
+ * Human summary for display, e.g. "Mon-Fri, 9:00 AM - 6:00 PM" or
+ * "Mon, Wed, Sat, 10:00 AM - 4:00 PM". Returns null when not configured.
  */
 export function formatWorkingHoursSummary(raw: string | null | undefined): string | null {
   const hours = parseWorkingHours(raw);
@@ -99,11 +99,11 @@ export function formatWorkingHoursSummary(raw: string | null | undefined): strin
     .map((g) => {
       const dayLabel =
         g.days.length > 2
-          ? `${g.days[0]}–${g.days[g.days.length - 1]}`
+          ? `${g.days[0]}-${g.days[g.days.length - 1]}`
           : g.days.join(', ');
-      return `${dayLabel} · ${to12h(g.open)} – ${to12h(g.close)}`;
+      return `${dayLabel}, ${to12h(g.open)} - ${to12h(g.close)}`;
     })
-    .join('  ·  ');
+    .join('; ');
 }
 
 /**

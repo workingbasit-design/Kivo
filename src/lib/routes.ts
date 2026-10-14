@@ -15,9 +15,9 @@ export interface RouteStop {
   time: string | null;
   price: number;
   status: string;
-  /** Driving distance (km) from the previous stop — set after route optimization. */
+  /** Driving distance (km) from the previous stop - set after route optimization. */
   legKm?: number | null;
-  /** Driving ETA (minutes) from the previous stop — set after route optimization. */
+  /** Driving ETA (minutes) from the previous stop - set after route optimization. */
   legMinutes?: number | null;
 }
 

@@ -13,7 +13,7 @@ function baseUrl(req: Request): string {
  * Start Stripe Connect OAuth for the signed-in business. The CSRF `state`
  * is random per attempt, stored in an HttpOnly SameSite cookie, and verified
  * (then deleted) in the callback. We only ever redirect to Stripe or to our
- * own settings page — no open redirects.
+ * own settings page - no open redirects.
  */
 export async function GET(req: Request) {
   const session = await getSession();

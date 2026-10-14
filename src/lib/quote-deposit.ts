@@ -1,5 +1,5 @@
 /**
- * Quote deposit amount parsing — pure, testable.
+ * Quote deposit amount parsing - pure, testable.
  *
  * The deposit is optional: blank input means "no deposit requested" (stored
  * as null). When present it must be a positive CAD amount rounded to cents

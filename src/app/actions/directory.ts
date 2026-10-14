@@ -99,7 +99,7 @@ export async function findDirectoryMatches(
     }));
 }
 
-/** Phone validation — Canada-only. The old IN fallback was pre-Canada Kivo
+/** Phone validation - Canada-only. The old IN fallback was pre-Canada Kivo
  *  leftover (and validatePhone parses as CA regardless), so it never did
  *  anything. Removed per the Canada-only rule. */
 function validateCustomerPhone(phone: string): { ok: boolean; digits: string | null } {
@@ -117,7 +117,7 @@ const quoteRequestSchema = z.object({
 
 /**
  * Public quote request. Creates a LEAD draft (source "Directory", status NEW)
- * in each matching provider's inbox — the provider chooses to respond.
+ * in each matching provider's inbox - the provider chooses to respond.
  * Nothing is sent anywhere automatically. Rate-limited: 5/hour/IP.
  */
 export async function submitQuoteRequest(
@@ -125,7 +125,7 @@ export async function submitQuoteRequest(
   formData: FormData
 ): Promise<DirectoryActionResult> {
   // Bot check first (cheapest): honeypot + minimum fill time, enforced
-  // server-side before any database work. Generic error, no `values` echo —
+  // server-side before any database work. Generic error, no `values` echo -
   // the form keeps its state so a human can retry without retyping.
   if (botCheckFailed(formData)) {
     const locale = await getLocale();
@@ -171,7 +171,7 @@ export async function submitQuoteRequest(
   try {
     const matches = await findDirectoryMatches(serviceNeed, city, 5);
     if (matches.length === 0) {
-      // No providers matched — save the request as an OPEN lead draft instead
+      // No providers matched - save the request as an OPEN lead draft instead
       // of dropping it. It becomes visible in the admin demand queue, and the
       // requester gets a clear "saved" confirmation (never an ambiguous error).
       await prisma.directoryRequest.create({
@@ -190,10 +190,10 @@ export async function submitQuoteRequest(
     }
 
     const leadDetails = [
-      `Directory quote request — ${serviceNeed}`,
+      `Directory quote request - ${serviceNeed}`,
       `City: ${city}${area ? ` (${area})` : ''}`,
       details ? `Details: ${details}` : '',
-      'The customer asked via the EveryJob directory. Reply only if you want the work — nothing was sent automatically.',
+      'The customer asked via the EveryJob directory. Reply only if you want the work - nothing was sent automatically.',
     ]
       .filter(Boolean)
       .join('\n');
@@ -238,7 +238,7 @@ const reportSchema = z.object({
   reporterContact: z.string().trim().max(120).optional().default(''),
 });
 
-/** Public "report this business" — creates an internal flag for review. */
+/** Public "report this business" - creates an internal flag for review. */
 export async function reportBusiness(
   _prev: DirectoryActionResult,
   formData: FormData
@@ -281,7 +281,7 @@ export async function reportBusiness(
       },
     });
   } catch {
-    return { error: 'Report could not be saved — please try again in a minute.' };
+    return { error: 'Report could not be saved - please try again in a minute.' };
   }
 
   return { ok: true };

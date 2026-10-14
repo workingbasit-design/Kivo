@@ -45,7 +45,7 @@ export default function WeatherStrip({
   return (
     <div className="rounded-2xl border border-sky-100 bg-gradient-to-r from-sky-50 to-indigo-50 px-4 py-3">
       <div className="flex items-center justify-between mb-2">
-        <p className="text-[11px] font-bold uppercase tracking-wide text-sky-700">
+        <p className="text-[11px] font-bold text-sky-700">
           Weather · <span className="normal-case font-semibold text-sky-600">{placeName}</span>
         </p>
       </div>
@@ -60,7 +60,7 @@ export default function WeatherStrip({
               title={w ? `${d.label}: ${weatherLabel(w.code)}, ${w.lowC}-${w.highC}°C, ${w.precipProb}% rain` : d.label}
               className="flex flex-col items-center rounded-xl bg-white/70 border border-white px-1 py-2"
             >
-              <span className="text-[10px] font-bold uppercase tracking-wide text-zinc-500">{d.label}</span>
+              <span className="text-[10px] font-bold text-zinc-500">{d.label}</span>
               <Icon
                 size={18}
                 className={cn('my-1', w === null ? 'text-zinc-300' : rainy ? 'text-sky-500' : 'text-amber-500')}

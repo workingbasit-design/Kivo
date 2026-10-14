@@ -8,7 +8,7 @@ import { designationSchema, tradeProfileSchema, DESIGNATION_TYPES } from '../des
 
 const valid = {
   type: 'RED_SEAL',
-  title: 'Red Seal Endorsement — Plumber',
+  title: 'Red Seal Endorsement - Plumber',
   issuer: 'Skilled Trades Ontario',
   number: 'R12345',
   issuedAt: '2020-05-01',

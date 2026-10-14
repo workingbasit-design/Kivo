@@ -4,8 +4,8 @@
  * - @/lib/prisma (business.findFirst, quoteRequest.findFirst/create, lead.create, $transaction)
  * - @/lib/customer-auth (getCustomerSession)
  * - next/navigation (redirect)
- * - @/lib/rate-limit (real one is used — in-memory, fine)
- * - @/lib/lead-expiry (real one — pure date math)
+ * - @/lib/rate-limit (real one is used - in-memory, fine)
+ * - @/lib/lead-expiry (real one - pure date math)
  */
 export const calls = { quoteRequests: [], leads: [] };
 

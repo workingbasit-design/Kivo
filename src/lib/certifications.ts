@@ -3,7 +3,7 @@
  *
  * HARD RULE: every program listed here must verifiably exist, with a link to
  * its official body. When in doubt, the program is left out. Nothing here is
- * scraped, invented, or presented as data about other businesses — these are
+ * scraped, invented, or presented as data about other businesses - these are
  * public credential programs a business owner can pursue.
  */
 
@@ -61,8 +61,8 @@ const RED_SEAL: Certification = {
   issuer: 'Red Seal Program (Employment and Social Development Canada)',
   url: 'https://www.red-seal.ca',
   why: {
-    en: 'The national standard of excellence for skilled trades. A Red Seal on your trade certificate is recognized in every province and territory — customers know what it means.',
-    fr: 'La norme nationale d’excellence pour les métiers spécialisés. Le Sceau rouge est reconnu dans chaque province et territoire — les clients savent ce que cela signifie.',
+    en: 'The national standard of excellence for skilled trades. A Red Seal on your trade certificate is recognized in every province and territory - customers know what it means.',
+    fr: 'La norme nationale d’excellence pour les métiers spécialisés. Le Sceau rouge est reconnu dans chaque province et territoire - les clients savent ce que cela signifie.',
   },
 };
 
@@ -104,12 +104,12 @@ function provincialCert(province: string | null | undefined): Certification {
   if (!body) return PROVINCIAL_FALLBACK;
   return {
     id: `provincial-${province!.toLowerCase()}`,
-    name: `${body.name} — trade certification`,
+    name: `${body.name} - trade certification`,
     issuer: body.name,
     url: body.url,
     why: {
-      en: `Your province's official route to a Certificate of Qualification in your trade — the licence customers ask about first.`,
-      fr: `La voie officielle de votre province vers un certificat de qualification dans votre métier — le permis que les clients demandent en premier.`,
+      en: `Your province's official route to a Certificate of Qualification in your trade - the licence customers ask about first.`,
+      fr: `La voie officielle de votre province vers un certificat de qualification dans votre métier - le permis que les clients demandent en premier.`,
     },
   };
 }
@@ -187,7 +187,7 @@ const TRADE_EXTRAS: Partial<Record<TradeKey, (province: string | null | undefine
 
 /**
  * Ordered roadmap of REAL credentials for a trade + province.
- * Pure function — no DB, fully testable.
+ * Pure function - no DB, fully testable.
  */
 export function getCertificationRoadmap(
   trade: TradeKey | string | null | undefined,
@@ -200,7 +200,7 @@ export function getCertificationRoadmap(
   if (redSealTrade) {
     out.push({
       ...RED_SEAL,
-      name: `Red Seal Endorsement — ${redSealTrade}`,
+      name: `Red Seal Endorsement - ${redSealTrade}`,
     });
   }
   out.push(provincialCert(province));

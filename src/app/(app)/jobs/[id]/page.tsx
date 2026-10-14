@@ -332,7 +332,7 @@ export default async function JobDetailPage({
             <div key={row.label} className="flex items-start gap-2.5">
               <span className="mt-0.5">{row.icon}</span>
               <div className="min-w-0">
-                <dt className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+                <dt className="text-[11px] font-bold text-zinc-400">
                   {row.label}
                 </dt>
                 <dd className="text-sm text-zinc-800 mt-0.5 break-words">{row.value}</dd>
@@ -342,7 +342,7 @@ export default async function JobDetailPage({
         </dl>
         {job.notes && (
           <div className="mt-5 pt-5 border-t border-zinc-100">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+            <p className="text-[11px] font-bold text-zinc-400 mb-1.5">
               {jobsL('notes')}
             </p>
             <p className="text-sm text-zinc-700 whitespace-pre-wrap">{job.notes}</p>

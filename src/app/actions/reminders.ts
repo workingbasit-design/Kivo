@@ -16,7 +16,7 @@ export type DraftResult = { text?: string; error?: string };
 
 /**
  * Build a polite, bilingual job-reminder draft for one job.
- * Never sends anything — returns draft text only.
+ * Never sends anything - returns draft text only.
  */
 export async function draftJobReminder(jobId: string): Promise<DraftResult> {
   const { businessId } = await requireAuth();
@@ -44,7 +44,7 @@ export async function draftJobReminder(jobId: string): Promise<DraftResult> {
 /**
  * Build a polite, bilingual invoice follow-up draft for one invoice.
  * Mentions Interac e-Transfer when the business has interacEmail set
- * (text only — EveryJob never processes payments). Never sends anything.
+ * (text only - EveryJob never processes payments). Never sends anything.
  */
 export async function draftInvoiceFollowup(invoiceId: string): Promise<DraftResult> {
   const { businessId } = await requireAuth();
@@ -77,7 +77,7 @@ export async function draftInvoiceFollowup(invoiceId: string): Promise<DraftResu
 
 /**
  * Build a manual "sorry I missed your call" text-back draft for a customer.
- * EveryJob has no telephony integration — this is a quick-draft the owner
+ * EveryJob has no telephony integration - this is a quick-draft the owner
  * sends themselves, never automatic detection.
  */
 export async function draftMissedCall(customerId: string): Promise<DraftResult> {

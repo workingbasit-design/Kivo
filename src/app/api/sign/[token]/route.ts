@@ -8,7 +8,7 @@ import { rateLimit } from '@/lib/rate-limit';
 import { clientIpFromHeaders } from '@/lib/client-ip';
 
 /**
- * POST /api/sign/[token] — submit a client signature for a signing link.
+ * POST /api/sign/[token] - submit a client signature for a signing link.
  * Never distinguishes failure reasons: unknown, expired, revoked, and
  * validation failures all surface as the same generic error.
  */

@@ -2,7 +2,7 @@
  * Customer tag helpers. Tags are stored on Customer.tags as a single
  * comma-separated string (e.g. "vip,senior,dog-friendly").
  *
- * Pure functions — no I/O, safe to import from server actions and node:test.
+ * Pure functions - no I/O, safe to import from server actions and node:test.
  */
 
 /** Maximum number of tags stored per customer. */

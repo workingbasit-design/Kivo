@@ -1,7 +1,7 @@
 /**
  * Pure, testable job-ops math: labor duration summation, expense totals,
  * job costing (profit/margin), expense + rate validation, and CSV escaping.
- * No I/O, no Prisma — safe to import from server actions and node:test.
+ * No I/O, no Prisma - safe to import from server actions and node:test.
  */
 
 /** Expense categories stored on JobExpense.category. */
@@ -79,7 +79,7 @@ export interface CostSummary {
   totalCost: number;
   price: number;
   profit: number;
-  /** Percent (0–100+), or null when the price is 0/unknown — never divide by zero. */
+  /** Percent (0-100+), or null when the price is 0/unknown - never divide by zero. */
   marginPct: number | null;
 }
 
@@ -196,7 +196,7 @@ export function escapeCsvCell(v: unknown): string {
  * Spreadsheet formula-injection guard (OWASP "CSV Injection").
  *
  * A cell whose value starts with `=`, `+`, `-`, `@` (or tab/CR) becomes a
- * live formula when the CSV/XLSX is opened in Excel/Sheets — so a customer
+ * live formula when the CSV/XLSX is opened in Excel/Sheets - so a customer
  * name like `=HYPERLINK("https://evil.example","click")` would execute on
  * open. Prefixing with `'` (the spreadsheet text marker) keeps the cell
  * displaying exactly the original value while making it unevaluable.

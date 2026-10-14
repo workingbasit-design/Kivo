@@ -1,5 +1,5 @@
 /**
- * lottie-lite — a dependency-free renderer for the simple stroke-based Lottie
+ * lottie-lite - a dependency-free renderer for the simple stroke-based Lottie
  * icons in ./icons (MIT-licensed; see LICENSES.md).
  *
  * Supported subset: cubic-bezier shapes (static or keyframed), strokes,
@@ -194,7 +194,7 @@ function shapeKeyValue(kfs: Keyframe[], frame: number): BezShape | null {
   return val(kfs[kfs.length - 1] as Keyframe);
 }
 
-/** Evaluate a shape's ks at a frame — static or keyframed geometry. */
+/** Evaluate a shape's ks at a frame - static or keyframed geometry. */
 function evalShape(ks: unknown, frame: number): BezShape | null {
   const o = asRecord(ks);
   if (o.a === 1 && Array.isArray(o.k)) {
@@ -305,7 +305,7 @@ function transformString(tr: unknown, frame: number): { t: string; opacity: numb
   const o = (tr ?? {}) as Record<string, unknown>;
   const p = pair(evalProp(o.p, frame));
   const a = pair(evalProp(o.a, frame));
-  // Absent scale/opacity mean identity (100%), not 0 — a group without a
+  // Absent scale/opacity mean identity (100%), not 0 - a group without a
   // Transform item must stay fully visible (2026-10-04 QA: success icon).
   const s = o.s === undefined ? ([100, 100] as [number, number]) : pair(evalProp(o.s, frame));
   const rot = num(evalProp(o.r, frame));
@@ -394,7 +394,7 @@ function walkItems(items: unknown[], ctx: WalkCtx, frame: number, out: RenderedP
       }
       out.push(p);
     }
-    // 'mm' (merge) and anything else: ignored — strokes render identically unmerged.
+    // 'mm' (merge) and anything else: ignored - strokes render identically unmerged.
   }
 }
 

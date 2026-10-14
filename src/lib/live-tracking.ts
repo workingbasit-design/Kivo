@@ -16,7 +16,7 @@ import { fetchDrivingEta, straightLineMeters } from '@/lib/eta';
 export interface LiveSnapshot {
   lat: number;
   lng: number;
-  /** ISO string — the client formats it in the viewer's timezone. */
+  /** ISO string - the client formats it in the viewer's timezone. */
   recordedAt: string;
   straightM: number | null;
   driveM: number | null;

@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 
 /**
- * Jobs of this business not already attached to any project —
+ * Jobs of this business not already attached to any project -
  * candidates for linking to a phase.
  */
 export async function GET(

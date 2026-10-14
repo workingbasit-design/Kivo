@@ -20,7 +20,7 @@ export type PortalActionResult = {
 /**
  * Create (or regenerate) the customer portal link. Tenant-scoped: the
  * customer must belong to the caller's business. Requires a customer phone
- * number — the link is shared over WhatsApp, which the owner sends by
+ * number - the link is shared over WhatsApp, which the owner sends by
  * tapping the generated wa.me link (EveryJob never sends anything itself).
  */
 export async function createPortalLink(
@@ -40,7 +40,7 @@ export async function createPortalLink(
   });
   if (!customer) return { error: 'Customer not found.' };
   if (!customer.phone) {
-    return { error: 'Add a phone number for this customer first — the portal link is shared over WhatsApp.' };
+    return { error: 'Add a phone number for this customer first - the portal link is shared over WhatsApp.' };
   }
 
   try {

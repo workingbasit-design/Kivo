@@ -191,7 +191,7 @@ function ReviewRow({ review, locale }: { review: ReviewItem; locale: Locale }) {
                 {t(locale, 't10money.reviewVerifiedBadge')}
               </span>
             ) : (
-              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+              <span className="text-[10px] font-bold text-zinc-400">
                 via {review.source}
               </span>
             )}

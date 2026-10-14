@@ -153,7 +153,7 @@ export async function createQuote(
   // Discount comes from the form; anything invalid is a hard error.
   const discount = parseDiscount(formData);
   if (discount.error) return { error: discount.error };
-  // Server-side money math — the single source of truth. Discount applies
+  // Server-side money math - the single source of truth. Discount applies
   // before tax (tax comes from the business's region settings), so the
   // stored total is tax-inclusive on the discounted amount.
   const business = await prisma.business.findUnique({
@@ -168,7 +168,7 @@ export async function createQuote(
   );
   const total = totals.total;
 
-  // Optional deposit request — validated against the server-computed total.
+  // Optional deposit request - validated against the server-computed total.
   // Blank means no deposit (stored as null).
   const deposit = parseDepositAmount(formData.get('depositAmount') as string | null, total);
   if (deposit.error) return { error: deposit.error };
@@ -229,7 +229,7 @@ export async function createQuote(
 }
 
 /**
- * Replace a DRAFT quote's line items and discount. Only drafts are editable —
+ * Replace a DRAFT quote's line items and discount. Only drafts are editable -
  * once a quote moves (SENT/APPROVED/…), its items are a record of what was
  * quoted. The total is recomputed server-side from the new items.
  */
@@ -303,7 +303,7 @@ const MANUAL_DEPOSIT_PROVIDERS = ['INTERAC', 'CASH', 'CHEQUE'] as const;
 
 /**
  * Record a deposit the owner collected outside EveryJob (Interac e-Transfer,
- * cash, cheque). This is record-keeping only — no money moves through
+ * cash, cheque). This is record-keeping only - no money moves through
  * EveryJob. STRIPE can never be used here; Stripe card collection lives in
  * Track 9's flow and records COMPLETED rows via its own action.
  */
@@ -329,7 +329,7 @@ export async function recordQuoteDeposit(
   if (!Number.isFinite(amount) || amount <= 0) {
     return { error: 'Enter an amount greater than 0.' };
   }
-  // Cap cumulative deposits at the quote total — a single-deposit check
+  // Cap cumulative deposits at the quote total - a single-deposit check
   // alone would let two 60% deposits over-collect on the same quote.
   const existing = await prisma.quoteDeposit.aggregate({
     where: { quoteId, businessId, status: 'COMPLETED' },
@@ -418,7 +418,7 @@ export async function updateQuoteStatus(
  * Pro-initiated "send quote to customer" via email.
  *
  * Ensures the quote has a usable public portal link (/q/[token]), emails it
- * to the customer (bilingual body), and marks the quote SENT — but ONLY when
+ * to the customer (bilingual body), and marks the quote SENT - but ONLY when
  * the email actually sends. A missing RESEND_API_KEY or a failed send
  * returns an honest error and the quote stays DRAFT.
  */
@@ -447,7 +447,7 @@ export async function sendQuoteEmail(
   if (!toEmail) {
     return {
       error:
-        'This customer has no email address. Add one to the customer record first — or use the WhatsApp / SMS buttons on this page instead.',
+        'This customer has no email address. Add one to the customer record first - or use the WhatsApp / SMS buttons on this page instead.',
     };
   }
 
@@ -488,7 +488,7 @@ export async function sendQuoteEmail(
   if (!sent.ok) {
     return {
       error: sent.notConfigured
-        ? 'Email is not configured yet — the workspace owner needs to add RESEND_API_KEY. The WhatsApp / SMS buttons on this page still work.'
+        ? 'Email is not configured yet - the workspace owner needs to add RESEND_API_KEY. The WhatsApp / SMS buttons on this page still work.'
         : `Email could not be sent (${sent.error ?? 'unknown error'}). The quote is still a draft.`,
     };
   }
@@ -566,7 +566,7 @@ export async function convertQuoteToJob(
   redirect(`/jobs/${job.id}`);
 }
 
-/** Delete a quote (drafts/sent/declined only — approved quotes stay as records). */
+/** Delete a quote (drafts/sent/declined only - approved quotes stay as records). */
 export async function deleteQuote(
   _prev: ActionResult,
   formData: FormData

@@ -191,7 +191,7 @@ export async function createInvoice(
   });
   if (!customer) return { error: 'Customer not found.' };
 
-  // Server-side money math — the single source of truth. Tax is computed
+  // Server-side money math - the single source of truth. Tax is computed
   // per line through the shared tax engine (calcTax), exactly like the
   // invoice form preview: reconstruct the lines from the stored tax type +
   // rate so a hand-edited rate still breaks down consistently, and the
@@ -242,7 +242,7 @@ export async function createInvoice(
 
   revalidatePath('/invoices');
   revalidatePath('/dashboard');
-  // Outgoing webhook: invoice created. Best-effort — never fails creation.
+  // Outgoing webhook: invoice created. Best-effort - never fails creation.
   try {
     const { emitWebhookEvent } = await import('@/lib/webhooks');
     await emitWebhookEvent(businessId, 'invoice.created', {
@@ -257,7 +257,7 @@ export async function createInvoice(
 }
 
 /**
- * Manual status tweaks. PAID is derived from payments — it can't be set by
+ * Manual status tweaks. PAID is derived from payments - it can't be set by
  * hand; record a payment instead. Can't mark UNPAID once money is recorded.
  */
 export async function updateInvoiceStatus(
@@ -365,7 +365,7 @@ export async function voidInvoice(
   const invoice = await ownedInvoice(businessId, id);
   if (!invoice) return { error: 'Invoice not found.' };
   if (invoice.status === 'DRAFT') {
-    return { error: 'Draft invoices can be deleted directly — no need to void.' };
+    return { error: 'Draft invoices can be deleted directly - no need to void.' };
   }
   if ((invoice as { voidedAt?: Date | null }).voidedAt) {
     return { error: 'This invoice is already voided.' };
@@ -383,7 +383,7 @@ export async function voidInvoice(
 
 /**
  * Void a payment (A7). Requires a reason (min 10 chars).
- * Payments are never deleted — voiding keeps the audit trail.
+ * Payments are never deleted - voiding keeps the audit trail.
  */
 export async function voidPayment(
   _prev: ActionResult,
@@ -475,7 +475,7 @@ function deriveStatus(total: number, paid: number): string {
 
 /**
  * Record a payment against an invoice. Updates the invoice status from the
- * actual money received — the single source of truth for "paid or not".
+ * actual money received - the single source of truth for "paid or not".
  */
 export async function recordPayment(
   _prev: ActionResult,
@@ -545,7 +545,7 @@ export async function recordPayment(
     await tx.invoice.update({
       where: { id: invoice.id, businessId },
       // invoicePaidUpdate stamps paidAt exactly when the invoice becomes
-      // fully paid — required by paidAt-filtered revenue reporting.
+      // fully paid - required by paidAt-filtered revenue reporting.
       data: invoicePaidUpdate(newStatus),
     });
 
@@ -556,7 +556,7 @@ export async function recordPayment(
   const { payment, newStatus, invoice } = recorded;
 
   // Outgoing webhooks: payment recorded (+ invoice paid when fully paid).
-  // Best-effort — never fails the payment recording.
+  // Best-effort - never fails the payment recording.
   try {
     const { emitWebhookEvent } = await import('@/lib/webhooks');
     await emitWebhookEvent(businessId, 'payment.recorded', {
@@ -576,7 +576,7 @@ export async function recordPayment(
     const { pushToBusiness } = await import('@/lib/webpush');
     await pushToBusiness(businessId, {
       title: 'Payment received · Paiement reçu',
-      body: `${formatMoney(payment.amount, invoice.business.currency)} — ${invoice.number}`,
+      body: `${formatMoney(payment.amount, invoice.business.currency)} - ${invoice.number}`,
       url: `/invoices/${invoice.id}`,
       tag: `payment-${payment.id}`,
     });
@@ -592,7 +592,7 @@ export async function recordPayment(
 
 /**
  * Money-correctness: marking a job PAID means the customer paid in full, so
- * the payment ledger must reflect it — otherwise "Collected" and the monthly
+ * the payment ledger must reflect it - otherwise "Collected" and the monthly
  * revenue bars disagree with the job status (and with top-customer / avg-job
  * / revenue-by-service numbers, which are job-based).
  *
@@ -602,7 +602,7 @@ export async function recordPayment(
  *   without specifying a method);
  * - if the job has no invoice at all and a positive price, a paid invoice
  *   for the job price is created first, then the matching payment.
- * A zero-price job with no invoice just flips status — nothing to record.
+ * A zero-price job with no invoice just flips status - nothing to record.
  */
 type PrismaTx = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
 
@@ -629,12 +629,12 @@ async function settleJobPaidTx(tx: PrismaTx, businessId: string, jobId: string):
     const number = await nextInvoiceNumber(businessId, tx);
     // NOTE (2026-10-04, reviewed): this auto-invoice is a RECEIPT for cash
     // already in hand (the owner just marked the job paid), not a fresh
-    // bill — so it records the amount received (price) with zero tax, and
+    // bill - so it records the amount received (price) with zero tax, and
     // the matching payment closes it at PAID. The batch-invoice path
     // (billing.ts buildBatchPreview) instead treats job.price as a pre-tax
     // subtotal and adds tax, because there the customer still owes. Adding
     // tax here would either invent an outstanding balance the customer
-    // doesn't owe or invent a payment they didn't make — both worse than
+    // doesn't owe or invent a payment they didn't make - both worse than
     // the path difference. Deliberate, not a defect.
     const inv = await tx.invoice.create({
       data: {
@@ -811,7 +811,7 @@ export async function revokeInvoiceShareLink(
  * Pro-initiated "send invoice to customer" via email.
  *
  * Ensures the invoice has a usable public payment link (/i/[token]), emails
- * it to the customer (bilingual body), and stamps sentAt — but ONLY when the
+ * it to the customer (bilingual body), and stamps sentAt - but ONLY when the
  * email actually sends. Note: invoice `status` stays payment-oriented
  * (UNPAID / PARTIALLY PAID / PAID); `sentAt` is the honest "was emailed"
  * signal, not a fake status.
@@ -838,7 +838,7 @@ export async function sendInvoiceEmail(
   if (!toEmail) {
     return {
       error:
-        'This customer has no email address. Add one to the customer record first — or use the WhatsApp / SMS buttons on this page instead.',
+        'This customer has no email address. Add one to the customer record first - or use the WhatsApp / SMS buttons on this page instead.',
     };
   }
 
@@ -878,7 +878,7 @@ export async function sendInvoiceEmail(
   if (!sent.ok) {
     return {
       error: sent.notConfigured
-        ? 'Email is not configured yet — the workspace owner needs to add RESEND_API_KEY. The WhatsApp / SMS buttons on this page still work.'
+        ? 'Email is not configured yet - the workspace owner needs to add RESEND_API_KEY. The WhatsApp / SMS buttons on this page still work.'
         : `Email could not be sent (${sent.error ?? 'unknown error'}). Nothing was marked as sent.`,
     };
   }

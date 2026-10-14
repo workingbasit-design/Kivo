@@ -1,5 +1,5 @@
 /**
- * Profile strength score — computed ONLY from the business's own data.
+ * Profile strength score - computed ONLY from the business's own data.
  *
  * No peer data, no invented benchmarks, no fake numbers. Each check is a
  * factual statement about what this business has or hasn't filled in, with a
@@ -33,7 +33,7 @@ export interface StrengthCheck {
 }
 
 /**
- * Returns { score (0–100), checks }. Pure and deterministic.
+ * Returns { score (0-100), checks }. Pure and deterministic.
  */
 export function computeProfileStrength(input: StrengthInput): {
   score: number;
@@ -65,7 +65,7 @@ export function computeProfileStrength(input: StrengthInput): {
   return { score, checks };
 }
 
-/** Unfinished checks, highest-weight first — the "what to do next" list. */
+/** Unfinished checks, highest-weight first - the "what to do next" list. */
 export function nextStrengthActions(checks: StrengthCheck[]): StrengthCheck[] {
   return checks.filter((c) => !c.done).sort((a, b) => b.weight - a.weight);
 }

@@ -3,14 +3,14 @@
  *
  * Design notes:
  * - Pure math (haversine) is fully unit-tested; network access is isolated in
- *   the geocoders below, which NEVER throw — they return null when the lookup
+ *   the geocoders below, which NEVER throw - they return null when the lookup
  *   fails so arrival detection degrades gracefully instead of blocking.
  * - Nominatim (OpenStreetMap) is free with no API key. Its usage policy
  *   requires a descriptive User-Agent; results are cached in memory to stay
  *   well under the rate limits.
  * - `pruneStaleLocationPings` lives in ./ping-retention.ts (server-only):
  *   this module is imported by client components (via ./eta.ts) and must
- *   stay free of server-only imports — tenant-guard pulls in
+ *   stay free of server-only imports - tenant-guard pulls in
  *   node:async_hooks, which Turbopack cannot place in a browser chunk.
  */
 
@@ -67,7 +67,7 @@ export function isWithinRadius(
 
 /**
  * Arrival check against an already-geocoded destination.
- * Returns null when either coordinate is invalid — never throws.
+ * Returns null when either coordinate is invalid - never throws.
  */
 export function detectArrival(
   tech: GeoPoint,
@@ -128,14 +128,14 @@ async function nominatimFetch(url: string): Promise<unknown | null> {
     if (!res.ok) return null;
     return (await res.json()) as unknown;
   } catch {
-    // Network down, timeout, blocked — arrival detection is best-effort.
+    // Network down, timeout, blocked - arrival detection is best-effort.
     return null;
   }
 }
 
 /**
  * Forward-geocode a street address to coordinates. Returns null when the
- * address is empty or the lookup fails — callers must skip arrival detection
+ * address is empty or the lookup fails - callers must skip arrival detection
  * in that case rather than erroring.
  */
 export async function geocodeAddress(

@@ -270,7 +270,7 @@ export default function VoiceModeClient({
 
       {/* Today's jobs - big tap targets */}
       <section>
-        <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2 px-1">
+        <h2 className="text-xs font-bold text-zinc-500 mb-2 px-1">
           {t(locale, "voice.todayJobs")}
         </h2>
         {jobs.length === 0 ? (
@@ -332,7 +332,7 @@ export default function VoiceModeClient({
       {/* Action log */}
       {log.length > 0 && (
         <section>
-          <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2 px-1">
+          <h2 className="text-xs font-bold text-zinc-500 mb-2 px-1">
             {t(locale, "voice.didAction")}
           </h2>
           <Card className="px-2 py-2 divide-y divide-zinc-100">

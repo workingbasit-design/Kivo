@@ -1,6 +1,6 @@
 /**
  * Unit tests for Web Push (PWA workstream): pure helpers in src/lib/webpush.ts
- * plus en/fr parity of the pwa i18n fragment. No HTTP, no DB, no network —
+ * plus en/fr parity of the pwa i18n fragment. No HTTP, no DB, no network -
  * the unconfigured path is exercised without touching the push service.
  * Run: node --test --import ./src/lib/__tests__/register-loader.mjs src/lib/__tests__/webpush.test.mts
  */

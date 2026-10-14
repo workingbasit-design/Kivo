@@ -1,6 +1,6 @@
 /**
- * GET /api/v1/invoices — list invoices (tenant-scoped).
- * POST /api/v1/invoices — create an invoice (status UNPAID).
+ * GET /api/v1/invoices - list invoices (tenant-scoped).
+ * POST /api/v1/invoices - create an invoice (status UNPAID).
  *
  * Auth: Authorization: Bearer ejk_live_...
  * GET needs the `read` scope; POST needs `write`.
@@ -139,7 +139,7 @@ export async function POST(req: Request) {
   const subtotal = round2(
     d.items ? d.items.reduce((s, i) => s + i.qty * i.rate, 0) : (d.subtotal ?? 0)
   );
-  // Server-side money math via the shared tax engine — the single source of
+  // Server-side money math via the shared tax engine - the single source of
   // truth, identical to the app's createInvoice path (per-line rounding).
   const taxAmount = calcTax(subtotal, {
     taxes: splitStoredTax(taxType, d.taxRate),

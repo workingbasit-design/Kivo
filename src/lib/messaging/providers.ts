@@ -1,14 +1,14 @@
 /**
- * Track 9 — outbound messaging providers (free-quota-first).
+ * Track 9 - outbound messaging providers (free-quota-first).
  *
  * WhatsApp Cloud API (Meta) is the primary channel; transactional email via
  * Resend is the fallback. SMS has NO genuine free tier, so it exists only as
- * a disabled stub that explains why — the system never sends paid SMS.
+ * a disabled stub that explains why - the system never sends paid SMS.
  *
  * IMPORTANT WhatsApp caveat: Meta only delivers free-form text inside the
  * 24-hour customer-service window, and since 2026-10-01 those service
  * messages count against the number's 1,000/month free tier (billed
- * per-message after that — our quota hard-stop means we never reach the
+ * per-message after that - our quota hard-stop means we never reach the
  * paid tier). Business-initiated notifications (like reminders) outside the
  * window require a Meta-approved *utility template*; otherwise the API
  * rejects the send with a template error, which we classify as
@@ -203,7 +203,7 @@ export async function sendResendEmail(
 /**
  * SMS has no genuine free tier (Twilio etc. are paid/trial-credit only), so
  * automated SMS is intentionally unavailable. This stub exists so call sites
- * get a plain-language explanation instead of a silent failure or — worse —
+ * get a plain-language explanation instead of a silent failure or - worse -
  * a paid default.
  */
 export function sendSmsDisabled(): SendResult {

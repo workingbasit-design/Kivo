@@ -99,7 +99,7 @@ export default async function SignPreparePage({
         {/* The quote as a signable document. Tap it to place the selected field. */}
         <div className="ej-glass-card rounded-2xl p-6 md:p-8">
           <div className="border-b border-zinc-100 pb-5 mb-5">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+            <p className="text-[11px] font-bold text-zinc-400">
               {quote.business.name}
             </p>
             <h2 className="text-xl font-bold text-zinc-900 mt-1">

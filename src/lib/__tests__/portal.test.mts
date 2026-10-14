@@ -1,6 +1,6 @@
 /**
  * Unit tests for the customer portal token primitives (src/lib/portal.ts).
- * Only the pure functions are tested here — DB round-trips are covered by
+ * Only the pure functions are tested here - DB round-trips are covered by
  * the same tenant-scoping discipline as ShareToken (every query carries
  * businessId + customerId).
  */
@@ -26,7 +26,7 @@ test('hash is deterministic, one-way, and differs from the raw token', () => {
   assert.equal(h1, h2);
   assert.notEqual(h1, t);
   assert.match(h1, /^[0-9a-f]{64}$/);
-  // A different token hashes differently — no collisions in practice.
+  // A different token hashes differently - no collisions in practice.
   assert.notEqual(hashPortalToken(newPortalTokenValue()), h1);
 });
 

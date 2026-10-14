@@ -86,7 +86,7 @@ export default async function CrewsPage() {
       )}
 
       <section>
-        <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2 px-1">
+        <h2 className="text-xs font-bold text-zinc-500 mb-2 px-1">
           {L('newCrew')}
         </h2>
         <Card className="p-5">

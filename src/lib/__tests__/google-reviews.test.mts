@@ -1,5 +1,5 @@
 /**
- * Unit tests for Google review sync pure logic (src/lib/google-reviews.ts —
+ * Unit tests for Google review sync pure logic (src/lib/google-reviews.ts -
  * Track 5). All HTTP is mocked; no live Google calls.
  * Run: node --test src/lib/__tests__/google-reviews.test.mts
  */

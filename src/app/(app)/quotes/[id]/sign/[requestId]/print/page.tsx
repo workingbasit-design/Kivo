@@ -89,7 +89,7 @@ export default async function SignedDocumentPrintPage({
         {/* Signed document */}
         <Card className="p-8 print:border-0 print:shadow-none">
           <div className="mb-6 border-b border-zinc-200 pb-6">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-400">
+            <p className="text-[11px] font-semibold text-zinc-400">
               {business.name}
             </p>
             <h1 className="mt-1 text-2xl font-bold text-zinc-900">{quote.title}</h1>
@@ -103,7 +103,7 @@ export default async function SignedDocumentPrintPage({
           </div>
 
           <div className="mb-6">
-            <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+            <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-zinc-500">
               <PenLine size={12} /> {L('esign.statusSigned')}
             </p>
             <div className="rounded-lg border border-zinc-200 bg-white px-6 py-5">
@@ -130,7 +130,7 @@ export default async function SignedDocumentPrintPage({
           </div>
 
           <div className="mb-6">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+            <p className="mb-2 text-xs font-semibold text-zinc-500">
               {L('esign.auditTitle')}
             </p>
             <ul className="divide-y divide-zinc-100 rounded-lg border border-zinc-200">

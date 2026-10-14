@@ -2,8 +2,8 @@
  * Quote money math (pure, DB-free): subtotal → discount → tax → total.
  *
  * Discount rules:
- * - PERCENT: clamped to 0–100% of the subtotal
- * - AMOUNT: clamped to 0–subtotal
+ * - PERCENT: clamped to 0-100% of the subtotal
+ * - AMOUNT: clamped to 0-subtotal
  * - null type (or null value): no discount
  * Tax is applied to the discounted taxable amount, never to the raw subtotal.
  *
@@ -43,7 +43,7 @@ export function computeQuoteTotals(
   }
 
   const taxable = round2(subtotal - discountAmount);
-  // Per-line tax via the shared tax engine — identical to the form preview.
+  // Per-line tax via the shared tax engine - identical to the form preview.
   const { taxAmount } = calcTax(taxable, { taxes });
   const total = round2(taxable + taxAmount);
 

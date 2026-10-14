@@ -42,7 +42,7 @@ async function send(businessId) {
 
 test('verified + opted-in business: request created, lead created, redirect', async () => {
   const { result, redirected } = await send('biz_ok');
-  assert.equal(result, null, 'no error object — action redirects on success');
+  assert.equal(result, null, 'no error object - action redirects on success');
   assert.ok(redirected?.includes('/customer/requests/qr_'), `redirected to the new request, got ${redirected}`);
   assert.equal(stub.calls.quoteRequests.length, 1, 'one quote request created');
   assert.equal(stub.calls.leads.length, 1, 'one lead created for the business inbox');
@@ -53,7 +53,7 @@ test('verified + opted-in business: request created, lead created, redirect', as
 
 test('opted-out business: rejected, nothing created', async () => {
   const { result, redirected } = await send('biz_out');
-  assert.equal(redirected, null, 'no redirect — the request was refused');
+  assert.equal(redirected, null, 'no redirect - the request was refused');
   assert.equal(result?.error, 'Business not found.');
   assert.equal(stub.calls.quoteRequests.length, 0, 'no quote request created');
   assert.equal(stub.calls.leads.length, 0, 'no lead created');

@@ -3,14 +3,14 @@
  * pro-initiated quote/invoice sends).
  *
  * Uses the platform's own RESEND_API_KEY (Resend free tier: 3,000 emails /
- * month — plenty for 1–5 person shops, $0 forever). This is deliberately
+ * month - plenty for 1-5 person shops, $0 forever). This is deliberately
  * separate from the per-business MessagingConnection path in engine.ts:
  * these emails must work out of the box with zero per-business setup,
  * which is exactly the founder's "no email ever arrives" complaint.
  *
  * Every send degrades gracefully when RESEND_API_KEY is missing: the skip
  * is logged server-side and the caller gets an honest
- * { ok: false, notConfigured: true } — never a throw, never a fake success.
+ * { ok: false, notConfigured: true } - never a throw, never a fake success.
  * `fetchFn` is injectable so tests run with zero live provider calls.
  */
 import { sendResendEmail, type SendResult } from './providers.ts';
@@ -34,7 +34,7 @@ export async function sendPlatformEmail(
   const apiKey = process.env.RESEND_API_KEY?.trim();
   if (!apiKey) {
     // TODO(logging): migrate to structured logger (src/lib/logger.ts)
-    console.warn('[platform-email] skipped — RESEND_API_KEY is not set');
+    console.warn('[platform-email] skipped - RESEND_API_KEY is not set');
     return {
       ok: false,
       notConfigured: true,

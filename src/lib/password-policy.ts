@@ -1,5 +1,5 @@
 /**
- * Shared password-length policy. Pure — no Next.js imports, safe for unit tests.
+ * Shared password-length policy. Pure - no Next.js imports, safe for unit tests.
  *
  * Passwords longer than the cap are rejected BEFORE hashing: hashing runs
  * PBKDF2-SHA512 100k iterations synchronously, so an unbounded input on an

@@ -96,12 +96,12 @@ const confirmSchema = z.object({
     address: z.string().max(200).nullable().optional(),
     price: z.number().int().min(0).max(10000000).nullable().optional(),
   }),
-  // Client-generated idempotency key (one per booking preview). Optional —
+  // Client-generated idempotency key (one per booking preview). Optional -
   // when absent the server derives a deterministic key from the draft.
   idempotencyKey: z.string().trim().min(8).max(128).optional(),
 });
 
-/** Confirming a previewed NEW CUSTOMER — same explicit-confirm boundary as jobs. */
+/** Confirming a previewed NEW CUSTOMER - same explicit-confirm boundary as jobs. */
 const customerConfirmSchema = z.object({
   confirm: z.literal(true),
   previewType: z.literal('customer'),
@@ -145,7 +145,7 @@ export async function POST(req: Request) {
   const rl = rateLimit(`copilot:${session.user.id}`, { limit: 30, windowMs: 60_000 });
   if (!rl.ok) {
     return NextResponse.json(
-      { error: tr('Too many requests — please wait a moment and try again.', 'Trop de requêtes — attendez un moment et réessayez.') },
+      { error: tr('Too many requests - please wait a moment and try again.', 'Trop de requêtes - attendez un moment et réessayez.') },
       { status: 429 }
     );
   }
@@ -167,7 +167,7 @@ export async function POST(req: Request) {
     });
     if (!rlConfirm.ok) {
       return NextResponse.json(
-        { error: tr('Too many confirm requests — please wait a moment and try again.', 'Trop de confirmations — attendez un moment et réessayez.') },
+        { error: tr('Too many confirm requests - please wait a moment and try again.', 'Trop de confirmations - attendez un moment et réessayez.') },
         { status: 429 }
       );
     }
@@ -188,7 +188,7 @@ export async function POST(req: Request) {
     });
     if (!rlConfirm.ok) {
       return NextResponse.json(
-        { error: tr('Too many confirm requests — please wait a moment and try again.', 'Trop de confirmations — attendez un moment et réessayez.') },
+        { error: tr('Too many confirm requests - please wait a moment and try again.', 'Trop de confirmations - attendez un moment et réessayez.') },
         { status: 429 }
       );
     }
@@ -203,7 +203,7 @@ export async function POST(req: Request) {
   // --- Normal chat message --------------------------------------------------
   const asMessage = messageSchema.safeParse(body);
   if (!asMessage.success) {
-    return NextResponse.json({ error: tr('Send a message — an empty message won\'t work.', 'Envoyez un message — un message vide ne fonctionne pas.') }, { status: 400 });
+    return NextResponse.json({ error: tr('Send a message - an empty message won\'t work.', 'Envoyez un message - un message vide ne fonctionne pas.') }, { status: 400 });
   }
 
   const result = await runCopilot(
@@ -335,7 +335,7 @@ async function handleConfirm(
     return confirmResponse({ ...existing.outcome, duplicate: true }, key);
   }
   if (existing?.outcome && !existing.outcome.ok) {
-    // A previous attempt failed — allow a fresh try.
+    // A previous attempt failed - allow a fresh try.
     confirmStore.delete(key);
   }
 
@@ -359,14 +359,14 @@ async function handleConfirm(
       expiresAt: Date.now() + CONFIRM_RESULT_TTL_MS,
     });
   } else {
-    // Nothing was created — drop the key so the user can retry for real.
+    // Nothing was created - drop the key so the user can retry for real.
     confirmStore.delete(key);
   }
   resolveOutcome(outcome);
   return confirmResponse(outcome, key);
 }
 
-/** Confirm a previewed new customer — same idempotency guarantees as jobs. */
+/** Confirm a previewed new customer - same idempotency guarantees as jobs. */
 async function handleCustomerConfirm(
   businessId: string,
   draft: z.infer<typeof customerConfirmSchema>['preview'],
@@ -424,7 +424,7 @@ async function runCustomerConfirm(
   const name = draft.name.trim();
 
   // Re-check duplicates at confirm time (tenant-scoped): an exact name or
-  // phone match resolves to the existing customer — never a duplicate.
+  // phone match resolves to the existing customer - never a duplicate.
   if (draft.phone) {
     const byPhone = await prisma.customer.findFirst({
       where: { businessId, phone: { contains: draft.phone } },
@@ -435,8 +435,8 @@ async function runCustomerConfirm(
         ok: true,
         jobId: byPhone.id,
         reply: tr(
-          `"${byPhone.name}" is already in your customers — no duplicate added.`,
-          `« ${byPhone.name} » est déjà dans vos clients — aucun doublon ajouté.`
+          `"${byPhone.name}" is already in your customers - no duplicate added.`,
+          `« ${byPhone.name} » est déjà dans vos clients - aucun doublon ajouté.`
         ),
         duplicate: true,
       };
@@ -453,8 +453,8 @@ async function runCustomerConfirm(
       ok: true,
       jobId: exact.id,
       reply: tr(
-        `"${exact.name}" is already in your customers — no duplicate added.`,
-        `« ${exact.name} » est déjà dans vos clients — aucun doublon ajouté.`
+        `"${exact.name}" is already in your customers - no duplicate added.`,
+        `« ${exact.name} » est déjà dans vos clients - aucun doublon ajouté.`
       ),
       duplicate: true,
     };
@@ -475,8 +475,8 @@ async function runCustomerConfirm(
     ok: true,
     jobId: customer.id,
     reply: tr(
-      `Customer added ✓\n\n${customer.name}${draft.phone ? ` — ${draft.phone}` : ''}\n\nYou’ll find them on the Customers page.`,
-      `Client ajouté ✓\n\n${customer.name}${draft.phone ? ` — ${draft.phone}` : ''}\n\nVous le trouverez sur la page Clients.`
+      `Customer added ✓\n\n${customer.name}${draft.phone ? ` - ${draft.phone}` : ''}\n\nYou’ll find them on the Customers page.`,
+      `Client ajouté ✓\n\n${customer.name}${draft.phone ? ` - ${draft.phone}` : ''}\n\nVous le trouverez sur la page Clients.`
     ),
     duplicate: false,
   };
@@ -493,7 +493,7 @@ async function runConfirm(
   const [y, m, d] = draft.date.split('-').map(Number);
   const date = new Date(y, m - 1, d, 9, 0, 0, 0);
   if (Number.isNaN(date.getTime())) {
-    return { ok: false, status: 400, error: tr('Couldn\'t understand the date — please try again.', 'Date non comprise — veuillez réessayer.') };
+    return { ok: false, status: 400, error: tr('Couldn\'t understand the date - please try again.', 'Date non comprise - veuillez réessayer.') };
   }
 
   const biz = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } });
@@ -531,12 +531,12 @@ async function runConfirm(
   // Defensive: creation must have succeeded by now.
   const bookedCustomer: { id: string; name: string } | null = customer;
   if (!bookedCustomer) {
-    return { ok: false, status: 500, error: tr('Couldn\'t save the customer — please try again.', 'Impossible d\'enregistrer le client — veuillez réessayer.') };
+    return { ok: false, status: 500, error: tr('Couldn\'t save the customer - please try again.', 'Impossible d\'enregistrer le client - veuillez réessayer.') };
   }
 
   // Idempotency DB fallback: an identical copilot booking created moments ago
   // (e.g. the first confirm succeeded but the response was lost, or the
-  // server restarted) resolves to the original job — never a duplicate.
+  // server restarted) resolves to the original job - never a duplicate.
   const recent = await prisma.job.findFirst({
     where: {
       businessId,
@@ -567,7 +567,7 @@ async function runConfirm(
       customerId: bookedCustomer.id,
       title: draft.title,
       date,
-      // Store NULL when no time was parsed — "TBD" is display text, not data.
+      // Store NULL when no time was parsed - "TBD" is display text, not data.
       time: draft.time ?? null,
       address: draft.address ?? undefined,
       price: draft.price ?? 0,

@@ -1,5 +1,5 @@
 /**
- * Track 9 — automation scheduler: scans jobs/invoices/quotes and builds
+ * Track 9 - automation scheduler: scans jobs/invoices/quotes and builds
  * the list of message candidates due right now.
  *
  * Pure, testable TypeScript: no DB, no network, no Next.js imports.

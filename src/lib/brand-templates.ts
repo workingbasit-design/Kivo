@@ -1,6 +1,6 @@
 /**
  * Brand-kit social templates: pure copy-paste post templates for the business.
- * No DB, no network — safe to unit test. Locale-aware (EN + Canadian FR).
+ * No DB, no network - safe to unit test. Locale-aware (EN + Canadian FR).
  */
 
 export type BrandLocale = 'en' | 'fr';
@@ -41,7 +41,7 @@ function phoneLine(phone: string | null, locale: BrandLocale): string {
 
 /**
  * Build 4 copy-paste social templates (EN or FR).
- * Never throws on partial input — missing fields are simply omitted.
+ * Never throws on partial input - missing fields are simply omitted.
  */
 export function buildSocialTemplates(
   brand: BrandInfo,
@@ -61,13 +61,13 @@ export function buildSocialTemplates(
         title: 'Annonce de service',
         body:
           `🎉 Nouveau service chez ${name} !${tag}${svc}${tel}` +
-          `\nÉcrivez-nous pour un devis gratuit — on vous répond vite !`,
+          `\nÉcrivez-nous pour un devis gratuit - on vous répond vite !`,
       },
       {
         id: 'seasonal',
         title: 'Rappel saisonnier',
         body:
-          `🍂 La saison change — pensez à l'entretien avec ${name} !${tag}${svc}${tel}` +
+          `🍂 La saison change - pensez à l'entretien avec ${name} !${tag}${svc}${tel}` +
           `\nRéservez votre visite dès aujourd'hui.`,
       },
       {
@@ -93,13 +93,13 @@ export function buildSocialTemplates(
       title: 'New-service announcement',
       body:
         `🎉 New service from ${name}!${tag}${svc}${tel}` +
-        `\nMessage us for a free quote — we reply fast!`,
+        `\nMessage us for a free quote - we reply fast!`,
     },
     {
       id: 'seasonal',
       title: 'Seasonal reminder',
       body:
-        `🍂 Season change — time for maintenance with ${name}!${tag}${svc}${tel}` +
+        `🍂 Season change - time for maintenance with ${name}!${tag}${svc}${tel}` +
         `\nBook your visit today.`,
     },
     {

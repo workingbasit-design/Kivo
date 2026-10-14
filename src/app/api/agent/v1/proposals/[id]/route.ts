@@ -1,7 +1,7 @@
 /**
  * GET /api/agent/v1/proposals/[id]?token=
  *
- * Check a proposal's status. The token returned at creation is required —
+ * Check a proposal's status. The token returned at creation is required -
  * unknown ids and wrong tokens both return 404 so proposals can't be
  * enumerated. Lazily marks pending proposals as expired past their
  * expiry (the purge cron cleans them up).

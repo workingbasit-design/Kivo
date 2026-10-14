@@ -2,7 +2,7 @@
  * GET /.well-known/everyjob.json
  *
  * Machine-readable capability manifest for the EveryJob Agent Protocol.
- * This is how AI agents discover what they can do — no guessing, no
+ * This is how AI agents discover what they can do - no guessing, no
  * reverse-engineering. See https://kivo-nine-silk.vercel.app/agents
  */
 import { NextResponse } from 'next/server';

@@ -11,10 +11,10 @@ import { NextResponse } from 'next/server';
  *   did NOT run (server log: "`x-forwarded-host` ... does not match
  *   `origin` ... Aborting the action."), while the same request with a
  *   same-origin Origin succeeded. Requests with NO Origin header are let
- *   through with a warning (handcrafted/curl) — fine, since CSRF requires
+ *   through with a warning (handcrafted/curl) - fine, since CSRF requires
  *   a browser that always sends Origin cross-origin. SameSite=lax cookies
  *   add a second layer. Verdict: framework-protected; no app change needed.
- * - API routes (`src/app/api/**`): Next.js enforces NOTHING about origin —
+ * - API routes (`src/app/api/**`): Next.js enforces NOTHING about origin -
  *   verified: POST /api/copilot with Origin: https://evil.example.com and
  *   a valid session cookie returned 200 and was fully processed. So every
  *   mutating API route must do its own origin check (this helper).
@@ -76,7 +76,7 @@ export function checkSameOrigin(
 ): OriginCheck {
   const { origin, referer } = requestOrigins(req);
 
-  // Non-browser clients send neither header — nothing to verify, allow.
+  // Non-browser clients send neither header - nothing to verify, allow.
   if (!origin && !referer) return { ok: true };
 
   const allowed = new Set<string>();
@@ -88,7 +88,7 @@ export function checkSameOrigin(
     .map((v) => (v ? originHost(v) : null))
     .filter((h): h is string => h !== null);
 
-  // A header we couldn't parse is suspicious — fail closed.
+  // A header we couldn't parse is suspicious - fail closed.
   const unparsable = [origin, referer].some((v) => v !== null && originHost(v) === null);
   if (unparsable) {
     return { ok: false, reason: 'Unparseable Origin/Referer header' };

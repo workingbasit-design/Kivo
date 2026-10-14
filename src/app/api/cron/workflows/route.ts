@@ -15,7 +15,7 @@ import { unsafeUnscoped } from '@/lib/tenant-guard';
  * set, so no secret appears in vercel.json or the repo; the `?secret=`
  * query parameter also works for manual runs.
  *
- * The secret is required — without it the route refuses to run. Actions are
+ * The secret is required - without it the route refuses to run. Actions are
  * limited to in-app notifications and draft creation (never external sends),
  * every firing is idempotent, and every run is written to AutomationLog.
  */
@@ -62,7 +62,7 @@ export async function GET(req: Request) {
     }
   }
 
-  // Ecosystem maintenance (all best-effort — a failure here must never break
+  // Ecosystem maintenance (all best-effort - a failure here must never break
   // the workflow run): retry due webhook deliveries, prune stale GPS pings,
   // and sync jobs to Google Calendar for businesses that granted write scope.
   let webhookStats = { attempted: 0, delivered: 0, failed: 0 };

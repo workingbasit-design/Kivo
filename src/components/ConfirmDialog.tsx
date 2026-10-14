@@ -24,6 +24,7 @@ export default function ConfirmDialog({
   locale = 'en',
   onConfirm,
   onClose,
+  onCancel,
 }: {
   open: boolean;
   title: string;
@@ -34,12 +35,15 @@ export default function ConfirmDialog({
   danger?: boolean;
   locale?: Locale;
   onConfirm: () => void;
-  onClose: () => void;
+  /** Close handler. `onCancel` is the Part B8 spec name; `onClose` is the legacy name. Either works. */
+  onClose?: () => void;
+  onCancel?: () => void;
 }) {
+  const close = onCancel ?? onClose ?? (() => {});
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') close();
     };
     document.addEventListener('keydown', onKey);
     const prev = document.body.style.overflow;
@@ -48,7 +52,7 @@ export default function ConfirmDialog({
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = prev;
     };
-  }, [open, onClose]);
+  }, [open, close]);
 
   if (!open) return null;
 
@@ -64,14 +68,14 @@ export default function ConfirmDialog({
     >
       <button
         aria-label={t(locale, 't10misc.confirmDialog.close')}
-        onClick={() => !busy && onClose()}
+        onClick={() => !busy && close()}
         className="absolute inset-0 bg-zinc-950/50 backdrop-blur-[2px] cursor-default"
       />
       <div className="relative w-full sm:max-w-sm bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-zinc-200 p-6 max-h-[90vh] overflow-y-auto ej-sheet-in">
         <div className="flex items-start justify-between gap-3">
           <h3 className="text-base font-bold text-zinc-900 tracking-tight">{title}</h3>
           <button
-            onClick={onClose}
+            onClick={close}
             disabled={busy}
             className="text-zinc-400 hover:text-zinc-700 transition-colors min-w-[44px] min-h-[44px] -m-2 flex items-center justify-center rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/40"
             aria-label={t(locale, 't10misc.confirmDialog.close')}
@@ -81,7 +85,7 @@ export default function ConfirmDialog({
         </div>
         <p className="mt-2 text-sm text-zinc-500 leading-relaxed">{message}</p>
         <div className="mt-6 flex flex-col-reverse sm:flex-row gap-2">
-          <button onClick={onClose} disabled={busy} className={secondaryBtnClass + ' flex-1'}>
+          <button onClick={close} disabled={busy} className={secondaryBtnClass + ' flex-1'}>
             {keep}
           </button>
           <button

@@ -143,7 +143,7 @@ export async function deleteCampaign(id: string): Promise<MarketingResult> {
 
 /**
  * Move a campaign DRAFT -> QUEUED or QUEUED -> SENT.
- * QUEUED means "ready for you to copy and send manually" — EveryJob never
+ * QUEUED means "ready for you to copy and send manually" - EveryJob never
  * sends messages itself. There is no sending infrastructure by design.
  */
 export async function advanceCampaignStatus(id: string): Promise<MarketingResult> {
@@ -178,7 +178,7 @@ export async function previewAudience(
 
 /**
  * Build a polite, copy-paste payment reminder for an invoice.
- * Never sends anything — returns draft text only. Interac details are text only.
+ * Never sends anything - returns draft text only. Interac details are text only.
  */
 export async function draftPaymentReminder(
   invoiceId: string

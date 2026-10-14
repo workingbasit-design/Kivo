@@ -11,13 +11,13 @@
  *
  * Writing to a calendar requires the
  * `https://www.googleapis.com/auth/calendar` scope. Connections made before
- * that scope was requested only have `calendar.readonly` — sync detects the
+ * that scope was requested only have `calendar.readonly` - sync detects the
  * missing scope and returns `{ ok: false, reason: 'needs-scope' }` so the UI
  * can ask the owner to reconnect, instead of failing. Missing connection,
  * missing OAuth config, or no refresh token degrade the same graceful way.
  *
  * Pure Calendar HTTP helpers (injectable fetch) run under plain node:test;
- * `syncJobsToGoogleCalendar` touches Prisma and is the cron entry point —
+ * `syncJobsToGoogleCalendar` touches Prisma and is the cron entry point -
  * hook it in the cron route, e.g.:
  *
  *   // src/app/api/cron/workflows/route.ts, inside GET after the workflow loop:
@@ -74,7 +74,7 @@ type JobForSync = {
 /* Pure helpers (node:test friendly)                                   */
 /* ------------------------------------------------------------------ */
 
-/** Fingerprint of the fields we sync — stored on the event, compared to skip no-ops. Pure. */
+/** Fingerprint of the fields we sync - stored on the event, compared to skip no-ops. Pure. */
 export function fingerprintJobEvent(parts: {
   summary: string;
   startISO: string;
@@ -93,16 +93,16 @@ export function fingerprintJobEvent(parts: {
  * The business timezone matters: `job.date` is stored as a UTC-midnight
  * calendar date, and `job.time` is wall-clock time in the business's zone.
  * We emit naive local ISO strings ("2026-09-25T09:00:00") and pass the
- * IANA `timeZone` alongside — Google interprets them in that zone. (The old
+ * IANA `timeZone` alongside - Google interprets them in that zone. (The old
  * code called `setHours` on the server, which is UTC on Vercel, shifting
- * e.g. Toronto jobs 4–5 hours early.)
+ * e.g. Toronto jobs 4-5 hours early.)
  */
 export function jobToCalendarEvent(
   job: JobForSync,
   timeZone: string
 ): { summary: string; description: string; location: string; startISO: string; endISO: string; timeZone: string } {
   const customerName = job.customer?.name?.trim() || 'Customer';
-  const summary = `${job.title} — ${customerName}`;
+  const summary = `${job.title} - ${customerName}`;
   const hhmm = /^([01]\d|2[0-3]):[0-5]\d$/.test(job.time ?? '') ? job.time! : '09:00';
   const [hh, mm] = hhmm.split(':').map(Number);
   const pad = (n: number) => String(n).padStart(2, '0');
@@ -213,7 +213,7 @@ export async function deleteCalendarEvent(
     { method: 'DELETE' },
     fetchImpl
   );
-  // 410 Gone = already deleted — treat as success (idempotent).
+  // 410 Gone = already deleted - treat as success (idempotent).
   if (!res.ok && res.status !== 410) throw new Error(`Calendar delete failed: ${res.status}`);
 }
 
@@ -236,7 +236,7 @@ async function getWriteAccessToken(businessId: string): Promise<string> {
 
   const granted = (conn.scopes ?? '').split(/\s+/).filter(Boolean);
   if (!granted.includes(SCOPE_CALENDAR_WRITE)) {
-    throw Object.assign(new Error('Calendar write scope not granted — reconnect Google'), {
+    throw Object.assign(new Error('Calendar write scope not granted - reconnect Google'), {
       kind: 'needs-scope',
     });
   }

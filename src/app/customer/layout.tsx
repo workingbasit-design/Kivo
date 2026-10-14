@@ -23,7 +23,7 @@ export default async function CustomerLayout({ children }: { children: React.Rea
             <span className="transition-transform duration-300 group-hover:scale-105 group-active:scale-95">
               <Logo size={26} />
             </span>
-            <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider hidden sm:inline">
+            <span className="text-xs font-bold text-indigo-600 hidden sm:inline">
               {tr('customer.auth.forCustomers')}
             </span>
           </Link>

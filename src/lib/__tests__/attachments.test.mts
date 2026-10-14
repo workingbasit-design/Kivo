@@ -1,7 +1,7 @@
 /**
  * Unit tests for universal attachments (Track 6A): pure helpers in
  * src/lib/attachments.ts plus en/fr parity of the attachments i18n
- * fragment. No HTTP, no DB — pure logic only.
+ * fragment. No HTTP, no DB - pure logic only.
  * Run: node --test --import ./src/lib/__tests__/register-loader.mjs src/lib/__tests__/attachments.test.mts
  */
 import test from 'node:test';

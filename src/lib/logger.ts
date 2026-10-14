@@ -14,7 +14,7 @@
  * and middleware-adjacent lib code.
  *
  * Migration: remaining `console.*` call sites carry a `// TODO(logging)`
- * comment — migrate them to this logger when touched (see 13c).
+ * comment - migrate them to this logger when touched (see 13c).
  */
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
@@ -91,7 +91,7 @@ function redactValue(value: unknown, key: string | undefined, seen: Set<object>)
   return value;
 }
 
-/** Deep-clone with secrets redacted. Never throws — logging must not break the app. */
+/** Deep-clone with secrets redacted. Never throws - logging must not break the app. */
 export function redactForLog(value: unknown): unknown {
   try {
     return redactValue(value, undefined, new Set());

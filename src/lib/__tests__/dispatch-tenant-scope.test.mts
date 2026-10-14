@@ -7,7 +7,7 @@
  * server action threw before persisting.
  *
  * These tests stub prisma/auth and run the REAL guard assertion inside the
- * stubbed update — a regression throws TenantScopeError here, as in prod.
+ * stubbed update - a regression throws TenantScopeError here, as in prod.
  *
  * Run: node --test --import ./src/lib/__tests__/register-loader.mjs src/lib/__tests__/dispatch-tenant-scope.test.mts
  */

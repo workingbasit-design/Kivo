@@ -21,7 +21,7 @@ async function checkLimit(userId: string): Promise<DirectoryProfileResult | null
  * One-time consent migration. Businesses whose listing was already public
  * via the app (account holder = owner, opted in before verification existed)
  * get an APPROVED claim so they are not unpublished by the new flow.
- * Never auto-approves NEW requests — those always wait for an admin.
+ * Never auto-approves NEW requests - those always wait for an admin.
  */
 export async function ensureClaimState(businessId: string): Promise<void> {
   const biz = await prisma.business.findUnique({
@@ -36,7 +36,7 @@ export async function ensureClaimState(businessId: string): Promise<void> {
   if (claim || !page) return;
   // Grandfathering only applies to businesses that existed before claim
   // verification launched (2026-09-23). Anything newer that opts in waits
-  // for a human reviewer — the claim-verification gate.
+  // for a human reviewer - the claim-verification gate.
   if (biz.createdAt < GRANDFATHER_CUTOFF) {
     await prisma.$transaction([
       prisma.directoryClaim.create({
@@ -72,7 +72,7 @@ const GRANDFATHER_CUTOFF = new Date('2026-09-24T00:00:00Z');
 
 /**
  * Business requests verification of its directory listing. Creates a PENDING
- * claim — the listing stays unpublished until an admin explicitly approves.
+ * claim - the listing stays unpublished until an admin explicitly approves.
  * No auto-approval, nothing sent anywhere.
  */
 export async function requestDirectoryClaim(formData: FormData): Promise<void> {
@@ -155,7 +155,7 @@ export async function updateDirectoryProfile(
     let slug = slugify(biz?.name ?? 'business');
     for (let i = 2; i <= 20; i++) {
       // Global slug uniqueness: slugs live in the public /book/[slug] URL
-      // namespace, so the clash check must span all businesses — scoping it
+      // namespace, so the clash check must span all businesses - scoping it
       // to the caller's business would let two businesses claim one slug.
       const clash = await unsafeUnscoped('directory-profile:slugClashCheck', (db) =>
         db.bookingPage.findUnique({ where: { slug }, select: { id: true } })

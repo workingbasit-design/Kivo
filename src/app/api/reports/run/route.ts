@@ -12,7 +12,7 @@ const runSchema = z.object({
 });
 
 /**
- * POST /api/reports/run — build a report from a natural-language prompt.
+ * POST /api/reports/run - build a report from a natural-language prompt.
  *
  * The rule-based EN/FR parser turns the prompt into a ReportConfig, which runs
  * against real tenant-scoped data. Responds with { config, result, defaulted };

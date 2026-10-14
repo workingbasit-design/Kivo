@@ -103,7 +103,7 @@ export async function POST(req: Request) {
     stripeAccountId: conn.stripeAccountId,
     amountCents: toCents(remaining),
     currency: quote.business.currency || 'CAD',
-    productName: `Deposit — Quote ${quote.number} (${quote.business.name})`,
+    productName: `Deposit - Quote ${quote.number} (${quote.business.name})`,
     successUrl: `${base}/q/${token}?paid=1`,
     cancelUrl: `${base}/q/${token}`,
     customerEmail: quote.customer.email ?? undefined,

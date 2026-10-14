@@ -84,7 +84,7 @@ export async function register(
   await createSession(owner.id);
 
   // Best-effort welcome email (platform Resend key, free tier). A missing
-  // RESEND_API_KEY only skips the email — signup must never fail because
+  // RESEND_API_KEY only skips the email - signup must never fail because
   // of it.
   try {
     const tpl = welcomeEmail(name, businessName);
@@ -93,7 +93,7 @@ export async function register(
       htmlBody: tpl.html,
     });
   } catch {
-    // ignore — the account is already created and the user is signed in
+    // ignore - the account is already created and the user is signed in
   }
 
   redirect('/dashboard');
@@ -144,12 +144,12 @@ export async function logout(): Promise<void> {
 }
 
 /* ------------------------------------------------------------------ */
-/* Track 7 — Google sign-in onboarding + profile.                      */
+/* Track 7 - Google sign-in onboarding + profile.                      */
 /* ------------------------------------------------------------------ */
 
 /**
  * Save the Canadian contact number from the post-Google-signup welcome
- * prompt. Phone is required here — the form has a separate "Skip for now".
+ * prompt. Phone is required here - the form has a separate "Skip for now".
  */
 export async function saveWelcomePhone(
   _prev: AuthResult,

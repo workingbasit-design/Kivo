@@ -1,5 +1,5 @@
 /**
- * Track 9 — automated customer messaging: bilingual message templates.
+ * Track 9 - automated customer messaging: bilingual message templates.
  *
  * Pure, testable TypeScript: no DB, no network, no Next.js imports.
  * Every template is WhatsApp-friendly (short, plain Canadian language,
@@ -48,7 +48,7 @@ function footer(locale: MsgLocale): string {
   return locale === 'fr' ? OPT_OUT_FR : OPT_OUT_EN;
 }
 
-/** "the Furnace check" / "l'inspection de la fournaise" — falls back to a generic label. */
+/** "the Furnace check" / "l'inspection de la fournaise" - falls back to a generic label. */
 function jobOr(label: string | undefined, en: string, fr: string, locale: MsgLocale): string {
   if (label && label.trim() !== '') return label;
   return locale === 'fr' ? fr : en;
@@ -183,7 +183,7 @@ function renderQuoteFollowup(locale: MsgLocale, p: TemplateParams): RenderedTemp
     body:
       `Hi ${p.customerName}, ${p.businessName} here. ` +
       `We sent you quote ${quote}${amount ? ` for ${amount}` : ''} about a week ago. ` +
-      `Happy to answer any questions — just reply to this message.\n` +
+      `Happy to answer any questions - just reply to this message.\n` +
       footer(locale),
   };
 }
@@ -205,7 +205,7 @@ function renderReviewRequest(locale: MsgLocale, p: TemplateParams): RenderedTemp
     body:
       `Hi ${p.customerName}, thanks for choosing ${p.businessName}! ` +
       `We hope you're happy with ${job}. ` +
-      `We'd love a Google review if you have a moment — it really helps.\n` +
+      `We'd love a Google review if you have a moment - it really helps.\n` +
       footer(locale),
   };
 }

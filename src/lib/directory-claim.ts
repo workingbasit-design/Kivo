@@ -25,7 +25,7 @@ export function isListingPublic(
 
 /**
  * Parse the BookingPage.serviceAreas JSON column into a clean string list.
- * Never throws — malformed data yields an empty list, not a crash.
+ * Never throws - malformed data yields an empty list, not a crash.
  */
 export function parseServiceAreas(json: string | null | undefined): string[] {
   if (!json) return [];
@@ -57,7 +57,7 @@ export function serviceAreasToJson(input: string | null | undefined): string | n
 
 /**
  * Claim state machine: what a new request/decision does to visibility.
- * Pure — the server actions implement the same rules against the DB.
+ * Pure - the server actions implement the same rules against the DB.
  */
 export function claimTransition(
   current: { status: ClaimStatus | null; verifiedAt: Date | null },

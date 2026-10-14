@@ -77,7 +77,7 @@ async function nextInvoiceNumber(
 
 /**
  * Preview: completed jobs with NO invoice yet, tenant-scoped.
- * Pure read — nothing is created.
+ * Pure read - nothing is created.
  */
 export async function previewBatchInvoices(): Promise<BatchPreviewResult> {
   const locale = await getLocale();
@@ -163,7 +163,7 @@ export async function confirmBatchInvoices(
 
   await prisma.$transaction(async (tx) => {
     for (const job of jobs) {
-      // Server-side money math — never trusts client values. Per-line tax
+      // Server-side money math - never trusts client values. Per-line tax
       // through the shared engine, identical to the batch preview.
       const subtotal = round2(job.price);
       const taxAmount = calcTax(subtotal, taxConfig).taxAmount;
@@ -223,7 +223,7 @@ export async function confirmBatchInvoices(
 }
 
 /**
- * Create ONE milestone/progress invoice against a job. No redirect — the
+ * Create ONE milestone/progress invoice against a job. No redirect - the
  * caller routes the user afterwards.
  */
 export async function createMilestoneInvoice(
@@ -289,7 +289,7 @@ export async function createMilestoneInvoice(
     await tx.invoiceLineItem.create({
       data: {
         invoiceId: inv.id,
-        description: `${label} — ${description || job.title}`,
+        description: `${label} - ${description || job.title}`,
         qty: 1,
         unitPrice: subtotal,
         position: 0,

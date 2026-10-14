@@ -1,6 +1,6 @@
 /**
  * Unit tests for the quote deposit amount parser:
- * - src/lib/quote-deposit.ts — parseDepositAmount(raw, total)
+ * - src/lib/quote-deposit.ts - parseDepositAmount(raw, total)
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';

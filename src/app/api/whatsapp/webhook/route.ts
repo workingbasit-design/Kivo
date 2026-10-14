@@ -11,7 +11,7 @@ import { unsafeUnscoped } from '@/lib/tenant-guard';
  * WhatsApp Cloud API webhook.
  *
  * GET verifies the webhook (Meta setup). POST receives inbound customer
- * messages — used for CASL STOP/HELP handling: STOP opts the customer out of
+ * messages - used for CASL STOP/HELP handling: STOP opts the customer out of
  * automated messages (with one confirming reply), HELP gets an info reply.
  * Every inbound message and consent change is logged (tenant-scoped audit).
  */
@@ -53,9 +53,9 @@ function helpReply(locale: string | null | undefined, businessName: string): str
 
 function stopReply(locale: string | null | undefined, businessName: string): string {
   if (locale === 'fr') {
-    return `C'est noté — vous ne recevrez plus de messages automatisés de ${businessName}. Merci!`;
+    return `C'est noté - vous ne recevrez plus de messages automatisés de ${businessName}. Merci!`;
   }
-  return `You're unsubscribed — no more automated messages from ${businessName}. Thank you!`;
+  return `You're unsubscribed - no more automated messages from ${businessName}. Thank you!`;
 }
 
 export async function POST(req: Request) {
@@ -67,7 +67,7 @@ export async function POST(req: Request) {
   const appSecret = process.env.WHATSAPP_APP_SECRET;
   const rawBody = await req.text();
   if (!appSecret) {
-    logger.error('whatsapp:webhook rejected — WHATSAPP_APP_SECRET not configured');
+    logger.error('whatsapp:webhook rejected - WHATSAPP_APP_SECRET not configured');
     return NextResponse.json({ error: 'Webhook not configured.' }, { status: 403 });
   }
   const sigHeader = req.headers.get('x-hub-signature-256') ?? '';
@@ -97,7 +97,7 @@ export async function POST(req: Request) {
       if (!phoneNumberId) continue;
 
       // Inbound Meta webhook: the phone_number_id (assigned by Meta and
-      // stored on our connection row) IS how the tenant is resolved — no
+      // stored on our connection row) IS how the tenant is resolved - no
       // business scope can exist before this lookup. The signature check
       // at route entry proves the payload came from Meta.
       const connection = await unsafeUnscoped('whatsapp:resolveConnection', (db) =>
@@ -126,7 +126,7 @@ export async function POST(req: Request) {
         const isStop = isStopText(text);
         const isHelp = isHelpText(text) && !isStop;
         if (!isStop && !isHelp) {
-          // Plain reply — log it so the owner sees the conversation context.
+          // Plain reply - log it so the owner sees the conversation context.
           await prisma.messageLog.create({
             data: {
               type: 'WHATSAPP', direction: 'IN', recipient: fromDigits,
@@ -173,7 +173,7 @@ export async function POST(req: Request) {
           },
         });
 
-        // One confirming reply (quota-checked — never silently spends).
+        // One confirming reply (quota-checked - never silently spends).
         const reply = isStop
           ? stopReply(customer?.preferredLocale, business.name)
           : helpReply(customer?.preferredLocale, business.name);

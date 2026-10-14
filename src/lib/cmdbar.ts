@@ -2,7 +2,7 @@
  * Command-bar natural language: "unpaid invoices" -> /invoices?status=UNPAID,
  * "create quote" -> /quotes/new, etc. Bilingual (EN/FR), pure and tested.
  *
- * Only maps to destinations that really exist — never invents query params.
+ * Only maps to destinations that really exist - never invents query params.
  */
 import type { Locale } from './i18n/index.ts';
 

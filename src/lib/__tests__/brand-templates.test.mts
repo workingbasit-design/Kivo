@@ -1,6 +1,6 @@
 /**
  * Tests for the brand-kit social templates (src/lib/brand-templates.ts).
- * Pure functions — no DB, no network.
+ * Pure functions - no DB, no network.
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';

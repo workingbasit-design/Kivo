@@ -3,7 +3,7 @@
  *
  * paidAt is the "fully paid" timestamp consumed by revenue reporting
  * (attention "paid this week", health profitability subscore, scenario
- * revenue90d) — it must be stamped exactly when the invoice becomes PAID,
+ * revenue90d) - it must be stamped exactly when the invoice becomes PAID,
  * on EVERY payment path (manual recordPayment, settleJobPaidTx, Stripe
  * webhook). Never cleared: a fully-paid invoice stays fully paid.
  *

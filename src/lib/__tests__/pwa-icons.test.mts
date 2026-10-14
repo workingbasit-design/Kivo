@@ -1,5 +1,5 @@
 /**
- * PWA icon integrity — every icon the manifest advertises must exist on disk
+ * PWA icon integrity - every icon the manifest advertises must exist on disk
  * with exactly the advertised pixel size, and the layered SVG source of
  * truth (public/icons/icon-source.svg) must be present and well-formed.
  * This is the "one design, every platform" regression guard for the

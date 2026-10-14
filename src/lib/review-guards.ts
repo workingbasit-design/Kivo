@@ -2,8 +2,8 @@
  * Bot protection for the public review-token form (CAPTCHA-or-equivalent).
  *
  * The spec asks for CAPTCHA *or equivalent* on public submission forms.
- * This form is already hard to abuse — it requires an unguessable 256-bit
- * single-use token, and it's rate-limited per business and per IP — so the
+ * This form is already hard to abuse - it requires an unguessable 256-bit
+ * single-use token, and it's rate-limited per business and per IP - so the
  * equivalent here is: a honeypot field (invisible to humans, irresistible
  * to naive bots) plus a minimum fill-time check (bots submit instantly).
  * Both are validated server-side; the client can't bypass them.
@@ -21,7 +21,7 @@ export type BotCheckResult =
   | { ok: false; reason: 'honeypot' | 'too-fast' };
 
 /**
- * Pure check — no I/O, fully unit-testable. `renderedAtMs` is the
+ * Pure check - no I/O, fully unit-testable. `renderedAtMs` is the
  * client-reported form render time; the server compares against its clock.
  */
 export function checkBotSignals(opts: {

@@ -57,7 +57,7 @@ export default async function AgentsPage() {
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-600/25">
                   <s.icon className="h-5 w-5" />
                 </span>
-                <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-indigo-600">
+                <p className="mt-3 text-xs font-semibold text-indigo-600">
                   {i + 1}
                 </p>
                 <h3 className="mt-1 font-bold text-zinc-900">{s.title}</h3>

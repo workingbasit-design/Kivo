@@ -8,7 +8,7 @@
  * The check is: increment the counter if the window hasn't expired;
  * if no row was updated (missing or expired), reset it. A tiny race
  * exists (two concurrent resets), but the consequence is only a
- * slightly lenient limit — acceptable for rate limiting.
+ * slightly lenient limit - acceptable for rate limiting.
  *
  * Not tenant-scoped by design: keys are "scope:identifier" (IP, user,
  * business) and the table holds no PII beyond the key itself.
@@ -35,7 +35,7 @@ export async function rateLimitDurable(
   });
 
   if (updated.count === 0) {
-    // Missing or expired — (re)create the bucket.
+    // Missing or expired - (re)create the bucket.
     const resetAt = new Date(now + opts.windowMs);
     await prisma.rateLimit.upsert({
       where: { key },
@@ -73,7 +73,7 @@ export async function rateLimitDurable(
 
 /**
  * Delete expired buckets. Called from a cron; keeps the table small.
- * Safe to run concurrently — deleteMany is idempotent.
+ * Safe to run concurrently - deleteMany is idempotent.
  */
 export async function pruneRateLimits(): Promise<number> {
   const result = await prisma.rateLimit.deleteMany({

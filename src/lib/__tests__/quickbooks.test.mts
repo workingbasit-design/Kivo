@@ -1,6 +1,6 @@
 /**
  * QuickBooks Online integration tests (src/lib/quickbooks.ts).
- * Mapping functions + sync-log behavior with mocked fetch — zero network.
+ * Mapping functions + sync-log behavior with mocked fetch - zero network.
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -173,7 +173,7 @@ test('mapCustomerToQB omits empty contact blocks', () => {
   assert.ok(!('BillAddr' in p));
 });
 
-test('mapInvoiceToQB maps every line 1:1 — never merged or dropped', () => {
+test('mapInvoiceToQB maps every line 1:1 - never merged or dropped', () => {
   const p = mapInvoiceToQB(
     {
       id: 'i1',
@@ -196,7 +196,7 @@ test('mapInvoiceToQB maps every line 1:1 — never merged or dropped', () => {
   assert.equal(p.DocNumber, 'INV-001');
   assert.equal(p.TxnDate, '2026-09-10');
   const lines = p.Line as Array<Record<string, unknown>>;
-  assert.equal(lines.length, 2); // 1:1 — nothing collapsed
+  assert.equal(lines.length, 2); // 1:1 - nothing collapsed
   assert.equal(lines[0].DetailType, 'SalesItemLineDetail');
   assert.equal(lines[0].Amount, 199.99);
   assert.equal(lines[1].Amount, 50.01); // 2 × 25.005 rounded to cents
@@ -298,7 +298,7 @@ test('syncCustomer writes a synced log row with the QuickBooks id', async () => 
   );
 });
 
-test('syncCustomer skips (with a log row) when already synced — no duplicate', async () => {
+test('syncCustomer skips (with a log row) when already synced - no duplicate', async () => {
   let calls = 0;
   const fetchFn = mockFetch(() => {
     calls += 1;

@@ -54,7 +54,7 @@ export default async function CampaignDetailPage({
       />
 
       <Card className="p-6">
-        <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-1">{tr('t10misc.marketing.templateLabel')}</p>
+        <p className="text-[11px] font-bold text-zinc-400 mb-1">{tr('t10misc.marketing.templateLabel')}</p>
         <p className="text-sm font-bold text-zinc-900">{campaign.subject}</p>
         <p className="text-sm text-zinc-600 mt-1.5 whitespace-pre-wrap">{campaign.body}</p>
         <p className="text-[11px] text-zinc-400 mt-3">

@@ -2,7 +2,7 @@
  * Vector-identity class strings for the job-ops components (checklists,
  * expenses, costing, checklist templates).
  *
- * These are local copies — not the shared ui.tsx classes — so job-ops UI
+ * These are local copies - not the shared ui.tsx classes - so job-ops UI
  * ships the new Vector tokens (bg-ink primary buttons, ink links/focus,
  * graphite secondary text, smoke borders) without touching shared
  * components that other parallel agents are using.

@@ -9,7 +9,7 @@ import { unsafeUnscoped } from '@/lib/tenant-guard';
  * timezone); this route only sends when the business's local hour matches.
  *
  * Same secret pattern as the other cron routes: CRON_SECRET via Bearer or
- * ?secret=. Delivery is in-app Notification + VAPID web push — $0.
+ * ?secret=. Delivery is in-app Notification + VAPID web push - $0.
  * Idempotent per (business, date) via the digest dedupeKey.
  */
 export const maxDuration = 120;

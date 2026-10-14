@@ -2,8 +2,8 @@
  * Retry wrapper for database operations.
  *
  * Production (2026-09-26) showed that the Postgres role EveryJob connects
- * with ("prisma_migration") has a very small connection cap. During bursts —
- * deploy cold starts, rapid taps on a phone — Vercel spins up concurrent
+ * with ("prisma_migration") has a very small connection cap. During bursts -
+ * deploy cold starts, rapid taps on a phone - Vercel spins up concurrent
  * serverless instances and the role rejects new connections with
  * "FATAL: too many connections for role". Each instance already opens only
  * one pooled connection, so the remaining lever is resilience: when the
@@ -12,7 +12,7 @@
  *
  * Safety: only errors classified by isDatabaseUnavailable() are retried.
  * Those all happen BEFORE the query executes (engine init / connection
- * acquisition / pool checkout), so a retried write cannot double-apply —
+ * acquisition / pool checkout), so a retried write cannot double-apply -
  * the first attempt never reached the database.
  */
 import { isDatabaseUnavailable } from './db-errors.ts';

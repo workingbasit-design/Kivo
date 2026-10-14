@@ -2,7 +2,7 @@
 
 /**
  * Voice input via the free Web Speech API (no keys, no backend).
- * Supports English (en-CA) and French (fr-CA) with a language toggle —
+ * Supports English (en-CA) and French (fr-CA) with a language toggle -
  * built for bilingual Canadian field users who'd rather speak than type.
  *
  * States: 'idle' | 'listening' | 'unsupported' | 'denied' | 'error'
@@ -97,7 +97,7 @@ export function useVoiceInput(initialLang: VoiceLang = 'en-CA') {
 
     const rec = new Ctor();
     rec.lang = langRef.current;
-    rec.continuous = false; // one utterance per tap — predictable UX
+    rec.continuous = false; // one utterance per tap - predictable UX
     rec.interimResults = true;
     rec.maxAlternatives = 1;
 

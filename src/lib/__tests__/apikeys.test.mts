@@ -1,6 +1,6 @@
 /**
  * Unit tests for tenant API key helpers (src/lib/apiKeys.ts).
- * Pure helpers only — no DB, no network.
+ * Pure helpers only - no DB, no network.
  * Run: node --test --import ./src/lib/__tests__/register-loader.mjs src/lib/__tests__/apikeys.test.mts
  */
 import test from 'node:test';

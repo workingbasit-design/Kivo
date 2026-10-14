@@ -4,7 +4,7 @@ import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 import { clientIpFromHeaders } from '@/lib/client-ip';
 
 /**
- * Free address autocomplete proxy — OpenStreetMap Nominatim (no API key).
+ * Free address autocomplete proxy - OpenStreetMap Nominatim (no API key).
  * Deliberately unauthenticated: also used by the public booking page.
  * Returns only the safe fields the UI needs; never leaks raw Nominatim internals.
  */
@@ -38,7 +38,7 @@ function clientIp(req: NextRequest): string {
 export async function GET(req: NextRequest) {
   // CSRF/origin guard: this endpoint is read-only and intentionally public
   // (used by the public booking page), but a mismatched Origin/Referer is
-  // never legitimate — reject it. Absent headers (curl/server-side) pass.
+  // never legitimate - reject it. Absent headers (curl/server-side) pass.
   const originCheck = checkSameOrigin(req);
   if (!originCheck.ok) return originForbidden(originCheck.reason);
 

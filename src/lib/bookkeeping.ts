@@ -1,5 +1,5 @@
 /**
- * Bookkeeping — profit & loss from real operational data.
+ * Bookkeeping - profit & loss from real operational data.
  *
  * No separate "books" to maintain: revenue comes from COMPLETED payments,
  * costs from JobExpense records. This module merges them into the P&L view

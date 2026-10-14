@@ -25,7 +25,7 @@ export function hasJobTime(time: string | null | undefined): time is string {
  * Normalize a user-entered time to 24-hour "HH:MM" for storage.
  *
  * Accepts "10:00 AM", "10:00AM", "2pm", "2:30 pm", "09:00", "9:00", "21:30".
- * Returns null for blank/TBD/unparseable input — never stores garbage.
+ * Returns null for blank/TBD/unparseable input - never stores garbage.
  * All job writes go through this so the column holds one canonical format.
  */
 export function normalizeJobTime(input: string | null | undefined): string | null {
@@ -61,7 +61,7 @@ export function formatJobTime(
   if (!hasJobTime(time)) return '';
   const t = time!.trim();
   const m = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(t);
-  if (!m) return t; // legacy free text — show as-is rather than blanking
+  if (!m) return t; // legacy free text - show as-is rather than blanking
   const h24 = parseInt(m[1], 10);
   if (locale === 'fr') {
     return `${h24} h ${m[2]}`;
@@ -110,7 +110,7 @@ export function formatDateLabel(
   dateInput: Date | string | null | undefined,
   locale: string = 'en-CA'
 ): string {
-  if (!dateInput) return "—";
+  if (!dateInput) return "-";
   let d: Date;
   if (typeof dateInput === "string" && /^\d{4}-\d{2}-\d{2}/.test(dateInput)) {
     // Date-only strings: parse as LOCAL date, not UTC midnight (avoids
@@ -120,7 +120,7 @@ export function formatDateLabel(
   } else {
     d = new Date(dateInput);
   }
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "-";
   return d.toLocaleDateString(locale, {
     weekday: "short",
     month: "short",
@@ -134,7 +134,7 @@ export function formatDateShort(
   dateInput: Date | string | null | undefined,
   locale: string = 'en-CA'
 ): string {
-  if (!dateInput) return "—";
+  if (!dateInput) return "-";
   let d: Date;
   if (typeof dateInput === "string" && /^\d{4}-\d{2}-\d{2}/.test(dateInput)) {
     // Date-only strings: parse as LOCAL date, not UTC midnight (avoids
@@ -144,7 +144,7 @@ export function formatDateShort(
   } else {
     d = new Date(dateInput);
   }
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "-";
   return d.toLocaleDateString(locale, {
     day: "numeric",
     month: "short",
@@ -263,7 +263,7 @@ export function isJobOverdue(
     if (Number.isNaN(date.getTime())) return false;
     day = toISODateInTimezone(date, timezone);
   } else if (/^\d{4}-\d{2}-\d{2}/.test(date)) {
-    // "YYYY-MM-DD" (or ISO with time): already a calendar day — use it
+    // "YYYY-MM-DD" (or ISO with time): already a calendar day - use it
     // directly so "today" isn't off by one in the evening.
     day = date.slice(0, 10);
   } else {
@@ -277,7 +277,7 @@ export function isJobOverdue(
 
 /**
  * Display label for a job status badge: 'LATE' when the date has passed
- * and the job is still open, otherwise the stored status. Display-only —
+ * and the job is still open, otherwise the stored status. Display-only -
  * the stored status is never rewritten, so the badge auto-heals when the
  * date moves or the job is completed/cancelled. (2026-09-26: users reported
  * that past-due jobs never changed status.)

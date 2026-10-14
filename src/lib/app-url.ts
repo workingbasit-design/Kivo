@@ -19,7 +19,7 @@ export async function appBaseUrl(): Promise<string> {
       return `${proto}://${host}`;
     }
   } catch {
-    // headers() unavailable — fall through to ''.
+    // headers() unavailable - fall through to ''.
   }
   return '';
 }

@@ -6,11 +6,13 @@ import { useResolvedT } from '@/hooks/useResolvedLocale';
 type Props = {
   className?: string;
   children: React.ReactNode;
+  /** Accessible label for icon-only buttons (e.g. top-bar Copilot entry). */
+  ariaLabel?: string;
   /** Pre-filled message sent to the copilot when opened. Defaults to a localized greeting. */
   message?: string;
 };
 
-export default function CopilotTriggerButton({ className, children, message }: Props) {
+export default function CopilotTriggerButton({ className, children, ariaLabel, message }: Props) {
   const { t } = useResolvedT();
   const handleClick = () => {
     window.dispatchEvent(
@@ -25,6 +27,7 @@ export default function CopilotTriggerButton({ className, children, message }: P
       onClick={handleClick}
       className={className}
       type="button"
+      aria-label={ariaLabel}
     >
       {children}
     </button>

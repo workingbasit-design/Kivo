@@ -15,11 +15,11 @@ async function rateLimited(): Promise<boolean> {
 }
 
 /**
- * Public "Pay now" for an invoice. Scoped to a valid invoice ShareToken —
+ * Public "Pay now" for an invoice. Scoped to a valid invoice ShareToken -
  * the raw invoice id is never accepted. Creates a Stripe Checkout Session on
  * the BUSINESS's own connected Stripe account (direct charge; EveryJob never
  * holds money) and returns the Stripe-hosted URL. The customer pays on
- * Stripe's page — card data never touches our servers.
+ * Stripe's page - card data never touches our servers.
  */
 export async function POST(req: Request) {
   const limited = await rateLimited();
@@ -92,7 +92,7 @@ export async function POST(req: Request) {
     stripeAccountId: conn.stripeAccountId,
     amountCents: toCents(remaining),
     currency: invoice.business.currency || 'CAD',
-    productName: `Invoice ${invoice.number} — ${invoice.business.name}`,
+    productName: `Invoice ${invoice.number} - ${invoice.business.name}`,
     successUrl: `${base}/i/${token}?paid=1`,
     cancelUrl: `${base}/i/${token}`,
     customerEmail: invoice.customer.email ?? undefined,

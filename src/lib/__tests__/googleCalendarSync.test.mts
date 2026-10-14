@@ -14,7 +14,7 @@ import {
 } from '@/lib/googleCalendarSync.ts';
 
 const parts = {
-  summary: 'Faucet repair — Jane Doe',
+  summary: 'Faucet repair - Jane Doe',
   startISO: '2026-09-25T13:00:00.000Z',
   endISO: '2026-09-25T14:00:00.000Z',
   location: '123 Main St',
@@ -26,7 +26,7 @@ test('fingerprintJobEvent is deterministic, compact, and field-sensitive', () =>
   const h2 = fingerprintJobEvent(parts);
   assert.equal(h1, h2);
   assert.match(h1, /^[0-9a-f]{32}$/);
-  assert.notEqual(fingerprintJobEvent({ ...parts, summary: 'Other — Jane Doe' }), h1);
+  assert.notEqual(fingerprintJobEvent({ ...parts, summary: 'Other - Jane Doe' }), h1);
   assert.notEqual(fingerprintJobEvent({ ...parts, startISO: '2026-09-25T15:00:00.000Z' }), h1);
 });
 
@@ -44,12 +44,12 @@ test('jobToCalendarEvent builds a sane event body', () => {
     customer: { name: 'Jane Doe' },
   };
   const ev = jobToCalendarEvent(job, 'America/Toronto');
-  assert.equal(ev.summary, 'Faucet repair — Jane Doe');
+  assert.equal(ev.summary, 'Faucet repair - Jane Doe');
   assert.ok(ev.location.includes('Toronto'));
   assert.ok(ev.description.includes('Jane Doe'));
   assert.ok(ev.description.includes('$149.99'));
   assert.ok(ev.description.includes('Sam'));
-  // Wall-clock time in the business zone — naive local ISO + IANA zone.
+  // Wall-clock time in the business zone - naive local ISO + IANA zone.
   assert.equal(ev.startISO, '2026-09-25T09:30:00');
   assert.equal(ev.endISO, '2026-09-25T10:30:00');
   assert.equal(ev.timeZone, 'America/Toronto');
@@ -87,7 +87,7 @@ test('jobToCalendarEvent falls back gracefully on bad/missing time', () => {
     customer: null,
   };
   const ev = jobToCalendarEvent(job, 'America/Toronto');
-  assert.equal(ev.summary, 'Tune-up — Customer');
+  assert.equal(ev.summary, 'Tune-up - Customer');
   assert.equal(ev.startISO, '2026-09-26T09:00:00', 'bad time falls back to 09:00 wall clock');
 });
 

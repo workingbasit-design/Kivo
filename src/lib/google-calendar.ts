@@ -1,7 +1,7 @@
 /**
  * Pure Google Calendar helpers (Track 6B: calendar import).
  *
- * No Next.js imports — runs under plain node:test. HTTP is injected so
+ * No Next.js imports - runs under plain node:test. HTTP is injected so
  * tests use mocked fetch; the server actions pass the real fetch.
  *
  * Endpoint: GET https://www.googleapis.com/calendar/v3/calendars/primary/events
@@ -45,7 +45,7 @@ function toISO(raw: string | undefined): string | null {
 /**
  * Map one Google Calendar event to an import draft.
  * Returns null for cancelled events, events with no id, or events with no
- * (or unparseable) start — we never invent a schedule for a job draft.
+ * (or unparseable) start - we never invent a schedule for a job draft.
  * All-day events (start.date, e.g. "2026-10-01") are kept: they become
  * midnight-UTC starts, still explicit about what Google gave us.
  */
@@ -110,7 +110,7 @@ export async function fetchCalendarEvents(
 /* Business-local day/time for imported events                         */
 /* ------------------------------------------------------------------ */
 
-/** "YYYY-MM-DD" in a specific IANA timezone (no Next.js imports — pure). */
+/** "YYYY-MM-DD" in a specific IANA timezone (no Next.js imports - pure). */
 export function toISODateInTimezone(d: Date, timeZone: string): string {
   try {
     const parts = new Intl.DateTimeFormat('en-CA', {

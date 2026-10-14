@@ -3,7 +3,7 @@
  * default price, duration (minutes) and notes, turning it into a reusable
  * service bundle that pre-fills the new-job form.
  *
- * Pure functions — no I/O, safe to import from server actions and node:test.
+ * Pure functions - no I/O, safe to import from server actions and node:test.
  */
 
 /** Optional bundle fields stored on ChecklistTemplate. */
@@ -35,7 +35,7 @@ export function parseOptionalPrice(raw: unknown): BundleParseResult {
   return { ok: true, data: { price: n, durationMin: null, notes: null } };
 }
 
-/** Parse an optional duration input (minutes): blank -> null, else 5–1440. */
+/** Parse an optional duration input (minutes): blank -> null, else 5-1440. */
 export function parseOptionalDurationMin(raw: unknown): BundleParseResult {
   const s = String(raw ?? '').trim();
   if (s === '') return { ok: true, data: { price: null, durationMin: null, notes: null } };

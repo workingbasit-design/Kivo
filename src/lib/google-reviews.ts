@@ -1,12 +1,12 @@
 /**
  * Pure Google Business Profile helpers (Track 5).
  *
- * No Next.js imports — runs under plain node:test. HTTP is injected so
+ * No Next.js imports - runs under plain node:test. HTTP is injected so
  * tests use mocked fetch; the server actions pass the real fetch.
  *
  * Verified against Google's docs (2026-09-23):
  * - Reviews list: GET https://mybusiness.googleapis.com/v4/accounts/{accountId}/locations/{locationId}/reviews
- *   (v4.9 legacy endpoint — reviews were NOT migrated to the federated v1 APIs)
+ *   (v4.9 legacy endpoint - reviews were NOT migrated to the federated v1 APIs)
  * - Accounts: GET https://mybusinessaccountmanagement.googleapis.com/v1/accounts
  * - Locations: GET https://mybusinessbusinessinformation.googleapis.com/v1/accounts/{accountId}/locations
  * - OAuth: user consent only (no service accounts), scope
@@ -31,7 +31,7 @@ export function googleScopes(): string[] {
   // Calendar readonly is included from Track 6 so calendar import never needs
   // a second consent screen. The full calendar scope powers the one-way
   // EveryJob → Google Calendar sync. Connections made before this change lack
-  // the write scope — the sync UI detects it and asks to reconnect.
+  // the write scope - the sync UI detects it and asks to reconnect.
   return [SCOPE_BUSINESS_MANAGE, SCOPE_CALENDAR_READONLY, SCOPE_CALENDAR];
 }
 
@@ -99,7 +99,7 @@ export function starRatingToInt(starRating: string | null | undefined): number |
 
 /**
  * Map one Google review to our Review row shape. Returns null when the
- * review has no usable id or rating — we never invent either.
+ * review has no usable id or rating - we never invent either.
  */
 export function mapGoogleReview(g: GoogleApiReview): MappedReview | null {
   const externalId = (g.name ?? '').trim();

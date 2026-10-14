@@ -89,7 +89,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
       locality: b.directoryHideAddress ? localityFromAddress(b.address) : b.address,
       serviceAreas: page.serviceAreas,
       // Privacy gate: a pro that hid its number on the booking page must not
-      // have it — or WhatsApp, which routes to the same line — exposed here.
+      // have it - or WhatsApp, which routes to the same line - exposed here.
       ...gateAgentContact(page.showPhone, b.phone, b.whatsappNumber),
       phoneVerified: isPhoneVerified(b.phone, b.whatsappNumber, b.regionCode),
       workingHours: b.workingHours,

@@ -3,11 +3,11 @@
 /* ---------- EveryJob Vector design tokens ---------- */
 @theme {
   --color-ink: #161616; /* primary text, dark surfaces */
-  --color-lime: #c8f04a; /* signature accent — lime on charcoal/dark only */
+  --color-lime: #c8f04a; /* signature accent - lime on charcoal/dark only */
   --color-paper: #fafaf7; /* page background */
   --color-smoke: #e8e8e3; /* borders, dividers */
   --color-graphite: #55554e; /* secondary text */
-  /* 2026-10-01 accessibility: zinc-400 (#a1a1aa) is ~2.3:1 on paper —
+  /* 2026-10-01 accessibility: zinc-400 (#a1a1aa) is ~2.3:1 on paper -
      unreadable for secondary text. Remapped to the zinc-500 value (#71717a,
      ~4.8:1, passes WCAG 2.1 AA) so all 300+ muted-text usages stay legible. */
   --color-zinc-400: #71717a;
@@ -61,7 +61,7 @@ body {
   }
 
   html {
-    /* 2026-09-26: was `smooth` — on client-side navigation the browser
+    /* 2026-09-26: was `smooth` - on client-side navigation the browser
        animated the scroll-reset, so every new page visibly glided up from
        the previous scroll position ("opens from the bottom"). App page
        changes must snap to top instantly; components that want animated
@@ -155,7 +155,7 @@ body {
     }
   }
 
-  /* Hero entrance — staggered via --ej-delay. */
+  /* Hero entrance - staggered via --ej-delay. */
   .ej-hero-anim {
     animation: ej-fade-up 0.85s cubic-bezier(0.22, 0.61, 0.21, 1) both;
     animation-delay: var(--ej-delay, 0ms);
@@ -196,7 +196,7 @@ body {
     }
   }
 
-  /* Liquid glass icon finish — iOS 26 style. Frosted translucency comes
+  /* Liquid glass icon finish - iOS 26 style. Frosted translucency comes
      from backdrop-blur + saturate on the element itself; these
      pseudo-elements add the specular top light and the slow hover sheen.
      Original treatment, not an Apple asset. */
@@ -244,7 +244,7 @@ body {
     }
   }
 
-  /* iOS-style spring press — physical, bouncy. The overshoot easing gives
+  /* iOS-style spring press - physical, bouncy. The overshoot easing gives
      the tap its "alive" feel; press down fast, bounce back. */
   .ej-spring {
     transition:
@@ -265,7 +265,7 @@ body {
     }
   }
 
-  /* Widget-style card entrance — cards rise and settle in on load, like
+  /* Widget-style card entrance - cards rise and settle in on load, like
      iOS widgets. Stagger with --ej-d per card. */
   @keyframes ej-rise {
     from {
@@ -287,7 +287,7 @@ body {
     }
   }
 
-  /* Glassmorphism card — visibly frosted: real translucency, diagonal
+  /* Glassmorphism card - visibly frosted: real translucency, diagonal
      specular sheen, bright hairline edge, soft depth shadow.
      The surface carries a whisper of lime-tinted cool so the frost reads
      on light backgrounds (pure white over near-white paper blurs back
@@ -322,7 +322,7 @@ body {
     );
     pointer-events: none;
   }
-  /* Ambient wash behind the cards — visible lime warmth and cool depth so
+  /* Ambient wash behind the cards - visible lime warmth and cool depth so
      the frosted cards have light to refract. The page still reads as the
      paper background; the charcoal/lime theme is unchanged. */
   .ej-app-wash {
@@ -339,12 +339,12 @@ body {
       ),
       #fafaf7;
   }
-  /* Liquid Glass on dark contexts — the same material adapting to charcoal
+  /* Liquid Glass on dark contexts - the same material adapting to charcoal
      surfaces (tab bar, top bar). Nearly-opaque ink with a deep blur + saturate
      so a whisper of content refracts through, specular top light, hairline
      edge. The alpha stays high ON PURPOSE: white text on this surface must
      stay readable over any scrolling content (2026-10-06: 0.74 alpha washed
-     the header out and made it unreadable — never go below 0.9 here).
+     the header out and made it unreadable - never go below 0.9 here).
      Original treatment, not an Apple asset. */
   .ej-glass-dark {
     position: relative;
@@ -375,7 +375,7 @@ body {
     );
     pointer-events: none;
   }
-  /* Dark-context glass finish without translucency — for in-flow charcoal
+  /* Dark-context glass finish without translucency - for in-flow charcoal
      surfaces (desktop sidebar) where nothing scrolls behind to refract.
      Same specular edge language as .ej-glass-dark, fully opaque.
      Sets no position/isolation so it never disturbs sticky/fixed layout. */
@@ -392,7 +392,7 @@ body {
       inset -1px 0 0 rgba(255, 255, 255, 0.05);
   }
 
-  /* Desktop-only glass — for containers that are separate cards on mobile
+  /* Desktop-only glass - for containers that are separate cards on mobile
      but merge into one card on md+ screens (e.g. the jobs list). */
   @media (min-width: 768px) {    .ej-glass-card-md {
       position: relative;
@@ -423,7 +423,7 @@ body {
       );
       pointer-events: none;
     }
-    /* Neutralize glass on rows that merge into a glass container on desktop —
+    /* Neutralize glass on rows that merge into a glass container on desktop -
        avoids a pointless backdrop-filter per row. */
     .ej-glass-plain-md.ej-glass-card,
     .ej-glass-plain-md.ej-glass-card::before {
@@ -434,7 +434,7 @@ body {
     }
   }
 
-  /* Icon hover — calm and precise. The icon breathes slightly on hover;
+  /* Icon hover - calm and precise. The icon breathes slightly on hover;
      no positional jump, so nothing ever feels jittery. Apply to nav
      links, icon buttons, and interactive icons. */
   .ej-icon-hover {
@@ -461,7 +461,7 @@ body {
     }
   }
 
-  /* Premium ambient motion — drifting organic gradient blobs (reel-inspired).
+  /* Premium ambient motion - drifting organic gradient blobs (reel-inspired).
      Durations/delays are tuned per-blob inline via animationDuration/Delay. */
   @keyframes ej-blob-drift {
     0% {
@@ -489,13 +489,13 @@ body {
       ej-blob-morph 17s ease-in-out infinite;
     will-change: transform, border-radius;
   }
-  /* Aurora blobs for dark sections — drift only, blur applied inline. */
+  /* Aurora blobs for dark sections - drift only, blur applied inline. */
   .ej-aurora-blob {
     animation: ej-blob-drift 28s ease-in-out infinite alternate;
     will-change: transform;
   }
 
-  /* Scroll-reveal — toggled by the Reveal island via .ej-reveal-visible. */
+  /* Scroll-reveal - toggled by the Reveal island via .ej-reveal-visible. */
   .ej-reveal {
     opacity: 0;
     transform: translateY(30px);
@@ -509,7 +509,7 @@ body {
     transform: translateY(0);
   }
 
-  /* Trades marquee — infinite CSS loop, pauses on hover. */
+  /* Trades marquee - infinite CSS loop, pauses on hover. */
   .ej-marquee-track {
     animation: ej-marquee 34s linear infinite;
     will-change: transform;
@@ -518,7 +518,7 @@ body {
     animation-play-state: paused;
   }
 
-  /* Hero schedule mock — gentle float + shimmering payment strip. */
+  /* Hero schedule mock - gentle float + shimmering payment strip. */
   .ej-mock-float {
     animation: ej-float 7s ease-in-out infinite;
   }
@@ -538,7 +538,7 @@ body {
     animation: ej-shimmer 4.5s linear infinite;
   }
 
-  /* Copilot chat — messages appear one by one once revealed. */
+  /* Copilot chat - messages appear one by one once revealed. */
   .ej-chat-msg {
     opacity: 0;
   }
@@ -637,7 +637,7 @@ body {
    Unlayered on purpose: these refine interactive feel and must win over
    Tailwind's layered utilities when both land on one node. */
 
-/* Card lift — subtle Apple-like elevation on hover (fine pointers only),
+/* Card lift - subtle Apple-like elevation on hover (fine pointers only),
    with a matching press state so touch gets the same feedback as hover. */
 @media (hover: hover) {
   .ej-card-lift {

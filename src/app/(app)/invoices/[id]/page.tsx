@@ -167,7 +167,7 @@ export default async function InvoiceDetailPage({
             )}
           </div>
           <div className="md:text-right">
-            <p className="text-xs font-bold uppercase tracking-wider text-zinc-400">{L('invoices.billTo')}</p>
+            <p className="text-xs font-bold text-zinc-400">{L('invoices.billTo')}</p>
             <p className="text-sm font-bold text-zinc-900 mt-1 flex items-center gap-1.5 md:justify-end">
               <User size={14} className="text-zinc-400" /> {invoice.customer.name}
             </p>
@@ -241,7 +241,7 @@ export default async function InvoiceDetailPage({
 
         {userNotes && (
           <div className="mt-6">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-1">{L('invoices.notes')}</p>
+            <p className="text-[11px] font-bold text-zinc-400 mb-1">{L('invoices.notes')}</p>
             <p className="text-sm text-zinc-600 whitespace-pre-wrap">{userNotes}</p>
           </div>
         )}

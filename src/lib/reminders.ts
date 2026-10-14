@@ -1,6 +1,6 @@
 /**
  * Reminder queue + missed-call text-back + booking availability: pure,
- * testable helpers. No DB, no network, no Next.js imports — safe for
+ * testable helpers. No DB, no network, no Next.js imports - safe for
  * node:test (see src/lib/__tests__/reminders.test.mts).
  *
  * HARD RULE, restated: EveryJob NEVER sends a message automatically.
@@ -17,7 +17,7 @@ export type Locale = 'en' | 'fr';
 /* Phone normalization + one-tap links                                  */
 /* ------------------------------------------------------------------ */
 
-/** Default country calling code — Canada-only (NANP). */
+/** Default country calling code - Canada-only (NANP). */
 export const DEFAULT_COUNTRY_CODE = '1';
 
 /**
@@ -210,7 +210,7 @@ export interface MissedCallInput {
 
 /**
  * Manual "sorry I missed your call" text-back draft. This is a quick-draft
- * the owner sends themselves — EveryJob has no telephony integration and
+ * the owner sends themselves - EveryJob has no telephony integration and
  * detects nothing automatically.
  */
 export function buildMissedCallDraft({
@@ -220,12 +220,12 @@ export function buildMissedCallDraft({
 }: MissedCallInput): string {
   if (locale === 'fr') {
     return (
-      `Bonjour ${customerName}, désolé d'avoir manqué votre appel — ` +
+      `Bonjour ${customerName}, désolé d'avoir manqué votre appel - ` +
       `ici ${businessName}. Comment puis-je vous aider?`
     );
   }
   return (
-    `Hi ${customerName}, sorry I missed your call — this is ${businessName}. ` +
+    `Hi ${customerName}, sorry I missed your call - this is ${businessName}. ` +
     `How can I help?`
   );
 }
@@ -302,7 +302,7 @@ export interface SlotWithAvailability extends DaySlot {
 /**
  * Mark slots unavailable when they overlap an existing job. A job occupies
  * [start, start + duration). Jobs without a parseable time don't block any
- * specific slot — they're counted so the UI can note the uncertainty.
+ * specific slot - they're counted so the UI can note the uncertainty.
  */
 export function computeSlotAvailability(
   slots: DaySlot[],

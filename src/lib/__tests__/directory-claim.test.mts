@@ -1,6 +1,6 @@
 /**
  * Unit tests for directory claim verification pure logic
- * (src/lib/directory.ts — Track 4A).
+ * (src/lib/directory.ts - Track 4A).
  * Run: node --test src/lib/__tests__/directory-claim.test.mts
  */
 import test from 'node:test';

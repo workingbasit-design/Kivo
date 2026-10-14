@@ -1,7 +1,7 @@
 /**
  * Unit tests for general expense tracking: pure helpers in
  * src/lib/expenses.ts plus en/fr parity of the expenses i18n fragment.
- * No HTTP, no DB — pure logic only.
+ * No HTTP, no DB - pure logic only.
  * Run: node --test --import ./src/lib/__tests__/register-loader.mjs src/lib/__tests__/expenses.test.mts
  */
 import test from 'node:test';

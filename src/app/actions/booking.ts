@@ -33,7 +33,7 @@ const bookingSettingsSchema = z.object({
 
 /**
  * Create or update this business's public booking page.
- * Slug is globally unique — reject if another business already uses it.
+ * Slug is globally unique - reject if another business already uses it.
  */
 export async function saveBookingSettings(
   _prev: BookingResult,
@@ -58,7 +58,7 @@ export async function saveBookingSettings(
   // namespace, so the clash check must span all businesses and exclude only
   // this business's own page. The nested NOT: { businessId } is deliberate
   // here (we WANT other tenants' rows) and therefore wrapped in
-  // unsafeUnscoped — the guard's top-level-businessId rule would otherwise
+  // unsafeUnscoped - the guard's top-level-businessId rule would otherwise
   // reject it.
   const clash = await unsafeUnscoped('booking:slugClashCheck', (db) =>
     db.bookingPage.findFirst({

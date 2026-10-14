@@ -7,7 +7,7 @@
  * (fr flag) and returns per-row errors with 1-based file line numbers
  * (header = row 1, first data row = row 2).
  *
- * No Next.js imports — runs under plain node:test.
+ * No Next.js imports - runs under plain node:test.
  */
 import { escapeCsvCell } from './costing.ts';
 

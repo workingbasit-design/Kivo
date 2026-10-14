@@ -1,5 +1,5 @@
 /**
- * /api/integrations/webhooks — session-authenticated CRUD for webhook
+ * /api/integrations/webhooks - session-authenticated CRUD for webhook
  * endpoints + recent delivery log (used by Settings → Integrations).
  *
  * - GET: endpoints plus the 25 most recent deliveries across them.
@@ -120,7 +120,7 @@ export async function POST(req: Request) {
     },
     select: { id: true, url: true, events: true, active: true, createdAt: true },
   });
-  // `secret` is returned once — the owner pastes it into Zapier/Make to
+  // `secret` is returned once - the owner pastes it into Zapier/Make to
   // verify the X-EveryJob-Signature header.
   return NextResponse.json({ data: { ...created, secret } }, { status: 201 });
 }

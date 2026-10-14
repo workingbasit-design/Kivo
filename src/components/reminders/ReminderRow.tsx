@@ -103,7 +103,7 @@ export default function ReminderRow({
           {text && (
             <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
               <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-amber-700">
+                <p className="text-[11px] font-bold text-amber-700">
                   {ui.draftReady}
                 </p>
                 <div className="flex items-center gap-2 shrink-0 flex-wrap">

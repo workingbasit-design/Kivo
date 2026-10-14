@@ -210,7 +210,7 @@ function LeadCard({ lead, locale }: { lead: LeadItem; locale: Locale }) {
         </a>
       )}
       {lead.details && <p className="text-xs text-zinc-500 mt-1 line-clamp-3">{lead.details}</p>}
-      <p className="text-[10px] text-zinc-400 font-semibold uppercase tracking-wide mt-2">
+      <p className="text-[10px] text-zinc-400 font-semibold mt-2">
         {lead.source ?? 'No source'} · {formatDateShort(lead.createdAt)}
       </p>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 border-t border-zinc-100 pt-1">

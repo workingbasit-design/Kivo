@@ -17,7 +17,7 @@ const globalForPrisma = globalThis as unknown as {
  *
  * Deadlock safety: every interactive transaction in this codebase uses
  * either the callback form with `tx` exclusively inside, or the array
- * form — no callback ever awaits a query on the global client while
+ * form - no callback ever awaits a query on the global client while
  * holding the transaction's connection, so a pool of 1 cannot deadlock.
  */
 export function pooledDatabaseUrl(fromEnv = process.env.DATABASE_URL): string | undefined {
@@ -39,7 +39,7 @@ export const prisma =
   });
 
 // Cache on globalThis in every environment so a module re-evaluation
-// (or HMR in dev) never creates a second client — and a second pool —
+// (or HMR in dev) never creates a second client - and a second pool -
 // inside the same serverless instance.
 globalForPrisma.prisma = prisma;
 
@@ -58,7 +58,7 @@ if (!cached) {
    */
   // Tenant-isolation guard (registered FIRST / outermost): a missing
   // where.businessId on a business-owned model is a programming error, not
-  // a transient failure — it throws TenantScopeError immediately and is
+  // a transient failure - it throws TenantScopeError immediately and is
   // never retried. Registered only for a freshly created client, like the
   // retry middleware below, so it never stacks on re-evaluation.
   // (Inline rather than via tenantGuardMiddleware() so Prisma's own
@@ -79,7 +79,7 @@ const globalForUnscoped = globalThis as unknown as {
  * Unguarded Prisma client for legitimately cross-tenant reads.
  *
  * WHY THIS EXISTS (2026-09-28): Prisma's `$use` middleware does NOT preserve
- * Node.js AsyncLocalStorage context — the middleware is invoked from Prisma's
+ * Node.js AsyncLocalStorage context - the middleware is invoked from Prisma's
  * internal engine scheduling, outside the caller's async chain. So the
  * `unsafeUnscoped()` ALS exemption never reaches `assertTenantScope`, and
  * every public token lookup (sign/review/booking/tracking) 500s with
@@ -90,7 +90,7 @@ const globalForUnscoped = globalThis as unknown as {
  * `unsafeUnscoped('op-name', (db) => ...)` for lookups keyed by unpredictable
  * 256-bit tokens/slugs (signature requests, review requests, booking pages,
  * tracking shares, quote/invoice/portal tokens). NEVER for businessId-scoped
- * data access — the guarded `prisma` client remains the default everywhere.
+ * data access - the guarded `prisma` client remains the default everywhere.
  *
  * POOL NOTE: one extra connection per serverless instance (connection_limit=1).
  * Acceptable: token pages are low-traffic, and the alternative is broken

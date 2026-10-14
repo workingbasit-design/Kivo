@@ -33,7 +33,7 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const origin = url.origin;
 
-  // Rate-limit the callback per IP — same budget as password auth.
+  // Rate-limit the callback per IP - same budget as password auth.
   const ip = clientIpFromHeaders(req.headers);
   const rl = rateLimit(`google-callback:${ip}`, AUTH_LIMIT);
   if (!rl.ok) return loginRedirect(req, 'rate-limited');

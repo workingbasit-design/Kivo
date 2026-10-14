@@ -217,7 +217,7 @@ export default function JobForm({
           {showZeroWarning && (
             <p role="alert" className="mt-2 flex items-start gap-2 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
               <AlertCircle size={14} className="shrink-0 mt-0.5" aria-hidden />
-              No price set — is this a no-charge job?
+              No price set - is this a no-charge job?
             </p>
           )}
           <label className="mt-3 flex items-center gap-2.5 cursor-pointer min-h-[44px]">

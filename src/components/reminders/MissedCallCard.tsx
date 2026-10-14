@@ -113,7 +113,7 @@ export default function MissedCallCard({
       {text && selected && (
         <div className="mt-3 bg-ink rounded-2xl p-4">
           <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-lime">
+            <p className="text-[11px] font-bold text-lime">
               {ui.draftReady} - {selected.name}
             </p>
             <div className="flex items-center gap-2 shrink-0 flex-wrap">

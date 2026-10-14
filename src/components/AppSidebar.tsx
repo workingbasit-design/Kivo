@@ -3,10 +3,10 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Bell, LogOut, ChevronDown, SlidersHorizontal } from 'lucide-react';
+import { Bell, Bot, LogOut, ChevronDown, SlidersHorizontal } from 'lucide-react';
 import EveryJobLogo from '@/components/EveryJobLogo';
 import PaletteTrigger from '@/components/PaletteTrigger';
-import { LanguageToggle } from '@/components/LanguageToggle';
+import CopilotTriggerButton from '@/components/CopilotTriggerButton';
 import { logout } from '@/app/actions/auth';
 import { formatMoney } from '@/lib/money';
 import { t, type Locale } from '@/lib/i18n';
@@ -99,9 +99,16 @@ export default function AppSidebar({
             <EveryJobLogo size={32} />
             <span className="text-xl font-bold tracking-tight text-white">EveryJob</span>
           </Link>
-          <Link
-            href="/notifications"
-            aria-label={
+          <div className="flex items-center gap-1">
+            <CopilotTriggerButton
+              ariaLabel={t(locale, 'copilot.openLabel')}
+              className="ej-icon-hover rounded-xl p-2.5 text-white/85 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70"
+            >
+              <Bot size={19} />
+            </CopilotTriggerButton>
+            <Link
+              href="/notifications"
+              aria-label={
               unreadCount > 0
                 ? `${t(locale, 'notifications.title')} (${unreadCount} ${t(locale, 'notifications.unread')})`
                 : t(locale, 'notifications.title')
@@ -117,11 +124,12 @@ export default function AppSidebar({
                 {unreadCount > 99 ? '99+' : unreadCount}
               </span>
             )}
-          </Link>
+            </Link>
+          </div>
         </div>
 
         <div className="mb-4">
-          <p className="text-[10px] uppercase tracking-wider text-white/75 font-semibold mb-1">
+          <p className="text-[10px] text-white/75 font-semibold mb-1">
             {t(locale, 'nav.todayView')}
           </p>
           <div className="text-2xl font-bold text-white tracking-tight">
@@ -148,7 +156,7 @@ export default function AppSidebar({
           if (items.length === 0) return null;
           return (
             <div key={section.labelKey}>
-              <p className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-white/60">
+              <p className="px-3 mb-1 text-[10px] font-semibold tracking-[0.12em] text-white/60">
                 {t(locale, section.labelKey)}
               </p>
               <div className="space-y-1">{items.map(navLink)}</div>
@@ -187,11 +195,9 @@ export default function AppSidebar({
         </div>
       </nav>
 
-      {/* User profile / Logout */}
+      {/* User profile / Logout. Language lives in Settings (profile
+          settings) and in the mobile More menu - not in the sidebar. */}
       <div className="p-4 border-t border-white/10 mt-auto space-y-3">
-        <div className="flex justify-center">
-          <LanguageToggle current={locale} tone="dark" />
-        </div>
         <form action={logout}>
           <button className="ej-icon-hover flex items-center gap-3 px-3 py-2.5 text-white/75 hover:bg-white/10 hover:text-white transition-colors rounded-xl w-full text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70">
             <div className="w-9 h-9 rounded-full bg-lime text-ink flex items-center justify-center text-sm font-bold shrink-0">

@@ -216,7 +216,7 @@ function TemplateEditor({
       <form ref={formRef} action={formAction} className="space-y-4">
         {template && <input type="hidden" name="id" value={template.id} />}
         <div>
-          <label className="block text-[11px] font-bold uppercase tracking-wider text-graphite mb-1">
+          <label className="block text-[11px] font-bold text-graphite mb-1">
             {t(locale, 'jobops.templates.name')}
           </label>
           <input
@@ -232,7 +232,7 @@ function TemplateEditor({
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-graphite mb-1">
+            <label className="block text-[11px] font-bold text-graphite mb-1">
               {bundle('price')}
             </label>
             <input
@@ -246,7 +246,7 @@ function TemplateEditor({
             />
           </div>
           <div>
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-graphite mb-1">
+            <label className="block text-[11px] font-bold text-graphite mb-1">
               {bundle('duration')}
             </label>
             <input
@@ -262,7 +262,7 @@ function TemplateEditor({
           </div>
         </div>
         <div>
-          <label className="block text-[11px] font-bold uppercase tracking-wider text-graphite mb-1">
+          <label className="block text-[11px] font-bold text-graphite mb-1">
             {bundle('notes')}
           </label>
           <textarea
@@ -275,7 +275,7 @@ function TemplateEditor({
           />
         </div>
         <div>
-          <label className="block text-[11px] font-bold uppercase tracking-wider text-graphite mb-1">
+          <label className="block text-[11px] font-bold text-graphite mb-1">
             {t(locale, 'jobops.templates.itemsLabel')}
           </label>
           <textarea

@@ -195,7 +195,7 @@ export default async function TeamPerformancePage({
                   </div>
                   <dl className="mt-3 grid grid-cols-3 gap-2 text-center">
                     <div className="rounded-lg bg-zinc-50 px-2 py-2">
-                      <dt className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                      <dt className="text-[10px] font-bold text-zinc-400">
                         {tr('t10misc.teamreport.hoursCol')}
                       </dt>
                       <dd className="text-sm font-bold text-zinc-900 tabular-nums mt-0.5">
@@ -203,7 +203,7 @@ export default async function TeamPerformancePage({
                       </dd>
                     </div>
                     <div className="rounded-lg bg-zinc-50 px-2 py-2">
-                      <dt className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                      <dt className="text-[10px] font-bold text-zinc-400">
                         {tr('t10misc.teamreport.jobsCol')}
                       </dt>
                       <dd className="text-sm font-bold text-zinc-900 tabular-nums mt-0.5">
@@ -211,7 +211,7 @@ export default async function TeamPerformancePage({
                       </dd>
                     </div>
                     <div className="rounded-lg bg-zinc-50 px-2 py-2">
-                      <dt className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">
+                      <dt className="text-[10px] font-bold text-zinc-400">
                         {tr('t10misc.teamreport.revenueCol')}
                       </dt>
                       <dd className="text-sm font-bold text-zinc-900 tabular-nums mt-0.5">
@@ -226,7 +226,7 @@ export default async function TeamPerformancePage({
             <div className="overflow-x-auto hidden md:block">
               <table className="w-full text-sm min-w-[560px]">
                 <thead>
-                  <tr className="text-left text-[11px] font-bold uppercase tracking-wider text-zinc-400 border-b border-zinc-100">
+                  <tr className="text-left text-[11px] font-bold text-zinc-400 border-b border-zinc-100">
                     <th className="px-5 py-3">{tr('t10misc.teamreport.memberCol')}</th>
                     <th className="px-5 py-3 text-right">{tr('t10misc.teamreport.hoursCol')}</th>
                     <th className="px-5 py-3 text-right">{tr('t10misc.teamreport.jobsCol')}</th>

@@ -5,7 +5,7 @@ import { rateLimit } from '@/lib/rate-limit';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 
 /**
- * GET /api/locations/latest — dispatcher view: the latest ping for each of
+ * GET /api/locations/latest - dispatcher view: the latest ping for each of
  * the business's SCHEDULED / IN PROGRESS jobs, with job + customer context.
  * Tenant-scoped: only this business's jobs and pings are ever returned.
  */
@@ -27,7 +27,7 @@ export async function GET(req: Request) {
   const rl = rateLimit(`gps-latest:${session.user.id}`, LATEST_LIMIT);
   if (!rl.ok) {
     return NextResponse.json(
-      { error: 'Too many requests — please slow down.' },
+      { error: 'Too many requests - please slow down.' },
       { status: 429 }
     );
   }

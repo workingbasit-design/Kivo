@@ -1,10 +1,10 @@
 /**
- * Google sign-in (OIDC) for EveryJob — Track 7.
+ * Google sign-in (OIDC) for EveryJob - Track 7.
  *
  * "Continue with Google" reuses GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET.
  * Identity is established by verifying the RS256-signed ID token against
  * Google's certs (never by trusting the email claim alone), and accounts
- * are linked only by a verified Google email — never creating a duplicate
+ * are linked only by a verified Google email - never creating a duplicate
  * user/business for an existing email.
  *
  * Pure functions take an injected fetch so they are unit-testable with

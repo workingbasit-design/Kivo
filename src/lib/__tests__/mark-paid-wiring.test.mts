@@ -1,7 +1,7 @@
 /**
  * Wiring regression tests for the 2026-10-01 earnings-math fix.
  *
- * Bug: updateJobStatus(jobId, 'PAID') flipped only the status — no payment
+ * Bug: updateJobStatus(jobId, 'PAID') flipped only the status - no payment
  * was recorded, so "Collected" and monthly revenue (payment-based) showed
  * $0.00 while job-based earnings showed the job's price.
  *

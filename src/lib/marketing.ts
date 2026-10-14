@@ -1,5 +1,5 @@
 // Client-safe marketing constants + template renderer.
-// NOTE: this module must NOT contain 'use server' — the values here are
+// NOTE: this module must NOT contain 'use server' - the values here are
 // imported by client components (CampaignForm, CampaignDetailClient).
 // Server actions import them from here as well.
 

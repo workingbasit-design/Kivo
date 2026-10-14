@@ -1,9 +1,9 @@
 /**
- * Morning Digest — the "AI teammate's" daily briefing.
+ * Morning Digest - the "AI teammate's" daily briefing.
  *
  * `getDigestData` composes everything an owner needs before the first coffee:
  * today's schedule, the top things needing action, the money picture, and the
- * week ahead. Pure data — rendering happens in the /digest page and the push
+ * week ahead. Pure data - rendering happens in the /digest page and the push
  * payload builder below.
  *
  * Delivery: the hourly /api/cron/digest route checks each business's
@@ -240,7 +240,7 @@ export interface DigestSendResult {
 
 /**
  * Compose + deliver one business's digest. Idempotent per (business, dateKey)
- * via the Notification dedupeKey — a second call the same morning is a no-op.
+ * via the Notification dedupeKey - a second call the same morning is a no-op.
  */
 export async function sendDigestForBusiness(
   businessId: string,
@@ -265,8 +265,8 @@ export async function sendDigestForBusiness(
 
   const title =
     data.dayPart === 'morning'
-      ? `Good morning — ${data.todayJobs.length} job${data.todayJobs.length === 1 ? '' : 's'} today`
-      : `Your briefing — ${data.todayJobs.length} job${data.todayJobs.length === 1 ? '' : 's'} today`;
+      ? `Good morning - ${data.todayJobs.length} job${data.todayJobs.length === 1 ? '' : 's'} today`
+      : `Your briefing - ${data.todayJobs.length} job${data.todayJobs.length === 1 ? '' : 's'} today`;
   const body = buildDigestPushBody(data, fmtMoney);
 
   let notification = false;

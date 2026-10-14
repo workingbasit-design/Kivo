@@ -6,7 +6,7 @@ import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 import { revokeTokens } from '@/lib/quickbooks';
 
 /**
- * POST /api/integrations/quickbooks/disconnect — drop the business's
+ * POST /api/integrations/quickbooks/disconnect - drop the business's
  * QuickBooks connection. Best-effort token revocation at Intuit, then the
  * local row is deleted regardless. The sync log is kept as the audit trail.
  */

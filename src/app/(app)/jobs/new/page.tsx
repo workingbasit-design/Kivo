@@ -16,10 +16,10 @@ export const dynamic = 'force-dynamic';
 export default async function NewJobPage({
   searchParams,
 }: {
-  searchParams: Promise<{ service?: string; template?: string }>;
+  searchParams: Promise<{ service?: string; template?: string; date?: string }>;
 }) {
   const { businessId } = await requireAuth();
-  const { service: serviceParam, template: templateParam } = await searchParams;
+  const { service: serviceParam, template: templateParam, date: dateParam } = await searchParams;
   const locale = await getLocale();
 
   const customers = await prisma.customer.findMany({
@@ -62,6 +62,16 @@ export default async function NewJobPage({
       if (typeof template.price === 'number') initial.price = template.price;
       if (template.notes) initial.notes = template.notes;
       initial.templateId = template.id;
+    }
+  }
+
+  // Tapping an empty day on Schedule starts a new job with that date
+  // prefilled (Part B3). Strict YYYY-MM-DD + real calendar date only -
+  // anything else is ignored, never guessed.
+  if (dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
+    const parsed = new Date(`${dateParam}T00:00:00`);
+    if (!Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === dateParam) {
+      initial.date = dateParam;
     }
   }
 

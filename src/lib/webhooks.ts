@@ -3,7 +3,7 @@
  *
  * Event catalog, HMAC-SHA256 payload signing, delivery enqueueing, and a
  * retry dispatcher with exponential backoff. Receivers verify the
- * `X-EveryJob-Signature` header against the endpoint secret — the same
+ * `X-EveryJob-Signature` header against the endpoint secret - the same
  * pattern Stripe/SendGrid use, which is why Zapier's "Webhooks by Zapier"
  * Catch Hook and Make's Custom Webhook modules accept it with a filter step.
  *
@@ -12,8 +12,8 @@
  *
  * Delivery model: `emitWebhookEvent` attempts immediate delivery inline (so
  * receivers like Zapier/Make get events in seconds even on hosting plans
- * whose crons run infrequently), and `dispatchWebhookRetries` — wired into
- * the workflows cron — sweeps pending deliveries with exponential backoff.
+ * whose crons run infrequently), and `dispatchWebhookRetries` - wired into
+ * the workflows cron - sweeps pending deliveries with exponential backoff.
  */
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { prisma } from '@/lib/prisma';
@@ -33,7 +33,7 @@ export type WebhookEvent = (typeof WEBHOOK_EVENTS)[number];
 export const WEBHOOK_SIGNATURE_HEADER = 'X-EveryJob-Signature';
 /** Header naming the event (also inside the JSON body). */
 export const WEBHOOK_EVENT_HEADER = 'X-EveryJob-Event';
-/** Header with the delivery id — receivers use it for idempotency. */
+/** Header with the delivery id - receivers use it for idempotency. */
 export const WEBHOOK_DELIVERY_HEADER = 'X-EveryJob-Delivery';
 
 /**
@@ -66,7 +66,7 @@ export function generateWebhookSecret(): string {
 }
 
 export type WebhookPayload = {
-  id: string; // delivery id — use for idempotency on the receiver side
+  id: string; // delivery id - use for idempotency on the receiver side
   event: WebhookEvent;
   business_id: string;
   occurred_at: string; // ISO timestamp
@@ -87,7 +87,7 @@ function parseSubscribedEvents(raw: string): string[] {
  * attempt immediate delivery inline. The immediate attempt is what makes
  * webhooks near-real-time on hosting plans whose crons run infrequently;
  * anything not delivered immediately stays `pending` for the retry sweep.
- * Returns the number of deliveries enqueued. Never throws — webhook
+ * Returns the number of deliveries enqueued. Never throws - webhook
  * fan-out must never fail the business operation that triggered it.
  */
 export async function emitWebhookEvent(
@@ -135,7 +135,7 @@ export async function emitWebhookEvent(
         data: { payload: rawPayload },
       });
 
-      // Best-effort immediate delivery (short timeout — this runs inside the
+      // Best-effort immediate delivery (short timeout - this runs inside the
       // request that triggered the event). Failures stay pending for the
       // cron retry sweep. Never throws.
       try {
@@ -196,7 +196,7 @@ async function postWithTimeout(
 
 /**
  * POST one signed delivery to its receiver. Shared by the immediate attempt
- * in `emitWebhookEvent` and the cron retry sweep. Never throws — returns
+ * in `emitWebhookEvent` and the cron retry sweep. Never throws - returns
  * `{ ok: false, error }` on any failure (network, timeout, non-2xx).
  */
 async function postDelivery(

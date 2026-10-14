@@ -3,13 +3,15 @@ import Link from 'next/link';
 import { Plus, Briefcase, Search } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { PageHeader, Card, StatusBadge, EmptyState, limeBtnClass, inputClass } from '@/components/ui';
-import { formatDateShort, hasJobTime, formatJobTime, formatStatusLabel, cn, jobDisplayStatus } from '@/lib/utils';
+import { PageHeader, Card, EmptyState, limeBtnClass, inputClass } from '@/components/ui';
+import StatusBadge from '@/components/StatusBadge';
+import { formatDateShort, hasJobTime, formatJobTime, formatStatusLabel, cn } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
-import { JOB_STATUSES } from '@/lib/validations';
+import { JOB_STATUSES, isJobLate } from '@/lib/job-status';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import ExportButtons, { type ExportColumn, type ExportRow } from '@/components/ExportButtons';
+import JobsExportMenu from '@/components/JobsExportMenu';
 
 export default async function JobsPage({
   searchParams,
@@ -25,8 +27,12 @@ export default async function JobsPage({
   const activeStatus =
     status && (JOB_STATUSES as readonly string[]).includes(status) ? status : 'ALL';
 
-  const business = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } });
+  const business = await prisma.business.findUnique({
+    where: { id: businessId },
+    select: { currency: true, timezone: true },
+  });
   const currency = business?.currency;
+  const timezone = business?.timezone ?? 'America/Toronto';
   const jobs = await prisma.job.findMany({
     where: {
       businessId,
@@ -37,6 +43,16 @@ export default async function JobsPage({
     },
     orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
   });
+
+  // Per-status counts for the filter chips (all jobs, before the search
+  // filter - the chips navigate, the search narrows).
+  const statusCounts = await prisma.job.groupBy({
+    by: ['status'],
+    where: { businessId },
+    _count: { _all: true },
+  });
+  const countByStatus = new Map(statusCounts.map((r) => [r.status, r._count._all]));
+  const totalJobs = statusCounts.reduce((s, r) => s + r._count._all, 0);
 
   const query = (q ?? '').trim().toLowerCase();
   const filtered = query
@@ -89,7 +105,17 @@ export default async function JobsPage({
         subtitle={countLabel}
         actions={
           <>
-            <ExportButtons
+            {/* Desktop: export buttons inline. Mobile: behind the More menu. */}
+            <div className="hidden md:flex items-center gap-2">
+              <ExportButtons
+                columns={exportColumns}
+                rows={exportRows}
+                fileBase={exportFileBase}
+                currency={currency}
+                locale={locale}
+              />
+            </div>
+            <JobsExportMenu
               columns={exportColumns}
               rows={exportRows}
               fileBase={exportFileBase}
@@ -120,27 +146,47 @@ export default async function JobsPage({
         />
       </form>
 
-      {/* Status filter tabs */}
-      <div
-        role="group"
-        aria-label={jobsL('status')}
-        className="flex items-center gap-1.5 overflow-x-auto pb-1"
-      >
-        {['ALL', ...JOB_STATUSES].map((s) => (
-          <Link
-            key={s}
-            href={statusLink(s)}
-            aria-current={activeStatus === s ? 'true' : undefined}
-            className={cn(
-              'px-3 min-h-[44px] inline-flex items-center rounded-lg text-xs font-semibold whitespace-nowrap transition-colors border',
-              activeStatus === s
-                ? 'bg-ink text-white border-ink'
-                : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50'
-            )}
-          >
-            {s === 'ALL' ? T('jobsTabAll') : formatStatusLabel(s, locale)}
-          </Link>
-        ))}
+      {/* Status filter tabs - sentence case, same fixed order everywhere,
+          with counts. Horizontally scrollable; the right-edge fade hints
+          there is more to scroll to. */}
+      <div className="relative">
+        <div
+          role="group"
+          aria-label={jobsL('status')}
+          className="flex items-center gap-1.5 overflow-x-auto pb-1 [scrollbar-width:thin]"
+        >
+          {['ALL', ...JOB_STATUSES].map((s) => {
+            const chipCount = s === 'ALL' ? totalJobs : (countByStatus.get(s) ?? 0);
+            return (
+              <Link
+                key={s}
+                href={statusLink(s)}
+                aria-current={activeStatus === s ? 'true' : undefined}
+                className={cn(
+                  'px-3 min-h-[44px] inline-flex items-center gap-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors border',
+                  activeStatus === s
+                    ? 'bg-ink text-white border-ink'
+                    : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50'
+                )}
+              >
+                {s === 'ALL' ? T('jobsTabAll') : formatStatusLabel(s, locale)}
+                <span
+                  className={cn(
+                    'inline-flex min-w-5 h-5 px-1 rounded-full text-[10px] font-bold items-center justify-center tabular-nums',
+                    activeStatus === s ? 'bg-white/25 text-white' : 'bg-zinc-100 text-zinc-600'
+                  )}
+                >
+                  {chipCount}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+        {/* Edge hint: fade on the right so the scrollable chips read as scrollable. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-[var(--ej-bg,#fafafa)] to-transparent"
+        />
       </div>
 
       {/* Job list - cards on mobile, compact rows on desktop */}
@@ -172,12 +218,17 @@ export default async function JobsPage({
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="font-semibold text-zinc-900 text-sm">{job.title}</p>
-                  <StatusBadge status={jobDisplayStatus(job.status, job.date)} />
+                  <StatusBadge
+                    status={job.status}
+                    isLate={isJobLate({ date: job.date, status: job.status }, new Date(), timezone)}
+                    locale={locale}
+                  />
                 </div>
-                <p className="text-xs text-zinc-500 mt-1 truncate">
-                  {job.customer.name}
-                  {hasJobTime(job.time) ? ` · ${formatJobTime(job.time, locale)}` : ''} · {formatDateShort(job.date)}
-                  {job.address ? ` · ${job.address}` : ''}
+                <p className="text-xs text-zinc-500 mt-1 truncate">{job.customer.name}</p>
+                <p className="text-xs text-zinc-500 truncate">
+                  {hasJobTime(job.time) ? `${formatJobTime(job.time, locale)}, ` : ''}
+                  {formatDateShort(job.date)}
+                  {job.address ? `, ${job.address}` : ''}
                 </p>
               </div>
               <p className="font-bold text-zinc-900 text-sm whitespace-nowrap tabular-nums">

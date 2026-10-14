@@ -148,7 +148,7 @@ export async function selectGoogleLocation(
 }
 
 /**
- * One-tap Google review sync. Explicit user action only — no background sync.
+ * One-tap Google review sync. Explicit user action only - no background sync.
  * Imports new reviews, dedupes by externalId, never touches manual reviews.
  */
 export async function syncGoogleReviews(): Promise<GoogleActionResult> {

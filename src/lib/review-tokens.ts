@@ -2,7 +2,7 @@
  * Review-request tokens (the review moat).
  *
  * A token is a 256-bit random hex string, shown to the pro exactly once as
- * part of the /rev/[token] link. Only the SHA-256 hash is stored — a
+ * part of the /rev/[token] link. Only the SHA-256 hash is stored - a
  * database leak reveals no usable review links, and tokens can't be forged
  * (guessing a 256-bit value is infeasible). Tokens are single-use with a
  * 30-day expiry and can be revoked by the pro.
@@ -17,7 +17,7 @@ export function newReviewTokenValue(): string {
   return randomBytes(32).toString('hex');
 }
 
-/** SHA-256 hash of a token value — this is what we store and look up. */
+/** SHA-256 hash of a token value - this is what we store and look up. */
 export function hashReviewToken(token: string): string {
   return createHash('sha256').update(token, 'utf8').digest('hex');
 }

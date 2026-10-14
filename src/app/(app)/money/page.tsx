@@ -6,6 +6,7 @@ import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { prisma } from '@/lib/prisma';
 import { PageHeader, Card, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
+import EmptyState from '@/components/EmptyState';
 import { formatMoney } from '@/lib/money';
 import SmsButton from '@/components/SmsButton';
 import WhatsAppButton from '@/components/WhatsAppButton';
@@ -100,12 +101,22 @@ export default async function MoneyPage() {
     <div className="space-y-6">
       <PageHeader title={L('t10money.money.title')} subtitle={L('t10money.money.subtitle')} />
 
+      {/* One clear empty state with one next action - instead of three
+          repeated "nothing here" lines (all-caught-up banner + "No open
+          quotes" + "No unpaid invoices"). */}
       {allCaughtUp && (
-        <Card className="p-6 text-center text-[var(--ej-muted)]">
-          {L('t10money.money.allCaughtUp')}
+        <Card>
+          <EmptyState
+            title={L('t10money.money.emptyTitle')}
+            description={L('t10money.money.emptyDesc')}
+            actionLabel={L('t10money.money.emptyAction')}
+            actionHref="/quotes/new"
+          />
         </Card>
       )}
 
+      {!allCaughtUp && (
+      <>
       <div className="grid gap-4 md:grid-cols-2">
         <Card className="p-6">
           <div className="flex items-center gap-3">
@@ -260,13 +271,13 @@ export default async function MoneyPage() {
                         <Link href={`/invoices/${inv.id}`} className="hover:underline">
                           {inv.number}
                         </Link>
-                        <span className="font-normal text-zinc-500"> · {inv.customer.name}</span>
                       </p>
+                      <p className="text-xs text-zinc-500 truncate">{inv.customer.name}</p>
                       <p className="text-xs text-zinc-500 mt-1">
                         <span className="font-semibold text-amber-700">
                           {L('t10money.reminders.daysOverdue').replace('{days}', String(overdueDays))}
                         </span>
-                        {' · '}
+                        {', '}
                         {L('t10money.reminders.balanceDue')}: {formatMoney(remaining, business?.currency)}
                       </p>
                     </div>
@@ -302,6 +313,8 @@ export default async function MoneyPage() {
             })}
           </ul>
         </Card>
+      )}
+      </>
       )}
     </div>
   );

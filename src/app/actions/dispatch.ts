@@ -21,7 +21,7 @@ async function checkLimit(userId: string): Promise<ActionResult | null> {
 }
 
 /**
- * Dispatch board actions — advance a job's status or assign a technician.
+ * Dispatch board actions - advance a job's status or assign a technician.
  * Tenant-scoped: the job must belong to the caller's business.
  * Status changes follow the same pipeline transition rules as the job
  * detail page (forward freely, one step back for mistaken taps).

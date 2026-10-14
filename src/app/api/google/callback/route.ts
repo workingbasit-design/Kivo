@@ -13,7 +13,7 @@ import { GOOGLE_BP_STATE_COOKIE } from '../connect/route';
  * Google OAuth callback. Verifies the random state against the cookie
  * (CSRF) and the session's business, exchanges the code for tokens, and
  * stores the connection. Location picking happens on the Reviews page
- * afterwards. No open redirects — we only ever redirect to /reviews.
+ * afterwards. No open redirects - we only ever redirect to /reviews.
  */
 export async function GET(req: Request) {
   const url = new URL(req.url);
@@ -31,7 +31,7 @@ export async function GET(req: Request) {
 
   const error = url.searchParams.get('error');
   if (error) {
-    // User denied consent (access_denied) or Google errored — graceful.
+    // User denied consent (access_denied) or Google errored - graceful.
     return denied('denied');
   }
 

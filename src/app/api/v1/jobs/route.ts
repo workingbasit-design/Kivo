@@ -1,6 +1,6 @@
 /**
- * GET /api/v1/jobs — list jobs (tenant-scoped).
- * POST /api/v1/jobs — create a job (status SCHEDULED).
+ * GET /api/v1/jobs - list jobs (tenant-scoped).
+ * POST /api/v1/jobs - create a job (status SCHEDULED).
  *
  * Auth: Authorization: Bearer ejk_live_...
  * GET needs the `read` scope; POST needs `write`.

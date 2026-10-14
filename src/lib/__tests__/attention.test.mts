@@ -1,6 +1,6 @@
 /**
  * Tests for the attention engine (src/lib/attention.ts).
- * Pure function over plain data — no DB, no network.
+ * Pure function over plain data - no DB, no network.
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';

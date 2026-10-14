@@ -143,7 +143,7 @@ export default async function QuotePortalPage({
         <Card className="p-6">
           <div className="flex items-start justify-between gap-3 mb-4">
             <div>
-              <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">{quote.number}</p>
+              <p className="text-xs font-semibold text-zinc-400">{quote.number}</p>
               <h2 className="text-lg font-bold text-zinc-900 mt-0.5">{quote.title}</h2>
               <p className="text-xs text-zinc-400 mt-1">
                 {L('quotes.portal.issued')} {quote.createdAt.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })}

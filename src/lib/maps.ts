@@ -1,7 +1,7 @@
 /**
  * Real map services for EveryJob route planning.
  *
- * SERVER-SIDE ONLY — import this module only from server components,
+ * SERVER-SIDE ONLY - import this module only from server components,
  * server actions, or API routes. It calls third-party free services:
  *
  * - Geocoding: OpenStreetMap Nominatim (free, no API key required)
@@ -14,7 +14,7 @@
  * - OSRM table requests are capped at 50 coordinates per call.
  * - Every result is cached in-memory so repeat views cost nothing.
  *
- * Every exported function NEVER throws — on any failure (network error,
+ * Every exported function NEVER throws - on any failure (network error,
  * bad response, rate limit, blocked egress) it returns null and the
  * caller degrades gracefully.
  */
@@ -209,7 +209,7 @@ function pathCost(order: number[], d: number[][]): number {
 /**
  * Compute a visit order minimizing total travel time over a duration
  * matrix (seconds). Nearest-neighbor seeded from `start`, then 2-opt
- * improvement. Pure function — exported for testing.
+ * improvement. Pure function - exported for testing.
  */
 export function solveTspPath(durations: number[][], start = 0): number[] {
   const n = durations.length;

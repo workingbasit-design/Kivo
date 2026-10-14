@@ -116,7 +116,7 @@ export default async function OwnerPage() {
 
       {/* 1. How is my business doing? */}
       <section>
-        <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2 px-1">
+        <h2 className="text-xs font-bold text-zinc-500 mb-2 px-1">
           {t(locale, "owner.questions.howDoing")}
         </h2>
         <Card className="p-5">
@@ -157,7 +157,7 @@ export default async function OwnerPage() {
       {/* 2. What needs my attention? */}
       <section>
         <div className="flex items-center justify-between mb-2 px-1">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-500">
+          <h2 className="text-xs font-bold text-zinc-500">
             {t(locale, "owner.questions.whatAttention")}
           </h2>
           <Link
@@ -192,7 +192,7 @@ export default async function OwnerPage() {
 
       {/* 3. Are we making money? - cash picture */}
       <section>
-        <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2 px-1">
+        <h2 className="text-xs font-bold text-zinc-500 mb-2 px-1">
           {t(locale, "owner.questions.makingMoney")}
         </h2>
         <div className="grid grid-cols-3 gap-3">
@@ -211,7 +211,7 @@ export default async function OwnerPage() {
 
       {/* 4. Where are we losing money? */}
       <section>
-        <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2 px-1">
+        <h2 className="text-xs font-bold text-zinc-500 mb-2 px-1">
           {t(locale, "owner.questions.losingMoney")}
         </h2>
         {leaks.length > 0 ? (
@@ -231,7 +231,7 @@ export default async function OwnerPage() {
                       <p className="text-sm font-semibold text-zinc-900 group-hover:underline underline-offset-2">
                         {t(locale, leak.titleKey)}
                         {!leak.measured && (
-                          <span className="ml-2 text-[10px] font-bold uppercase tracking-wide text-zinc-400">
+                          <span className="ml-2 text-[10px] font-bold text-zinc-400">
                             {t(locale, "scenarios.estimateLabel")}
                           </span>
                         )}
@@ -264,7 +264,7 @@ export default async function OwnerPage() {
 
       {/* 5. What should I do tomorrow? */}
       <section>
-        <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2 px-1">
+        <h2 className="text-xs font-bold text-zinc-500 mb-2 px-1">
           {t(locale, "owner.questions.tomorrow")}
         </h2>
         {tomorrowJobs.length > 0 ? (

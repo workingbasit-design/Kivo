@@ -8,7 +8,7 @@
  * upsert MessagingConnection rows via
  *   { businessId_channel: { businessId, channel } }.
  * Prisma requires the compound input for upsert/findUnique, so there is no
- * top-level where.businessId — and the fail-closed tenant guard threw
+ * top-level where.businessId - and the fail-closed tenant guard threw
  * TenantScopeError, crashing the page to the error boundary on every load
  * (and breaking the messaging scheduler + WhatsApp webhook quota path).
  *

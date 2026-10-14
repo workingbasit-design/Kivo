@@ -1,5 +1,5 @@
 /**
- * EveryJob Agent Protocol v1 — a machine-readable contract that lets a
+ * EveryJob Agent Protocol v1 - a machine-readable contract that lets a
  * customer's AI assistant propose actions inside EveryJob safely.
  *
  * The core rule, stated once: AGENTS MAY PROPOSE, HUMANS DISPOSE.
@@ -12,7 +12,7 @@
  *
  * Identity model: a logged-in customer generates a scoped agent key in
  * their profile ("Connect your AI assistant") and pastes it into their
- * assistant. The key resolves the customer's identity server-side — name,
+ * assistant. The key resolves the customer's identity server-side - name,
  * phone, email, city come from the account, never from re-typed fields.
  * Assistants without a key may still propose, but must supply a contact
  * email, and every proposal still needs the human's confirmation.
@@ -32,12 +32,12 @@ const AGENT_KEY_SECRET_BYTES = 32;
 
 export type AgentScope = 'read' | 'write'; // read = directory search; write = propose actions
 
-/** SHA-256 hex of the full key — the only thing ever stored. Pure. */
+/** SHA-256 hex of the full key - the only thing ever stored. Pure. */
 export function hashAgentKey(key: string): string {
   return createHash('sha256').update(key, 'utf8').digest('hex');
 }
 
-/** Generate a new customer agent key. Pure — returns plaintext once. */
+/** Generate a new customer agent key. Pure - returns plaintext once. */
 export function generateAgentKey(): { key: string; keyHash: string; keyPrefix: string } {
   const key = `${AGENT_KEY_PREFIX}${randomBytes(AGENT_KEY_SECRET_BYTES).toString('base64url')}`;
   // Prefix shown in the UI comes from the RANDOM part, so every key is
@@ -87,7 +87,7 @@ export const PROPOSAL_STATUS = {
   EXPIRED: 'expired',
 } as const;
 
-/** Rate limits for the public agent surface (per client IP, advisory — see rate-limit.ts). */
+/** Rate limits for the public agent surface (per client IP, advisory - see rate-limit.ts). */
 export const AGENT_SEARCH_LIMIT = { limit: 60, windowMs: 60 * 1000 }; // 60 searches/min/IP
 export const AGENT_PROPOSAL_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 }; // 5 proposals/hour/IP (spam-prone)
 
@@ -99,8 +99,8 @@ export function normalizeAgentName(raw: unknown): string {
 
 /**
  * Privacy gate for agent-facing contact details. A business that hid its
- * number on the booking page (showPhone = false) must not have it — or the
- * WhatsApp number, which routes to the same line — exposed to callers.
+ * number on the booking page (showPhone = false) must not have it - or the
+ * WhatsApp number, which routes to the same line - exposed to callers.
  * Pure: both agent search and the pro-detail route share this gate so a
  * future change cannot fix one route and leak through the other.
  */
@@ -160,7 +160,7 @@ export type AgentProposalInput = z.infer<typeof agentProposalSchema>;
 
 /**
  * Build the machine-readable capability manifest served at
- * /.well-known/everyjob.json — how agents discover what they can do.
+ * /.well-known/everyjob.json - how agents discover what they can do.
  * Pure: pass the request origin as baseUrl.
  */
 export function buildAgentManifest(baseUrl: string) {
@@ -169,7 +169,7 @@ export function buildAgentManifest(baseUrl: string) {
     protocol: 'everyjob-agent',
     version: AGENT_PROTOCOL_VERSION,
     description:
-      'EveryJob welcomes AI agents. Agents may search the directory and propose quote requests on behalf of a customer. Every consequential action requires the human\'s one-tap confirmation — nothing executes until approved.',
+      'EveryJob welcomes AI agents. Agents may search the directory and propose quote requests on behalf of a customer. Every consequential action requires the human\'s one-tap confirmation - nothing executes until approved.',
     policy: `${b}/agents`,
     authentication: {
       type: 'optional-bearer',
@@ -179,7 +179,7 @@ export function buildAgentManifest(baseUrl: string) {
     confirmation: {
       required: true,
       mechanism: 'POST /api/agent/v1/proposals returns a confirmationUrl. The human opens it and taps Approve or Decline. Proposals expire after 24 hours.',
-      guarantee: 'No quote request, lead, or message is created — and no business is contacted — until the human approves.',
+      guarantee: 'No quote request, lead, or message is created - and no business is contacted - until the human approves.',
     },
     idempotency: `POST /api/agent/v1/proposals requires the ${IDEMPOTENCY_HEADER} header. Retries with the same key return the original proposal instead of creating a duplicate.`,
     endpoints: [
@@ -232,9 +232,9 @@ export function buildAgentManifest(baseUrl: string) {
     ],
     rules: [
       'Identify your agent with a descriptive User-Agent and the agentName field.',
-      'Never scrape HTML to perform actions — use this API.',
+      'Never scrape HTML to perform actions - use this API.',
       'Respect rate limits; back off on 429.',
-      'Consequential actions ALWAYS need human confirmation — do not attempt to bypass it.',
+      'Consequential actions ALWAYS need human confirmation - do not attempt to bypass it.',
       'EveryJob never holds customer funds; agents must never request or handle payments.',
     ],
   };

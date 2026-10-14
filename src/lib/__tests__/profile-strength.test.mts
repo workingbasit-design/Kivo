@@ -1,7 +1,7 @@
 /**
  * Unit tests for the profile strength score (src/lib/profile-strength.ts).
  * The score must be 100 for a fully complete profile, 0 for an empty one,
- * and deterministic — it only ever reflects the business's own data.
+ * and deterministic - it only ever reflects the business's own data.
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';

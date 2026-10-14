@@ -25,7 +25,7 @@ export async function GET(req: Request) {
     return NextResponse.redirect(new URL('/login?google=not-configured', req.url));
   }
 
-  // Rate-limit OAuth initiations per IP — prevents state-cookie churn attacks.
+  // Rate-limit OAuth initiations per IP - prevents state-cookie churn attacks.
   const rl = rateLimit(`google-oauth-init:${clientIp(req)}`, AUTH_LIMIT);
   if (!rl.ok) {
     return NextResponse.redirect(new URL('/login?google=rate-limited', req.url));
@@ -51,7 +51,7 @@ export async function GET(req: Request) {
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/api/auth/google',
-    maxAge: 600, // 10 minutes — enough to complete the Google round trip
+    maxAge: 600, // 10 minutes - enough to complete the Google round trip
   });
   return res;
 }

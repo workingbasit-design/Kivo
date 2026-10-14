@@ -340,7 +340,7 @@ export default async function DashboardPage() {
             </ul>
           )}
           <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-zinc-100">
-            <p className="w-full text-[11px] font-bold uppercase tracking-wider text-zinc-600 mb-1">
+            <p className="w-full text-[11px] font-bold text-zinc-600 mb-1">
               {L("dashboard.jobsByStatus")}
             </p>
             {stats.jobsByStatus.length === 0 ? (

@@ -28,7 +28,7 @@ import { botCheckFailed } from '@/lib/bot-check';
  * date -> available slots -> confirm UX, and `submitBookingWithTime` is the
  * slot-validating confirm action the updated BookingForm posts to.
  *
- * EveryJob never sends anything — this only checks availability and stores
+ * EveryJob never sends anything - this only checks availability and stores
  * the chosen time on the created job.
  */
 
@@ -45,7 +45,7 @@ export interface SlotsResult {
   slots: PublicSlot[];
   /** Business is closed on this weekday. */
   closed: boolean;
-  /** Working hours were never configured — fall back to a date-only request. */
+  /** Working hours were never configured - fall back to a date-only request. */
   hoursNotSet: boolean;
   /** Existing jobs that day with no parseable time (couldn't block slots). */
   unscheduledCount: number;
@@ -74,7 +74,7 @@ const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 
 /**
  * Load available time slots for a public booking page on a given date.
- * No auth — only ever reveals slot availability for the single business
+ * No auth - only ever reveals slot availability for the single business
  * that owns the slug (no job/customer details leak).
  */
 export async function getBookingSlots(
@@ -268,7 +268,7 @@ async function runBookingWithTime(
   if (Number.isNaN(preferred.getTime())) {
     return { error: 'Pick a valid preferred date.' };
   }
-  // Compare against "today" in the business's own timezone — the server
+  // Compare against "today" in the business's own timezone - the server
   // runs on UTC, so a server-local check would wrongly reject same-day
   // evening bookings in timezones behind UTC.
   const todayStr = todayInTimezone(page.business.timezone, page.business.regionCode);
@@ -308,7 +308,7 @@ async function runBookingWithTime(
     validatedTime = time;
   }
   // When hours aren't configured (or the day is closed and the customer
-  // submitted a stale form), store no time — the owner confirms by phone.
+  // submitted a stale form), store no time - the owner confirms by phone.
 
   let service: { id: string; name: string; price: number } | null = null;
   if (serviceId) {
@@ -350,7 +350,7 @@ async function runBookingWithTime(
     data: {
       title: service ? service.name : 'Booking request',
       date: preferred,
-      // Canonical 24h "HH:MM" — parseable by the slot logic everywhere.
+      // Canonical 24h "HH:MM" - parseable by the slot logic everywhere.
       time: validatedTime,
       address: address || null,
       price: service ? service.price : 0,

@@ -14,7 +14,7 @@ export interface GrowthData {
 
 /**
  * Loads everything the growth UI needs, scoped to the caller's business.
- * All inputs to the score are the business's own records — nothing external.
+ * All inputs to the score are the business's own records - nothing external.
  */
 export async function getGrowthData(businessId: string): Promise<GrowthData> {
   const [business, designationCount, serviceCount, userCount, bookingPage] = await Promise.all([

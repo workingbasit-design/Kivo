@@ -1,5 +1,5 @@
 /**
- * Copilot parser regression tests — pure functions from src/lib/copilot/parse.ts.
+ * Copilot parser regression tests - pure functions from src/lib/copilot/parse.ts.
  * English + Canadian French (Canada-only).
  */
 import { test } from 'node:test';
@@ -104,7 +104,7 @@ test('extractTime: French "15h30" is 15:30', () => {
 
 // --- Customer names: never truncate, never invent ---
 test('extractCustomerName: multi-word name with filler is rejected, not truncated', () => {
-  // "Nonexistent Person XYZ" — "Person" is a filler word; returning the
+  // "Nonexistent Person XYZ" - "Person" is a filler word; returning the
   // half-guessed "Nonexistent" as a customer would book under a wrong name.
   assert.equal(extractCustomerName('book a repair for Nonexistent Person XYZ'), null);
 });

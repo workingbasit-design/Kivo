@@ -15,7 +15,7 @@ const subscribeSchema = z.object({
 });
 
 /**
- * POST /api/push/subscribe — register this device for push notifications.
+ * POST /api/push/subscribe - register this device for push notifications.
  *
  * Tenant-scoped: the subscription is stored against the caller's businessId.
  * Idempotent: subscribing the same endpoint twice updates rather than
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
   const { endpoint, keys } = parsed.data;
   // endpoint is the device's unique push URL (unguessable); the upsert
   // binds it to the authenticated session's business and rewrites keys.
-  // Authenticated route — no other tenant's data is readable here.
+  // Authenticated route - no other tenant's data is readable here.
   await unsafeUnscoped('push:subscribe:upsert', (db) =>
     db.pushSubscription.upsert({
       where: { endpoint },

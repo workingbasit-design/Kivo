@@ -1,6 +1,6 @@
 /**
  * Regression (2026-10-11 morning QA): FR locale spot-check found English
- * leakage in status badges — the FR dashboard showed "SCHEDULED" and the FR
+ * leakage in status badges - the FR dashboard showed "SCHEDULED" and the FR
  * invoices page showed "ALL/UNPAID/PARTIALLY PAID/PAID" tabs. StatusBadge now
  * localizes via statusLabel() + the `statuses` dictionary section.
  */

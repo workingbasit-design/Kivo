@@ -49,7 +49,7 @@ test('isJobLate: job due today is not late (America/Toronto)', () => {
   assert.equal(isJobLate({ date: D('2026-10-13T16:00:00Z'), status: 'SCHEDULED' }, now, 'America/Toronto'), false);
 });
 
-test('isJobLate: evening edge — 9 PM Toronto is still Oct 13, not Oct 14', () => {
+test('isJobLate: evening edge - 9 PM Toronto is still Oct 13, not Oct 14', () => {
   // 21:00 Toronto (EDT, UTC-4) on Oct 13 = 01:00 UTC on Oct 14.
   // The old server-UTC logic flipped this job Late; timezone-aware logic must not.
   const now = D('2026-10-14T01:00:00Z');
@@ -59,7 +59,7 @@ test('isJobLate: evening edge — 9 PM Toronto is still Oct 13, not Oct 14', () 
   assert.equal(isJobLate(job, D('2026-10-14T14:00:00Z'), 'America/Toronto'), true);
 });
 
-test('isJobLate: America/Regina (no DST) — same calendar rules', () => {
+test('isJobLate: America/Regina (no DST) - same calendar rules', () => {
   // Regina is CST year-round (UTC-6). 20:00 Regina Oct 13 = 02:00 UTC Oct 14.
   const now = D('2026-10-14T02:00:00Z');
   const job = { date: D('2026-10-13T16:00:00Z'), status: 'NEW' };
@@ -67,17 +67,17 @@ test('isJobLate: America/Regina (no DST) — same calendar rules', () => {
   assert.equal(isJobLate(job, D('2026-10-14T14:00:00Z'), 'America/Regina'), true);
 });
 
-test('isJobLate: America/St_Johns (half-hour offset) — evening edge', () => {
+test('isJobLate: America/St_Johns (half-hour offset) - evening edge', () => {
   // 21:00 St_Johns (NDT, UTC-2:30) on Oct 13 = 23:30 UTC on Oct 13.
   const now = D('2026-10-13T23:30:00Z');
   const job = { date: D('2026-10-13T16:00:00Z'), status: 'SCHEDULED' };
   assert.equal(isJobLate(job, now, 'America/St_Johns'), false);
-  // 21:00 St_Johns Oct 14 = 23:30 UTC Oct 14 — job Oct 13 is late by then.
+  // 21:00 St_Johns Oct 14 = 23:30 UTC Oct 14 - job Oct 13 is late by then.
   assert.equal(isJobLate(job, D('2026-10-14T23:30:00Z'), 'America/St_Johns'), true);
 });
 
 test('isJobLate: DST fallback Sunday Nov 1 2026 (America/Toronto)', () => {
-  // At 02:00 EDT clocks fall back to 01:00 EST — the 01:00–02:00 hour
+  // At 02:00 EDT clocks fall back to 01:00 EST - the 01:00-02:00 hour
   // repeats. A job dated Nov 1 must stay "today" through both passes.
   const firstPass = D('2026-11-01T05:30:00Z'); // 01:30 EDT (first)
   const secondPass = D('2026-11-01T06:30:00Z'); // 01:30 EST (second)

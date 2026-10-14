@@ -100,7 +100,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       />
       <div className="flex-1 min-w-0 flex flex-col">
         <MobileNav locale={locale} unreadCount={unreadCount} />
-        <main id="main-content" className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-8 pb-36 md:pb-8">
+        <main id="main-content" className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-8 pb-[calc(9rem+env(safe-area-inset-bottom))] md:pb-8">
           {children}
         </main>
         <BottomNav user={user} locale={locale} />

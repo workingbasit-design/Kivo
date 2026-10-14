@@ -5,7 +5,7 @@ import { pooledDatabaseUrl } from '../prisma.ts';
 describe('pooledDatabaseUrl', () => {
   it('returns undefined when DATABASE_URL is missing', () => {
     // Importing prisma.ts pulls in @prisma/client, which auto-loads the
-    // repo .env — so simulate "missing" by deleting the var. The default
+    // repo .env - so simulate "missing" by deleting the var. The default
     // parameter is evaluated at call time, making this a true missing-env test.
     delete process.env.DATABASE_URL;
     assert.equal(pooledDatabaseUrl(), undefined);

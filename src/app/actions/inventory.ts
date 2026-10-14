@@ -116,7 +116,7 @@ export async function adjustPartQuantity(id: string, delta: number): Promise<Act
 
   // Atomic: the "won't go below zero" guard lives in the WHERE clause, so
   // concurrent taps can't race a read-then-write into negative stock.
-  // Single statement — safe under the one-connection pool constraint.
+  // Single statement - safe under the one-connection pool constraint.
   const result = await prisma.part.updateMany({
     where: {
       id,

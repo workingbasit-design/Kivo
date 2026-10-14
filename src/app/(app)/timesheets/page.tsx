@@ -163,7 +163,7 @@ export default async function TimesheetsPage({
       {/* Summary strip */}
       <div className="grid grid-cols-2 gap-4">
         <Card className="p-5 ej-row-in">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-1">
+          <p className="text-[11px] font-bold text-zinc-400 mb-1">
             {T('tsTotalHours')}
           </p>
           <p className="text-2xl font-bold text-zinc-900 tracking-tight tabular-nums">
@@ -172,7 +172,7 @@ export default async function TimesheetsPage({
           <p className="text-xs text-zinc-500 mt-1">{entriesLabel}</p>
         </Card>
         <Card className="p-5 ej-row-in">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-1">
+          <p className="text-[11px] font-bold text-zinc-400 mb-1">
             {T('tsPeriod')}
           </p>
           <p className="text-sm font-bold text-zinc-900 mt-2">
@@ -211,7 +211,7 @@ export default async function TimesheetsPage({
                         {e.user.name || e.user.email}
                       </p>
                       {isActive && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md px-2 py-0.5">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md px-2 py-0.5">
                           <Timer size={10} /> {T('tsActive')}
                         </span>
                       )}

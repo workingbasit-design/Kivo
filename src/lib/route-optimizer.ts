@@ -8,7 +8,7 @@
  * Flow for a given business + day:
  *  1. Load the day's SCHEDULED / IN PROGRESS jobs with addresses.
  *  2. Geocode each unique address via Nominatim (cached, 1 req/sec).
- *  3. Jobs with no address — or whose address could not be geocoded —
+ *  3. Jobs with no address - or whose address could not be geocoded -
  *     are returned separately as `unlocated`.
  *  4. Located stops are optimized with real OSRM driving times
  *     (nearest-neighbor + 2-opt), seeded from the earliest appointment

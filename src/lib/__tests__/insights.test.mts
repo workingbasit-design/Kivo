@@ -1,6 +1,6 @@
 /**
  * Unit tests for the pure insights computation (src/lib/insights.ts).
- * No DB, no network — deterministic inputs, deterministic outputs.
+ * No DB, no network - deterministic inputs, deterministic outputs.
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';

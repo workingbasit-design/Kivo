@@ -1,6 +1,6 @@
 /**
  * Unit tests for messaging secret encryption (src/lib/messaging/crypto.ts).
- * Pure Node crypto — zero network, zero provider calls.
+ * Pure Node crypto - zero network, zero provider calls.
  * Run: node --test src/lib/__tests__/messaging-crypto.test.mts
  */
 import test from 'node:test';

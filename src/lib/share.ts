@@ -8,7 +8,7 @@ export type ShareType = 'QUOTE' | 'INVOICE';
  * Capability tokens for the public quote/invoice portals.
  *
  * The public pages (/q/[token], /i/[token]) resolve ONLY through the
- * ShareToken table — a raw cuid id never renders a document. A token is
+ * ShareToken table - a raw cuid id never renders a document. A token is
  * usable when revokedAt is null and (expiresAt is null or in the future).
  * Tokens are 256-bit random hex strings: unguessable and URL-safe.
  */
@@ -134,7 +134,7 @@ export async function setShareTokenExpiry(
 /**
  * Resolve a public token to its document. Returns the token row when it is
  * usable; otherwise a reason the page can turn into a friendly message.
- * NEVER leaks document data on failure — the caller decides what to show.
+ * NEVER leaks document data on failure - the caller decides what to show.
  */
 export async function resolveShareToken(token: string, type: ShareType) {
   if (!token || token.length > 128) return { ok: false as const };

@@ -102,7 +102,7 @@ export default async function AttentionPage({
       ) : (
         groups.map((g) => (
           <section key={g.severity}>
-            <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2 px-1">
+            <h2 className="text-xs font-bold text-zinc-500 mb-2 px-1">
               {t(locale, `attention.severity.${g.severity}`)} · {g.items.length}
             </h2>
             <Card className="px-2 py-2 divide-y divide-zinc-100">

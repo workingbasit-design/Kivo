@@ -49,7 +49,7 @@ function resolve(spec: string, basedir: string): string | null {
   let base: string;
   if (spec.startsWith('@/')) base = join(SRC, spec.slice(2));
   else if (spec.startsWith('.')) base = normalize(join(basedir, spec));
-  else return null; // bare package import — not our concern
+  else return null; // bare package import - not our concern
   for (const c of [`${base}.ts`, `${base}.tsx`, join(base, 'index.ts'), join(base, 'index.tsx'), base]) {
     try {
       if (statSync(c).isFile()) return c;
@@ -72,7 +72,7 @@ interface Mod {
 function analyze(f: string): Mod {
   const src = readFileSync(f, 'utf8');
   const head = src.slice(0, 300);
-  // Strip `import type` lines — types are erased and never bundled.
+  // Strip `import type` lines - types are erased and never bundled.
   const noTypes = src
     .split('\n')
     .filter((l) => !/^\s*import\s+type\b/.test(l))

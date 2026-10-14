@@ -1,5 +1,5 @@
 import React from 'react';
-import { cn, statusClasses, statusLabel } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { t, type Locale } from '@/lib/i18n';
 import AnimatedNumber from './AnimatedNumber';
 
@@ -39,18 +39,9 @@ export function Card({
   );
 }
 
-export function StatusBadge({ status, locale = 'en' }: { status: string; locale?: Locale }) {
-  return (
-    <span
-      className={cn(
-        'inline-flex px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border whitespace-nowrap',
-        statusClasses(status)
-      )}
-    >
-      {statusLabel(status, locale)}
-    </span>
-  );
-}
+/** Canonical status badge lives in ./StatusBadge (Part B8 consolidation).
+ *  Re-exported here so existing `from '@/components/ui'` imports keep working. */
+export { default as StatusBadge } from './StatusBadge';
 
 /**
  * GlassIcon - the app's icon chip. iOS 26 "liquid glass" finish: frosted
@@ -146,7 +137,7 @@ export function StatCard({
       style={{ ['--ej-d' as string]: `${Math.min(index, 8) * 0.07}s` }}
     >
       <div className="flex items-center justify-between gap-2 mb-3">
-        <p className="text-[11px] font-bold uppercase tracking-wider text-white/60 leading-tight text-balance">{label}</p>
+        <p className="text-[11px] font-bold text-white/60 leading-tight text-balance">{label}</p>
         {icon &&
           (tone ? (
             <GlassIcon icon={icon} tone={tone} size="md" />
@@ -354,7 +345,7 @@ export function SectionTitle({
 }) {
   return (
     <div className={cn('flex items-center justify-between gap-3 mb-3', className)}>
-      <h2 className="text-sm font-bold text-zinc-900 uppercase tracking-wider">{children}</h2>
+      <h2 className="text-sm font-bold text-zinc-900">{children}</h2>
       {action}
     </div>
   );

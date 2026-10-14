@@ -162,7 +162,7 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
                   <div className="text-xs bg-white p-3 rounded-xl border border-zinc-200/60 text-zinc-600 space-y-2">
                     <p>{L('waSample')}</p>
                     <div>
-                      <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">
+                      <label className="block text-[10px] font-bold text-zinc-500 mb-1">
                         {L('waNumber')}
                       </label>
                       <input
@@ -195,7 +195,7 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                   <div>
-                    <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">{L('hoursLabel')}</label>
+                    <label className="block text-[10px] font-bold text-zinc-500 mb-1">{L('hoursLabel')}</label>
                     <select
                       value={workingHours}
                       onChange={(e) => setWorkingHours(e.target.value)}
@@ -208,7 +208,7 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">{L('dispatchLabel')}</label>
+                    <label className="block text-[10px] font-bold text-zinc-500 mb-1">{L('dispatchLabel')}</label>
                     <button
                       type="button"
                       onClick={() => setAutoAssignTech(!autoAssignTech)}

@@ -16,7 +16,7 @@ export async function getAgentKeys() {
 }
 
 /**
- * Generate a key. Returns the plaintext key ONCE — the client must show
+ * Generate a key. Returns the plaintext key ONCE - the client must show
  * it immediately because it is never retrievable again.
  */
 export async function generateAgentKeyAction(

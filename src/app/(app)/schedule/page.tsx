@@ -159,6 +159,14 @@ export default async function SchedulePage({
 
   const weekLabel = `${dayMonth(days[0])} - ${dayMonth(days[6])} ${yearOf(days[6])}`;
 
+  // "This week" is disabled when already viewing the current week (Part A6).
+  const currentWeekKey = toISODateLocal(mondayOf(new Date(`${todayKey}T00:00:00`)));
+  const isCurrentWeek = weekKey === currentWeekKey;
+
+  // Full holiday name for the selected day (shown in full in the agenda
+  // header below - never as a truncated chip in the day cell).
+  const activeHoliday = activeDay ? (holidayByDate.get(activeDay) ?? null) : null;
+
   const weekLink = (monday: Date) => `/schedule?week=${toISODateLocal(monday)}`;
   const dayLink = (d: Date) =>
     `/schedule?week=${weekKey}&day=${toISODateLocal(d)}`;
@@ -186,7 +194,7 @@ export default async function SchedulePage({
           <div className="flex items-center gap-2 mb-3">
             <span className="w-2 h-2 rounded-full bg-red-500" aria-hidden />
             <h2 className="text-sm font-bold text-red-900">
-              {T('schedOverdueTitle')} · {overdueJobs.length}
+              {T('schedOverdueTitle')} ({overdueJobs.length})
             </h2>
           </div>
           <p className="text-xs text-red-700 mb-3">{T('schedOverdueDesc')}</p>
@@ -201,9 +209,8 @@ export default async function SchedulePage({
                     <span className="block text-sm font-semibold text-zinc-900 truncate">
                       {j.title}
                     </span>
-                    <span className="block text-xs text-zinc-500 truncate">
-                      {j.customer.name} · {formatDateShort(j.date)}
-                    </span>
+                    <span className="block text-xs text-zinc-500 truncate">{j.customer.name}</span>
+                    <span className="block text-xs text-zinc-400 truncate">{formatDateShort(j.date)}</span>
                   </span>
                   <span className="shrink-0 text-xs font-bold text-red-700 bg-red-100 px-2 py-1 rounded-full">
                     {T('schedOverdueBadge')}
@@ -229,15 +236,24 @@ export default async function SchedulePage({
             <ChevronLeft size={18} />
           </Link>
           <div className="flex items-center gap-2 flex-wrap justify-center min-w-0">
-            <Link
-              href="/schedule"
-              className={cn(
-                'text-xs font-bold text-zinc-800 px-4 py-2 min-h-[44px] inline-flex items-center rounded-full transition-all hover:scale-[1.03] active:scale-95',
-                glassClass('zinc')
-              )}
-            >
-              {T('schedThisWeek')}
-            </Link>
+            {isCurrentWeek ? (
+              <span
+                aria-disabled="true"
+                className="text-xs font-bold text-zinc-400 px-4 py-2 min-h-[44px] inline-flex items-center rounded-full bg-zinc-100 cursor-not-allowed"
+              >
+                {T('schedThisWeek')}
+              </span>
+            ) : (
+              <Link
+                href="/schedule"
+                className={cn(
+                  'text-xs font-bold text-zinc-800 px-4 py-2 min-h-[44px] inline-flex items-center rounded-full transition-all hover:scale-[1.03] active:scale-95',
+                  glassClass('zinc')
+                )}
+              >
+                {T('schedThisWeek')}
+              </Link>
+            )}
             <span className="text-sm font-bold text-zinc-900">{weekLabel}</span>
           </div>
           <Link
@@ -260,12 +276,15 @@ export default async function SchedulePage({
             const isToday = key === todayKey;
             const isActive = activeDay === key;
             const holiday = holidayByDate.get(key);
+            // An empty day starts a new job with that date prefilled;
+            // a day with jobs opens its agenda underneath.
+            const cellHref = count === 0 ? `/jobs/new?date=${key}` : dayLink(d);
             return (
               <Link
                 key={key}
-                href={dayLink(d)}
+                href={cellHref}
                 aria-current={isActive ? 'date' : undefined}
-                aria-label={`${dayName(d)} ${d.getDate()}${isToday ? `, ${T('schedToday')}` : ''}`}
+                aria-label={`${dayName(d)} ${d.getDate()}${isToday ? `, ${T('schedToday')}` : ''}${count === 0 ? `, ${T('schedEmptyDayNew')}` : ''}`}
                 className={cn(
                   'flex flex-col items-center rounded-xl border-2 py-2 md:py-3 transition-colors min-h-[64px]',
                   isActive
@@ -276,7 +295,7 @@ export default async function SchedulePage({
               >
                 <span
                   className={cn(
-                    'text-[10px] font-bold uppercase tracking-wide',
+                    'text-[10px] font-bold',
                     isActive ? 'text-white/80' : isToday ? 'text-lime-700' : 'text-zinc-400'
                   )}
                 >
@@ -290,31 +309,22 @@ export default async function SchedulePage({
                 >
                   {d.getDate()}
                 </span>
-                <span
-                  className={cn(
-                    'mt-1 min-w-5 h-5 px-1 rounded-full text-[10px] font-bold flex items-center justify-center tabular-nums',
-                    isActive
-                      ? 'bg-white/25 text-white'
-                      : count > 0
-                        ? 'bg-smoke text-ink'
-                        : 'bg-zinc-100 text-zinc-400'
-                  )}
-                >
-                  {count}
-                </span>
-                {holiday && (
+                {/* Count badge only when there are jobs - never a row of zeros. */}
+                {count > 0 && (
                   <span
-                    title={holiday}
-                    aria-label={holiday}
                     className={cn(
-                      'mt-1 inline-flex items-center gap-0.5 rounded-full border px-1.5 py-px text-[9px] font-bold leading-tight',
-                      isActive
-                        ? 'border-white/40 bg-white/20 text-white'
-                        : 'border-amber-200 bg-amber-50 text-amber-700'
+                      'mt-1 min-w-5 h-5 px-1 rounded-full text-[10px] font-bold flex items-center justify-center tabular-nums',
+                      isActive ? 'bg-white/25 text-white' : 'bg-smoke text-ink'
                     )}
                   >
-                    <span aria-hidden>🎉</span>
-                    <span className="hidden sm:inline max-w-[72px] truncate">{holiday}</span>
+                    {count}
+                  </span>
+                )}
+                {/* Holiday marker only - the full name lives in the agenda
+                    header, never as a truncated chip here. */}
+                {holiday && (
+                  <span title={holiday} aria-hidden className="mt-1 text-[10px] leading-none">
+                    🎉
                   </span>
                 )}
               </Link>
@@ -343,6 +353,7 @@ export default async function SchedulePage({
         currency={currency}
         todayKey={todayKey}
         locale={locale}
+        activeDayHoliday={activeHoliday}
       />
     </div>
   );

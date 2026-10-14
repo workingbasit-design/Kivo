@@ -4,7 +4,7 @@ import { getSession } from '@/lib/auth';
 
 /**
  * Fresh tenant-scoped customer id+name list for comboboxes.
- * no-store so a customer created moments ago always shows up —
+ * no-store so a customer created moments ago always shows up -
  * never rely on a possibly-stale server-component prop alone.
  */
 export async function GET() {

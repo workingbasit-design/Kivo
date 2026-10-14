@@ -243,7 +243,7 @@ export default async function AgentConfirmPage({
 
       <Stagger index={1}>
         <Card className="p-6">
-          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+          <p className="text-xs font-semibold text-zinc-400">
             {tr('agent.confirm.to')}
           </p>
           <div className="mt-2 flex items-center gap-3">
@@ -257,14 +257,14 @@ export default async function AgentConfirmPage({
           </div>
 
           <div className="mt-5 border-t border-zinc-100 pt-5">
-            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+            <p className="text-xs font-semibold text-zinc-400">
               {tr('agent.confirm.service')}
             </p>
             <p className="mt-1 text-lg font-bold text-zinc-900">{proposal.service}</p>
           </div>
 
           <div className="mt-4">
-            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+            <p className="text-xs font-semibold text-zinc-400">
               {tr('agent.confirm.details')}
             </p>
             <p className="mt-1 rounded-xl bg-zinc-50 px-4 py-3 text-sm leading-relaxed text-zinc-700">
@@ -273,7 +273,7 @@ export default async function AgentConfirmPage({
           </div>
 
           <div className="mt-4">
-            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+            <p className="text-xs font-semibold text-zinc-400">
               {tr('agent.confirm.contact')}
             </p>
             <ul className="mt-2 space-y-2">

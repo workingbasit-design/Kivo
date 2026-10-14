@@ -17,7 +17,7 @@ export function fillTemplate(
 
 export const DAY_MS = 86_400_000;
 
-/** Phase 1 has no explicit invoice dueDate — Net-30 from the invoice date. */
+/** Phase 1 has no explicit invoice dueDate - Net-30 from the invoice date. */
 export const OVERDUE_AFTER_DAYS = 30;
 
 /** "YYYY-MM-DD" of a Date in UTC (the stored invoice date is UTC-midnight). */
@@ -64,7 +64,7 @@ export function daysOverdue(
   return Math.max(0, diffKeys(dueKey, nowKey));
 }
 
-/** Quote has no sentAt in Phase 1 — updatedAt is the best "sent" proxy. */
+/** Quote has no sentAt in Phase 1 - updatedAt is the best "sent" proxy. */
 export const FOLLOWUP_AFTER_DAYS = 3;
 
 /** True when a SENT quote has waited long enough to need a follow-up. */

@@ -2,7 +2,7 @@
  * POST /api/agent/v1/proposals
  *
  * An AI agent PROPOSES a quote request on behalf of a customer. This
- * creates a PENDING proposal only — nothing is sent to the business and
+ * creates a PENDING proposal only - nothing is sent to the business and
  * no quote request exists until the human approves via the returned
  * confirmationUrl (/a/[token], 24h expiry).
  *
@@ -11,7 +11,7 @@
  * the agent needs the `write` scope. Anonymous agents must supply
  * customerName + customerEmail in the body.
  *
- * Headers: Idempotency-Key (required) — retries with the same key return
+ * Headers: Idempotency-Key (required) - retries with the same key return
  * the original proposal instead of creating a duplicate.
  */
 import { NextResponse } from 'next/server';
@@ -188,7 +188,7 @@ export async function POST(req: Request) {
     }
     // The key was seen before but that proposal is over (expired or
     // decided). Replaying it must NOT silently create a new proposal
-    // under the same key, and must NOT 500 on the unique constraint —
+    // under the same key, and must NOT 500 on the unique constraint -
     // the agent needs a fresh Idempotency-Key.
     return NextResponse.json(
       {
@@ -234,7 +234,7 @@ export async function POST(req: Request) {
       confirmationUrl: `${origin}/a/${confirmToken}`,
       token: confirmToken,
       message:
-        'Proposal created and PENDING. Share the confirmationUrl with the customer — the quote request is sent to the business only after they tap Approve (link expires in 24 hours).',
+        'Proposal created and PENDING. Share the confirmationUrl with the customer - the quote request is sent to the business only after they tap Approve (link expires in 24 hours).',
     },
     { status: 201 }
   );

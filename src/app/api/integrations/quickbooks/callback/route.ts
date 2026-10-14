@@ -8,10 +8,10 @@ import { QB_STATE_COOKIE, quickbooksConfigured, quickbooksRedirectUri } from '..
 import { clientIpFromHeaders } from '@/lib/client-ip';
 
 /**
- * GET /api/integrations/quickbooks/callback — Intuit OAuth2 callback.
+ * GET /api/integrations/quickbooks/callback - Intuit OAuth2 callback.
  * Verifies state (CSRF), exchanges the code, and stores the per-business
  * connection. The company id (realmId) arrives as its own query param.
- * No open redirects — we only ever redirect to /settings.
+ * No open redirects - we only ever redirect to /settings.
  */
 export async function GET(req: Request) {
   const url = new URL(req.url);
@@ -71,7 +71,7 @@ export async function GET(req: Request) {
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
         expiresAt: new Date(Date.now() + (tokens.expiresIn ?? 3600) * 1000),
-        lastSyncAt: null, // fresh connection — nothing synced yet
+        lastSyncAt: null, // fresh connection - nothing synced yet
       },
     });
     const ok = NextResponse.redirect(new URL('/settings?quickbooks=connected', req.url));

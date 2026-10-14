@@ -3,7 +3,7 @@ import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
 /**
- * GET /api/attachments/[id] — the ONLY way attachment bytes are served.
+ * GET /api/attachments/[id] - the ONLY way attachment bytes are served.
  *
  * The row is looked up tenant-scoped ({ id, businessId }); the client is
  * then redirected to the signed Blob URL. Raw Blob URLs are never handed

@@ -40,7 +40,7 @@ export async function createJobWithOfflineFallback(
   } catch (e) {
     // Server-action invocation failed at the network layer (device went
     // offline mid-flight). Queue it instead of showing a cryptic error.
-    // NEXT_REDIRECT and validation errors are NOT TypeErrors — they pass through.
+    // NEXT_REDIRECT and validation errors are NOT TypeErrors - they pass through.
     if (e instanceof TypeError) return queueOffline();
     throw e;
   }

@@ -115,7 +115,7 @@ export async function deleteDesignation(id: string): Promise<DesignationResult> 
   const hit = limited(await clientKey('designation-delete'));
   if (hit) return hit;
   const { businessId } = await requireAuth();
-  // Ownership check via scoped delete — deletes 0 rows for foreign ids.
+  // Ownership check via scoped delete - deletes 0 rows for foreign ids.
   const res = await prisma.designation.deleteMany({ where: { id, businessId } });
   if (res.count === 0) return { error: 'Designation not found.' };
   revalidatePath('/settings');

@@ -10,7 +10,7 @@ import { useSyncExternalStore } from 'react';
  *
  * Reading `window.SpeechRecognition` in a useState initializer instead
  * mismatches the server HTML on every browser that ships the API
- * (React #418 hydration crash + client re-render) — regression fixed
+ * (React #418 hydration crash + client re-render) - regression fixed
  * 2026-10-06 after morning QA caught the pageerror on /voice.
  */
 function subscribe() {

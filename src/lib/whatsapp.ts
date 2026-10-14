@@ -2,11 +2,11 @@
  * WhatsApp deep-link helpers (free, no API key).
  *
  * These only build `https://wa.me/...` links. Nothing is ever sent
- * automatically — the user taps the link and sends from their own
+ * automatically - the user taps the link and sends from their own
  * WhatsApp app.
  */
 
-/** Default country calling code — Canada-only (NANP). */
+/** Default country calling code - Canada-only (NANP). */
 export function countryCodeForRegion(_regionCode?: string | null): string {
   return '1';
 }

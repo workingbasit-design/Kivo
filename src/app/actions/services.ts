@@ -11,7 +11,7 @@ import { dollarsToCents } from '@/lib/money';
 export type ServiceResult = { error?: string; ok?: boolean };
 
 /**
- * Extended service fields: duration (minutes, 5–1440, optional) and
+ * Extended service fields: duration (minutes, 5-1440, optional) and
  * description (optional plain-text). Blank inputs stay null.
  */
 const serviceFieldsSchema = serviceSchema.extend({

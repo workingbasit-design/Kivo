@@ -1,5 +1,5 @@
 /**
- * Safe workflow engine — Track 8.
+ * Safe workflow engine - Track 8.
  *
  * Triggers (job completed, quote awaiting response, invoice overdue) are
  * evaluated on a schedule. Actions are DELIBERATELY limited to:
@@ -121,17 +121,17 @@ export type WorkflowRunResult = {
 
 function reviewDraftMessages(customerName: string, jobTitle: string): { en: string; fr: string } {
   return {
-    en: `Hi ${customerName}! Thanks for choosing us for "${jobTitle}". If you were happy with the work, a Google review would mean a lot — reply YES and I'll send you the link.`,
-    fr: `Bonjour ${customerName}! Merci de nous avoir choisis pour « ${jobTitle} ». Si vous êtes satisfait du travail, un avis Google nous aiderait beaucoup — répondez OUI et je vous enverrai le lien.`,
+    en: `Hi ${customerName}! Thanks for choosing us for "${jobTitle}". If you were happy with the work, a Google review would mean a lot - reply YES and I'll send you the link.`,
+    fr: `Bonjour ${customerName}! Merci de nous avoir choisis pour « ${jobTitle} ». Si vous êtes satisfait du travail, un avis Google nous aiderait beaucoup - répondez OUI et je vous enverrai le lien.`,
   };
 }
 
 /**
  * Evaluate every enabled rule for a business and fire due actions.
- * Idempotent: a WorkflowEvent row is created first inside a transaction —
+ * Idempotent: a WorkflowEvent row is created first inside a transaction -
  * a unique-violation means another run already fired for that entity, so it
  * is skipped. Notifications are in-app only; review content is a DRAFT the
- * owner copies — nothing is ever sent automatically.
+ * owner copies - nothing is ever sent automatically.
  */
 export async function runWorkflowsForBusiness(businessId: string): Promise<WorkflowRunResult> {
   const rules = await getOrCreateDefaultRules(businessId);
@@ -260,7 +260,7 @@ async function fireOnce(
       await tx.workflowEvent.create({
         data: { ruleId, entityType, entityId },
       });
-      // In-app notification only — never an external send.
+      // In-app notification only - never an external send.
       await tx.notification.create({
         data: {
           businessId,

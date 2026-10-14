@@ -5,7 +5,7 @@
  *
  * Pure-function tests run against the real modules. Server-action tests
  * run against an in-memory stub (reviews-moat-stub.mjs) wired by
- * reviews-moat-stub-loader.mjs, registered below — only this file's
+ * reviews-moat-stub-loader.mjs, registered below - only this file's
  * subprocess is affected, no database is ever contacted.
  *
  * Run: node --test --import ./src/lib/__tests__/register-loader.mjs src/lib/__tests__/reviews-moat.test.mts

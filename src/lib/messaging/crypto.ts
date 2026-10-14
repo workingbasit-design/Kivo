@@ -1,7 +1,7 @@
 import { createCipheriv, createDecipheriv, randomBytes } from 'crypto';
 
 /**
- * Track 9 — encryption at rest for provider secrets (Meta access tokens,
+ * Track 9 - encryption at rest for provider secrets (Meta access tokens,
  * Resend API keys). AES-256-GCM with a server-side key.
  *
  * Key source: the `MESSAGING_ENC_KEY` env var, a base64-encoded 32-byte key.

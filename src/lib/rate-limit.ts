@@ -5,7 +5,7 @@
  * serverless, every concurrent instance (and every cold start) gets its own
  * bucket map, so a limit of N/hour is really ~N/hour *per instance*. This is
  * acceptable while traffic is low, but before any public scaling the
- * limiter MUST move to a shared store (Upstash Redis / Vercel KV —
+ * limiter MUST move to a shared store (Upstash Redis / Vercel KV -
  * `@upstash/ratelimit` is the standard choice) or the limits are advisory
  * only under burst traffic.
  *

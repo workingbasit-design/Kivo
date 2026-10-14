@@ -1,6 +1,6 @@
 /**
  * Unit tests for the help center article library (src/lib/help-articles.ts)
- * plus en/fr parity of the support i18n fragment. No HTTP, no DB — pure
+ * plus en/fr parity of the support i18n fragment. No HTTP, no DB - pure
  * logic only.
  * Run: node --test --import ./src/lib/__tests__/register-loader.mjs src/lib/__tests__/help-articles.test.mts
  */

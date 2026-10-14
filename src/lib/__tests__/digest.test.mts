@@ -1,6 +1,6 @@
 /**
  * Tests for the morning digest (src/lib/digest.ts).
- * Only the pure helpers are tested here — getDigestData hits the DB and is
+ * Only the pure helpers are tested here - getDigestData hits the DB and is
  * covered by integration checks, not unit tests.
  */
 import test from 'node:test';

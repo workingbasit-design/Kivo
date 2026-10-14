@@ -1,7 +1,7 @@
 /**
  * Integration tests for the shared job/money queries (Part A3).
  * Source: src/lib/job-queries.ts -> getJobCounts / getMoneySummary /
- * getJobsInRange. The Prisma client is stubbed via dependency injection —
+ * getJobsInRange. The Prisma client is stubbed via dependency injection -
  * no real database is touched.
  *
  * Seeds 4 jobs (past, today, future, no date) and asserts all screens

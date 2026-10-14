@@ -129,7 +129,7 @@ export default function OnMyWayNotifier({
         )}
 
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+          <p className="text-[11px] font-bold text-zinc-400 mb-1.5">
             {tr('preview')}
           </p>
           <p className="text-sm text-zinc-700 bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 whitespace-pre-wrap">

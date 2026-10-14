@@ -56,7 +56,7 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except the static assets in PROXY_STATIC_BYPASS
-     * (@/lib/public-paths, unit-tested — keep this literal in sync; Next.js
+     * (@/lib/public-paths, unit-tested - keep this literal in sync; Next.js
      * requires matcher entries to be static strings):
      * - _next/static, _next/image (static files)
      * - favicon.ico, favicon.svg, sitemap.xml, robots.txt (metadata)

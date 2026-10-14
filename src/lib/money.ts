@@ -1,5 +1,5 @@
 /**
- * CAD money formatting. Display only — EveryJob never processes
+ * CAD money formatting. Display only - EveryJob never processes
  * payments, so this is purely presentational.
  *
  * Accepts dollars (number) for backward compatibility.
@@ -45,7 +45,7 @@ export function formatMoney(
     amount === null || amount === undefined || Number.isNaN(Number(amount))
       ? 0
       : Number(amount);
-  // fr-CA: "1 234,56 $" (narrow no-break space, comma decimals) — the
+  // fr-CA: "1 234,56 $" (narrow no-break space, comma decimals) - the
   // standard Quebec price format.
   if (locale === 'fr') {
     return new Intl.NumberFormat('fr-CA', {

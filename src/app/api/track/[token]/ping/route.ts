@@ -7,11 +7,11 @@ import { clientIpFromHeaders } from '@/lib/client-ip';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
 
 /**
- * GET /api/track/[token]/ping — public live-tracking poll endpoint.
+ * GET /api/track/[token]/ping - public live-tracking poll endpoint.
  * No authentication: the unguessable token in the URL is the only
  * capability (same as the /track/[token] page). Returns the technician's
  * latest ping plus straight-line distance and driving ETA to the job
- * address. Rate-limited per IP. Never 500s on bad data — it degrades to
+ * address. Rate-limited per IP. Never 500s on bad data - it degrades to
  * `{ ok: true, latest: null }` so the customer page keeps polling.
  */
 
@@ -31,7 +31,7 @@ export async function GET(
   const rl = rateLimit(`portal:track-ping:${await clientIp()}`, PING_LIMIT);
   if (!rl.ok) {
     return NextResponse.json(
-      { error: 'Too many requests — please wait a moment.' },
+      { error: 'Too many requests - please wait a moment.' },
       { status: 429 }
     );
   }
@@ -54,7 +54,7 @@ export async function GET(
       })
     );
   } catch {
-    // Our side failed (e.g. database unreachable) — tell the client to keep
+    // Our side failed (e.g. database unreachable) - tell the client to keep
     // polling rather than 500ing. Never report a live link as expired.
     return NextResponse.json({ error: 'unavailable' }, { status: 503 });
   }

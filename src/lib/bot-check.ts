@@ -1,7 +1,7 @@
 /**
  * Honeypot + minimum-fill-time bot checks for public forms.
  *
- * Enforced SERVER-SIDE — the form fields are just carriers; a bot posting
+ * Enforced SERVER-SIDE - the form fields are just carriers; a bot posting
  * directly to the action gets the same checks. This is a cheap first layer,
  * not a replacement for interactive challenges.
  *

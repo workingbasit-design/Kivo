@@ -168,7 +168,7 @@ function AddExpenseForm({ jobId, locale }: { jobId: string; locale: Locale }) {
       <input type="hidden" name="jobId" value={jobId} />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="sm:col-span-2">
-          <label className="block text-[11px] font-bold uppercase tracking-wider text-graphite mb-1">
+          <label className="block text-[11px] font-bold text-graphite mb-1">
             {t(locale, 'jobops.expenses.description')}
           </label>
           <input
@@ -180,7 +180,7 @@ function AddExpenseForm({ jobId, locale }: { jobId: string; locale: Locale }) {
           />
         </div>
         <div>
-          <label className="block text-[11px] font-bold uppercase tracking-wider text-graphite mb-1">
+          <label className="block text-[11px] font-bold text-graphite mb-1">
             {t(locale, 'jobops.expenses.amount')}
           </label>
           <input
@@ -194,7 +194,7 @@ function AddExpenseForm({ jobId, locale }: { jobId: string; locale: Locale }) {
           />
         </div>
         <div>
-          <label className="block text-[11px] font-bold uppercase tracking-wider text-graphite mb-1">
+          <label className="block text-[11px] font-bold text-graphite mb-1">
             {t(locale, 'jobops.expenses.category')}
           </label>
           <select name="category" className={jInputClass} defaultValue="MATERIALS">
@@ -213,7 +213,7 @@ function AddExpenseForm({ jobId, locale }: { jobId: string; locale: Locale }) {
           </select>
         </div>
         <div>
-          <label className="block text-[11px] font-bold uppercase tracking-wider text-graphite mb-1">
+          <label className="block text-[11px] font-bold text-graphite mb-1">
             {t(locale, 'jobops.expenses.date')}
           </label>
           <input

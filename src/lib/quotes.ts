@@ -1,5 +1,5 @@
 /**
- * Quote add-on helpers (pure — unit-testable without a database).
+ * Quote add-on helpers (pure - unit-testable without a database).
  *
  * Add-ons are optional extras the client toggles on the public quote page.
  * The stored quote total is the base total; the displayed total is

@@ -8,7 +8,7 @@
  * through untouched.
  *
  * These tests exercise the pure decision function and the middleware
- * shape directly — no real Prisma client, no database.
+ * shape directly - no real Prisma client, no database.
  */
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
@@ -130,7 +130,7 @@ describe('tenant guard allows legitimate queries', () => {
   });
 
   it('does not leak scope between tenants at the decision level', () => {
-    // Tenant A scoped — fine. Same shape with tenant B — fine. Unscoped — blocked.
+    // Tenant A scoped - fine. Same shape with tenant B - fine. Unscoped - blocked.
     expectAllowed('Job', 'update', { where: { id: 'row_1', businessId: BIZ_A } });
     expectAllowed('Job', 'update', { where: { id: 'row_1', businessId: BIZ_B } });
     expectBlocked('Job', 'update', { where: { id: 'row_1' } });
@@ -214,7 +214,7 @@ describe('unsafeUnscoped escape hatch', () => {
     // internal engine scheduling, outside the caller's async chain), so an
     // ALS-based exemption never reached the guard and every public token
     // page 500'd with TenantScopeError. The fix is an explicit unguarded
-    // client passed to the callback — verify no ALS is involved.
+    // client passed to the callback - verify no ALS is involved.
     const src = readFileSync(
       new URL('../tenant-guard.ts', import.meta.url),
       'utf8'
@@ -223,7 +223,7 @@ describe('unsafeUnscoped escape hatch', () => {
     const fnBody = src.slice(src.indexOf('export async function unsafeUnscoped'));
     assert.ok(
       !/unscopedStore\.run/.test(fnBody),
-      'unsafeUnscoped must not use AsyncLocalStorage.run — use the injected client'
+      'unsafeUnscoped must not use AsyncLocalStorage.run - use the injected client'
     );
   });
 });
@@ -249,7 +249,7 @@ describe('TENANT_MODELS stays in sync with prisma/schema.prisma', () => {
     }
     assert.ok(modelsWithBusinessId.size > 40, `expected many tenant models, found ${modelsWithBusinessId.size}`);
 
-    // User is deliberately excluded (identity root — login looks users up
+    // User is deliberately excluded (identity root - login looks users up
     // globally before any tenant is known; see tenant-guard.ts).
     // AgentProposal IS guarded (fail-closed): every legitimate access goes
     // through explicit unsafeUnscoped with 256-bit token checks, so a

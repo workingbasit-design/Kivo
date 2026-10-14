@@ -1,6 +1,6 @@
 /**
- * GET /api/v1/customers — list customers (tenant-scoped).
- * POST /api/v1/customers — create a customer.
+ * GET /api/v1/customers - list customers (tenant-scoped).
+ * POST /api/v1/customers - create a customer.
  *
  * Auth: Authorization: Bearer ejk_live_...
  * GET needs the `read` scope; POST needs `write`.

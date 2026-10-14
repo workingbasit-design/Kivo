@@ -338,7 +338,7 @@ function RateForm({
 
   return (
     <form ref={formRef} action={formAction}>
-      <label className="block text-[11px] font-bold uppercase tracking-wider text-graphite mb-1">
+      <label className="block text-[11px] font-bold text-graphite mb-1">
         {t(locale, 'jobops.costing.hourlyRate')}
       </label>
       <div className="flex gap-2">

@@ -1,7 +1,7 @@
 /**
  * Help center article library (server-safe, no I/O).
  *
- * Every article describes what EveryJob ACTUALLY does — claims were verified
+ * Every article describes what EveryJob ACTUALLY does - claims were verified
  * against the codebase (routes, actions, schema). Never invent features here.
  * Bodies are markdown-ish text (## headings, - bullets, plain paragraphs).
  */
@@ -49,7 +49,7 @@ const A: HelpArticle[] = [
       title: 'Getting started with EveryJob',
       body: `## Welcome to EveryJob
 
-EveryJob is a free job-management app for Canadian home-service businesses. Everything runs in your browser — nothing to install.
+EveryJob is a free job-management app for Canadian home-service businesses. Everything runs in your browser - nothing to install.
 
 ## Your first 10 minutes
 
@@ -59,23 +59,23 @@ EveryJob is a free job-management app for Canadian home-service businesses. Ever
 
 ## Where everything lives
 
-- **Dashboard** — today's jobs and a snapshot of your business.
-- **Customers** — your customer list, with search, import and export.
-- **Jobs** — every job, moving through a simple pipeline.
-- **Schedule** — your jobs on a calendar view.
-- **Quotes & Invoices** — send quotes, get them approved, turn them into invoices.
-- **Insights** — your profile strength and certification roadmap.
-- **Settings** — business details, team, messaging, automations, booking page, payments.
+- **Dashboard** - today's jobs and a snapshot of your business.
+- **Customers** - your customer list, with search, import and export.
+- **Jobs** - every job, moving through a simple pipeline.
+- **Schedule** - your jobs on a calendar view.
+- **Quotes & Invoices** - send quotes, get them approved, turn them into invoices.
+- **Insights** - your profile strength and certification roadmap.
+- **Settings** - business details, team, messaging, automations, booking page, payments.
 
 ## Stuck? Ask the AI assistant
 
-The EveryJob AI assistant (bottom-right of every page) answers questions about your own data — "How many customers do I have?", "What is my booked revenue this month?" — in English or French. It never creates records without showing you a preview and getting your confirmation first.`,
+The EveryJob AI assistant (bottom-right of every page) answers questions about your own data - "How many customers do I have?", "What is my booked revenue this month?" - in English or French. It never creates records without showing you a preview and getting your confirmation first.`,
     },
     fr: {
       title: 'Débuter avec EveryJob',
       body: `## Bienvenue sur EveryJob
 
-EveryJob est une application gratuite de gestion pour les entreprises canadiennes de services à domicile. Tout fonctionne dans votre navigateur — rien à installer.
+EveryJob est une application gratuite de gestion pour les entreprises canadiennes de services à domicile. Tout fonctionne dans votre navigateur - rien à installer.
 
 ## Vos 10 premières minutes
 
@@ -85,17 +85,17 @@ EveryJob est une application gratuite de gestion pour les entreprises canadienne
 
 ## Où tout se trouve
 
-- **Tableau de bord** — les travaux du jour et un aperçu de votre entreprise.
-- **Clients** — votre liste de clients, avec recherche, importation et exportation.
-- **Travaux** — chaque travail, suivant un pipeline simple.
-- **Horaire** — vos travaux sur un calendrier.
-- **Soumissions et factures** — envoyez des soumissions, faites-les approuver, convertissez-les en factures.
-- **Aperçus** — la solidité de votre profil et votre feuille de route de certification.
-- **Paramètres** — coordonnées de l'entreprise, équipe, messagerie, automatisations, page de réservation, paiements.
+- **Tableau de bord** - les travaux du jour et un aperçu de votre entreprise.
+- **Clients** - votre liste de clients, avec recherche, importation et exportation.
+- **Travaux** - chaque travail, suivant un pipeline simple.
+- **Horaire** - vos travaux sur un calendrier.
+- **Soumissions et factures** - envoyez des soumissions, faites-les approuver, convertissez-les en factures.
+- **Aperçus** - la solidité de votre profil et votre feuille de route de certification.
+- **Paramètres** - coordonnées de l'entreprise, équipe, messagerie, automatisations, page de réservation, paiements.
 
 ## Bloqué? Demandez à l'assistant IA
 
-L'assistant IA EveryJob (en bas à droite de chaque page) répond aux questions sur vos propres données — « Combien de clients ai-je? », « Quel est mon revenu réservé ce mois-ci? » — en français ou en anglais. Il ne crée jamais de dossier sans d'abord vous montrer un aperçu et obtenir votre confirmation.`,
+L'assistant IA EveryJob (en bas à droite de chaque page) répond aux questions sur vos propres données - « Combien de clients ai-je? », « Quel est mon revenu réservé ce mois-ci? » - en français ou en anglais. Il ne crée jamais de dossier sans d'abord vous montrer un aperçu et obtenir votre confirmation.`,
     },
   },
   {
@@ -112,7 +112,7 @@ The Customers page is your address book. Add customers one by one, search by nam
 ## Adding customers
 
 - **Manually**: click "Add customer" and fill in name, phone, email and address.
-- **In bulk**: import a CSV or Excel file (see "Importing and exporting data"). You get a preview with validation, duplicate detection and a confirmation step — nothing is created silently.
+- **In bulk**: import a CSV or Excel file (see "Importing and exporting data"). You get a preview with validation, duplicate detection and a confirmation step - nothing is created silently.
 
 ## Custom fields
 
@@ -120,7 +120,7 @@ Need to track something specific (gate code, preferred contact time)? Add custom
 
 ## Exporting
 
-Export your customer list to CSV or Excel any time, with your current search and filters applied — handy for backups or mail merges.
+Export your customer list to CSV or Excel any time, with your current search and filters applied - handy for backups or mail merges.
 
 ## The AI assistant can help
 
@@ -135,7 +135,7 @@ La page Clients est votre carnet d'adresses. Ajoutez des clients un par un, rech
 ## Ajouter des clients
 
 - **Manuellement** : cliquez sur « Ajouter un client » et remplissez le nom, le téléphone, le courriel et l'adresse.
-- **En lot** : importez un fichier CSV ou Excel (voir « Importer et exporter des données »). Vous obtenez un aperçu avec validation, détection des doublons et une étape de confirmation — rien n'est créé en silence.
+- **En lot** : importez un fichier CSV ou Excel (voir « Importer et exporter des données »). Vous obtenez un aperçu avec validation, détection des doublons et une étape de confirmation - rien n'est créé en silence.
 
 ## Champs personnalisés
 
@@ -143,7 +143,7 @@ Besoin de suivre quelque chose de précis (code de porte, moment préféré pour
 
 ## Exportation
 
-Exportez votre liste de clients en CSV ou Excel en tout temps, avec votre recherche et vos filtres appliqués — pratique pour les sauvegardes ou les publipostages.
+Exportez votre liste de clients en CSV ou Excel en tout temps, avec votre recherche et vos filtres appliqués - pratique pour les sauvegardes ou les publipostages.
 
 ## L'assistant IA peut aider
 
@@ -177,11 +177,11 @@ Job prices accept cents (for example $249.99) and all money math is rounded to t
 
 ## Recurring jobs
 
-Jobs can repeat on a schedule — set the recurrence when you create the job and EveryJob generates the upcoming occurrences for you.
+Jobs can repeat on a schedule - set the recurrence when you create the job and EveryJob generates the upcoming occurrences for you.
 
 ## What the AI assistant knows
 
-Ask "What is my total booked revenue this month?" and the assistant totals your scheduled (non-cancelled) jobs for the current calendar month — separate from payments you've actually collected.`,
+Ask "What is my total booked revenue this month?" and the assistant totals your scheduled (non-cancelled) jobs for the current calendar month - separate from payments you've actually collected.`,
     },
     fr: {
       title: 'Travaux et pipeline des travaux',
@@ -205,11 +205,11 @@ Les prix acceptent les cents (par exemple 249,99 $) et tous les calculs sont arr
 
 ## Travaux récurrents
 
-Les travaux peuvent se répéter selon un horaire — définissez la récurrence à la création et EveryJob génère les prochaines occurrences pour vous.
+Les travaux peuvent se répéter selon un horaire - définissez la récurrence à la création et EveryJob génère les prochaines occurrences pour vous.
 
 ## Ce que l'assistant IA sait
 
-Demandez « Quel est mon revenu réservé ce mois-ci? » et l'assistant totalise vos travaux planifiés (non annulés) du mois civil en cours — séparément des paiements réellement encaissés.`,
+Demandez « Quel est mon revenu réservé ce mois-ci? » et l'assistant totalise vos travaux planifiés (non annulés) du mois civil en cours - séparément des paiements réellement encaissés.`,
     },
   },
   {
@@ -229,7 +229,7 @@ Open a job and set its scheduled date and time. It appears on the schedule and o
 
 ## Removing from the schedule
 
-Jobs can be removed from the schedule without deleting them — they go back to the job list and can be rescheduled later.
+Jobs can be removed from the schedule without deleting them - they go back to the job list and can be rescheduled later.
 
 ## Time tracking
 
@@ -247,7 +247,7 @@ Ouvrez un travail et définissez sa date et son heure. Il apparaît à l'horaire
 
 ## Retirer de l'horaire
 
-Un travail peut être retiré de l'horaire sans être supprimé — il retourne à la liste des travaux et peut être replanifié plus tard.
+Un travail peut être retiré de l'horaire sans être supprimé - il retourne à la liste des travaux et peut être replanifié plus tard.
 
 ## Suivi du temps
 
@@ -305,7 +305,7 @@ Activez la relance de soumissions (Paramètres → Automatisations) et EveryJob 
       title: 'Timesheets',
       body: `## Track who worked what
 
-Timesheets keep a simple record of hours worked — by whom, on which job, and when.
+Timesheets keep a simple record of hours worked - by whom, on which job, and when.
 
 ## Why it matters
 
@@ -319,7 +319,7 @@ Open Timesheets from the main navigation to log and review time entries.`,
       title: 'Feuilles de temps',
       body: `## Suivez qui a fait quoi
 
-Les feuilles de temps gardent un registre simple des heures travaillées — par qui, sur quel travail, et quand.
+Les feuilles de temps gardent un registre simple des heures travaillées - par qui, sur quel travail, et quand.
 
 ## Pourquoi c'est utile
 
@@ -343,11 +343,11 @@ Invoices are **Unpaid**, **Partially paid** or **Paid**. Record payments as they
 
 ## Getting paid online
 
-Connect your own Stripe account in Settings → Payments. Money goes straight to you — EveryJob never holds your funds.
+Connect your own Stripe account in Settings → Payments. Money goes straight to you - EveryJob never holds your funds.
 
 ## Overdue reminders, automatically
 
-Turn on invoice reminders (Settings → Automations) and EveryJob will remind customers about upcoming and overdue invoices after the grace period you choose — politely, and only if they consented to messages.
+Turn on invoice reminders (Settings → Automations) and EveryJob will remind customers about upcoming and overdue invoices after the grace period you choose - politely, and only if they consented to messages.
 
 ## What the AI assistant knows
 
@@ -361,11 +361,11 @@ Les factures sont **Impayées**, **Partiellement payées** ou **Payées**. Enreg
 
 ## Être payé en ligne
 
-Connectez votre propre compte Stripe dans Paramètres → Paiements. L'argent vous parvient directement — EveryJob ne détient jamais vos fonds.
+Connectez votre propre compte Stripe dans Paramètres → Paiements. L'argent vous parvient directement - EveryJob ne détient jamais vos fonds.
 
 ## Rappels d'impayés automatiques
 
-Activez les rappels de factures (Paramètres → Automatisations) et EveryJob rappellera poliment aux clients les factures à venir et en retard après le délai de grâce que vous choisissez — et seulement s'ils ont consenti aux messages.
+Activez les rappels de factures (Paramètres → Automatisations) et EveryJob rappellera poliment aux clients les factures à venir et en retard après le délai de grâce que vous choisissez - et seulement s'ils ont consenti aux messages.
 
 ## Ce que l'assistant IA sait
 
@@ -385,12 +385,12 @@ Bring your existing customer list with a CSV or Excel file (.csv, .xls, .xlsx):
 
 1. Go to Imports and upload your file (Excel reads the first worksheet).
 2. **Preview** every row with validation results before anything is created.
-3. **Duplicates are flagged** — choose to skip or update them.
+3. **Duplicates are flagged** - choose to skip or update them.
 4. **Confirm** and only then are the customers created. Nothing is ever created silently.
 
 ## Exporting
 
-Export **customers, jobs, quotes and invoices** to CSV or Excel from each page's export button. Your current search and filters are applied, so you export exactly what you see — handy for backups, accountants and mail merges.
+Export **customers, jobs, quotes and invoices** to CSV or Excel from each page's export button. Your current search and filters are applied, so you export exactly what you see - handy for backups, accountants and mail merges.
 
 ## Your data stays yours
 
@@ -404,12 +404,12 @@ Importez votre liste de clients existante avec un fichier CSV ou Excel (.csv, .x
 
 1. Allez à Importations et téléversez votre fichier (Excel lit la première feuille).
 2. **Prévisualisez** chaque ligne avec les résultats de validation avant toute création.
-3. **Les doublons sont signalés** — choisissez de les ignorer ou de les mettre à jour.
+3. **Les doublons sont signalés** - choisissez de les ignorer ou de les mettre à jour.
 4. **Confirmez**, et seulement alors les clients sont créés. Rien n'est jamais créé en silence.
 
 ## Exporter
 
-Exportez **clients, travaux, soumissions et factures** en CSV ou Excel depuis le bouton d'exportation de chaque page. Votre recherche et vos filtres en cours sont appliqués : vous exportez exactement ce que vous voyez — pratique pour les sauvegardes, les comptables et les publipostages.
+Exportez **clients, travaux, soumissions et factures** en CSV ou Excel depuis le bouton d'exportation de chaque page. Votre recherche et vos filtres en cours sont appliqués : vous exportez exactement ce que vous voyez - pratique pour les sauvegardes, les comptables et les publipostages.
 
 ## Vos données restent à vous
 
@@ -425,7 +425,7 @@ Les exportations sont des fichiers ordinaires ouvrables partout. Aucune dépenda
       title: 'The EveryJob AI assistant',
       body: `## What it is
 
-The AI assistant (bottom-right of every page) answers questions about your business using your real data — customers, jobs, quotes, invoices and your credentials.
+The AI assistant (bottom-right of every page) answers questions about your business using your real data - customers, jobs, quotes, invoices and your credentials.
 
 ## What it can do
 
@@ -439,17 +439,17 @@ The AI assistant (bottom-right of every page) answers questions about your busin
 - **Never creates records silently.** No customer, job or booking appears without your explicit confirmation.
 - **Never sends messages.** It drafts; you send.
 - **Admits what it doesn't know.** Ask about another business's customer and it tells you it can't find them instead of inventing one. Ask about peer comparisons and it tells you plainly there is no peer data yet.
-- **Stays in its lane.** Ask about the weather and it politely declines — it is your business assistant, not a search engine.
+- **Stays in its lane.** Ask about the weather and it politely declines - it is your business assistant, not a search engine.
 
 ## It learns your business
 
-Set your trade and credentials (Settings → Credentials) and the assistant gives tailored answers — for example, pointing Ontario plumbers to the right official certification bodies.`,
+Set your trade and credentials (Settings → Credentials) and the assistant gives tailored answers - for example, pointing Ontario plumbers to the right official certification bodies.`,
     },
     fr: {
       title: 'L’assistant IA EveryJob',
       body: `## Ce que c'est
 
-L'assistant IA (en bas à droite de chaque page) répond aux questions sur votre entreprise à partir de vos vraies données — clients, travaux, soumissions, factures et vos titres de compétence.
+L'assistant IA (en bas à droite de chaque page) répond aux questions sur votre entreprise à partir de vos vraies données - clients, travaux, soumissions, factures et vos titres de compétence.
 
 ## Ce qu'il peut faire
 
@@ -463,11 +463,11 @@ L'assistant IA (en bas à droite de chaque page) répond aux questions sur votre
 - **Jamais de création silencieuse.** Aucun client, travail ou rendez-vous n'apparaît sans votre confirmation explicite.
 - **Jamais d'envoi de messages.** Il rédige; vous envoyez.
 - **Il admet ce qu'il ignore.** Interrogez-le sur le client d'une autre entreprise et il vous dira qu'il ne le trouve pas au lieu d'en inventer un. Demandez une comparaison avec des pairs et il vous dira franchement qu'il n'y a pas encore de données.
-- **Il reste dans son rôle.** Demandez la météo et il déclinera poliment — c'est votre assistant d'entreprise, pas un moteur de recherche.
+- **Il reste dans son rôle.** Demandez la météo et il déclinera poliment - c'est votre assistant d'entreprise, pas un moteur de recherche.
 
 ## Il apprend votre métier
 
-Définissez votre métier et vos titres (Paramètres → Titres) et l'assistant donne des réponses adaptées — par exemple, en dirigeant les plombiers ontariens vers les bons organismes officiels de certification.`,
+Définissez votre métier et vos titres (Paramètres → Titres) et l'assistant donne des réponses adaptées - par exemple, en dirigeant les plombiers ontariens vers les bons organismes officiels de certification.`,
     },
   },
   {
@@ -492,7 +492,7 @@ Each rule can be toggled on or off individually, and you tune the timing (follow
 
 ## Safety rails, always on
 
-- **Consent first**: no customer opt-in, no message — ever.
+- **Consent first**: no customer opt-in, no message - ever.
 - **Quiet hours**: messages wait for business hours in your timezone.
 - **Free quotas**: sending stops hard at the free limit. Nothing can silently cost you money.
 - **Drafts, not surprises**: by design, automations are limited to in-app notifications and drafts. Anything that goes to a customer is something you approved.`,
@@ -514,7 +514,7 @@ Chaque règle s'active ou se désactive individuellement, et vous réglez le min
 
 ## Garde-fous toujours actifs
 
-- **Consentement d'abord** : sans l'accord du client, aucun message — jamais.
+- **Consentement d'abord** : sans l'accord du client, aucun message - jamais.
 - **Heures de silence** : les messages attendent les heures d'ouverture de votre fuseau horaire.
 - **Quotas gratuits** : l'envoi s'arrête net à la limite gratuite. Rien ne peut vous coûter de l'argent en silence.
 - **Brouillons, pas de surprises** : par conception, les automatisations se limitent aux notifications internes et aux brouillons. Tout ce qui parvient à un client est quelque chose que vous avez approuvé.`,
@@ -531,7 +531,7 @@ Chaque règle s'active ou se désactive individuellement, et vous réglez le min
 
 EveryJob can message your customers over **WhatsApp** and **email** using free-tier providers you connect in Settings → Messaging. A message log shows everything sent.
 
-## The rules are strict — on purpose
+## The rules are strict - on purpose
 
 1. **Consent (CASL)**: a customer who hasn't opted in never gets a message. Blocked attempts are logged, not sent.
 2. **Quiet hours**: messages are deferred to business hours in your timezone.
@@ -540,7 +540,7 @@ EveryJob can message your customers over **WhatsApp** and **email** using free-t
 
 ## What about texting (SMS)?
 
-SMS is disabled by design to keep EveryJob free — WhatsApp and email cover customer messaging without per-message charges.`,
+SMS is disabled by design to keep EveryJob free - WhatsApp and email cover customer messaging without per-message charges.`,
     },
     fr: {
       title: 'Envoyer des messages aux clients',
@@ -548,7 +548,7 @@ SMS is disabled by design to keep EveryJob free — WhatsApp and email cover cus
 
 EveryJob peut écrire à vos clients par **WhatsApp** et par **courriel** grâce aux fournisseurs gratuits que vous connectez dans Paramètres → Messagerie. Un journal des messages montre tout ce qui a été envoyé.
 
-## Des règles strictes — volontairement
+## Des règles strictes - volontairement
 
 1. **Consentement (LCAP)** : un client qui n'a pas accepté ne reçoit jamais de message. Les tentatives bloquées sont journalisées, pas envoyées.
 2. **Heures de silence** : les messages attendent les heures d'ouverture de votre fuseau horaire.
@@ -557,7 +557,7 @@ EveryJob peut écrire à vos clients par **WhatsApp** et par **courriel** grâce
 
 ## Et les textos (SMS)?
 
-Les SMS sont désactivés par conception pour garder EveryJob gratuit — WhatsApp et le courriel couvrent la messagerie client sans frais par message.`,
+Les SMS sont désactivés par conception pour garder EveryJob gratuit - WhatsApp et le courriel couvrent la messagerie client sans frais par message.`,
     },
   },
   {
@@ -569,13 +569,13 @@ Les SMS sont désactivés par conception pour garder EveryJob gratuit — WhatsA
       title: 'Your online booking page',
       body: `## Let customers book you directly
 
-Turn on your public booking page in Settings → Booking. You get a shareable link (your business's own /book page) where customers can request a booking any time — even at midnight.
+Turn on your public booking page in Settings → Booking. You get a shareable link (your business's own /book page) where customers can request a booking any time - even at midnight.
 
 ## How it works
 
 1. Enable the page and choose which services can be booked.
 2. Share the link on your website, Google profile, invoices and quotes.
-3. Incoming requests arrive as drafts for you to confirm — nothing is ever booked without your say-so.
+3. Incoming requests arrive as drafts for you to confirm - nothing is ever booked without your say-so.
 
 ## Public directory listing
 
@@ -585,13 +585,13 @@ You can also appear in the EveryJob public directory so nearby customers can fin
       title: 'Votre page de réservation en ligne',
       body: `## Laissez les clients vous réserver directement
 
-Activez votre page de réservation publique dans Paramètres → Réservation. Vous obtenez un lien à partager (la page /book de votre entreprise) où les clients peuvent demander une réservation en tout temps — même à minuit.
+Activez votre page de réservation publique dans Paramètres → Réservation. Vous obtenez un lien à partager (la page /book de votre entreprise) où les clients peuvent demander une réservation en tout temps - même à minuit.
 
 ## Comment ça fonctionne
 
 1. Activez la page et choisissez les services réservables.
 2. Partagez le lien sur votre site web, votre fiche Google, vos factures et soumissions.
-3. Les demandes arrivent comme brouillons à confirmer — rien n'est jamais réservé sans votre accord.
+3. Les demandes arrivent comme brouillons à confirmer - rien n'est jamais réservé sans votre accord.
 
 ## Fiche publique au répertoire
 
@@ -615,7 +615,7 @@ Set your primary trade (plumbing, electrical, HVAC, carpentry, painting, landsca
 
 ## Certification roadmap
 
-Based on your trade, EveryJob shows a roadmap of real Canadian credentials you can pursue next — Red Seal, provincial bodies like Skilled Trades Ontario or SkilledTradesBC, and official links. No invented programs, ever.
+Based on your trade, EveryJob shows a roadmap of real Canadian credentials you can pursue next - Red Seal, provincial bodies like Skilled Trades Ontario or SkilledTradesBC, and official links. No invented programs, ever.
 
 ## Profile strength
 
@@ -633,7 +633,7 @@ Définissez votre métier principal (plomberie, électricité, CVCA, menuiserie,
 
 ## Feuille de route de certification
 
-Selon votre métier, EveryJob affiche une feuille de route de vrais titres canadiens à envisager — Sceau rouge, organismes provinciaux comme Skilled Trades Ontario ou SkilledTradesBC, avec liens officiels. Jamais de programmes inventés.
+Selon votre métier, EveryJob affiche une feuille de route de vrais titres canadiens à envisager - Sceau rouge, organismes provinciaux comme Skilled Trades Ontario ou SkilledTradesBC, avec liens officiels. Jamais de programmes inventés.
 
 ## Solidité du profil
 
@@ -649,9 +649,9 @@ Aperçus note votre profil sur 100 à partir de vos propres données et liste le
       title: 'Getting help: help center, AI, and direct support',
       body: `## Three ways to get unstuck
 
-1. **This help center** — searchable articles written from the app's real features, in English and French.
-2. **The AI assistant** — instant answers about your own data and how to use the app (bottom-right of every page).
-3. **A support ticket** — use the form below. Your ticket goes **directly to the owner of EveryJob** — no ticket black hole, no tiered support queues, no bots stalling you.
+1. **This help center** - searchable articles written from the app's real features, in English and French.
+2. **The AI assistant** - instant answers about your own data and how to use the app (bottom-right of every page).
+3. **A support ticket** - use the form below. Your ticket goes **directly to the owner of EveryJob** - no ticket black hole, no tiered support queues, no bots stalling you.
 
 ## What to include in a ticket
 
@@ -659,15 +659,15 @@ Your name, your email, a short subject, and what happened: what you were trying 
 
 ## Response expectations
 
-EveryJob is run by its founder. Tickets are read by a human — usually the person who built the feature you're asking about.`,
+EveryJob is run by its founder. Tickets are read by a human - usually the person who built the feature you're asking about.`,
     },
     fr: {
       title: 'Obtenir de l’aide : centre d’aide, IA et soutien direct',
       body: `## Trois façons de vous débloquer
 
-1. **Ce centre d'aide** — des articles consultables décrivant les vraies fonctions de l'application, en français et en anglais.
-2. **L'assistant IA** — des réponses instantanées sur vos propres données et sur l'utilisation de l'application (en bas à droite de chaque page).
-3. **Un billet de soutien** — utilisez le formulaire ci-dessous. Votre billet va **directement au propriétaire d'EveryJob** — pas de trou noir, pas de files d'attente par niveaux, pas de robots qui vous font patienter.
+1. **Ce centre d'aide** - des articles consultables décrivant les vraies fonctions de l'application, en français et en anglais.
+2. **L'assistant IA** - des réponses instantanées sur vos propres données et sur l'utilisation de l'application (en bas à droite de chaque page).
+3. **Un billet de soutien** - utilisez le formulaire ci-dessous. Votre billet va **directement au propriétaire d'EveryJob** - pas de trou noir, pas de files d'attente par niveaux, pas de robots qui vous font patienter.
 
 ## Quoi inclure dans un billet
 
@@ -675,7 +675,7 @@ Votre nom, votre courriel, un objet court, et ce qui s'est passé : ce que vous 
 
 ## À quoi vous attendre
 
-EveryJob est géré par son fondateur. Les billets sont lus par un humain — généralement la personne qui a conçu la fonction sur laquelle vous posez une question.`,
+EveryJob est géré par son fondateur. Les billets sont lus par un humain - généralement la personne qui a conçu la fonction sur laquelle vous posez une question.`,
     },
   },
 ];

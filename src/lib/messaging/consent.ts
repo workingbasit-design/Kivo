@@ -1,5 +1,5 @@
 /**
- * Track 9 — CASL consent guardrails and inbound STOP/HELP detection.
+ * Track 9 - CASL consent guardrails and inbound STOP/HELP detection.
  *
  * Pure, testable TypeScript: no DB, no network, no Next.js imports.
  * Under CASL, express consent is required for commercial electronic

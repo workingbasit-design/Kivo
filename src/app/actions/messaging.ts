@@ -292,7 +292,7 @@ export async function previewMessagingAction(): Promise<{
 
 /**
  * Run the automation cycle now. Respects the stored dryRun flag: when preview
- * mode is on, this only logs a preview — nothing is sent.
+ * mode is on, this only logs a preview - nothing is sent.
  */
 export async function runMessagingNowAction(): Promise<{
   ok: boolean;

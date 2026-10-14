@@ -42,6 +42,23 @@ type Job = {
   } | null;
 };
 
+/**
+ * Minutes since midnight for agenda sorting. Handles both stored formats
+ * ("09:00" and "10:00 AM"). Untimed / unparseable jobs sort last.
+ */
+function timeToMinutes(time: string | null): number {
+  if (!time) return Number.MAX_SAFE_INTEGER;
+  const m = time.trim().match(/^(\d{1,2}):(\d{2})\s*([AaPp][Mm])?$/);
+  if (!m) return Number.MAX_SAFE_INTEGER;
+  let h = parseInt(m[1], 10);
+  const min = parseInt(m[2], 10);
+  const meridiem = m[3]?.toUpperCase();
+  if (meridiem === 'PM' && h < 12) h += 12;
+  if (meridiem === 'AM' && h === 12) h = 0;
+  if (h > 23 || min > 59) return Number.MAX_SAFE_INTEGER;
+  return h * 60 + min;
+}
+
 export default function ScheduleClient({
   initialJobs,
   initialDateFilter,
@@ -49,6 +66,7 @@ export default function ScheduleClient({
   currency,
   todayKey,
   locale,
+  activeDayHoliday,
 }: {
   initialJobs: Job[];
   /** Override the default date filter ('TODAY'). Use 'ALL' to show everything passed in. */
@@ -60,6 +78,9 @@ export default function ScheduleClient({
    *  server-rendered day tiles even if the browser timezone differs. */
   todayKey?: string;
   locale: Locale;
+  /** Full holiday name for the selected day, shown in the agenda header
+   *  (never truncated). Null when the day is not a holiday. */
+  activeDayHoliday?: string | null;
 }) {
   const [selectedDate, setSelectedDate] = useState<string>(initialDateFilter ?? 'TODAY'); // 'TODAY', 'ALL', or YYYY-MM-DD
   const canSeed = allowSeed ?? initialJobs.length === 0;
@@ -115,6 +136,14 @@ export default function ScheduleClient({
 
     return true;
   });
+
+  // Agenda mode: a single day is selected, so the list below is that
+  // day's agenda (time, title, customer, status, address), sorted by
+  // start time with untimed jobs last.
+  const isAgendaDay = selectedDate !== 'ALL' && selectedDate !== 'TODAY';
+  const agendaJobs = isAgendaDay
+    ? [...filteredJobs].sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time))
+    : filteredJobs;
 
   const handleStatusChange = (jobId: string, newStatus: string) => {
     setActionError(null);
@@ -203,42 +232,26 @@ export default function ScheduleClient({
 
   return (
     <div className="space-y-5">
-      {/* Date filter - the 7-day strip above handles day navigation;
-          this is just the "show all" reset. */}
-      <Card className="p-4">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-2 flex-wrap">
-            <button
-              onClick={() => setSelectedDate('ALL')}
-              aria-pressed={selectedDate === 'ALL'}
-              className={cn(
-                'px-4 min-h-[44px] font-semibold text-sm rounded-xl border transition-colors whitespace-nowrap',
-                selectedDate === 'ALL' ? 'bg-zinc-900 text-white border-zinc-900' : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50'
-              )}
-            >
-              {T('schedAllDates')} ({initialJobs.length})
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2 flex-wrap">
-            {canSeed && (
-              <button
-                onClick={handleSeedJobs}
-                disabled={isPending}
-                className={secondaryBtnClass}
-              >
-                <ListPlus size={14} /> {T('schedSeedJobs')}
-              </button>
-            )}
-          </div>
-        </div>
-
-        {selectedDate !== 'TODAY' && selectedDate !== 'ALL' && (
-          <p className="mt-3 text-xs font-bold text-ink bg-smoke px-3 py-1.5 rounded-xl border border-smoke inline-flex">
+      {/* Agenda header - shown when a single day is selected. The 7-day
+          strip above is the only date navigator (the old "All scheduled
+          dates" reset button duplicated it); "Show whole week" in the
+          strip clears the day selection. The holiday name appears here
+          in full, never as a truncated chip. */}
+      {isAgendaDay && (
+        <div>
+          <h2 className="text-base font-bold text-zinc-900">
             {formatDateLabel(selectedDate, dateLocale)}
+          </h2>
+          {activeDayHoliday && (
+            <p className="text-sm text-amber-700 mt-0.5">🎉 {activeDayHoliday}</p>
+          )}
+          <p className="text-xs text-zinc-500 mt-0.5">
+            {agendaJobs.length === 1
+              ? T('jobsCountOne').replace('{count}', '1')
+              : T('jobsCountMany').replace('{count}', String(agendaJobs.length))}
           </p>
-        )}
-      </Card>
+        </div>
+      )}
 
       {/* Filter & Search Bar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
@@ -296,8 +309,8 @@ export default function ScheduleClient({
         </div>
       )}
 
-      {/* Jobs list */}
-      {filteredJobs.length === 0 ? (
+      {/* Jobs list - the day's agenda when a single day is selected */}
+      {agendaJobs.length === 0 ? (
         <Card>
           <EmptyState
             icon={<CalendarIcon size={24} />}
@@ -312,6 +325,11 @@ export default function ScheduleClient({
                 >
                   <ListPlus size={14} /> {T('schedSeedJobs')}
                 </button>
+              ) : isAgendaDay ? (
+                // Empty day: start a new job with that date prefilled.
+                <Link href={`/jobs/new?date=${selectedDate}`} className={primaryBtnClass}>
+                  {T('schedNewJobForDay')}
+                </Link>
               ) : (
                 <button
                   onClick={() => { setSelectedDate('ALL'); setStatusFilter('ALL'); setSearchQuery(''); }}
@@ -325,7 +343,7 @@ export default function ScheduleClient({
         </Card>
       ) : (
         <div className="space-y-3">
-          {filteredJobs.map((job, i) => {
+          {agendaJobs.map((job, i) => {
             const isEditing = editingJobId === job.id;
             const nextStatuses = validNextStatuses(job.status);
 

@@ -78,7 +78,7 @@ export default async function DigestPage() {
           <span className="w-10 h-10 rounded-2xl bg-lime/20 text-lime flex items-center justify-center">
             <Sunrise size={20} aria-hidden />
           </span>
-          <p className="text-xs font-bold uppercase tracking-wider text-white/60">
+          <p className="text-xs font-bold text-white/60">
             {dateLabel}
           </p>
         </div>
@@ -98,7 +98,7 @@ export default async function DigestPage() {
 
       {/* Today's schedule */}
       <section>
-        <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2 px-1 flex items-center gap-1.5">
+        <h2 className="text-xs font-bold text-zinc-500 mb-2 px-1 flex items-center gap-1.5">
           <CalendarDays size={14} aria-hidden /> {t(locale, 'digest.today')}
         </h2>
         {data.todayJobs.length === 0 ? (
@@ -150,7 +150,7 @@ export default async function DigestPage() {
 
       {/* Needs action */}
       <section>
-        <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2 px-1">
+        <h2 className="text-xs font-bold text-zinc-500 mb-2 px-1">
           {t(locale, 'digest.needsAction')}
           {data.actionsTotal > 0 ? ` · ${data.actionsTotal}` : ''}
         </h2>
@@ -178,7 +178,7 @@ export default async function DigestPage() {
                 href="/attention"
                 className="text-sm font-semibold text-lime-700 hover:underline"
               >
-                {t(locale, 'digest.viewAll')} →
+                {t(locale, 'digest.viewAll')}
               </Link>
             </div>
           </Card>
@@ -187,7 +187,7 @@ export default async function DigestPage() {
 
       {/* Money */}
       <section>
-        <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2 px-1 flex items-center gap-1.5">
+        <h2 className="text-xs font-bold text-zinc-500 mb-2 px-1 flex items-center gap-1.5">
           <Wallet size={14} aria-hidden /> {t(locale, 'digest.moneyTitle')}
         </h2>
         <div className="grid grid-cols-2 gap-3">
@@ -211,7 +211,7 @@ export default async function DigestPage() {
 
       {/* Week ahead */}
       <section>
-        <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2 px-1">
+        <h2 className="text-xs font-bold text-zinc-500 mb-2 px-1">
           {t(locale, 'digest.weekAhead')}
         </h2>
         <Card className="flex items-center justify-between px-5 py-4">
@@ -230,14 +230,14 @@ export default async function DigestPage() {
             href="/schedule"
             className="text-sm font-semibold text-lime-700 hover:underline shrink-0"
           >
-            {t(locale, 'digest.viewAll')} →
+            {t(locale, 'digest.viewAll')}
           </Link>
         </Card>
       </section>
 
       {/* Settings */}
       <section>
-        <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2 px-1">
+        <h2 className="text-xs font-bold text-zinc-500 mb-2 px-1">
           {t(locale, 'digest.settings')}
         </h2>
         <Card className="p-5">

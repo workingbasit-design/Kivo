@@ -100,7 +100,7 @@ export async function createJob(
   });
   if (!customer) return { error: 'Selected customer not found.' };
 
-  // Optional price-book service link: tenant-scoped — a service that doesn't
+  // Optional price-book service link: tenant-scoped - a service that doesn't
   // belong to this business is ignored rather than failing the whole job.
   let serviceId: string | null = null;
   const rawServiceId = String(formData.get('serviceId') ?? '').trim();
@@ -112,7 +112,7 @@ export async function createJob(
     if (service) serviceId = service.id;
   }
 
-  // Optional crew link: tenant-scoped — a crew that doesn't belong to this
+  // Optional crew link: tenant-scoped - a crew that doesn't belong to this
   // business is ignored rather than failing the whole job.
   let crewId: string | null = null;
   const rawCrewId = String(formData.get('crewId') ?? '').trim();
@@ -144,7 +144,7 @@ export async function createJob(
   });
 
   // Optional checklist-template bundle: copy the template's items into the
-  // new job. Tenant-scoped — another business's template is ignored.
+  // new job. Tenant-scoped - another business's template is ignored.
   const rawTemplateId = String(formData.get('templateId') ?? '').trim();
   if (rawTemplateId) {
     const template = await prisma.checklistTemplate.findFirst({
@@ -164,7 +164,7 @@ export async function createJob(
   }
 
   revalidateJobPaths(job.id);
-  // Outgoing webhook: job created. Best-effort — never fails creation.
+  // Outgoing webhook: job created. Best-effort - never fails creation.
   try {
     const { emitWebhookEvent } = await import('@/lib/webhooks');
     await emitWebhookEvent(businessId, 'job.created', {
@@ -217,7 +217,7 @@ export async function updateJob(
   });
   if (!customer) return { error: 'Selected customer not found.' };
 
-  // Optional crew link: tenant-scoped — a crew that doesn't belong to this
+  // Optional crew link: tenant-scoped - a crew that doesn't belong to this
   // business is ignored rather than failing the whole update. Only touched
   // when the form actually rendered the crew select (formData.has).
   const crewUpdate: { crewId?: string | null } = {};
@@ -276,9 +276,9 @@ export async function updateJobStatus(
     return { error: `Cannot move job from ${job.status} to ${newStatus}.` };
   }
 
-  // 2026-09-24: never throw on the write path — an unhandled throw renders a
+  // 2026-09-24: never throw on the write path - an unhandled throw renders a
   // full server-error page instead of the inline error + toast the UI shows.
-  // 2026-10-01: marking PAID settles the money in the same transaction —
+  // 2026-10-01: marking PAID settles the money in the same transaction -
   // without this, "Collected" and the monthly revenue bars (payment-based)
   // disagreed with the job status and the job-based earnings numbers.
   try {
@@ -296,7 +296,7 @@ export async function updateJobStatus(
     return { error: 'Could not update the job. Please try again.' };
   }
   revalidateJobPaths(jobId);
-  // Outgoing webhook: job completed. Best-effort — never fails the update.
+  // Outgoing webhook: job completed. Best-effort - never fails the update.
   if (newStatus === 'COMPLETED') {
     try {
       const { emitWebhookEvent } = await import('@/lib/webhooks');
@@ -451,7 +451,7 @@ export async function seedSampleJobs(): Promise<JobActionResult> {
 
   const existing = await prisma.job.count({ where: { businessId } });
   if (existing > 0) {
-    return { error: 'You already have jobs — clear them first to reseed.' };
+    return { error: 'You already have jobs - clear them first to reseed.' };
   }
 
   let customer = await prisma.customer.findFirst({

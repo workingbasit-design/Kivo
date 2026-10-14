@@ -1,5 +1,5 @@
 /**
- * Unit tests for CSV import pure logic (src/lib/csv.ts — Track 6B).
+ * Unit tests for CSV import pure logic (src/lib/csv.ts - Track 6B).
  * No DB, no network.
  * Run: node --test src/lib/__tests__/csv.test.mts
  */

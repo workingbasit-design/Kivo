@@ -1,8 +1,8 @@
 /**
- * EveryJob copilot — rule-based engine (offline fallback).
+ * EveryJob copilot - rule-based engine (offline fallback).
  *
  * Deterministic, no-network intent detection + multilingual entity extraction
- * (see ./parse.ts — DB-free and unit-testable) + real business-data fetchers
+ * (see ./parse.ts - DB-free and unit-testable) + real business-data fetchers
  * (always scoped by businessId).
  *
  * NEVER invents numbers: every figure comes from a Prisma query.
@@ -216,7 +216,7 @@ function formatJobList(
 ): string {
   if (jobs.length === 0) return '';
   return jobs
-    .map((j, i) => `${i + 1}. ${j.title} — ${j.customer?.name ?? '—'}${j.time ? ` (${j.time})` : ''} [${j.status}]`)
+    .map((j, i) => `${i + 1}. ${j.title} - ${j.customer?.name ?? '-'}${j.time ? ` (${j.time})` : ''} [${j.status}]`)
     .join('\n');
 }
 
@@ -224,60 +224,60 @@ function helpText(lang: CopilotLang, example: string): string {
   return pick(
     lang,
     `I can help with:\n\n` +
-      `• Booking a job — write WhatsApp-style, e.g. "${example}". I'll confirm before booking.\n` +
-      `• Adding a customer — "Add a new customer named Priya, 416-555-0100". I confirm before adding.\n` +
-      `• Checking the schedule — "Today's jobs?" or "Tomorrow's jobs?"\n` +
-      `• Earnings — "How much did I earn this week?"\n` +
-      `• Outstanding payments — "What's outstanding?"\n` +
-      `• Finding a customer — "Sarah's number"\n` +
-      `• Career credentials — "Which certification should I pursue as a plumber in Ontario?"\n` +
-      `• Payment reminders — "Draft a reminder for Sarah"\n\n` +
-      `Ask anything — I answer from your real business data.`,
+      `• Booking a job - write WhatsApp-style, e.g. "${example}". I'll confirm before booking.\n` +
+      `• Adding a customer - "Add a new customer named Priya, 416-555-0100". I confirm before adding.\n` +
+      `• Checking the schedule - "Today's jobs?" or "Tomorrow's jobs?"\n` +
+      `• Earnings - "How much did I earn this week?"\n` +
+      `• Outstanding payments - "What's outstanding?"\n` +
+      `• Finding a customer - "Sarah's number"\n` +
+      `• Career credentials - "Which certification should I pursue as a plumber in Ontario?"\n` +
+      `• Payment reminders - "Draft a reminder for Sarah"\n\n` +
+      `Ask anything - I answer from your real business data.`,
     `Je peux vous aider avec :\n\n` +
-      `• Réserver une tâche — écrivez comme sur WhatsApp, par ex. « ${example} ». Je confirmerai avant de réserver.\n` +
-      `• Ajouter un client — « Ajouter un nouveau client nommé Priya, 416-555-0100 ». Je confirmerai avant d’ajouter.\n` +
-      `• Voir l'horaire — « Les tâches d'aujourd'hui? » ou « Celles de demain? »\n` +
-      `• Les revenus — « Combien ai-je gagné cette semaine? »\n` +
-      `• Les paiements impayés — « Combien me doit-on? »\n` +
-      `• Trouver un client — « Le numéro de Sarah »\n` +
-      `• Les titres de compétence — « Quelle certification viser comme plombier en Ontario? »\n` +
-      `• Les rappels de paiement — « Prépare un rappel pour Sarah »\n\n` +
-      `Posez votre question — je réponds à partir de vos vraies données d'affaires.`
+      `• Réserver une tâche - écrivez comme sur WhatsApp, par ex. « ${example} ». Je confirmerai avant de réserver.\n` +
+      `• Ajouter un client - « Ajouter un nouveau client nommé Priya, 416-555-0100 ». Je confirmerai avant d’ajouter.\n` +
+      `• Voir l'horaire - « Les tâches d'aujourd'hui? » ou « Celles de demain? »\n` +
+      `• Les revenus - « Combien ai-je gagné cette semaine? »\n` +
+      `• Les paiements impayés - « Combien me doit-on? »\n` +
+      `• Trouver un client - « Le numéro de Sarah »\n` +
+      `• Les titres de compétence - « Quelle certification viser comme plombier en Ontario? »\n` +
+      `• Les rappels de paiement - « Prépare un rappel pour Sarah »\n\n` +
+      `Posez votre question - je réponds à partir de vos vraies données d'affaires.`
   );
 }
 
-/** Short greeting — kept separate from help so "hi" doesn't dump the manual. */
+/** Short greeting - kept separate from help so "hi" doesn't dump the manual. */
 function greetingText(lang: CopilotLang, example: string): string {
   return pick(
     lang,
     `Hi! 👋 I'm your EveryJob assistant.\n\n` +
       `• Need to book a job? Just write, e.g.: "${example}"\n` +
       `• Check the schedule? "Today's jobs?" or "Tomorrow's jobs?"\n` +
-      `• "What's outstanding?" — for unpaid payments\n\n` +
-      `Just message here — a job is only booked after you confirm.`,
+      `• "What's outstanding?" - for unpaid payments\n\n` +
+      `Just message here - a job is only booked after you confirm.`,
     `Bonjour! 👋 Je suis votre assistant EveryJob.\n\n` +
       `• Vous voulez réserver une tâche? Écrivez par ex. : « ${example} »\n` +
       `• Voir l'horaire? « Les tâches d'aujourd'hui? » ou « Celles de demain? »\n` +
-      `• « Combien me doit-on? » — pour les paiements impayés\n\n` +
-      `Écrivez simplement ici — une tâche n'est réservée qu'après votre confirmation.`
+      `• « Combien me doit-on? » - pour les paiements impayés\n\n` +
+      `Écrivez simplement ici - une tâche n'est réservée qu'après votre confirmation.`
   );
 }
 
-/** Asked when the message carries no recognizable intent — never silence,
+/** Asked when the message carries no recognizable intent - never silence,
  *  never a wrong guess. */
 function clarifyText(lang: CopilotLang, example: string): string {
   return pick(
     lang,
-    `I didn't quite catch that — could you say a bit more? 🙂\n\n` +
+    `I didn't quite catch that - could you say a bit more? 🙂\n\n` +
       `To book a job, write something like:\n"${example}"\n\n` +
-      `Or just tell me — what's the work, who is it for, and when?`,
-    `Je n'ai pas bien compris — pouvez-vous préciser? 🙂\n\n` +
+      `Or just tell me - what's the work, who is it for, and when?`,
+    `Je n'ai pas bien compris - pouvez-vous préciser? 🙂\n\n` +
       `Pour réserver une tâche, écrivez par exemple :\n« ${example} »\n\n` +
-      `Ou dites-moi simplement — c'est quoi le travail, pour qui, et quand?`
+      `Ou dites-moi simplement - c'est quoi le travail, pour qui, et quand?`
   );
 }
 
-/** True for bare greetings ("hi", "bonjour") — longer sentences that happen
+/** True for bare greetings ("hi", "bonjour") - longer sentences that happen
  *  to contain "hi" (e.g. "Sarah is doing it") are NOT greetings. */
 function isGreeting(raw: string): boolean {
   const text = norm(raw);
@@ -322,10 +322,10 @@ export async function runCopilot(
       // Flag impossible calendar dates ("February 30") instead of silently
       // rolling them over (JS Date turns Feb 30 into Mar 2).
       const invalidDate = extractInvalidDate(message);
-      // Pronoun follow-ups ("usko kal kar do") name no service — carry the
+      // Pronoun follow-ups ("usko kal kar do") name no service - carry the
       // service forward from the most recent booking preview in history so
       // the follow-up doesn't silently reset to "General Service".
-      // IMPORTANT: never carry forward an invented placeholder — only real
+      // IMPORTANT: never carry forward an invented placeholder - only real
       // service titles from history. "A Job For February 30" leaking into
       // the next question was a real contamination bug (2026-09-30 QA).
       let serviceTitle = extractServiceTitle(message);
@@ -348,7 +348,7 @@ export async function runCopilot(
       }
       // If the message names NO service, NO customer, NO phone, NO address,
       // NO price, and NO explicit date (e.g. just "Book a job"), don't invent
-      // a "General Service" preview — ask what the job is for.
+      // a "General Service" preview - ask what the job is for.
       const customerNameEarly = extractCustomerName(message) ?? followUpName ?? '';
       const hasAnyDetail =
         !!serviceTitle ||
@@ -363,15 +363,15 @@ export async function runCopilot(
           intent,
           reply: pick(
             lang,
-            'Sure — what’s the job? Tell me the service (e.g. "AC repair"), who it’s for, and when. For example: "AC repair for Sarah tomorrow at 3pm, $800".',
-            'Bien sûr — c’est pour quel travail? Dites-moi le service (p. ex. « réparation de climatiseur »), pour qui et quand. Par exemple : « réparation de climatiseur pour Sarah demain à 15h, 800 $ ».'
+            'Sure - what’s the job? Tell me the service (e.g. "AC repair"), who it’s for, and when. For example: "AC repair for Sarah tomorrow at 3pm, $800".',
+            'Bien sûr - c’est pour quel travail? Dites-moi le service (p. ex. « réparation de climatiseur »), pour qui et quand. Par exemple : « réparation de climatiseur pour Sarah demain à 15h, 800 $ ».'
           ),
         };
       }
       const draft: JobDraft = {
         title: serviceTitle ?? 'General Service',
         // If the user named an impossible date ("February 30"), do NOT put
-        // the JS-rolled-over date (Mar 2) in the preview — leave it blank so
+        // the JS-rolled-over date (Mar 2) in the preview - leave it blank so
         // they must pick a valid date. The warning below explains why.
         date: invalidDate ? '' : (explicitDate ?? todayStr),
         time: extractTime(message),
@@ -406,7 +406,7 @@ export async function runCopilot(
       }
 
       const L = {
-        title: pick(lang, "Here's the job I understood — please confirm?", 'Voici la tâche que j’ai comprise — confirmez-vous?'),
+        title: pick(lang, "Here's the job I understood - please confirm?", 'Voici la tâche que j’ai comprise - confirmez-vous?'),
         service: pick(lang, 'Service', 'Service'),
         date: pick(lang, 'Date', 'Date'),
         time: pick(lang, 'Time', 'Heure'),
@@ -419,23 +419,23 @@ export async function runCopilot(
         notSet: pick(lang, '(not set)', '(non défini)'),
         dateNote: pick(
           lang,
-          'Note: the date wasn’t clear, so I used today — set the right date in the preview.',
-          'Note : la date n’était pas claire, j’ai donc pris aujourd’hui — corrigez la date dans l’aperçu.'
+          'Note: the date wasn’t clear, so I used today - set the right date in the preview.',
+          'Note : la date n’était pas claire, j’ai donc pris aujourd’hui - corrigez la date dans l’aperçu.'
         ),
         matchedNote: (name: string) =>
           pick(lang, `Note: ${name} is already in your customers.`, `Note : ${name} est déjà dans vos clients.`),
         newCustomerNote: (name: string) =>
           pick(
             lang,
-            `Note: "${name}" isn’t in your customers — confirming will add them as a new customer.`,
-            `Note : « ${name} » ne figure pas dans vos clients — en confirmant, je l’ajouterai comme nouveau client.`
+            `Note: "${name}" isn’t in your customers - confirming will add them as a new customer.`,
+            `Note : « ${name} » ne figure pas dans vos clients - en confirmant, je l’ajouterai comme nouveau client.`
           ),
         similarNote: (name: string) =>
           pick(lang, `Did you mean "${name}"?`, `Vouliez-vous dire « ${name} »?`),
         nameMissingNote: pick(
           lang,
-          'Note: I couldn’t find the customer name — add it in the preview, it’s required to book.',
-          'Note : je n’ai pas trouvé le nom du client — ajoutez-le dans l’aperçu, c’est requis pour réserver.'
+          'Note: I couldn’t find the customer name - add it in the preview, it’s required to book.',
+          'Note : je n’ai pas trouvé le nom du client - ajoutez-le dans l’aperçu, c’est requis pour réserver.'
         ),
         confirmNote: pick(lang, 'The job is only booked when you confirm.', 'La tâche ne sera réservée qu’après votre confirmation.'),
       };
@@ -447,8 +447,8 @@ export async function runCopilot(
         `${L.date}: ${formatDateShort(draft.date)}`,
         `${L.time}: ${draft.time ?? L.tbd}`,
         `${L.customer}: ${draft.customerName || L.noName}`,
-        `${L.phone}: ${draft.phone ?? '—'}`,
-        `${L.address}: ${draft.address ?? '—'}`,
+        `${L.phone}: ${draft.phone ?? '-'}`,
+        `${L.address}: ${draft.address ?? '-'}`,
         `${L.price}: ${draft.price !== null ? formatMoney(draft.price, currency) : L.notSet}`,
       ];
       if (!explicitDate) {
@@ -459,8 +459,8 @@ export async function runCopilot(
           '',
           pick(
             lang,
-            `⚠️ "${invalidDate}" isn't a real calendar date — I can't book that day. Please pick a valid date.`,
-            `⚠️ « ${invalidDate} » n'est pas une vraie date du calendrier — je ne peux pas réserver ce jour-là. Veuillez choisir une date valide.`
+            `⚠️ "${invalidDate}" isn't a real calendar date - I can't book that day. Please pick a valid date.`,
+            `⚠️ « ${invalidDate} » n'est pas une vraie date du calendrier - je ne peux pas réserver ce jour-là. Veuillez choisir une date valide.`
           )
         );
       }
@@ -489,8 +489,8 @@ export async function runCopilot(
           intent,
           reply: pick(
             lang,
-            'Sure — what’s the quote for? Tell me the service and who it’s for. For example: "Quote for Sarah — bathroom tile, $1,200". If you skip the price, I’ll suggest one from similar past quotes.',
-            'Bien sûr — c’est un devis pour quoi? Dites-moi le service et pour qui. Par exemple : « Devis pour Sarah — carrelage de salle de bain, 1 200 $ ». Si vous omettez le prix, je suggérerai à partir de devis similaires.'
+            'Sure - what’s the quote for? Tell me the service and who it’s for. For example: "Quote for Sarah - bathroom tile, $1,200". If you skip the price, I’ll suggest one from similar past quotes.',
+            'Bien sûr - c’est un devis pour quoi? Dites-moi le service et pour qui. Par exemple : « Devis pour Sarah - carrelage de salle de bain, 1 200 $ ». Si vous omettez le prix, je suggérerai à partir de devis similaires.'
           ),
         };
       }
@@ -522,7 +522,7 @@ export async function runCopilot(
         }
       }
 
-      // Customer matching — same discipline as job booking: never silent.
+      // Customer matching - same discipline as job booking: never silent.
       let customerExists = false;
       let similarCustomer: string | null = null;
       if (customerName) {
@@ -542,19 +542,19 @@ export async function runCopilot(
       };
 
       const L = {
-        title: pick(lang, "Here's the quote draft — please confirm?", 'Voici le brouillon de devis — confirmez-vous?'),
+        title: pick(lang, "Here's the quote draft - please confirm?", 'Voici le brouillon de devis - confirmez-vous?'),
         service: pick(lang, 'Service', 'Service'),
         customer: pick(lang, 'Customer', 'Client'),
         price: pick(lang, 'Price', 'Prix'),
         priceSuggested: pick(
           lang,
-          'Suggested from similar past quotes — adjust as needed.',
-          'Suggéré à partir de devis similaires — ajustez au besoin.'
+          'Suggested from similar past quotes - adjust as needed.',
+          'Suggéré à partir de devis similaires - ajustez au besoin.'
         ),
         priceMissing: pick(
           lang,
-          'No price set — add one in the preview.',
-          'Aucun prix défini — ajoutez-en un dans l’aperçu.'
+          'No price set - add one in the preview.',
+          'Aucun prix défini - ajoutez-en un dans l’aperçu.'
         ),
         noName: pick(lang, '(no name found)', '(nom introuvable)'),
         matchedNote: (name: string) =>
@@ -562,15 +562,15 @@ export async function runCopilot(
         newCustomerNote: (name: string) =>
           pick(
             lang,
-            `Note: "${name}" isn’t in your customers — you’ll need to add them before the quote can be created.`,
-            `Note : « ${name} » ne figure pas dans vos clients — vous devrez l’ajouter avant de créer le devis.`
+            `Note: "${name}" isn’t in your customers - you’ll need to add them before the quote can be created.`,
+            `Note : « ${name} » ne figure pas dans vos clients - vous devrez l’ajouter avant de créer le devis.`
           ),
         similarNote: (name: string) =>
           pick(lang, `Did you mean "${name}"?`, `Vouliez-vous dire « ${name} »?`),
         nameMissingNote: pick(
           lang,
-          'Note: I couldn’t find the customer name — add it in the preview, it’s required.',
-          'Note : je n’ai pas trouvé le nom du client — ajoutez-le dans l’aperçu, c’est requis.'
+          'Note: I couldn’t find the customer name - add it in the preview, it’s required.',
+          'Note : je n’ai pas trouvé le nom du client - ajoutez-le dans l’aperçu, c’est requis.'
         ),
         confirmNote: pick(lang, 'The quote is only created when you confirm.', 'Le devis ne sera créé qu’après votre confirmation.'),
       };
@@ -580,7 +580,7 @@ export async function runCopilot(
         '',
         `${L.service}: ${draft.title}`,
         `${L.customer}: ${draft.customerName || L.noName}`,
-        `${L.price}: ${draft.price !== null ? formatMoney(draft.price, currency) : '—'}`,
+        `${L.price}: ${draft.price !== null ? formatMoney(draft.price, currency) : '-'}`,
       ];
       if (priceSource === 'history') {
         lines.push(`(${L.priceSuggested})`);
@@ -601,18 +601,18 @@ export async function runCopilot(
     }
 
     case 'create_customer': {
-      // Brand-new customer — always previewed, never created silently.
+      // Brand-new customer - always previewed, never created silently.
       const name = extractCustomerName(message) ?? '';
       const phone = extractPhone(message);
       const address = extractAddress(message);
 
       // Duplicate check: an exact name or phone match means the customer
-      // is already there — say so instead of offering a duplicate.
+      // is already there - say so instead of offering a duplicate.
       const alreadyMsg = (existing: string) =>
         pick(
           lang,
-          `"${existing}" is already in your customers — no duplicate added. Want to book a job for them instead?`,
-          `« ${existing} » est déjà dans vos clients — aucun doublon ajouté. Voulez-vous plutôt réserver une tâche pour ce client?`
+          `"${existing}" is already in your customers - no duplicate added. Want to book a job for them instead?`,
+          `« ${existing} » est déjà dans vos clients - aucun doublon ajouté. Voulez-vous plutôt réserver une tâche pour ce client?`
         );
       if (phone) {
         const byPhone = await prisma.customer.findFirst({
@@ -641,16 +641,16 @@ export async function runCopilot(
 
       const draft: CustomerDraft = { name, phone, address };
       const lines = [
-        pick(lang, 'Here’s the customer I understood — please confirm?', 'Voici le client que j’ai compris — confirmez-vous?'),
+        pick(lang, 'Here’s the customer I understood - please confirm?', 'Voici le client que j’ai compris - confirmez-vous?'),
         '',
         `${pick(lang, 'Name', 'Nom')}: ${draft.name}`,
-        `${pick(lang, 'Phone', 'Téléphone')}: ${draft.phone ?? '—'}`,
-        `${pick(lang, 'Address', 'Adresse')}: ${draft.address ?? '—'}`,
+        `${pick(lang, 'Phone', 'Téléphone')}: ${draft.phone ?? '-'}`,
+        `${pick(lang, 'Address', 'Adresse')}: ${draft.address ?? '-'}`,
         '',
         pick(
           lang,
-          'Nothing has been added yet — review the details in the panel and confirm to add this customer.',
-          'Rien n’a encore été ajouté — vérifiez les détails dans le panneau et confirmez pour ajouter ce client.'
+          'Nothing has been added yet - review the details in the panel and confirm to add this customer.',
+          'Rien n’a encore été ajouté - vérifiez les détails dans le panneau et confirmez pour ajouter ce client.'
         ),
       ];
       return { intent, reply: lines.join('\n'), preview: draft, previewKind: 'customer' };
@@ -696,8 +696,8 @@ export async function runCopilot(
       );
       const outro = pick(
         lang,
-        '\n\nEvery program above is real and links to its official body — nothing here is invented. You can also see this roadmap in Insights.',
-        '\n\nChaque programme ci-dessus est réel et mène à son organisme officiel — rien n’est inventé. Vous pouvez aussi voir cette feuille de route dans Aperçus.'
+        '\n\nEvery program above is real and links to its official body - nothing here is invented. You can also see this roadmap in Insights.',
+        '\n\nChaque programme ci-dessus est réel et mène à son organisme officiel - rien n’est inventé. Vous pouvez aussi voir cette feuille de route dans Aperçus.'
       );
       return { intent, reply: `${intro}\n\n${items.join('\n\n')}${outro}`, data: { trade, province, count: roadmap.length } };
     }
@@ -711,13 +711,13 @@ export async function runCopilot(
         intent,
         reply: pick(
           lang,
-          'I don’t have real peer data to compare you against — EveryJob only compares businesses that opt into the directory, and there are no participants yet. I won’t invent averages.\n\n' +
+          'I don’t have real peer data to compare you against - EveryJob only compares businesses that opt into the directory, and there are no participants yet. I won’t invent averages.\n\n' +
             'Best-practice benchmarks (industry guidance, NOT peer data):\n' +
             '• Strong profiles list 3+ credentials and keep contact info, hours and service area complete.\n' +
             '• Businesses that win repeat work enable online booking and follow up on quotes within one business day.\n' +
             '• Collecting a review after every finished job builds the trust signal most homeowners check first.\n\n' +
             'For a personalised checklist, see your profile strength score in Insights.',
-          'Je n’ai pas de vraies données de pairs pour vous comparer — EveryJob ne compare que les entreprises inscrites au répertoire, et il n’y a encore aucun participant. Je n’inventerai pas de moyennes.\n\n' +
+          'Je n’ai pas de vraies données de pairs pour vous comparer - EveryJob ne compare que les entreprises inscrites au répertoire, et il n’y a encore aucun participant. Je n’inventerai pas de moyennes.\n\n' +
             'Repères de bonnes pratiques (conseils du secteur, PAS des données de pairs) :\n' +
             '• Les profils solides affichent 3+ titres de compétence et gardent coordonnées, heures et zone de service complètes.\n' +
             '• Les entreprises qui fidélisent activent la réservation en ligne et relancent les soumissions sous un jour ouvrable.\n' +
@@ -762,7 +762,7 @@ export async function runCopilot(
 
     case 'out_of_scope': {
       // Tailored guidance when the user asked to create an invoice or quote
-      // (the copilot can't create those — point to the right page instead of
+      // (the copilot can't create those - point to the right page instead of
       // the generic out-of-scope text).
       const t = norm(message);
       if (hasAny(' ' + t + ' ', [' invoice ', ' invoices ', ' facture ', ' factures '])) {
@@ -770,8 +770,8 @@ export async function runCopilot(
           intent,
           reply: pick(
             lang,
-            'I can’t create invoices — but you can in seconds from the Invoices page: open Invoices → New invoice, pick the customer, add line items, and send it. Want me to explain any of those steps?',
-            'Je ne peux pas créer de factures — mais vous pouvez le faire en quelques secondes depuis la page Factures : ouvrez Factures → Nouvelle facture, choisissez le client, ajoutez les lignes et envoyez-la. Voulez-vous que j’explique une de ces étapes?'
+            'I can’t create invoices - but you can in seconds from the Invoices page: open Invoices → New invoice, pick the customer, add line items, and send it. Want me to explain any of those steps?',
+            'Je ne peux pas créer de factures - mais vous pouvez le faire en quelques secondes depuis la page Factures : ouvrez Factures → Nouvelle facture, choisissez le client, ajoutez les lignes et envoyez-la. Voulez-vous que j’explique une de ces étapes?'
           ),
         };
       }
@@ -780,8 +780,8 @@ export async function runCopilot(
           intent,
           reply: pick(
             lang,
-            'I can’t create quotes — but you can in seconds from the Quotes page: open Quotes → New quote, pick the customer, add line items, and send it. Want me to explain any of those steps?',
-            'Je ne peux pas créer de soumissions — mais vous pouvez le faire en quelques secondes depuis la page Soumissions : ouvrez Soumissions → Nouvelle soumission, choisissez le client, ajoutez les lignes et envoyez-la. Voulez-vous que j’explique une de ces étapes?'
+            'I can’t create quotes - but you can in seconds from the Quotes page: open Quotes → New quote, pick the customer, add line items, and send it. Want me to explain any of those steps?',
+            'Je ne peux pas créer de soumissions - mais vous pouvez le faire en quelques secondes depuis la page Soumissions : ouvrez Soumissions → Nouvelle soumission, choisissez le client, ajoutez les lignes et envoyez-la. Voulez-vous que j’explique une de ces étapes?'
           ),
         };
       }
@@ -789,21 +789,21 @@ export async function runCopilot(
         intent,
         reply: pick(
           lang,
-          'That’s outside what I can help with — I answer questions about your EveryJob business: jobs, customers, quotes, invoices, earnings and certifications. What would you like to know about your business?',
-          'C’est en dehors de ce que je peux faire — je réponds aux questions sur votre entreprise EveryJob : tâches, clients, soumissions, factures, revenus et certifications. Que voulez-vous savoir sur votre entreprise?'
+          'That’s outside what I can help with - I answer questions about your EveryJob business: jobs, customers, quotes, invoices, earnings and certifications. What would you like to know about your business?',
+          'C’est en dehors de ce que je peux faire - je réponds aux questions sur votre entreprise EveryJob : tâches, clients, soumissions, factures, revenus et certifications. Que voulez-vous savoir sur votre entreprise?'
         ),
       };
     }
 
     case 'refuse_destructive': {
       // Explicit refusal for mass-destructive requests ("delete all my
-      // customers"). The copilot never deletes data — say so directly.
+      // customers"). The copilot never deletes data - say so directly.
       return {
         intent,
         reply: pick(
           lang,
-          'I can’t delete your customers, jobs, or other records — I never delete data. If you need to remove something specific, you can do it from the relevant page (Customers, Jobs, etc.), where each delete asks for confirmation first.',
-          'Je ne peux pas supprimer vos clients, tâches ou autres dossiers — je ne supprime jamais de données. Si vous devez retirer un élément précis, faites-le depuis la page concernée (Clients, Tâches, etc.), où chaque suppression demande d’abord une confirmation.'
+          'I can’t delete your customers, jobs, or other records - I never delete data. If you need to remove something specific, you can do it from the relevant page (Customers, Jobs, etc.), where each delete asks for confirmation first.',
+          'Je ne peux pas supprimer vos clients, tâches ou autres dossiers - je ne supprime jamais de données. Si vous devez retirer un élément précis, faites-le depuis la page concernée (Clients, Tâches, etc.), où chaque suppression demande d’abord une confirmation.'
         ),
       };
     }
@@ -839,7 +839,7 @@ export async function runCopilot(
       let start: Date | null, end: Date, label: string;
       const now = new Date();
       if (hasAny(' ' + text + ' ', [' total ', ' all time ', ' overall ', ' lifetime ', ' tout ', ' totalite ', ' depuis le debut '])) {
-        // "What is my total revenue?" — all-time collections, not today's.
+        // "What is my total revenue?" - all-time collections, not today's.
         start = null; end = now; label = pick(lang, 'all time', 'depuis le début');
       } else if (hasAny(' ' + text + ' ', [' aaj ', ' ajj ', ' today ', ' aujourd hui '])) {
         const { gte, lte } = dayRange(todayStr);
@@ -875,7 +875,7 @@ export async function runCopilot(
     }
 
     case 'ask_booked_revenue': {
-      // Booked (scheduled) revenue for the current calendar month — the
+      // Booked (scheduled) revenue for the current calendar month - the
       // value of non-cancelled jobs, not cash collected.
       const text = norm(message);
       let start: Date, end: Date, label: string;
@@ -913,8 +913,8 @@ export async function runCopilot(
           intent,
           reply: pick(
             lang,
-            'All clear! No unpaid invoices — everything’s settled.',
-            'Parfait! Aucune facture impayée — tout est réglé.'
+            'All clear! No unpaid invoices - everything’s settled.',
+            'Parfait! Aucune facture impayée - tout est réglé.'
           ),
         };
       }
@@ -922,7 +922,7 @@ export async function runCopilot(
       const total = withBalance.reduce((s, i) => s + i.balance, 0);
       const lines = withBalance.slice(0, 10).map(
         (i, idx) =>
-          `${idx + 1}. ${i.customer.name} — ${i.number} — ${formatMoney(i.balance, currency)} ${
+          `${idx + 1}. ${i.customer.name} - ${i.number} - ${formatMoney(i.balance, currency)} ${
             lang === 'fr' ? 'dû' : 'due'
           } [${i.status}]`
       );
@@ -959,7 +959,7 @@ export async function runCopilot(
           ),
         };
       }
-      const shown = all.slice(0, 10).map((c, i) => `${i + 1}. ${c.name}${c.phone ? ` — ${c.phone}` : ''}`);
+      const shown = all.slice(0, 10).map((c, i) => `${i + 1}. ${c.name}${c.phone ? ` - ${c.phone}` : ''}`);
       const more = total > 10 ? (lang === 'fr' ? `\n\n...et ${total - 10} de plus.` : `\n\n...and ${total - 10} more.`) : '';
       return {
         intent,
@@ -977,7 +977,7 @@ export async function runCopilot(
       const name = extractCustomerName(message);
       // Only ever search with a clean extracted phone or name. Echoing the
       // raw message ("tell me about the named nonexistent mcfake") was a
-      // real bug — if no name was understood, ask for one instead.
+      // real bug - if no name was understood, ask for one instead.
       if (!phone && !name) {
         return {
           intent,
@@ -1001,7 +1001,7 @@ export async function runCopilot(
         };
       }
       const lines = customers.map(
-        (c, i) => `${i + 1}. ${c.name}${c.phone ? ` — ${c.phone}` : ''}${c._count.jobs ? ` (${c._count.jobs} jobs)` : ''}`
+        (c, i) => `${i + 1}. ${c.name}${c.phone ? ` - ${c.phone}` : ''}${c._count.jobs ? ` (${c._count.jobs} jobs)` : ''}`
       );
       return {
         intent,
@@ -1036,8 +1036,8 @@ export async function runCopilot(
               )
             : pick(
                 lang,
-                'No unpaid invoices — no reminder needed!',
-                'Aucune facture impayée — aucun rappel nécessaire!'
+                'No unpaid invoices - no reminder needed!',
+                'Aucune facture impayée - aucun rappel nécessaire!'
               ),
         };
       }
@@ -1054,16 +1054,16 @@ export async function runCopilot(
       const note = invoices.length > 1
         ? pick(
             lang,
-            `\n\n(Note: there are ${invoices.length} unpaid invoices — this draft is for the most recent one.)`,
-            `\n\n(Note : il y a ${invoices.length} factures impayées — ce brouillon concerne la plus récente.)`
+            `\n\n(Note: there are ${invoices.length} unpaid invoices - this draft is for the most recent one.)`,
+            `\n\n(Note : il y a ${invoices.length} factures impayées - ce brouillon concerne la plus récente.)`
           )
         : '';
       return {
         intent,
         reply: pick(
           lang,
-          `Here’s a reminder draft (I have NOT sent anything — copy it and send it yourself):\n\n"${draft}"${note}`,
-          `Voici un brouillon de rappel (je n’ai RIEN envoyé — copiez-le et envoyez-le vous-même) :\n\n« ${draft} »${note}`
+          `Here’s a reminder draft (I have NOT sent anything - copy it and send it yourself):\n\n"${draft}"${note}`,
+          `Voici un brouillon de rappel (je n’ai RIEN envoyé - copiez-le et envoyez-le vous-même) :\n\n« ${draft} »${note}`
         ),
         data: { invoiceId: inv.id, customer: inv.customer.name, amount: balance },
       };
@@ -1075,7 +1075,7 @@ export async function runCopilot(
     case 'unknown':
     default: {
       // Ambiguous input ("fix the thing for the guy") previously fell
-      // through to the generic help dump — and in one case produced no
+      // through to the generic help dump - and in one case produced no
       // useful reply at all. Always answer, and ask what you need.
       if (isGreeting(message)) return { intent: 'unknown', reply: greetingText(lang, example) };
       return { intent: 'unknown', reply: clarifyText(lang, example) };

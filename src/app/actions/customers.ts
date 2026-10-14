@@ -167,7 +167,7 @@ export async function updateCustomer(
 
 /** Delete a customer (must belong to the current business). */
 /**
- * Archive a customer (A7). Sets archivedAt — hidden from lists, restorable.
+ * Archive a customer (A7). Sets archivedAt - hidden from lists, restorable.
  * Archiving preserves all linked records (jobs, invoices, quotes).
  */
 export async function archiveCustomer(
@@ -255,7 +255,7 @@ export async function deleteCustomer(
   }
 
   // CRA requires businesses to keep records for 6 years. Never cascade-delete
-  // a customer with jobs, invoices, or quotes — that would destroy records
+  // a customer with jobs, invoices, or quotes - that would destroy records
   // the business is legally required to keep.
   if (existing.jobs.length > 0 || existing.invoices.length > 0 || existing.quotes.length > 0) {
     return {

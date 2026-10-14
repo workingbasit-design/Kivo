@@ -2,7 +2,7 @@
  * Unit tests for the database retry wrapper (src/lib/db-retry.ts).
  * Hermetic: the "database" is a stubbed async function, sleeps are
  * injected no-ops, randomness is stubbed. No network, no real Prisma
- * client needed — but the error shapes use the real @prisma/client error
+ * client needed - but the error shapes use the real @prisma/client error
  * classes so the retry classifier is tested for real.
  * Run: node --test src/lib/__tests__/db-retry.test.mts
  */

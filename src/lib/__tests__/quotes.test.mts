@@ -1,9 +1,9 @@
 /**
  * Unit tests for the quote add-ons feature area:
- * - src/lib/quotes.ts — add-on total computation (base + selected only)
- * - src/lib/esign.ts — canonical doc-hash input builder with/without
+ * - src/lib/quotes.ts - add-on total computation (base + selected only)
+ * - src/lib/esign.ts - canonical doc-hash input builder with/without
  *   add-ons (backward compatibility: no add-ons → byte-identical payload)
- * - src/lib/routes.ts — Google Maps multi-stop URL builder (encoding,
+ * - src/lib/routes.ts - Google Maps multi-stop URL builder (encoding,
  *   empty-address skipping)
  */
 import test from 'node:test';
@@ -161,7 +161,7 @@ test('googleMapsRouteUrl: single address becomes a destination link', () => {
 test('googleMapsRouteUrl: multiple stops get origin, destination and waypoints', () => {
   const url = googleMapsRouteUrl([
     { address: '10 King St W, Toronto' },
-    { address: null }, // skipped — no address on this job
+    { address: null }, // skipped - no address on this job
     { address: '200 Queen St E, Toronto' },
     { address: '  ' }, // blank addresses are skipped too
     { address: '350 Bloor St W, Toronto' },

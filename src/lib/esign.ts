@@ -1,10 +1,10 @@
 /**
- * EveryJob Sign — free e-signature for quotes.
+ * EveryJob Sign - free e-signature for quotes.
  *
  * Mirrors the customer-portal token pattern in src/lib/portal.ts:
  * signing links carry a raw token that is stored only as a SHA-256 hash,
  * so anyone who can read the database still cannot mint a working signing
- * URL. Lookup hashes the presented token — invalid, expired, and revoked
+ * URL. Lookup hashes the presented token - invalid, expired, and revoked
  * links all resolve to the same "invalid or expired" outcome, so there is
  * no enumeration vector.
  *
@@ -16,7 +16,7 @@
  * Tamper evidence: at send time we hash a canonical JSON snapshot of the
  * quote (id, number, title, total, customerId, businessId, plus the titles
  * and prices of any selected add-ons). verifyDocHash()
- * recomputes that hash against the current quote — a mismatch means the
+ * recomputes that hash against the current quote - a mismatch means the
  * quote was edited after the link went out.
  */
 import { createHash, randomBytes } from 'crypto';
@@ -29,7 +29,7 @@ export type SignStatus = 'sent' | 'viewed' | 'signed' | 'declined' | 'expired' |
 export type AuditEvent = 'sent' | 'viewed' | 'signed' | 'declined' | 'revoked';
 export type AuditEntry = { event: AuditEvent; at: string; ip: string };
 
-/** Terminal statuses — a request in one of these can never become signable again. */
+/** Terminal statuses - a request in one of these can never become signable again. */
 const TERMINAL_STATUSES: ReadonlySet<string> = new Set([
   'signed',
   'declined',
@@ -79,7 +79,7 @@ export function appendAudit(auditJson: string, event: AuditEvent, ip: string): s
  * order so the JSON (and therefore the hash) is stable regardless of how
  * the quote object was constructed.
  *
- * Selected add-ons (title + price) are appended when the quote has any —
+ * Selected add-ons (title + price) are appended when the quote has any -
  * a client approves a specific bundle, so editing an add-on after a signing
  * link goes out must change the hash. Quotes WITHOUT selected add-ons
  * produce byte-identical output to the pre-add-on format, so every
@@ -138,8 +138,8 @@ export function signatureDocHash(quote: {
 
 /**
  * Prisma `where` clause matching currently-usable signing requests for a
- * quote. Factored out (and exported) so tenant scoping — businessId AND
- * quoteId — is unit-testable. Used by issueSignatureRequest to invalidate
+ * quote. Factored out (and exported) so tenant scoping - businessId AND
+ * quoteId - is unit-testable. Used by issueSignatureRequest to invalidate
  * old links when a new one is issued.
  */
 export function activeSignRequestFilter(businessId: string, quoteId: string, now = new Date()) {
@@ -183,7 +183,7 @@ export type ResolvedSignatureRequest = {
  * Issue a signing link for a quote. Verifies the quote belongs to the
  * business (throws otherwise), revokes any currently-active requests for
  * the same quote, snapshots the quote hash for tamper evidence, and
- * records a "sent" audit event. Returns the DB id plus the RAW token —
+ * records a "sent" audit event. Returns the DB id plus the RAW token -
  * the only moment it exists outside a hash.
  */
 export async function issueSignatureRequest(
@@ -239,7 +239,7 @@ export async function issueSignatureRequest(
 /**
  * Resolve a presented signing-link token to its request, with the quote,
  * customer, and business selects the public signing page needs. Returns
- * null for ANY failure — unknown token, expired, revoked, or signed all
+ * null for ANY failure - unknown token, expired, revoked, or signed all
  * look identical to the caller ("link invalid or expired").
  */
 export async function resolveSignatureRequest(
@@ -247,7 +247,7 @@ export async function resolveSignatureRequest(
 ): Promise<ResolvedSignatureRequest | null> {
   if (!token || token.length > 128) return null;
   // Public signing entry point: the 256-bit token (hashed) IS the
-  // authorization — the business is learned from the resolved request, so
+  // authorization - the business is learned from the resolved request, so
   // no tenant scope can exist before this lookup.
   const rec = await unsafeUnscoped('esign:resolveSignatureRequest', (db) =>
     db.signatureRequest.findUnique({
@@ -291,7 +291,7 @@ export async function resolveSignatureRequest(
 }
 
 /**
- * Revoke one signing request. Business-scoped — a business can only revoke
+ * Revoke one signing request. Business-scoped - a business can only revoke
  * its own requests. Sets revokedAt + status and appends a "revoked" audit
  * event. Returns false when the request does not exist or is already revoked.
  */
@@ -318,7 +318,7 @@ export async function revokeSignatureRequest(
 /**
  * Append an audit event to a request. Status only moves forward:
  * sent → viewed → signed (or → declined). Out-of-order events are still
- * recorded in the audit log but never move the status backwards — e.g. a
+ * recorded in the audit log but never move the status backwards - e.g. a
  * late "viewed" after "signed" stays logged without reopening the request.
  */
 export async function appendAuditEvent(
@@ -352,7 +352,7 @@ export function nextSignStatus(current: string, event: AuditEvent): string {
 
 /**
  * Record that the client opened the signing link. Only fires while the
- * request is still "sent" — repeat views (or views after signing) are
+ * request is still "sent" - repeat views (or views after signing) are
  * no-ops so the audit trail keeps exactly one first-view.
  */
 export async function recordView(businessId: string, requestId: string, ip: string): Promise<boolean> {
@@ -393,7 +393,7 @@ export async function submitSignature(
 
   // Atomic claim: only one concurrent submit can flip the status from an
   // active state to 'signed'. updateMany with the active-state filter makes
-  // the check-and-set a single statement — a double-submit (or replayed
+  // the check-and-set a single statement - a double-submit (or replayed
   // request) that loses the race gets "no longer active" instead of
   // overwriting the first signature.
   const claimed = await prisma.signatureRequest.updateMany({
@@ -421,7 +421,7 @@ export async function submitSignature(
 /**
  * Recompute the quote snapshot hash and compare it to the hash stored at
  * send time. False means the quote was edited after the signing link went
- * out — the UI should warn before letting anyone sign a changed document.
+ * out - the UI should warn before letting anyone sign a changed document.
  */
 export function verifyDocHash(request: {
   docHash: string;

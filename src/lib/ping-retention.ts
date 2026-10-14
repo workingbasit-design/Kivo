@@ -1,6 +1,6 @@
 /**
  * Server-only: 24-hour retention purge for technician location pings
- * (PIPEDA data minimization — raw GPS pings are deleted 24h after recording).
+ * (PIPEDA data minimization - raw GPS pings are deleted 24h after recording).
  *
  * This lives in its own module (not geofence.ts) because geofence.ts is
  * imported by client components via lib/eta.ts and must stay free of
@@ -23,7 +23,7 @@ export async function pruneStaleLocationPings(
 ): Promise<number> {
   const cutoff = new Date(Date.now() - maxAgeHours * 60 * 60 * 1000);
   // Intentionally cross-tenant: PIPEDA data-minimization purge. Deletes
-  // only rows older than the retention cutoff and returns a count — no
+  // only rows older than the retention cutoff and returns a count - no
   // row contents ever leave the database.
   const res = await unsafeUnscoped('geofence:pruneStaleLocationPings', (db) =>
     db.technicianLocation.deleteMany({

@@ -1,11 +1,11 @@
 /**
  * Unit tests for online invoice card payments:
  * - buildInvoiceCheckoutOptions / createInvoiceCheckout param building
- *   (mock fetchFn — zero live Stripe calls)
+ *   (mock fetchFn - zero live Stripe calls)
  * - deriveInvoiceStatus truth table (pure helper in src/lib/stripe.ts,
  *   used by the Stripe webhook)
  * - EN/FR parity of the new invoicePay i18n fragment
- * No HTTP, no DB — pure logic only.
+ * No HTTP, no DB - pure logic only.
  * Run: node --test --import ./src/lib/__tests__/register-loader.mjs src/lib/__tests__/stripe-invoice-pay.test.mts
  */
 import test from 'node:test';
@@ -39,7 +39,7 @@ test('invoice checkout options carry the invoice contract', () => {
   const o = buildInvoiceCheckoutOptions(baseInput);
   assert.equal(o.amountCents, 24999);
   assert.equal(o.currency, 'cad');
-  assert.equal(o.productName, 'Invoice INV-001 — Acme Plumbing');
+  assert.equal(o.productName, 'Invoice INV-001 - Acme Plumbing');
   assert.equal(o.successUrl, 'https://app.example/i/tok?paid=1');
   assert.equal(o.cancelUrl, 'https://app.example/i/tok');
   assert.equal(o.customerEmail, 'client@example.ca');
@@ -110,7 +110,7 @@ test('posts a direct-charge Checkout Session to the connected account', async ()
   assert.equal(body.get('line_items[0][price_data][currency]'), 'cad');
   assert.equal(
     body.get('line_items[0][price_data][product_data][name]'),
-    'Invoice INV-001 — Acme Plumbing'
+    'Invoice INV-001 - Acme Plumbing'
   );
   assert.equal(body.get('locale'), 'fr');
   assert.equal(body.get('customer_email'), 'client@example.ca');
@@ -118,7 +118,7 @@ test('posts a direct-charge Checkout Session to the connected account', async ()
   assert.equal(body.get('metadata[invoice_id]'), 'inv_1');
   assert.equal(body.get('metadata[business_id]'), 'biz_1');
   assert.equal(body.get('payment_intent_data[metadata][kind]'), 'invoice');
-  // Explicit zero platform fee — EveryJob never takes a cut.
+  // Explicit zero platform fee - EveryJob never takes a cut.
   assert.equal(body.get('payment_intent_data[application_fee_amount]'), '0');
 });
 

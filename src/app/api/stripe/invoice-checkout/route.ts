@@ -21,7 +21,7 @@ async function rateLimited(businessId: string): Promise<boolean> {
  * Tenant-scoped (invoiceId + businessId from the session). The owner sends
  * the returned URL to the customer by text/email; the customer pays on
  * Stripe's hosted page and the webhook records the payment. Direct charge
- * on the business's own connected Stripe account — EveryJob never holds
+ * on the business's own connected Stripe account - EveryJob never holds
  * money and takes no fee (application_fee_amount = 0).
  */
 export async function POST(req: Request) {

@@ -1,7 +1,7 @@
 /**
  * Unit tests for the EveryJob Sign primitives (src/lib/esign.ts).
  *
- * Only pure functions are tested here — no database. The DB-backed flows
+ * Only pure functions are tested here - no database. The DB-backed flows
  * (issue/resolve/revoke/submit) need DATABASE_URL + a Postgres server, so
  * they are covered by the same tenant-scoping discipline as the portal
  * tokens instead: every query carries businessId (+ quoteId), and the

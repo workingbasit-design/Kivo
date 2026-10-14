@@ -1,6 +1,6 @@
 /**
  * Unit tests for webhook signing/verification (src/lib/webhooks.ts).
- * Pure crypto only — no DB, no network.
+ * Pure crypto only - no DB, no network.
  * Run: node --test --import ./src/lib/__tests__/register-loader.mjs src/lib/__tests__/webhooks-sign.test.mts
  */
 import test from 'node:test';
@@ -39,7 +39,7 @@ test('verifyWebhookSignature accepts a valid signature, rejects the rest', () =>
   assert.equal(
     verifyWebhookSignature(secret, body, valid.toUpperCase()),
     false,
-    'case differs — receivers must send exact hex'
+    'case differs - receivers must send exact hex'
   );
 });
 

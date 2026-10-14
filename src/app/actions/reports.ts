@@ -55,7 +55,7 @@ export async function saveReport(
 
 export type DeleteReportResult = { ok?: boolean; error?: string };
 
-/** Delete a saved report — tenant-scoped, only the owning business's row. */
+/** Delete a saved report - tenant-scoped, only the owning business's row. */
 export async function deleteReport(id: string): Promise<DeleteReportResult> {
   const { businessId, user } = await requireAuth();
   const rl = rateLimit(`reports:${user.id}`, ACTION_LIMIT);

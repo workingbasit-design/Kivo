@@ -11,7 +11,7 @@
 export type DailyWeather = {
   highC: number;
   lowC: number;
-  /** Max precipitation probability for the day, 0–100. */
+  /** Max precipitation probability for the day, 0-100. */
   precipProb: number;
   /** Open-Meteo weathercode. */
   code: number;

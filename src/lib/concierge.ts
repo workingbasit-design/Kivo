@@ -1,5 +1,5 @@
 /**
- * "Get it done for me" concierge — pure logic (no DB, no network).
+ * "Get it done for me" concierge - pure logic (no DB, no network).
  *
  * The customer describes a job in plain language. We interpret the service
  * need with a deterministic keyword scan (no LLM, no external calls, $0),
@@ -10,7 +10,7 @@
  * - Interpretation is keyword-based and explainable; unknown descriptions
  *   fall back to a generic label and still match by keyword.
  * - The exact message text is built once and shown in the preview; the send
- *   step transmits exactly that text — nothing is rewritten server-side.
+ *   step transmits exactly that text - nothing is rewritten server-side.
  * - No SMS / WhatsApp / email is ever sent by this flow; requests land in
  *   EveryJob's internal inbox (QuoteRequest + Lead) only.
  */
@@ -134,7 +134,7 @@ export type InterpretedNeed = {
 
 /**
  * Interpret a plain-language job description into a service need.
- * Deterministic keyword scan — explainable, no external calls.
+ * Deterministic keyword scan - explainable, no external calls.
  */
 export function interpretServiceNeed(
   description: string,
@@ -157,7 +157,7 @@ export function interpretServiceNeed(
   };
 }
 
-/** Keywords for a trade key — used for directory matching. Empty for unknown keys. */
+/** Keywords for a trade key - used for directory matching. Empty for unknown keys. */
 export function serviceHintKeywords(key: string): string[] {
   return SERVICE_HINTS.find((h) => h.key === key)?.keywords ?? [];
 }
@@ -181,7 +181,7 @@ export function buildConciergeMessage(input: ConciergeMessageInput): string {
   const desc = description.trim();
   if (locale === 'fr') {
     return [
-      `Demande de devis — ${serviceLabel}`,
+      `Demande de devis - ${serviceLabel}`,
       '',
       desc,
       '',
@@ -189,11 +189,11 @@ export function buildConciergeMessage(input: ConciergeMessageInput): string {
       `Téléphone : ${phone.trim()}`,
       `Ville : ${city.trim()}`,
       '',
-      'Envoyé via EveryJob — répondez dans l’application si ce travail vous intéresse.',
+      'Envoyé via EveryJob - répondez dans l’application si ce travail vous intéresse.',
     ].join('\n');
   }
   return [
-    `Quote request — ${serviceLabel}`,
+    `Quote request - ${serviceLabel}`,
     '',
     desc,
     '',
@@ -201,7 +201,7 @@ export function buildConciergeMessage(input: ConciergeMessageInput): string {
     `Phone: ${phone.trim()}`,
     `City: ${city.trim()}`,
     '',
-    'Sent via EveryJob — reply in the app if you want this job.',
+    'Sent via EveryJob - reply in the app if you want this job.',
   ].join('\n');
 }
 

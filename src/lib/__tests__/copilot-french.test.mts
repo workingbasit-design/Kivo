@@ -1,11 +1,11 @@
 /**
  * French-language guarantees for the Copilot bot.
  * - buildConfirmReply: the deterministic booking reply must be fully
- *   English or fully Canadian French — never Hinglish (regression lock
+ *   English or fully Canadian French - never Hinglish (regression lock
  *   for the 2026-10-01 'Job book ho gayi!' fix).
  * - buildSystemPrompt: the Claude layer must force Canadian French when
  *   the app UI is French, even for English/ambiguous user messages.
- * Pure helpers only — no DB, no network, no API key.
+ * Pure helpers only - no DB, no network, no API key.
  * Run: node --test --import ./src/lib/__tests__/register-loader.mjs src/lib/__tests__/copilot-french.test.mts
  */
 import test from 'node:test';

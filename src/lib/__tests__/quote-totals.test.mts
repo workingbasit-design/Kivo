@@ -49,7 +49,7 @@ test('AMOUNT discount applies before tax', () => {
   assert.equal(r.total, 183.75);
 });
 
-test('PERCENT clamps to 0–100', () => {
+test('PERCENT clamps to 0-100', () => {
   const over = computeQuoteTotals([{ qty: 1, unitPrice: 100 }], { type: 'PERCENT', value: 150 }, [{ name: 'GST', rate: 5 }]);
   assert.equal(over.discountAmount, 100);
   assert.equal(over.taxable, 0);
@@ -60,7 +60,7 @@ test('PERCENT clamps to 0–100', () => {
   assert.equal(under.total, 105);
 });
 
-test('AMOUNT clamps to 0–subtotal', () => {
+test('AMOUNT clamps to 0-subtotal', () => {
   const over = computeQuoteTotals([{ qty: 1, unitPrice: 100 }], { type: 'AMOUNT', value: 999 }, [{ name: 'GST', rate: 5 }]);
   assert.equal(over.discountAmount, 100);
   assert.equal(over.total, 0);
@@ -105,7 +105,7 @@ test('Quebec: per-line tax matches calcTax exactly (preview == stored)', () => {
   // The audit's 1c-divergence case: the server used to store
   // round2(subtotal x totalRate/100) = round2(33.35 x 14.975%) = 4.99 while
   // the preview used per-line rounding = 5.00. Both now go through calcTax.
-  // (QST applies to the pre-tax subtotal — the post-2013 Revenu Québec rule.)
+  // (QST applies to the pre-tax subtotal - the post-2013 Revenu Québec rule.)
   const qcTaxes = [
     { name: 'GST', rate: 5 },
     { name: 'QST', rate: 9.975 },

@@ -114,7 +114,7 @@ export default async function SignPage({
           <div className="mb-4">
             <Logo tone="onDark" size={28} />
           </div>
-          <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/60">
+          <p className="mb-1 text-[11px] font-semibold text-white/60">
             {business.name}
           </p>
           <h1 className="text-2xl font-bold tracking-tight">{L('esign.signTitle')}</h1>
@@ -126,7 +126,7 @@ export default async function SignPage({
         <Card className="relative overflow-hidden p-6">
           <div className="mb-4 flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+              <p className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-400">
                 <FileText size={12} /> {quote.number}
               </p>
               <h2 className="mt-1 text-lg font-bold text-zinc-900">{quote.title}</h2>

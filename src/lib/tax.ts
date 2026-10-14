@@ -1,5 +1,5 @@
 /**
- * EveryJob tax engine — Canadian sales tax configuration and math.
+ * EveryJob tax engine - Canadian sales tax configuration and math.
  *
  * Canada-only: province-based rules (GST / HST / PST / QST combos).
  * The Business `taxRegion` field carries the province code (e.g. "ON").
@@ -80,7 +80,7 @@ const CA_TAXES: Record<string, TaxLine[]> = {
 };
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
-/** 3-decimal rounding — preserves QST's 9.975% through rate sums. */
+/** 3-decimal rounding - preserves QST's 9.975% through rate sums. */
 const round3 = (n: number) => Math.round(n * 1000) / 1000;
 
 /** Sum of the config's tax rates, e.g. 14.975 for Quebec. */
@@ -118,7 +118,7 @@ export function taxConfigFromBusiness(b: {
 
 /**
  * Compute tax on a subtotal. Each tax line is applied to the subtotal and
- * rounded to the cent, then summed — the standard way multi-tax
+ * rounded to the cent, then summed - the standard way multi-tax
  * provinces (QC/BC/SK/MB) are quoted on a simple invoice.
  */
 export function calcTax(
@@ -158,7 +158,7 @@ export function defaultTaxType(config: Pick<TaxConfig, 'taxes'>): string {
  * component lines for display.
  *
  * For the Canadian composites the federal GST portion is always 5%, so the
- * provincial portion is derived as (total - 5) — this stays correct even if
+ * provincial portion is derived as (total - 5) - this stays correct even if
  * the rate was hand-edited on the invoice.
  */
 export function splitStoredTax(taxType: string, taxRate: number): TaxLine[] {

@@ -7,7 +7,7 @@
  *
  * Rules:
  *  - PIPELINE (NEW -> SCHEDULED -> IN PROGRESS -> COMPLETED -> PAID) moves
- *    forward freely, and ONE step backward (undo for a mistaken tap — e.g.
+ *    forward freely, and ONE step backward (undo for a mistaken tap - e.g.
  *    COMPLETED -> IN PROGRESS). Jumping back multiple steps at once is
  *    rejected; tap "back" repeatedly instead.
  *  - CANCELLED is reachable from any status except PAID and CANCELLED.
@@ -118,7 +118,7 @@ export function isJobLate(
     if (Number.isNaN(job.date.getTime())) return false;
     day = toISODateInTimezone(job.date, timezone);
   } else if (/^\d{4}-\d{2}-\d{2}/.test(job.date)) {
-    // "YYYY-MM-DD" is already a calendar day — use it directly.
+    // "YYYY-MM-DD" is already a calendar day - use it directly.
     day = job.date.slice(0, 10);
   } else {
     const d = new Date(job.date);

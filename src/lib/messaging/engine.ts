@@ -1,16 +1,16 @@
 /**
- * Track 9 — automated messaging engine (server-only).
+ * Track 9 - automated messaging engine (server-only).
  *
  * Evaluates per-business automation triggers (appointment reminders, invoice
  * due/overdue, quote follow-up, review requests) and sends via the
  * free-quota-first providers. Guardrails, in order, for every candidate:
  *
- *   1. CASL consent — no opt-in, no send (logged BLOCKED_NO_CONSENT).
- *   2. Quiet hours (business timezone) — deferred, retried next cycle.
- *   3. Provider connected for the candidate's channel — else FAILED.
- *   4. Quota — HARD STOP at the free limit (logged BLOCKED_QUOTA, owner
+ *   1. CASL consent - no opt-in, no send (logged BLOCKED_NO_CONSENT).
+ *   2. Quiet hours (business timezone) - deferred, retried next cycle.
+ *   3. Provider connected for the candidate's channel - else FAILED.
+ *   4. Quota - HARD STOP at the free limit (logged BLOCKED_QUOTA, owner
  *      notified in-app). The engine cannot silently incur charges.
- *   5. dryRun — preview mode logs DRY_RUN rows and sends nothing.
+ *   5. dryRun - preview mode logs DRY_RUN rows and sends nothing.
  *
  * Idempotency: MessageLog.eventKey is unique per (business, eventKey) for
  * terminal sends; a candidate whose key already has a SENT (or permanently
@@ -417,7 +417,7 @@ export async function runMessagingCycle(
   const quota = await prisma.messageQuota.findUniqueOrThrow({ where: { id: quotaRow.id, businessId } });
 
   // Idempotency: keys already terminally handled (SENT, or FAILED with a
-  // permanent error kind — transient network/quota failures retry).
+  // permanent error kind - transient network/quota failures retry).
   const terminalRows = await prisma.messageLog.findMany({
     where: { businessId, eventKey: { not: null } },
     select: { eventKey: true, status: true, error: true },
@@ -498,7 +498,7 @@ export async function runMessagingCycle(
     locale: localeOf(q.customer.preferredLocale),
   });
 
-  // Existing public pay links for invoices (only already-issued tokens — the
+  // Existing public pay links for invoices (only already-issued tokens - the
   // cycle never mints new public URLs on its own).
   const shareTokens = await prisma.shareToken.findMany({
     where: { businessId, type: 'INVOICE', revokedAt: null, invoiceId: { not: null } },
@@ -558,7 +558,7 @@ export async function runMessagingCycle(
       status: 'PENDING',
     };
 
-    // 1. Consent (CASL) — checked against the primary channel's contact.
+    // 1. Consent (CASL) - checked against the primary channel's contact.
     const hasPrimaryContact = c.channel === 'WHATSAPP' ? !!c.toPhone : !!c.toEmail;
     const consent = jobs
       .concat()
@@ -584,11 +584,11 @@ export async function runMessagingCycle(
       continue;
     }
 
-    // 2. Quiet hours — deferred, retried next cycle (no terminal row written).
+    // 2. Quiet hours - deferred, retried next cycle (no terminal row written).
     if (quietNow) {
       report.deferredQuietHours++;
       item.status = 'DEFERRED_QUIET_HOURS';
-      item.detail = `Quiet hours (${settings.quietStartHour}:00–${settings.quietEndHour}:00 ${timeZone}). Will retry next cycle.`;
+      item.detail = `Quiet hours (${settings.quietStartHour}:00-${settings.quietEndHour}:00 ${timeZone}). Will retry next cycle.`;
       report.items.push(item);
       continue;
     }
@@ -596,7 +596,7 @@ export async function runMessagingCycle(
     // 3. Render.
     const rendered = renderTemplate(c.template, c.locale, c.params);
 
-    // 4. Dry run — log the preview, send nothing (no quota reserved).
+    // 4. Dry run - log the preview, send nothing (no quota reserved).
     if (dryRun) {
       const recipient = c.channel === 'WHATSAPP' ? normalizeWaDigits(c.toPhone) : (c.toEmail ?? '').trim();
       await prisma.messageLog.create({
@@ -613,7 +613,7 @@ export async function runMessagingCycle(
       continue;
     }
 
-    // 5. Send — primary channel first, then the other channel as a free
+    // 5. Send - primary channel first, then the other channel as a free
     // fallback (e.g. WhatsApp is rejected outside the 24h service window
     // with template_required → email). Each attempt atomically reserves one
     // quota unit BEFORE the provider call, so concurrent cycles can never
@@ -697,7 +697,7 @@ export async function getMessagingOverview(businessId: string) {
     update: {},
   });
   const connections = await prisma.messagingConnection.findMany({ where: { businessId } });
-  // Secrets are encrypted at rest — never reveal even a suffix of the
+  // Secrets are encrypted at rest - never reveal even a suffix of the
   // ciphertext; presence alone is shown in the UI.
   const secretBadge = (s: string | null | undefined) => (s ? '••••••' : null);
   return {

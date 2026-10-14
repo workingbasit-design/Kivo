@@ -1,7 +1,7 @@
 /**
  * PII access audit logging (PIPEDA accountability).
  *
- * Records when authenticated users access customer PII — views, searches,
+ * Records when authenticated users access customer PII - views, searches,
  * and exports. The log itself is tenant-scoped (businessId) and contains
  * no PII, only metadata about the access.
  *

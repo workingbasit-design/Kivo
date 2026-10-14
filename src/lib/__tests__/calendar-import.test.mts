@@ -1,6 +1,6 @@
 /**
  * Unit tests for Google Calendar import pure logic (src/lib/google-calendar.ts
- * — Track 6B). All HTTP is mocked; no live Google calls.
+ * - Track 6B). All HTTP is mocked; no live Google calls.
  * Run: node --test src/lib/__tests__/calendar-import.test.mts
  */
 import test from 'node:test';

@@ -121,7 +121,7 @@ function ApplyTemplateForm({
 
   return (
     <div className="mb-2">
-      <p className="text-[11px] font-bold uppercase tracking-wider text-graphite mb-1.5">
+      <p className="text-[11px] font-bold text-graphite mb-1.5">
         {t(locale, 'jobops.checklist.applyTemplate')}
       </p>
       <div className="flex gap-2">

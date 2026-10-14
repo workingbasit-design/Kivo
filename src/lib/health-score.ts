@@ -1,5 +1,5 @@
 /**
- * Business health score — 0-100 with explainable subscores.
+ * Business health score - 0-100 with explainable subscores.
  *
  * Every subscore states its inputs; the UI renders the explanation next to
  * the number. A subscore with no data is omitted (not zeroed) so a new

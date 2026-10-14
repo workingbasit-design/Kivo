@@ -8,7 +8,7 @@ const STATE_COOKIE = 'stripe_oauth_state';
 /**
  * Stripe Connect OAuth callback. Verifies the random state, exchanges the
  * code for the connected account id, and stores the connection. Funds settle
- * directly to the business's Stripe account — EveryJob never holds money.
+ * directly to the business's Stripe account - EveryJob never holds money.
  */
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);

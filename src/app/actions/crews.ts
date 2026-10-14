@@ -55,7 +55,7 @@ export async function updateCrew(id: string, name: string, color: string): Promi
   return { ok: true };
 }
 
-/** Delete a crew. Jobs keep their data — their crew link is cleared. */
+/** Delete a crew. Jobs keep their data - their crew link is cleared. */
 export async function deleteCrew(id: string): Promise<CrewActionResult> {
   const { businessId, user } = await requireAuth();
   const limited = await checkLimit(user.id, 'deleteCrew');

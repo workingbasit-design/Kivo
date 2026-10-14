@@ -8,10 +8,10 @@ import { buildExportCsv, EXPORT_TYPES, type ExportType } from '@/lib/export';
 const VALID = new Set<string>(EXPORT_TYPES.map((t) => t.value));
 
 /**
- * GET /api/export?type=customers — downloads a tenant-scoped CSV.
+ * GET /api/export?type=customers - downloads a tenant-scoped CSV.
  * Auth required; rate-limited; origin-checked. The origin check blocks
  * forced cross-origin downloads (e.g. an attacker framing the URL on a
- * malicious page) — a mismatched Origin/Referer is never legitimate here.
+ * malicious page) - a mismatched Origin/Referer is never legitimate here.
  */
 export async function GET(req: Request) {
   const originCheck = checkSameOrigin(req);

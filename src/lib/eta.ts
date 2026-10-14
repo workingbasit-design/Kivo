@@ -10,7 +10,7 @@
 import { haversineMeters } from './geofence.ts';
 
 const OSRM_BASE = 'https://router.project-osrm.org/route/v1/driving';
-const OSRM_CACHE_TTL_MS = 60 * 1000; // 1 minute — pings move fast
+const OSRM_CACHE_TTL_MS = 60 * 1000; // 1 minute - pings move fast
 const OSRM_TIMEOUT_MS = 8_000;
 
 export interface DrivingEta {
@@ -41,7 +41,7 @@ function cacheKey(
 
 /**
  * Driving distance + duration between two points via OSRM.
- * Returns null on any failure (network, timeout, bad response) — never throws.
+ * Returns null on any failure (network, timeout, bad response) - never throws.
  */
 export async function fetchDrivingEta(
   fromLat: number,
@@ -94,7 +94,7 @@ export async function fetchDrivingEta(
   }
 }
 
-/** Straight-line distance in metres — always available, no network needed. */
+/** Straight-line distance in metres - always available, no network needed. */
 export function straightLineMeters(
   fromLat: number,
   fromLng: number,

@@ -99,7 +99,7 @@ export default async function BookkeepingPage() {
 
           {/* Month by month */}
           <section>
-            <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2 px-1">
+            <h2 className="text-xs font-bold text-zinc-500 mb-2 px-1">
               {t(locale, "bookkeeping.byMonth")}
             </h2>
             <Card className="overflow-hidden">
@@ -139,7 +139,7 @@ export default async function BookkeepingPage() {
           {/* Spending by category */}
           {data.byCategory.length > 0 && (
             <section>
-              <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2 px-1">
+              <h2 className="text-xs font-bold text-zinc-500 mb-2 px-1">
                 {t(locale, "bookkeeping.byCategory")}
               </h2>
               <Card className="p-4 space-y-3">

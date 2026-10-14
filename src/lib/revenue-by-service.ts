@@ -3,7 +3,7 @@
  * their price-book service name. Jobs with no linked service fall under the
  * provided "other" label (localized by the caller).
  *
- * Pure — no I/O, safe to import from src/lib/dashboard.ts and node:test.
+ * Pure - no I/O, safe to import from src/lib/dashboard.ts and node:test.
  */
 
 export interface ServiceRevenueRow {

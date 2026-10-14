@@ -1,5 +1,5 @@
 /**
- * Shared job/money queries (Part A3) — one source of truth for counts.
+ * Shared job/money queries (Part A3) - one source of truth for counts.
  *
  * Dashboard, Jobs, Schedule, and Money must all import from here so the
  * same jobs are counted the same way on every screen. The `db` parameter

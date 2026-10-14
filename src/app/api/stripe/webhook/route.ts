@@ -97,7 +97,7 @@ export async function POST(req: Request) {
 
 /** The connected account on the event must match the business's connection. */
 async function assertAccount(businessId: string, eventAccount: string | undefined) {
-  if (!eventAccount) return true; // platform-mode events (tests) — metadata is authoritative
+  if (!eventAccount) return true; // platform-mode events (tests) - metadata is authoritative
   const conn = await prisma.stripeConnection.findUnique({
     where: { businessId },
     select: { stripeAccountId: true },
@@ -230,7 +230,7 @@ async function handleCheckoutCompleted(
         const { pushToBusiness } = await import('@/lib/webpush');
         await pushToBusiness(businessId, {
           title: 'Payment received · Paiement reçu',
-          body: `${round2((info.amountCents ?? 0) / 100).toFixed(2)} CAD — ${invoice.number}`,
+          body: `${round2((info.amountCents ?? 0) / 100).toFixed(2)} CAD - ${invoice.number}`,
           url: `/invoices/${invoice.id}`,
           tag: `payment-${paymentId}`,
         });

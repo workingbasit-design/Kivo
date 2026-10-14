@@ -2,8 +2,8 @@
  * Unit tests for the public-form bot checks (src/lib/bot-check.ts).
  * Run: node --test src/lib/__tests__/bot-check.test.mts
  *
- * Both public forms — the directory quote-request form and the /book/[slug]
- * booking form — carry the same two hidden fields, and their server actions
+ * Both public forms - the directory quote-request form and the /book/[slug]
+ * booking form - carry the same two hidden fields, and their server actions
  * enforce these checks before any database work:
  *   - honeypot field must be empty (bots fill every field)
  *   - hidden start timestamp must show a human-speed fill time

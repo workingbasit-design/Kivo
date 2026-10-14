@@ -6,11 +6,11 @@ import { rateLimit } from '@/lib/rate-limit';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 
 /**
- * POST /api/locations/ping — record one GPS ping from a technician's device.
+ * POST /api/locations/ping - record one GPS ping from a technician's device.
  *
  * Privacy-first: a ping is accepted ONLY when the referenced job belongs to
  * the caller's business AND is SCHEDULED or IN PROGRESS. Pings for completed,
- * cancelled, paid, or foreign jobs are rejected — so no location is ever
+ * cancelled, paid, or foreign jobs are rejected - so no location is ever
  * recorded outside active work, even if a device keeps sending.
  */
 
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
   const rl = rateLimit(`gps-ping:${userId}`, PING_LIMIT);
   if (!rl.ok) {
     return NextResponse.json(
-      { error: 'Too many requests — please slow down.' },
+      { error: 'Too many requests - please slow down.' },
       { status: 429 }
     );
   }

@@ -3,7 +3,7 @@
  *
  * A logged-in customer generates a key in their profile and pastes it
  * into their AI assistant. The assistant can then search the directory
- * and propose quote requests AS that customer — identity comes from the
+ * and propose quote requests AS that customer - identity comes from the
  * key, never from re-typed form fields. Keys can propose only; every
  * proposal still needs the human's one-tap confirmation.
  *
@@ -84,7 +84,7 @@ export function customerKeyHasScope(v: VerifiedCustomerAgentKey, need: AgentScop
 export type CustomerAgentAuthResult =
   | { ok: true; key: VerifiedCustomerAgentKey }
   | { ok: false; status: 401 | 429; error: string }
-  | { ok: true; key: null }; // anonymous — allowed for read/propose, identity must come from the body
+  | { ok: true; key: null }; // anonymous - allowed for read/propose, identity must come from the body
 
 /**
  * Authenticate an agent-protocol request. Unlike the business v1 API,

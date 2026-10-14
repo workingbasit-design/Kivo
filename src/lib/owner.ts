@@ -7,7 +7,7 @@
  * product owner, identified by email via the OWNER_EMAILS env var
  * (comma-separated, e.g. OWNER_EMAILS="you@example.com").
  *
- * Until the owner sets OWNER_EMAILS, the inbox is closed to everyone —
+ * Until the owner sets OWNER_EMAILS, the inbox is closed to everyone -
  * fail-closed is the safe default.
  */
 export function ownerEmails(): string[] {

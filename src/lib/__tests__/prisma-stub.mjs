@@ -42,7 +42,7 @@ function delegate(model) {
         if (method === 'aggregate') {
           return async () => ({ _sum: { amount: null } });
         }
-        // create / update / upsert / delete / createMany / ... — record, never execute
+        // create / update / upsert / delete / createMany / ... - record, never execute
         return async (args) => {
           recordWrite(model, String(method), args);
           return null;

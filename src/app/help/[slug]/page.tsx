@@ -106,7 +106,7 @@ export default async function HelpArticlePage({
       >
         ← {t(locale, 'support.backToHelp')}
       </Link>
-      <div className="mt-3 text-xs font-semibold uppercase tracking-wide text-lime-700">
+      <div className="mt-3 text-xs font-semibold text-lime-700">
         {categoryLabel(article.category, locale)}
       </div>
       <h1 className="mt-1 text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl">

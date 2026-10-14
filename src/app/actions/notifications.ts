@@ -28,7 +28,7 @@ export async function markNotificationRead(id: string): Promise<void> {
 
 /**
  * Save per-type notification preferences. Unchecked boxes submit nothing, so
- * every type is read explicitly (missing = off). Unknown keys are ignored —
+ * every type is read explicitly (missing = off). Unknown keys are ignored -
  * only the six known types can ever be stored.
  */
 export async function saveNotificationSettingsAction(

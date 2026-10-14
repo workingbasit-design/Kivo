@@ -8,7 +8,7 @@ import { newShareTokenValue } from '@/lib/share';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
 
 /**
- * POST /api/tracking/share — create (or refresh) the customer-facing live
+ * POST /api/tracking/share - create (or refresh) the customer-facing live
  * tracking link for a job ("tech is on the way").
  *
  * The link resolves by unguessable token at /track/[token] with no login.
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
   const rl = rateLimit(`tracking-share:${session.user.id}`, SHARE_LIMIT);
   if (!rl.ok) {
     return NextResponse.json(
-      { error: 'Too many requests — please slow down.' },
+      { error: 'Too many requests - please slow down.' },
       { status: 429 }
     );
   }
@@ -72,7 +72,7 @@ export async function POST(req: Request) {
   const expiresAt = new Date(Date.now() + SHARE_TTL_HOURS * 60 * 60 * 1000);
   // job.id was business-verified 15 lines above; jobId is this table's
   // unique key, so the upsert can only ever touch this tenant's row.
-  // Reuse the existing token if it's still valid — regenerating on every
+  // Reuse the existing token if it's still valid - regenerating on every
   // "Share" click invalidates links already sent to customers (2026-09-30 QA).
   const existing = await unsafeUnscoped('tracking:share:findExisting', (db) =>
     db.trackingShare.findFirst({
@@ -111,7 +111,7 @@ export async function POST(req: Request) {
 }
 
 /**
- * GET /api/tracking/share?jobId=... — return the current active tracking
+ * GET /api/tracking/share?jobId=... - return the current active tracking
  * link for a job, if any. Lets the UI show the existing link after a page
  * reload instead of forcing the tech to create a new one.
  */
@@ -139,7 +139,7 @@ export async function GET(req: Request) {
 }
 
 /**
- * DELETE /api/tracking/share?jobId=... — revoke the tracking link for a job.
+ * DELETE /api/tracking/share?jobId=... - revoke the tracking link for a job.
  * The customer link stops working immediately.
  */
 export async function DELETE(req: Request) {

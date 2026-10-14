@@ -1,5 +1,5 @@
 /**
- * Track 9 — messaging quota guardrails (free-tier hard limits).
+ * Track 9 - messaging quota guardrails (free-tier hard limits).
  *
  * Pure, testable TypeScript: no DB, no network, no Next.js imports.
  *
@@ -10,17 +10,17 @@
  *   utility/authentication rate. Without a payment method on file Meta simply
  *   stops delivering after the free tier.
  *   Source: https://developers.facebook.com/documentation/business-messaging/whatsapp/pricing
- *   Business-initiated utility templates are PAID per message — EveryJob never
+ *   Business-initiated utility templates are PAID per message - EveryJob never
  *   sends those; we send free-form service text, which Meta delivers inside an
  *   open 24h customer-service window (within the free tier) or rejects
  *   (template_required), in which case we fall back to email. Our own counter
  *   hard-stops at 1,000 so the paid tier is never reached.
- * - Email (Resend free-forever plan): 3,000/month AND 100/day — the daily cap
+ * - Email (Resend free-forever plan): 3,000/month AND 100/day - the daily cap
  *   is the binding constraint (https://resend.com/pricing;
  *   https://resend.com/docs/knowledge-base/account-quotas-and-limits).
  *   Exceeding either pauses sending.
  * - SMS: no genuine ongoing free tier exists (Twilio: one-time $15 trial
- *   credit, verified numbers only; Textbelt: 1 free text/day test courtesy) —
+ *   credit, verified numbers only; Textbelt: 1 free text/day test courtesy) -
  *   disabled by design.
  */
 
@@ -30,7 +30,7 @@ export interface QuotaLimits {
   emailDaily: number;
 }
 
-/** Verified defaults — overridable per business in MessagingSettings. */
+/** Verified defaults - overridable per business in MessagingSettings. */
 export const VERIFIED_QUOTA_DEFAULTS = {
   whatsappMonthly: 1000,
   emailMonthly: 3000,

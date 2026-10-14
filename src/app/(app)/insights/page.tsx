@@ -501,7 +501,7 @@ export default async function InsightsPage() {
                   {(["b1", "b2", "b3"] as const).map((b) => (
                     <li key={b} className="rounded-xl border border-zinc-200 bg-zinc-50 px-3.5 py-3">
                       <p className="text-xs font-bold text-zinc-900 flex items-center gap-2">
-                        <span className="inline-block text-[10px] font-bold uppercase tracking-wide bg-white border border-zinc-200 rounded px-1.5 py-0.5 text-zinc-500">
+                        <span className="inline-block text-[10px] font-bold bg-white border border-zinc-200 rounded px-1.5 py-0.5 text-zinc-500">
                           {t(locale, "growth.benchmarkNote")}
                         </span>
                         {t(locale, `growth.benchmarks.${b}t`)}

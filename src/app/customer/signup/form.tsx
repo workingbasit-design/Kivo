@@ -28,7 +28,7 @@ export default function CustomerSignupForm({ locale }: { locale: Locale }) {
         <div className="ej-anim-fade-up w-full max-w-sm bg-white rounded-3xl border border-zinc-200/70 shadow-xl shadow-zinc-200/50 p-6 sm:p-8">
           <div className="flex items-center gap-2 text-indigo-600 mb-2">
             <Search className="w-5 h-5" />
-            <span className="text-xs font-bold uppercase tracking-wider">{tr('customer.auth.forCustomers')}</span>
+            <span className="text-xs font-bold">{tr('customer.auth.forCustomers')}</span>
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900">{tr('customer.auth.signupTitle')}</h1>
           <p className="text-sm text-zinc-500 mt-1 mb-6">

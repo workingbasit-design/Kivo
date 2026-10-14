@@ -40,7 +40,7 @@ async function notifyOwner(ticket: {
 }): Promise<void> {
   const ownerEmail = process.env.SUPPORT_OWNER_EMAIL?.trim();
   const resendKey = process.env.RESEND_API_KEY?.trim();
-  if (!ownerEmail || !resendKey) return; // not configured — ticket still stored
+  if (!ownerEmail || !resendKey) return; // not configured - ticket still stored
   try {
     await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -84,7 +84,7 @@ export async function POST(req: Request) {
     );
   }
 
-  // Optional tenant context — the form is public, so never require auth.
+  // Optional tenant context - the form is public, so never require auth.
   const session = await getSession();
   const businessId: string | null = session?.user?.businessId ?? null;
 
@@ -123,7 +123,7 @@ export async function PATCH(req: Request) {
   }
   email = patchSession.user.email;
   // Only the product owner may change ticket statuses. Tickets are about the
-  // EveryJob product itself, not tenant data — fail closed until OWNER_EMAILS
+  // EveryJob product itself, not tenant data - fail closed until OWNER_EMAILS
   // is configured.
   if (!isProductOwner(email)) {
     return NextResponse.json({ error: 'forbidden' }, { status: 403 });
@@ -138,7 +138,7 @@ export async function PATCH(req: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: 'invalid' }, { status: 400 });
   }
-  // Tickets may be global (no businessId) — the owner inbox sees all of them.
+  // Tickets may be global (no businessId) - the owner inbox sees all of them.
   // isProductOwner() above is the authorization: only the product owner
   // reaches this line.
   const ticket = await unsafeUnscoped('support:ownerUpdateTicket', (db) =>

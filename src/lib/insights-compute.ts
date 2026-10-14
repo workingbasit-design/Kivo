@@ -1,5 +1,5 @@
 /**
- * Pure insight computations — deterministic functions of plain rows.
+ * Pure insight computations - deterministic functions of plain rows.
  * No DB, no network, no randomness. Imported by src/lib/insights.ts and
  * unit-tested in src/lib/__tests__/insights.test.mts.
  */
@@ -33,9 +33,9 @@ export interface Insights {
   seasonalDemand: { month: string; jobs: number }[];
   /** Busiest weekday (0=Sun..6=Sat) across completed history, or null. */
   busiestWeekday: number | null;
-  /** Avg job value by weekday — used for smart scheduling suggestions. */
+  /** Avg job value by weekday - used for smart scheduling suggestions. */
   avgValueByWeekday: (number | null)[];
-  /** SENT quotes older than 7 days — follow-up candidates. */
+  /** SENT quotes older than 7 days - follow-up candidates. */
   staleQuotes: { id: string; number: string; customerName: string; total: number; daysWaiting: number }[];
   quoteWinRatePct: number | null;
   /** Technician utilization: completed+paid jobs per technician, best first. */
@@ -79,7 +79,7 @@ export interface InsightQuote {
 
 /**
  * Pure computation: everything below is a deterministic function of the
- * given rows — no DB, no network, no randomness. Unit-tested in
+ * given rows - no DB, no network, no randomness. Unit-tested in
  * src/lib/__tests__/insights.test.mts.
  */
 export function computeInsights(

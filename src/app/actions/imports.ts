@@ -36,8 +36,8 @@ function tooManyRowsError(count: number, fr: boolean): ImportActionResult {
       {
         row: 0,
         message: fr
-          ? `Trop de lignes (${count}). Maximum ${MAX_IMPORT_ROWS} lignes par importation — divisez le fichier.`
-          : `Too many rows (${count}). Maximum ${MAX_IMPORT_ROWS} rows per import — please split the file.`,
+          ? `Trop de lignes (${count}). Maximum ${MAX_IMPORT_ROWS} lignes par importation - divisez le fichier.`
+          : `Too many rows (${count}). Maximum ${MAX_IMPORT_ROWS} rows per import - please split the file.`,
       },
     ],
   };
@@ -76,7 +76,7 @@ async function checkLimit(userId: string): Promise<ImportActionResult | null> {
  * Minimal token logic (mirrors src/app/actions/google-reviews.ts, kept
  * local because that module's helper is private). Reads the tenant's
  * googleConnection, refreshes the access token when expired, and requires
- * the calendar readonly scope — connections made before Track 6 granted
+ * the calendar readonly scope - connections made before Track 6 granted
  * only business.manage and must reconnect.
  */
 async function getCalendarAccessToken(businessId: string): Promise<string> {
@@ -186,7 +186,7 @@ export async function confirmCalendarImport(items: CalendarImportItem[]): Promis
   const picked = items.filter((i) => i.customerId && i.title?.trim() && i.startISO);
   if (picked.length === 0) return { ok: true, imported: 0, skipped: 0 };
 
-  // Verify every customerId belongs to this business — never invent customers.
+  // Verify every customerId belongs to this business - never invent customers.
   const customers = await prisma.customer.findMany({
     where: { businessId },
     select: { id: true },
@@ -354,7 +354,7 @@ export async function commitCsvImport(type: CsvType, records: CsvRecord[]): Prom
           data: toCreate.map((r) => {
             const c = r as CustomerRecord;
             // phoneNorm is the E.164 matching key used by lead→customer
-            // phone dedupe and WhatsApp links — the UI path sets it, so the
+            // phone dedupe and WhatsApp links - the UI path sets it, so the
             // import path must too (rows already passed phone validation).
             const phoneCheck = validatePhone(c.phone ?? '', 'CA');
             return {
@@ -390,7 +390,7 @@ export async function commitCsvImport(type: CsvType, records: CsvRecord[]): Prom
     return { ok: true, imported: toCreate.length, skipped };
   }
 
-  // Jobs: re-validate server-side first — never trust the client preview.
+  // Jobs: re-validate server-side first - never trust the client preview.
   // (Customers/services do this above; the jobs path previously trusted the
   // client records outright, so a tampered client could store negative
   // prices and malformed dates threw a 500.)

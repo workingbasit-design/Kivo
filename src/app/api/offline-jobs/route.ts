@@ -22,12 +22,12 @@ const offlineJobSchema = z.object({
 });
 
 /**
- * POST /api/offline-jobs — sync endpoint for the offline outbox.
+ * POST /api/offline-jobs - sync endpoint for the offline outbox.
  *
  * Accepts a job payload that was queued while the device had no connection.
  * Authenticated via the session cookie (same-origin + CSRF guard, like other
  * API routes). Idempotent: a `clientKey` generated at queue time dedupes
- * retries — a job with identical (customer, title, date, time, price) created
+ * retries - a job with identical (customer, title, date, time, price) created
  * in the last 15 minutes is treated as already synced.
  */
 export async function POST(req: NextRequest) {

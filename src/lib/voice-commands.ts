@@ -1,5 +1,5 @@
 /**
- * Voice-mode command parser — turns a transcript into a job action.
+ * Voice-mode command parser - turns a transcript into a job action.
  * Bilingual (EN/FR), pure, tested. The client handles microphone +
  * follow-up prompts; this module only decides what was said.
  */
@@ -99,7 +99,7 @@ export function parseVoiceCommand(
     const hint = jobHint(rest);
 
     if (p.action === 'note' || p.action === 'material') {
-      // "add note <text>" / "add note <text> for smith" — split text from job hint
+      // "add note <text>" / "add note <text> for smith" - split text from job hint
       const job = findJob(hint, jobs) ?? (jobs.length === 1 ? jobs[0] : null);
       // text = rest minus the matched job hint words
       let noteText = rest;

@@ -1,6 +1,6 @@
 /**
  * Pure helpers for standalone expense tracking (/expenses).
- * No I/O, no Prisma — safe for node:test.
+ * No I/O, no Prisma - safe for node:test.
  */
 
 export const EXPENSE_CATEGORIES = ['MATERIALS', 'TRAVEL', 'OTHER'] as const;
@@ -116,7 +116,7 @@ export interface ExpenseFilters {
   q: string;
 }
 
-/** Normalize expense list query params (category uppercased, dates validated). */
+/** Normalize expense list query params (categoryd, dates validated). */
 export function parseExpenseFilters(params: {
   category?: string;
   jobId?: string;

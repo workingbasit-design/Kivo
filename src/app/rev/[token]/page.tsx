@@ -76,7 +76,7 @@ export default async function TokenReviewPage({
           </div>
           {ctx ? (
             <>
-              <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+              <p className="text-[11px] font-bold text-zinc-400">
                 {L('t10money.reviewPageFor')}
               </p>
               <h1 className="text-2xl font-bold text-zinc-900 tracking-tight mt-1">

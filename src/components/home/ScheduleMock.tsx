@@ -43,7 +43,7 @@ export default function ScheduleMock({ strings }: { strings: ScheduleMockStrings
           <div key={j.name} className="p-5">
             <div className="flex items-center justify-between mb-3">
               <span
-                className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full ${TONES[i % TONES.length]}`}
+                className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${TONES[i % TONES.length]}`}
               >
                 {j.status}
               </span>

@@ -2,7 +2,7 @@
  * Resolve hook for the auth rate-limit tests: redirects framework and
  * data modules to the in-memory stub. Pure modules (validations,
  * rate-limit, password-policy, password-reset, client-ip, zod) resolve
- * normally — the real rate limiter is what's under test.
+ * normally - the real rate limiter is what's under test.
  */
 const stubUrl = new URL('./auth-stub.mjs', import.meta.url).href;
 

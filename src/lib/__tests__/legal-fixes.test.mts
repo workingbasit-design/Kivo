@@ -1,7 +1,7 @@
 /**
  * Tests for the reel-driven legal fixes:
  * 1. Age requirement moved to Terms of Service (18+ clause in legal.ts);
- *    the signup form no longer has an age checkbox — registration succeeds
+ *    the signup form no longer has an age checkbox - registration succeeds
  *    without ageConfirm, and the register page links Terms + Privacy.
  * 2. Transactional email footer (no-marketing statement in HTML + text).
  *

@@ -2,7 +2,7 @@
  * Unit tests for password-reset token helpers (src/lib/password-reset.ts).
  * Run: node --test src/lib/__tests__/password-reset.test.mts
  *
- * Pure functions only — no DB. The raw token is never persisted; only its
+ * Pure functions only - no DB. The raw token is never persisted; only its
  * SHA-256 hash is stored.
  */
 import test from 'node:test';

@@ -14,7 +14,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { toISODateInTimezone } from '../utils.ts';
 
-// 2026-09-23T02:30:00Z — it is already Sep 23 in UTC, but still Sep 22
+// 2026-09-23T02:30:00Z - it is already Sep 23 in UTC, but still Sep 22
 // (10:30 PM EDT) in Toronto.
 const TORONTO_EVENING = new Date('2026-09-23T02:30:00.000Z');
 

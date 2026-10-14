@@ -1,5 +1,5 @@
 /**
- * Canadian statutory holidays — pure, dependency-free date computation.
+ * Canadian statutory holidays - pure, dependency-free date computation.
  *
  * Covers federal holidays plus the major provincial/territorial statutory
  * holidays. Used by the scheduler to badge days off, and as the offline

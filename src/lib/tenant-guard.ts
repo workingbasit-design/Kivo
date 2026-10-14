@@ -17,7 +17,7 @@
  * - The check is on the top-level `where` only, deliberately: a nested
  *   `businessId` inside an OR branch would NOT actually scope the query
  *   (the other branch could match another tenant's rows), so nested-only
- *   scopes are rejected — fail closed.
+ *   scopes are rejected - fail closed.
  *
  * What it does NOT cover (known residuals, documented so they stay visible):
  * - `User` is excluded: it is the identity root. Login, Google OAuth
@@ -41,7 +41,7 @@
  * provider ids, owner-admin views, global retention purges). It uses
  * AsyncLocalStorage so concurrent requests on one serverless instance
  * cannot leak the exemption to each other. Every call site must carry a
- * comment justifying why it is safe — grep for unsafeUnscoped to audit.
+ * comment justifying why it is safe - grep for unsafeUnscoped to audit.
  */
 import { AsyncLocalStorage } from 'node:async_hooks';
 import type { PrismaClient } from '@prisma/client';
@@ -84,8 +84,8 @@ export class TenantScopeError extends Error {
 }
 
 /**
- * Every Prisma model with a businessId column — i.e. every table whose rows
- * belong to exactly one business — minus User (identity root, see above).
+ * Every Prisma model with a businessId column - i.e. every table whose rows
+ * belong to exactly one business - minus User (identity root, see above).
  * Derived from prisma/schema.prisma; the test
  * src/lib/__tests__/tenant-isolation.test.mts asserts this list stays in
  * sync with the schema, so adding a businessId column to a new model
@@ -152,7 +152,7 @@ export const TENANT_MODELS: ReadonlySet<string> = new Set([
 
 /**
  * Read/write-by-where operations. Includes the OrThrow variants, which
- * Prisma reports as distinct middleware actions — omitting them would
+ * Prisma reports as distinct middleware actions - omitting them would
  * leave a hole (e.g. findUniqueOrThrow bypassing the guard).
  */
 const GUARDED_ACTIONS: ReadonlySet<string> = new Set([
@@ -177,8 +177,8 @@ const globalForGuard = globalThis as unknown as {
   __everyjob_unscopedStore?: AsyncLocalStorage<boolean>;
 };
 /**
- * The exemption store lives on globalThis — NOT as a plain module-level
- * const — because the production bundler can evaluate this module twice
+ * The exemption store lives on globalThis - NOT as a plain module-level
+ * const - because the production bundler can evaluate this module twice
  * when it is imported through two different specifiers (e.g. `@/lib/tenant-guard`
  * in pages vs `./tenant-guard.ts` in lib files). Two module instances mean
  * two AsyncLocalStorage instances; the Prisma middleware (registered from
@@ -202,14 +202,14 @@ export interface GuardParams {
 }
 
 /**
- * Pure decision function — no Prisma import, directly unit-tested.
+ * Pure decision function - no Prisma import, directly unit-tested.
  * Throws TenantScopeError for unscoped tenant queries; returns void otherwise.
  *
  * For read/write-by-where operations, requires args.where.businessId.
  * For create/createMany, requires args.data.businessId (or every element's
  * businessId for createMany arrays). Creates cannot leak another tenant's
  * rows, but an unscoped create is a programming error that would orphan
- * data or attach it to the wrong tenant — fail closed here too.
+ * data or attach it to the wrong tenant - fail closed here too.
  */
 export function assertTenantScope(params: GuardParams): void {
   const { model, action } = params;
@@ -247,13 +247,13 @@ export function assertTenantScope(params: GuardParams): void {
   }
   // Compound unique keys that embed businessId. Prisma requires the compound
   // input for upsert/findUnique on these models, so there is no top-level
-  // where.businessId — but the embedded businessId scopes the query to one
+  // where.businessId - but the embedded businessId scopes the query to one
   // tenant exactly as well:
   // - MessageQuota: { businessId_month: { businessId, month } }
   // - MessagingConnection: { businessId_channel: { businessId, channel } }
   // (2026-10-01: without this, /settings/messaging crashed to the error
-  // boundary on every load — getMessagingOverview upserts the monthly quota
-  // row — and the messaging scheduler + WhatsApp webhook hit the same wall.)
+  // boundary on every load - getMessagingOverview upserts the monthly quota
+  // row - and the messaging scheduler + WhatsApp webhook hit the same wall.)
   for (const key of ['businessId_month', 'businessId_channel'] as const) {
     const compound = where?.[key] as Record<string, unknown> | undefined;
     if (
@@ -283,7 +283,7 @@ export function assertTenantScope(params: GuardParams): void {
 
 /**
  * Prisma `$use` middleware. Register OUTSIDE (before) the retry middleware
- * so a TenantScopeError — a programming error, not a transient failure —
+ * so a TenantScopeError - a programming error, not a transient failure -
  * rejects immediately and is never retried. Async so the block surfaces
  * as a rejected promise, exactly like any other middleware failure.
  */
@@ -311,7 +311,7 @@ export async function unsafeUnscoped<T>(
   // Prisma's internal engine scheduling, outside the caller's async chain),
   // so the exemption never reached the guard and every public token page
   // 500'd with TenantScopeError. The callback now receives an explicit
-  // UNGUARDED client — the only reliable bypass. The client is injected via
+  // UNGUARDED client - the only reliable bypass. The client is injected via
   // setUnscopedClient() (called by lib/prisma.ts) to avoid a circular
   // runtime import; tests inject a mock.
   //
@@ -325,7 +325,7 @@ export async function unsafeUnscoped<T>(
   }
   if (!unscopedClient) {
     throw new Error(
-      '[tenant-guard] unscoped client not initialized — lib/prisma.ts must call setUnscopedClient()'
+      '[tenant-guard] unscoped client not initialized - lib/prisma.ts must call setUnscopedClient()'
     );
   }
   unscopedEvents.push({ at: Date.now(), op: operationName });

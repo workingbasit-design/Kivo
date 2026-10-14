@@ -71,7 +71,7 @@ const OPEN_JOB_STATUSES = ["NEW", "SCHEDULED", "IN PROGRESS"];
  *
  * Cancelled jobs never count as booked revenue and never count as jobs left
  * (2026-09-24 defect: cancelling a job left its amount in the sidebar total
- * until a manual reload). Pure function — unit-tested in
+ * until a manual reload). Pure function - unit-tested in
  * `__tests__/dashboard.test.mts`. Shared by the dashboard stats and the app
  * shell (sidebar) so both surfaces always agree.
  */
@@ -100,7 +100,7 @@ export async function getDashboardStats(
   businessId: string,
   biz?: { timezone: string | null; regionCode: string | null } | null
 ): Promise<DashboardStats> {
-  // "Today" is the business-local calendar day — the server runs on UTC, so
+  // "Today" is the business-local calendar day - the server runs on UTC, so
   // a server-local date would show the wrong day's jobs in the evening.
   // The caller may pass an already-fetched business row to skip a roundtrip.
   const b =

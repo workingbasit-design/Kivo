@@ -29,7 +29,7 @@ export const PRIVACY: { en: LegalPage; fr: LegalPage } = {
       {
         heading: 'What we collect',
         body: [
-          'Account information: your name, email address, business name, and contact number — the details you give us when you sign up.',
+          'Account information: your name, email address, business name, and contact number - the details you give us when you sign up.',
           'Business data you enter: customers, jobs, quotes, invoices, payments, schedules, and files you upload. This is your data; we store it so the app works.',
           'Technical data: device type, browser, and basic usage logs we need for security (rate limiting, abuse prevention) and to fix bugs.',
           'Location: only when you or your team explicitly share it for an active job (for example, a live tracking link you create). Location pings are deleted automatically after 24 hours.',
@@ -38,7 +38,7 @@ export const PRIVACY: { en: LegalPage; fr: LegalPage } = {
       {
         heading: 'What we don\u2019t do',
         body: [
-          'We do not sell your personal information — to anyone, ever.',
+          'We do not sell your personal information - to anyone, ever.',
           'We do not run advertising trackers, session-replay recorders, or third-party analytics on your workspace.',
           'Fonts are served from our own servers; your visit never phones home to a font provider.',
         ],
@@ -94,7 +94,7 @@ export const PRIVACY: { en: LegalPage; fr: LegalPage } = {
       {
         heading: 'Ce que nous recueillons',
         body: [
-          'Informations du compte : votre nom, votre courriel, le nom de votre entreprise et votre numéro de téléphone — les détails que vous nous donnez à l\u2019inscription.',
+          'Informations du compte : votre nom, votre courriel, le nom de votre entreprise et votre numéro de téléphone - les détails que vous nous donnez à l\u2019inscription.',
           'Données d\u2019entreprise que vous saisissez : clients, travaux, devis, factures, paiements, horaires et fichiers téléversés. Ce sont vos données; nous les stockons pour faire fonctionner l\u2019application.',
           'Données techniques : type d\u2019appareil, navigateur et journaux d\u2019utilisation de base nécessaires à la sécurité (limitation du débit, prévention des abus) et à la correction des bogues.',
           'Localisation : uniquement lorsque vous ou votre équipe la partagez explicitement pour un travail actif (par exemple, un lien de suivi que vous créez). Les positions sont supprimées automatiquement après 24 heures.',
@@ -103,7 +103,7 @@ export const PRIVACY: { en: LegalPage; fr: LegalPage } = {
       {
         heading: 'Ce que nous ne faisons pas',
         body: [
-          'Nous ne vendons jamais vos renseignements personnels — à personne.',
+          'Nous ne vendons jamais vos renseignements personnels - à personne.',
           'Nous n\u2019utilisons aucun traqueur publicitaire, enregistreur de session ni outil d\u2019analyse tiers dans votre espace de travail.',
           'Les polices sont servies depuis nos propres serveurs; votre visite ne contacte jamais un fournisseur de polices.',
         ],
@@ -176,7 +176,7 @@ export const TERMS: { en: LegalPage; fr: LegalPage } = {
       {
         heading: 'Your data',
         body: [
-          'You own the business data you put into EveryJob — your customers, jobs, quotes, and invoices are yours.',
+          'You own the business data you put into EveryJob - your customers, jobs, quotes, and invoices are yours.',
           'You give us permission to store and process that data only to run the service for you.',
           'Don\u2019t upload anything illegal, infringing, or that you don\u2019t have the right to store.',
         ],
@@ -204,7 +204,7 @@ export const TERMS: { en: LegalPage; fr: LegalPage } = {
       {
         heading: 'Limitation of liability',
         body: [
-          'To the maximum extent allowed by law, EveryJob is provided "as is". We\u2019re not liable for indirect or consequential losses — for example, lost profits from a missed job. Our total liability is limited to the amounts you paid us in the 12 months before the claim (currently $0 on the free plan).',
+          'To the maximum extent allowed by law, EveryJob is provided "as is". We\u2019re not liable for indirect or consequential losses - for example, lost profits from a missed job. Our total liability is limited to the amounts you paid us in the 12 months before the claim (currently $0 on the free plan).',
         ],
       },
       {
@@ -239,7 +239,7 @@ export const TERMS: { en: LegalPage; fr: LegalPage } = {
       {
         heading: 'Vos données',
         body: [
-          'Les données d\u2019entreprise que vous entrez dans EveryJob vous appartiennent — vos clients, travaux, devis et factures sont à vous.',
+          'Les données d\u2019entreprise que vous entrez dans EveryJob vous appartiennent - vos clients, travaux, devis et factures sont à vous.',
           'Vous nous autorisez à stocker et traiter ces données uniquement pour faire fonctionner le service pour vous.',
           'Ne téléversez rien d\u2019illégal, de contrefait, ni rien que vous n\u2019avez pas le droit de stocker.',
         ],
@@ -267,7 +267,7 @@ export const TERMS: { en: LegalPage; fr: LegalPage } = {
       {
         heading: 'Limitation de responsabilité',
         body: [
-          'Dans toute la mesure permise par la loi, EveryJob est fourni « tel quel ». Nous ne sommes pas responsables des pertes indirectes — par exemple, des profits perdus à cause d\u2019un travail manqué. Notre responsabilité totale est limitée aux montants que vous nous avez versés dans les 12 mois précédant la réclamation (actuellement 0 $ sur le forfait gratuit).',
+          'Dans toute la mesure permise par la loi, EveryJob est fourni « tel quel ». Nous ne sommes pas responsables des pertes indirectes - par exemple, des profits perdus à cause d\u2019un travail manqué. Notre responsabilité totale est limitée aux montants que vous nous avez versés dans les 12 mois précédant la réclamation (actuellement 0 $ sur le forfait gratuit).',
         ],
       },
       {
@@ -311,7 +311,7 @@ export const COPYRIGHT: { en: LegalPage; fr: LegalPage } = {
       {
         heading: 'Counter-notice',
         body: [
-          'If your content was removed and you believe that was a mistake, you can file a counter-notice with your contact details, identification of the removed material, and a consent to jurisdiction statement. We\u2019ll forward it to the original complainant; if they don\u2019t take legal action within 10–14 business days, we may restore the material.',
+          'If your content was removed and you believe that was a mistake, you can file a counter-notice with your contact details, identification of the removed material, and a consent to jurisdiction statement. We\u2019ll forward it to the original complainant; if they don\u2019t take legal action within 10-14 business days, we may restore the material.',
         ],
       },
       {

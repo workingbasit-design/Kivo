@@ -49,7 +49,7 @@ const businessSettingsSchema = z.object({
   directoryOptIn: z.coerce.boolean().default(true),
   directoryHideAddress: z.coerce.boolean().default(true),
   // taxRegion stores the Canadian province code ("ON").
-  // Stored in the existing taxRegion column — no schema change needed.
+  // Stored in the existing taxRegion column - no schema change needed.
   taxRegion: z.string().trim().max(10).optional().default(''),
 });
 
@@ -160,7 +160,7 @@ export async function updateBusinessSettings(
   });
 
   // Claim verification: opting into the directory without a verified claim
-  // creates a PENDING claim — the listing stays unpublished until an admin
+  // creates a PENDING claim - the listing stays unpublished until an admin
   // explicitly approves. Never auto-approved. A previously APPROVED business
   // that opted out and back in is re-verified (it was already vetted).
   if (directoryOptIn) {
@@ -346,7 +346,7 @@ export async function completeBusinessSetup(opts: {
   return { ok: true };
 }
 
-/** Allowed logo types — raster images only (no SVG: inline scripts). */
+/** Allowed logo types - raster images only (no SVG: inline scripts). */
 const LOGO_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 const MAX_LOGO_BYTES = 2 * 1024 * 1024; // 2 MB
 

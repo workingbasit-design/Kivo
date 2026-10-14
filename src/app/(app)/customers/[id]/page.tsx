@@ -172,7 +172,7 @@ export default async function CustomerDetailPage({
           <div className="flex items-start gap-2.5">
             <Phone size={15} className="text-zinc-400 mt-0.5 shrink-0" />
             <div className="min-w-0">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Phone</p>
+              <p className="text-[11px] font-bold text-zinc-400">Phone</p>
               {customer.phone ? (
                 <a
                   href={`tel:${customer.phone.replace(/\s/g, '')}`}
@@ -188,7 +188,7 @@ export default async function CustomerDetailPage({
           <div className="flex items-start gap-2.5">
             <Mail size={15} className="text-zinc-400 mt-0.5 shrink-0" />
             <div className="min-w-0">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Email</p>
+              <p className="text-[11px] font-bold text-zinc-400">Email</p>
               {customer.email ? (
                 <a
                   href={`mailto:${customer.email}`}
@@ -204,7 +204,7 @@ export default async function CustomerDetailPage({
           <div className="flex items-start gap-2.5 sm:col-span-2">
             <MapPin size={15} className="text-zinc-400 mt-0.5 shrink-0" />
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Address</p>
+              <p className="text-[11px] font-bold text-zinc-400">Address</p>
               <p className="text-zinc-800 whitespace-pre-line">{customer.address ?? '-'}</p>
               {(provinceLabel || customer.postalCode) && (
                 <p className="text-xs text-zinc-500 mt-1">
@@ -217,7 +217,7 @@ export default async function CustomerDetailPage({
             <div className="flex items-start gap-2.5 sm:col-span-2">
               <StickyNote size={15} className="text-zinc-400 mt-0.5 shrink-0" />
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Notes</p>
+                <p className="text-[11px] font-bold text-zinc-400">Notes</p>
                 <p className="text-zinc-800 whitespace-pre-line">{customer.notes}</p>
               </div>
             </div>
@@ -226,7 +226,7 @@ export default async function CustomerDetailPage({
             <div className="flex items-start gap-2.5 sm:col-span-2">
               <StickyNote size={15} className="text-zinc-400 mt-0.5 shrink-0" />
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Tags</p>
+                <p className="text-[11px] font-bold text-zinc-400">Tags</p>
                 <div className="flex flex-wrap gap-1.5 mt-1">
                   {customer.tags.split(',').filter(Boolean).map((tag) => (
                     <span key={tag} className="text-[11px] font-semibold bg-zinc-100 text-zinc-700 rounded-full px-2.5 py-1">

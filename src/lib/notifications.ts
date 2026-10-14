@@ -3,7 +3,7 @@ import { todayInTimezone, dayRange, toISODateLocal, toISODateInTimezone } from '
 import { t, type Locale } from '@/lib/i18n/index';
 
 // Client-safe preference types/helpers live in ./notification-prefs.ts
-// (no server-only imports there — client components import it directly).
+// (no server-only imports there - client components import it directly).
 // Imported here for internal use and re-exported so existing server
 // imports keep working.
 import {
@@ -25,12 +25,12 @@ export type { NotificationType, NotificationSettings };
  * In-app notification center (Track 3).
  *
  * Notifications are GENERATED from real records (jobs, invoices, quotes,
- * bookings, payments) — nothing is ever seeded or faked. A dismissed
+ * bookings, payments) - nothing is ever seeded or faked. A dismissed
  * notification never reappears for the same underlying record (dedupeKey).
- * Read state is per business: 1–5 person shops share one inbox.
+ * Read state is per business: 1-5 person shops share one inbox.
  *
  * In-app ONLY. Nothing in this module sends WhatsApp, SMS, email, or any
- * other external message — it only writes Notification rows.
+ * other external message - it only writes Notification rows.
  */
 
 /** Fill a "{param}" template. Missing params render as "". */
@@ -46,7 +46,7 @@ export interface NotificationCandidate {
 }
 
 // ---------------------------------------------------------------------------
-// Pure candidate builders (no DB) — the generation logic unit tests target
+// Pure candidate builders (no DB) - the generation logic unit tests target
 // these directly with fixture rows.
 // ---------------------------------------------------------------------------
 
@@ -243,7 +243,7 @@ export function buildPaymentRecorded(
 // ---------------------------------------------------------------------------
 // Rendering (locale-aware, at read time).
 // The type is a plain string (not the NotificationType union) so the safe
-// workflow engine's types (review_request_draft, workflow_*) render too —
+// workflow engine's types (review_request_draft, workflow_*) render too -
 // unknown types fall back to the key path via t().
 
 export function renderNotificationTitle(

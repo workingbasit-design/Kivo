@@ -3,8 +3,8 @@
  *
  * There is no genuine free server-side SMS API for Canada: carrier
  * email-to-SMS gateways were retired (Bell shut theirs down 2025-12-31),
- * and "free" APIs cap out at ~1 message/day. So — exactly like the wa.me
- * WhatsApp buttons — these only build native `sms:` links. The user taps
+ * and "free" APIs cap out at ~1 message/day. So - exactly like the wa.me
+ * WhatsApp buttons - these only build native `sms:` links. The user taps
  * the button, their phone's SMS app opens with the message prefilled, and
  * they send it from their own mobile plan. EveryJob never sends anything
  * automatically and spends nothing.

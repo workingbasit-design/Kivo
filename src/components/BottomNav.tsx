@@ -8,6 +8,7 @@ import { t, type Locale } from '@/lib/i18n';
 import { navSections, bottomTabs, advancedNavItems, type NavItem } from '@/components/nav-sections';
 import { NavIconView } from '@/components/animated-icons/nav-icon';
 import { Dialog, ghostBtnClass } from '@/components/ui';
+import { LanguageToggle } from '@/components/LanguageToggle';
 import { logout } from '@/app/actions/auth';
 import { cn } from '@/lib/utils';
 import { useAutoExpandFlag } from '@/hooks/useStoredFlag';
@@ -126,7 +127,7 @@ export default function BottomNav({
             if (items.length === 0) return null;
             return (
               <div key={section.labelKey}>
-                <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-zinc-400">
+                <p className="mb-1.5 text-[10px] font-bold tracking-[0.12em] text-zinc-400">
                   {t(locale, section.labelKey)}
                 </p>
                 <div className="grid grid-cols-1 gap-1">{items.map(renderNavLink)}</div>
@@ -162,7 +163,15 @@ export default function BottomNav({
               </div>
             )}
           </div>
-          <form action={logout} className="pt-3 border-t border-zinc-100">
+          <div className="pt-1 pb-3 border-b border-zinc-100">
+            <p className="mb-2 px-3 text-[10px] font-bold tracking-[0.12em] text-zinc-400">
+              {t(locale, 'settings.language')}
+            </p>
+            <div className="px-3">
+              <LanguageToggle current={locale} />
+            </div>
+          </div>
+          <form action={logout} className="pt-3">
             <button type="submit" className={ghostBtnClass + ' w-full'}>
               <LogOut size={18} />
               {t(locale, 'nav.logout')} ({user.name || user.email})

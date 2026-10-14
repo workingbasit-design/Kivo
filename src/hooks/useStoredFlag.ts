@@ -46,7 +46,7 @@ export function useStoredFlag(key: string, initial = false): [boolean, (next: bo
       try {
         window.localStorage.setItem(key, next ? '1' : '0');
       } catch {
-        // private mode — the flag just won't persist
+        // private mode - the flag just won't persist
       }
       setNonce((n) => n + 1);
     },

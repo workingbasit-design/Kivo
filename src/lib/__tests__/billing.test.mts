@@ -47,7 +47,7 @@ test('buildBatchPreview with zero tax keeps price as total', () => {
 });
 
 test('buildBatchPreview Quebec: per-line tax identical to the commit path', () => {
-  // Preview and commit both go through calcTax now — the 1c divergence the
+  // Preview and commit both go through calcTax now - the 1c divergence the
   // audit found (preview per-line vs stored single-rounding) is gone.
   const qcTaxes = [
     { name: 'GST', rate: 5 },

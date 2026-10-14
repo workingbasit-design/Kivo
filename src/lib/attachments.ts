@@ -2,7 +2,7 @@
  * Universal attachments (Track 6A): pure helpers for validating uploaded
  * files and building safe Vercel Blob pathnames.
  *
- * No I/O here — the server actions in src/app/actions/attachments.ts and the
+ * No I/O here - the server actions in src/app/actions/attachments.ts and the
  * API route import these. Unit-tested without HTTP or DB.
  */
 

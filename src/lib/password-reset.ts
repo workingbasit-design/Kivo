@@ -1,5 +1,5 @@
 /**
- * Password-reset token helpers (pure functions — unit-testable without a DB).
+ * Password-reset token helpers (pure functions - unit-testable without a DB).
  *
  * The raw token is emailed once and never persisted; only its SHA-256 hash
  * is stored (PasswordResetToken.tokenHash). Tokens are single-use

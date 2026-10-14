@@ -78,7 +78,7 @@ export async function updateWorkflowRuleConfig(
   return { ok: true };
 }
 
-/** Manual "run now" for the owner — same idempotent engine the cron uses. */
+/** Manual "run now" for the owner - same idempotent engine the cron uses. */
 export async function runWorkflowsNow(): Promise<AutomationActionResult> {
   const { businessId, user } = await requireAuth();
   const limited = await checkLimit(user.id);

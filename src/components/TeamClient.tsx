@@ -123,7 +123,7 @@ function MemberRow({ member, isSelf }: { member: TeamMember; isSelf: boolean }) 
           <div className="min-w-0">
             <p className="text-sm font-bold text-zinc-900 truncate">
               {displayName}
-              {isSelf && <span className="ml-2 text-[10px] font-bold uppercase tracking-wider text-zinc-400">{t('t10misc.team.you')}</span>}
+              {isSelf && <span className="ml-2 text-[10px] font-bold text-zinc-400">{t('t10misc.team.you')}</span>}
             </p>
             <p className="text-xs text-zinc-500 truncate">{member.email}</p>
           </div>

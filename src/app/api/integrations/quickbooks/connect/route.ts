@@ -17,7 +17,7 @@ export function quickbooksRedirectUri(origin: string): string {
 }
 
 /**
- * GET /api/integrations/quickbooks/connect — start Intuit OAuth2.
+ * GET /api/integrations/quickbooks/connect - start Intuit OAuth2.
  * Without configured credentials we bounce back to settings with a code the
  * card turns into the 3-step setup instructions (graceful, $0 spend).
  */

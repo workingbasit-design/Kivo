@@ -118,7 +118,7 @@ export default async function BrandPage() {
       />
 
       <section>
-        <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2 px-1 flex items-center gap-1.5">
+        <h2 className="text-xs font-bold text-zinc-500 mb-2 px-1 flex items-center gap-1.5">
           <Palette size={14} aria-hidden /> {tr('brand.sectionBrand')}
         </h2>
         <Card className="p-5">
@@ -135,7 +135,7 @@ export default async function BrandPage() {
       </section>
 
       <section>
-        <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2 px-1">
+        <h2 className="text-xs font-bold text-zinc-500 mb-2 px-1">
           {tr('brand.previewTitle')}
         </h2>
         <BrandHeaderPreview
@@ -149,7 +149,7 @@ export default async function BrandPage() {
       </section>
 
       <section>
-        <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2 px-1">
+        <h2 className="text-xs font-bold text-zinc-500 mb-2 px-1">
           {tr('brand.templatesTitle')}
         </h2>
         <p className="text-sm text-zinc-500 px-1 mb-3">{tr('brand.templatesSubtitle')}</p>

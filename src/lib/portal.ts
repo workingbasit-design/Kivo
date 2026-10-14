@@ -1,14 +1,14 @@
 /**
- * Customer portal tokens — magic-link auth for the public customer portal.
+ * Customer portal tokens - magic-link auth for the public customer portal.
  *
  * Unlike ShareToken (which stores the raw token for document links), portal
  * tokens are stored as SHA-256 hashes: anyone who can read the database
  * still cannot mint a working portal URL. Lookup hashes the presented
- * token — there is no enumeration vector (invalid tokens all resolve to
+ * token - there is no enumeration vector (invalid tokens all resolve to
  * the same "link invalid or expired" outcome).
  *
  * A token is usable when revokedAt is null and (expiresAt is null or in
- * the future). Every query is scoped to (businessId, customerId) — a token
+ * the future). Every query is scoped to (businessId, customerId) - a token
  * can never escape its tenant or its customer.
  */
 import { createHash, randomBytes } from 'crypto';
@@ -43,7 +43,7 @@ export type PortalTokenRecord = {
 
 /**
  * Issue a portal token for a customer: revoke all currently-usable tokens
- * first so "regenerate" instantly invalidates old links. Tenant-scoped —
+ * first so "regenerate" instantly invalidates old links. Tenant-scoped -
  * the customer must belong to the business.
  */
 export async function issueCustomerPortalToken(
@@ -115,7 +115,7 @@ export async function revokeCustomerPortalToken(
 
 /**
  * Resolve a presented portal token to its customer. Returns null for any
- * failure — callers show a single generic "link invalid or expired" page
+ * failure - callers show a single generic "link invalid or expired" page
  * and never distinguish "unknown token" from "expired".
  */
 export async function resolveCustomerPortalToken(

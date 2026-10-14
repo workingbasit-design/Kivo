@@ -41,7 +41,7 @@ async function clientKey(prefix: string): Promise<string> {
 }
 
 /**
- * Owner-side: issue a signing link for a quote. Returns the RAW token once —
+ * Owner-side: issue a signing link for a quote. Returns the RAW token once -
  * the client shows it as a shareable link; it is never stored.
  */
 export async function createSignRequest(

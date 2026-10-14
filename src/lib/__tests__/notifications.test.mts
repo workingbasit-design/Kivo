@@ -1,6 +1,6 @@
 /**
- * Notification generation-logic tests (Track 3). The builders are pure —
- * fixtures in, candidates out — so generation is verified without a database.
+ * Notification generation-logic tests (Track 3). The builders are pure -
+ * fixtures in, candidates out - so generation is verified without a database.
  * Also covers settings defaults/parsing and locale-aware rendering.
  */
 import test from 'node:test';
@@ -45,7 +45,7 @@ const daysAgo = (n: number) => new Date(now.getTime() - n * DAY);
 const daysAhead = (n: number) => new Date(now.getTime() + n * DAY);
 // Business timezone used by all builder tests. Dates are interpreted in
 // this zone (not the server-local zone) so the suite is deterministic on
-// any CI runner timezone — the 2026-10-04 CI failure was exactly this:
+// any CI runner timezone - the 2026-10-04 CI failure was exactly this:
 // a UTC runner misclassified a Toronto "tomorrow" job near midnight.
 const TZ = 'America/Toronto';
 const { toISODateInTimezone } = await import('../utils.ts');

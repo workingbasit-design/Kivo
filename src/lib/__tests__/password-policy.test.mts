@@ -1,6 +1,6 @@
 /**
- * Unit tests for src/lib/password-policy.ts — the shared password-length cap.
- * Pure helpers only — no DB, no network.
+ * Unit tests for src/lib/password-policy.ts - the shared password-length cap.
+ * Pure helpers only - no DB, no network.
  * Run: node --test --import ./src/lib/__tests__/register-loader.mjs src/lib/__tests__/password-policy.test.mts
  */
 import test from 'node:test';

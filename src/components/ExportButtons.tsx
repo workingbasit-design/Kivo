@@ -27,12 +27,11 @@ function triggerDownload(url: string, filename: string) {
 }
 
 /**
- * "Export CSV" / "Export Excel" buttons for list pages. Receives the
- * *currently filtered* rows from the page so the download always matches
- * what the user sees. CSV is generated directly; the xlsx library is
- * dynamically imported on click so list pages pay no bundle cost until used.
+ * Shared export-download logic (CSV + Excel) so both the inline
+ * ExportButtons and the mobile overflow menu (JobsExportMenu) download
+ * exactly the same files.
  */
-export default function ExportButtons({
+export function useExportDownloads({
   columns,
   rows,
   fileBase,
@@ -130,6 +129,37 @@ export default function ExportButtons({
       setBusy(null);
     }
   }
+
+  return { downloadCsv, downloadXlsx, busy, disabled };
+}
+
+/**
+ * "Export CSV" / "Export Excel" buttons for list pages. Receives the
+ * *currently filtered* rows from the page so the download always matches
+ * what the user sees. CSV is generated directly; the xlsx library is
+ * dynamically imported on click so list pages pay no bundle cost until used.
+ */
+export default function ExportButtons({
+  columns,
+  rows,
+  fileBase,
+  currency,
+  locale = 'en',
+}: {
+  columns: ExportColumn[];
+  rows: ExportRow[];
+  /** filename prefix, e.g. 'everyjob-customers-2026-09-24' */
+  fileBase: string;
+  currency?: string | null;
+  locale?: Locale;
+}) {
+  const { downloadCsv, downloadXlsx, busy, disabled } = useExportDownloads({
+    columns,
+    rows,
+    fileBase,
+    currency,
+    locale,
+  });
 
   return (
     <>

@@ -1,5 +1,5 @@
 /**
- * Public-holiday helpers (server-only) — Canada only.
+ * Public-holiday helpers (server-only) - Canada only.
  *
  * Data: Nager.Date public holidays API (free, no key).
  * https://date.nager.at/api/v3/publicholidays/{year}/CA
@@ -13,7 +13,7 @@ export type Holiday = { date: string; name: string }; // date: YYYY-MM-DD
 
 type CacheEntry = { at: number; value: Holiday[] };
 const cache = new Map<string, CacheEntry>();
-const TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days — holidays barely change
+const TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days - holidays barely change
 
 const UA = 'EveryJobApp/1.0 (schedule holidays)';
 

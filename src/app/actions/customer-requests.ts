@@ -26,7 +26,7 @@ export async function sendQuoteRequest(_prev: unknown, formData: FormData) {
 
   // Consent gate: quote requests may only target opted-in, VERIFIED
   // directory businesses. The businessId comes from the client and must
-  // never be trusted on its own — without this check a tampered form could
+  // never be trusted on its own - without this check a tampered form could
   // file requests against businesses that never consented to the directory.
   const business = await prisma.business.findFirst({
     where: { id: businessId, directoryOptIn: true, directoryVerifiedAt: { not: null } },

@@ -51,7 +51,7 @@ export default function CopilotDemo({ strings }: { strings: CopilotDemoStrings }
           <Bot size={16} className="text-white" />
         </span>
         <span className="font-semibold text-[15px]">{strings.chatTitle}</span>
-        <span className="ml-auto text-[11px] font-medium uppercase tracking-widest text-white/40">
+        <span className="ml-auto text-[11px] font-mediumst text-white/40">
           {strings.langBadge}
         </span>
       </div>

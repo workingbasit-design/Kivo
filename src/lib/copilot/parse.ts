@@ -1,5 +1,5 @@
 /**
- * Copilot command parser — natural-language (English + Canadian French) text
+ * Copilot command parser - natural-language (English + Canadian French) text
  * into intents and booking entities. Canada-only.
  *
  * Explicit-confirm boundary lives in engine.ts: this module only PARSES,
@@ -38,7 +38,7 @@ export interface JobDraft {
   price: number | null;
 }
 
-/** Draft for adding a brand-new customer — always previewed, never silent. */
+/** Draft for adding a brand-new customer - always previewed, never silent. */
 export interface CustomerDraft {
   name: string;
   phone: string | null;
@@ -46,7 +46,7 @@ export interface CustomerDraft {
 }
 
 /**
- * Draft for a new quote — always previewed, never silent. `priceSource`
+ * Draft for a new quote - always previewed, never silent. `priceSource`
  * tells the UI whether the price came from the user's message ('said'),
  * was suggested from similar past quotes ('history'), or is unset ('none').
  */
@@ -136,12 +136,12 @@ export function extractDate(raw: string): string | null {
     }
   }
 
-  // "25", "25th" — bare day of month, this month if still ahead, otherwise
+  // "25", "25th" - bare day of month, this month if still ahead, otherwise
   // next month. Only when followed by "of"/"this month" is it unambiguous;
   // otherwise require an explicit cue so bare amounts don't clash with money.
   // (Date+month and ISO forms below cover the common explicit cases.)
 
-  // "12 oct", "12 octobre", "5 jan", "29th october" — ordinal suffixes ok
+  // "12 oct", "12 octobre", "5 jan", "29th october" - ordinal suffixes ok
   const md = text.match(
     /\b(\d{1,2})(?:st|nd|rd|th)?\s*(jan|january|janvier|feb|february|fevrier|fev|mar|march|mars|apr|april|avril|avr|may|mai|jun|june|juin|jul|july|juillet|juil|aug|august|aout|sep|sept|september|septembre|oct|october|octobre|nov|november|novembre|dec|december|decembre)\b/
   );
@@ -149,7 +149,7 @@ export function extractDate(raw: string): string | null {
     return dayMonthToISO(Number(md[1]), MONTHS[md[2]], today);
   }
 
-  // "october 29th", "oct 12" — month first, ordinal suffixes ok
+  // "october 29th", "oct 12" - month first, ordinal suffixes ok
   const dm = text.match(
     /\b(jan|january|janvier|feb|february|fevrier|fev|mar|march|mars|apr|april|avril|avr|may|mai|jun|june|juin|jul|july|juillet|juil|aug|august|aout|sep|sept|september|septembre|oct|october|octobre|nov|november|novembre|dec|december|decembre)\s*(\d{1,2})(?:st|nd|rd|th)?\b/
   );
@@ -168,7 +168,7 @@ export function extractDate(raw: string): string | null {
  * Detect the language of the user's message itself. The app is EN + Canadian
  * French: when the user writes French, the reply should be French even if the
  * business's UI locale is English (and vice versa). Returns null when the
- * message gives no clear signal — the caller then falls back to the locale.
+ * message gives no clear signal - the caller then falls back to the locale.
  */
 export function detectMessageLang(raw: string): 'fr' | 'en' | null {
   const text = ' ' + norm(raw) + ' ';
@@ -178,7 +178,7 @@ export function detectMessageLang(raw: string): 'fr' | 'en' | null {
     ' quand ', ' pourquoi ', ' comment ', " s il ", ' etes ', ' suis ', ' aujourd hui ', ' tache ', ' taches ',
     ' devis ', ' paiement ', ' paiements ', ' horaire ', ' revenu ', ' revenus ', ' gagne ', ' dois ',
     ' rendez vous ', ' plomberie ', ' plombier ', ' fournaise ', ' rappel ', ' rappelle ',
-    // NOTE: 'client'/'clients' deliberately excluded — English speakers use
+    // NOTE: 'client'/'clients' deliberately excluded - English speakers use
     // them too, so they are not reliable French signals.
   ];
   const enMarkers = [
@@ -195,13 +195,13 @@ export function detectMessageLang(raw: string): 'fr' | 'en' | null {
   return null;
 }
 
-/** Phone-number-shaped digit runs — never a price ("416-555-0100" ≠ $416). */
+/** Phone-number-shaped digit runs - never a price ("416-555-0100" ≠ $416). */
 const PHONE_LIKE_RE = /(\+?1[\s\-.]?)?\(?\d{3}\)?[\s\-.]?\d{3}[\s\-.]?\d{4}/g;
 
-/** Date-like digit runs — never a price ("09/28/2026" ≠ $2026). */
+/** Date-like digit runs - never a price ("09/28/2026" ≠ $2026). */
 const NUMERIC_DATE_RE = /\b(\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}|\d{4}[\/\-.]\d{1,2}[\/\-.]\d{1,2})\b/g;
 
-/** Written dates — never a price ("September 28 2026" ≠ $2026). */
+/** Written dates - never a price ("September 28 2026" ≠ $2026). */
 const MONTHS_RE =
   'january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec';
 const WRITTEN_DATE_RE = new RegExp(
@@ -225,7 +225,7 @@ export function extractMoney(raw: string): number | null {
       if (v > 0 && v < 10000000) return Math.round(v);
     }
   }
-  // "2 thousand" — spoken English.
+  // "2 thousand" - spoken English.
   const mK = text.match(/(\d+(?:\.\d+)?)\s*(?:thousand|k)\b/i);
   if (mK) {
     const v = Number(mK[1]) * 1000;
@@ -233,7 +233,7 @@ export function extractMoney(raw: string): number | null {
   }
   // Bare 3-5 digit number in a booking context is a price ("plumbing for
   // Sarah tomorrow 800"). 1-2 digit numbers are dates, 10-digit numbers
-  // are phones — neither can match this shape. Phone-number and date runs
+  // are phones - neither can match this shape. Phone-number and date runs
   // are stripped first so "416-555-0100" can never yield a $416 price and
   // "09/28/2026" can never yield a $2026 price. As a final guard, a bare
   // number in the year range 1900-2100 is never a price either.
@@ -315,7 +315,7 @@ export function extractTime(raw: string): string | null {
   }
 
   // Bare period words with no hour ("tomorrow morning", "demain soir").
-  // Conventional defaults — the booking preview shows the time and the user
+  // Conventional defaults - the booking preview shows the time and the user
   // can change it before confirming, so a sensible default beats "TBD".
   if (/\b(morning|matin|matinee)\b/.test(text)) return '10:00';
   if (/\b(afternoon|apres midi)\b/.test(text)) return '14:00';
@@ -349,7 +349,7 @@ export function extractServiceTitle(raw: string): string | null {
   for (const s of SERVICE_KEYWORDS) {
     for (const k of s.keys) {
       if (k.length <= 2) {
-        // Short keys ("ac", "tv") must match whole words — "McTestface"
+        // Short keys ("ac", "tv") must match whole words - "McTestface"
         // contains "ac" but is not an air conditioner.
         if (new RegExp(`\\b${k}\\b`).test(text)) return s.title;
       } else if (text.includes(k)) {
@@ -357,7 +357,7 @@ export function extractServiceTitle(raw: string): string | null {
       }
     }
   }
-  // No keyword matched — try to extract a custom title from the message.
+  // No keyword matched - try to extract a custom title from the message.
   // E.g. "Book E2E3 Copilot Job for tomorrow" -> "E2E3 Copilot Job".
   // (extractCustomTitle is defined below, after NAME_STOPWORDS.)
   return extractCustomTitle(raw);
@@ -369,32 +369,32 @@ const NAME_STOPWORDS = new Set([
   'house', 'home', 'shop', 'office', 'place',
   'the', 'a', 'an', 'guy', 'man', 'woman', 'person', 'someone', 'anyone',
   'my', 'our', 'their', 'his', 'her',
-  // Vague placeholders — never a real service ("schedule something" -> ask, don't invent "Something")
+  // Vague placeholders - never a real service ("schedule something" -> ask, don't invent "Something")
   'something', 'anything', 'thing', 'things', 'stuff',
   // French fillers
   'pour', 'chez', 'avec', 'sans', 'dans', 'sur', 'demain', 'aujourdhui',
   'le', 'la', 'les', 'un', 'une', 'des', 'du', 'de', 'mon', 'ma', 'mes', 'son', 'sa',
   'monsieur', 'madame', 'm', 'mme',
-  // time words — so "for Priya tomorrow" doesn't become "Priya Tomorrow"
+  // time words - so "for Priya tomorrow" doesn't become "Priya Tomorrow"
   'tomorrow', 'today', 'morning', 'evening', 'afternoon', 'night',
   'matin', 'soir', 'soiree', 'apres', 'midi', 'nuit',
   'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday',
   'dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi',
-  // pronouns — so "schedule it for tomorrow" never books customer "It"
+  // pronouns - so "schedule it for tomorrow" never books customer "It"
   'it', 'this', 'that', 'these', 'those', 'him', 'her', 'them', 'us', 'me', 'you', 'we', 'they', 'he', 'she',
-  // prepositions / determiners — so "for Priya on 25 oct" doesn't become
+  // prepositions / determiners - so "for Priya on 25 oct" doesn't become
   // "Priya On" and "for next Monday" doesn't become "Next"
   'on', 'at', 'in', 'into', 'by', 'from', 'with', 'a', 'au', 'aux', 'en', 'vers',
   'next', 'last', 'this',
-  // question words — so "what's on my schedule tomorrow?" never yields "What"
+  // question words - so "what's on my schedule tomorrow?" never yields "What"
   'what', 'when', 'where', 'which', 'who', 'whom', 'whose', 'why', 'how',
   'quoi', 'quand', 'qui', 'que', 'quel', 'quelle', 'quels', 'quelles',
   'comment', 'pourquoi', 'combien', 'est', 'ce', 'ces', 'ca',
-  // conjunctions / cue words — never part of a name
+  // conjunctions / cue words - never part of a name
   'and', 'et', 'or', 'ou', 'for', 'pour',
   // gerunds / trade nouns that are never a person's name
   'cleaning', 'painting', 'plumbing', 'wiring', 'roofing', 'mowing', 'entretien', 'reparation',
-  // name-cue verbs — never part of a name ("named Testy" -> "Testy")
+  // name-cue verbs - never part of a name ("named Testy" -> "Testy")
   'named', 'nomme', 'nommee', 'appele', 'appelle',
 ]);
 
@@ -416,7 +416,7 @@ for (const t of SERVICE_TOKENS) NAME_STOPWORDS.add(t);
 const HONORIFICS = ['mr', 'mrs', 'ms', 'miss', 'dr', 'monsieur', 'madame', 'm', 'mme', 'sir'];
 const HONORIFIC_RE = new RegExp(`\\b(?:${HONORIFICS.join('|')})\\.?\\b`, 'gi');
 
-/** Booking verbs — never part of a customer name ("schedule Sarah's" -> "Sarah"). */
+/** Booking verbs - never part of a customer name ("schedule Sarah's" -> "Sarah"). */
 const BOOKING_VERBS = new Set([
   'schedule', 'scheduling', 'book', 'booking', 'booked', 'create', 'add',
   'plan', 'arrange', 'reserver', 'reserve', 'reservation', 'planifier',
@@ -435,7 +435,7 @@ function extractCustomTitle(raw: string): string | null {
   const trimmed = raw.trim();
   const lower = trimmed.toLowerCase();
   
-  // Must start with a booking verb — otherwise it's not a job title request
+  // Must start with a booking verb - otherwise it's not a job title request
   // (e.g. "A new customer named..." should return null, not a title)
   const verbMatch = trimmed.match(/^(book|schedule|create|add|make|set up|set|plan)\s+/i);
   if (!verbMatch) return null;
@@ -448,7 +448,7 @@ function extractCustomTitle(raw: string): string | null {
   // Remove trailing time expressions ("at 10am", "10:30 pm")
   text = text.replace(/\s+(at\s+)?\d{1,2}(:\d{2})?\s*(am|pm)\b.*$/i, '');
   // Remove date words wherever they trail ("tomorrow", "for Sarah tomorrow",
-  // "E2E3 Copilot Job for tomorrow") — the preposition is optional so a
+  // "E2E3 Copilot Job for tomorrow") - the preposition is optional so a
   // customer name between "for" and the date doesn't block the strip.
   text = text.replace(/\s+(for|on|at)?\s*(tomorrow|today|monday|tuesday|wednesday|thursday|friday|saturday|sunday|next week|this week)\b.*$/i, '');
   
@@ -529,13 +529,13 @@ function leadingName(rawToks: string[]): string | null {
  *
  * Service/trade words ("plumbing", "plomberie", …) are stopwords and can
  * never be returned as a name. A name containing a filler word mid-phrase
- * (e.g. "Nonexistent Person XYZ") is rejected rather than truncated —
+ * (e.g. "Nonexistent Person XYZ") is rejected rather than truncated -
  * booking under a half-guessed name is worse than asking.
  */
 export function extractCustomerName(raw: string): string | null {
   const text = raw.trim().replace(HONORIFIC_RE, ' ');
 
-  // English "for Priya" / French "pour Sarah Tremblay" — up to three name
+  // English "for Priya" / French "pour Sarah Tremblay" - up to three name
   // words. Trailing fillers are dropped and only the leading name-like run
   // is kept, so "for Priya on 25 oct" -> "Priya" and "for Sarah tomorrow
   // at 3pm" -> "Sarah".
@@ -591,7 +591,7 @@ export function extractCustomerName(raw: string): string | null {
   }
 
   // "Add customer John Smith with phone +14165550123" / "Add customer
-  // John Smith, phone 416-555-0123" — the name sits between "customer"
+  // John Smith, phone 416-555-0123" - the name sits between "customer"
   // and a "with"/"phone"/number cue. The m2 pattern above can't handle the
   // "with phone +..." tail, so capture up to that cue explicitly.
   const m2b = text.match(
@@ -603,7 +603,7 @@ export function extractCustomerName(raw: string): string | null {
   }
 
   // "schedule a Jon for 29th October" / "book Sarah for tomorrow" /
-  // "book Sarah 4165551234 for tomorrow" / "planifier Jon pour demain" —
+  // "book Sarah 4165551234 for tomorrow" / "planifier Jon pour demain" -
   // the name sits BEFORE the "for"/"pour" cue, anchored on a booking verb
   // so "looking for X" or "I need it for tomorrow" never match. An optional
   // phone chunk may sit between the name and "for". Tried after the
@@ -672,7 +672,7 @@ export function resolveFollowUpName(
 // Intent detection
 // ---------------------------------------------------------------------------
 
-/** Explicit cancellation — must never be mistaken for a booking. */
+/** Explicit cancellation - must never be mistaken for a booking. */
 function isCancellation(text: string): boolean {
   return hasAny(text, [
     ' cancel ', ' cancelled ', ' delete ', ' remove ',
@@ -741,7 +741,7 @@ export function detectProvince(raw: string): string | null {
 
 /**
  * Explicit customer-creation language ("add a new customer", "ajouter un
- * client") — must NEVER be treated as a job booking.
+ * client") - must NEVER be treated as a job booking.
  */
 const CREATE_CUSTOMER_RES = [
   /\badd\s+(?:(?:a|an|new)\s+)*customers?\b/,
@@ -779,7 +779,7 @@ function hasDomainWords(raw: string): boolean {
 /**
  * Extract a simple arithmetic expression: "149.99 + 19.99", "what is 5*3?",
  * "100-25". Returns { a, op, b } or null. Only handles a single binary
- * operation on two numbers (safe — no eval).
+ * operation on two numbers (safe - no eval).
  */
 export function extractArithmetic(raw: string): { a: number; op: string; b: number } | null {
   // Strip common question prefixes so "what is 149.99 + 19.99?" works.
@@ -869,16 +869,16 @@ export function detectIntent(raw: string, followUpName: string | null = null): C
   const text = ' ' + norm(raw) + ' ';
 
   // Mass-destructive requests ("delete all my customers", "cancel all jobs")
-  // get an explicit refusal — never the generic "didn't catch that".
+  // get an explicit refusal - never the generic "didn't catch that".
   if (isMassDestructive(text)) return 'refuse_destructive';
 
-  // Explicit cancellation — the copilot has no cancel capability, so a
+  // Explicit cancellation - the copilot has no cancel capability, so a
   // cancellation must NEVER book and must not masquerade as a schedule
   // query either ("cancel tomorrow's job" contains "tomorrow"). Ask.
   if (isCancellation(text)) return 'unknown';
 
   // A message LED by a booking verb ("Book ...", "Schedule ...", "Planifie ...")
-  // is a booking command, not a question — even if the job title contains the
+  // is a booking command, not a question - even if the job title contains the
   // word "check" (e.g. "Book schedule check for Alice tomorrow", 2026-09-28 QA).
   // The "check" question-word only applies when no booking verb leads.
   const startsWithBookingVerb =
@@ -907,13 +907,13 @@ export function detectIntent(raw: string, followUpName: string | null = null): C
         ' liste ',
       ]));
 
-  // 0. Customer creation — BEFORE job creation, so "add a new customer"
+  // 0. Customer creation - BEFORE job creation, so "add a new customer"
   //    is never misread as a booking. Explicit creation language only.
   if (CREATE_CUSTOMER_RES.some((re) => re.test(norm(raw)))) {
     return 'create_customer';
   }
 
-  // 0b. Quote drafting — "draft/make/prepare a quote for X" produces a
+  // 0b. Quote drafting - "draft/make/prepare a quote for X" produces a
   // previewed quote draft (with price suggested from history when the user
   // doesn't name one). Plain "create an invoice" stays out of scope.
   if (
@@ -934,7 +934,7 @@ export function detectIntent(raw: string, followUpName: string | null = null): C
     return 'draft_reminder';
   }
 
-  // 2. Revenue questions — "booked revenue" is its own metric (scheduled
+  // 2. Revenue questions - "booked revenue" is its own metric (scheduled
   //    job value, excluding cancelled) distinct from cash collections.
   //    "collect/collected" is dashboard-canonical ("COLLECTED · 7 DAYS");
   //    without it "How much did I collect this week?" fell through to
@@ -953,7 +953,7 @@ export function detectIntent(raw: string, followUpName: string | null = null): C
     return 'ask_unpaid';
   }
 
-  // 3b. Certification / career-credential questions — answered from the
+  // 3b. Certification / career-credential questions - answered from the
   // real certification roadmap (official programs only, never invented).
   if (hasAny(text, [
     ' certification ', ' certifications ', ' certify ', ' certified ', ' certifie ',
@@ -967,7 +967,7 @@ export function detectIntent(raw: string, followUpName: string | null = null): C
     return 'ask_certification';
   }
 
-  // 3c. "How do I compare?" — answered honestly: no real peer data exists
+  // 3c. "How do I compare?" - answered honestly: no real peer data exists
   // yet, so offer clearly-labelled best-practice benchmarks instead.
   if (hasAny(text, [
     ' compare ', ' comparison ', ' comparaison ', ' comparer ',
@@ -978,7 +978,7 @@ export function detectIntent(raw: string, followUpName: string | null = null): C
     return 'ask_compare';
   }
 
-  // 4. Job creation — BEFORE schedule queries, so "AC repair for Sarah
+  // 4. Job creation - BEFORE schedule queries, so "AC repair for Sarah
   //    tomorrow" is treated as a booking, not a question about tomorrow's
   //    jobs. Booking verbs ("book", "create", "schedule", "add", "réserver",
   //    "planifier", "ajouter", "créer") combined with a service, a
@@ -1011,11 +1011,11 @@ export function detectIntent(raw: string, followUpName: string | null = null): C
     ((hasBookingVerb && !isQuestion) ||
       followUpBooking ||
       (hasService && hasWho && !isQuestion) ||
-      // "plumbing for Sarah tomorrow" — a service + a date with no question
+      // "plumbing for Sarah tomorrow" - a service + a date with no question
       // is a booking, not a schedule query. Confirmation is always required,
       // so a wrong guess here is cheap and correctable.
       (hasService && hasWhen && !isQuestion) ||
-      // "job on 1st jan for Sarah" — the bare job noun + a customer or a date
+      // "job on 1st jan for Sarah" - the bare job noun + a customer or a date
       // (time-only counts via the engine's "used today" date note) is a
       // booking preview with confirmation, never a silent guess.
       (hasJobNoun && (hasWho || hasWhen) && !isQuestion))
@@ -1051,7 +1051,7 @@ export function detectIntent(raw: string, followUpName: string | null = null): C
     return 'help';
   }
 
-  // 7b. Simple arithmetic — "what is 149.99 + 19.99?", "100 - 25", "5*3".
+  // 7b. Simple arithmetic - "what is 149.99 + 19.99?", "100 - 25", "5*3".
   // A money-savvy assistant should handle basic math, not refuse it.
   if (extractArithmetic(raw) !== null) {
     return 'calculate';

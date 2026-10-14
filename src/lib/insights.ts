@@ -1,5 +1,5 @@
 /**
- * AI Business Insights — computed strictly from the business's own records.
+ * AI Business Insights - computed strictly from the business's own records.
  *
  * Every figure below is derived from real jobs, payments, quotes, customers
  * and expenses in the tenant's database. No benchmarks, no fake averages,

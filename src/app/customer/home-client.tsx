@@ -83,7 +83,7 @@ export default function CustomerHomeClient({
     <div className="space-y-6">
       {/* Hero - clean EveryJob theme with staggered entrance */}
       <div className="ej-anim-fade-up">
-        <p className="text-indigo-600 text-xs font-bold uppercase tracking-widest">
+        <p className="text-indigo-600 text-xs font-boldst">
           {new Date().getHours() < 12
             ? tr('customer.home.morning')
             : new Date().getHours() < 18

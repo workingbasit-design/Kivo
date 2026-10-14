@@ -14,7 +14,7 @@ export const GOOGLE_BP_STATE_COOKIE = 'google_bp_oauth_state';
 /**
  * Start Google OAuth: redirect the business owner to Google's consent
  * screen. Uses a random state stored in a short-lived HttpOnly cookie
- * (CSRF protection) — the callback also verifies the session's business.
+ * (CSRF protection) - the callback also verifies the session's business.
  */
 export async function GET(req: Request) {
   const session = await getSession();
@@ -41,7 +41,7 @@ export async function GET(req: Request) {
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
     path: '/api/google/callback',
-    maxAge: 600, // 10 minutes — enough to complete the Google round trip
+    maxAge: 600, // 10 minutes - enough to complete the Google round trip
   });
   return res;
 }

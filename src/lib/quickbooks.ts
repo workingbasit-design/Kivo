@@ -1,5 +1,5 @@
 /**
- * QuickBooks Online integration — one-way sync EveryJob → QuickBooks.
+ * QuickBooks Online integration - one-way sync EveryJob → QuickBooks.
  *
  * Design goals (vs. syncs that silently drop records):
  *  - Every entity gets a QuickBooksSyncLog row: synced | failed | skipped,
@@ -122,7 +122,7 @@ async function postToken(
 
 /**
  * Exchange the OAuth `code` for tokens. The QuickBooks company id (realmId)
- * arrives as a separate query param on the callback — it is NOT in the
+ * arrives as a separate query param on the callback - it is NOT in the
  * token response.
  */
 export async function exchangeCode(
@@ -272,7 +272,7 @@ export async function getValidAccessToken(
   if (msLeft > REFRESH_BUFFER_MS) return { ok: true, accessToken: conn.accessToken };
   const refreshed = await refreshAccessToken(conn.refreshToken, creds.clientId, creds.clientSecret, fetchFn);
   if (!refreshed.ok || !refreshed.accessToken) {
-    return { ok: false, error: 'QuickBooks authorization expired — please reconnect.' };
+    return { ok: false, error: 'QuickBooks authorization expired - please reconnect.' };
   }
   try {
     await db.quickBooksConnection.update({
@@ -412,7 +412,7 @@ export interface EJPayment {
   createdAt: Date;
 }
 
-/** Round to cents — QuickBooks rejects more than 2 decimals on amounts. */
+/** Round to cents - QuickBooks rejects more than 2 decimals on amounts. */
 function cents(n: number): number {
   return Math.round(n * 100) / 100;
 }
@@ -441,7 +441,7 @@ export function mapCustomerToQB(c: EJCustomer): Record<string, unknown> {
 
 /**
  * EveryJob invoice → QuickBooks Invoice create payload.
- * Line items map 1:1 (no collapsing) so nothing is ever silently merged —
+ * Line items map 1:1 (no collapsing) so nothing is ever silently merged -
  * the per-line audit trail survives the sync.
  */
 export function mapInvoiceToQB(
@@ -495,7 +495,7 @@ export function mapPaymentToQB(
 }
 
 /* ------------------------------------------------------------------ */
-/* Sync — every call writes exactly one QuickBooksSyncLog row            */
+/* Sync - every call writes exactly one QuickBooksSyncLog row            */
 /* ------------------------------------------------------------------ */
 
 export type QBSyncStatus = 'synced' | 'failed' | 'skipped';
@@ -565,7 +565,7 @@ function failed(
 
 /**
  * Sync one customer. On QuickBooks "Duplicate Name Exists" (6240) we link
- * to the existing record instead of failing — the log says what happened.
+ * to the existing record instead of failing - the log says what happened.
  */
 export async function syncCustomer(
   base: SyncCallBase,
@@ -592,7 +592,7 @@ export async function syncCustomer(
   if (res.ok) {
     qbId = (res.data?.Customer as { Id?: string } | undefined)?.Id;
   } else if (qbErrorCodes(res.data).includes('6240')) {
-    // Same DisplayName already exists in QuickBooks — link it, don't fail.
+    // Same DisplayName already exists in QuickBooks - link it, don't fail.
     const q = await qbQuery(base, `select Id from Customer where DisplayName = '${customer.name.replace(/'/g, "\\'")}' maxresults 1`, fetchFn);
     const found = (
       (q.data?.QueryResponse as { Customer?: Array<{ Id?: string }> } | undefined)?.Customer ?? []
@@ -615,7 +615,7 @@ export async function syncCustomer(
   return outcome;
 }
 
-/** Sync one invoice (with its line items, 1:1 — never merged). */
+/** Sync one invoice (with its line items, 1:1 - never merged). */
 export async function syncInvoice(
   base: SyncCallBase,
   invoice: EJInvoice,
@@ -642,7 +642,7 @@ export async function syncInvoice(
       entityType: 'invoice',
       entityId: invoice.id,
       status: 'skipped',
-      detail: 'Customer is not synced to QuickBooks yet — sync customers first.',
+      detail: 'Customer is not synced to QuickBooks yet - sync customers first.',
     };
     await writeLog(db, businessId, outcome);
     return outcome;

@@ -198,7 +198,7 @@ export default function QuoteAddons({
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="text-sm font-semibold text-zinc-900 truncate">{a.title}</span>
                     {a.selected && (
-                      <span className="shrink-0 text-[10px] font-bold uppercase tracking-wide text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
+                      <span className="shrink-0 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
                         ✓
                       </span>
                     )}

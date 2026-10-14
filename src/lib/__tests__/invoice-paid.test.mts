@@ -5,12 +5,12 @@
  * week", health profitability subscore, scenario revenue90d).
  *
  * Invariant locked here: the invoice update payload stamps paidAt exactly
- * when the new status is PAID, on the manual payment path — and never
+ * when the new status is PAID, on the manual payment path - and never
  * touches paidAt otherwise (a fully-paid invoice stays fully paid).
  *
  * The helper lives in the pure module src/lib/invoice-paid.ts (a
  * 'use server' action file may only export async functions), so this
- * test imports it directly — no stubs needed.
+ * test imports it directly - no stubs needed.
  *
  * Run: npm test -- src/lib/__tests__/invoice-paid.test.mts
  */

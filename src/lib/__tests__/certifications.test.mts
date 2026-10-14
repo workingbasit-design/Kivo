@@ -1,7 +1,7 @@
 /**
  * Unit tests for the certification roadmap (src/lib/certifications.ts).
  * Guards the hard rule: every recommended program must be a real,
- * verifiable credential with an official URL — never invented.
+ * verifiable credential with an official URL - never invented.
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';

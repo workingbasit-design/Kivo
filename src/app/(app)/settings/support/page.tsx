@@ -70,7 +70,7 @@ export default async function SupportInboxPage() {
                     · {formatDateShort(ticket.createdAt, dateLocale)}
                   </p>
                 </div>
-                <span className="inline-flex px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border whitespace-nowrap bg-zinc-100 text-zinc-600 border-zinc-200">
+                <span className="inline-flex px-2.5 py-1 rounded-md text-[10px] font-bold border whitespace-nowrap bg-zinc-100 text-zinc-600 border-zinc-200">
                   {ticket.status === 'open'
                     ? tr('inboxOpen')
                     : ticket.status === 'answered'

@@ -41,7 +41,7 @@ function canDeleteInvoice(status: string, hasPayments: boolean): { allowed: bool
     return { allowed: false, error: 'Only draft invoices can be deleted. Void it instead.' };
   }
   if (hasPayments) {
-    return { allowed: false, error: 'Has payments — void instead.' };
+    return { allowed: false, error: 'Has payments - void instead.' };
   }
   return { allowed: true };
 }

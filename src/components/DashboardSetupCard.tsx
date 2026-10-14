@@ -39,7 +39,7 @@ export default function DashboardSetupCard({ initialCompleted = false }: { initi
       }`}>
         <div className="flex justify-between items-start gap-3 mb-4">
           <div>
-            <p className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${
+            <p className={`text-[10px] font-boldst mb-1 ${
               isCompleted ? 'text-emerald-700' : 'text-zinc-400'
             }`}>
               {isCompleted ? T('setupComplete') : T('setupReadyIn')}
@@ -49,7 +49,7 @@ export default function DashboardSetupCard({ initialCompleted = false }: { initi
             </h2>
           </div>
           {isCompleted && (
-            <span className="bg-emerald-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm shrink-0">
+            <span className="bg-emerald-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm shrink-0">
               {T('setupActive')}
             </span>
           )}

@@ -152,7 +152,7 @@ export async function toggleRecurringActive(id: string): Promise<RecurringAction
 }
 
 /**
- * Delete a recurring job plan. Jobs already generated from it are kept —
+ * Delete a recurring job plan. Jobs already generated from it are kept -
  * the relation is SetNull in the schema.
  */
 export async function deleteRecurring(id: string): Promise<RecurringActionResult> {

@@ -39,7 +39,7 @@ test('business login: per-email limit triggers even from a fresh IP', async () =
     const r = await login(null, fd({ email: 'victim@example.com', password: 'wrongpass1' }));
     assert.equal(r.error, 'Incorrect email or password.');
   }
-  // Fresh IP — the IP bucket is clean, but the email bucket is exhausted.
+  // Fresh IP - the IP bucket is clean, but the email bucket is exhausted.
   stub.setTestIp('10.11.0.2');
   const blocked = await login(null, fd({ email: 'victim@example.com', password: 'wrongpass1' }));
   assert.match(blocked.error ?? '', /Too many attempts/);

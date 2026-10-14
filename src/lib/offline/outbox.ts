@@ -1,5 +1,5 @@
 /**
- * Offline outbox — queue job creations while offline, auto-sync on reconnect.
+ * Offline outbox - queue job creations while offline, auto-sync on reconnect.
  *
  * Field workers lose signal constantly. When a job creation fails because the
  * device is offline, the payload is stored in IndexedDB and retried

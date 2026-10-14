@@ -28,10 +28,10 @@ function summarize(outcomes: SyncOutcome[]) {
 }
 
 /**
- * POST /api/integrations/quickbooks/sync — push customers, open invoices and
+ * POST /api/integrations/quickbooks/sync - push customers, open invoices and
  * completed payments to QuickBooks. Every entity produces exactly one
  * QuickBooksSyncLog row (synced | failed | skipped + reason), and the
- * response carries the per-entity summary — nothing vanishes quietly.
+ * response carries the per-entity summary - nothing vanishes quietly.
  */
 export async function POST(req: Request) {
   const session = await getSession();
@@ -43,7 +43,7 @@ export async function POST(req: Request) {
 
   const rl = rateLimit(`qb-sync:${businessId}`, SYNC_LIMIT);
   if (!rl.ok) {
-    return NextResponse.json({ error: 'Sync already running or run too recently — please wait a moment.' }, { status: 429 });
+    return NextResponse.json({ error: 'Sync already running or run too recently - please wait a moment.' }, { status: 429 });
   }
 
   if (!process.env.QUICKBOOKS_CLIENT_ID || !process.env.QUICKBOOKS_CLIENT_SECRET) {
@@ -85,7 +85,7 @@ export async function POST(req: Request) {
     const knownQbId = (t: EntityType, id: string): string | null =>
       syncedByType.get(t)?.get(id) ?? null;
 
-    // 1. Customers first — invoices and payments need their QuickBooks ids.
+    // 1. Customers first - invoices and payments need their QuickBooks ids.
     const customers = (
       await prisma.customer.findMany({
         where: { businessId },

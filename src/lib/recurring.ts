@@ -50,8 +50,8 @@ export function occurrenceDayWindow(
 /**
  * In-process per-business mutex for generation.
  *
- * This app is single-instance (SQLite) — see the same assumption in
- * src/lib/rate-limit.ts — so serializing concurrent generations inside this
+ * This app is single-instance (SQLite) - see the same assumption in
+ * src/lib/rate-limit.ts - so serializing concurrent generations inside this
  * process removes SQLite write-transaction contention (P2028 timeouts)
  * between parallel requests entirely. The DB transaction in
  * generateDueJobsInner remains the correctness backstop for anything
@@ -89,7 +89,7 @@ async function withGenerationLock<T>(
  * advances nextRun by one frequency step.
  *
  * Deliberately generates at most ONE job per recurring job per call, so a
- * long-overdue plan can't flood the schedule — the next load/generation
+ * long-overdue plan can't flood the schedule - the next load/generation
  * catches up one more occurrence.
  *
  * IDEMPOTENCY (two layers):
@@ -98,10 +98,10 @@ async function withGenerationLock<T>(
  *    below never overlaps with itself in this process.
  * 2. Per-plan write transaction: (1) re-reads the plan and confirms it's
  *    still due, (2) checks for an existing job on that day, (3) creates the
- *    job only if absent, and (4) advances nextRun — atomically. This is the
+ *    job only if absent, and (4) advances nextRun - atomically. This is the
  *    backstop for anything outside this process.
  *
- * NOTE: there is deliberately no DB-level unique constraint — schema.prisma
+ * NOTE: there is deliberately no DB-level unique constraint - schema.prisma
  * is owned by another workstream. The transaction above is the enforcement.
  * The recommended belt-and-braces addition is:
  *   @@unique([recurringJobId, date])   on the Job model
@@ -175,7 +175,7 @@ async function generateDueJobsInner(
         });
       }
 
-      // Always advance — even when a job already existed — so a second run
+      // Always advance - even when a job already existed - so a second run
       // moves on to the next occurrence instead of looping on the same day.
       await tx.recurringJob.update({
         where: { id: fresh.id, businessId },

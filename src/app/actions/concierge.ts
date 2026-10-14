@@ -31,7 +31,7 @@ export type ConciergeSendResult =
 
 /**
  * Step 2 of "Get it done for me": interpret the description and find up to
- * 3 opted-in, verified pros matching the service + city. Never invents pros —
+ * 3 opted-in, verified pros matching the service + city. Never invents pros -
  * an empty list is an honest empty state for the UI.
  */
 export async function matchConciergePros(
@@ -71,11 +71,11 @@ export async function matchConciergePros(
  * Step 4 of "Get it done for me": the customer's explicit tap.
  *
  * Creates ONE QuoteRequest + opening QuoteMessage per selected pro, plus a
- * Lead draft in each pro's inbox — all inside a single transaction, so a
+ * Lead draft in each pro's inbox - all inside a single transaction, so a
  * mid-send failure creates nothing. Idempotent: the client generates one
  * UUID per preview session; replays resolve to the original send.
  *
- * Rate-limited per customer. Nothing is sent by SMS/WhatsApp/email —
+ * Rate-limited per customer. Nothing is sent by SMS/WhatsApp/email -
  * requests land in EveryJob's internal inbox only.
  */
 export async function sendConciergeRequests(input: {
@@ -147,10 +147,10 @@ export async function sendConciergeRequests(input: {
         where: { idempotencyKey },
       });
       // Ownership check (mirrors the unique-constraint retry path below):
-      // a replayed key must belong to this customer — fail closed on
+      // a replayed key must belong to this customer - fail closed on
       // mismatch rather than returning another customer's requests.
       if (existing && existing.customerId === customer.id) {
-        // Replay returns the EXACT requests from the original send —
+        // Replay returns the EXACT requests from the original send -
         // never a fresh lookup that could match older requests.
         return {
           requestIds: existing.requestIds,
@@ -220,6 +220,6 @@ export async function sendConciergeRequests(input: {
         };
       }
     }
-    return { ok: false, error: 'Something went wrong sending your requests. Nothing was sent — please try again.' };
+    return { ok: false, error: 'Something went wrong sending your requests. Nothing was sent - please try again.' };
   }
 }

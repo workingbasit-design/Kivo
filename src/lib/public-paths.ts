@@ -28,11 +28,11 @@ export const PUBLIC_PATHS = [
 // '/sign/' must stay public: unauthenticated clients open signing links
 // with no login, and bouncing them to /login would break the feature.
 // '/track/' must stay public: customers open technician tracking links
-// with no account — the unguessable token is the only capability.
+// with no account - the unguessable token is the only capability.
 // '/reset-password/' must stay public: the emailed reset link is opened by
 // logged-out users; bouncing them to /login would break password recovery.
 // '/a/' must stay public: agent-proposal confirmation links are opened by
-// the customer with no account — the unguessable token is the capability.
+// the customer with no account - the unguessable token is the capability.
 // '/api/agent/' must stay public: the Agent Protocol's machine-readable
 // surface (search, pro profiles, proposals, status) is public by design;
 // every write still needs the human's confirmation link.
@@ -72,10 +72,10 @@ export function isPublicPath(pathname: string): boolean {
  * icons, manifest, service worker, and favicon with no session; social
  * crawlers fetch og:image with no session. Guarding them breaks installs,
  * browser tabs, and link previews.
- * Regression (2026-10-05): /favicon.svg — the metadata `icon` — bounced
+ * Regression (2026-10-05): /favicon.svg - the metadata `icon` - bounced
  * anonymous browsers to /login because it was missing from this list.
- * Regression (2026-10-06): /skills/<name>/SKILL.md — the Agent Protocol
- * skill files advertised in the public manifest — bounced anonymous agents
+ * Regression (2026-10-06): /skills/<name>/SKILL.md - the Agent Protocol
+ * skill files advertised in the public manifest - bounced anonymous agents
  * to /login for the same reason. They are static files under public/skills/.
  */
 export const PROXY_STATIC_BYPASS =

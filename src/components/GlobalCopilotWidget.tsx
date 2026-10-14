@@ -478,37 +478,6 @@ export default function GlobalCopilotWidget({
   const [lookupLoading, setLookupLoading] = useState(false);
   const [lookupError, setLookupError] = useState(false);
 
-  // On mobile the FAB floats over page content; hide it while the user
-  // scrolls down so it never sits on top of buttons they need to tap,
-  // and bring it back when they scroll up. Desktop keeps it always visible.
-  const [fabHidden, setFabHidden] = useState(false);
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const mq = window.matchMedia('(max-width: 767px)');
-    let lastY = window.scrollY;
-    let ticking = false;
-    const onScroll = () => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(() => {
-        ticking = false;
-        const y = window.scrollY;
-        if (!mq.matches) {
-          setFabHidden(false);
-        } else if (y < 40) {
-          setFabHidden(false);
-        } else {
-          const dy = y - lastY;
-          if (dy > 6) setFabHidden(true);
-          else if (dy < -6) setFabHidden(false);
-        }
-        lastY = y;
-      });
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
   /* ---------------- chat state (existing free-text experience) -------- */
   const [messages, setMessages] = useState<Message[]>([
     { id: '1', role: 'assistant', content: t(lang, 'copilot.greeting') },
@@ -1485,31 +1454,11 @@ export default function GlobalCopilotWidget({
         : t(lang, 't10misc.copilot.actionBook')
       : 'EveryJob AI';
 
+  // The copilot opens only via top-bar / sidebar trigger buttons
+  // (CopilotTriggerButton dispatches 'open-copilot'). There is no floating
+  // button: nothing floats over content (Part B2).
   return (
     <>
-      {/* Floating Action Button */}
-      <AnimatePresence>
-        {!isOpen && (
-          <motion.button
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{
-              scale: fabHidden ? 0.6 : 1,
-              opacity: fabHidden ? 0 : 1,
-              y: fabHidden ? 16 : 0,
-            }}
-            exit={{ scale: 0, opacity: 0 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => { setIsOpen(true); goHome(); }}
-            style={{ pointerEvents: fabHidden ? 'none' : 'auto' }}
-            className="fixed right-4 md:bottom-10 md:right-10 bottom-[calc(6rem+env(safe-area-inset-bottom))] w-14 h-14 bg-lime rounded-full flex items-center justify-center shadow-2xl shadow-ink/20 z-50 hover:brightness-105 transition-all border border-ink/10"
-            aria-label={t(lang, 'copilot.openLabel')}
-          >
-            <Bot className="w-6 h-6 text-ink" />
-          </motion.button>
-        )}
-      </AnimatePresence>
-
       {/* Slide-over panel */}
       <AnimatePresence>
         {isOpen && (
@@ -1542,7 +1491,7 @@ export default function GlobalCopilotWidget({
                   <h3 className="text-sm font-semibold tracking-tight text-zinc-900">{headerTitle}</h3>
                   <div className="flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">
+                    <span className="text-[10px] text-zinc-500 font-semibold">
                       {t(lang, 't10misc.copilot.onlineBadge')}
                     </span>
                   </div>

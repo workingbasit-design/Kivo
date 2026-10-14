@@ -269,7 +269,7 @@ test('quote_followup_7d accepts ages between 6.5 and 7.5 days', () => {
   }
 });
 
-test('quote_followup_7d does not fire outside the 6.5–7.5 day window or wrong status', () => {
+test('quote_followup_7d does not fire outside the 6.5-7.5 day window or wrong status', () => {
   const day = 24 * 60 * 60 * 1000;
   assert.equal(
     buildMessageCandidates(baseInput({ quotes: [quote({ createdAt: new Date(NOW.getTime() - 6 * day) })] })).length,
@@ -297,7 +297,7 @@ test('review_request fires for a job completed 2 days ago', () => {
   assert.equal(out[0].eventKey, 'reviewRequest:j1');
 });
 
-test('review_request accepts jobs completed 0–3 days ago, not 4', () => {
+test('review_request accepts jobs completed 0-3 days ago, not 4', () => {
   for (const daysAgo of [0, 1, 3]) {
     const d = new Date(NOW.getTime() - daysAgo * 24 * 60 * 60 * 1000);
     const iso = `${String(d.getFullYear())}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -346,7 +346,7 @@ test('channel is WHATSAPP with a phone, EMAIL with only an email, skipped with n
 
 /* ---------------- isQuietHour ---------------- */
 
-test('isQuietHour handles the overnight 21:00–08:00 window in America/Toronto', () => {
+test('isQuietHour handles the overnight 21:00-08:00 window in America/Toronto', () => {
   const at = (utc: string) => new Date(utc);
   // 22:00 local on Sep 23 -> true
   assert.equal(isQuietHour(at('2026-09-24T02:00:00Z'), TZ, 21, 8), true);
