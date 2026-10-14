@@ -1,5 +1,7 @@
+-- IDEMPOTENT (2026-10-14): safe to re-run. DDL uses IF NOT EXISTS /
+-- IF EXISTS guards and DO blocks; DML was already idempotent.
 -- CreateTable
-CREATE TABLE "Membership" (
+CREATE TABLE IF NOT EXISTS "Membership" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "businessId" TEXT NOT NULL,
@@ -13,24 +15,44 @@ CREATE TABLE "Membership" (
 );
 
 -- CreateIndex
-CREATE INDEX "Membership_businessId_status_idx" ON "Membership"("businessId", "status");
+CREATE INDEX IF NOT EXISTS "Membership_businessId_status_idx" ON "Membership"("businessId", "status");
 
 -- CreateIndex
-CREATE INDEX "Membership_userId_idx" ON "Membership"("userId");
+CREATE INDEX IF NOT EXISTS "Membership_userId_idx" ON "Membership"("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Membership_userId_businessId_key" ON "Membership"("userId", "businessId");
+CREATE UNIQUE INDEX IF NOT EXISTS "Membership_userId_businessId_key" ON "Membership"("userId", "businessId");
 
 -- AddForeignKey
-ALTER TABLE "Membership" ADD CONSTRAINT "Membership_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'Membership_userId_fkey') THEN
+    ALTER TABLE "Membership" ADD CONSTRAINT "Membership_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "Membership" ADD CONSTRAINT "Membership_businessId_fkey" FOREIGN KEY ("businessId") REFERENCES "Business"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'Membership_businessId_fkey') THEN
+    ALTER TABLE "Membership" ADD CONSTRAINT "Membership_businessId_fkey" FOREIGN KEY ("businessId") REFERENCES "Business"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;
 
 -- M1: CHECK constraints for role/status (Prisma models them as String;
 -- the database enforces the allowed vocabularies).
-ALTER TABLE "Membership" ADD CONSTRAINT "Membership_role_check" CHECK ("role" IN ('OWNER', 'ADMIN', 'DISPATCHER', 'TECHNICIAN'));
-ALTER TABLE "Membership" ADD CONSTRAINT "Membership_status_check" CHECK ("status" IN ('ACTIVE', 'INVITED', 'SUSPENDED', 'REMOVED'));
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'Membership_role_check') THEN
+    ALTER TABLE "Membership" ADD CONSTRAINT "Membership_role_check" CHECK ("role" IN ('OWNER', 'ADMIN', 'DISPATCHER', 'TECHNICIAN'));
+  END IF;
+END $$;
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'Membership_status_check') THEN
+    ALTER TABLE "Membership" ADD CONSTRAINT "Membership_status_check" CHECK ("status" IN ('ACTIVE', 'INVITED', 'SUSPENDED', 'REMOVED'));
+  END IF;
+END $$;
 
 -- M1 backfill: one ACTIVE Membership per existing User with a business.
 -- Role maps from the legacy User.role (OWNER->OWNER, ADMIN->ADMIN,

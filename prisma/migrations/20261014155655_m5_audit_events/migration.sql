@@ -1,5 +1,7 @@
+-- IDEMPOTENT (2026-10-14): safe to re-run. DDL uses IF NOT EXISTS /
+-- IF EXISTS guards and DO blocks; DML was already idempotent.
 -- CreateTable
-CREATE TABLE "AuditEvent" (
+CREATE TABLE IF NOT EXISTS "AuditEvent" (
     "id" TEXT NOT NULL,
     "businessId" TEXT NOT NULL,
     "actorId" TEXT NOT NULL,
@@ -17,18 +19,31 @@ CREATE TABLE "AuditEvent" (
 );
 
 -- CreateIndex
-CREATE INDEX "AuditEvent_businessId_createdAt_idx" ON "AuditEvent"("businessId", "createdAt");
+CREATE INDEX IF NOT EXISTS "AuditEvent_businessId_createdAt_idx" ON "AuditEvent"("businessId", "createdAt");
 
 -- CreateIndex
-CREATE INDEX "AuditEvent_businessId_entityType_entityId_idx" ON "AuditEvent"("businessId", "entityType", "entityId");
+CREATE INDEX IF NOT EXISTS "AuditEvent_businessId_entityType_entityId_idx" ON "AuditEvent"("businessId", "entityType", "entityId");
 
 -- AddForeignKey
-ALTER TABLE "AuditEvent" ADD CONSTRAINT "AuditEvent_businessId_fkey" FOREIGN KEY ("businessId") REFERENCES "Business"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'AuditEvent_businessId_fkey') THEN
+    ALTER TABLE "AuditEvent" ADD CONSTRAINT "AuditEvent_businessId_fkey" FOREIGN KEY ("businessId") REFERENCES "Business"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;
 
 -- M5: CHECK constraints for the actor/action vocabularies.
-ALTER TABLE "AuditEvent" ADD CONSTRAINT "AuditEvent_actorType_check"
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'AuditEvent_actorType_check') THEN
+    ALTER TABLE "AuditEvent" ADD CONSTRAINT "AuditEvent_actorType_check"
   CHECK ("actorType" IN ('USER', 'SYSTEM', 'WEBHOOK', 'COPILOT'));
-ALTER TABLE "AuditEvent" ADD CONSTRAINT "AuditEvent_action_check"
+  END IF;
+END $$;
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'AuditEvent_action_check') THEN
+    ALTER TABLE "AuditEvent" ADD CONSTRAINT "AuditEvent_action_check"
   CHECK ("action" IN (
     'MONEY_CREATE', 'MONEY_UPDATE', 'MONEY_VOID', 'INVOICE_SEND',
     'PAYMENT_RECORD', 'PAYMENT_VOID', 'CREDIT_NOTE_CREATE', 'DELETE',
@@ -36,6 +51,8 @@ ALTER TABLE "AuditEvent" ADD CONSTRAINT "AuditEvent_action_check"
     'SETTINGS_CHANGE', 'PAYOUT_EVENT', 'WEBHOOK_EVENT', 'COPILOT_ACTION',
     'LOGIN', 'LOGOUT', 'PASSWORD_CHANGE', 'EXPORT', 'IMPORT', 'CONSENT_CHANGE'
   ));
+  END IF;
+END $$;
 
 -- M5: append-only — UPDATE and DELETE on AuditEvent are rejected.
 CREATE OR REPLACE FUNCTION audit_events_block_mutation() RETURNS trigger AS $$

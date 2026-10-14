@@ -1,3 +1,5 @@
+-- IDEMPOTENT (2026-10-14): safe to re-run. DDL uses IF NOT EXISTS /
+-- IF EXISTS guards and DO blocks; DML was already idempotent.
 -- M9: tenancy NOT NULL + drop legacy User.role / User.businessId.
 --
 -- Payment.businessId NOT NULL: no NULL rows exist on any migrated database
@@ -28,6 +30,6 @@ ALTER TABLE "Business" ALTER COLUMN "timezone" SET DEFAULT 'America/Toronto';
 ALTER TABLE "Business" ALTER COLUMN "timezone" SET NOT NULL;
 
 -- 3. Drop User.businessId (FK first) and User.role
-ALTER TABLE "User" DROP CONSTRAINT "User_businessId_fkey";
-ALTER TABLE "User" DROP COLUMN "businessId";
-ALTER TABLE "User" DROP COLUMN "role";
+ALTER TABLE "User" DROP CONSTRAINT IF EXISTS "User_businessId_fkey";
+ALTER TABLE "User" DROP COLUMN IF EXISTS "businessId";
+ALTER TABLE "User" DROP COLUMN IF EXISTS "role";

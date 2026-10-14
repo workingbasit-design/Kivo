@@ -9,9 +9,16 @@
 # production push and the baseline). Running it would fail on existing tables.
 #
 # Fail-fast: `set -e` aborts the build on the first failing migration, so the
-# previous production deployment keeps serving. Check the build log for the
-# failing statement and fix forward - never re-run blindly after a partial
-# apply (DDL statements are not all idempotent).
+# previous production deployment keeps serving.
+#
+# IDEMPOTENT (2026-10-14): every statement in m1..m13 now uses IF NOT EXISTS /
+# IF EXISTS / DO-block guards (see the header in each migration.sql), so a
+# re-run after a partial apply - or two builds racing each other - converges
+# instead of failing on "already exists". (Lesson learned the hard way: the
+# first two production builds raced - a delayed GitHub webhook fired ~10s
+# before a manual deploy - and the second build died on m1 with
+# 'relation "Membership" already exists'.) Re-running a fully-applied file
+# is all no-ops. Fix forward, never blindly.
 set -e
 
 for m in \

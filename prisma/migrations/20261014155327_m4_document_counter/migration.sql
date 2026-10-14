@@ -1,3 +1,5 @@
+-- IDEMPOTENT (2026-10-14): safe to re-run. DDL uses IF NOT EXISTS /
+-- IF EXISTS guards and DO blocks; DML was already idempotent.
 -- M4: DocumentCounter + CreditNote.number. The generated ALTER is
 -- rewritten: add the column nullable, backfill, then SET NOT NULL so the
 -- migration works on tables that already have rows.
@@ -6,7 +8,7 @@
 ALTER TABLE "CreditNote" ADD COLUMN     "number" TEXT;
 
 -- CreateTable
-CREATE TABLE "DocumentCounter" (
+CREATE TABLE IF NOT EXISTS "DocumentCounter" (
     "id" TEXT NOT NULL,
     "businessId" TEXT NOT NULL,
     "docType" TEXT NOT NULL,
@@ -19,16 +21,26 @@ CREATE TABLE "DocumentCounter" (
 );
 
 -- CreateIndex
-CREATE INDEX "DocumentCounter_businessId_idx" ON "DocumentCounter"("businessId");
+CREATE INDEX IF NOT EXISTS "DocumentCounter_businessId_idx" ON "DocumentCounter"("businessId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "DocumentCounter_businessId_docType_key" ON "DocumentCounter"("businessId", "docType");
+CREATE UNIQUE INDEX IF NOT EXISTS "DocumentCounter_businessId_docType_key" ON "DocumentCounter"("businessId", "docType");
 
 -- AddForeignKey
-ALTER TABLE "DocumentCounter" ADD CONSTRAINT "DocumentCounter_businessId_fkey" FOREIGN KEY ("businessId") REFERENCES "Business"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'DocumentCounter_businessId_fkey') THEN
+    ALTER TABLE "DocumentCounter" ADD CONSTRAINT "DocumentCounter_businessId_fkey" FOREIGN KEY ("businessId") REFERENCES "Business"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;
 
 -- M4: CHECK constraint for the document-type vocabulary.
-ALTER TABLE "DocumentCounter" ADD CONSTRAINT "DocumentCounter_docType_check" CHECK ("docType" IN ('QUOTE', 'INVOICE', 'CREDIT_NOTE'));
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'DocumentCounter_docType_check') THEN
+    ALTER TABLE "DocumentCounter" ADD CONSTRAINT "DocumentCounter_docType_check" CHECK ("docType" IN ('QUOTE', 'INVOICE', 'CREDIT_NOTE'));
+  END IF;
+END $$;
 
 -- M4 backfill 1: existing credit notes get CN-0001, CN-0002, ... per
 -- business in creation order, then the column goes NOT NULL.

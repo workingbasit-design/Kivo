@@ -1,3 +1,5 @@
+-- IDEMPOTENT (2026-10-14): safe to re-run. DDL uses IF NOT EXISTS /
+-- IF EXISTS guards and DO blocks; DML was already idempotent.
 -- AlterTable
 ALTER TABLE "Business" ADD COLUMN     "filingFrequency" TEXT,
 ADD COLUMN     "gstHstRegistered" BOOLEAN NOT NULL DEFAULT false,
@@ -12,7 +14,7 @@ ALTER TABLE "QuoteLineItem" ADD COLUMN     "taxRateBps" INTEGER,
 ADD COLUMN     "taxType" TEXT;
 
 -- CreateTable
-CREATE TABLE "TaxRate" (
+CREATE TABLE IF NOT EXISTS "TaxRate" (
     "id" TEXT NOT NULL,
     "jurisdiction" TEXT NOT NULL,
     "taxType" TEXT NOT NULL,
@@ -25,7 +27,7 @@ CREATE TABLE "TaxRate" (
 );
 
 -- CreateTable
-CREATE TABLE "InvoiceTaxLine" (
+CREATE TABLE IF NOT EXISTS "InvoiceTaxLine" (
     "id" TEXT NOT NULL,
     "invoiceId" TEXT NOT NULL,
     "taxType" TEXT NOT NULL,
@@ -38,21 +40,41 @@ CREATE TABLE "InvoiceTaxLine" (
 );
 
 -- CreateIndex
-CREATE INDEX "TaxRate_jurisdiction_effectiveFrom_idx" ON "TaxRate"("jurisdiction", "effectiveFrom");
+CREATE INDEX IF NOT EXISTS "TaxRate_jurisdiction_effectiveFrom_idx" ON "TaxRate"("jurisdiction", "effectiveFrom");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "TaxRate_jurisdiction_taxType_effectiveFrom_key" ON "TaxRate"("jurisdiction", "taxType", "effectiveFrom");
+CREATE UNIQUE INDEX IF NOT EXISTS "TaxRate_jurisdiction_taxType_effectiveFrom_key" ON "TaxRate"("jurisdiction", "taxType", "effectiveFrom");
 
 -- CreateIndex
-CREATE INDEX "InvoiceTaxLine_invoiceId_idx" ON "InvoiceTaxLine"("invoiceId");
+CREATE INDEX IF NOT EXISTS "InvoiceTaxLine_invoiceId_idx" ON "InvoiceTaxLine"("invoiceId");
 
 -- AddForeignKey
-ALTER TABLE "InvoiceTaxLine" ADD CONSTRAINT "InvoiceTaxLine_invoiceId_fkey" FOREIGN KEY ("invoiceId") REFERENCES "Invoice"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'InvoiceTaxLine_invoiceId_fkey') THEN
+    ALTER TABLE "InvoiceTaxLine" ADD CONSTRAINT "InvoiceTaxLine_invoiceId_fkey" FOREIGN KEY ("invoiceId") REFERENCES "Invoice"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+  END IF;
+END $$;
 
 -- M3: CHECK constraints for tax vocabularies and filing frequency.
-ALTER TABLE "TaxRate" ADD CONSTRAINT "TaxRate_taxType_check" CHECK ("taxType" IN ('GST', 'HST', 'PST', 'RST', 'QST'));
-ALTER TABLE "InvoiceTaxLine" ADD CONSTRAINT "InvoiceTaxLine_taxType_check" CHECK ("taxType" IN ('GST', 'HST', 'PST', 'RST', 'QST'));
-ALTER TABLE "Business" ADD CONSTRAINT "Business_filingFrequency_check" CHECK ("filingFrequency" IS NULL OR "filingFrequency" IN ('MONTHLY', 'QUARTERLY', 'ANNUAL'));
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'TaxRate_taxType_check') THEN
+    ALTER TABLE "TaxRate" ADD CONSTRAINT "TaxRate_taxType_check" CHECK ("taxType" IN ('GST', 'HST', 'PST', 'RST', 'QST'));
+  END IF;
+END $$;
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'InvoiceTaxLine_taxType_check') THEN
+    ALTER TABLE "InvoiceTaxLine" ADD CONSTRAINT "InvoiceTaxLine_taxType_check" CHECK ("taxType" IN ('GST', 'HST', 'PST', 'RST', 'QST'));
+  END IF;
+END $$;
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'Business_filingFrequency_check') THEN
+    ALTER TABLE "Business" ADD CONSTRAINT "Business_filingFrequency_check" CHECK ("filingFrequency" IS NULL OR "filingFrequency" IN ('MONTHLY', 'QUARTERLY', 'ANNUAL'));
+  END IF;
+END $$;
 
 -- M3: TaxRate immutability — rows are never UPDATED. Corrections = insert a
 -- new row with a new effectiveFrom and close the old row's effectiveTo.

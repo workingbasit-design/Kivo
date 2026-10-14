@@ -1,3 +1,5 @@
+-- IDEMPOTENT (2026-10-14): safe to re-run. DDL uses IF NOT EXISTS /
+-- IF EXISTS guards and DO blocks; DML was already idempotent.
 -- M6: IdempotencyKey + WebhookEvent tables.
 --
 -- NOTE: this migration was written by hand (not `prisma migrate dev
@@ -7,7 +9,7 @@
 -- `prisma migrate diff --from-url ... --to-schema-datamodel`.
 
 -- CreateTable
-CREATE TABLE "IdempotencyKey" (
+CREATE TABLE IF NOT EXISTS "IdempotencyKey" (
     "id" TEXT NOT NULL,
     "businessId" TEXT,
     "key" TEXT NOT NULL,
@@ -21,7 +23,7 @@ CREATE TABLE "IdempotencyKey" (
 );
 
 -- CreateTable
-CREATE TABLE "WebhookEvent" (
+CREATE TABLE IF NOT EXISTS "WebhookEvent" (
     "id" TEXT NOT NULL,
     "provider" TEXT NOT NULL,
     "providerEventId" TEXT NOT NULL,
@@ -35,30 +37,45 @@ CREATE TABLE "WebhookEvent" (
 );
 
 -- CreateIndex
-CREATE INDEX "IdempotencyKey_expiresAt_idx" ON "IdempotencyKey"("expiresAt");
+CREATE INDEX IF NOT EXISTS "IdempotencyKey_expiresAt_idx" ON "IdempotencyKey"("expiresAt");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "IdempotencyKey_businessId_endpoint_key_key" ON "IdempotencyKey"("businessId", "endpoint", "key");
+CREATE UNIQUE INDEX IF NOT EXISTS "IdempotencyKey_businessId_endpoint_key_key" ON "IdempotencyKey"("businessId", "endpoint", "key");
 
 -- CreateIndex
-CREATE INDEX "WebhookEvent_businessId_createdAt_idx" ON "WebhookEvent"("businessId", "createdAt");
+CREATE INDEX IF NOT EXISTS "WebhookEvent_businessId_createdAt_idx" ON "WebhookEvent"("businessId", "createdAt");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "WebhookEvent_provider_providerEventId_key" ON "WebhookEvent"("provider", "providerEventId");
+CREATE UNIQUE INDEX IF NOT EXISTS "WebhookEvent_provider_providerEventId_key" ON "WebhookEvent"("provider", "providerEventId");
 
 -- AddForeignKey
-ALTER TABLE "IdempotencyKey" ADD CONSTRAINT "IdempotencyKey_businessId_fkey" FOREIGN KEY ("businessId") REFERENCES "Business"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'IdempotencyKey_businessId_fkey') THEN
+    ALTER TABLE "IdempotencyKey" ADD CONSTRAINT "IdempotencyKey_businessId_fkey" FOREIGN KEY ("businessId") REFERENCES "Business"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;
 
 -- AddForeignKey
-ALTER TABLE "WebhookEvent" ADD CONSTRAINT "WebhookEvent_businessId_fkey" FOREIGN KEY ("businessId") REFERENCES "Business"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'WebhookEvent_businessId_fkey') THEN
+    ALTER TABLE "WebhookEvent" ADD CONSTRAINT "WebhookEvent_businessId_fkey" FOREIGN KEY ("businessId") REFERENCES "Business"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+  END IF;
+END $$;
 
 -- M6: CHECK constraint for the provider vocabulary.
-ALTER TABLE "WebhookEvent" ADD CONSTRAINT "WebhookEvent_provider_check" CHECK ("provider" IN ('STRIPE', 'QUICKBOOKS', 'RESEND', 'META'));
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'WebhookEvent_provider_check') THEN
+    ALTER TABLE "WebhookEvent" ADD CONSTRAINT "WebhookEvent_provider_check" CHECK ("provider" IN ('STRIPE', 'QUICKBOOKS', 'RESEND', 'META'));
+  END IF;
+END $$;
 
 -- M6: partial unique index for null-business idempotency rows. Postgres
 -- treats NULLs as distinct in the regular unique index, so without this
 -- two null-business rows could share (endpoint, key).
-CREATE UNIQUE INDEX "IdempotencyKey_null_biz_endpoint_key" ON "IdempotencyKey"("endpoint", "key") WHERE "businessId" IS NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS "IdempotencyKey_null_biz_endpoint_key" ON "IdempotencyKey"("endpoint", "key") WHERE "businessId" IS NULL;
 
 -- M6 backfill: StripeEvent -> WebhookEvent (provider=STRIPE). StripeEvent
 -- has no payload column, so payloadJson gets '{}'. Idempotent via
