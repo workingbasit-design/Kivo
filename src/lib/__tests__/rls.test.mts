@@ -26,11 +26,15 @@ import { PrismaClient, Prisma } from '@prisma/client';
 
 const TEST_URL = process.env.TEST_DATABASE_URL;
 const TESTER_ROLE = 'rls_tester';
+// The scratch role needs a known password: CI postgres (postgres:18 service)
+// uses password auth, not trust, so an empty password is rejected.
+// Alphanumeric only — embedded raw in SQL and a connection URL.
+const TESTER_PASSWORD = 'rlsTesterPw123';
 
 function testerUrl(): string {
   const u = new URL(TEST_URL!);
   u.username = TESTER_ROLE;
-  u.password = '';
+  u.password = TESTER_PASSWORD;
   return u.toString();
 }
 
@@ -57,9 +61,13 @@ describe('M11 RLS staging gate', () => {
   }
 
   async function setup() {
-    // Idempotent role + grants (the sandbox uses trust auth).
+    // Idempotent role + grants. ALTER ROLE always runs (not just on create)
+    // so a role left behind by an earlier run still gets the known password.
     await owner.$executeRawUnsafe(
       `DO $$ BEGIN CREATE ROLE "${TESTER_ROLE}" WITH LOGIN; EXCEPTION WHEN duplicate_object THEN NULL; END $$`
+    );
+    await owner.$executeRawUnsafe(
+      `ALTER ROLE "${TESTER_ROLE}" WITH LOGIN PASSWORD '${TESTER_PASSWORD}'`
     );
     await owner.$executeRawUnsafe(`GRANT USAGE ON SCHEMA public TO "${TESTER_ROLE}"`);
     for (const t of ['Job', 'Invoice', 'Customer', 'InvoiceLineItem']) {
@@ -122,7 +130,10 @@ describe('M11 RLS staging gate', () => {
       await owner.customer.deleteMany({ where: { businessId: bizId } });
       await owner.business.delete({ where: { id: bizId } }).catch(() => {});
     }
-    await owner.$executeRawUnsafe(`REASSIGN OWNED BY "${TESTER_ROLE}" TO postgres`);
+    // Reassign to the connecting owner role from TEST_DATABASE_URL — never a
+    // hardcoded 'postgres', which does not exist on CI (POSTGRES_USER=test).
+    const ownerRole = new URL(TEST_URL!).username;
+    await owner.$executeRawUnsafe(`REASSIGN OWNED BY "${TESTER_ROLE}" TO "${ownerRole}"`);
     await owner.$executeRawUnsafe(`DROP OWNED BY "${TESTER_ROLE}"`);
     await owner.$executeRawUnsafe(`DROP ROLE IF EXISTS "${TESTER_ROLE}"`);
     await tester.$disconnect();
