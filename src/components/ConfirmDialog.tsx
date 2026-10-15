@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { t, type Locale } from '@/lib/i18n';
 import { dangerBtnClass, secondaryBtnClass } from '@/components/ui';
@@ -25,6 +25,8 @@ export default function ConfirmDialog({
   onConfirm,
   onClose,
   onCancel,
+  error,
+  children,
 }: {
   open: boolean;
   title: string;
@@ -38,6 +40,14 @@ export default function ConfirmDialog({
   /** Close handler. `onCancel` is the Part B8 spec name; `onClose` is the legacy name. Either works. */
   onClose?: () => void;
   onCancel?: () => void;
+  /**
+   * Server-action error to display INSIDE the dialog (morning QA 2026-10-15).
+   * Errors used to render behind the open dialog overlay, so "Yes, delete"
+   * looked dead when the action refused. Never hide action feedback again.
+   */
+  error?: string | null;
+  /** Extra content (e.g. a reason textarea) rendered between message and buttons. */
+  children?: ReactNode;
 }) {
   const close = onCancel ?? onClose ?? (() => {});
   useEffect(() => {
@@ -84,6 +94,15 @@ export default function ConfirmDialog({
           </button>
         </div>
         <p className="mt-2 text-sm text-zinc-500 leading-relaxed">{message}</p>
+        {children}
+        {error && (
+          <div
+            role="alert"
+            className="mt-4 flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5"
+          >
+            <span>{error}</span>
+          </div>
+        )}
         <div className="mt-6 flex flex-col-reverse sm:flex-row gap-2">
           <button onClick={close} disabled={busy} className={secondaryBtnClass + ' flex-1'}>
             {keep}

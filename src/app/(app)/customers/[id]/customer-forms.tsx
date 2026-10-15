@@ -1,10 +1,16 @@
 'use client';
 
 import React, { useActionState, useEffect, useRef, useState } from 'react';
-import { AlertCircle, CheckCircle2, Pencil, Trash2, X } from 'lucide-react';
+import { AlertCircle, Archive, ArchiveRestore, CheckCircle2, Pencil, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
-import { updateCustomer, deleteCustomer, type ActionResult } from '@/app/actions/customers';
+import {
+  updateCustomer,
+  deleteCustomer,
+  archiveCustomer,
+  unarchiveCustomer,
+  type ActionResult,
+} from '@/app/actions/customers';
 import {
   Field,
   FormGrid,
@@ -185,6 +191,8 @@ export function DeleteCustomerButton({
   const [state, formAction, isPending] = useActionState(deleteCustomer, {});
 
   // deleteCustomer redirects to /customers on success; toast on failure only.
+  // The error is ALSO rendered inside the dialog (morning QA 2026-10-15):
+  // it used to appear behind the open overlay, making "Yes, delete" look dead.
   useResultToast(state, {
     success: t(locale, 't10money.customerDeleted'),
   });
@@ -203,6 +211,7 @@ export function DeleteCustomerButton({
         title={t(locale, 't10money.custDelete')}
         message={t(locale, 't10money.custDeleteMsg').replace('{name}', customerName)}
         busy={isPending}
+        error={state?.error ?? null}
         onConfirm={() => {
           const fd = new FormData();
           fd.append('id', customerId);
@@ -210,7 +219,48 @@ export function DeleteCustomerButton({
         }}
         onClose={() => !isPending && setConfirming(false)}
       />
-      {state?.error && <span className="text-xs text-rose-600">{state.error}</span>}
     </>
+  );
+}
+
+/**
+ * Archive / restore a customer (morning QA 2026-10-15). The archiveCustomer
+ * server action existed with no UI, so customers could never be archived —
+ * and deleteCustomer refuses non-archived customers, making delete a
+ * dead end. This wires the existing actions up.
+ */
+export function ArchiveCustomerButton({
+  customerId,
+  archived,
+  locale = 'en',
+}: {
+  customerId: string;
+  archived: boolean;
+  locale?: Locale;
+}) {
+  const [state, formAction, isPending] = useActionState(
+    archived ? unarchiveCustomer : archiveCustomer,
+    {}
+  );
+
+  useResultToast(state, {
+    success: t(locale, archived ? 't10money.custRestored' : 't10money.custArchived'),
+  });
+
+  return (
+    <form action={formAction} className="inline-flex items-center gap-2">
+      <input type="hidden" name="id" value={customerId} />
+      <button
+        type="submit"
+        disabled={isPending}
+        className="min-h-[44px] px-4 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 border border-zinc-200 text-zinc-700 hover:bg-zinc-50 disabled:opacity-60"
+      >
+        {archived ? <ArchiveRestore size={14} /> : <Archive size={14} />}
+        {isPending
+          ? t(locale, archived ? 't10money.custRestoring' : 't10money.custArchiving')
+          : t(locale, archived ? 't10money.custRestore' : 't10money.custArchive')}
+      </button>
+      {state?.error && <span className="text-xs text-rose-600">{state.error}</span>}
+    </form>
   );
 }

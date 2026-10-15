@@ -18,7 +18,7 @@ import {
   revokeInvoiceShareLink,
   setInvoiceShareLinkExpiry,
 } from '@/app/actions/invoices';
-import InvoiceActions from './InvoiceActions';
+import InvoiceActions, { VoidPaymentButton } from './InvoiceActions';
 import InvoicePayButton from '@/components/InvoicePayButton';
 import ShareTokenManager from '@/components/ShareTokenManager';
 import PrintButton from './PrintButton';
@@ -265,7 +265,12 @@ export default async function InvoiceDetailPage({
                     <DateTimeText date={p.createdAt} variant="short" timezone={invoice.business.timezone ?? 'America/Toronto'} locale={locale} />
                   </p>
                 </div>
-                <StatusBadge status={p.status} locale={locale} />
+                <div className="flex items-center gap-2">
+                  <StatusBadge status={p.status} locale={locale} />
+                  {p.status !== 'VOID' && (
+                    <VoidPaymentButton paymentId={p.id} locale={locale} />
+                  )}
+                </div>
               </li>
             ))}
           </ul>

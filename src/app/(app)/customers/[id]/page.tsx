@@ -9,7 +9,7 @@ import { formatDateShort, jobDisplayStatus } from '@/lib/utils';
 import { formatMoney, formatCents, centsToDollars } from '@/lib/money';
 import { PageHeader, Card, StatusBadge, Badge } from '@/components/ui';
 import { secondaryBtnClass } from '@/components/ui';
-import { EditCustomerForm, DeleteCustomerButton } from './customer-forms';
+import { EditCustomerForm, DeleteCustomerButton, ArchiveCustomerButton } from './customer-forms';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import SmsButton from '@/components/SmsButton';
 import PortalLinkManager from '@/components/PortalLinkManager';
@@ -30,6 +30,7 @@ async function loadCustomer(id: string, businessId: string) {
     select: {
       id: true,
       name: true,
+      archivedAt: true,
       phone: true,
       email: true,
       address: true,
@@ -159,7 +160,12 @@ export default async function CustomerDetailPage({
             {initial}
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-lg font-bold text-zinc-900">{customerName}</h2>
+            <h2 className="text-lg font-bold text-zinc-900 flex items-center gap-2 flex-wrap">
+              {customerName}
+              {customer.archivedAt && (
+                <Badge>{t(locale, 't10money.custArchivedBadge')}</Badge>
+              )}
+            </h2>
             <p className="text-xs text-zinc-500">
               Customer since {formatDateShort(customer.createdAt)} · {formatMoney(totalRevenue, currency)} lifetime
             </p>
@@ -265,6 +271,11 @@ export default async function CustomerDetailPage({
               notes: customer.notes,
               tags: customer.tags,
             }}
+          />
+          <ArchiveCustomerButton
+            customerId={customer.id}
+            archived={!!customer.archivedAt}
+            locale={locale}
           />
           <DeleteCustomerButton
             customerId={customer.id}

@@ -147,14 +147,40 @@ const fragment = {
       invDelete: 'Delete invoice',
       invDeleteTitle: 'Delete this invoice?',
       invDeleteMsg: 'The invoice will be permanently deleted. This can’t be undone.',
+      // Launch-pack item 7: non-draft invoices are voided, not deleted.
+      invVoid: 'Void invoice',
+      invVoidTitle: 'Void this invoice?',
+      invVoidMsg:
+        'Voiding keeps the invoice number and the audit trail. The invoice will be excluded from totals and reports.',
+      invVoidReason: 'Reason (min 10 characters)',
+      invVoidReasonPh: 'e.g. Issued in error — reissued as INV-0005',
+      invVoidReasonShort: 'Please give a reason of at least 10 characters.',
+      invVoiding: 'Voiding…',
+      invVoided: 'Invoice voided',
+      invVoidPayment: 'Void payment',
+      invVoidPaymentTitle: 'Void this payment?',
+      invVoidPaymentMsg:
+        'The payment stays on record as voided. Totals and reports will exclude it.',
+      invPaymentVoided: 'Payment voided',
+      invVoidedBadge: 'Voided',
       invBookkeepingNote:
         'EveryJob only records payments you received - it never moves money itself.',
       invDue: 'due',
 
       // Customer delete
       custDelete: 'Delete',
-      custDeleteMsg: 'Delete {name}? Jobs and invoices linked to them will also be removed.',
+      // A7 / launch-pack item 6: deleting a customer NEVER cascades. Only
+      // archived customers with zero linked records can be deleted.
+      custDeleteMsg:
+        'Delete {name}? Only archived customers with no jobs, invoices, or quotes can be deleted — archive the customer first.',
       custDeleting: 'Deleting…',
+      custArchive: 'Archive',
+      custArchiving: 'Archiving…',
+      custArchived: 'Customer archived',
+      custRestore: 'Restore',
+      custRestoring: 'Restoring…',
+      custRestored: 'Customer restored',
+      custArchivedBadge: 'Archived',
 
       // New customer form
       custNewTitle: 'Add customer',
@@ -558,14 +584,38 @@ const fragment = {
       invDelete: 'Supprimer la facture',
       invDeleteTitle: 'Supprimer cette facture?',
       invDeleteMsg: 'La facture sera définitivement supprimée. Cette action est irréversible.',
+      // Launch-pack item 7: non-draft invoices are voided, not deleted.
+      invVoid: 'Annuler la facture',
+      invVoidTitle: 'Annuler cette facture?',
+      invVoidMsg:
+        'L’annulation conserve le numéro de facture et la piste d’audit. La facture sera exclue des totaux et des rapports.',
+      invVoidReason: 'Motif (min 10 caractères)',
+      invVoidReasonPh: 'p. ex. Émise par erreur — réémise comme FAC-0005',
+      invVoidReasonShort: 'Veuillez fournir un motif d’au moins 10 caractères.',
+      invVoiding: 'Annulation…',
+      invVoided: 'Facture annulée',
+      invVoidPayment: 'Annuler le paiement',
+      invVoidPaymentTitle: 'Annuler ce paiement?',
+      invVoidPaymentMsg:
+        'Le paiement reste au dossier comme annulé. Les totaux et les rapports l’excluront.',
+      invPaymentVoided: 'Paiement annulé',
+      invVoidedBadge: 'Annulée',
       invBookkeepingNote:
         'EveryJob enregistre uniquement les paiements que vous avez reçus - il ne déplace jamais d’argent lui-même.',
       invDue: 'dû',
 
       // Customer delete
       custDelete: 'Supprimer',
-      custDeleteMsg: 'Supprimer {name}? Les travaux et factures liés seront aussi supprimés.',
+      custDeleteMsg:
+        'Supprimer {name}? Seuls les clients archivés sans travaux, factures ni devis peuvent être supprimés — archivez d’abord le client.',
       custDeleting: 'Suppression…',
+      custArchive: 'Archiver',
+      custArchiving: 'Archivage…',
+      custArchived: 'Client archivé',
+      custRestore: 'Restaurer',
+      custRestoring: 'Restauration…',
+      custRestored: 'Client restauré',
+      custArchivedBadge: 'Archivé',
 
       // New customer form
       custNewTitle: 'Ajouter un client',

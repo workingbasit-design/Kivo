@@ -229,7 +229,8 @@ export default function JobForm({
               className="h-5 w-5 rounded border-zinc-300 text-lime-600 focus:ring-lime-500"
             />
             <span className="text-sm text-zinc-700">
-              No charge <span className="text-zinc-500">(warranty callback, goodwill, etc.)</span>
+              {T('formNoCharge')}{' '}
+              <span className="text-zinc-500">{T('formNoChargeHint')}</span>
             </span>
           </label>
         </Field>

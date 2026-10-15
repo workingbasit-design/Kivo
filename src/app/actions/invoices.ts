@@ -11,6 +11,7 @@ import { invoiceSchema, paymentSchema, INVOICE_STATUSES } from '@/lib/validation
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { dollarsToCents, centsToDollars, formatCents } from '@/lib/money';
 import { deriveInvoiceStatus } from '@/lib/invoice-status';
+import { isValidVoidReason } from '@/lib/voiding';
 import { nextDocumentNumber } from '@/lib/numbering';
 import {
   getTaxConfig,
@@ -331,7 +332,7 @@ export async function voidInvoice(
 
   const id = String(formData.get('id') ?? '');
   const reason = String(formData.get('reason') ?? '').trim();
-  if (reason.length < 10) {
+  if (!isValidVoidReason(reason)) {
     return { error: 'Please provide a reason (at least 10 characters) for voiding this invoice.' };
   }
 
@@ -376,7 +377,7 @@ export async function voidPayment(
 
   const id = String(formData.get('id') ?? '');
   const reason = String(formData.get('reason') ?? '').trim();
-  if (reason.length < 10) {
+  if (!isValidVoidReason(reason)) {
     return { error: 'Please provide a reason (at least 10 characters) for voiding this payment.' };
   }
 
