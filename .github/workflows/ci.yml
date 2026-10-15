@@ -78,8 +78,14 @@ jobs:
       - run: npm run test:db
 
   # P4-E/P4-A/P4-X/P4-B/P4-AX/P4-P: Playwright on all three device projects.
+  # Sharded by project (one job per device) so each gets a dedicated runner —
+  # the full 1359-test matrix on a single runner was timing out / OOM-killed.
   e2e:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [iphone, android, desktop]
     services:
       postgres:
         image: postgres:18
@@ -110,16 +116,17 @@ jobs:
       - run: node tests/scripts/seed-e2e.mjs
       - run: npm run build
       # Playwright's webServer starts `npm run start:e2e` and waits for :3100.
-      - run: npx playwright test
+      # One project per job (matrix) for reliability.
+      - run: npx playwright test --project=${{ matrix.project }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.project }}
           path: playwright-report/
           retention-days: 14
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-traces
+          name: playwright-traces-${{ matrix.project }}
           path: test-results/
           retention-days: 14

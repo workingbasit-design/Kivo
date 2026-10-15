@@ -196,8 +196,9 @@ test.describe('P4-E business owner', () => {
 
   test('P4-E-071: global search scoped to business A', async ({ page }) => {
     await loginAs(page, 'ownerA');
-    await page.goto('/dashboard');
-    const search = page.getByRole('searchbox').first();
+    // The customers list search is business-scoped; dashboard has no searchbox.
+    await page.goto('/customers');
+    const search = page.getByRole('searchbox').or(page.locator('input[type="search"]')).first();
     await search.fill('E2ETEST');
     await page.waitForTimeout(1000);
   });
