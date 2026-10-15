@@ -381,6 +381,10 @@ export async function voidPayment(
     return { error: 'Please provide a reason (at least 10 characters) for voiding this payment.' };
   }
 
+  // BISECT (morning QA 2026-10-15): isolate the #441. Remove after diagnosis.
+  return { error: 'BISECT: reached after validation, before DB' };
+
+  /* BISECTED OUT
   const payment = await prisma.payment.findFirst({
     where: { id, invoice: { businessId } },
     select: { id: true, voidedAt: true, status: true },
@@ -398,6 +402,7 @@ export async function voidPayment(
   revalidatePath('/invoices');
   revalidatePath('/dashboard');
   return { ok: true };
+  */
 }
 
 /**
