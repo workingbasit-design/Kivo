@@ -383,7 +383,7 @@ export async function voidPayment(
 
   // BISECT (morning QA 2026-10-15): isolate the #441. Remove after diagnosis.
   const payment = await prisma.payment.findFirst({
-    where: { id, invoice: { businessId } },
+    where: { id },
     select: { id: true, voidedAt: true, status: true },
   });
   return { error: 'BISECT: findFirst ok, payment=' + (payment ? payment.status : 'null') };
