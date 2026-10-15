@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useActionState, useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { AlertCircle, Wallet, Trash2, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
@@ -82,13 +83,15 @@ export default function InvoiceActions({
     {}
   );
   const [confirmingDelete, setConfirmingDelete] = useState(false);
-  // Single void-payment action + dialog at this level (see below): a
-  // useActionState inside the payments .map() 500'd with React #441.
-  const [voidPaymentState, voidPaymentAction, voidPaymentPending] =
-    useActionState<ActionResult, FormData>(voidPayment, {});
+  // Single void-payment action + dialog at this level (not in the .map()):
+  // useActionState 500'd with React #441 for voidPayment on production, so
+  // the action is called directly and state is managed with useState.
   const [confirmingVoidPayment, setConfirmingVoidPayment] = useState(false);
   const [voidPaymentId, setVoidPaymentId] = useState<string | null>(null);
   const [voidPaymentReason, setVoidPaymentReason] = useState('');
+  const [voidPaymentPending, setVoidPaymentPending] = useState(false);
+  const [voidPaymentError, setVoidPaymentError] = useState<string | null>(null);
+  const router = useRouter();
 
   useResultToast(payState, {
     success: t(locale, 't10money.paymentRecorded'),
@@ -101,9 +104,6 @@ export default function InvoiceActions({
   });
   // deleteInvoice redirects to the invoices list on success - toast on failure only.
   useResultToast(deleteState, {});
-  useResultToast(voidPaymentState, {
-    success: t(locale, 't10money.invPaymentVoided'),
-  });
 
   const error = payState?.error || emailState?.error || deleteState?.error;
 
@@ -247,6 +247,7 @@ export default function InvoiceActions({
                     onClick={() => {
                       setVoidPaymentId(p.id);
                       setVoidPaymentReason('');
+                      setVoidPaymentError(null);
                       setConfirmingVoidPayment(true);
                     }}
                     className="text-[11px] font-semibold text-rose-600 hover:text-rose-700 underline underline-offset-2"
@@ -264,14 +265,29 @@ export default function InvoiceActions({
         title={t(locale, 't10money.invVoidPaymentTitle')}
         message={t(locale, 't10money.invVoidPaymentMsg')}
         busy={voidPaymentPending}
-        error={voidPaymentState?.error ?? null}
+        error={voidPaymentError}
         confirmLabel={t(locale, 't10money.invVoidPayment')}
-        onConfirm={() => {
+        onConfirm={async () => {
           if (!isValidVoidReason(voidPaymentReason) || !voidPaymentId) return;
-          const fd = new FormData();
-          fd.append('id', voidPaymentId);
-          fd.append('reason', voidPaymentReason.trim());
-          voidPaymentAction(fd);
+          setVoidPaymentPending(true);
+          setVoidPaymentError(null);
+          try {
+            const fd = new FormData();
+            fd.append('id', voidPaymentId);
+            fd.append('reason', voidPaymentReason.trim());
+            // Direct call (not useActionState): useActionState 500'd with
+            // React #441 for this action on production.
+            const result = await voidPayment({} as ActionResult, fd);
+            if (result?.error) {
+              setVoidPaymentError(result.error);
+            } else {
+              setConfirmingVoidPayment(false);
+              toast.success(t(locale, 't10money.invPaymentVoided'));
+              router.refresh();
+            }
+          } finally {
+            setVoidPaymentPending(false);
+          }
         }}
         onClose={() => !voidPaymentPending && setConfirmingVoidPayment(false)}
       >
@@ -284,6 +300,7 @@ export default function InvoiceActions({
           </label>
           <textarea
             id="void-payment-reason"
+            name="reason"
             rows={3}
             maxLength={500}
             value={voidPaymentReason}
