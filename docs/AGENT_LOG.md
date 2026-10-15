@@ -352,3 +352,23 @@ Verified live: Permissions-Policy now serves microphone=(self).
    inputs no longer overflow the card on narrow screens.
 Gates: tsc clean, lint 0 errors, 1205/1205 tests pass, next build OK.
 Pushed via exact_push.py (252acadb, tree byte-identical), CI validate green on dc18ce2.
+
+## 2026-10-15 ~02:30 UTC - Morning QA leftovers: messaging 500, dispatch selector, RLS state
+1. /settings/messaging 500 (morning QA, pre-Prompt-3): RESOLVED, no code change.
+   Live-verified just now with real QATEST login via Playwright: HTTP 200,
+   renders "Automated messaging" correctly. Almost certainly fixed by the
+   Prompt 3 deploy's `prisma db push` creating the messaging tables.
+2. Dispatch technician selector "rendered disabled" (morning QA): DOES NOT
+   REPRODUCE. Live check: select renders enabled with 2 options
+   (Unassigned + team member), aria-label "Assign technician". Code review:
+   disabled={pending} from useTransition — nothing sets pending on load, so
+   the morning finding was a transient transition state during their session.
+   No code change; DispatchBoardClient untouched since 8ea2d41.
+3. RLS activation review: 78 policies staged in m11_rls (ENABLED, NOT FORCED) -
+   verified count matches. Inert at runtime (app connects as table owner;
+   1205/1205 suite green confirms zero behavior change). Activation checklist
+   NOT met: per-request set_config('app.business_id') wiring does not exist
+   anywhere in src/ (grep clean - ~50 request paths need it); no staging DB
+   exists (checklist items 3-5 impossible); no RLS-violation monitoring.
+   FORCING today would fail-closed into a total outage. Activation is a
+   project, not a switch - presented to user for decision.
