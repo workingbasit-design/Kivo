@@ -1,12 +1,12 @@
 /**
  * Unit tests for import/export pure helpers added 2026-09-24:
- *  - customerDedupeKey / excelRowsToStrings (src/lib/csv.ts)
+ *  - customerDedupeKey (src/lib/csv.ts)
  *  - escapeCsvCell (src/lib/costing.ts), used by the export CSV builder
  * Run: node --test --import ./src/lib/__tests__/register-loader.mjs src/lib/__tests__/spreadsheet-io.test.mts
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { customerDedupeKey, excelRowsToStrings } from '../csv.ts';
+import { customerDedupeKey } from '../csv.ts';
 import { escapeCsvCell } from '../costing.ts';
 
 test('customerDedupeKey matches on normalized email when present', () => {
@@ -37,23 +37,6 @@ test('customerDedupeKey keeps email and email-less rows distinct', () => {
   const withEmail = customerDedupeKey('Marie Tremblay', '514-555-0100', 'marie@example.ca');
   const withoutEmail = customerDedupeKey('Marie Tremblay', '514-555-0100', null);
   assert.notEqual(withEmail, withoutEmail);
-});
-
-test('excelRowsToStrings trims, stringifies and drops blank rows', () => {
-  assert.deepEqual(
-    excelRowsToStrings([
-      ['name', 'price', 'email'],
-      ['  Drain cleaning ', 120, null],
-      ['', '', ''],
-      ['Leak repair', 99.5, 'a@b.ca'],
-      [],
-    ]),
-    [
-      ['name', 'price', 'email'],
-      ['Drain cleaning', '120', ''],
-      ['Leak repair', '99.5', 'a@b.ca'],
-    ]
-  );
 });
 
 test('escapeCsvCell quotes only when needed', () => {

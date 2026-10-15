@@ -34,16 +34,18 @@ async function main() {
     },
   });
 
-  // An invoice due yesterday, still SENT -> Overdue.
+  // An invoice due yesterday, still UNPAID -> Overdue.
+  // (Invoices have no SENT status — that is a quote status. Valid invoice
+  // statuses per the M10 CHECK: DRAFT, UNPAID, PARTIALLY PAID, PAID, VOID.)
   const inv = await db.invoice.upsert({
     where: { id: 'e2e-inv-overdue' },
-    update: { dueAt: new Date(now.getTime() - day), status: 'SENT' },
+    update: { dueAt: new Date(now.getTime() - day), status: 'UNPAID' },
     create: {
       id: 'e2e-inv-overdue',
       businessId: 'seed-biz-on',
       customerId: 'seed-cust-on-1',
       number: 'INV-E2E-OVERDUE',
-      status: 'SENT',
+      status: 'UNPAID',
       date: new Date(now.getTime() - 10 * day),
       dueAt: new Date(now.getTime() - day),
       subtotalCents: BigInt(20000),

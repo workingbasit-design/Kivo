@@ -94,6 +94,10 @@ type Fixtures = {
   authedPage: Page;
 };
 
+/* eslint-disable react-hooks/rules-of-hooks --
+   Playwright fixture callbacks receive a `use` function (base.extend) —
+   this is not React's `use` hook. The react-hooks rule misidentifies it. */
+
 export const test = base.extend<Fixtures & { persona: Persona }>({
   persona: ['ownerA', { option: true }],
   authedPage: async ({ page, persona }, use) => {

@@ -106,7 +106,6 @@ export default async function SignedDocumentPrintPage({
             </p>
             <div className="rounded-lg border border-zinc-200 bg-white px-6 py-5">
               {drawn ? (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={request.signatureData!}
                   alt={request.signerName ?? 'signature'}

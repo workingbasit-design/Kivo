@@ -49,7 +49,6 @@ export function Avatar({
       )}
     >
       {logoUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
         <img src={logoUrl} alt="" className="w-full h-full object-cover" />
       ) : (
         <span className="font-bold text-indigo-600">{name.charAt(0).toUpperCase()}</span>

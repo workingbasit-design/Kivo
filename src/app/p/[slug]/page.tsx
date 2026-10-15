@@ -208,7 +208,6 @@ export default async function PublicProfilePage({
           <div className="flex items-start justify-between gap-3 mt-3">
             <div className="flex items-center gap-3">
               {b.logoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img src={b.logoUrl} alt="" className="w-14 h-14 rounded-2xl object-contain bg-white border border-white/20 shrink-0" />
               ) : null}
               <div>

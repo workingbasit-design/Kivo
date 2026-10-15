@@ -165,7 +165,6 @@ export default function Attachments({
                       rel="noreferrer"
                       title={t(locale, 'attachments.openLabel')}
                     >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={`/api/attachments/${row.id}`}
                         alt={row.fileName}

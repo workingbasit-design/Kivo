@@ -1,17 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { Download, FileSpreadsheet } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { t, type Locale } from '@/lib/i18n';
-import { escapeCsvCell, neutralizeFormulaPrefix } from '@/lib/costing';
+import { escapeCsvCell } from '@/lib/costing';
 import { formatMoney } from '@/lib/money';
 import { secondaryBtnClass } from '@/components/ui';
 
 export type ExportColumn = {
   key: string;
   label: string;
-  /** 'money' columns render as CAD-formatted strings in CSV and as real
-   *  numeric cells with a CAD number format in Excel. */
+  /** 'money' columns render as CAD-formatted strings in the CSV. */
   kind?: 'money' | 'text';
 };
 
@@ -27,9 +26,16 @@ function triggerDownload(url: string, filename: string) {
 }
 
 /**
- * Shared export-download logic (CSV + Excel) so both the inline
- * ExportButtons and the mobile overflow menu (JobsExportMenu) download
- * exactly the same files.
+ * Shared export-download logic (CSV) so both the inline ExportButtons and
+ * the mobile overflow menu (JobsExportMenu) download exactly the same file.
+ *
+ * 2026-10-15: the .xlsx export was removed. The `xlsx` (SheetJS) package
+ * carries unpatched high-severity advisories (GHSA-4r6h-8v6p-xvw6,
+ * GHSA-5pgg-2g8v-p4x9 — no fixed version exists) and the only maintained
+ * alternative (exceljs) has its own unpatched high CVE (CVE-2026-78208),
+ * so neither can pass the `npm audit --audit-level=high` CI gate. CSV
+ * opens natively in Excel, Google Sheets, and LibreOffice (UTF-8 BOM
+ * included for fr-CA accents), so no data interchange is lost.
  */
 export function useExportDownloads({
   columns,
@@ -45,7 +51,7 @@ export function useExportDownloads({
   currency?: string | null;
   locale?: Locale;
 }) {
-  const [busy, setBusy] = useState<null | 'csv' | 'xlsx'>(null);
+  const [busy, setBusy] = useState<null | 'csv'>(null);
   const moneyLocale = locale === 'fr' ? 'fr' : 'en';
 
   const moneyText = (v: unknown): string => {
@@ -88,56 +94,12 @@ export function useExportDownloads({
     }
   }
 
-  async function downloadXlsx() {
-    setBusy('xlsx');
-    try {
-      const XLSX = await import('xlsx');
-      const aoa: (string | number | null)[][] = [
-        columns.map((c) => c.label),
-        ...rows.map((r) =>
-          columns.map((c) => {
-            const v = r[c.key];
-            if (c.kind === 'money') {
-              const n = typeof v === 'number' ? v : Number(v);
-              return Number.isFinite(n) ? n : null;
-            }
-            // Neutralize formula injection: a raw string starting with `=`
-            // would become an executable formula cell in Excel (worse than
-            // the CSV case - no quoting ambiguity at all).
-            const cleaned = cleanText(v);
-            const cell = cleaned === '' ? null : cleaned;
-            return typeof cell === 'string' ? (neutralizeFormulaPrefix(cell) as string) : cell;
-          })
-        ),
-      ];
-      const ws = XLSX.utils.aoa_to_sheet(aoa);
-      // Money columns: real numbers with a CAD display format so they stay
-      // summable in Excel / Sheets / LibreOffice.
-      columns.forEach((c, ci) => {
-        if (c.kind !== 'money') return;
-        for (let ri = 1; ri < aoa.length; ri++) {
-          const addr = XLSX.utils.encode_cell({ r: ri, c: ci });
-          const cell = ws[addr] as { v?: unknown; z?: string } | undefined;
-          if (cell && typeof cell.v === 'number') cell.z = '"$"#,##0.00';
-        }
-      });
-      ws['!cols'] = columns.map((c) => ({ wch: c.kind === 'money' ? 14 : 24 }));
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Export');
-      XLSX.writeFile(wb, `${fileBase}.xlsx`);
-    } finally {
-      setBusy(null);
-    }
-  }
-
-  return { downloadCsv, downloadXlsx, busy, disabled };
+  return { downloadCsv, busy, disabled };
 }
 
 /**
- * "Export CSV" / "Export Excel" buttons for list pages. Receives the
- * *currently filtered* rows from the page so the download always matches
- * what the user sees. CSV is generated directly; the xlsx library is
- * dynamically imported on click so list pages pay no bundle cost until used.
+ * "Export CSV" button for list pages. Receives the *currently filtered*
+ * rows from the page so the download always matches what the user sees.
  */
 export default function ExportButtons({
   columns,
@@ -153,7 +115,7 @@ export default function ExportButtons({
   currency?: string | null;
   locale?: Locale;
 }) {
-  const { downloadCsv, downloadXlsx, busy, disabled } = useExportDownloads({
+  const { downloadCsv, busy, disabled } = useExportDownloads({
     columns,
     rows,
     fileBase,
@@ -162,27 +124,15 @@ export default function ExportButtons({
   });
 
   return (
-    <>
-      <button
-        type="button"
-        onClick={downloadCsv}
-        disabled={disabled}
-        className={secondaryBtnClass}
-        title={t(locale, 'exports.csv')}
-      >
-        <Download size={14} />
-        {busy === 'csv' ? t(locale, 'exports.preparing') : t(locale, 'exports.csv')}
-      </button>
-      <button
-        type="button"
-        onClick={downloadXlsx}
-        disabled={disabled}
-        className={secondaryBtnClass}
-        title={t(locale, 'exports.excel')}
-      >
-        <FileSpreadsheet size={14} />
-        {busy === 'xlsx' ? t(locale, 'exports.preparing') : t(locale, 'exports.excel')}
-      </button>
-    </>
+    <button
+      type="button"
+      onClick={downloadCsv}
+      disabled={disabled}
+      className={secondaryBtnClass}
+      title={t(locale, 'exports.csv')}
+    >
+      <Download size={14} />
+      {busy === 'csv' ? t(locale, 'exports.preparing') : t(locale, 'exports.csv')}
+    </button>
   );
 }

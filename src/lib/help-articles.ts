@@ -381,9 +381,9 @@ Demandez « Quelles factures sont impayées? » (en français ou en anglais) et 
       title: 'Importing and exporting data',
       body: `## Importing customers
 
-Bring your existing customer list with a CSV or Excel file (.csv, .xls, .xlsx):
+Bring your existing customer list with a CSV file (.csv) — Excel can save any sheet as CSV:
 
-1. Go to Imports and upload your file (Excel reads the first worksheet).
+1. Go to Imports and upload your file.
 2. **Preview** every row with validation results before anything is created.
 3. **Duplicates are flagged** - choose to skip or update them.
 4. **Confirm** and only then are the customers created. Nothing is ever created silently.
@@ -400,9 +400,9 @@ Exports are plain files you can open anywhere. There is no lock-in: your busines
       title: 'Importer et exporter des données',
       body: `## Importer des clients
 
-Importez votre liste de clients existante avec un fichier CSV ou Excel (.csv, .xls, .xlsx) :
+Importez votre liste de clients existante avec un fichier CSV (.csv) — Excel peut enregistrer une feuille en CSV :
 
-1. Allez à Importations et téléversez votre fichier (Excel lit la première feuille).
+1. Allez à Importations et téléversez votre fichier.
 2. **Prévisualisez** chaque ligne avec les résultats de validation avant toute création.
 3. **Les doublons sont signalés** - choisissez de les ignorer ou de les mettre à jour.
 4. **Confirmez**, et seulement alors les clients sont créés. Rien n'est jamais créé en silence.

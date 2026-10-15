@@ -42,7 +42,6 @@ export default function ProCard({
         <div className="relative shrink-0">
           <div className="w-14 h-14 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center overflow-hidden transition-transform duration-300 group-hover:scale-105">
             {pro.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
               <img src={pro.logoUrl} alt="" className="w-full h-full object-cover" />
             ) : (
               <span className="text-xl font-bold text-indigo-600">

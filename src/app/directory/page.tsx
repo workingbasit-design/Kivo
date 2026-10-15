@@ -242,7 +242,6 @@ export default async function DirectoryPage({
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="w-12 h-12 rounded-2xl bg-ink flex items-center justify-center shrink-0 overflow-hidden transition-transform duration-300 group-hover:scale-105">
                         {b.logoUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
                           <img src={b.logoUrl} alt="" className="w-full h-full object-cover" />
                         ) : (
                           <span className="text-lg font-bold text-lime">{b.name.charAt(0).toUpperCase()}</span>

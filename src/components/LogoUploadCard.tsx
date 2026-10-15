@@ -63,7 +63,6 @@ export default function LogoUploadCard({
       <div className="mt-4 flex items-center gap-4">
         <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-50 flex items-center justify-center">
           {logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img src={logoUrl} alt="" className="h-full w-full object-contain" />
           ) : (
             <ImagePlus size={28} className="text-zinc-300" />

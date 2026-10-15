@@ -123,7 +123,6 @@ export default async function InvoicePortalPage({
       <main className="max-w-lg mx-auto px-4 py-8 space-y-5">
         <div className="text-center">
           {invoice.business.logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={invoice.business.logoUrl}
               alt={`${invoice.business.name} logo`}

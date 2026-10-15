@@ -34,7 +34,6 @@ function BrandHeaderPreview({
       <div className="h-2.5" style={{ backgroundColor: accent }} aria-hidden />
       <div className="p-5 flex items-center gap-4">
         {logoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={logoUrl}
             alt=""

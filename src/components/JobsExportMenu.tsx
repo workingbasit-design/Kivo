@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { EllipsisVertical, Download, FileSpreadsheet } from 'lucide-react';
+import { EllipsisVertical, Download } from 'lucide-react';
 import { t, type Locale } from '@/lib/i18n';
 import { useExportDownloads, type ExportColumn, type ExportRow } from '@/components/ExportButtons';
 import { cn } from '@/lib/utils';
@@ -10,11 +10,10 @@ import { glassClass } from '@/components/ui';
 /**
  * Mobile overflow menu for the Jobs list (Part B4).
  *
- * On phones the Export CSV / Export Excel buttons move behind a "More"
- * (three-dot) menu so the header stays uncluttered. On desktop the inline
- * ExportButtons stay visible - this component renders nothing there
- * (`md:hidden`). Both paths share `useExportDownloads`, so the files are
- * identical.
+ * On phones the Export CSV button moves behind a "More" (three-dot) menu
+ * so the header stays uncluttered. On desktop the inline ExportButtons stay
+ * visible - this component renders nothing there (`md:hidden`). Both paths
+ * share `useExportDownloads`, so the files are identical.
  */
 export default function JobsExportMenu({
   columns,
@@ -31,7 +30,7 @@ export default function JobsExportMenu({
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const { downloadCsv, downloadXlsx, busy, disabled } = useExportDownloads({
+  const { downloadCsv, busy, disabled } = useExportDownloads({
     columns,
     rows,
     fileBase,
@@ -92,19 +91,6 @@ export default function JobsExportMenu({
           >
             <Download size={14} />
             {busy === 'csv' ? t(locale, 'exports.preparing') : t(locale, 'exports.csv')}
-          </button>
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => {
-              downloadXlsx();
-              setOpen(false);
-            }}
-            disabled={disabled}
-            className={cn(itemClass, 'border-t border-zinc-100')}
-          >
-            <FileSpreadsheet size={14} />
-            {busy === 'xlsx' ? t(locale, 'exports.preparing') : t(locale, 'exports.excel')}
           </button>
         </div>
       )}

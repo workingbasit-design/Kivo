@@ -20,7 +20,7 @@ import {
   localMidnight,
   type CalendarDraft,
 } from '@/lib/google-calendar';
-import { parseCsv, validateCsvRows, excelRowsToStrings, customerDedupeKey, type CsvType, type CsvRecord, type CustomerRecord, type ServiceRecord, type JobRecord } from '@/lib/csv';
+import { parseCsv, validateCsvRows, customerDedupeKey, type CsvType, type CsvRecord, type CustomerRecord, type ServiceRecord, type JobRecord } from '@/lib/csv';
 import { validatePhone } from '@/lib/phone';
 import { dollarsToCents } from '@/lib/money';
 

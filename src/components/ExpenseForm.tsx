@@ -165,7 +165,6 @@ export default function ExpenseForm({
             <div className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-zinc-50 p-3">
               {/* B12: receipts are private blobs - served through the
                   tenant-scoped route, never via a public Blob URL. */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={`/api/expenses/receipt/${initial.id}`}
                 alt={T('receipt')}

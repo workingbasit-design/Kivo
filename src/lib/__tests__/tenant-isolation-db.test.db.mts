@@ -127,7 +127,7 @@ describe('P4-D: database tenant isolation', () => {
       data: {
         id: 'p4d-inv-a', number: 'INV-P4D-A', businessId: A, customerId: custA.id,
         date: new Date(), subtotalCents: BigInt(10000), taxAmountCents: BigInt(1300),
-        totalCents: BigInt(11300), status: 'SENT',
+        totalCents: BigInt(11300), status: 'UNPAID',
       },
     });
     const attA = await db.attachment.create({

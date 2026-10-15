@@ -10,14 +10,12 @@ import {
   confirmCalendarImport,
   listImportCustomers,
   validateCsvImport,
-  validateRowsImport,
   commitCsvImport,
   type CalendarImportItem,
 } from '@/app/actions/imports';
 import type { getGoogleStatus } from '@/app/actions/google-reviews';
 import type { CalendarDraft } from '@/lib/google-calendar';
 import type { CsvType, CsvRecord } from '@/lib/csv';
-import { excelRowsToStrings } from '@/lib/csv';
 
 type GoogleStatus = Awaited<ReturnType<typeof getGoogleStatus>>;
 type Customer = { id: string; name: string };
@@ -133,7 +131,7 @@ export default function ImportsClient({
 
   const selectableCount = drafts.filter((d) => checked[d.googleEventId] && pickedCustomer[d.googleEventId]).length;
 
-  /* ---------------- CSV / Excel ---------------- */
+  /* ---------------- CSV import ---------------- */
   const [csvType, setCsvType] = useState<CsvType>(initialType);
   const [csvValid, setCsvValid] = useState<CsvRecord[]>([]);
   const [csvErrors, setCsvErrors] = useState<{ row: number; message: string }[]>([]);
@@ -156,28 +154,6 @@ export default function ImportsClient({
     setCsvErrors(res.errors ?? []);
   }
 
-  async function validateExcelFile(file: File) {
-    try {
-      // SheetJS is code-split: only downloaded when the user imports Excel.
-      const XLSX = await import('xlsx');
-      const buf = await file.arrayBuffer();
-      const wb = XLSX.read(buf, { type: 'array' });
-      const firstSheet = wb.SheetNames[0];
-      if (!firstSheet) throw new Error('empty');
-      const aoa = XLSX.utils.sheet_to_json<unknown[]>(
-        wb.Sheets[firstSheet],
-        { header: 1, raw: false, defval: '' }
-      );
-      // Normalize to trimmed string cells; drop fully-blank rows.
-      const rows = excelRowsToStrings(aoa);
-      if (rows.length === 0) throw new Error('empty');
-      const res = await validateRowsImport(csvType, rows);
-      applyValidationResult(res);
-    } catch {
-      setCsvErrors([{ row: 0, message: t(locale, 'imports.failedToRead') }]);
-    }
-  }
-
   function handleFile(file: File | undefined) {
     setCsvMsg(null);
     setCsvValid([]);
@@ -185,12 +161,11 @@ export default function ImportsClient({
     setCsvFileName(null);
     if (!file) return;
     setCsvFileName(file.name);
-    const isExcel = /\.(xlsx|xls)$/i.test(file.name);
+    // 2026-10-15: Excel (.xlsx/.xls) import removed — the `xlsx` (SheetJS)
+    // package has unpatched high-severity advisories (GHSA-4r6h-8v6p-xvw6,
+    // GHSA-5pgg-2g8v-p4x9) with no fixed version. CSV opens natively in
+    // Excel / Sheets / LibreOffice, so users export from Excel as CSV.
     startCsv(async () => {
-      if (isExcel) {
-        await validateExcelFile(file);
-        return;
-      }
       const reader = new FileReader();
       const text = await new Promise<string>((resolve, reject) => {
         reader.onload = () => resolve(String(reader.result ?? ''));
@@ -362,7 +337,7 @@ export default function ImportsClient({
         )}
       </Card>
 
-      {/* ============ CSV / Excel ============ */}
+      {/* ============ CSV import ============ */}
       <Card className="p-6 space-y-5">
         <SectionTitle icon={Upload} title={t(locale, 'imports.csvTitle')} desc={t(locale, 'imports.csvDesc')} />
 
@@ -394,7 +369,7 @@ export default function ImportsClient({
             <input
               ref={fileRef}
               type="file"
-              accept=".csv,.xlsx,.xls,text/csv"
+              accept=".csv,text/csv"
               onChange={(e) => handleFile(e.target.files?.[0])}
               className="text-sm text-zinc-600 file:mr-3 file:rounded-lg file:border-0 file:bg-zinc-100 file:px-3 file:py-2 file:text-sm file:font-semibold hover:file:bg-zinc-200"
             />
