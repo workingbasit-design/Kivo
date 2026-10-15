@@ -78,6 +78,33 @@ library-agnostic; only the renderer module changes.
 Invoice variant: "INVOICE INV-0031", due date, "Balance owing", payment
 history table, deposit paid line.
 
+## Mobile entry points (390px ASCII)
+
+The PDF is generated server-side; the mobile UI is the download/share
+entry point on the quote/invoice page (app) and on the customer portal link
+(F1).
+
+```
++--------------------------------------+
+|  < Quote Q-1042                       |
+|                                      |
+|  Drain cleaning         $149.00      |
+|  Camera inspection       $89.00      |
+|  Subtotal               $238.00      |
+|  GST (5%)                $11.90      |
+|  Total                  $249.90      |
+|                                      |
+|  [ Download PDF ]                    |
+|  [ Share link ]   [ Copy link ]       |
+|                                      |
+|  Status: SENT · Viewed 2h ago        |
++--------------------------------------+
+```
+
+Customer portal (F1) shows the same [ Download PDF ] button under the
+document; the file name is `Quote-Q-1042-<Business>.pdf` /
+`Invoice-INV-0031-<Business>.pdf`.
+
 ## CRA input tax credit requirements
 
 Per the CRA (verify current list at build time — do not rely on memory),

@@ -37,6 +37,48 @@ real (via provider), templates editable, and adds the full event set.
 - As a customer, every message says who it's from and how to reach them;
   I can reply STOP to opt out of texts.
 
+## Screens (390px ASCII)
+
+### Automation settings
+
+```
++--------------------------------------+
+|  < Automatic messages                 |
+|                                      |
+|  Reminders                           |
+|  [x] 24h reminder (text + email)     |
+|  [x] On-my-way with ETA (text)       |
+|  [ ] Quote follow-up day 2 (email)   |
+|  [x] Quote follow-up day 7 (email)   |
+|                                      |
+|  Invoicing                           |
+|  [x] Invoice reminder +7d (email)    |
+|  [x] Invoice reminder +14d (text)    |
+|  [x] Review request after payment    |
+|                                      |
+|  Quiet hours: texts 8:00–20:00 local |
+|  [ Edit templates ]                  |
++--------------------------------------+
+```
+
+### Template editor
+
+```
++--------------------------------------+
+|  < 24h reminder            [EN|FR]   |
+|                                      |
+|  Hi {customerName}, this is           |
+|  {businessName}. {techName} is        |
+|  coming {date} at {time}. Reply      |
+|  STOP to opt out.                    |
+|  _____________________________       |
+|  Variables: +customerName +date      |
+|  +time +businessName +techName       |
+|                                      |
+|  [ Preview ]      [ Save ]           |
++--------------------------------------+
+```
+
 ## Message catalog
 
 | Event | Default | Channel |

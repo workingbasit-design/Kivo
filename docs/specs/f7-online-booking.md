@@ -35,6 +35,49 @@ booking flow, and the widget.
   decline with one tap.
 - As an owner, I copy an embed snippet (`<iframe>`) for my own website.
 
+## Screens (390px ASCII)
+
+### Public booking page (no login)
+
+```
++--------------------------------------+
+|  Maple Leaf Plumbing                 |
+|  Book online · Toronto ON            |
+|                                      |
+|  Choose a service                    |
+|  (o) Drain cleaning · 60m · $149     |
+|  ( ) Camera inspection · 45m · $89   |
+|                                      |
+|  Pick a day                          |
+|  [<] Week of Nov 2          [>]      |
+|  M  T  W  T  F  S  S                 |
+|  2  3  4  5  6  -  -                 |
+|                                      |
+|  Available times (Tue Nov 3)         |
+|  [9:00] [10:30] [13:00] [14:30]     |
+|                                      |
+|  Your details                        |
+|  Name [____________]                 |
+|  Phone [____________]                |
+|  Address [____________]              |
+|                                      |
+|  [ Request booking ]                 |
++--------------------------------------+
+```
+
+### Owner approval (in app)
+
+```
++--------------------------------------+
+|  New booking request                 |
+|  Drain cleaning · Tue Nov 3, 9:00    |
+|  Jane Doe · (416) 555-0100           |
+|  456 Oak Ave                         |
+|                                      |
+|  [ Approve ]  [ Decline ]            |
++--------------------------------------+
+```
+
 ## Availability engine
 
 Slot = service duration + buffer, within working hours, not overlapping

@@ -16,6 +16,35 @@ Every number links to the records behind it. CSV export.
 Report builder exists at `src/app/(app)/reports/` (partial). F9 completes
 the six required reports with drill-down.
 
+## Screens (390px ASCII)
+
+```
++--------------------------------------+
+|  < Reports              [Export CSV] |
+|                                      |
+|  [Revenue] AR aging  Profit  Tax    |
+|                                      |
+|  Revenue · 2026                      |
+|  Invoiced  Collected                 |
+|  ████ 12.4k  ████ 11.8k             |
+|  Jan Feb Mar Apr May Jun             |
+|                                      |
+|  Oct 2026                            |
+|  Invoiced:   $4,210.00  [view >]    |
+|  Collected:  $3,890.00  [view >]    |
+|                                      |
+|  AR aging                            |
+|  Current      $1,200.00  [view >]    |
+|  1–30 days      $840.00  [view >]    |
+|  31–60 days     $320.00  [view >]    |
+|  61–90 days       $0.00              |
+|  90+ days       $150.00  [view >]    |
++--------------------------------------+
+```
+
+Tapping [view >] opens the filtered invoice/customer list. Every figure is
+a link to its underlying records.
+
 ## Reports
 
 1. **Revenue:** invoiced vs collected by month (bar + table).

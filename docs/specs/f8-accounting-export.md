@@ -26,6 +26,32 @@ F8 v1 adds properly-shaped exports; v2 is explicitly a later session.
 - As an owner, each export includes a reconciliation summary (counts,
   totals) so I can verify nothing was lost.
 
+## Screens (390px ASCII)
+
+```
++--------------------------------------+
+|  < Accounting export                  |
+|                                      |
+|  Export for                          |
+|  (o) QuickBooks Online               |
+|  ( ) Xero                            |
+|  ( ) Wave                            |
+|                                      |
+|  Date range                          |
+|  From [2026-01-01]                   |
+|  To   [2026-10-15]                   |
+|                                      |
+|  Include                             |
+|  [x] Customers  [x] Invoices         |
+|  [x] Payments   [x] Tax summary      |
+|                                      |
+|  [ Download CSV files ]              |
+|                                      |
+|  Last export: Oct 1, 2026            |
+|  42 invoices · $12,480.00 · OK      |
++--------------------------------------+
+```
+
 ## Export formats (v1)
 
 | Target | Format |

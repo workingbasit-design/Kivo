@@ -11,6 +11,29 @@ existing feature surface — no new flags needed except where noted).
 - Dismissed items stay dismissed per user (`DismissedCard`: userId,
   businessId, cardKey).
 
+### Dashboard with "Ready to invoice" (390px ASCII)
+
+```
++--------------------------------------+
+|  Good morning, Karim                 |
+|  Tue Oct 15 · 3 visits today        |
+|                                      |
+|  +---------------+ +---------------+ |
+|  | Today's visits| | Overdue       | |
+|  |       3       | |       2       | |
+|  +---------------+ +---------------+ |
+|  +---------------+ +---------------+ |
+|  | Ready to      | | Collected     | |
+|  | invoice (4)   | | $3,890 Oct    | |
+|  +---------------+ +---------------+ |
+|                                      |
+|  Ready to invoice              [ > ] |
+|  J-2041 Drain cleaning  $149.00     |
+|  J-2038 Camera inspect   $89.00     |
+|  + 2 more                            |
++--------------------------------------+
+```
+
 ## Quotes
 - Optional line items (selectable in F1 portal; stored per quote).
 - Reusable templates (save quote as template; new from template).

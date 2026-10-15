@@ -26,6 +26,42 @@ fixtures, never real emails.
 - As a customer, my invoice tells me exactly where to send the e-Transfer
   and what to put in the message.
 
+## Screens (390px ASCII)
+
+### Invoice shows e-Transfer instructions
+
+```
++--------------------------------------+
+|  < Invoice INV-0031                   |
+|  Balance owing: $249.90              |
+|                                      |
+|  Pay by e-Transfer                    |
+|  Send to: pay@mapleleaf.ca           |
+|  Amount: $249.90                     |
+|  Message: EJ-7K2P                    |
+|  [ Copy details ]                    |
+|                                      |
+|  Your payment is matched              |
+|  automatically — usually within       |
+|  an hour.                            |
++--------------------------------------+
+```
+
+### Owner: match review
+
+```
++--------------------------------------+
+|  < e-Transfer matching                |
+|                                      |
+|  ● $249.90 · EJ-7K2P · Matched      |
+|    INV-0031 · 10:42            [ > ] |
+|  ● $189.00 · (no code) · Review     |
+|    Possible: INV-0028          [ > ] |
+|  ○ $60.00 · EJ-9Q1A · Unmatched    |
+|    2 days old                  [ > ] |
++--------------------------------------+
+```
+
 ## Flow
 
 1. Invoice issued → reference code (e.g., `EJ-7K2P`) generated, shown on

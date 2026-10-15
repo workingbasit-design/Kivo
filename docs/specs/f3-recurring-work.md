@@ -42,6 +42,54 @@ requirement below; existing behavior must not regress.
 ### Customer
 - As a customer, I see my upcoming visits in the portal (F1).
 
+## Screens (390px ASCII)
+
+### New recurring job
+
+```
++--------------------------------------+
+|  < New recurring job                  |
+|                                      |
+|  Customer  [Jane Doe        v]       |
+|  Service   [Lawn mowing     v]       |
+|                                      |
+|  Repeats                             |
+|  (o) Weekly  ( ) Every 2 weeks       |
+|  ( ) Monthly ( ) Custom             |
+|                                      |
+|  Every [1] week(s) on                |
+|  [x]M [x]T [ ]W [x]T [ ]F [ ]S [ ]S |
+|                                      |
+|  Starts [2026-11-02]                |
+|  Ends   (o) After [12] visits       |
+|         ( ) On [        ]           |
+|         ( ) Never                    |
+|                                      |
+|  Billing                             |
+|  (o) Per visit  ( ) Monthly batch    |
+|  ( ) Seasonal flat                   |
+|                                      |
+|  [ Create 12 visits ]                |
++--------------------------------------+
+```
+
+### Series view (visit list)
+
+```
++--------------------------------------+
+|  < Lawn mowing · Jane Doe             |
+|  Weekly · 12 visits · $60/visit      |
+|                                      |
+|  Nov 2   Mon 9:00   Karim    [Edit]  |
+|  Nov 9   Mon 9:00   Karim    [Edit]  |
+|  Nov 16  Mon 9:00   —        [Edit]  |
+|  Nov 23  Mon 9:00   —    [Skipped]   |
+|  ...                                 |
+|                                      |
+|  [ Pause series ] [ End series ]     |
++--------------------------------------+
+```
+
 ## Repeat rules
 
 | Rule | Definition |

@@ -49,6 +49,42 @@ jobs (title/number), quotes, invoices — business-scoped, ranked, max 20
 results grouped by type. Debounced 200ms. No full-text engine (ILIKE on
 indexed columns; fine at this scale).
 
+## Screens (390px ASCII)
+
+### Notifications (bell)
+
+```
++--------------------------------------+
+|  < Notifications        [Mark all   ] |
+|                          [read]      |
+|                                      |
+|  ● Quote Q-1042 accepted             |
+|    Jane Doe · 2 min ago        [ > ] |
+|  ● Payment $249.90 received          |
+|    Invoice INV-0031 · 1h ago   [ > ] |
+|  ○ Booking request: Drain cleaning   |
+|    Tue Nov 3, 9:00 · 3h ago    [ > ] |
+|  ○ Invoice INV-0028 overdue (7d)     |
+|    $189.00 · yesterday         [ > ] |
++--------------------------------------+
+```
+
+### Global search (header)
+
+```
++--------------------------------------+
+|  [Search customers, jobs...      ]   |
+|                                      |
+|  Customers                           |
+|  Jane Doe · (416) 555-0100      [ > ]|
+|  Tremblay Inc · (514) 555-0101 [ > ]|
+|  Jobs                                |
+|  #J-2041 Drain cleaning · Nov 3 [ > ]|
+|  Invoices                            |
+|  INV-0031 · $249.90 · Unpaid    [ > ]|
++--------------------------------------+
+```
+
 ## Permissions
 
 | Action | Owner/Admin | Dispatcher | Technician |

@@ -28,6 +28,29 @@ as a bookkeeping helper — not tax advice, not a filing service.
 - As an owner, I photograph a receipt; the app suggests the tax amounts; I
   confirm.
 
+## Screens (390px ASCII)
+
+### Tax collected (per period)
+
+```
++--------------------------------------+
+|  < Sales tax              Q3 2026   |
+|                                      |
+|  Collected on invoices               |
+|  GST/HST               $1,842.10   |
+|  QST                     $412.55   |
+|  PST (BC)                 $96.00   |
+|                                      |
+|  Paid on expenses                    |
+|  GST/HST                 $310.40   |
+|  QST                      $68.10   |
+|                                      |
+|  Net owing               $1,972.15   |
+|                                      |
+|  [ Export for filing (CSV) ]         |
++--------------------------------------+
+```
+
 ## Place of supply
 
 Rate source: province/territory of the **service address** (not the

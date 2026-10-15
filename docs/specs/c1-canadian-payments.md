@@ -36,6 +36,47 @@ steps). `/api/pay/*` exists. C1 completes the payment surface.
 - As a customer, I pay the invoice by card or bank; PAD shows "Processing"
   until it clears (I’m told it takes a few days).
 
+## Screens (390px ASCII)
+
+### Pay invoice (customer portal)
+
+```
++--------------------------------------+
+|  < Invoice INV-0031                   |
+|  Balance owing: $249.90              |
+|                                      |
+|  Pay by                                |
+|  (o) Card  ( ) Bank (PAD)            |
+|                                      |
+|  Card number                          |
+|  [________________]                  |
+|  Expiry [______]  CVC [___]          |
+|                                      |
+|  [ Pay $249.90 ]                     |
+|                                      |
+|  Bank payments take 3–5 business     |
+|  days to clear.                      |
++--------------------------------------+
+```
+
+### Owner: payment settings
+
+```
++--------------------------------------+
+|  < Payment settings                   |
+|                                      |
+|  Stripe                              |
+|  Status: Connected (test)            |
+|  [ Connect with Stripe ]              |
+|                                      |
+|  Accept                              |
+|  [x] Cards  [x] Bank (PAD)          |
+|  [ ] Require deposit on quotes       |
+|                                      |
+|  Fees are paid by the business.      |
++--------------------------------------+
+```
+
 ## PAD specifics (Stripe)
 
 - Mandate collected at payment time (Stripe's Canadian PAD mandate text,
