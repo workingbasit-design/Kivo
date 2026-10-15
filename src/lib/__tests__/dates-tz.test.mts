@@ -62,14 +62,14 @@ test('P4-U-012: isJobOverdue — NEW/SCHEDULED/IN PROGRESS can be late; closed n
   assert.equal(isJobOverdue('SCHEDULED', undefined, m), false);
 });
 
-test('P4-U-012: isJobLate (job-status.ts) — NEW/SCHEDULED only; documents the IN PROGRESS discrepancy', () => {
-  // NOTE: isJobLate excludes IN PROGRESS while isJobOverdue includes it.
-  // Logged as P2 in docs/BUGS.md (BUG-P4-001); do not "fix" the test without
-  // a product decision — pin current behavior here.
+test('P4-U-012: isJobLate (job-status.ts) — NEW/SCHEDULED/IN PROGRESS (BUG-P4-001 fixed)', () => {
+  // 2026-10-15: unified per user decision ("Everywhere") — a past-due job
+  // that is still being worked is genuinely late; every screen must agree.
   const m = new Date('2026-10-15T12:00:00Z');
   assert.equal(isJobLate({ date: '2026-10-01', status: 'NEW' }, m, 'America/Toronto'), true);
   assert.equal(isJobLate({ date: '2026-10-01', status: 'SCHEDULED' }, m, 'America/Toronto'), true);
-  assert.equal(isJobLate({ date: '2026-10-01', status: 'IN PROGRESS' }, m, 'America/Toronto'), false);
+  assert.equal(isJobLate({ date: '2026-10-01', status: 'IN PROGRESS' }, m, 'America/Toronto'), true);
+  assert.equal(isJobLate({ date: '2026-10-01', status: 'COMPLETED' }, m, 'America/Toronto'), false);
 });
 
 test('P4-U-013: DST ends Sun 2026-11-01 — Toronto 25-hour day handled', () => {

@@ -68,8 +68,10 @@ export const JOB_STATUSES: readonly JobStatus[] = ALL_JOB_STATUSES;
 
 /** Statuses for which a past-due date renders the Late badge. Late is
  *  derived, never stored: a job is Late when its scheduled start is before
- *  today in the business's time zone and its status is New or Scheduled. */
-const LATE_ELIGIBLE_STATUSES: readonly string[] = ['NEW', 'SCHEDULED'];
+ *  today in the business's time zone and its status is New, Scheduled, or
+ *  In Progress (2026-10-15: unified per BUG-P4-001 — an in-progress job past
+ *  its date is genuinely late, and every screen must agree). */
+const LATE_ELIGIBLE_STATUSES: readonly string[] = ['NEW', 'SCHEDULED', 'IN PROGRESS'];
 
 const JOB_STATUS_LABELS_EN: Record<string, string> = {
   NEW: 'New',
@@ -100,8 +102,9 @@ export function jobStatusLabel(status: string, locale: 'en' | 'fr' = 'en'): stri
 
 /**
  * True when a job's date is before today (in the given IANA timezone) and
- * its status is New or Scheduled. Calendar-day comparison: a job due today
- * is not late; a job due yesterday or earlier with an open status is.
+ * its status is New, Scheduled, or In Progress. Calendar-day comparison: a
+ * job due today is not late; a job due yesterday or earlier with an open
+ * status is.
  *
  * Uses the business timezone (not server UTC) so a job dated "today" can't
  * flip Late in the evening when UTC has already rolled to tomorrow.

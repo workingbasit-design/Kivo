@@ -201,8 +201,8 @@ export async function getUpcomingJobs(
 
 /** Past-date open jobs — Schedule overdue section. These are invisible in
  *  the week grid (they are not in the current week) but the owner must see
- *  them. Includes IN PROGRESS (unlike isJobLate, which is NEW/SCHEDULED
- *  only) so in-progress work that slipped is not hidden. */
+ *  them. Includes IN PROGRESS so in-progress work that slipped is not hidden
+ *  (consistent with isJobLate since BUG-P4-001, 2026-10-15). */
 export async function getOverdueJobs(
   businessId: string,
   before: Date,

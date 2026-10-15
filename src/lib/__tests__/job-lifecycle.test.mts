@@ -95,12 +95,14 @@ test('isJobLate: DST fallback Sunday Nov 1 2026 (America/St_Johns)', () => {
   assert.equal(isJobLate(job, D('2026-11-02T14:00:00Z'), 'America/St_Johns'), true);
 });
 
-test('isJobLate: finished/cancelled/in-progress jobs are never late', () => {
+test('isJobLate: finished/cancelled jobs are never late; IN PROGRESS past-due IS late (BUG-P4-001 "Everywhere")', () => {
   const now = D('2026-10-13T12:00:00Z');
   const past = D('2026-10-10T16:00:00Z');
-  for (const s of ['COMPLETED', 'PAID', 'CANCELLED', 'IN PROGRESS']) {
+  for (const s of ['COMPLETED', 'PAID', 'CANCELLED']) {
     assert.equal(isJobLate({ date: past, status: s }, now, 'America/Toronto'), false, s);
   }
+  // 2026-10-15 user decision: past-due IN PROGRESS jobs show Late everywhere.
+  assert.equal(isJobLate({ date: past, status: 'IN PROGRESS' }, now, 'America/Toronto'), true, 'IN PROGRESS');
 });
 
 test('isJobLate: future dates and missing dates are not late', () => {

@@ -372,3 +372,12 @@ Pushed via exact_push.py (252acadb, tree byte-identical), CI validate green on d
    exists (checklist items 3-5 impossible); no RLS-violation monitoring.
    FORCING today would fail-closed into a total outage. Activation is a
    project, not a switch - presented to user for decision.
+
+## 2026-10-15 ~04:30 UTC — Prompt 4 complete, pushed to main
+- Full test system implemented per docs/plans/testing.md (user approved "OK").
+- Pushed: remote main 05a40305 (42 files, tree verified byte-identical).
+- Unit: 1268/1268 pass, 0 skipped. Playwright: 1359 listed x 3 device projects.
+- CI: validate + audit + db-tests (postgres:18) + e2e (report/trace artifacts).
+- BUGS.md: BUG-P4-001 (P2, Late badge IN PROGRESS discrepancy — awaiting user decision).
+- docs/MANUAL_QA.md + docs/TEST_REPORT.md written.
+- Status: implementation complete, awaiting user review (per Prompt 4: stop and wait).
