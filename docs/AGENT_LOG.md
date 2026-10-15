@@ -325,3 +325,30 @@ Production deployment **READY**: `dpl_8p19ZAUMxv225iigAqUzmrtc7bAb` (commit `486
 - Invoices page works; CSP nonce header + HSTS + X-Frame-Options live (B2 verified in production headers).
 - Settings → Online payments: "Connect with Stripe" button present and rendered.
 - No invoice rows deleted by any migration (m1–m13 contain no DELETEs on business data).
+
+## 2026-10-15 ~02:10 UTC - Voice mode, voice revalidation, mobile layout fixes (commit 252acadb)
+Deployed: dpl_Fuk7DGba8GeSe8YaZBMG9hKYZ9kc (manual create_deployment, target production) - READY.
+Verified live: Permissions-Policy now serves microphone=(self).
+
+1. Voice mode not working (user phone report): root cause was Permissions-Policy
+   `microphone=()` in next.config.ts - recognition started but captured no audio.
+   Changed to `microphone=(self)` (copilot voice button is app-wide, so (self)
+   is the correct scope; third-party iframes still denied). Recorded in
+   SECURITY_REPORT.md B2.
+2. VoiceModeClient hardening: every SpeechRecognition error now ends with a
+   clear user message (was: only not-allowed handled, all else hung on
+   "Listening..." forever); 15s no-result watchdog; auto-restart capped at 4;
+   listening UI shows pulsing mic instead of the confusing muted-mic icon;
+   error banner with role=alert; router.refresh() after successful actions.
+   New i18n keys voice.micDenied/voice.noSpeech/voice.micError (en/fr).
+3. Voice status updates not propagating: revalidateJobPaths() and addJobNote()
+   now revalidate /voice; client calls router.refresh() after mutations.
+4. Bookkeeping "false data" (user phone report): NOT false data. totalRevenue is
+   derived as the sum of the monthly buckets, so cards and table cannot disagree;
+   the $708 is the September 2026 collected revenue, hidden behind the floating
+   tab bar at that scroll position. Fixed the layout so nothing hides: month
+   table min-w 420px -> 300px with tighter mobile cell padding (fits 390px
+   without horizontal scroll); expense form 2-col grids got min-w-0 so date/select
+   inputs no longer overflow the card on narrow screens.
+Gates: tsc clean, lint 0 errors, 1205/1205 tests pass, next build OK.
+Pushed via exact_push.py (252acadb, tree byte-identical), CI validate green on dc18ce2.
