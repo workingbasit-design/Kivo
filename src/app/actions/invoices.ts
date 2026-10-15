@@ -381,16 +381,19 @@ export async function voidPayment(
     return { error: 'Please provide a reason (at least 10 characters) for voiding this payment.' };
   }
 
-  // BISECT (morning QA 2026-10-15): isolate the #441. Remove after diagnosis.
-  const c = await prisma.payment.count();
-  return { error: 'BISECT: count ok, c=' + c };
-
-  /* BISECTED OUT
+  // Tenant guard (src/lib/tenant-guard.ts) FAILS CLOSED: Payment queries
+  // MUST carry top-level where.businessId. The original
+  // `where: { id, invoice: { businessId } }` (nested-only) and
+  // `where: { id }` both threw TenantScopeError (surfaced as React #441).
+  const payment = await prisma.payment.findFirst({
+    where: { id, businessId },
+    select: { id: true, voidedAt: true, status: true },
+  });
   if (!payment) return { error: 'Payment not found.' };
   if (payment.voidedAt || payment.status === 'VOID') return { error: 'This payment is already voided.' };
 
   await prisma.payment.update({
-    where: { id },
+    where: { id, businessId },
     // M10: status='VOID' is the single source of truth; voidedAt/voidReason
     // stay as the audit fields.
     data: { status: 'VOID', voidedAt: new Date(), voidReason: reason },
@@ -399,7 +402,6 @@ export async function voidPayment(
   revalidatePath('/invoices');
   revalidatePath('/dashboard');
   return { ok: true };
-  */
 }
 
 /**
