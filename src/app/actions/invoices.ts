@@ -381,6 +381,9 @@ export async function voidPayment(
     return { error: 'Please provide a reason (at least 10 characters) for voiding this payment.' };
   }
 
+  // DEBUG (morning QA 2026-10-15): bisect the #441 - return before DB.
+  return { ok: true, debug: 'early-return' } as ActionResult;
+
   const payment = await prisma.payment.findFirst({
     where: { id, invoice: { businessId } },
     select: { id: true, voidedAt: true, status: true },
@@ -393,6 +396,11 @@ export async function voidPayment(
     // M10: status='VOID' is the single source of truth; voidedAt/voidReason
     // stay as the audit fields.
     data: { status: 'VOID', voidedAt: new Date(), voidReason: reason },
+  }).catch((e) => {
+    // Morning QA 2026-10-15: surface DB errors as action errors (not a bare
+    // 500) so the UI can show what went wrong.
+    logger.error({ err: e, paymentId: id }, 'voidPayment: prisma update failed');
+    throw new Error('Could not void the payment. Please try again.');
   });
 
   revalidatePath('/invoices');
