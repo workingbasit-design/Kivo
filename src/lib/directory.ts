@@ -1,6 +1,6 @@
 import { headers } from 'next/headers';
-import { validatePhone } from './phone';
-import { clientIpFromHeaders } from './client-ip';
+import { validatePhone } from './phone.ts';
+import { clientIpFromHeaders } from './client-ip.ts';
 
 /**
  * Shared helpers for the public EveryJob Directory (customer-discovery layer).

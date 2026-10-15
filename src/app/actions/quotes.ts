@@ -11,6 +11,7 @@ import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { dollarsToCents, centsToDollars, formatCents } from '@/lib/money';
 import { nextDocumentNumber } from '@/lib/numbering';
 import { getTaxConfig } from '@/lib/tax';
+import { QUOTE_TRANSITIONS } from '@/lib/quote-status';
 import { computeQuoteTotals, type DiscountType } from '@/lib/quote-totals';
 import { parseDepositAmount } from '@/lib/quote-deposit';
 import {
@@ -347,13 +348,6 @@ export async function recordQuoteDeposit(
   revalidatePath(`/quotes/${quoteId}`);
   return { ok: true };
 }
-
-const QUOTE_TRANSITIONS: Record<string, string[]> = {
-  DRAFT: ['SENT', 'DECLINED'],
-  SENT: ['DRAFT', 'APPROVED', 'DECLINED'],
-  APPROVED: [],
-  DECLINED: ['DRAFT'],
-};
 
 /** Move a quote through DRAFT → SENT → APPROVED / DECLINED. */
 export async function updateQuoteStatus(

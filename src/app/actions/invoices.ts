@@ -10,6 +10,7 @@ import { requireAuth } from '@/lib/auth';
 import { invoiceSchema, paymentSchema, INVOICE_STATUSES } from '@/lib/validations';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { dollarsToCents, centsToDollars, formatCents } from '@/lib/money';
+import { deriveInvoiceStatus } from '@/lib/invoice-status';
 import { nextDocumentNumber } from '@/lib/numbering';
 import {
   getTaxConfig,
@@ -448,10 +449,9 @@ export async function createCreditNote(
   return { ok: true };
 }
 
+/** Invoice payment status is derived from money — see src/lib/invoice-status.ts. */
 function deriveStatus(totalCents: bigint, paidCents: bigint): string {
-  if (paidCents >= totalCents) return 'PAID';
-  if (paidCents > BigInt(0)) return 'PARTIALLY PAID';
-  return 'UNPAID';
+  return deriveInvoiceStatus(totalCents, paidCents);
 }
 
 /**
