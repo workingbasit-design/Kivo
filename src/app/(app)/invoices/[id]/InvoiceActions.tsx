@@ -15,7 +15,7 @@ import {
 import { isValidVoidReason } from '@/lib/voiding';
 import { Field, inputClass, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
 import ConfirmDialog from '@/components/ConfirmDialog';
-import { currencySymbol, formatMoney } from '@/lib/money';
+import { currencySymbol, formatMoney, centsToDollars } from '@/lib/money';
 
 /**
  * Fires a toast exactly once per server-action result. Minimal inline
@@ -54,12 +54,21 @@ export default function InvoiceActions({
   remaining,
   currency,
   locale = 'en',
+  payments = [],
 }: {
   id: string;
   status: string;
   remaining: number;
   currency: string;
   locale?: Locale;
+  /**
+   * Payments for the void-payment controls (morning QA 2026-10-15).
+   * Rendered here (client component) rather than in page.tsx's server-side
+   * .map(): a useActionState button inside the server map 500'd with
+   * React #441 on production (useActionState's internal Suspense exception
+   * misbehaves there).
+   */
+  payments?: { id: string; status: string; amountCents: number | bigint }[];
 }) {
   const [payState, payAction, payPending] = useActionState<ActionResult, FormData>(
     recordPayment,
@@ -204,6 +213,30 @@ export default function InvoiceActions({
           </div>
         )}
       </div>
+
+      {/* Voidable payments (client-component map; see payments prop note). */}
+      {payments.some((p) => p.status !== 'VOID') && (
+        <div className="border-t border-zinc-100 pt-3">
+          <p className="text-[11px] font-bold text-zinc-500 mb-2">
+            {t(locale, 't10money.invVoidPaymentSection')}
+          </p>
+          <ul className="space-y-2">
+            {payments
+              .filter((p) => p.status !== 'VOID')
+              .map((p) => (
+                <li
+                  key={p.id}
+                  className="flex items-center justify-between text-sm"
+                >
+                  <span className="font-semibold tabular-nums text-zinc-900">
+                    {formatMoney(centsToDollars(p.amountCents), currency)}
+                  </span>
+                  <VoidPaymentButton paymentId={p.id} locale={locale} />
+                </li>
+              ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }

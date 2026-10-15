@@ -89,6 +89,7 @@ const MONEY_KEYS = [
   't10money.invVoiding',
   't10money.invVoided',
   't10money.invVoidPayment',
+  't10money.invVoidPaymentSection',
   't10money.invVoidPaymentTitle',
   't10money.invVoidPaymentMsg',
   't10money.invPaymentVoided',

@@ -158,6 +158,7 @@ const fragment = {
       invVoiding: 'Voiding…',
       invVoided: 'Invoice voided',
       invVoidPayment: 'Void payment',
+      invVoidPaymentSection: 'Void a recorded payment',
       invVoidPaymentTitle: 'Void this payment?',
       invVoidPaymentMsg:
         'The payment stays on record as voided. Totals and reports will exclude it.',
@@ -595,6 +596,7 @@ const fragment = {
       invVoiding: 'Annulation…',
       invVoided: 'Facture annulée',
       invVoidPayment: 'Annuler le paiement',
+      invVoidPaymentSection: 'Annuler un paiement enregistré',
       invVoidPaymentTitle: 'Annuler ce paiement?',
       invVoidPaymentMsg:
         'Le paiement reste au dossier comme annulé. Les totaux et les rapports l’excluront.',

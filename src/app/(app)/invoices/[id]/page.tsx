@@ -18,7 +18,7 @@ import {
   revokeInvoiceShareLink,
   setInvoiceShareLinkExpiry,
 } from '@/app/actions/invoices';
-import InvoiceActions, { VoidPaymentButton } from './InvoiceActions';
+import InvoiceActions from './InvoiceActions';
 import InvoicePayButton from '@/components/InvoicePayButton';
 import ShareTokenManager from '@/components/ShareTokenManager';
 import PrintButton from './PrintButton';
@@ -267,9 +267,6 @@ export default async function InvoiceDetailPage({
                 </div>
                 <div className="flex items-center gap-2">
                   <StatusBadge status={p.status} locale={locale} />
-                  {p.status !== 'VOID' && (
-                    <VoidPaymentButton paymentId={p.id} locale={locale} />
-                  )}
                 </div>
               </li>
             ))}
@@ -284,6 +281,11 @@ export default async function InvoiceDetailPage({
           remaining={remaining}
           currency={currency}
           locale={locale}
+          payments={invoice.payments.map((p) => ({
+            id: p.id,
+            status: p.status,
+            amountCents: p.amountCents,
+          }))}
         />
       </Card>
 
