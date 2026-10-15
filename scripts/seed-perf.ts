@@ -95,7 +95,7 @@ async function main() {
            (SELECT count(*) FROM "Invoice" WHERE "businessId"='perf-biz') AS invoices,
            (SELECT count(*) FROM "Payment" WHERE "businessId"='perf-biz') AS payments,
            (SELECT count(*) FROM "Quote" WHERE "businessId"='perf-biz') AS quotes
-  `)) as any[];
+  `)) as Array<Record<string, unknown>>;
   console.log('seeded:', counts[0]);
 }
 

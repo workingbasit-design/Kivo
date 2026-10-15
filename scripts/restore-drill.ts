@@ -32,7 +32,7 @@ async function main() {
     `SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE' AND table_name NOT LIKE '\\_prisma%' ORDER BY table_name`
   )) as Array<{ table_name: string }>;
   log(`extract: ${tables.length} tables`);
-  const dump = new Map<string, { cols: string[]; rows: any[][] }>();
+  const dump = new Map<string, { cols: string[]; rows: unknown[][] }>();
   for (const { table_name } of tables) {
     const cols = (await src.$queryRawUnsafe(
       `SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name='${table_name}' ORDER BY ordinal_position`
@@ -40,7 +40,7 @@ async function main() {
     const colNames = cols.map((c) => c.column_name);
     const rows = (await src.$queryRawUnsafe(
       `SELECT ${colNames.map((c) => `"${c}"`).join(',')} FROM "${table_name}"`
-    )) as any[];
+    )) as Array<Record<string, unknown>>;
     dump.set(table_name, { cols: colNames, rows: rows.map((r) => colNames.map((c) => r[c])) });
   }
   const totalRows = [...dump.values()].reduce((n, t) => n + t.rows.length, 0);
@@ -66,7 +66,7 @@ async function main() {
     const colList = cols.map((c) => `"${c}"`).join(',');
     for (let i = 0; i < rows.length; i += 500) {
       const batch = rows.slice(i, i + 500);
-      const params: any[] = [];
+      const params: unknown[] = [];
       const tuples = batch.map((row) => {
         const ph = row.map((v) => {
           params.push(v instanceof Date ? v : v);
@@ -81,8 +81,9 @@ async function main() {
           `INSERT INTO "${table}" (${colList}) VALUES ${tuples.join(',')} ON CONFLICT DO NOTHING`,
           ...params
         );
-      } catch (e: any) {
-        console.log(`LOAD FAILED at ${table} batch ${i}:`, String(e?.message ?? e).slice(0, 300), 'code=', e?.code);
+      } catch (e: unknown) {
+        const err = e as { message?: unknown; code?: unknown } | null;
+        console.log(`LOAD FAILED at ${table} batch ${i}:`, String(err?.message ?? e).slice(0, 300), 'code=', err?.code);
         throw e;
       }
     }
@@ -105,7 +106,7 @@ async function main() {
   )) as Array<{ n: number }>;
   const spot2 = (await dst.$queryRawUnsafe(
     `SELECT "number","totalCents" FROM "Invoice" WHERE "businessId"='perf-biz' AND "status"='UNPAID' ORDER BY "dueAt" LIMIT 3`
-  )) as any[];
+  )) as Array<{ number: string; totalCents: number }>;
   log(`verify: ${mismatches} mismatches; spot-check perf jobs=${spot[0].n}, unpaid invoices sample=${spot2.length}`);
   if (mismatches > 0 || spot[0].n !== 10000 || spot2.length === 0) throw new Error('VERIFY FAILED');
 

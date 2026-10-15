@@ -22,7 +22,7 @@
  */
 import { describe, it, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 
 const TEST_URL = process.env.TEST_DATABASE_URL;
 const TESTER_ROLE = 'rls_tester';
@@ -47,8 +47,8 @@ describe('M11 RLS staging gate', () => {
   let bizB = '';
 
   /** Run fn inside one transaction with app.business_id set (or unset). */
-  async function asTenant<T>(businessId: string | null, fn: (tx: any) => Promise<T>): Promise<T> {
-    return tester.$transaction(async (tx: any) => {
+  async function asTenant<T>(businessId: string | null, fn: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T> {
+    return tester.$transaction(async (tx: Prisma.TransactionClient) => {
       if (businessId) {
         await tx.$executeRawUnsafe(`SET LOCAL app.business_id = '${businessId}'`);
       }
@@ -134,41 +134,41 @@ describe('M11 RLS staging gate', () => {
   it('gate tables: same-tenant reads see only own rows', async () => {
     await setup();
     const jobs = await asTenant(bizA, (tx) =>
-      tx.$queryRawUnsafe(`SELECT "title" FROM "Job" ORDER BY "title"`)
+      tx.$queryRawUnsafe<Array<{ title: string }>>(`SELECT "title" FROM "Job" ORDER BY "title"`)
     );
-    assert.deepEqual(jobs.map((r: any) => r.title), ['RLS Job A']);
+    assert.deepEqual(jobs.map((r) => r.title), ['RLS Job A']);
 
     const invoices = await asTenant(bizA, (tx) =>
-      tx.$queryRawUnsafe(`SELECT "number" FROM "Invoice"`)
+      tx.$queryRawUnsafe<Array<{ number: string }>>(`SELECT "number" FROM "Invoice"`)
     );
-    assert.deepEqual(invoices.map((r: any) => r.number), ['RLS-A-1']);
+    assert.deepEqual(invoices.map((r) => r.number), ['RLS-A-1']);
 
     const customers = await asTenant(bizB, (tx) =>
-      tx.$queryRawUnsafe(`SELECT "name" FROM "Customer"`)
+      tx.$queryRawUnsafe<Array<{ name: string }>>(`SELECT "name" FROM "Customer"`)
     );
-    assert.deepEqual(customers.map((r: any) => r.name), ['RLS Cust B']);
+    assert.deepEqual(customers.map((r) => r.name), ['RLS Cust B']);
   });
 
   it('gate tables: cross-tenant reads return nothing (fail-closed)', async () => {
     // Tenant A asks for tenant B's job explicitly — policy hides it.
     const rows = await asTenant(bizA, (tx) =>
-      tx.$queryRawUnsafe(`SELECT "id" FROM "Job" WHERE "title" = 'RLS Job B'`)
+      tx.$queryRawUnsafe<Array<{ id: string }>>(`SELECT "id" FROM "Job" WHERE "title" = 'RLS Job B'`)
     );
     assert.equal(rows.length, 0);
   });
 
   it('gate tables: unset setting sees nothing', async () => {
     const rows = await asTenant(null, (tx) =>
-      tx.$queryRawUnsafe(`SELECT "id" FROM "Job"`)
+      tx.$queryRawUnsafe<Array<{ id: string }>>(`SELECT "id" FROM "Job"`)
     );
     assert.equal(rows.length, 0);
   });
 
   it('gate tables: cross-tenant INSERT is rejected (WITH CHECK)', async () => {
     const custA = await asTenant(bizA, (tx) =>
-      tx.$queryRawUnsafe(`SELECT "id" FROM "Customer" LIMIT 1`)
+      tx.$queryRawUnsafe<Array<{ id: string }>>(`SELECT "id" FROM "Customer" LIMIT 1`)
     );
-    const custId = (custA[0] as any).id;
+    const custId = custA[0].id;
     await assert.rejects(
       asTenant(bizA, (tx) =>
         tx.$queryRawUnsafe(
@@ -187,7 +187,7 @@ describe('M11 RLS staging gate', () => {
     assert.equal(n, 0);
     // And the row is untouched.
     const check = await asTenant(bizB, (tx) =>
-      tx.$queryRawUnsafe(`SELECT "title" FROM "Job" WHERE "title" = 'RLS Job B'`)
+      tx.$queryRawUnsafe<Array<{ title: string }>>(`SELECT "title" FROM "Job" WHERE "title" = 'RLS Job B'`)
     );
     assert.equal(check.length, 1);
   });
@@ -195,9 +195,9 @@ describe('M11 RLS staging gate', () => {
   it('gate tables: same-tenant INSERT and UPDATE work', async () => {
     const id = `rls-own-${Date.now()}`;
     const custA = await asTenant(bizA, (tx) =>
-      tx.$queryRawUnsafe(`SELECT "id" FROM "Customer" LIMIT 1`)
+      tx.$queryRawUnsafe<Array<{ id: string }>>(`SELECT "id" FROM "Customer" LIMIT 1`)
     );
-    const custId = (custA[0] as any).id;
+    const custId = custA[0].id;
     await asTenant(bizA, (tx) =>
       tx.$queryRawUnsafe(
         `INSERT INTO "Job" ("id","businessId","customerId","title","status","date","priceCents","createdAt","updatedAt") ` +
@@ -215,19 +215,19 @@ describe('M11 RLS staging gate', () => {
 
   it('parent-linked tables: InvoiceLineItem isolated via Invoice', async () => {
     const rowsA = await asTenant(bizA, (tx) =>
-      tx.$queryRawUnsafe(`SELECT "description" FROM "InvoiceLineItem"`)
+      tx.$queryRawUnsafe<Array<{ description: string }>>(`SELECT "description" FROM "InvoiceLineItem"`)
     );
-    assert.deepEqual(rowsA.map((r: any) => r.description), ['RLS line A']);
+    assert.deepEqual(rowsA.map((r) => r.description), ['RLS line A']);
     // Cross-tenant insert through the line item is rejected because the
     // parent invoice belongs to tenant B.
     const parentB = await asTenant(bizB, (tx) =>
-      tx.$queryRawUnsafe(`SELECT "id" FROM "Invoice" LIMIT 1`)
+      tx.$queryRawUnsafe<Array<{ id: string }>>(`SELECT "id" FROM "Invoice" LIMIT 1`)
     );
     await assert.rejects(
       asTenant(bizA, (tx) =>
         tx.$queryRawUnsafe(
           `INSERT INTO "InvoiceLineItem" ("id","invoiceId","description","qty","unitPriceCents","position") ` +
-            `VALUES ('rls-li-x','${(parentB[0] as any).id}','evil line',1,100,0)`
+            `VALUES ('rls-li-x','${parentB[0].id}','evil line',1,100,0)`
         )
       ),
       /row-level security|policy/i
