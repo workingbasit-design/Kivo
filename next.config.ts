@@ -27,7 +27,12 @@ const nextConfig: NextConfig = {
             // geolocation=(self): the technician's "share my location" toggle
             // needs foreground GPS on our own origin. It was previously
             // geolocation=(), which silently blocked every location ping.
-            value: "camera=(), microphone=(), geolocation=(self), payment=()",
+            // microphone=(self): voice input (the /voice page and the
+            // copilot's voice button, mounted app-wide) needs mic access on
+            // our own origin. It was previously microphone=(), which made
+            // voice mode sit on "Listening..." forever with no audio.
+            // Third-party iframes still get no mic/camera.
+            value: "camera=(), microphone=(self), geolocation=(self), payment=()",
           },
           { key: "X-DNS-Prefetch-Control", value: "on" },
         ],

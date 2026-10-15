@@ -97,7 +97,7 @@ export default function ExpenseForm({
           />
         </Field>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4 [&>*]:min-w-0">
           <Field label={T('amount')}>
             <input
               name="amount"
@@ -122,7 +122,7 @@ export default function ExpenseForm({
           </Field>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4 [&>*]:min-w-0">
           <Field label={T('category')}>
             <select
               name="category"

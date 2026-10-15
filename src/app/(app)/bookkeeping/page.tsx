@@ -104,27 +104,27 @@ export default async function BookkeepingPage() {
             </h2>
             <Card className="overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full text-sm min-w-[420px]">
+                <table className="w-full text-sm min-w-[300px]">
                   <thead>
                     <tr className="text-left text-xs text-zinc-500 border-b border-zinc-100">
-                      <th className="px-4 py-3 font-semibold">{t(locale, "bookkeeping.month")}</th>
-                      <th className="px-4 py-3 font-semibold text-right">{t(locale, "bookkeeping.collected")}</th>
-                      <th className="px-4 py-3 font-semibold text-right">{t(locale, "bookkeeping.spent")}</th>
-                      <th className="px-4 py-3 font-semibold text-right">{t(locale, "bookkeeping.net")}</th>
+                      <th className="px-3 py-2.5 sm:px-4 sm:py-3 font-semibold">{t(locale, "bookkeeping.month")}</th>
+                      <th className="px-3 py-2.5 sm:px-4 sm:py-3 font-semibold text-right">{t(locale, "bookkeeping.collected")}</th>
+                      <th className="px-3 py-2.5 sm:px-4 sm:py-3 font-semibold text-right">{t(locale, "bookkeeping.spent")}</th>
+                      <th className="px-3 py-2.5 sm:px-4 sm:py-3 font-semibold text-right">{t(locale, "bookkeeping.net")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-100">
                     {data.months.map((mo) => (
                       <tr key={mo.monthKey}>
-                        <td className="px-4 py-3 font-medium text-zinc-800">{mo.label}</td>
-                        <td className="px-4 py-3 text-right tabular-nums text-emerald-700 font-semibold">
+                        <td className="px-3 py-2.5 sm:px-4 sm:py-3 font-medium text-zinc-800">{mo.label}</td>
+                        <td className="px-3 py-2.5 sm:px-4 sm:py-3 text-right tabular-nums text-emerald-700 font-semibold">
                           {m(mo.revenue)}
                         </td>
-                        <td className="px-4 py-3 text-right tabular-nums text-zinc-600">
+                        <td className="px-3 py-2.5 sm:px-4 sm:py-3 text-right tabular-nums text-zinc-600">
                           {m(mo.expenses)}
                         </td>
                         <td
-                          className={`px-4 py-3 text-right tabular-nums font-bold ${mo.profit >= 0 ? "text-zinc-900" : "text-red-600"}`}
+                          className={`px-3 py-2.5 sm:px-4 sm:py-3 text-right tabular-nums font-bold ${mo.profit >= 0 ? "text-zinc-900" : "text-red-600"}`}
                         >
                           {m(mo.profit)}
                         </td>

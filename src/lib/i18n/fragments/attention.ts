@@ -183,6 +183,9 @@ const fragment = {
       completeJob: 'Complete job',
       tapHint: 'You can also just tap - every voice command has a button.',
       micPermission: 'Allow microphone access when the browser asks.',
+      micDenied: 'Microphone blocked - allow mic access in your browser settings, then tap again.',
+      noSpeech: "I didn't hear anything - try again in a quieter spot.",
+      micError: 'Microphone trouble - try again, or use the buttons below instead.',
     },
     cmdbar: {
       hint: 'Try “unpaid invoices”, “create quote for John Smith”…',
@@ -370,6 +373,9 @@ const fragment = {
       completeJob: 'Terminer le travail',
       tapHint: 'Vous pouvez aussi simplement toucher - chaque commande vocale a un bouton.',
       micPermission: 'Autorisez l’accès au micro quand le navigateur le demande.',
+      micDenied: 'Micro bloqué - autorisez l’accès au micro dans les réglages du navigateur, puis touchez de nouveau.',
+      noSpeech: 'Je n’ai rien entendu - réessayez dans un endroit plus calme.',
+      micError: 'Problème de micro - réessayez, ou utilisez les boutons ci-dessous.',
     },
     cmdbar: {
       hint: 'Essayez « factures impayées », « créer une soumission pour Jean Tremblay »…',

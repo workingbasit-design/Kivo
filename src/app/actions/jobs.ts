@@ -37,6 +37,7 @@ function revalidateJobPaths(jobId?: string) {
   revalidatePath('/jobs');
   revalidatePath('/schedule');
   revalidatePath('/dashboard');
+  revalidatePath('/voice');
   if (jobId) revalidatePath(`/jobs/${jobId}`);
 }
 
@@ -413,6 +414,7 @@ export async function addJobNote(
   });
 
   revalidatePath(`/jobs/${job.id}`);
+  revalidatePath('/voice');
   return { ok: true };
 }
 

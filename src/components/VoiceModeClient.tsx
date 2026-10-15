@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Mic, MicOff, Play, Check, StickyNote, Wrench } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Mic, Play, Check, StickyNote, Wrench } from "lucide-react";
 import { updateJobStatus, addJobNote } from "@/app/actions/jobs";
 import {
   parseVoiceCommand,
@@ -65,6 +66,11 @@ export default function VoiceModeClient({
   >(null);
   const recRef = useRef<SpeechRecognitionT | null>(null);
   const logId = useRef(0);
+  const restartsRef = useRef(0);
+  const watchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const heardResultRef = useRef(false);
+  const [voiceError, setVoiceError] = useState<string | null>(null);
+  const router = useRouter();
   const jobsRef = useRef(jobs);
   useEffect(() => {
     jobsRef.current = jobs;
@@ -89,6 +95,46 @@ export default function VoiceModeClient({
     logId.current += 1;
     setLog((l) => [{ id: logId.current, heard: heardText, result, ok }, ...l].slice(0, 10));
   }, []);
+
+  const clearWatchdog = useCallback(() => {
+    if (watchdogRef.current) {
+      clearTimeout(watchdogRef.current);
+      watchdogRef.current = null;
+    }
+  }, []);
+
+  // Stop listening and optionally tell the user why. Never leaves the UI
+  // stuck on "Listening..." - every failure path ends here with a message.
+  const stopListening = useCallback(
+    (msgKey: "micDenied" | "noSpeech" | "micError" | null) => {
+      clearWatchdog();
+      const rec = recRef.current;
+      recRef.current = null;
+      restartsRef.current = 0;
+      try {
+        rec?.stop();
+      } catch {
+        /* noop */
+      }
+      setListening(false);
+      if (msgKey) {
+        const msg = t(locale, `voice.${msgKey}`) as string;
+        setVoiceError(msg);
+        speak(msg);
+      }
+    },
+    [clearWatchdog, locale, speak]
+  );
+
+  const armWatchdog = useCallback(() => {
+    clearWatchdog();
+    heardResultRef.current = false;
+    // If the recognizer runs but nothing is ever heard (blocked mic,
+    // silent stub implementation), say so instead of hanging forever.
+    watchdogRef.current = setTimeout(() => {
+      if (!heardResultRef.current) stopListening("noSpeech");
+    }, 15000);
+  }, [clearWatchdog, stopListening]);
 
   const runAction = useCallback(
     async (action: VoiceAction, transcript: string) => {
@@ -146,6 +192,9 @@ export default function VoiceModeClient({
           pushLog(transcript, msg, true);
           speak(msg);
         }
+        // Refresh server data so the voice page's job list (and every other
+        // page on next navigation) shows the new status/note immediately.
+        router.refresh();
       } catch {
         const msg = t(locale, "common.retry");
         pushLog(transcript, msg, false);
@@ -155,7 +204,7 @@ export default function VoiceModeClient({
         setPending(null);
       }
     },
-    [locale, pushLog, speak]
+    [locale, pushLog, speak, router]
   );
 
   const handleTranscript = useCallback(
@@ -181,51 +230,75 @@ export default function VoiceModeClient({
 
   const toggleListening = useCallback(() => {
     if (listening) {
-      recRef.current?.stop();
-      setListening(false);
+      stopListening(null);
       return;
     }
     const Ctor = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!Ctor) return;
+    setVoiceError(null);
+    restartsRef.current = 0;
     const rec = new Ctor();
     rec.lang = locale === "fr" ? "fr-CA" : "en-CA";
     rec.continuous = true;
     rec.interimResults = true;
     rec.onresult = (e) => {
+      heardResultRef.current = true;
+      clearWatchdog();
+      restartsRef.current = 0;
       const last = e.results[e.results.length - 1];
       const transcript = last[0].transcript.trim();
       setHeard(transcript);
       if (last.isFinal && transcript) handleTranscript(transcript);
     };
     rec.onerror = (e) => {
-      if (e.error === "not-allowed") {
-        rec.stop();
+      const err = e.error || "";
+      if (err === "not-allowed" || err === "service-not-allowed") {
+        stopListening("micDenied");
+      } else if (err === "no-speech" || err === "audio-capture") {
+        stopListening("noSpeech");
+      } else if (err === "aborted") {
+        // Our own stop() - stay quiet.
+        clearWatchdog();
+        recRef.current = null;
+        restartsRef.current = 0;
         setListening(false);
+      } else {
+        // "network" and anything else: stop with a clear message instead
+        // of hanging on "Listening..." forever.
+        stopListening("micError");
       }
     };
     rec.onend = () => {
-      // Auto-restart while the toggle is on (mobile browsers stop often).
-      if (recRef.current === rec) {
+      clearWatchdog();
+      // Mobile browsers end recognition after short pauses; restart a few
+      // times, but never loop silently forever.
+      if (recRef.current === rec && restartsRef.current < 4) {
+        restartsRef.current += 1;
         try {
           rec.start();
+          armWatchdog();
         } catch {
-          setListening(false);
+          stopListening("micError");
         }
+      } else if (recRef.current === rec) {
+        stopListening("noSpeech");
       }
     };
     recRef.current = rec;
     try {
       rec.start();
       setListening(true);
+      armWatchdog();
     } catch {
-      setListening(false);
+      stopListening("micError");
     }
-  }, [listening, locale, handleTranscript]);
+  }, [listening, locale, handleTranscript, armWatchdog, clearWatchdog, stopListening]);
 
   useEffect(() => {
     return () => {
       const rec = recRef.current;
       recRef.current = null;
+      if (watchdogRef.current) clearTimeout(watchdogRef.current);
       try {
         rec?.stop();
       } catch {
@@ -253,12 +326,24 @@ export default function VoiceModeClient({
                 listening ? "bg-red-600 hover:bg-red-700" : "bg-ink hover:bg-graphite"
               )}
             >
-              {listening ? <MicOff size={36} /> : <Mic size={36} />}
+              {listening ? (
+                <Mic size={36} className="animate-pulse" aria-hidden />
+              ) : (
+                <Mic size={36} aria-hidden />
+              )}
             </button>
             <p className="mt-3 text-sm font-bold text-zinc-900">
               {listening ? t(locale, "voice.listening") : t(locale, "voice.startListening")}
             </p>
             <p className="mt-1 text-xs text-zinc-500">{t(locale, "voice.micPermission")}</p>
+            {voiceError && (
+              <p
+                role="alert"
+                className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+              >
+                {voiceError}
+              </p>
+            )}
           </>
         )}
         {heard && (
