@@ -62,11 +62,10 @@ export default function InvoiceActions({
   currency: string;
   locale?: Locale;
   /**
-   * Payments for the void-payment controls (morning QA 2026-10-15).
-   * Rendered here (client component) rather than in page.tsx's server-side
-   * .map(): a useActionState button inside the server map 500'd with
-   * React #441 on production (useActionState's internal Suspense exception
-   * misbehaves there).
+   * Payments for the void-payment controls (morning QA 2026-10-15). The
+   * trigger buttons render in a .map() below, but the useActionState +
+   * dialog live ONCE at this component's top level: a useActionState inside
+   * the list 500'd with React #441 on production.
    */
   payments?: { id: string; status: string; amountCents: number | bigint }[];
 }) {
@@ -83,6 +82,13 @@ export default function InvoiceActions({
     {}
   );
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  // Single void-payment action + dialog at this level (see below): a
+  // useActionState inside the payments .map() 500'd with React #441.
+  const [voidPaymentState, voidPaymentAction, voidPaymentPending] =
+    useActionState<ActionResult, FormData>(voidPayment, {});
+  const [confirmingVoidPayment, setConfirmingVoidPayment] = useState(false);
+  const [voidPaymentId, setVoidPaymentId] = useState<string | null>(null);
+  const [voidPaymentReason, setVoidPaymentReason] = useState('');
 
   useResultToast(payState, {
     success: t(locale, 't10money.paymentRecorded'),
@@ -95,6 +101,9 @@ export default function InvoiceActions({
   });
   // deleteInvoice redirects to the invoices list on success - toast on failure only.
   useResultToast(deleteState, {});
+  useResultToast(voidPaymentState, {
+    success: t(locale, 't10money.invPaymentVoided'),
+  });
 
   const error = payState?.error || emailState?.error || deleteState?.error;
 
@@ -214,7 +223,9 @@ export default function InvoiceActions({
         )}
       </div>
 
-      {/* Voidable payments (client-component map; see payments prop note). */}
+      {/* Voidable payments. The void dialog + useActionState live ONCE at this
+          level (not in the .map() below): a useActionState button inside a
+          list 500'd with React #441 on production. */}
       {payments.some((p) => p.status !== 'VOID') && (
         <div className="border-t border-zinc-100 pt-3">
           <p className="text-[11px] font-bold text-zinc-500 mb-2">
@@ -231,12 +242,62 @@ export default function InvoiceActions({
                   <span className="font-semibold tabular-nums text-zinc-900">
                     {formatMoney(centsToDollars(p.amountCents), currency)}
                   </span>
-                  <VoidPaymentButton paymentId={p.id} locale={locale} />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setVoidPaymentId(p.id);
+                      setVoidPaymentReason('');
+                      setConfirmingVoidPayment(true);
+                    }}
+                    className="text-[11px] font-semibold text-rose-600 hover:text-rose-700 underline underline-offset-2"
+                  >
+                    {t(locale, 't10money.invVoidPayment')}
+                  </button>
                 </li>
               ))}
           </ul>
         </div>
       )}
+      <ConfirmDialog
+        open={confirmingVoidPayment}
+        locale={locale}
+        title={t(locale, 't10money.invVoidPaymentTitle')}
+        message={t(locale, 't10money.invVoidPaymentMsg')}
+        busy={voidPaymentPending}
+        error={voidPaymentState?.error ?? null}
+        confirmLabel={t(locale, 't10money.invVoidPayment')}
+        onConfirm={() => {
+          if (!isValidVoidReason(voidPaymentReason) || !voidPaymentId) return;
+          const fd = new FormData();
+          fd.append('id', voidPaymentId);
+          fd.append('reason', voidPaymentReason.trim());
+          voidPaymentAction(fd);
+        }}
+        onClose={() => !voidPaymentPending && setConfirmingVoidPayment(false)}
+      >
+        <div className="mt-4">
+          <label
+            htmlFor="void-payment-reason"
+            className="block text-xs font-bold text-zinc-700 mb-1.5"
+          >
+            {t(locale, 't10money.invVoidReason')}
+          </label>
+          <textarea
+            id="void-payment-reason"
+            rows={3}
+            maxLength={500}
+            value={voidPaymentReason}
+            onChange={(e) => setVoidPaymentReason(e.target.value)}
+            placeholder={t(locale, 't10money.invVoidReasonPh')}
+            className={inputClass}
+          />
+          {!isValidVoidReason(voidPaymentReason) && voidPaymentReason.length > 0 && (
+            <p className="mt-1.5 text-[11px] text-amber-700">
+              {t(locale, 't10money.invVoidReasonShort')}
+            </p>
+          )}
+        </div>
+      </ConfirmDialog>
     </div>
   );
 }
@@ -298,86 +359,6 @@ function VoidInvoiceButton({ id, locale = 'en' }: { id: string; locale?: Locale 
           </label>
           <textarea
             id="void-reason"
-            rows={3}
-            maxLength={500}
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder={t(locale, 't10money.invVoidReasonPh')}
-            className={inputClass}
-          />
-          {!reasonOk && reason.length > 0 && (
-            <p className="mt-1.5 text-[11px] text-amber-700">
-              {t(locale, 't10money.invVoidReasonShort')}
-            </p>
-          )}
-        </div>
-      </ConfirmDialog>
-    </>
-  );
-}
-
-/**
- * Void a single payment with a reason (morning QA 2026-10-15). Rendered in
- * the invoice detail payments list by page.tsx.
- */
-export function VoidPaymentButton({
-  paymentId,
-  locale = 'en',
-}: {
-  paymentId: string;
-  locale?: Locale;
-}) {
-  const [confirming, setConfirming] = useState(false);
-  const [reason, setReason] = useState('');
-  const [state, formAction, isPending] = useActionState<ActionResult, FormData>(
-    voidPayment,
-    {}
-  );
-
-  useResultToast(state, {
-    success: t(locale, 't10money.invPaymentVoided'),
-  });
-
-  const reasonOk = isValidVoidReason(reason);
-
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => {
-          setReason('');
-          setConfirming(true);
-        }}
-        className="text-[11px] font-semibold text-rose-600 hover:text-rose-700 underline underline-offset-2"
-      >
-        {t(locale, 't10money.invVoidPayment')}
-      </button>
-      <ConfirmDialog
-        open={confirming}
-        locale={locale}
-        title={t(locale, 't10money.invVoidPaymentTitle')}
-        message={t(locale, 't10money.invVoidPaymentMsg')}
-        busy={isPending}
-        error={state?.error ?? null}
-        confirmLabel={t(locale, 't10money.invVoidPayment')}
-        onConfirm={() => {
-          if (!reasonOk) return;
-          const fd = new FormData();
-          fd.append('id', paymentId);
-          fd.append('reason', reason.trim());
-          formAction(fd);
-        }}
-        onClose={() => !isPending && setConfirming(false)}
-      >
-        <div className="mt-4">
-          <label
-            htmlFor="void-payment-reason"
-            className="block text-xs font-bold text-zinc-700 mb-1.5"
-          >
-            {t(locale, 't10money.invVoidReason')}
-          </label>
-          <textarea
-            id="void-payment-reason"
             rows={3}
             maxLength={500}
             value={reason}
