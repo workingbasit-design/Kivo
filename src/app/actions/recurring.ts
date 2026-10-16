@@ -8,6 +8,7 @@ import { recurringSchema } from '@/lib/validations';
 import { generateDueJobs } from '@/lib/recurring';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { dollarsToCents } from '@/lib/money';
+import { parseDateInputInTimezone } from '@/lib/utils';
 
 export type RecurringActionResult = { error?: string; ok?: boolean; created?: number };
 
@@ -19,10 +20,16 @@ async function checkLimit(userId: string, prefix: string): Promise<RecurringActi
   return null;
 }
 
-/** 'YYYY-MM-DD' -> local-midnight Date for Prisma DateTime. */
-function parseDateInput(dateStr: string): Date {
-  const [y, m, d] = dateStr.split('-').map(Number);
-  return new Date(y, m - 1, d, 0, 0, 0, 0);
+/**
+ * Business timezone for date-input parsing (same off-by-one rationale as
+ * jobs.ts: 'YYYY-MM-DD' is midnight in the business's timezone).
+ */
+async function businessTimeZone(businessId: string): Promise<string> {
+  const b = await prisma.business.findUnique({
+    where: { id: businessId },
+    select: { timezone: true },
+  });
+  return b?.timezone || 'America/Toronto';
 }
 
 async function getOwnedRecurring(businessId: string, id: string) {
@@ -66,11 +73,12 @@ export async function createRecurring(
   const customer = await getOwnedCustomer(businessId, parsed.data.customerId);
   if (!customer) return { error: 'Selected customer not found.' };
 
+  const tz = await businessTimeZone(businessId);
   await prisma.recurringJob.create({
     data: {
       title: parsed.data.title,
       frequency: parsed.data.frequency,
-      nextRun: parseDateInput(parsed.data.startDate),
+      nextRun: parseDateInputInTimezone(parsed.data.startDate, tz),
       time: parsed.data.time || null,
       address: parsed.data.address || null,
       priceCents: dollarsToCents(parsed.data.price),
@@ -114,12 +122,13 @@ export async function updateRecurring(
   const customer = await getOwnedCustomer(businessId, parsed.data.customerId);
   if (!customer) return { error: 'Selected customer not found.' };
 
+  const tz = await businessTimeZone(businessId);
   await prisma.recurringJob.update({
     where: { id, businessId },
     data: {
       title: parsed.data.title,
       frequency: parsed.data.frequency,
-      nextRun: parseDateInput(parsed.data.startDate),
+      nextRun: parseDateInputInTimezone(parsed.data.startDate, tz),
       time: parsed.data.time || null,
       address: parsed.data.address || null,
       priceCents: dollarsToCents(parsed.data.price),

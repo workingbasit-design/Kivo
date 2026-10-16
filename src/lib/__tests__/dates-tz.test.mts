@@ -88,3 +88,42 @@ test('P4-U-013: DST starts Sun 2027-03-14 — Toronto 23-hour day handled', () =
   assert.equal(toISODateInTimezone(m, 'America/Toronto'), '2027-03-14');
   assert.equal(isJobOverdue('SCHEDULED', '2027-03-14', m, 'America/Toronto'), false);
 });
+
+// --- parseDateInputInTimezone -------------------------------------------------
+// 2026-10-16 morning-QA regression: job date inputs parsed as midnight
+// SERVER-local (UTC on Vercel) stored 2026-10-16T00:00Z, which is still
+// Oct 15 in America/Toronto - so the attention engine (business-tz day keys)
+// reported "Was scheduled for 2026-10-15" for a job booked Oct 16.
+import { parseDateInputInTimezone, tzOffsetMs } from '../utils.ts';
+
+test('parseDateInputInTimezone: Oct 16 in Toronto stores midnight Toronto (04:00Z)', () => {
+  const d = parseDateInputInTimezone('2026-10-16', 'America/Toronto');
+  assert.equal(d.toISOString(), '2026-10-16T04:00:00.000Z');
+  // ...and it reads back as Oct 16 in the business timezone (attention dayKey).
+  assert.equal(toISODateInTimezone(d, 'America/Toronto'), '2026-10-16');
+});
+
+test('parseDateInputInTimezone: old server-local parse would have been Oct 15 in Toronto', () => {
+  const buggy = new Date(2026, 9, 16, 0, 0, 0, 0); // what the old code did on a UTC server
+  const asUtcMidnight = new Date(Date.UTC(2026, 9, 16));
+  assert.equal(toISODateInTimezone(asUtcMidnight, 'America/Toronto'), '2026-10-15');
+  void buggy;
+});
+
+test('parseDateInputInTimezone: Vancouver (UTC-7) and default timezone', () => {
+  const v = parseDateInputInTimezone('2026-10-16', 'America/Vancouver');
+  assert.equal(v.toISOString(), '2026-10-16T07:00:00.000Z');
+  assert.equal(toISODateInTimezone(v, 'America/Vancouver'), '2026-10-16');
+  const def = parseDateInputInTimezone('2026-10-16', null);
+  assert.equal(def.toISOString(), '2026-10-16T04:00:00.000Z'); // America/Toronto default
+});
+
+test('parseDateInputInTimezone: invalid input -> Invalid Date', () => {
+  assert.ok(Number.isNaN(parseDateInputInTimezone('', 'America/Toronto').getTime()));
+  assert.ok(Number.isNaN(parseDateInputInTimezone('not-a-date', 'America/Toronto').getTime()));
+});
+
+test('tzOffsetMs: Toronto is UTC-4 in October, UTC-5 in January', () => {
+  assert.equal(tzOffsetMs('America/Toronto', Date.UTC(2026, 9, 16)), -4 * 3600_000);
+  assert.equal(tzOffsetMs('America/Toronto', Date.UTC(2026, 0, 16)), -5 * 3600_000);
+});

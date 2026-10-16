@@ -10,7 +10,7 @@ import { jobSchema, JOB_STATUSES } from '@/lib/validations';
 import { isValidTransition } from '@/lib/job-status';
 import { validatePhone, INVALID_PHONE_MESSAGE } from '@/lib/phone';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
-import { normalizeJobTime } from '@/lib/utils';
+import { normalizeJobTime, parseDateInputInTimezone } from '@/lib/utils';
 import { dollarsToCents } from '@/lib/money';
 
 export type JobActionResult = { error?: string; ok?: boolean; queued?: boolean };
@@ -23,10 +23,18 @@ async function checkLimit(userId: string, prefix: string): Promise<JobActionResu
   return null;
 }
 
-/** 'YYYY-MM-DD' -> local-midnight Date for Prisma DateTime. */
-function parseDateInput(dateStr: string): Date {
-  const [y, m, d] = dateStr.split('-').map(Number);
-  return new Date(y, m - 1, d, 0, 0, 0, 0);
+/**
+ * Business timezone for date-input parsing. Dates entered as 'YYYY-MM-DD'
+ * are midnight in the BUSINESS's timezone, not the server's (Vercel runs
+ * UTC - parsing server-local shifted Oct-16 jobs back to Oct 15 in the
+ * attention engine's business-tz day keys; 2026-10-16 morning-QA finding).
+ */
+async function businessTimeZone(businessId: string): Promise<string> {
+  const b = await prisma.business.findUnique({
+    where: { id: businessId },
+    select: { timezone: true },
+  });
+  return b?.timezone || 'America/Toronto';
 }
 
 async function getOwnedJob(businessId: string, jobId: string) {
@@ -125,12 +133,13 @@ export async function createJob(
     if (crew) crewId = crew.id;
   }
 
+  const tz = await businessTimeZone(businessId);
   const job = await prisma.job.create({
     data: {
       title: parsed.data.title,
       customerId: parsed.data.customerId,
       businessId,
-      date: parseDateInput(parsed.data.date),
+      date: parseDateInputInTimezone(parsed.data.date, tz),
       time: normalizeJobTime(parsed.data.time),
       address: parsed.data.address || null,
       priceCents: dollarsToCents(parsed.data.price) ?? BigInt(0),
@@ -234,12 +243,13 @@ export async function updateJob(
     crewUpdate.crewId = crewId;
   }
 
+  const tz = await businessTimeZone(businessId);
   await prisma.job.update({
     where: { id, businessId },
     data: {
       title: parsed.data.title,
       customerId: parsed.data.customerId,
-      date: parseDateInput(parsed.data.date),
+      date: parseDateInputInTimezone(parsed.data.date, tz),
       time: normalizeJobTime(parsed.data.time),
       address: parsed.data.address || null,
       priceCents: dollarsToCents(parsed.data.price) ?? BigInt(0),
@@ -334,11 +344,12 @@ export async function updateJobSchedule(
     return { error: `Cannot move job from ${job.status} to ${status}.` };
   }
 
+  const tz = await businessTimeZone(businessId);
   await prisma.$transaction(async (tx) => {
     await tx.job.update({
       where: { id: jobId, businessId },
       data: {
-        date: parseDateInput(dateStr),
+        date: parseDateInputInTimezone(dateStr, tz),
         time: normalizeJobTime(time),
         status,
       },

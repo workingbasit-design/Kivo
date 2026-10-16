@@ -178,6 +178,61 @@ export function todayInTimezone(timeZone?: string | null, regionCode?: string | 
   return toISODateInTimezone(new Date(), timeZone || defaultTimezoneForRegion(regionCode));
 }
 
+/**
+ * UTC offset of an IANA timezone at the given instant, in milliseconds
+ * (negative west of UTC, e.g. -4h for America/Toronto in October).
+ * Pure; no dependencies.
+ */
+export function tzOffsetMs(timeZone: string, utcMs: number): number {
+  try {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      hour12: false,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    })
+      .formatToParts(new Date(utcMs))
+      .reduce<Record<string, string>>((acc, p) => {
+        acc[p.type] = p.value;
+        return acc;
+      }, {});
+    const asUtc = Date.UTC(
+      Number(parts.year),
+      Number(parts.month) - 1,
+      Number(parts.day),
+      Number(parts.hour) % 24,
+      Number(parts.minute),
+      Number(parts.second)
+    );
+    return asUtc - utcMs;
+  } catch {
+    return 0;
+  }
+}
+
+/**
+ * Parse a 'YYYY-MM-DD' date input as midnight in the given IANA timezone,
+ * returned as a UTC Date for Prisma DateTime storage.
+ *
+ * Why this exists: `new Date(y, m - 1, d)` is midnight SERVER-local. On
+ * Vercel (UTC) that instant is still the previous calendar day in
+ * America/Toronto, so the attention engine (which keys days in the business
+ * timezone) reported "scheduled for 2026-10-15" for a job booked for Oct 16.
+ * Parsing in the business timezone keeps the stored instant on the intended
+ * calendar day everywhere it is displayed or compared.
+ */
+export function parseDateInputInTimezone(dateStr: string, timeZone?: string | null): Date {
+  const tz = timeZone || 'America/Toronto';
+  const [y, m, d] = dateStr.split('-').map(Number);
+  if (!y || !m || !d) return new Date(NaN);
+  const utcMidnight = Date.UTC(y, m - 1, d);
+  return new Date(utcMidnight - tzOffsetMs(tz, utcMidnight));
+}
+
 /** "YYYY-MM-DD" in local time (safe for <input type="date"> and day comparisons) */
 export function toISODateLocal(d: Date): string {
   const year = d.getFullYear();
