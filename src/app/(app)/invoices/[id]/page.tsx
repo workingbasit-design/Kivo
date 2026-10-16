@@ -239,6 +239,9 @@ export default async function InvoiceDetailPage({
             <p className="text-xs text-zinc-600">
               {L('invoices.payViaInterac')} <span className="font-bold text-zinc-900">{invoice.business.interacEmail}</span>
             </p>
+            <p className="text-xs text-zinc-600 mt-1">
+              {L('invoices.interacReference')}: <span className="font-bold text-zinc-900 font-mono">{invoice.number}</span>
+            </p>
             <p className="text-[11px] text-zinc-400 mt-0.5">
               {L('invoices.interacDisclaimer')}
             </p>

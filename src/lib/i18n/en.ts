@@ -113,6 +113,7 @@ const en: Dict = {
     payments: 'Payments',
     dated: 'Dated',
     payViaInterac: 'Pay via Interac e-Transfer to',
+    interacReference: 'Put this reference in the message',
     interacDisclaimer: 'Pay from your own banking app - EveryJob never processes payments.',
     backToInvoices: 'Back to invoices',
     taxIdLabel: 'GST/HST number',

@@ -112,6 +112,7 @@ const fr: Dictionary = {
     payments: 'Paiements',
     dated: 'Datée du',
     payViaInterac: 'Payer par Interac à',
+    interacReference: 'Indiquez cette référence dans le message',
     interacDisclaimer: 'Payez depuis votre propre application bancaire - EveryJob ne traite jamais les paiements.',
     backToInvoices: 'Retour aux factures',
     taxIdLabel: 'N° TPS/TVQ',
