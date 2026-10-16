@@ -965,13 +965,13 @@
       "auth": "session",
       "hint": "",
       "expected": {
-        "anonymous": "TODO",
-        "consumer": "TODO",
-        "ownerA": "TODO",
-        "adminA": "TODO",
-        "dispatcherA": "TODO",
-        "technicianA": "TODO",
-        "ownerB": "TODO"
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerB": "deny",
+        "ownerA": "allow",
+        "adminA": "allow",
+        "dispatcherA": "allow",
+        "technicianA": "deny"
       }
     },
     {
@@ -4357,13 +4357,13 @@
       "auth": "session",
       "hint": "",
       "expected": {
-        "anonymous": "TODO",
-        "consumer": "TODO",
-        "ownerA": "TODO",
-        "adminA": "TODO",
-        "dispatcherA": "TODO",
-        "technicianA": "TODO",
-        "ownerB": "TODO"
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerB": "deny",
+        "ownerA": "allow",
+        "adminA": "allow",
+        "dispatcherA": "allow",
+        "technicianA": "deny"
       }
     },
     {
@@ -4373,13 +4373,13 @@
       "auth": "session",
       "hint": "",
       "expected": {
-        "anonymous": "TODO",
-        "consumer": "TODO",
-        "ownerA": "TODO",
-        "adminA": "TODO",
-        "dispatcherA": "TODO",
-        "technicianA": "TODO",
-        "ownerB": "TODO"
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerB": "deny",
+        "ownerA": "allow",
+        "adminA": "allow",
+        "dispatcherA": "allow",
+        "technicianA": "deny"
       }
     },
     {
@@ -4469,13 +4469,13 @@
       "auth": "session",
       "hint": "",
       "expected": {
-        "anonymous": "TODO",
-        "consumer": "TODO",
-        "ownerA": "TODO",
-        "adminA": "TODO",
-        "dispatcherA": "TODO",
-        "technicianA": "TODO",
-        "ownerB": "TODO"
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerB": "deny",
+        "ownerA": "allow",
+        "adminA": "deny",
+        "dispatcherA": "deny",
+        "technicianA": "deny"
       }
     },
     {
@@ -4485,13 +4485,13 @@
       "auth": "session",
       "hint": "",
       "expected": {
-        "anonymous": "TODO",
-        "consumer": "TODO",
-        "ownerA": "TODO",
-        "adminA": "TODO",
-        "dispatcherA": "TODO",
-        "technicianA": "TODO",
-        "ownerB": "TODO"
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerB": "deny",
+        "ownerA": "allow",
+        "adminA": "deny",
+        "dispatcherA": "deny",
+        "technicianA": "deny"
       }
     },
     {
@@ -4501,13 +4501,13 @@
       "auth": "session",
       "hint": "",
       "expected": {
-        "anonymous": "TODO",
-        "consumer": "TODO",
-        "ownerA": "TODO",
-        "adminA": "TODO",
-        "dispatcherA": "TODO",
-        "technicianA": "TODO",
-        "ownerB": "TODO"
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerB": "deny",
+        "ownerA": "allow",
+        "adminA": "deny",
+        "dispatcherA": "deny",
+        "technicianA": "deny"
       }
     },
     {
