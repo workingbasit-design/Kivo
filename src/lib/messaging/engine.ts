@@ -27,7 +27,7 @@ import {
   type SchedInvoice,
   type SchedQuote,
 } from './scheduler.ts';
-import { renderTemplate, type MsgLocale, type RenderedTemplate } from './templates.ts';
+import { renderTemplate, type MsgLocale, type RenderedTemplate, type TemplateParams, type MessageTemplateId } from './templates.ts';
 import { canSendMessage, type MessageChannel } from './consent.ts';
 import { monthKeyInTimezone, dayKeyInTimezone, quotaAllows } from './quota.ts';
 import { decryptSecret } from './crypto.ts';
@@ -38,6 +38,46 @@ import {
 } from './providers.ts';
 import { normalizeWaDigits } from '../reminders.ts';
 import { centsToDollars } from '../money.ts';
+
+/**
+ * F5: Render a template, using the business's custom override if one exists.
+ * Variables like {customerName} are substituted in the custom template.
+ */
+async function renderWithOverrides(
+  businessId: string,
+  templateId: MessageTemplateId,
+  locale: MsgLocale,
+  params: TemplateParams
+): Promise<RenderedTemplate> {
+  const override = await prisma.messageTemplateOverride.findUnique({
+    where: {
+      businessId_templateId_locale: { businessId, templateId, locale },
+    },
+    select: { subject: true, body: true },
+  });
+
+  if (override) {
+    // Substitute variables in the custom template
+    const vars: Record<string, string> = {
+      customerName: params.customerName,
+      businessName: params.businessName,
+      jobTitle: params.jobTitle ?? '',
+      whenLabel: params.whenLabel ?? '',
+      invoiceNumber: params.invoiceNumber ?? '',
+      amountLabel: params.amountLabel ?? '',
+      payLink: params.payLink ?? '',
+      quoteNumber: params.quoteNumber ?? '',
+    };
+    const sub = (text: string) =>
+      text.replace(/\{(\w+)\}/g, (_, key) => vars[key] ?? `{${key}}`);
+    return {
+      subject: sub(override.subject),
+      body: sub(override.body),
+    };
+  }
+
+  return renderTemplate(templateId, locale, params);
+}
 
 /** SendErrorKinds that will never succeed on retry (don't re-attempt). */
 const PERMANENT_KINDS = new Set([
@@ -616,8 +656,8 @@ export async function runMessagingCycle(
       continue;
     }
 
-    // 3. Render.
-    const rendered = renderTemplate(c.template, c.locale, c.params);
+    // 3. Render (with business custom overrides).
+    const rendered = await renderWithOverrides(businessId, c.template, c.locale, c.params);
 
     // 4. Dry run - log the preview, send nothing (no quota reserved).
     if (dryRun) {

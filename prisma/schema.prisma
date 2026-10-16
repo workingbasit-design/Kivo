@@ -161,6 +161,7 @@ model Business {
   directoryReports     DirectoryReport[]
   campaigns            Campaign[]
   automationLogs       AutomationLog[]
+  templateOverrides    MessageTemplateOverride[]
   customerProperties   CustomerProperty[]
   customFieldDefs      CustomFieldDef[]
   payments             Payment[]
@@ -1133,6 +1134,24 @@ model MessagingSettings {
   quotaNotifiedAt DateTime? // last in-app quota-exhausted notice (avoid spam)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+}
+
+// F5: Per-business custom template overrides. When a business customizes a
+// template, the override is used instead of the built-in version.
+// Variables like {customerName} are still substituted at send time.
+model MessageTemplateOverride {
+  id         String   @id @default(cuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  templateId String // MessageTemplateId, e.g. "reminder_24h"
+  locale     String // "en" | "fr"
+  subject    String
+  body       String
+  updatedAt  DateTime @updatedAt
+  createdAt  DateTime @default(now())
+
+  @@unique([businessId, templateId, locale])
+  @@index([businessId])
 }
 
 // A business's own messaging provider connections. Secrets (tokens/keys)
