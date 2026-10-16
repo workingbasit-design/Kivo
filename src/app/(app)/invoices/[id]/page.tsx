@@ -168,6 +168,9 @@ export default async function InvoiceDetailPage({
             {invoice.business.taxId && (
               <p className="text-xs text-zinc-500">{taxIdLabelForRegion(invoice.business.regionCode, locale)}: {invoice.business.taxId}</p>
             )}
+            {invoice.business.qstNumber && (
+              <p className="text-xs text-zinc-500">QST: {invoice.business.qstNumber}</p>
+            )}
           </div>
           <div className="md:text-right">
             <p className="text-xs font-bold text-zinc-400">{L('invoices.billTo')}</p>

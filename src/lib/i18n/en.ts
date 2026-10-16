@@ -261,6 +261,8 @@ const en: Dict = {
     noJobsYet: 'No jobs yet.',
     quickActions: 'Quick actions',
     viewReports: 'View business reports',
+    readyToInvoice: 'Ready to invoice',
+    createInvoice: 'Create invoice',
   },
   home: {
     nav: {

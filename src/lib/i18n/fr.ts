@@ -261,6 +261,8 @@ const fr: Dictionary = {
     noJobsYet: 'Aucun rendez-vous pour le moment.',
     quickActions: 'Actions rapides',
     viewReports: 'Voir les rapports d’affaires',
+    readyToInvoice: 'Prêt à facturer',
+    createInvoice: 'Créer une facture',
   },
   home: {
     nav: {

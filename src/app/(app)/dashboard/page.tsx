@@ -314,6 +314,45 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
+      {/* Ready to invoice */}
+      {stats.readyToInvoice.length > 0 && (
+        <div className="grid lg:grid-cols-3 gap-3 md:gap-4 mt-3 md:mt-4">
+          <Card className="lg:col-span-2 p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-bold text-zinc-900">
+                {L("dashboard.readyToInvoice")} ({stats.readyToInvoice.length})
+              </h2>
+              <Link
+                href="/invoices/new"
+                className="text-xs font-semibold text-ink hover:underline inline-flex items-center gap-1 min-h-[44px] px-2 -mr-2"
+              >
+                {L("dashboard.createInvoice")} <ChevronRight size={13} />
+              </Link>
+            </div>
+            <ul className="divide-y divide-zinc-100">
+              {stats.readyToInvoice.map((job, i) => (
+                <li key={job.id} className="ej-row-in" style={rowDelay(i)}>
+                  <Link
+                    href={`/jobs/${job.id}`}
+                    className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-50 transition-colors min-h-[56px]"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-zinc-900 truncate">
+                        {job.title}
+                      </p>
+                      <p className="text-xs text-zinc-700">{job.customerName}</p>
+                    </div>
+                    <p className="text-sm font-bold text-zinc-900 tabular-nums">
+                      <MoneyText dollars={job.price} locale={locale} />
+                    </p>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        </div>
+      )}
+
       {/* Upcoming + jobs by status + quick actions */}
       <div className="grid lg:grid-cols-3 gap-3 md:gap-4">
         <Card className="lg:col-span-2 p-5">

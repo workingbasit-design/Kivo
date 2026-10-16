@@ -39,6 +39,8 @@ export interface DashboardStats {
   todayJobs: TodayJob[];
   upcomingJobs: TodayJob[];
   dueInvoices: DueInvoice[];
+  /** Completed jobs without invoices (ready to bill). */
+  readyToInvoice: { id: string; title: string; price: number; customerName: string }[];
 }
 
 /** Shapes returned by the Prisma selects below (kept explicit so this
@@ -132,6 +134,7 @@ export async function getDashboardStats(
     paymentsThisWeek,
     newLeads,
     totalCustomers,
+    readyToInvoiceRaw,
   ]: [
     JobWithCustomer[],
     JobWithCustomer[],
@@ -141,6 +144,7 @@ export async function getDashboardStats(
     { _sum: { amountCents: bigint | null } },
     number,
     number,
+    { id: string; title: string; priceCents: bigint | null; customer: { name: string } }[],
   ] = await Promise.all([
     getTodayJobs(businessId, todayStart, todayEnd),
     getUpcomingJobs(businessId, todayEnd),
@@ -173,6 +177,22 @@ export async function getDashboardStats(
     }),
     prisma.lead.count({ where: { businessId, status: 'NEW' } }),
     prisma.customer.count({ where: { businessId, archivedAt: null } }),
+    // Ready to invoice: completed jobs with no invoice yet.
+    prisma.job.findMany({
+      where: {
+        businessId,
+        status: 'COMPLETED',
+        invoices: { none: {} },
+      },
+      select: {
+        id: true,
+        title: true,
+        priceCents: true,
+        customer: { select: { name: true } },
+      },
+      orderBy: { updatedAt: 'desc' },
+      take: 5,
+    }),
   ]);
 
   const mapJob = (j: JobWithCustomer): TodayJob => ({
@@ -223,6 +243,12 @@ export async function getDashboardStats(
     todayJobs,
     upcomingJobs: upcomingRaw.map(mapJob),
     dueInvoices,
+    readyToInvoice: readyToInvoiceRaw.map((j) => ({
+      id: j.id,
+      title: j.title,
+      price: centsToDollars(j.priceCents),
+      customerName: j.customer.name,
+    })),
   };
 }
 
