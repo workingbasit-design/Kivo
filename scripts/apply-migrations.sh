@@ -1,5 +1,5 @@
 #!/bin/sh
-# Applies the Prompt 3 ordered migrations (m1..m13) to the database pointed at
+# Applies the ordered migrations (m1..m13, m22, m23) to the database pointed at
 # by DATABASE_URL. Used by the Vercel build BEFORE `prisma db push`, because
 # db push cannot add NOT NULL columns / drop columns on tables that already
 # have production data - the migration files do the backfills first.
@@ -35,6 +35,8 @@ for m in \
   20261014180000_m11_rls \
   20261014183000_m12_indexes \
   20261014190000_m13_totp \
+  20261016090000_m22_template_overrides \
+  20261016100000_m23_stripe_bank_first \
 ; do
   echo "==> Applying migration ${m}..."
   prisma db execute --file "prisma/migrations/${m}/migration.sql" --schema prisma/schema.prisma
