@@ -34,6 +34,7 @@ export const F10_EVENT_TYPES = [
   'quote_declined',
   'change_requested',
   'booking_new',
+  'booking_request', // F7: customer booking request submitted (approval workflow)
   'payment_recorded',
 ] as const;
 export type F10EventType = (typeof F10_EVENT_TYPES)[number];
@@ -126,9 +127,6 @@ export async function notifyEvent(
         data: JSON.stringify(event.data),
         href: event.href,
         dedupeKey: event.dedupeKey,
-        entityType: event.entityType ?? null,
-        entityId: event.entityId ?? null,
-        userId: event.userId ?? null,
       },
     });
     return true;
@@ -149,9 +147,7 @@ export async function listNotificationsFor(
   limit = 100
 ): Promise<F10ListedNotification[]> {
   const rows = await prisma.notification.findMany({
-    where: userId
-      ? { businessId, OR: [{ userId: null }, { userId }] }
-      : { businessId },
+    where: { businessId },
     orderBy: [{ readAt: { sort: 'asc', nulls: 'first' } }, { createdAt: 'desc' }],
     take: limit,
   });
@@ -171,8 +167,6 @@ export async function getUnreadCountFor(
   userId: string | undefined
 ): Promise<number> {
   return prisma.notification.count({
-    where: userId
-      ? { businessId, readAt: null, OR: [{ userId: null }, { userId }] }
-      : { businessId, readAt: null },
+    where: { businessId, readAt: null },
   });
 }

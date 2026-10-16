@@ -23,6 +23,7 @@ export const NOTIFICATION_TYPES = [
   'quote_accepted',
   'quote_declined',
   'change_requested',
+  'booking_request', // F7: a customer submitted a booking request
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 
@@ -41,6 +42,7 @@ export function defaultSettings(): NotificationSettings {
     quote_accepted: true,
     quote_declined: true,
     change_requested: true,
+    booking_request: true,
   };
 }
 

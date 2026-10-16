@@ -24,6 +24,7 @@ model User {
   jobNotes      JobNote[]   @relation("JobNoteAuthor")
   jobPhotos     JobPhoto[]  @relation("JobPhotoUploadedBy")
   timeEntries   TimeEntry[]
+  jobAssignments JobAssignment[] // M19 (F4): multi-technician assignments
   crewMemberships CrewMember[]
   memberships   Membership[]
   createdAt     DateTime    @default(now())
@@ -131,7 +132,11 @@ model Business {
   reviewRequests       ReviewRequest[]
   recurringJobs        RecurringJob[]
   timeEntries          TimeEntry[]
+  jobAssignments       JobAssignment[] // M19 (F4): visits assigned to this user
+  visitSignatures      VisitSignature[] // M19 (F4): business visit signatures
   bookingPage          BookingPage?
+  bookableServices     BookableService[] // F7: services bookable online
+  bookingRequests      BookingRequest[] // F7: customer booking submissions
   checklistTemplates   ChecklistTemplate[]
   expenses             JobExpense[]
   trade                String? // primary trade: plumbing|electrical|hvac|carpentry|painting|landscaping|cleaning|renovation|other
@@ -203,6 +208,7 @@ model Customer {
   businessId           String
   business             Business              @relation(fields: [businessId], references: [id], onDelete: Cascade)
   jobs                 Job[]
+  bookingRequests      BookingRequest[] // F7: booking requests from this customer
   invoices             Invoice[]
   quotes               Quote[]
   reviews              Review[]
@@ -239,6 +245,8 @@ model Service {
   businessId    String
   business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
   jobs        Job[]
+  bookableServices BookableService[] // F7: booking-page listings of this service
+  bookingRequests  BookingRequest[] // F7: requests for this service
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -271,12 +279,15 @@ model Job {
   serviceId      String? // optional link to the price-book service this job was created from
   service        Service?           @relation(fields: [serviceId], references: [id], onDelete: SetNull)
   timeEntries    TimeEntry[]
+  jobAssignments JobAssignment[] // M19 (F4): technicians assigned to this job
+  visitSignatures VisitSignature[] // M19 (F4): customer signatures
   jobNotes       JobNote[]
   jobPhotos      JobPhoto[]
   expenses       JobExpense[]
   checklistItems JobChecklistItem[]
   invoices       Invoice[]
   idempotencyKey String?            @unique // booking-confirm dedupe key (UUID); null for jobs not created via booking
+  bookingRequests BookingRequest[] // F7: requests that created this job
   technicianLocations TechnicianLocation[]
   trackingShare       TrackingShare?
   reviewRequests      ReviewRequest[]
@@ -751,10 +762,48 @@ model TimeEntry {
   job        Job?      @relation(fields: [jobId], references: [id], onDelete: SetNull)
   businessId String
   business   Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  approvedAt DateTime? // M19 (F4): owner/admin approval of the timesheet entry
+  approvedById String? // M19 (F4): User.id of the approving owner/admin
   createdBy            String? // M7: User.id of the acting membership user; 'system' for system/cron writes
   updatedBy            String? // M7: User.id of the last acting membership user
   createdAt            DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
+}
+
+// M19 (F4): multi-technician job assignments. Replaces the single
+// Job.assignedToId for dispatch; that column stays for compatibility.
+model JobAssignment {
+  id           String   @id @default(cuid())
+  jobId        String
+  job          Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessId   String
+  business     Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  assignedAt   DateTime @default(now())
+  assignedById String? // User.id of the dispatcher/owner who assigned
+
+  @@unique([jobId, userId])
+  @@index([businessId])
+  @@index([userId, businessId])
+  @@index([jobId])
+}
+
+// M19 (F4): customer signature captured on visit completion.
+// The drawn signature image is stored in Blob; imageUrl is its URL.
+model VisitSignature {
+  id         String   @id @default(cuid())
+  jobId      String
+  job        Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  signerName String
+  imageUrl   String?
+  signedAt   DateTime @default(now())
+  createdBy  String // User.id of the technician who captured it
+
+  @@index([jobId])
+  @@index([businessId])
 }
 
 model BookingPage {
@@ -769,10 +818,73 @@ model BookingPage {
   descriptionFr String? // longer public "about" text (FR); falls back to description
   serviceAreas  String? // JSON array of city/area strings the business serves
   showPhone     Boolean  @default(true) // display phone/WhatsApp on the public profile
+  // F7: online-booking settings
+  approvalRequired Boolean @default(true) // true = requests need owner approval; false = instant booking
+  bufferMin        Int     @default(30) // buffer minutes between visits
+  depositRequired  Boolean @default(false) // require a deposit at booking time
+  depositCents     BigInt? // deposit amount in cents (when depositRequired)
+  embedEnabled     Boolean @default(true) // allow the /book/[slug]/embed widget
   businessId    String   @unique
   business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  bookableServices BookableService[]
+  bookingRequests  BookingRequest[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+// F7: which price-book services are bookable online (per booking page).
+model BookableService {
+  id            String  @id @default(cuid())
+  bookingPageId String
+  bookingPage   BookingPage @relation(fields: [bookingPageId], references: [id], onDelete: Cascade)
+  serviceId     String
+  service       Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  position      Int     @default(0) // display order on the booking page
+  active        Boolean @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([bookingPageId, serviceId])
+  @@index([businessId])
+  @@index([bookingPageId, position])
+}
+
+// F7: a customer booking submission. NOT a Job until approved
+// (approval-required mode). Instant mode creates the Job directly.
+model BookingRequest {
+  id            String   @id @default(cuid())
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  bookingPageId String
+  bookingPage   BookingPage @relation(fields: [bookingPageId], references: [id], onDelete: Cascade)
+  serviceId     String?
+  service       Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  customerName  String
+  phone         String
+  phoneNorm     String?
+  email         String?
+  address       String?
+  notes         String?
+  slotStart     DateTime?
+  slotEnd       DateTime?
+  durationMin   Int?
+  status        String   @default("PENDING") // PENDING, APPROVED, DECLINED, CANCELLED
+  jobId         String?
+  job           Job?     @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  customerId    String?
+  customer      Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  depositCents  BigInt? // deposit charged for this request
+  depositPaidAt DateTime? // set by the Stripe webhook when the deposit clears
+  confirmToken  String   @unique // one-time token for the confirmation view; never in URLs with PII
+  createdBy            String? // M7: User.id of the acting membership user; 'system' for system/cron writes
+  updatedBy            String? // M7: User.id of the last acting membership user
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([businessId, status])
+  @@index([bookingPageId])
 }
 
 model Campaign {

@@ -15,6 +15,12 @@ export const FLAG_PRICEBOOK_V2 = 'pricebookV2';
 /** F9: six financial/operational reports behind a per-business flag. */
 export const FLAG_REPORTS = 'reports';
 
+/** F4: team roles, dispatch, my-day, clock in/out behind a per-business flag. */
+export const FLAG_TEAM_DISPATCH = 'teamDispatch';
+
+/** F7: online booking (approval workflow, embed widget, deposits). */
+export const FLAG_BOOKING_V2 = 'onlineBooking';
+
 export type FeatureFlags = Record<string, boolean>;
 
 export function parseFlags(raw: string | null | undefined): FeatureFlags {
