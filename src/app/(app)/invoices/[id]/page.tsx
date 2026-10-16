@@ -133,7 +133,7 @@ export default async function InvoiceDetailPage({
 
       <PageHeader
         title={`${L('invoices.invoice')} ${invoice.number}`}
-        subtitle={<>{L('invoices.dated')} <DateTimeText date={invoice.date} variant="short" timezone={invoice.business.timezone ?? 'America/Toronto'} locale={locale} /></>}
+        subtitle={<>{L('invoices.dated')} <DateTimeText date={invoice.date} variant="short" timezone={invoice.business.timezone ?? 'America/Toronto'} locale={locale} />{invoice.dueAt && <> · {L('invoices.due')} <DateTimeText date={invoice.dueAt} variant="short" timezone={invoice.business.timezone ?? 'America/Toronto'} locale={locale} /></>}</>}
         actions={
           <span className="flex items-center gap-1.5">
             {overdue && <Badge tone="danger">{t(locale, 't10money.overdue')}</Badge>}

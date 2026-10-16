@@ -111,6 +111,7 @@ const fr: Dictionary = {
     notes: 'Notes',
     payments: 'Paiements',
     dated: 'Datée du',
+    due: 'Échéance',
     payViaInterac: 'Payer par Interac à',
     interacReference: 'Indiquez cette référence dans le message',
     interacDisclaimer: 'Payez depuis votre propre application bancaire - EveryJob ne traite jamais les paiements.',

@@ -112,6 +112,7 @@ const en: Dict = {
     notes: 'Notes',
     payments: 'Payments',
     dated: 'Dated',
+    due: 'Due',
     payViaInterac: 'Pay via Interac e-Transfer to',
     interacReference: 'Put this reference in the message',
     interacDisclaimer: 'Pay from your own banking app - EveryJob never processes payments.',
