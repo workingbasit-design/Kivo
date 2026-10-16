@@ -54,6 +54,9 @@ export async function getTaxSummary(
       },
       select: {
         amountCents: true,
+        taxGstHstCents: true,
+        taxQstCents: true,
+        taxPstCents: true,
       },
     }),
   ]);
@@ -73,9 +76,18 @@ export async function getTaxSummary(
     }
   }
 
-  // Expenses: tax paid fields pending schema update
-  // For now, estimate based on tax region (to be refined)
+  // Expenses: tax paid (ITCs for GST/HST, ITRs for QST)
+  // These fields are entered on the expense form
   const paidOnExpenses = { gstHst: 0, qst: 0, pst: 0, total: 0 };
+  for (const exp of expenses) {
+    const gstHst = centsToDollars(exp.taxGstHstCents);
+    const qst = centsToDollars(exp.taxQstCents);
+    const pst = centsToDollars(exp.taxPstCents);
+    paidOnExpenses.gstHst += gstHst;
+    paidOnExpenses.qst += qst;
+    paidOnExpenses.pst += pst;
+    paidOnExpenses.total += gstHst + qst + pst;
+  }
 
   return {
     period: `${startDate.toISOString().slice(0, 10)} to ${endDate.toISOString().slice(0, 10)}`,
