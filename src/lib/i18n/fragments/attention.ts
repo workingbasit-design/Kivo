@@ -264,7 +264,7 @@ const fragment = {
         jobs: 'Travaux',
         money: 'Argent',
         leads: 'Prospects',
-        quotes: 'Devis',
+        quotes: 'Soumissions',
         inventory: 'Inventaire',
         schedule: 'Horaire',
       },
