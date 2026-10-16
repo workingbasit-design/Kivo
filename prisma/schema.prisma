@@ -223,16 +223,26 @@ model Customer {
 }
 
 model Service {
-  id          String   @id @default(cuid())
-  name        String
-  priceCents BigInt // cents (M8 cutover: Float column dropped)
-  durationMin Int? // typical job duration in minutes; pre-fills scheduling estimates
-  description String? // short plain-language description shown on quotes/booking
-  businessId  String
+  id            String   @id @default(cuid())
+  name          String
+  nameFr        String? // F6: French name; falls back to name when absent
+  priceCents    BigInt // cents (M8 cutover: Float column dropped)
+  costCents     BigInt? // F6: owner's cost in cents; drives margin display
+  durationMin   Int? // typical job duration in minutes; pre-fills scheduling estimates
+  description   String? // short plain-language description shown on quotes/booking
+  descriptionFr String? // F6: French description
+  kind          String   @default("SERVICE") // F6: SERVICE | PRODUCT (CHECK in M15)
+  unit          String   @default("each") // F6: each | hour | job | sqft
+  taxCategory   String   @default("TAXABLE_GST_HST") // F6: feeds F2 PDFs + C3 tax engine
+  category      String? // F6: owner-defined grouping, e.g. Plumbing
+  active        Boolean  @default(true) // F6: archived items are hidden, never hard-deleted by UI
+  businessId    String
   business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
   jobs        Job[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([businessId, active])
 }
 
 model Job {

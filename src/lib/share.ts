@@ -1,4 +1,4 @@
-import { randomBytes } from 'crypto';
+import { randomBytes, createHash } from 'crypto';
 import { prisma } from '@/lib/prisma';
 import { unsafeUnscoped } from './tenant-guard.ts';
 
@@ -11,11 +11,20 @@ export type ShareType = 'QUOTE' | 'INVOICE';
  * ShareToken table - a raw cuid id never renders a document. A token is
  * usable when revokedAt is null and (expiresAt is null or in the future).
  * Tokens are 256-bit random hex strings: unguessable and URL-safe.
+ *
+ * F1: The `token` column stores the SHA-256 hash of the raw token, never
+ * the raw value. The raw token is only ever in the URL the business shares.
+ * On lookup, the incoming token is hashed before the DB query.
  */
 
 /** Generate a new unguessable token value. */
 export function newShareTokenValue(): string {
   return randomBytes(32).toString('hex');
+}
+
+/** SHA-256 hash of a token for storage/lookup. */
+export function hashShareToken(rawToken: string): string {
+  return createHash('sha256').update(rawToken).digest('hex');
 }
 
 /** Legacy cuid ids (pre-token public URLs) look like this. */
@@ -59,6 +68,7 @@ export async function getActiveShareToken(
 /**
  * Issue a fresh token for a document: revoke every currently-usable token
  * first so "regenerate" instantly invalidates old links.
+ * F1: Stores the SHA-256 hash, returns the raw token (only time it's visible).
  */
 export async function issueShareToken(
   businessId: string,
@@ -77,17 +87,20 @@ export async function issueShareToken(
     },
     data: { revokedAt: now },
   });
-  return prisma.shareToken.create({
+  const rawToken = newShareTokenValue();
+  const rec = await prisma.shareToken.create({
     data: {
-      token: newShareTokenValue(),
+      token: hashShareToken(rawToken),
       type,
       businessId,
       invoiceId: 'invoiceId' in ref ? ref.invoiceId : null,
       quoteId: 'quoteId' in ref ? ref.quoteId : null,
       expiresAt,
     },
-    select: { id: true, token: true, expiresAt: true, createdAt: true },
+    select: { id: true, expiresAt: true, createdAt: true },
   });
+  // Return the raw token for the URL; the DB only has the hash.
+  return { ...rec, token: rawToken };
 }
 
 /** Revoke every usable token for a document. Business-scoped. */
@@ -135,6 +148,7 @@ export async function setShareTokenExpiry(
  * Resolve a public token to its document. Returns the token row when it is
  * usable; otherwise a reason the page can turn into a friendly message.
  * NEVER leaks document data on failure - the caller decides what to show.
+ * F1: The incoming raw token is hashed before lookup (DB stores hashes only).
  */
 export async function resolveShareToken(token: string, type: ShareType) {
   if (!token || token.length > 128) return { ok: false as const };
@@ -142,9 +156,10 @@ export async function resolveShareToken(token: string, type: ShareType) {
   // business is learned from the resolved row, so no tenant scope can
   // exist before this lookup; the caller must verify active/usability
   // (revokedAt/expiresAt) before using the result.
+  const tokenHash = hashShareToken(token);
   const rec = await unsafeUnscoped('share:resolveShareToken', (db) =>
     db.shareToken.findUnique({
-      where: { token, type },
+      where: { token: tokenHash, type },
       select: {
         id: true,
         businessId: true,

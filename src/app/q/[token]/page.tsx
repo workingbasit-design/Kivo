@@ -181,6 +181,9 @@ export default async function QuotePortalPage({
                 declineLabel: L('quotes.portal.declineLabel'),
                 responseNote: L('quotes.portal.responseNote'),
                 errorLabel: L('quotes.portal.errorLabel'),
+                signerNameLabel: L('quotes.portal.signerNameLabel'),
+                signerNamePlaceholder: L('quotes.portal.signerNamePlaceholder'),
+                consentLabel: L('quotes.portal.consentLabel'),
                 locale,
               }}
             />

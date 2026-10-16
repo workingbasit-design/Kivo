@@ -46,6 +46,9 @@ const fragment = {
         declineLabel: 'Decline',
         responseNote: 'Your response is sent to the business immediately.',
         errorLabel: 'Something went wrong. Please try again.',
+        signerNameLabel: 'Type your full name to sign',
+        signerNamePlaceholder: 'Jane Doe',
+        consentLabel: 'I agree to the quote terms and confirm this electronic signature is legally binding.',
       },
       route: {
         openFullRoute: 'Open full route in Google Maps',
@@ -113,6 +116,9 @@ const fragment = {
         declineLabel: 'Refuser',
         responseNote: 'Votre réponse est envoyée à l’entreprise immédiatement.',
         errorLabel: 'Une erreur est survenue. Veuillez réessayer.',
+        signerNameLabel: 'Tapez votre nom complet pour signer',
+        signerNamePlaceholder: 'Jean Dupont',
+        consentLabel: 'J’accepte les conditions du devis et je confirme que cette signature électronique a valeur légale.',
       },
       route: {
         openFullRoute: "Ouvrir l'itinéraire complet dans Google Maps",

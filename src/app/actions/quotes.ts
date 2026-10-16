@@ -429,12 +429,11 @@ export async function sendQuoteEmail(
   const currency = business?.currency ?? 'CAD';
 
   // Ensure a usable public portal link for the email.
-  let token = (await getActiveShareToken(businessId, 'QUOTE', { quoteId: id }))
-    ?.token;
-  if (!token) {
-    const rec = await issueShareToken(businessId, 'QUOTE', { quoteId: id }, null);
-    token = rec.token;
-  }
+  // F1: Tokens are stored hashed, so we cannot reuse an existing token's
+  // raw value. Issue a fresh token (revokes the old one); the email carries
+  // the new link.
+  const rec = await issueShareToken(businessId, 'QUOTE', { quoteId: id }, null);
+  const token = rec.token;
   const base = await appBaseUrl();
   if (!base) {
     return { error: 'Could not build the quote link. Please try again.' };
@@ -864,7 +863,9 @@ function checkPortalLimit(key: string): PortalDecisionResult | null {
 export async function portalQuoteDecisionByToken(
   token: string,
   decision: 'APPROVED' | 'DECLINED',
-  addonIds: string[] = []
+  addonIds: string[] = [],
+  signerName?: string,
+  consent?: boolean
 ): Promise<PortalDecisionResult> {
   const hit = checkPortalLimit(await clientKey('portal-quote-token'));
   if (hit) return hit;
@@ -886,6 +887,17 @@ export async function portalQuoteDecisionByToken(
   }
   if (quote.status !== 'SENT') {
     return { error: 'This quote is not ready for approval yet.' };
+  }
+
+  // F1: E-signature required for approval — typed name + consent checkbox.
+  if (decision === 'APPROVED') {
+    const name = (signerName ?? '').trim();
+    if (name.length < 2 || name.length > 100) {
+      return { error: 'Please type your full name to sign.' };
+    }
+    if (!consent) {
+      return { error: 'Please check the consent box to sign.' };
+    }
   }
 
   if (decision === 'APPROVED') {
@@ -910,10 +922,43 @@ export async function portalQuoteDecisionByToken(
     ]);
   }
 
+  const h = await headers();
+  const rawIp =
+    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    h.get('x-real-ip') ||
+    'unknown';
+  const userAgent = h.get('user-agent')?.slice(0, 500) ?? null;
+  // F1: Store hashed IP with daily salt (privacy), not raw IP.
+  const { createHash } = await import('crypto');
+  const salt = new Date().toISOString().slice(0, 10);
+  const ipHash = createHash('sha256').update(`${salt}:${rawIp}`).digest('hex');
+
   const updated = await prisma.quote.update({
     where: { id: quoteId, businessId: resolved.rec.businessId },
     data: { status: decision },
     select: { status: true },
+  });
+
+  // F1: Record e-signature and audit event.
+  if (decision === 'APPROVED') {
+    await prisma.quoteSignature.create({
+      data: {
+        quoteId,
+        businessId: resolved.rec.businessId,
+        signerName: (signerName ?? '').trim(),
+        signerIpHash: ipHash,
+        userAgent,
+        consentedAt: new Date(),
+      },
+    });
+  }
+  await prisma.portalEvent.create({
+    data: {
+      businessId: resolved.rec.businessId,
+      shareTokenId: resolved.rec.id,
+      kind: decision === 'APPROVED' ? 'ACCEPT' : 'DECLINE',
+      meta: JSON.stringify({ ipHash, userAgent: userAgent?.slice(0, 200) }),
+    },
   });
 
   revalidatePath(`/q/${token}`);

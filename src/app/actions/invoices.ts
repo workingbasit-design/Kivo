@@ -835,12 +835,11 @@ export async function sendInvoiceEmail(
   const currency = business?.currency ?? 'CAD';
 
   // Ensure a usable public payment link for the email.
-  let token = (await getActiveShareToken(businessId, 'INVOICE', { invoiceId: id }))
-    ?.token;
-  if (!token) {
-    const rec = await issueShareToken(businessId, 'INVOICE', { invoiceId: id }, null);
-    token = rec.token;
-  }
+  // F1: Tokens are stored hashed, so we cannot reuse an existing token's
+  // raw value. Issue a fresh token (revokes the old one); the email carries
+  // the new link.
+  const rec = await issueShareToken(businessId, 'INVOICE', { invoiceId: id }, null);
+  const token = rec.token;
   const base = await appBaseUrl();
   if (!base) {
     return { error: 'Could not build the invoice link. Please try again.' };

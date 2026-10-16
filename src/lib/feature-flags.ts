@@ -10,6 +10,10 @@
  */
 
 export const FLAG_PORTAL_V2 = 'portalV2';
+export const FLAG_PRICEBOOK_V2 = 'pricebookV2';
+
+/** F9: six financial/operational reports behind a per-business flag. */
+export const FLAG_REPORTS = 'reports';
 
 export type FeatureFlags = Record<string, boolean>;
 

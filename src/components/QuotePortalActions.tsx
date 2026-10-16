@@ -27,6 +27,10 @@ export interface QuotePortalStrings {
   errorLabel: string;
   /** Locale for money formatting, e.g. 'en' or 'fr'. Defaults to 'en'. */
   locale?: string;
+  /** F1: E-signature strings */
+  signerNameLabel?: string;
+  signerNamePlaceholder?: string;
+  consentLabel?: string;
 }
 
 /**
@@ -53,6 +57,8 @@ export default function QuotePortalActions({
   const [selectedIds, setSelectedIds] = useState<string[]>(() =>
     addons.filter((a) => a.selected).map((a) => a.id)
   );
+  const [signerName, setSignerName] = useState('');
+  const [consent, setConsent] = useState(false);
   const router = useRouter();
 
   const hasAddons = addons.length > 0;
@@ -74,7 +80,9 @@ export default function QuotePortalActions({
       const res = await portalQuoteDecisionByToken(
         token,
         decision,
-        decision === 'APPROVED' ? selectedIds : []
+        decision === 'APPROVED' ? selectedIds : [],
+        decision === 'APPROVED' ? signerName : undefined,
+        decision === 'APPROVED' ? consent : undefined
       );
       if (res.ok) {
         router.refresh();
@@ -150,6 +158,38 @@ export default function QuotePortalActions({
           </div>
         </div>
       )}
+
+      {/* F1: E-signature — typed name + consent required to approve */}
+      <div className="space-y-3 border border-smoke rounded-xl p-4 bg-paper">
+        <div>
+          <label htmlFor="portal-signer-name" className="block text-sm font-bold text-ink mb-1.5">
+            {strings.signerNameLabel ?? 'Type your full name to sign'}
+          </label>
+          <input
+            id="portal-signer-name"
+            type="text"
+            value={signerName}
+            onChange={(e) => setSignerName(e.target.value)}
+            placeholder={strings.signerNamePlaceholder ?? 'Jane Doe'}
+            disabled={pending}
+            autoComplete="name"
+            maxLength={100}
+            className="w-full border border-smoke rounded-xl px-3.5 py-2.5 text-sm text-ink bg-white focus:outline-none focus:ring-2 focus:ring-ink/20 disabled:opacity-60"
+          />
+        </div>
+        <label className="flex items-start gap-2.5 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={consent}
+            onChange={(e) => setConsent(e.target.checked)}
+            disabled={pending}
+            className="w-4 h-4 accent-ink shrink-0 mt-0.5"
+          />
+          <span className="text-xs text-graphite leading-relaxed">
+            {strings.consentLabel ?? 'I agree to the quote terms and confirm this electronic signature is legally binding.'}
+          </span>
+        </label>
+      </div>
 
       <div className="grid grid-cols-2 gap-3">
         <button
