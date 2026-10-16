@@ -35,7 +35,7 @@ export default async function InvoicesPage({
       orderBy: { createdAt: 'desc' },
     }),
     prisma.invoice.findMany({
-      where: { businessId },
+      where: { businessId, voidedAt: null },
       select: { totalCents: true, status: true, payments: { select: { amountCents: true } } },
     }),
   ]);

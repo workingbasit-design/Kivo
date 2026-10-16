@@ -69,7 +69,7 @@ export default async function DashboardPage() {
   const [stats, counts, growth] = await Promise.all([
     getDashboardStats(businessId, business),
     Promise.all([
-      prisma.customer.count({ where: { businessId } }),
+      prisma.customer.count({ where: { businessId, archivedAt: null } }),
       prisma.quote.count({ where: { businessId } }),
       prisma.invoice.count({ where: { businessId } }),
       prisma.membership.count({ where: { businessId, status: 'ACTIVE' } }),

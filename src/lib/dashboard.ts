@@ -167,11 +167,12 @@ export async function getDashboardStats(
         status: 'COMPLETED',
         createdAt: { gte: weekStart },
         businessId,
+        invoice: { voidedAt: null },
       },
       _sum: { amountCents: true },
     }),
     prisma.lead.count({ where: { businessId, status: 'NEW' } }),
-    prisma.customer.count({ where: { businessId } }),
+    prisma.customer.count({ where: { businessId, archivedAt: null } }),
   ]);
 
   const mapJob = (j: JobWithCustomer): TodayJob => ({

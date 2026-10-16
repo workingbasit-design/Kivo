@@ -101,6 +101,7 @@ model Business {
   tagline              String? // brand kit tagline shown on quotes / social templates
   brandColors          String? // JSON: { primary: "#rrggbb", accent: "#rrggbb" }; null = defaults
   brandServices        String? // JSON array of service names for social templates; null = none set
+  featureFlags         String? // JSON: { "portalV2": true }; per-business feature flags (F1+)
   portalTokens         CustomerPortalToken[]
   memberships          Membership[]
   customerLinks        CustomerLink[]
@@ -115,6 +116,8 @@ model Business {
   invoices             Invoice[]
   creditNotes          CreditNote[]
   shareTokens          ShareToken[]
+  quoteSignatures      QuoteSignature[] // F1
+  portalEvents         PortalEvent[]    // F1
   messageLogs          MessageLog[]
   emailVerificationTokens EmailVerificationToken[]
   communications       Communication[]
@@ -417,6 +420,9 @@ model ShareToken {
   business   Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
   expiresAt  DateTime?
   revokedAt  DateTime?
+  maxViews   Int?      // F1: optional view cap for portal links
+  lastViewedAt DateTime? // F1: last portal view timestamp
+  portalEvents PortalEvent[] // F1
   createdAt  DateTime  @default(now())
 }
 
@@ -430,6 +436,41 @@ model CustomerPortalToken {
   expiresAt  DateTime?
   revokedAt  DateTime?
   createdAt  DateTime  @default(now())
+}
+
+// F1: e-signature audit for portal quote acceptance. IP is stored hashed
+// (SHA-256 + daily salt), never raw.
+model QuoteSignature {
+  id                String   @id @default(cuid())
+  quoteId           String
+  quote             Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  businessId        String
+  business          Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  signerName        String
+  signerIpHash      String
+  userAgent         String?
+  consentedAt       DateTime
+  acceptedOptionIds String? // JSON array of selected optional item ids
+  createdAt         DateTime @default(now())
+
+  @@index([quoteId])
+  @@index([businessId])
+}
+
+// F1: append-only audit log for portal interactions.
+model PortalEvent {
+  id           String     @id @default(cuid())
+  businessId   String
+  business     Business   @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  shareTokenId String?
+  shareToken   ShareToken? @relation(fields: [shareTokenId], references: [id], onDelete: SetNull)
+  kind         String // VIEW|ACCEPT|DECLINE|CHANGE_REQUEST|PAYMENT|PDF
+  customerId   String?
+  meta         String? // JSON
+  createdAt    DateTime   @default(now())
+
+  @@index([businessId])
+  @@index([shareTokenId])
 }
 
 model Payment {
@@ -573,6 +614,7 @@ model Quote {
   businessId        String
   business          Business           @relation(fields: [businessId], references: [id], onDelete: Cascade)
   shareTokens       ShareToken[]
+  signatures        QuoteSignature[] // F1
   signatureRequests SignatureRequest[]
   addons            QuoteAddon[]
   lineItems         QuoteLineItem[]
@@ -583,6 +625,8 @@ model Quote {
   deposits          QuoteDeposit[]
   createdBy            String? // M7: User.id of the acting membership user; 'system' for system/cron writes
   updatedBy            String? // M7: User.id of the last acting membership user
+  changeRequest      String?   // F1: customer's requested changes via portal
+  changeRequestedAt  DateTime? // F1: when the change request was submitted
   createdAt            DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
 

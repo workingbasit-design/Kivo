@@ -11,7 +11,7 @@ import { updateJobStatus, deleteJob, seedSampleJobs, updateJobSchedule } from '@
 import { validNextStatuses, JOB_STATUSES } from '@/lib/job-status';
 import MoneyText from '@/components/MoneyText';
 import DateTimeText from '@/components/DateTimeText';
-import { toISODateLocal, hasJobTime, formatStatusLabel, jobDisplayStatus, cn } from '@/lib/utils';
+import { toISODateLocal, hasJobTime, formatJobTime, formatStatusLabel, jobDisplayStatus, cn } from '@/lib/utils';
 import { t, type Locale } from '@/lib/i18n';
 import {
   Card, StatusBadge, EmptyState, Field,
@@ -407,7 +407,7 @@ export default function ScheduleClient({
                       <StatusBadge status={jobDisplayStatus(job.status, job.date)} />
                       <span className="inline-flex items-center gap-1.5 text-xs font-bold text-ink bg-smoke px-2.5 py-1 rounded-md tabular-nums">
                         <Clock size={12} />
-                        {hasJobTime(job.time) ? job.time : T('schedTimeTbd')}
+                        {hasJobTime(job.time) ? formatJobTime(job.time, locale) : T('schedTimeTbd')}
                       </span>
                       <span className="text-xs font-medium text-zinc-500">
                         <DateTimeText date={job.dateKey} variant="weekday" timezone={timezone} locale={locale} />
