@@ -41,19 +41,24 @@ export default function TemplateEditor({
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
   const [pending, startTransition] = useTransition();
+  // Track which template+locale the form fields reflect, so we can reset
+  // them during render when the selection changes (React "adjust state
+  // during render" pattern — avoids setState-in-effect cascading renders).
+  const [formKey, setFormKey] = useState('');
 
   useEffect(() => {
     getTemplateOverrides().then(setOverrides);
   }, []);
 
-  useEffect(() => {
-    const key = `${selected}:${editLocale}`;
+  const key = `${selected}:${editLocale}`;
+  if (formKey !== key) {
+    setFormKey(key);
     const o = overrides[key];
     setSubject(o?.subject ?? '');
     setBody(o?.body ?? '');
-  }, [selected, editLocale, overrides]);
+  }
 
-  const isCustom = !!overrides[`${selected}:${editLocale}`];
+  const isCustom = !!overrides[key];
 
   function handleSave() {
     startTransition(async () => {

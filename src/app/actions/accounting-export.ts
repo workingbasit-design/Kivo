@@ -24,7 +24,7 @@ export async function exportAccountingCSV(
   const businessId = session.businessId;
   if (!businessId) return { error: 'No business.' };
 
-  const where: any = { businessId, voidedAt: null };
+  const where: { businessId: string; voidedAt: null; date?: { gte?: Date; lte?: Date } } = { businessId, voidedAt: null };
   if (startDate || endDate) {
     where.date = {};
     if (startDate) where.date.gte = new Date(startDate);
