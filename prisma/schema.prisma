@@ -266,6 +266,7 @@ model Job {
   address        String?
   priceCents BigInt // cents (M8 cutover: Float column dropped)
   status         String // NEW, SCHEDULED, IN PROGRESS, COMPLETED, PAID, CANCELLED
+  skippedAt      DateTime? // F3: when a recurring visit was skipped (stays visible, not deleted)
   notes          String?
   technician     String?
   assignedToId   String?
