@@ -67,7 +67,7 @@ function job(over: Partial<JobRow>): JobRow {
 
 test('settings default to all ON', () => {
   const s = defaultSettings();
-  assert.equal(NOTIFICATION_TYPES.length, 7); // + messaging_quota (Track 9)
+  assert.equal(NOTIFICATION_TYPES.length, 12); // + messaging_quota (Track 9), F10 event types, booking_request (F7)
   for (const k of NOTIFICATION_TYPES) assert.equal(s[k], true, k);
 });
 
@@ -221,6 +221,9 @@ test('rendered titles/bodies are complete in EN and FR', () => {
         number: 'INV-1',
         amount: '$500.00',
         when: '2026-01-01',
+        name: 'Jane Doe', // lead_new title
+        phone: '416-555-0100', // lead_new body
+        source: 'Website', // lead_new body
       };
       const title = renderNotificationTitle(type, data, locale);
       const body = renderNotificationBody(type, data, locale);

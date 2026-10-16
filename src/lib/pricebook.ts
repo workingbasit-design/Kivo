@@ -83,3 +83,26 @@ export function displayDescription(
   }
   return item.description ?? null;
 }
+/**
+ * Filter a business's tax lines down to the ones a price-book item's tax
+ * category actually charges. Pure (no Prisma); pairs with calcTax() from
+ * ../tax.ts for F6-002. Canada-only: RST is kept with PST (Manitoba's
+ * retail sales tax behaves like PST for price-book purposes).
+ */
+export function applicableTaxes(
+  category: string,
+  taxes: { name: string; rate: number }[]
+): { name: string; rate: number }[] {
+  switch (category) {
+    case 'TAXABLE_GST_HST':
+      return taxes.filter((t) => t.name === 'GST' || t.name === 'HST');
+    case 'TAXABLE_PST':
+      return taxes.filter((t) => t.name === 'PST' || t.name === 'RST');
+    case 'TAXABLE_QST':
+      return taxes.filter((t) => t.name === 'QST');
+    case 'EXEMPT':
+    default:
+      // EXEMPT and any unknown category fail closed: no tax lines.
+      return [];
+  }
+}

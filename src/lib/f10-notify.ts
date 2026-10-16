@@ -127,6 +127,9 @@ export async function notifyEvent(
         data: JSON.stringify(event.data),
         href: event.href,
         dedupeKey: event.dedupeKey,
+        entityType: event.entityType ?? null,
+        entityId: event.entityId ?? null,
+        userId: event.userId ?? null,
       },
     });
     return true;
@@ -147,7 +150,9 @@ export async function listNotificationsFor(
   limit = 100
 ): Promise<F10ListedNotification[]> {
   const rows = await prisma.notification.findMany({
-    where: { businessId },
+    where: userId
+      ? { businessId, OR: [{ userId: null }, { userId }] }
+      : { businessId },
     orderBy: [{ readAt: { sort: 'asc', nulls: 'first' } }, { createdAt: 'desc' }],
     take: limit,
   });
@@ -167,6 +172,8 @@ export async function getUnreadCountFor(
   userId: string | undefined
 ): Promise<number> {
   return prisma.notification.count({
-    where: { businessId, readAt: null },
+    where: userId
+      ? { businessId, readAt: null, OR: [{ userId: null }, { userId }] }
+      : { businessId, readAt: null },
   });
 }

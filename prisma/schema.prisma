@@ -1085,9 +1085,16 @@ model Notification {
   dedupeKey  String // stable per (business, type, source record)
   readAt     DateTime?
   createdAt  DateTime  @default(now())
+  // M18 (F10): event-driven notifications link back to their source record
+  // and can target a single business member. NULL = whole business.
+  entityType String? // 'LEAD' | 'QUOTE' | 'INVOICE' | 'PAYMENT' | 'JOB' | 'BOOKING'
+  entityId   String? // id of the source record (for "no longer available" states)
+  userId     String? // when set, only this user sees the notification (technician-scoped)
 
   @@unique([businessId, dedupeKey])
   @@index([businessId, readAt, createdAt])
+  @@index([entityType, entityId])
+  @@index([userId])
 }
 
 // ---------------------------------------------------------------------------
