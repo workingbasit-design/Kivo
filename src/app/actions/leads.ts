@@ -51,7 +51,7 @@ export async function createLead(
   const phoneCheck = validatePhone(phone, business?.regionCode ?? 'CA');
   if (!phoneCheck.ok) return { error: INVALID_PHONE_MESSAGE };
 
-  await prisma.lead.create({
+  const lead = await prisma.lead.create({
     data: {
       name,
       phone: nullIfEmpty(phone),
@@ -62,7 +62,23 @@ export async function createLead(
       status,
       businessId,
     },
+    select: { id: true },
   });
+
+  // F10: event-driven new-lead notification (flag + preferences checked inside).
+  try {
+    const { notifyEvent } = await import('@/lib/f10-notify');
+    await notifyEvent(businessId, {
+      type: 'lead_new',
+      dedupeKey: `lead_new:${lead.id}`,
+      href: `/leads/${lead.id}`,
+      data: { name, phone: phone ?? '', source: source ?? '' },
+      entityType: 'LEAD',
+      entityId: lead.id,
+    });
+  } catch {
+    // Best-effort: the lead itself was already created.
+  }
 
   revalidatePath('/leads');
   return { ok: true };

@@ -280,7 +280,10 @@ async function runBookingWithTime(
   // All database operations below run unscoped: this is a public page with no
   // authenticated user, and businessId (from the resolved booking page slug)
   // scopes every query explicitly.
-  return unsafeUnscoped('booking-slots:createBooking', async (db) => {
+  // F10: capture the created job so we can fire a booking_new notification
+  // after the write completes (notifyEvent runs outside the unscoped block).
+  let createdBooking: { id: string; title: string; customerName: string; when: string } | null = null;
+  const result = await unsafeUnscoped('booking-slots:createBooking', async (db) => {
   let validatedTime: string | null = null;
   const gen = generateDaySlots(page.business.workingHours, date);
   if (!gen.hoursNotSet && !gen.closed) {
@@ -346,7 +349,7 @@ async function runBookingWithTime(
         select: { id: true },
       });
 
-  await db.job.create({
+  const bookingJob = await db.job.create({
     data: {
       title: service ? service.name : 'Booking request',
       date: preferred,
@@ -361,8 +364,35 @@ async function runBookingWithTime(
       customerId: customer.id,
       businessId,
     },
+    select: { id: true },
   });
+  createdBooking = {
+    id: bookingJob.id,
+    title: service ? service.name : 'Booking request',
+    customerName: name,
+    when: validatedTime ? `${date} ${validatedTime}` : date,
+  };
 
   return { ok: true };
   });
+
+  // F10: event-driven booking notification (flag + preferences checked inside).
+  // Same dedupeKey as the sync builder so the periodic sync never duplicates it.
+  if (result.ok && createdBooking) {
+    const b = createdBooking as { id: string; title: string; customerName: string; when: string };
+    try {
+      const { notifyEvent } = await import('@/lib/f10-notify');
+      await notifyEvent(businessId, {
+        type: 'booking_new',
+        dedupeKey: `booking_new:${b.id}`,
+        href: `/jobs/${b.id}`,
+        data: { job: b.title, customer: b.customerName, when: b.when },
+        entityType: 'BOOKING',
+        entityId: b.id,
+      });
+    } catch {
+      // Best-effort: the booking itself already succeeded.
+    }
+  }
+  return result;
 }

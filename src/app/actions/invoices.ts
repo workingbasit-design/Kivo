@@ -570,6 +570,31 @@ export async function recordPayment(
     logger.error('invoices: payment webhooks failed', { businessId, invoiceId: invoice.id, error: err });
   }
 
+  // F10: event-driven payment notification (flag + preferences checked inside).
+  // Same dedupeKey as the sync builder so the periodic sync never duplicates it.
+  try {
+    const { notifyEvent } = await import('@/lib/f10-notify');
+    const { centsToDollars } = await import('@/lib/money');
+    const payer = await prisma.invoice.findFirst({
+      where: { id: invoice.id, businessId },
+      select: { customer: { select: { name: true } } },
+    });
+    await notifyEvent(businessId, {
+      type: 'payment_recorded',
+      dedupeKey: `payment_recorded:${payment.id}`,
+      href: `/invoices/${invoice.id}`,
+      data: {
+        amount: String(centsToDollars(payment.amountCents)),
+        number: invoice.number,
+        customer: payer?.customer.name ?? '',
+      },
+      entityType: 'PAYMENT',
+      entityId: payment.id,
+    });
+  } catch {
+    // Best-effort: the payment itself was already recorded.
+  }
+
   revalidatePath('/invoices');
   revalidatePath(`/invoices/${invoice.id}`);
   revalidatePath('/dashboard');

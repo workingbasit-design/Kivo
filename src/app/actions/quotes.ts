@@ -379,6 +379,29 @@ export async function updateQuoteStatus(
   }
 
   await prisma.quote.update({ where: { id, businessId }, data: { status } });
+
+  // F10: event-driven quote decision notification (flag + preferences checked inside).
+  if (status === 'APPROVED' || status === 'DECLINED') {
+    try {
+      const { notifyEvent } = await import('@/lib/f10-notify');
+      const { centsToDollars } = await import('@/lib/money');
+      await notifyEvent(businessId, {
+        type: status === 'APPROVED' ? 'quote_accepted' : 'quote_declined',
+        dedupeKey: `quote_decision:${id}:${status}`,
+        href: `/quotes/${id}`,
+        data: {
+          number: quote.number,
+          customer: quote.customer.name,
+          amount: String(centsToDollars(quote.totalCents)),
+        },
+        entityType: 'QUOTE',
+        entityId: id,
+      });
+    } catch {
+      // Best-effort: the status change already succeeded.
+    }
+  }
+
   revalidatePath('/quotes');
   revalidatePath(`/quotes/${id}`);
   return { ok: true };
@@ -960,6 +983,36 @@ export async function portalQuoteDecisionByToken(
       meta: JSON.stringify({ ipHash, userAgent: userAgent?.slice(0, 200) }),
     },
   });
+
+  // F10: event-driven quote decision notification (flag + preferences checked inside).
+  try {
+    const { notifyEvent } = await import('@/lib/f10-notify');
+    const { centsToDollars } = await import('@/lib/money');
+    const full = await prisma.quote.findFirst({
+      where: { id: quoteId, businessId: resolved.rec.businessId },
+      select: {
+        number: true,
+        totalCents: true,
+        customer: { select: { name: true } },
+      },
+    });
+    if (full) {
+      await notifyEvent(resolved.rec.businessId, {
+        type: decision === 'APPROVED' ? 'quote_accepted' : 'quote_declined',
+        dedupeKey: `quote_decision:${quoteId}:${decision}`,
+        href: `/quotes/${quoteId}`,
+        data: {
+          number: full.number,
+          customer: full.customer.name,
+          amount: String(centsToDollars(full.totalCents)),
+        },
+        entityType: 'QUOTE',
+        entityId: quoteId,
+      });
+    }
+  } catch {
+    // Best-effort: the portal decision already succeeded.
+  }
 
   revalidatePath(`/q/${token}`);
   return { ok: true, status: updated.status };

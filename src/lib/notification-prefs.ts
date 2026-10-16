@@ -18,6 +18,11 @@ export const NOTIFICATION_TYPES = [
   'booking_new',
   'payment_recorded',
   'messaging_quota',
+  // F10 event-driven types (fired immediately when the event happens).
+  'lead_new',
+  'quote_accepted',
+  'quote_declined',
+  'change_requested',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 
@@ -32,6 +37,10 @@ export function defaultSettings(): NotificationSettings {
     booking_new: true,
     payment_recorded: true,
     messaging_quota: true,
+    lead_new: true,
+    quote_accepted: true,
+    quote_declined: true,
+    change_requested: true,
   };
 }
 

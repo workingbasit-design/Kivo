@@ -71,8 +71,9 @@ async function main() {
   ] as const) {
     await db.business.upsert({
       where: { id },
-      update: { name },
-      create: { id, name, timezone: 'America/Toronto' },
+      // F9: reports flag on for seeded businesses so e2e can exercise them.
+      update: { name, featureFlags: '{"reports": true}' },
+      create: { id, name, timezone: 'America/Toronto', featureFlags: '{"reports": true}' },
     });
     console.log(`business ${id} (${province})`);
   }

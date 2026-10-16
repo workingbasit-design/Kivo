@@ -897,6 +897,11 @@ model JobExpense {
   spentAt     DateTime @default(now())
   note        String? // optional longer note
   receiptUrl  String? // Vercel Blob URL of the receipt photo, when uploaded
+  // F9: tax paid on the expense, in cents — feeds the sales-tax summary (C3).
+  // Entered on the expense form (small-improvements); defaults to 0.
+  taxGstHstCents BigInt @default(0)
+  taxQstCents    BigInt @default(0)
+  taxPstCents    BigInt @default(0)
   createdBy            String? // M7: User.id of the acting membership user; 'system' for system/cron writes
   updatedBy            String? // M7: User.id of the last acting membership user
   createdAt            DateTime @default(now())

@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import { forbidden } from "next/navigation";
 import {
   TrendingUp,
   Briefcase,
@@ -18,6 +19,8 @@ import { formatMoney } from "@/lib/money";
 import { getLocale } from "@/lib/i18n/server";
 import { PageHeader, Card, StatCard, StatusBadge, EmptyState } from "@/components/ui";
 import { ReportBuilder, type SavedReportLite } from "@/components/ReportBuilder";
+import { parseFlags, isFlagOn, FLAG_REPORTS } from "@/lib/feature-flags";
+import { F9Reports } from "./f9-reports";
 
 const JOB_STATUS_ORDER = ["NEW", "SCHEDULED", "IN PROGRESS", "COMPLETED", "PAID", "CANCELLED"];
 
@@ -111,15 +114,38 @@ const enReports = {
   nothingScheduled: 'Nothing scheduled in the next 14 days.',
   otherLabelJobs: 'jobs',
   otherLabelJob: 'job',
+  yearLabel: 'Year',
 };
 
-export default async function ReportsPage() {
-  const { businessId } = await requireAuth();
+export default async function ReportsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ year?: string }>;
+}) {
+  const { businessId, role } = await requireAuth();
   const locale = await getLocale();
   const r = locale === 'fr' ? frReports : enReports;
   const moneyLocale = locale === 'fr' ? 'fr' : 'en';
-  const business = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } });
+  const business = await prisma.business.findUnique({
+    where: { id: businessId },
+    select: { currency: true, featureFlags: true },
+  });
   const currency = business?.currency;
+
+  // F9: per-business flag. When on, the six F9 reports render and the page
+  // is Owner/Admin-only (dispatchers/technicians get a 403).
+  const f9On = isFlagOn(parseFlags(business?.featureFlags), FLAG_REPORTS);
+  if (f9On && role !== 'OWNER' && role !== 'ADMIN') {
+    forbidden();
+  }
+  const { year: yearParam } = await searchParams;
+  const thisYear = new Date().getFullYear();
+  const parsedYear = Number(yearParam);
+  const f9Year =
+    Number.isInteger(parsedYear) && parsedYear >= 2000 && parsedYear <= thisYear + 1
+      ? parsedYear
+      : thisYear;
+
   const stats = await getReportStats(businessId, locale);
   const savedDb = await prisma.savedReport.findMany({
     where: { businessId },
