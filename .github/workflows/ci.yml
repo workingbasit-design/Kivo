@@ -19,6 +19,7 @@ jobs:
       - run: npx tsc --noEmit
       - run: node --experimental-strip-types scripts/check-i18n-parity.mjs
       - run: node scripts/check-copy-lint.mjs
+      - run: node scripts/check-design-tokens.mjs
       - run: npm test
       # P4-A-001: auth matrix drift — new routes/actions must be reviewed.
       - run: node tests/scripts/gen-auth-matrix.mjs --check

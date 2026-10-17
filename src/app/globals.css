@@ -21,6 +21,48 @@
      unreadable for secondary text. Remapped to the zinc-500 value (#71717a,
      ~4.8:1, passes WCAG 2.1 AA) so all 300+ muted-text usages stay legible. */
   --color-zinc-400: #71717a;
+
+  /* ---------- Part B design tokens (docs/DESIGN.md) ----------
+     Full semantic palette. All text pairs measured >= 4.5:1 (2026-10-17).
+     Use bg-ej-*, text-ej-*, border-ej-* utilities. */
+  --color-ej-bg: #ffffff;
+  --color-ej-surface: #fafaf7;
+  --color-ej-raised: #ffffff;
+  --color-ej-border: #e8e8e3;
+  --color-ej-secondary: #55554e;
+  --color-ej-disabled: #71717a;
+  --color-ej-primary: #161616;
+  --color-ej-on-primary: #ffffff;
+  --color-ej-accent: #c8f04a;
+  --color-ej-focus: #161616;
+  --color-ej-success: #047857;
+  --color-ej-success-bg: #ecfdf5;
+  --color-ej-warning: #b45309;
+  --color-ej-warning-bg: #fffbeb;
+  --color-ej-danger: #c0392b;
+  --color-ej-danger-bg: #fef2f2;
+  --color-ej-info: #1d4ed8;
+  --color-ej-info-bg: #eff6ff;
+  /* Dark mode (forward-compat; no toggle yet) */
+  --color-ej-bg-dark: #161616;
+  --color-ej-surface-dark: #1e2426;
+  --color-ej-ink-dark: #f5f5f4;
+  --color-ej-muted-dark: #a8b0b3;
+  --color-ej-accent-dark: #c8f04a;
+  --color-ej-success-dark: #6ee7b7;
+  --color-ej-warning-dark: #fcd34d;
+  --color-ej-danger-dark: #fda4af;
+  /* Radius by hierarchy */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+  /* Motion */
+  --motion-fast: 100ms;
+  --motion-base: 200ms;
+  --motion-slow: 250ms;
+  /* Type: system stack (migrate from Geist in Part C) */
+  --font-ej-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 :root {

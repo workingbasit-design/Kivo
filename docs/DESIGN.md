@@ -1,102 +1,258 @@
-# EveryJob Design System (DESIGN.md)
+# EveryJob Design System
 
-## Design principle
+**Status:** Part B (design direction and tokens). Written 2026-10-17. Supersedes the 2026-10-14 draft.  
+**References:** Vercel Web Interface Guidelines (fetched 2026-10-17), Apple HIG principles (clarity, consistency, feedback, legibility — not visual effects).
 
-Built for a phone held in one hand, often in a work glove, often in bright sunlight, between jobs.
+---
 
-That means:
-- **High contrast.** Dark text on light backgrounds. No grey-on-grey. No washed-out icons.
-- **Large numerals.** Money and times are the most important numbers on screen. They are big and tabular.
-- **48px primary tap targets.** Every primary action is at least 48px tall. Secondary actions at least 44px.
-- **Primary actions in thumb reach.** Bottom of screen on mobile. Never top-right only.
-- **Minimal decoration.** No decorative gradients, no glass blur on work screens, no shadows for their own sake.
+## 1. Users and context
 
-## Color tokens (6 named)
+**The pro.** A plumber, electrician, or cleaner running a 1–5 person shop in Canada. They use their phone outdoors, in bright sunlight, in the cold, sometimes in gloves, and get interrupted constantly. They are not tech people. If the app needs configuring before it works, they will not configure it — they will go back to paper or texting.
 
-| Token | Hex | Use | Contrast |
+**The homeowner.** Finds pros, requests quotes, approves work, pays invoices. On any device, iPhone or Android, often on a slow connection.
+
+**The app's main job.** Show what needs doing next, and get the business paid. Everything else is secondary.
+
+**Constraints that shape every decision:**
+- Sunlight readability beats beauty. Contrast is not decoration.
+- Gloves and cold mean 44px minimum touch targets, no tiny controls.
+- Interruptions mean state must survive: drafts autosave, forms never lose input.
+- Android is as important as iPhone. No iOS-only patterns.
+- French text runs ~15% longer. Nothing important gets cut off in French.
+
+---
+
+## 2. Principles
+
+1. **Truth first.** Every number is right and the same on every screen. If a number looks wrong, fix the source, never the display.
+2. **What's next before what's there.** Every screen leads with the next action, not a museum of what exists.
+3. **Readable anywhere.** Sunlight, gloves, 200% text size, French, dark mode. If it only works in ideal conditions, it doesn't work.
+4. **Calm.** Colour always means something. Nothing moves without a reason. No decoration.
+5. **Instant.** Every tap answers within 100ms. Key screens load in under 2.5s on 4G.
+
+---
+
+## 3. Brand anchor
+
+**Lime stays.** It is the brand's signature. But it has exactly two jobs:
+
+1. **Fill behind dark text** for the single primary action where black would disappear (e.g., on dark surfaces), and
+2. **The active tab indicator** in the bottom nav.
+
+**Black is the primary action colour** on light surfaces (Part A unified all primary buttons to `primaryBtnClass`/black). Lime is never text on white, never decoration, never a second "primary."
+
+**Rules:**
+- One primary action per screen. It is black on light, lime-fill on dark.
+- Lime never appears as text, borders, or backgrounds except the two jobs above.
+- If lime and black ever compete on the same screen, black wins and lime steps back to the active tab only.
+
+---
+
+## 4. Colour tokens
+
+All colours are defined in `src/app/globals.css` (`@theme`). Components reference tokens, never raw values. Contrast ratios measured 2026-10-17 (WCAG 2.1 formula).
+
+### Light mode
+
+| Token | Value | Use | Contrast on bg |
 |---|---|---|---|
-| `--ej-ink` | `#14181A` | Primary text, headings | 16.5:1 on white |
-| `--ej-paper` | `#FFFFFF` | Page background | - |
-| `--ej-smoke` | `#F2F4F3` | List row separator, subtle fill | - |
-| `--ej-muted` | `#5A6366` | Secondary text, meta | 7.0:1 on white |
-| `--ej-lime` | `#C8F542` | Fill behind dark text (buttons, highlights). Never as text on white. | Ink on lime: 11.2:1 |
-| `--ej-alert` | `#C0392B` | Late, errors, destructive actions | 5.9:1 on white |
+| `--color-ej-bg` | `#ffffff` | Page background | — |
+| `--color-ej-surface` | `#fafaf7` | Cards, grouped containers | — |
+| `--color-ej-raised` | `#ffffff` | Popovers, sheets (over surface) | — |
+| `--color-ej-border` | `#e8e8e3` | Borders, dividers | — |
+| `--color-ej-ink` | `#161616` | Primary text | 18.1:1 ✅ |
+| `--color-ej-secondary` | `#55554e` | Secondary text | 7.5:1 ✅ |
+| `--color-ej-muted` | `#5a6366` | Muted text, placeholders | 6.2:1 ✅ |
+| `--color-ej-disabled` | `#71717a` | Disabled text | 4.8:1 ✅ |
+| `--color-ej-primary` | `#161616` | Primary action fill | 18.1:1 white text ✅ |
+| `--color-ej-on-primary` | `#ffffff` | Text on primary | — |
+| `--color-ej-accent` | `#c8f04a` | Lime: active tab, dark-surface primary | 13.8:1 ink text ✅ |
+| `--color-ej-focus` | `#161616` | Focus ring | — |
+| `--color-ej-success` | `#047857` | Success text | 5.5:1 ✅ |
+| `--color-ej-success-bg` | `#ecfdf5` | Success background | 5.2:1 w/ text ✅ |
+| `--color-ej-warning` | `#b45309` | Warning text | 5.0:1 ✅ |
+| `--color-ej-warning-bg` | `#fffbeb` | Warning background | 4.8:1 w/ text ✅ |
+| `--color-ej-danger` | `#c0392b` | Danger text | 5.4:1 ✅ |
+| `--color-ej-danger-bg` | `#fef2f2` | Danger background | — |
+| `--color-ej-info` | `#1d4ed8` | Info text | 6.3:1 ✅ |
+| `--color-ej-info-bg` | `#eff6ff` | Info background | — |
 
-Lime works as a **fill behind dark text**, not as text on white. Lime text on white fails contrast. Lime background with ink text passes easily.
+### Dark mode
 
-Status colors (used only in badges, never as body text):
-- New: `#E8F0FE` bg, `#1A56DB` text
-- Scheduled: `#FEF3C7` bg, `#92400E` text
-- In progress: `#DBEAFE` bg, `#1E40AF` text
-- Completed: `#D1FAE5` bg, `#065F46` text
-- Cancelled: `#F3F4F6` bg, `#4B5563` text
-- Late: `#FEE2E2` bg, `#991B1B` text
-- Paid: `#D1FAE5` bg, `#065F46` text
+Dark mode tokens are defined for forward compatibility. The app does not yet have a dark-mode toggle; when it does, these are the values.
 
-## Type
+| Token | Value | Contrast |
+|---|---|---|
+| `--color-ej-bg-dark` | `#161616` | — |
+| `--color-ej-surface-dark` | `#1e2426` | — |
+| `--color-ej-ink-dark` | `#f5f5f4` | 16.6:1 ✅ |
+| `--color-ej-muted-dark` | `#a8b0b3` | 8.2:1 ✅ |
+| `--color-ej-accent-dark` | `#c8f04a` | 13.8:1 ink text ✅ |
+| `--color-ej-success-dark` | `#6ee7b7` | 11.9:1 ✅ |
+| `--color-ej-warning-dark` | `#fcd34d` | 12.6:1 ✅ |
+| `--color-ej-danger-dark` | `#fda4af` | 9.6:1 ✅ |
 
-**One typeface:** system stack (`-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`). No webfont download. Fast, familiar, readable in sunlight.
+### Status colour rule
 
-**Type scale:**
+**Status colour is always paired with an icon or a word.** Never colour alone. A red dot means nothing to a colourblind user in sunlight. A red triangle plus the word "Late" means something to everyone.
 
-| Role | Size | Weight | Use |
+---
+
+## 5. Type
+
+**Font stack** (system native, no webfont download):
+```css
+--font-ej-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+```
+System fonts feel native on every phone and cost zero load time. (The project currently loads Geist; migrate to system stack in Part C.)
+
+**Type scale** (named roles, not sizes):
+
+| Role | Size / Weight | Line height | Use |
 |---|---|---|---|
-| Page title | 24px / 1.25 | 700 | Page headers |
-| Section title | 18px / 1.3 | 600 | Card/section headings |
-| Body | 16px / 1.5 | 400 | Main content |
-| Meta | 14px / 1.4 | 400 | Secondary info, muted |
-| Small | 12px / 1.4 | 400 | Only for timestamps, never body copy |
-| Money large | 32px / 1.1 | 700 | Dashboard totals, invoice totals |
-| Money medium | 20px / 1.2 | 600 | List amounts |
-| Time | 18px / 1.2 | 600 | Schedule times |
+| `title` | 28px / 700 | 1.2 | Screen titles |
+| `headline` | 20px / 700 | 1.3 | Card titles, section headers |
+| `body` | 16px / 400 | 1.5 | Default text, list rows |
+| `callout` | 14px / 600 | 1.4 | Labels, buttons, chips |
+| `footnote` | 12px / 400 | 1.4 | Hints, timestamps, captions |
 
-**Money and times use tabular figures** (`font-variant-numeric: tabular-nums`) so amounts line up in lists.
+**Rules:**
+- Inputs are at least 16px. Below 16px, iOS zooms on focus. No exceptions.
+- Money, times, and counts use tabular figures (`font-variant-numeric: tabular-nums`) so columns align.
+- Maximum line length 65ch for body text.
+- Test at 200% text size. Layout must not break; truncation is never the answer for important content.
 
-**Sentence case everywhere.** No all-caps labels. No em/en dashes. No arrows on buttons.
+---
 
-## Layout
+## 6. Space
 
-**Lists, not card grids, on work screens.** Jobs, Schedule agenda, Money rows, Customers, Quotes, Invoices are vertical lists with dividers. One row = one item. Tap a row to open it.
+**Base grid:** 4px. All spacing is a multiple of 4.
 
-**Cards only where grouping means something.** Dashboard summary, Money totals, Settings sections. A card groups related data. It is not a default container.
+| Token | Value | Use |
+|---|---|---|
+| `--space-1` | 4px | Tight gaps, icon padding |
+| `--space-2` | 8px | Default gap between related items |
+| `--space-3` | 12px | Card internal padding (compact) |
+| `--space-4` | 16px | Page padding (mobile), card padding |
+| `--space-5` | 20px | Card padding (comfortable) |
+| `--space-6` | 24px | Section gaps |
+| `--space-8` | 32px | Large section gaps |
+| `--space-12` | 48px | Page padding (desktop) |
 
-**Corner radius and shadow vary with hierarchy:**
-- List rows: 0 radius, 1px bottom border (`--ej-smoke`). No shadow.
-- Grouping cards: 12px radius, 1px border, no shadow.
-- Floating actions (bottom sheet, dialog): 16px radius, 1px border + soft shadow (`0 8px 24px rgba(0,0,0,0.12)`).
-- Never the same rounded-card-with-soft-shadow for everything.
+**Rules:**
+- Page padding: 16px mobile, 32px desktop.
+- Tappable list rows: minimum 56px height, 44px minimum touch target.
+- Bottom nav clearance: content gets `padding-bottom` equal to nav height + safe area. Never hide content under bars (WCAG 2.4.11).
 
-**Spacing:** 16px page padding on mobile, 24px on desktop. 12px between list rows (vertical padding). 8px between label and value.
+---
 
-## One memorable element
+## 7. Shape and depth
 
-**The "today" timeline on the Schedule screen.** A vertical line down the left of today's agenda, with a dot at the current time. Jobs above the dot are done or in progress. Jobs below are upcoming. Everything around it stays quiet — no other decorative elements compete.
+**Radius by hierarchy:**
 
-Implementation: a 2px `--ej-lime` line with a 10px ink dot at the current-time position, computed from business timezone. Only on today's view. Other days show a plain list.
+| Token | Value | Use |
+|---|---|---|
+| `--radius-sm` | 8px | Inputs, chips, small buttons |
+| `--radius-md` | 12px | Cards, grouped containers |
+| `--radius-lg` | 16px | Sheets, dialogs, large cards |
+| `--radius-pill` | 999px | Only where shape means something (toggles, status pills) |
 
-## Tap targets and thumb reach
+**Elevation** (three levels, each with a purpose):
 
-- Primary actions: min 48px height, full-width on mobile or bottom-anchored.
-- Secondary actions: min 44px.
-- Filter chips: min 36px height, 12px horizontal padding.
-- Bottom nav: 64px tall, icons 24px, labels 11px.
-- Primary action (e.g. "New job") sits in thumb reach: bottom-right on mobile, or as a full-width button at the bottom of the list.
-
-## Accessibility
-
-- WCAG 2.2 AA: text contrast 4.5:1 minimum (all tokens pass, see table above).
-- Focus visible: 2px `--ej-ink` outline, 2px offset.
-- Touch targets: 44px minimum (48px for primary).
-- Screen reader labels on all icon-only buttons.
-- Reduced motion: respect `prefers-reduced-motion`, no animation on work screens.
-
-## What changed from the old look
-
-| Old (templated) | New (deliberate) |
+| Token | Use |
 |---|---|
-| Near-black header | White header, ink text |
-| One bright lime accent everywhere | Lime only as fill behind dark text on primary actions |
-| Identical rounded cards + soft shadow | Lists with dividers; cards only for grouping; radius/shadow vary |
-| All-caps labels | Sentence case |
-| Glass blur | No blur on work screens |
-| Floating mascot + robot button | Nothing floats (Part B) |
+| `--elevation-1` | Sticky bars (top bar, bottom nav) — subtle separation |
+| `--elevation-2` | Sheets, popovers — clearly above content |
+| `--elevation-3` | Dialogs, toasts — highest, demands attention |
+
+**Rules:**
+- Flat lists get no shadows. Shadows mean "this floats above."
+- No glass, blur, or gradient decoration. Surfaces are solid.
+- One radius per hierarchy level. A card and a chip do not share a radius.
+
+---
+
+## 8. Icons
+
+**One set:** Lucide (`lucide-react`, already in use).  
+**One stroke weight:** 2px (Lucide default).  
+**Two sizes:** 16px (inline, chips) and 20px (buttons, nav). 24px only for empty-state illustrations.
+
+**Rules:**
+- Icons for navigation, status, and actions only. No decorative icon tiles.
+- Every icon-only button has an `aria-label`.
+- Decorative icons get `aria-hidden="true"`.
+- Status icons always accompany a text label (see §4).
+
+---
+
+## 9. Motion
+
+**Durations:** 100–250ms. Nothing longer.
+
+| Token | Value | Use |
+|---|---|---|
+| `--motion-fast` | 100ms | Pressed states, toggles |
+| `--motion-base` | 200ms | Sheets, expanding rows |
+| `--motion-slow` | 250ms | Page transitions (max) |
+
+**Easing:** `cubic-bezier(0.32, 0.72, 0, 1)` (ease-out, iOS-like).
+
+**Rules:**
+- Animate only state changes caused by the user (opening a sheet, expanding a row, confirming an action).
+- Nothing animates on page load.
+- Respect `prefers-reduced-motion`: disable all non-essential animation.
+
+---
+
+## 10. Density
+
+**Phones:** Comfortable. 56px rows, 16px padding, one column. Thumb-reachable primary actions.
+
+**Desktop (1024px+):** Denser. Tables instead of cards where it helps, two-pane list+detail, 12px padding in tables. More information per screen, same touch targets for interactive elements.
+
+---
+
+## 11. Not this
+
+The AI-built defaults we are avoiding, and what we do instead:
+
+| Instead of... | We do... |
+|---|---|
+| Identical cards with one radius and one shadow | Radius by hierarchy (§7); flat lists have no shadow |
+| Rainbow icon tiles | One icon set, no decorative tiles (§8) |
+| Big number + small label for everything | Label includes its time range; empty variant when no data |
+| Labels joined with middle dots | Plain words or commas |
+| Arrows on "View all" | Plain "View all", no arrow |
+| ALL-CAPS labels | Sentence case everywhere |
+| Glossy/glass/blur effects | Solid surfaces, no translucency |
+| Decorative gradients | Flat fills; gradients only for button depth (subtle) |
+| Entrance animations on every section | No load animations (§9) |
+| Spaced hyphens as dashes | Commas, parentheses, or periods |
+| Unmeasured claims ("in 20 seconds") | No claims we haven't measured |
+| Exclamation marks | Periods. Calm. |
+| Two primary button styles | One: black on light (§3) |
+
+---
+
+## 12. Self-review
+
+Checked against §1 (users and context):
+
+- **Sunlight:** All text pairs ≥4.5:1. Status never colour-alone. ✅
+- **Gloves:** 44px targets, 56px rows, 16px inputs. ✅
+- **Interruptions:** Tokens don't solve this; Part E (screens) must ensure drafts autosave. ⚠️ Flagged for Part E.
+- **Android:** System font stack, no iOS-only patterns. ✅
+- **French:** Type scale tested at 200% covers French length; Part F verifies per-screen. ⚠️ Needs verification.
+- **"Would look the same on any other app":** The lime-on-black brand anchor and the trades-specific density (56px rows, outdoor-first contrast) are distinctive. The principles are generic enough to be true but specific enough to check. Acceptable.
+
+**Open questions:**
+1. Migrate from Geist to system font stack now, or in Part C with the component library?
+2. Dark mode: build the toggle now, or ship tokens and add the toggle in Part E?
+3. The 50+ remaining copy violations from Part A — bulk-fix or gradual?
+
+---
+
+## Token implementation
+
+Defined in `src/app/globals.css` (`@theme` block). Components use `bg-ej-*`, `text-ej-*`, `border-ej-*` utilities. Raw hex/rgb/hsl outside `globals.css` fails the design lint (`scripts/check-design-tokens.mjs`, in CI).
