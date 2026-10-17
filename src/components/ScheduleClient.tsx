@@ -3,20 +3,23 @@
 import React, { useState, useTransition } from 'react';
 import Link from 'next/link';
 import {
-  Calendar as CalendarIcon, Clock, MapPin,
-  User as UserIcon, Trash2, Edit3, Search, ListPlus, CheckCircle2, XCircle
+  Calendar as CalendarIcon, Clock, MapPin, GripVertical,
+  User as UserIcon, Trash2, Edit3, Search, ListPlus, CheckCircle2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { updateJobStatus, deleteJob, seedSampleJobs, updateJobSchedule } from '@/app/actions/jobs';
 import { validNextStatuses, JOB_STATUSES } from '@/lib/job-status';
 import MoneyText from '@/components/MoneyText';
 import DateTimeText from '@/components/DateTimeText';
-import { toISODateLocal, hasJobTime, formatJobTime, formatStatusLabel, jobDisplayStatus, cn } from '@/lib/utils';
+import { toISODateLocal, hasJobTime, formatJobTime, formatStatusLabel, jobDisplayStatus, cn, localeDateTag } from '@/lib/utils';
 import { t, type Locale } from '@/lib/i18n';
 import {
   Card, StatusBadge, EmptyState, Field,
   primaryBtnClass, secondaryBtnClass, dangerBtnClass, inputClass, selectClass, Dialog,
 } from '@/components/ui';
+import { Banner } from '@/components/design/feedback';
+import { FilterChip } from '@/components/design/navigation';
+import { DRAG_TYPE, type DragJob } from '@/components/schedule/WeekStrip';
 
 type Job = {
   id: string;
@@ -173,6 +176,50 @@ export default function ScheduleClient({
   // Today's view (filter or explicit day) gets the DESIGN.md timeline.
   const isTodayView = selectedDate === 'TODAY' || selectedDate === todayStr;
 
+  // Part E2: conflict detection. Two OPEN, timed visits on the same day with
+  // the same start time. No invented durations — a shared start time is a
+  // fact. Completed, paid, and cancelled visits cannot conflict.
+  const OPEN_STATUSES = new Set(['NEW', 'SCHEDULED', 'IN PROGRESS']);
+  const conflicts = (() => {
+    const byDayTime = new Map<string, typeof filteredJobs>();
+    for (const job of filteredJobs) {
+      if (!OPEN_STATUSES.has(job.status)) continue;
+      if (!hasJobTime(job.time)) continue;
+      const key = `${job.dateKey}|${timeToMinutes(job.time)}`;
+      const list = byDayTime.get(key);
+      if (list) list.push(job);
+      else byDayTime.set(key, [job]);
+    }
+    return [...byDayTime.values()].filter((l) => l.length > 1);
+  })();
+
+  const dayLabel = (dateKey: string) =>
+    new Date(`${dateKey}T00:00:00`).toLocaleDateString(localeDateTag(locale), {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+    });
+
+  const conflictMessage = (() => {
+    if (conflicts.length === 0) return null;
+    const [a, b] = conflicts[0];
+    const time = formatJobTime(a.time, locale);
+    const day = dayLabel(a.dateKey);
+    if (conflicts.length === 1) {
+      return T('schedConflictOne')
+        .replace('{a}', a.title)
+        .replace('{b}', b.title)
+        .replace('{time}', time)
+        .replace('{day}', day);
+    }
+    return T('schedConflictMany')
+      .replace('{a}', a.title)
+      .replace('{b}', b.title)
+      .replace('{time}', time)
+      .replace('{day}', day)
+      .replace('{n}', String(conflicts.length - 1));
+  })();
+
   const handleStatusChange = (jobId: string, newStatus: string) => {
     setActionError(null);
     startTransition(async () => {
@@ -267,13 +314,13 @@ export default function ScheduleClient({
           in full, never as a truncated chip. */}
       {isAgendaDay && (
         <div>
-          <h2 className="text-base font-bold text-zinc-900">
+          <h2 className="text-base font-bold text-ej-ink">
             <DateTimeText date={selectedDate} variant="weekday" timezone={timezone} locale={locale} />
           </h2>
           {activeDayHoliday && (
-            <p className="text-sm text-amber-700 mt-0.5">🎉 {activeDayHoliday}</p>
+            <p className="text-sm text-ej-warning mt-0.5">🎉 {activeDayHoliday}</p>
           )}
-          <p className="text-xs text-zinc-500 mt-0.5">
+          <p className="text-xs text-ej-muted mt-0.5">
             {agendaJobs.length === 1
               ? T('jobsCountOne').replace('{count}', '1')
               : T('jobsCountMany').replace('{count}', String(agendaJobs.length))}
@@ -290,19 +337,12 @@ export default function ScheduleClient({
             className="flex items-center gap-1.5 overflow-x-auto pb-1"
           >
             {(['ALL', ...JOB_STATUSES] as const).map((st) => (
-              <button
+              <FilterChip
                 key={st}
+                label={st === 'ALL' ? T('jobsTabAll') : formatStatusLabel(st, locale)}
+                selected={statusFilter === st}
                 onClick={() => setStatusFilter(st)}
-                aria-pressed={statusFilter === st}
-                className={cn(
-                  'px-3 min-h-[44px] rounded-lg text-xs font-semibold whitespace-nowrap transition-colors border',
-                  statusFilter === st
-                    ? 'bg-ink text-white border-ink'
-                    : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50'
-                )}
-              >
-                {st === 'ALL' ? T('jobsTabAll') : formatStatusLabel(st, locale)}
-              </button>
+              />
             ))}
           </div>
           {/* Edge hint: fade on the right so the scrollable chips read as scrollable. */}
@@ -316,7 +356,7 @@ export default function ScheduleClient({
           <label htmlFor="schedule-search" className="sr-only">
             {common('search')}
           </label>
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ej-muted pointer-events-none" />
           <input
             id="schedule-search"
             type="search"
@@ -328,20 +368,19 @@ export default function ScheduleClient({
         </div>
       </div>
 
-      {/* Rejection feedback - status/date changes the server refuses surface here. */}
+      {/* Rejection feedback — status/date changes the server refuses surface here. */}
       {actionError && (
-        <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-2xl px-4 py-3">
-          <XCircle size={14} className="mt-0.5 shrink-0" />
-          <span className="flex-1">{actionError}</span>
-          <button
-            type="button"
-            onClick={() => setActionError(null)}
-            className="text-rose-400 hover:text-rose-600 font-bold min-w-[44px] min-h-[44px] -m-2 flex items-center justify-center"
-            aria-label={t(locale, 't10work.statusCloseDialog')}
-          >
-            ✕
-          </button>
-        </div>
+        <Banner
+          tone="error"
+          title={actionError}
+          onDismiss={() => setActionError(null)}
+        />
+      )}
+
+      {/* Part E2: overlapping visits. One warning per screen, naming the
+          visits, the time, and the day. */}
+      {conflictMessage && (
+        <Banner tone="warning" title={T('schedConflictTitle')} message={conflictMessage} />
       )}
 
       {/* Jobs list - the day's agenda when a single day is selected */}
@@ -379,8 +418,8 @@ export default function ScheduleClient({
       ) : (
         // DESIGN.md: work screens are vertical lists with dividers, not card
         // grids. On today's view the list carries the one memorable element:
-        // a 2px lime line down the left with a 10px ink dot at the current
-        // time (business timezone). Other days show a plain list. The dot
+        // a 2px ink line down the left with a 10px dot at the current time
+        // (business timezone). Other days show a plain list. The dot
         // lives in the outer wrapper so divide-y still treats the first
         // row as the first child (no double top border).
         <div className="relative">
@@ -393,55 +432,75 @@ export default function ScheduleClient({
           )}
           <div
             className={cn(
-              'bg-white rounded-xl border border-zinc-200 overflow-hidden divide-y divide-ej-smoke',
-              isTodayView && 'border-l-2 border-l-ej-lime'
+              'bg-ej-bg rounded-xl border border-ej-border overflow-hidden divide-y divide-ej-border',
+              isTodayView && 'border-l-2 border-l-ej-ink'
             )}
           >
-          {agendaJobs.map((job, i) => {
+          {agendaJobs.map((job) => {
             const isEditing = editingJobId === job.id;
             const nextStatuses = validNextStatuses(job.status);
 
             return (
               <div
                 key={job.id}
-                className="p-4 md:p-5 ej-row-in"
-                style={{ '--row-delay': `${Math.min(i, 10) * 40}ms` } as React.CSSProperties}
+                className="p-4 md:p-5"
               >
-                <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+                <div className="flex items-start gap-2">
+                  {/* Drag handle (desktop only). The reschedule dialog is the
+                      non-drag path for touch and keyboard (WCAG 2.5.7). */}
+                  <span
+                    draggable
+                    aria-hidden="true"
+                    title={T('schedDragHandle').replace('{title}', job.title)}
+                    onDragStart={(e) => {
+                      const payload: DragJob = {
+                        id: job.id,
+                        title: job.title,
+                        time: job.time ?? '',
+                        status: job.status,
+                      };
+                      e.dataTransfer.setData(DRAG_TYPE, JSON.stringify(payload));
+                      e.dataTransfer.effectAllowed = 'move';
+                    }}
+                    className="hidden md:inline-flex min-w-[44px] min-h-[44px] items-center justify-center text-ej-muted cursor-grab active:cursor-grabbing shrink-0 -ml-2"
+                  >
+                    <GripVertical size={18} />
+                  </span>
+                  <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 flex-1 min-w-0">
                   {/* Tap target → job detail */}
                   <Link href={`/jobs/${job.id}`} className="flex-1 min-w-0 space-y-2.5 py-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <StatusBadge status={jobDisplayStatus(job.status, job.date)} />
-                      <span className="inline-flex items-center gap-1.5 text-xs font-bold text-ink bg-smoke px-2.5 py-1 rounded-md tabular-nums">
+                      <span className="inline-flex items-center gap-1.5 text-xs font-bold text-ej-ink bg-ej-ink/10 px-2.5 py-1 rounded-md tabular-nums">
                         <Clock size={12} />
                         {hasJobTime(job.time) ? formatJobTime(job.time, locale) : T('schedTimeTbd')}
                       </span>
-                      <span className="text-xs font-medium text-zinc-500">
+                      <span className="text-xs font-medium text-ej-muted">
                         <DateTimeText date={job.dateKey} variant="weekday" timezone={timezone} locale={locale} />
                       </span>
                     </div>
 
                     <div>
-                      <p className="text-base font-bold text-zinc-900">{job.title}</p>
-                      <p className="text-xs font-medium text-zinc-600 mt-0.5">
-                        {jobsL('customer')}: <span className="font-semibold text-zinc-900">{job.customer.name}</span>
+                      <p className="text-base font-bold text-ej-ink">{job.title}</p>
+                      <p className="text-xs font-medium text-ej-secondary mt-0.5">
+                        {jobsL('customer')}: <span className="font-semibold text-ej-ink">{job.customer.name}</span>
                         {job.customer.phone ? ` (${job.customer.phone})` : ''}
                       </p>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-zinc-500 font-medium">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-ej-muted font-medium">
                       {job.address && (
                         <span className="inline-flex items-center gap-1 min-w-0">
-                          <MapPin size={12} className="text-zinc-400 shrink-0" />
+                          <MapPin size={12} className="text-ej-muted shrink-0" />
                           <span className="truncate">{job.address}</span>
                         </span>
                       )}
                       <span className="inline-flex items-center gap-1">
-                        <UserIcon size={12} className="text-zinc-400" />
-                        {jobsL('technician')}: <strong className="text-zinc-700">{job.assignedTo?.name || T('jobUnassigned')}</strong>
+                        <UserIcon size={12} className="text-ej-muted" />
+                        {jobsL('technician')}: <strong className="text-ej-secondary">{job.assignedTo?.name || T('jobUnassigned')}</strong>
                       </span>
                       <span>
-                        {T('schedAmount')}: <strong className="text-zinc-900 tabular-nums"><MoneyText dollars={job.price} locale={locale} /></strong>
+                        {T('schedAmount')}: <strong className="text-ej-ink tabular-nums"><MoneyText dollars={job.price} locale={locale} /></strong>
                       </span>
                     </div>
                   </Link>
@@ -467,7 +526,7 @@ export default function ScheduleClient({
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => startEdit(job)}
-                        className="min-w-[44px] min-h-[44px] flex items-center justify-center text-zinc-600 rounded-full transition-all hover:scale-105 active:scale-95 bg-white border border-zinc-200 shadow-sm"
+                        className="min-w-[44px] min-h-[44px] flex items-center justify-center text-ej-secondary rounded-full bg-ej-bg border border-ej-border"
                         title={T('schedRescheduleTitle')}
                         aria-label={T('schedRescheduleTitle')}
                       >
@@ -476,7 +535,7 @@ export default function ScheduleClient({
                       <button
                         onClick={() => setRemovingJobId(job.id)}
                         disabled={isPending}
-                        className="min-w-[44px] min-h-[44px] flex items-center justify-center text-rose-600 rounded-full transition-all hover:scale-105 active:scale-95 disabled:opacity-50 bg-white border border-zinc-200 shadow-sm"
+                        className="min-w-[44px] min-h-[44px] flex items-center justify-center text-ej-danger rounded-full disabled:opacity-50 bg-ej-bg border border-ej-border"
                         title={jobsL('removeFromSchedule')}
                         aria-label={jobsL('removeFromSchedule')}
                       >
@@ -485,11 +544,13 @@ export default function ScheduleClient({
                     </div>
                   </div>
                 </div>
+                </div>
 
-                {/* Inline reschedule form */}
+                {/* Inline reschedule form — the non-drag path for moving a visit
+                    (WCAG 2.5.7). Works with keyboard, touch, and screen readers. */}
                 {isEditing && (
-                  <div className="mt-4 p-4 bg-zinc-50 rounded-xl border border-zinc-200 space-y-4">
-                    <p className="text-xs font-bold text-zinc-900">{T('schedReschedule')}</p>
+                  <div className="mt-4 p-4 bg-ej-surface rounded-xl border border-ej-border space-y-4">
+                    <p className="text-xs font-bold text-ej-ink">{T('schedReschedule')}</p>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <Field label={jobsL('date')}>
                         <input
@@ -553,7 +614,7 @@ export default function ScheduleClient({
         onClose={() => !isPending && setRemovingJobId(null)}
         title={jobsL('confirmRemoveTitle')}
       >
-        <p className="text-sm text-zinc-500 leading-relaxed">
+        <p className="text-sm text-ej-secondary leading-relaxed">
           {(() => {
             const target = initialJobs.find((j) => j.id === removingJobId);
             return target

@@ -1,14 +1,17 @@
 import React from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
+import { CalendarDays, AlertTriangle } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card, primaryBtnClass } from '@/components/ui';
+import { Banner } from '@/components/design/feedback';
 import ScheduleClient from '@/components/ScheduleClient';
+import WeekStrip, { type WeekStripDay } from '@/components/schedule/WeekStrip';
 import WeatherStrip, { type StripDay } from '@/components/WeatherStrip';
 import { getWeatherForDates, geocodeLocation } from '@/lib/weather';
 import { getHolidays } from '@/lib/holidays';
-import { toISODateLocal, todayInTimezone, cn, localeDateTag, formatDateShort } from '@/lib/utils';
+import { toISODateLocal, todayInTimezone, localeDateTag } from '@/lib/utils';
+import { formatDisplayDate } from '@/lib/attention';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { getJobCounts, getOverdueJobs, getScheduleWeekJobs } from '@/lib/job-queries';
@@ -170,152 +173,80 @@ export default async function SchedulePage({
         <WeatherStrip days={stripDays} placeName={geo?.name.split(',').slice(0, 2).join(',') ?? ''} />
       )}
 
-      {/* Overdue jobs - past date, still open. Not in the week grid above,
-          but the owner must see them here. */}
+      {/* Late jobs — past date, still open. Not in the week grid (they're not
+          in the current week) but the owner must see them here. One urgency
+          signal per row: icon + the word "Late", never colour alone. */}
       {overdueJobs.length > 0 && (
-        <Card className="p-4 border-red-200 bg-red-50/60">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="w-2 h-2 rounded-full bg-red-500" aria-hidden />
-            <h2 className="text-sm font-bold text-red-900">
-              {T('schedOverdueTitle')} ({overdueJobs.length})
-            </h2>
-          </div>
-          <p className="text-xs text-red-700 mb-3">{T('schedOverdueDesc')}</p>
-          <ul className="divide-y divide-red-100">
+        <section aria-label={T('schedOverdueTitle')}>
+          <Banner
+            tone="warning"
+            title={`${T('schedOverdueTitle')} (${overdueJobs.length})`}
+            message={T('schedOverdueDesc')}
+          />
+          <ul className="mt-3 bg-ej-bg border border-ej-border rounded-xl overflow-hidden divide-y divide-ej-border">
             {overdueJobs.map((j) => (
               <li key={j.id}>
                 <Link
                   href={`/jobs/${j.id}`}
-                  className="flex items-center justify-between gap-3 py-2.5 min-h-[44px]"
+                  className="flex items-center justify-between gap-3 px-4 py-3 min-h-[56px]"
                 >
                   <span className="min-w-0">
-                    <span className="block text-sm font-semibold text-zinc-900 truncate">
+                    <span className="block text-sm font-semibold text-ej-ink truncate">
                       {j.title}
                     </span>
-                    <span className="block text-xs text-zinc-500 truncate">{j.customer.name}</span>
-                    <span className="block text-xs text-zinc-400 truncate">{formatDateShort(j.date)}</span>
+                    <span className="block text-xs text-ej-secondary truncate">{j.customer.name}</span>
+                    <span className="block text-xs text-ej-muted truncate">
+                      {formatDisplayDate(j.date, business?.timezone, locale)}
+                    </span>
                   </span>
-                  <span className="shrink-0 text-xs font-bold text-red-700 bg-red-100 px-2 py-1 rounded-full">
+                  <span className="shrink-0 inline-flex items-center gap-1 text-xs font-bold text-ej-warning bg-ej-warning-bg px-2 py-1 rounded-full">
+                    <AlertTriangle size={12} aria-hidden="true" />
                     {T('schedOverdueBadge')}
                   </span>
                 </Link>
               </li>
             ))}
           </ul>
-        </Card>
+        </section>
       )}
 
-      {/* Week navigator */}
+      {/* Week navigator + 7-day strip (client: day cells are drop targets
+          for desktop drag-and-drop rescheduling). */}
       <Card className="p-4">
-        <div className="flex items-center justify-between gap-2 mb-4">
-          <Link
-            href={weekLink(addDays(weekStart, -7))}
-            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-zinc-700 transition-all hover:scale-105 active:scale-95 bg-white border border-zinc-200 shadow-sm"
-            aria-label={T('schedPrevWeek')}
-          >
-            <ChevronLeft size={18} />
-          </Link>
-          <div className="flex items-center gap-2 flex-wrap justify-center min-w-0">
-            {isCurrentWeek ? (
-              <span
-                aria-disabled="true"
-                className="text-xs font-bold text-zinc-400 px-4 py-2 min-h-[44px] inline-flex items-center rounded-full bg-zinc-100 cursor-not-allowed"
-              >
-                {T('schedThisWeek')}
-              </span>
-            ) : (
-              <Link
-                href="/schedule"
-                className="text-xs font-bold text-zinc-800 px-4 py-2 min-h-[44px] inline-flex items-center rounded-full transition-all hover:scale-[1.03] active:scale-95 bg-white border border-zinc-200 shadow-sm"
-              >
-                {T('schedThisWeek')}
-              </Link>
-            )}
-            <span className="text-sm font-bold text-zinc-900">{weekLabel}</span>
-          </div>
-          <Link
-            href={weekLink(addDays(weekStart, 7))}
-            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-zinc-700 transition-all hover:scale-105 active:scale-95 bg-white border border-zinc-200 shadow-sm"
-            aria-label={T('schedNextWeek')}
-          >
-            <ChevronRight size={18} />
-          </Link>
-        </div>
-
-        {/* 7-day strip */}
-        <div className="grid grid-cols-7 gap-1.5 md:gap-2">
-          {days.map((d, i) => {
+        <WeekStrip
+          days={days.map((d): WeekStripDay => {
             const key = toISODateLocal(d);
             const count = counts.get(key) ?? 0;
-            const isToday = key === todayKey;
-            const isActive = activeDay === key;
-            const holiday = holidayByDate.get(key);
-            // An empty day starts a new job with that date prefilled;
-            // a day with jobs opens its agenda underneath.
-            const cellHref = count === 0 ? `/jobs/new?date=${key}` : dayLink(d);
-            return (
-              <Link
-                key={key}
-                href={cellHref}
-                aria-current={isActive ? 'date' : undefined}
-                aria-label={`${dayName(d)} ${d.getDate()}${isToday ? `, ${T('schedToday')}` : ''}${count === 0 ? `, ${T('schedEmptyDayNew')}` : ''}`}
-                className={cn(
-                  'flex flex-col items-center rounded-xl border-2 py-2 md:py-3 transition-colors min-h-[64px]',
-                  isActive
-                    ? 'bg-ink text-white border-ink shadow-sm'
-                    : 'bg-white border-zinc-200 hover:border-smoke hover:bg-paper',
-                  isToday && !isActive && 'border-lime-500 bg-lime-50'
-                )}
-              >
-                <span
-                  className={cn(
-                    'text-[10px] font-bold',
-                    isActive ? 'text-white/80' : isToday ? 'text-lime-700' : 'text-zinc-400'
-                  )}
-                >
-                  {dayName(d)}
-                </span>
-                <span
-                  className={cn(
-                    'text-sm md:text-base font-bold mt-0.5',
-                    isActive ? 'text-white' : isToday ? 'text-lime-800' : 'text-zinc-900'
-                  )}
-                >
-                  {d.getDate()}
-                </span>
-                {/* Count badge only when there are jobs - never a row of zeros. */}
-                {count > 0 && (
-                  <span
-                    className={cn(
-                      'mt-1 min-w-5 h-5 px-1 rounded-full text-[10px] font-bold flex items-center justify-center tabular-nums',
-                      isActive ? 'bg-white/25 text-white' : 'bg-smoke text-ink'
-                    )}
-                  >
-                    {count}
-                  </span>
-                )}
-                {/* Holiday marker only - the full name lives in the agenda
-                    header, never as a truncated chip here. */}
-                {holiday && (
-                  <span title={holiday} aria-hidden className="mt-1 text-[10px] leading-none">
-                    🎉
-                  </span>
-                )}
-              </Link>
-            );
+            return {
+              key,
+              dayName: dayName(d),
+              dayNum: d.getDate(),
+              count,
+              isToday: key === todayKey,
+              holidayName: holidayByDate.get(key) ?? null,
+              // An empty day starts a new job with that date prefilled;
+              // a day with jobs opens its agenda underneath.
+              href: count === 0 ? `/jobs/new?date=${key}` : dayLink(d),
+            };
           })}
-        </div>
-
-        {activeDay && (
-          <div className="mt-3 text-center">
-            <Link
-              href={weekLink(weekStart)}
-              className="text-xs font-semibold text-ink hover:underline inline-flex items-center min-h-[44px] px-3"
-            >
-              {T('schedShowWholeWeek')}
-            </Link>
-          </div>
-        )}
+          weekLabel={weekLabel}
+          prevWeekHref={weekLink(addDays(weekStart, -7))}
+          nextWeekHref={weekLink(addDays(weekStart, 7))}
+          thisWeekHref="/schedule"
+          clearDayHref={weekLink(weekStart)}
+          isCurrentWeek={isCurrentWeek}
+          activeDay={activeDay}
+          strings={{
+            prevWeek: T('schedPrevWeek'),
+            nextWeek: T('schedNextWeek'),
+            thisWeek: T('schedThisWeek'),
+            showWholeWeek: T('schedShowWholeWeek'),
+            today: T('schedToday'),
+            emptyDayNew: T('schedEmptyDayNew'),
+            moved: T('schedMoved'),
+            moveFailed: T('schedMoveFailed'),
+          }}
+        />
       </Card>
 
       {/* Job list for the week */}
