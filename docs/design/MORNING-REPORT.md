@@ -2,7 +2,7 @@
 
 ## What got done overnight
 
-11 of the 17 design parts are complete and pushed to `origin/main`. All commits verified, all tests pass (1352/1352), tsc clean, build succeeds.
+13 of the 17 design parts are complete and pushed to `origin/main`. All commits verified, all tests pass (1356/1356), tsc clean, build succeeds.
 
 ### Part A: Make every screen tell the truth (10/12 items)
 **Commits:** `cce295d`, `3f25955`
@@ -43,6 +43,8 @@
 - **E4 Money** (`447cfbc`) — three lists (ready to invoice, awaiting payment, awaiting decision), no giant $0.00 cards
 - **E5 Customers** (`aa0d420`) — one-tap call/text/email/map, unified timeline, lead decline with reason
 - **E6 Projects** (`719fb82`) — phases as add/remove/reorder list, trade templates, MoneyInput, detail money section
+- **E7 Settings** (`e797b5d`) — grouped + searchable, first-run 3-question onboarding (trade, team size, province) with tailored checklist
+- **E8 Customer-facing** (`a62ed6d`) — trust signals (licence/insurance) on public profile, tax breakdown on quote approval, language toggle on all public pages
 
 ### Part G: Words
 **Commit:** `4e0403b`
@@ -53,11 +55,9 @@
 
 ## What was NOT done
 
-- **E7 Settings/onboarding** — settings grouping, 3-question first run
-- **E8 Customer-facing pages** — public profile, booking, quote approval
 - **F State matrix** — systematic screenshots of every screen/state (needs authenticated mobile-qa session)
 - **H Accessibility deep pass** — WCAG 2.2 AA audit, VoiceOver/TalkBack runs
-- **I Feel** — 100ms tap response, optimistic updates, speed budgets
+- **I Feel** — 100ms tap response verification, optimistic updates, speed budgets
 - **J Proof** — visual regression CI, heuristic review, usability test kit, final scorecard
 
 ## CI status
