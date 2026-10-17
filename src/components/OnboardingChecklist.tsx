@@ -82,6 +82,13 @@ export default function OnboardingChecklist({
   const done = STEPS.filter((s) => completed[s.id]).length;
   const total = STEPS.length;
 
+  // Part A Item 1: When every step is done, remove the card entirely.
+  // A completed checklist has served its purpose; keeping it contradicts
+  // the "all set up" state.
+  if (done === total) {
+    return null;
+  }
+
   return (
     <Card className="p-5">
       <div className="flex items-start justify-between gap-3">
@@ -110,12 +117,7 @@ export default function OnboardingChecklist({
         />
       </div>
 
-      {done === total ? (
-        <p className="mt-4 rounded-xl bg-lime-50 p-4 text-sm font-semibold text-zinc-900" role="status">
-          {t(locale, 'support.onboardingAllDone')}
-        </p>
-      ) : (
-        <ol className="mt-4 space-y-2">
+      <ol className="mt-4 space-y-2">
           {STEPS.map((s) => {
             const isDone = !!completed[s.id];
             return (
@@ -155,7 +157,6 @@ export default function OnboardingChecklist({
             );
           })}
         </ol>
-      )}
     </Card>
   );
 }

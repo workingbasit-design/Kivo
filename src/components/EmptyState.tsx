@@ -10,7 +10,7 @@
  * has exactly one obvious next step.
  */
 import Link from 'next/link';
-import { limeBtnClass } from '@/components/ui';
+import { primaryBtnClass } from '@/components/ui';
 
 export default function EmptyState({
   title,
@@ -32,7 +32,7 @@ export default function EmptyState({
       <h3 className="text-base font-bold text-zinc-900 mb-1">{title}</h3>
       <p className="text-sm text-zinc-500 max-w-sm mb-6">{description}</p>
       {actionLabel && actionHref && (
-        <Link href={actionHref} className={limeBtnClass}>
+        <Link href={actionHref} className={primaryBtnClass}>
           {actionLabel}
         </Link>
       )}

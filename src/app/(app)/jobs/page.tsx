@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Plus, Briefcase, Search } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { PageHeader, Card, EmptyState, limeBtnClass, inputClass } from '@/components/ui';
+import { PageHeader, Card, EmptyState, primaryBtnClass, inputClass } from '@/components/ui';
 import StatusBadge from '@/components/StatusBadge';
 import { formatDateShort, hasJobTime, formatJobTime, formatStatusLabel, cn } from '@/lib/utils';
 import MoneyText from '@/components/MoneyText';
@@ -116,7 +116,7 @@ export default async function JobsPage({
               currency={currency}
               locale={locale}
             />
-            <Link href="/jobs/new" className={limeBtnClass}>
+            <Link href="/jobs/new" className={primaryBtnClass}>
               <Plus size={16} /> {jobsL('newJob')}
             </Link>
           </>
@@ -192,7 +192,7 @@ export default async function JobsPage({
             description={jobs.length === 0 ? T('jobsEmptyDesc') : T('jobsNoMatchDesc')}
             action={
               jobs.length === 0 ? (
-                <Link href="/jobs/new" className={limeBtnClass}>
+                <Link href="/jobs/new" className={primaryBtnClass}>
                   <Plus size={16} /> {T('jobsCreateFirst')}
                 </Link>
               ) : undefined

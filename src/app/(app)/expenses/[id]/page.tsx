@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { ChevronLeft, Receipt, Pencil, Trash2 } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { PageHeader, Card, limeBtnClass, secondaryBtnClass } from '@/components/ui';
+import { PageHeader, Card, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
 import ExpenseForm, { type ExpenseFormInitial } from '@/components/ExpenseForm';
 import DeleteExpenseButton from '@/components/DeleteExpenseButton';
 import { formatMoney, centsToDollars } from '@/lib/money';

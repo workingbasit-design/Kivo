@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Plus, Repeat, Clock, MapPin } from 'lucide-react';
-import { PageHeader, Card, EmptyState, Badge, limeBtnClass, secondaryBtnClass } from '@/components/ui';
+import { PageHeader, Card, EmptyState, Badge, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
 import { formatDateShort, formatJobTime, cn } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import { t, type Locale } from '@/lib/i18n';
@@ -83,7 +83,7 @@ export default function RecurringClient({
         actions={
           <>
             <GenerateDueJobsButton />
-            <Link href="/recurring/new" className={limeBtnClass}>
+            <Link href="/recurring/new" className={primaryBtnClass}>
               <Plus size={16} /> {T('recurNewPlan')}
             </Link>
           </>
@@ -129,7 +129,7 @@ export default function RecurringClient({
             }
             action={
               activeFilter === 'ALL' ? (
-                <Link href="/recurring/new" className={limeBtnClass}>
+                <Link href="/recurring/new" className={primaryBtnClass}>
                   <Plus size={16} /> {T('recurCreateFirst')}
                 </Link>
               ) : (

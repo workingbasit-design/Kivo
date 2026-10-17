@@ -6,7 +6,7 @@ import {
   PageHeader,
   Card,
   EmptyState,
-  limeBtnClass,
+  primaryBtnClass,
   inputClass,
   secondaryBtnClass,
 } from '@/components/ui';
@@ -90,7 +90,7 @@ export default async function ExpensesPage({
         title={T('title')}
         subtitle={T('subtitle')}
         actions={
-          <Link href="/expenses/new" className={limeBtnClass}>
+          <Link href="/expenses/new" className={primaryBtnClass}>
             <Plus size={16} /> {T('new')}
           </Link>
         }
@@ -177,7 +177,7 @@ export default async function ExpensesPage({
             title={T('empty')}
             description={T('emptyHint')}
             action={
-              <Link href="/expenses/new" className={limeBtnClass}>
+              <Link href="/expenses/new" className={primaryBtnClass}>
                 <Plus size={16} /> {T('new')}
               </Link>
             }

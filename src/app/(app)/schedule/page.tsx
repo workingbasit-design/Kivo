@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { PageHeader, Card, limeBtnClass } from '@/components/ui';
+import { PageHeader, Card, primaryBtnClass } from '@/components/ui';
 import ScheduleClient from '@/components/ScheduleClient';
 import WeatherStrip, { type StripDay } from '@/components/WeatherStrip';
 import { getWeatherForDates, geocodeLocation } from '@/lib/weather';
@@ -160,7 +160,7 @@ export default async function SchedulePage({
         title={t(locale, 'schedule.title')}
         subtitle={weekLabel}
         actions={
-          <Link href="/jobs/new" className={limeBtnClass}>
+          <Link href="/jobs/new" className={primaryBtnClass}>
             <CalendarDays size={16} /> {T('schedNewJobBtn')}
           </Link>
         }

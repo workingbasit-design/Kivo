@@ -1,7 +1,7 @@
 import React from 'react';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { PageHeader, Card, EmptyState, limeBtnClass, inputClass, Field } from '@/components/ui';
+import { PageHeader, Card, EmptyState, primaryBtnClass, inputClass, Field } from '@/components/ui';
 import { dayRange, toISODateLocal, formatDateLabel, localeDateTag } from '@/lib/utils';
 import { MapPinned } from 'lucide-react';
 import RoutesClient from '@/components/RoutesClient';
@@ -85,7 +85,7 @@ export default async function RoutesPage({
             title={T('routesEmptyTitle')}
             description={T('routesEmptyDesc')}
             action={
-              <a href="/schedule" className={limeBtnClass}>
+              <a href="/schedule" className={primaryBtnClass}>
                 {T('routesGoSchedule')}
               </a>
             }

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AlertTriangle, ArrowRight, BellRing, CheckCircle2, Info } from "lucide-react";
+import { AlertTriangle, BellRing, CheckCircle2, Info } from "lucide-react";
 import { getAttentionItems, type AttentionItem, type AttentionSeverity } from "@/lib/attention";
 import { fillTemplate } from "@/lib/revenue";
 import { formatMoney } from "@/lib/money";
@@ -7,13 +7,12 @@ import { getLocale } from "@/lib/i18n/server";
 import { t, type Locale } from "@/lib/i18n";
 import { localeMoneyTag } from "@/lib/utils";
 import { Card } from "@/components/ui";
-import { cn } from "@/lib/utils";
 
-const SEVERITY_STYLE: Record<AttentionSeverity, { dot: string; icon: React.ReactNode }> = {
-  critical: { dot: "bg-red-500", icon: <AlertTriangle size={14} className="text-red-600" /> },
-  attention: { dot: "bg-amber-500", icon: <BellRing size={14} className="text-amber-600" /> },
-  info: { dot: "bg-sky-500", icon: <Info size={14} className="text-sky-600" /> },
-  positive: { dot: "bg-emerald-500", icon: <CheckCircle2 size={14} className="text-emerald-600" /> },
+const SEVERITY_STYLE: Record<AttentionSeverity, { icon: React.ReactNode }> = {
+  critical: { icon: <AlertTriangle size={14} className="text-red-600" /> },
+  attention: { icon: <BellRing size={14} className="text-amber-600" /> },
+  info: { icon: <Info size={14} className="text-sky-600" /> },
+  positive: { icon: <CheckCircle2 size={14} className="text-emerald-600" /> },
 };
 
 export function AttentionRow({
@@ -30,16 +29,18 @@ export function AttentionRow({
   const style = SEVERITY_STYLE[item.severity];
   const title = fillTemplate(t(locale, `attention.${item.titleKey}`), item.titleParams);
   const detail = fillTemplate(t(locale, `attention.${item.detailKey}`), item.detailParams);
+  // Part A Item 7: One urgency signal per row (the icon), not a dot plus an icon.
   return (
     <Link
       href={item.href}
       className="flex items-start gap-3 px-4 py-3.5 rounded-xl hover:bg-zinc-50 transition-colors min-h-[56px]"
     >
-      <span className={cn("mt-1.5 w-2 h-2 rounded-full shrink-0", style.dot)} aria-hidden />
+      <span className="mt-1 shrink-0" aria-hidden>
+        {style.icon}
+      </span>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-semibold text-zinc-900 leading-snug">{title}</p>
-        <p className="text-xs text-zinc-500 mt-0.5 flex items-center gap-1.5">
-          {style.icon}
+        <p className="text-xs text-zinc-500 mt-0.5">
           <span className="truncate">{detail}</span>
         </p>
       </div>
@@ -73,7 +74,7 @@ export default async function AttentionBriefing({
   const moneyLocale = localeMoneyTag(locale);
   let items: AttentionItem[] = [];
   try {
-    items = (await getAttentionItems(businessId, limit)).slice(0, limit);
+    items = (await getAttentionItems(businessId, limit, locale)).slice(0, limit);
   } catch (err) {
     console.error("[attention] briefing failed:", err);
     return null;
@@ -90,7 +91,7 @@ export default async function AttentionBriefing({
           href="/attention"
           className="text-xs font-semibold text-ink hover:underline inline-flex items-center gap-1 min-h-[44px] px-2 -mr-2"
         >
-          {t(locale, "attention.viewAll")} <ArrowRight size={13} />
+          {t(locale, "attention.viewAll")}
         </Link>
       </div>
       <p className="px-5 text-xs text-zinc-500 pb-1">

@@ -27,6 +27,11 @@ export function NewProjectForm({
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    // Part A Item 9: End date cannot be before start date.
+    if (startDate && endDate && endDate < startDate) {
+      setError(t(locale, 'projects.endBeforeStart'));
+      return;
+    }
     startTransition(async () => {
       const budgetCents =
         budget.trim() === '' ? undefined : Math.round(Number(budget) * 100);
@@ -66,20 +71,23 @@ export function NewProjectForm({
         />
       </Field>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Field label={t(locale, 'projects.customerLabel')}>
           <select
             value={customerId}
             onChange={(e) => setCustomerId(e.target.value)}
             className={selectClass}
           >
-            <option value="">-</option>
+            <option value="">{t(locale, 'projects.noCustomer')}</option>
             {customers.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
               </option>
             ))}
           </select>
+          <a href="/customers/new" className="text-xs font-semibold text-ink hover:underline mt-1.5 inline-block min-h-[32px]">
+            {t(locale, 'projects.newCustomer')}
+          </a>
         </Field>
         <Field label={t(locale, 'projects.budgetLabel')}>
           <input

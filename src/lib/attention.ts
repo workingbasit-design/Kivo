@@ -40,6 +40,7 @@ export interface AttentionItem {
 export interface AttentionInput {
   now: Date;
   timezone?: string | null;
+  locale?: 'en' | 'fr';
   invoices: {
     id: string;
     number: string;
@@ -103,6 +104,46 @@ function dayKey(d: Date, timeZone?: string | null): string {
   return parts; // en-CA yields YYYY-MM-DD
 }
 
+/**
+ * Part A Item 4: Format a date for display using the "one date style".
+ * - "Today", "Tomorrow", "Yesterday" where they apply (in business timezone)
+ * - Otherwise "Tue, Sep 29" (weekday, month, day) — never ISO format
+ */
+export function formatDisplayDate(
+  d: Date,
+  timeZone?: string | null,
+  locale: 'en' | 'fr' = 'en'
+): string {
+  const tz = timeZone || 'America/Toronto';
+  const tag = locale === 'fr' ? 'fr-CA' : 'en-CA';
+  
+  const todayKey = dayKey(new Date(), tz);
+  const dateKey = dayKey(d, tz);
+  
+  // Today/Yesterday/Tomorrow
+  if (dateKey === todayKey) {
+    return locale === 'fr' ? "Aujourd'hui" : 'Today';
+  }
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  if (dateKey === dayKey(yesterday, tz)) {
+    return locale === 'fr' ? 'Hier' : 'Yesterday';
+  }
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  if (dateKey === dayKey(tomorrow, tz)) {
+    return locale === 'fr' ? 'Demain' : 'Tomorrow';
+  }
+  
+  // "Tue, Sep 29" format
+  return new Intl.DateTimeFormat(tag, {
+    timeZone: tz,
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  }).format(d);
+}
+
 export function sortAttention(items: AttentionItem[]): AttentionItem[] {
   return [...items].sort((a, b) => {
     const s = SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity];
@@ -113,6 +154,7 @@ export function sortAttention(items: AttentionItem[]): AttentionItem[] {
 
 export function computeAttention(input: AttentionInput): AttentionItem[] {
   const { now, timezone } = input;
+  const locale = input.locale ?? 'en';
   const todayKey = dayKey(now, timezone);
   const items: AttentionItem[] = [];
 
@@ -171,7 +213,7 @@ export function computeAttention(input: AttentionInput): AttentionItem[] {
         titleKey: 'items.jobAtRisk.title',
         titleParams: { title: job.title, customer: job.customerName },
         detailKey: 'items.jobAtRisk.detail',
-        detailParams: { date: jobKey },
+        detailParams: { date: formatDisplayDate(job.date, timezone, locale) },
         href: `/jobs/${job.id}`,
         ctaKey: 'actions.reschedule',
       });
@@ -185,7 +227,7 @@ export function computeAttention(input: AttentionInput): AttentionItem[] {
         severity: 'attention',
         category: 'schedule',
         titleKey: 'items.jobUnassigned.title',
-        titleParams: { title: job.title, date: jobKey },
+        titleParams: { title: job.title, date: formatDisplayDate(job.date, timezone, locale) },
         detailKey: 'items.jobUnassigned.detail',
         detailParams: { customer: job.customerName },
         href: `/dispatch`,
@@ -272,7 +314,8 @@ export function computeAttention(input: AttentionInput): AttentionItem[] {
  */
 export async function getAttentionItems(
   businessId: string,
-  maxItems = 25
+  maxItems = 25,
+  locale: 'en' | 'fr' = 'en'
 ): Promise<AttentionItem[]> {
   const now = new Date();
   const business = await prisma.business.findUnique({
@@ -360,6 +403,7 @@ export async function getAttentionItems(
   const items = computeAttention({
     now,
     timezone,
+    locale,
     invoices: invoices.map((inv) => ({
       id: inv.id,
       number: inv.number,

@@ -14,7 +14,6 @@ import {
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getDashboardStats } from "@/lib/dashboard";
-import { getGrowthData } from "@/lib/growth";
 import { generateDueJobs } from "@/lib/recurring";
 import { hasJobTime, formatJobTime, jobDisplayStatus, localeMoneyTag } from "@/lib/utils";
 import MoneyText from "@/components/MoneyText";
@@ -28,7 +27,7 @@ import {
   StatusBadge,
   EmptyState,
   GlassIcon,
-  limeBtnClass,
+  primaryBtnClass,
   secondaryBtnClass,
 } from "@/components/ui";
 import OnboardingChecklist from "@/components/OnboardingChecklist";
@@ -64,9 +63,10 @@ export default async function DashboardPage() {
     genPromise,
   ]);
   const currency = business?.currency;
-  // Stats, onboarding counts and growth data are mutually independent -
-  // one round instead of three.
-  const [stats, counts, growth] = await Promise.all([
+  // Stats and onboarding counts are mutually independent - one round instead of two.
+  // Part A Item 2: Profile strength (growth data) removed — the onboarding checklist
+  // is now the single source of truth for setup progress.
+  const [stats, counts] = await Promise.all([
     getDashboardStats(businessId, business),
     Promise.all([
       prisma.customer.count({ where: { businessId, archivedAt: null } }),
@@ -75,14 +75,6 @@ export default async function DashboardPage() {
       prisma.membership.count({ where: { businessId, status: 'ACTIVE' } }),
       prisma.googleConnection.findUnique({ where: { businessId }, select: { id: true } }),
     ]),
-    (async () => {
-      try {
-        return await getGrowthData(businessId);
-      } catch (err) {
-        console.error('[dashboard] growth data failed:', err);
-        return null;
-      }
-    })(),
   ]);
   const [customerCount, quoteCount, invoiceCount, teamCount, googleConn] = counts;
   const jobCount = stats.totalJobs; // shared getJobCounts, not a parallel count query
@@ -107,7 +99,7 @@ export default async function DashboardPage() {
         title={L("dashboard.title")}
         subtitle={todayLabel}
         actions={
-          <Link href="/jobs/new" className={limeBtnClass}>
+          <Link href="/jobs/new" className={primaryBtnClass}>
             <Plus size={16} /> {L("dashboard.newJob")}
           </Link>
         }
@@ -151,7 +143,8 @@ export default async function DashboardPage() {
               label: L("dashboard.newLeads"),
               value: String(stats.newLeads),
               numericValue: stats.newLeads,
-              sub: L("dashboard.totalCustomers").replace("{count}", String(stats.totalCustomers)),
+              // Part A Item 5: No subtitle — "total customers" does not describe the new-leads count.
+              sub: undefined,
               icon: <UserPlus size={16} />,
               tone: 'blue',
             },
@@ -179,48 +172,8 @@ export default async function DashboardPage() {
           calm dashboard, not an empty card. */}
       <AttentionBriefing businessId={businessId} currency={currency} />
 
-      {/* Profile strength - computed from the business's own data only.
-          Every "next up" action lives in Settings, so the card links there
-          (Insights is a deferred feature under More → Advanced). */}
-      {growth && growth.score < 100 && (
-        <Link href="/settings" className="block">
-          <Card className="p-5 hover:border-ink/30 transition-colors">
-            <div className="flex items-center gap-4">
-              <div className="relative w-14 h-14 shrink-0">
-                <svg viewBox="0 0 36 36" className="w-14 h-14 -rotate-90">
-                  <circle cx="18" cy="18" r="15.5" fill="none" stroke="#e4e4e7" strokeWidth="4" />
-                  <circle
-                    cx="18"
-                    cy="18"
-                    r="15.5"
-                    fill="none"
-                    stroke="#1a1a1a"
-                    strokeWidth="4"
-                    strokeLinecap="round"
-                    strokeDasharray={`${growth.score}, 100`}
-                    className="ej-ring-anim"
-                    style={{ ['--ej-score' as string]: growth.score }}
-                  />
-                </svg>
-                <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-zinc-900">
-                  {growth.score}
-                </span>
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-bold text-zinc-900">
-                  {L("growth.scoreLabel")} · {growth.score} {L("growth.scoreOf")}
-                </p>
-                {growth.nextActions[0] && (
-                  <p className="text-xs text-zinc-700 mt-1 line-clamp-2">
-                    {L("growth.nextUp")}: {L(`growth.checkActions.${growth.nextActions[0].key}`)}
-                  </p>
-                )}
-              </div>
-              <ChevronRight size={16} className="text-zinc-600 shrink-0" />
-            </div>
-          </Card>
-        </Link>
-      )}
+      {/* Part A Item 2: Profile strength card removed. The onboarding checklist above
+          is now the single source of truth for setup progress. */}
 
       {/* Today's schedule + payments due */}
       <div className="grid lg:grid-cols-2 gap-3 md:gap-4">

@@ -21,23 +21,23 @@ const fragment = {
       briefingSubtitle: 'Good morning. Here’s what needs you first.',
       items: {
         overdueInvoice: {
-          title: 'Invoice {number} overdue - {customer}',
+          title: 'Invoice {number} overdue ({customer})',
           detail: '{days} days overdue',
         },
         quoteFollowUp: {
-          title: 'Quote {number} waiting - {customer}',
+          title: 'Quote {number} waiting ({customer})',
           detail: 'No response in {days} days',
         },
         jobAtRisk: {
-          title: '“{title}” never started - {customer}',
-          detail: 'Was scheduled for {date} and is still not started',
+          title: '“{title}” hasn’t started ({customer})',
+          detail: 'Was scheduled for {date}',
         },
         jobUnassigned: {
-          title: '“{title}” has no technician - {date}',
+          title: '“{title}” has no technician ({date})',
           detail: 'For {customer}. Assign someone before the day slips.',
         },
         jobUnbilled: {
-          title: '“{title}” finished but not invoiced - {customer}',
+          title: '“{title}” finished but not invoiced ({customer})',
           detail: 'Completed work with no invoice yet',
         },
         leadIdle: {
@@ -46,7 +46,7 @@ const fragment = {
         },
         lowStock: {
           title: 'Low stock: {name}',
-          detail: '{quantity} left - at or below your reorder point',
+          detail: '{quantity} left, at or below your reorder point',
         },
         paidThisWeek: {
           title: '{count} invoices paid this week',
@@ -219,15 +219,15 @@ const fragment = {
           detail: 'Sans réponse depuis {days} jours',
         },
         jobAtRisk: {
-          title: '« {title} » jamais commencé - {customer}',
-          detail: 'Prévu le {date} et toujours pas commencé',
+          title: '« {title} » jamais commencé ({customer})',
+          detail: 'Prévu le {date}',
         },
         jobUnassigned: {
-          title: '« {title} » sans technicien - {date}',
+          title: '« {title} » sans technicien ({date})',
           detail: 'Pour {customer}. Assignez quelqu’un avant que la journée dérape.',
         },
         jobUnbilled: {
-          title: '« {title} » terminé mais non facturé - {customer}',
+          title: '« {title} » terminé mais non facturé ({customer})',
           detail: 'Travail terminé sans facture',
         },
         leadIdle: {
