@@ -263,7 +263,10 @@ export function computeAttention(input: AttentionInput): AttentionItem[] {
         titleKey: 'items.jobAtRisk.title',
         titleParams: { title: job.title, customer: job.customerName },
         detailKey: 'items.jobAtRisk.detail',
-        detailParams: { date: formatDisplayDate(job.date, timezone, locale) },
+        detailParams: {
+          customer: job.customerName,
+          date: formatDisplayDate(job.date, timezone, locale),
+        },
         href: `/jobs/${job.id}`,
         ctaKey: 'actions.reschedule',
       });
@@ -279,7 +282,10 @@ export function computeAttention(input: AttentionInput): AttentionItem[] {
         titleKey: 'items.jobUnassigned.title',
         titleParams: { title: job.title, date: formatDisplayDate(job.date, timezone, locale) },
         detailKey: 'items.jobUnassigned.detail',
-        detailParams: { customer: job.customerName },
+        detailParams: {
+          customer: job.customerName,
+          date: formatDisplayDate(job.date, timezone, locale),
+        },
         href: `/dispatch`,
         ctaKey: 'actions.assign',
       });
@@ -293,7 +299,7 @@ export function computeAttention(input: AttentionInput): AttentionItem[] {
         titleKey: 'items.jobUnbilled.title',
         titleParams: { title: job.title, customer: job.customerName },
         detailKey: 'items.jobUnbilled.detail',
-        detailParams: { amount: job.price.toFixed(2) },
+        detailParams: { customer: job.customerName },
         amount: job.price,
         href: `/jobs/${job.id}`,
         ctaKey: 'actions.createInvoice',
