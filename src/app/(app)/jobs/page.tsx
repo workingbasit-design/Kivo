@@ -179,7 +179,7 @@ export default async function JobsPage({
         {/* Edge hint: fade on the right so the scrollable chips read as scrollable. */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-[var(--ej-bg,#fafafa)] to-transparent"
+          className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-white to-transparent"
         />
       </div>
 

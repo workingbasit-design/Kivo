@@ -283,26 +283,33 @@ export default function ScheduleClient({
 
       {/* Filter & Search Bar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-        <div
-          role="group"
-          aria-label={jobsL('status')}
-          className="flex items-center gap-1.5 overflow-x-auto pb-1 flex-1"
-        >
-          {(['ALL', ...JOB_STATUSES] as const).map((st) => (
-            <button
-              key={st}
-              onClick={() => setStatusFilter(st)}
-              aria-pressed={statusFilter === st}
-              className={cn(
-                'px-3 min-h-[44px] rounded-lg text-xs font-semibold whitespace-nowrap transition-colors border',
-                statusFilter === st
-                  ? 'bg-ink text-white border-ink'
-                  : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50'
-              )}
-            >
-              {st === 'ALL' ? T('jobsTabAll') : formatStatusLabel(st, locale)}
-            </button>
-          ))}
+        <div className="relative flex-1">
+          <div
+            role="group"
+            aria-label={jobsL('status')}
+            className="flex items-center gap-1.5 overflow-x-auto pb-1"
+          >
+            {(['ALL', ...JOB_STATUSES] as const).map((st) => (
+              <button
+                key={st}
+                onClick={() => setStatusFilter(st)}
+                aria-pressed={statusFilter === st}
+                className={cn(
+                  'px-3 min-h-[44px] rounded-lg text-xs font-semibold whitespace-nowrap transition-colors border',
+                  statusFilter === st
+                    ? 'bg-ink text-white border-ink'
+                    : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50'
+                )}
+              >
+                {st === 'ALL' ? T('jobsTabAll') : formatStatusLabel(st, locale)}
+              </button>
+            ))}
+          </div>
+          {/* Edge hint: fade on the right so the scrollable chips read as scrollable. */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-white to-transparent"
+          />
         </div>
 
         <div className="relative sm:w-64">

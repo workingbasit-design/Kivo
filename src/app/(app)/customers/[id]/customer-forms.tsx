@@ -99,7 +99,6 @@ export function EditCustomerForm({
             name="phone"
             type="tel"
             defaultValue={customer.phone ?? ''}
-            placeholder="+1 416 555 0100"
             className={inputClass}
           />
         </Field>
@@ -138,7 +137,6 @@ export function EditCustomerForm({
           <input
             name="postalCode"
             defaultValue={customer.postalCode ?? ''}
-            placeholder="M5V 2T6"
             maxLength={7}
             className={inputClass + ' uppercase'}
           />
@@ -150,7 +148,7 @@ export function EditCustomerForm({
       </Field>
 
       <Field label="Tags" hint="Comma-separated, e.g. vip, senior">
-        <input name="tags" defaultValue={customer.tags ?? ''} placeholder="vip, senior" maxLength={400} className={inputClass} />
+        <input name="tags" defaultValue={customer.tags ?? ''} maxLength={400} className={inputClass} />
       </Field>
 
       {state?.error && (

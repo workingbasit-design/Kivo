@@ -42,7 +42,6 @@ export default function NewCustomerForm() {
               <input
                 name="phone"
                 type="tel"
-                placeholder="+1 416 555 0100"
                 autoComplete="tel"
                 className={inputClass}
               />
@@ -81,7 +80,6 @@ export default function NewCustomerForm() {
             <Field label={t('t10money.custPostal')} hint={t('t10money.custPostalHint')}>
               <input
                 name="postalCode"
-                placeholder="M5V 2T6"
                 autoComplete="postal-code"
                 maxLength={7}
                 className={inputClass + ' uppercase'}
@@ -101,7 +99,6 @@ export default function NewCustomerForm() {
           <Field label={t('t10money.custTags')} hint={t('t10money.custTagsHint')}>
             <input
               name="tags"
-              placeholder="vip, senior"
               maxLength={400}
               className={inputClass}
             />

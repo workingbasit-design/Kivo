@@ -6,6 +6,7 @@
  * P4-P-001 (Lighthouse) runs in .github/workflows/perf.yml (record-only).
  */
 import { test, expect } from './fixtures';
+import { loginAs } from './fixtures';
 import type { Page } from '@playwright/test';
 
 const PERF_EMAIL = 'perf-owner@test.ca';
@@ -15,20 +16,29 @@ async function loginPerf(page: Page) {
   await page.goto('/login');
   await page.fill('input[type="email"]', PERF_EMAIL);
   await page.fill('input[type="password"]', PERF_PASSWORD);
+  // Do NOT swallow the timeout: a failed login must fail fast.
+  // CI is slow (cold starts); allow 60s.
   await Promise.all([
-    page.waitForURL(/dashboard/, { timeout: 30000 }).catch(() => {}),
+    page.waitForURL(/dashboard/, { timeout: 60_000 }),
     page.locator('button[type="submit"]').first().click(),
   ]);
 }
 
 async function hasPerfData(page: Page): Promise<boolean> {
   // Probe: the perf business exists iff login succeeds.
-  await loginPerf(page);
+  // loginPerf throws on failure; catch it to return false for graceful skip.
+  try {
+    await loginPerf(page);
+  } catch {
+    return false;
+  }
   return /dashboard/.test(page.url());
 }
 
 test.describe('P4-P performance', () => {
   test('P4-P-002: 10k jobs — list paginates, does not render everything', async ({ page }) => {
+    // Skip gracefully if the perf seed wasn't run (CI doesn't run it).
+    if (!(await hasPerfData(page))) test.skip(true, 'perf seed not present');
     const start = Date.now();
     await page.goto('/jobs');
     await page.waitForLoadState('networkidle').catch(() => {});
@@ -40,6 +50,8 @@ test.describe('P4-P performance', () => {
   });
 
   test('P4-P-002: 5k customers — search stays fast', async ({ page }) => {
+    // Skip gracefully if the perf seed wasn't run (CI doesn't run it).
+    if (!(await hasPerfData(page))) test.skip(true, 'perf seed not present');
     await page.goto('/customers');
     await page.waitForLoadState('networkidle').catch(() => {});
     const search = page.getByRole('searchbox').or(page.locator('input[type="search"]')).first();
@@ -61,7 +73,9 @@ test.describe('P4-P performance', () => {
   });
 
   test('P4-P-003: double-tap Save creates exactly one record', async ({ page }) => {
-    await loginPerf(page);
+    // Uses the regular e2e seed (ownerA); the perf dataset isn't needed
+    // for the double-submit idempotency check.
+    await loginAs(page, 'ownerA');
     await page.goto('/jobs/new');
     const tag = `E2ETEST-DBLTAP-${Date.now()}`;
     const titleInput = page.locator('input[name="title"]').first();

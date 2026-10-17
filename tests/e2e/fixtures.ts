@@ -45,8 +45,12 @@ export async function loginAs(page: Page, persona: Persona): Promise<void> {
   await page.goto(loginPath);
   await page.fill('input[type="email"]', email);
   await page.fill('input[type="password"]', SEED_PASSWORD);
+  // Click submit and wait for the dashboard. Do NOT swallow the timeout:
+  // a failed login must fail fast with a clear error, not continue
+  // unauthenticated and fail mysteriously later (P4-E-130/136/138).
+  // CI is slow (cold starts); allow 60s.
   await Promise.all([
-    page.waitForURL(/\/(dashboard|customer)/, { timeout: 30_000 }).catch(() => {}),
+    page.waitForURL(/\/(dashboard|customer)/, { timeout: 60_000 }),
     page.locator('button[type="submit"]').first().click(),
   ]);
 }
