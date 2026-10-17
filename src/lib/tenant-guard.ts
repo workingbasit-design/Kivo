@@ -112,6 +112,7 @@ export const TENANT_MODELS: ReadonlySet<string> = new Set([
   'CustomerLink',
   'CustomerPortalToken',
   'CustomerProperty',
+  'DashboardLayout',
   'Designation',
   'DigestSetting',
   'DirectoryClaim',
@@ -284,10 +285,11 @@ export function assertTenantScope(params: GuardParams): void {
   // - MessagingConnection: { businessId_channel: { businessId, channel } }
   // - IdempotencyKey: { businessId_endpoint_key: { businessId, endpoint, key } }
   // - MessageTemplateOverride: { businessId_templateId_locale: { businessId, templateId, locale } }
+  // - DashboardLayout: { userId_businessId: { userId, businessId } }
   // (2026-10-01: without this, /settings/messaging crashed to the error
   // boundary on every load - getMessagingOverview upserts the monthly quota
   // row - and the messaging scheduler + WhatsApp webhook hit the same wall.)
-  for (const key of ['businessId_month', 'businessId_channel', 'businessId_endpoint_key', 'businessId_templateId_locale'] as const) {
+  for (const key of ['businessId_month', 'businessId_channel', 'businessId_endpoint_key', 'businessId_templateId_locale', 'userId_businessId'] as const) {
     const compound = where?.[key] as Record<string, unknown> | undefined;
     if (
       compound &&

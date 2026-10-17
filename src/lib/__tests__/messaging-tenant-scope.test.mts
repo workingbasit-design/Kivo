@@ -108,3 +108,29 @@ test('existing exemptions still hold (top-level businessId, SavedPro customerId)
     }),
   );
 });
+
+test('DashboardLayout findUnique/upsert via { userId_businessId } passes the guard', () => {
+  for (const action of ['findUnique', 'upsert']) {
+    assert.doesNotThrow(() =>
+      assertTenantScope({
+        model: 'DashboardLayout',
+        action,
+        args: {
+          where: { userId_businessId: { userId: 'user_1', businessId: 'biz_1' } },
+        },
+      }),
+    );
+  }
+});
+
+test('DashboardLayout compound key with empty businessId still fails closed', () => {
+  assert.throws(
+    () =>
+      assertTenantScope({
+        model: 'DashboardLayout',
+        action: 'findUnique',
+        args: { where: { userId_businessId: { userId: 'user_1', businessId: '' } } },
+      }),
+    TenantScopeError,
+  );
+});

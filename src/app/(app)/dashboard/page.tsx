@@ -1,76 +1,90 @@
-import React from "react";
-import Link from "next/link";
+/**
+ * Part C (dashboard rebuild): the dashboard, section by section.
+ *
+ * Order: header, quick actions, then the customizable sections
+ * (Collected, Needs you, Key numbers, Today's visits, Where your money
+ * is, Last 8 weeks), then "Customize this screen". Each section loads
+ * and fails independently: a skeleton while loading, an inline retry
+ * when its own fetch fails, the rest of the page untouched.
+ *
+ * Technicians get the "My day" view (their visits only). New businesses
+ * keep the checklist-first layout.
+ */
+import React, { Suspense } from "react";
 import { redirect } from "next/navigation";
-import {
-  Calendar,
-  Banknote,
-  AlertCircle,
-  UserPlus,
-  Clock,
-  ChevronRight,
-  Plus,
-  CalendarDays,
-  Receipt,
-} from '@/components/icons';
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getDashboardStats } from "@/lib/dashboard";
 import { generateDueJobs } from "@/lib/recurring";
-import { hasJobTime, formatJobTime, jobDisplayStatus, localeMoneyTag } from "@/lib/utils";
-import MoneyText from "@/components/MoneyText";
-import DateTimeText from "@/components/DateTimeText";
 import { getLocale } from "@/lib/i18n/server";
-import { t } from "@/lib/i18n";
-import { tp } from "@/lib/i18n/plural";
-import { formatDisplayDate } from "@/lib/attention";
-import {
-  PageHeader,
-  Card,
-  StatusBadge,
-  EmptyState,
-  GlassIcon,
-  hivisBtnClass,
-} from "@/components/ui";
+import { t, type Locale } from "@/lib/i18n";
+import { CardSkeleton } from "@/components/ui";
 import OnboardingChecklist from "@/components/OnboardingChecklist";
-import AttentionBriefing from "@/components/AttentionBriefing";
+import SectionShell from "@/components/dashboard/SectionShell";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import QuickActions from "@/components/dashboard/QuickActions";
+import CollectedSection from "@/components/dashboard/CollectedSection";
+import NeedsYou from "@/components/dashboard/NeedsYou";
+import KeyNumbers from "@/components/dashboard/KeyNumbers";
+import TodaysVisits from "@/components/dashboard/TodaysVisits";
+import MoneyPipeline from "@/components/dashboard/MoneyPipeline";
+import Last8Weeks from "@/components/dashboard/Last8Weeks";
+import CustomizePanel from "@/components/dashboard/CustomizePanel";
+import { getDashboardLayout, type DashboardSectionKey } from "@/lib/dashboard-layout";
+
+function Section({
+  errorMessage,
+  retryLabel,
+  children,
+}: {
+  errorMessage: string;
+  retryLabel: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <SectionShell errorMessage={errorMessage} retryLabel={retryLabel}>
+      <Suspense fallback={<CardSkeleton rows={4} />}>{children}</Suspense>
+    </SectionShell>
+  );
+}
 
 export default async function DashboardPage() {
-  const { businessId } = await requireAuth();
-  const locale = await getLocale();
+  const { businessId, user, role } = await requireAuth();
+  const locale: Locale = await getLocale();
   const L = (path: string) => t(locale, path);
-  const moneyLocale = localeMoneyTag(locale);
 
-  // Lazy auto-generation: create jobs for any due recurring plans before
-  // rendering, so jobs appear without the user tapping "Generate due jobs".
   const genPromise = (async () => {
     try {
       await generateDueJobs(businessId);
     } catch (err) {
-      console.error('[dashboard] recurring generation failed:', err);
+      console.error("[dashboard] recurring generation failed:", err);
     }
   })();
   const [business] = await Promise.all([
-    prisma.business.findUnique({ where: { id: businessId }, select: { currency: true, logoUrl: true, timezone: true, regionCode: true, onboardingDone: true, teamSize: true } }),
+    prisma.business.findUnique({
+      where: { id: businessId },
+      select: {
+        currency: true,
+        logoUrl: true,
+        timezone: true,
+        regionCode: true,
+        onboardingDone: true,
+        teamSize: true,
+      },
+    }),
     genPromise,
   ]);
-  // E7: first run goes to the 3-question flow. Existing businesses with
-  // real data were backfilled to done in m25; only true first-runs land here.
   if (business && !business.onboardingDone) {
-    redirect('/onboarding');
+    redirect("/onboarding");
   }
-  const currency = business?.currency;
-  const [stats, counts] = await Promise.all([
-    getDashboardStats(businessId, business),
-    Promise.all([
-      prisma.customer.count({ where: { businessId, archivedAt: null } }),
-      prisma.quote.count({ where: { businessId } }),
-      prisma.invoice.count({ where: { businessId } }),
-      prisma.membership.count({ where: { businessId, status: 'ACTIVE' } }),
-      prisma.googleConnection.findUnique({ where: { businessId }, select: { id: true } }),
-    ]),
+  const [customerCount, quoteCount, invoiceCount, teamCount, googleConn] = await Promise.all([
+    prisma.customer.count({ where: { businessId, archivedAt: null } }),
+    prisma.quote.count({ where: { businessId } }),
+    prisma.invoice.count({ where: { businessId } }),
+    prisma.membership.count({ where: { businessId, status: "ACTIVE" } }),
+    prisma.googleConnection.findUnique({ where: { businessId }, select: { id: true } }),
   ]);
-  const [customerCount, quoteCount, invoiceCount, teamCount, googleConn] = counts;
-  const jobCount = stats.totalJobs;
+  const jobCount = await prisma.job.count({ where: { businessId, archivedAt: null } });
+
   const onboardingCompleted = {
     logo: !!business?.logoUrl,
     customer: customerCount > 0,
@@ -79,233 +93,111 @@ export default async function DashboardPage() {
     google: !!googleConn,
     team: teamCount > 1,
   };
-
-  // E7: tailor the checklist to the first-run answers. Everyone gets the
-  // 3 core steps; businesses that said they have a team also get the
-  // team-invite step (skipped when the team is already invited).
-  const tailoredSteps: { id: 'customer' | 'job' | 'quote' | 'team'; href: string }[] = [
-    { id: 'customer', href: '/customers/new' },
-    { id: 'job', href: '/jobs/new' },
-    { id: 'quote', href: '/quotes/new' },
+  const tailoredSteps: { id: "customer" | "job" | "quote" | "team"; href: string }[] = [
+    { id: "customer", href: "/customers/new" },
+    { id: "job", href: "/jobs/new" },
+    { id: "quote", href: "/quotes/new" },
   ];
-  if (business?.teamSize && business.teamSize !== '1' && teamCount <= 1) {
-    tailoredSteps.push({ id: 'team', href: '/settings/team' });
+  if (business?.teamSize && business.teamSize !== "1" && teamCount <= 1) {
+    tailoredSteps.push({ id: "team", href: "/settings/team" });
   }
 
-  // E1: New business detection. If no jobs, invoices, or customers exist,
-  // show the checklist-first layout instead of $0.00 stat cards.
+  const timezone = business?.timezone ?? "America/Toronto";
+  const regionCode = business?.regionCode ?? null;
   const isNewBusiness = jobCount === 0 && invoiceCount === 0 && customerCount === 0;
+  const errorMessage = L("dashboard.sectionFailed");
+  const retryLabel = L("dashboard.sectionRetry");
 
-  // E1: Money section shows only metrics with data.
-  const hasMoneyData =
-    stats.collectedThisWeek > 0 ||
-    stats.outstanding > 0 ||
-    stats.readyToInvoice.length > 0 ||
-    stats.newLeads > 0;
-
-  const timezone = business?.timezone ?? 'America/Toronto';
-  const rowDelay = (i: number) => ({ ["--row-delay" as string]: `${Math.min(i, 8) * 45}ms` });
-
-  // E1: Date line reads "Saturday, October 17" (long weekday, long month, no year).
-  const dateLine = (
-    <DateTimeText date={new Date()} variant="dateline" timezone={timezone} locale={locale} />
-  );
-
-  // E1: New business layout — checklist replaces $0.00 cards.
+  // New business: checklist-first layout (no $0.00 walls, no blank page).
   if (isNewBusiness) {
     return (
       <div className="space-y-6">
-        <PageHeader
-          title={L("dashboard.title")}
-          subtitle={dateLine}
-          actions={
-            <Link href="/jobs/new" className={hivisBtnClass}>
-              <Plus size={16} /> {L("dashboard.newJob")}
-            </Link>
-          }
+        <DashboardHeader businessId={businessId} timezone={timezone} regionCode={regionCode} />
+        <OnboardingChecklist
+          locale={locale}
+          businessId={businessId}
+          completed={onboardingCompleted}
+          tailoredSteps={tailoredSteps}
         />
-
-        {/* Setup checklist is the screen for a new business. */}
-        <OnboardingChecklist locale={locale} businessId={businessId} completed={onboardingCompleted} tailoredSteps={tailoredSteps} />
-
-        {/* One clear action: create the first job. */}
-        <Card className="p-6 text-center dark:bg-coal dark:border-white/10">
-          <CalendarDays size={32} className="mx-auto mb-3 text-zinc-400 dark:text-zinc-500" aria-hidden />
-          <h2 className="text-lg font-bold text-zinc-900 dark:text-white mb-1">
-            {L("dashboard.noJobsYet")}
-          </h2>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
-            {L("dashboard.breather")}
-          </p>
-          <Link href="/jobs/new" className={hivisBtnClass}>
-            <Plus size={16} /> {L("dashboard.newJob")}
-          </Link>
-        </Card>
+        <Section errorMessage={errorMessage} retryLabel={retryLabel}>
+          <CollectedSection businessId={businessId} timezone={timezone} regionCode={regionCode} />
+        </Section>
+        <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">
+          {L("dashboard.firstPaymentHere")}
+        </p>
       </div>
     );
   }
 
-  // E1: Existing business layout.
-  // Order: needs you → today's agenda → money → checklist.
-  return (
-    <div className="space-y-6">
-      <PageHeader
-        title={L("dashboard.title")}
-        subtitle={dateLine}
-        actions={
-          <Link href="/jobs/new" className={hivisBtnClass}>
-            <Plus size={16} /> {L("dashboard.newJob")}
-          </Link>
-        }
-      />
-
-      {/* 1. What needs you (attention engine). Renders nothing when calm. */}
-      <AttentionBriefing businessId={businessId} currency={currency} timezone={timezone} />
-
-      {/* 2. Today's agenda: today's visits + upcoming. */}
-      <Card className="dark:bg-coal dark:border-white/10">
-        <div className="flex items-center justify-between px-5 pt-5 pb-3">
-          <h2 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2.5">
-            <GlassIcon icon={<Clock size={14} />} tone="zinc" size="sm" /> {L("dashboard.todaysSchedule")}
-          </h2>
-          <Link
-            href="/schedule"
-            className="text-xs font-semibold text-ink dark:text-zinc-300 hover:underline inline-flex items-center gap-1 min-h-[44px] px-2 -mr-2"
-          >
-            {L("dashboard.schedule")} <ChevronRight size={13} />
-          </Link>
-        </div>
-        {stats.todayJobs.length === 0 && stats.upcomingJobs.length === 0 ? (
-          <EmptyState
-            icon={<CalendarDays size={22} />}
-            title={L("dashboard.nothingScheduled")}
-            description={L("dashboard.breather")}
+  // Technician: "My day" - only their visits.
+  if (role === "TECHNICIAN") {
+    return (
+      <div className="space-y-6">
+        <DashboardHeader businessId={businessId} timezone={timezone} regionCode={regionCode} />
+        <Section errorMessage={errorMessage} retryLabel={retryLabel}>
+          <TodaysVisits
+            businessId={businessId}
+            timezone={timezone}
+            regionCode={regionCode}
+            technicianUserId={user.id}
           />
-        ) : (
-          <ul className="divide-y divide-zinc-100 dark:divide-white/10 px-2 pb-2">
-            {/* Today's jobs first. */}
-            {stats.todayJobs.map((job, i) => (
-              <li key={`today-${job.id}`} className="ej-row-in" style={rowDelay(i)}>
-                <Link
-                  href={`/jobs/${job.id}`}
-                  className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors min-h-[56px]"
-                >
-                  <div className="w-14 shrink-0 text-center">
-                    <p className="text-xs font-bold text-zinc-900 dark:text-white tabular-nums">{hasJobTime(job.time) ? formatJobTime(job.time, locale) : "-"}</p>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-zinc-900 dark:text-white truncate">{job.title}</p>
-                    <p className="text-xs text-zinc-700 dark:text-zinc-300 truncate">{job.customerName}</p>
-                  </div>
-                  <StatusBadge status={jobDisplayStatus(job.status, job.date)} locale={locale} />
-                </Link>
-              </li>
-            ))}
-            {/* Upcoming jobs follow. */}
-            {stats.upcomingJobs.map((job, i) => (
-              <li key={`upcoming-${job.id}`} className="ej-row-in" style={rowDelay(stats.todayJobs.length + i)}>
-                <Link
-                  href={`/jobs/${job.id}`}
-                  className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors min-h-[56px]"
-                >
-                  <div className="w-14 shrink-0 text-center">
-                    {/* Part A: one date style everywhere — the shared formatter,
-                        so this agrees with the briefing ("Tomorrow", not "Oct 18, 2026"). */}
-                    <p className="text-xs font-bold text-zinc-900 dark:text-white tabular-nums">
-                      {formatDisplayDate(job.date, timezone, locale)}
-                    </p>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-zinc-900 dark:text-white truncate">{job.title}</p>
-                    <p className="text-xs text-zinc-700 dark:text-zinc-300 truncate">
-                      {job.customerName}
-                      {hasJobTime(job.time) ? ` · ${formatJobTime(job.time, locale)}` : ""}
-                    </p>
-                  </div>
-                  <StatusBadge status={jobDisplayStatus(job.status, job.date)} locale={locale} />
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Card>
+        </Section>
+      </div>
+    );
+  }
 
-      {/* 3. Money: compact rows, only metrics with data. No $0.00 cards. */}
-      {hasMoneyData && (
-        <Card className="dark:bg-coal dark:border-white/10">
-          <div className="px-5 pt-5 pb-3">
-            <h2 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2.5">
-              <GlassIcon icon={<Banknote size={14} />} tone="emerald" size="sm" /> {L("dashboard.moneyTitle")}
-            </h2>
-          </div>
-          <ul className="divide-y divide-zinc-100 dark:divide-white/10 px-2 pb-2">
-            {stats.collectedThisWeek > 0 && (
-              <li className="flex items-center justify-between px-3 py-3 min-h-[56px]">
-                <div>
-                  <p className="text-sm font-semibold text-zinc-900 dark:text-white">{L("dashboard.collected7")}</p>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">{L("dashboard.paymentsReceived")}</p>
-                </div>
-                <p className="text-base font-bold text-zinc-900 dark:text-white tabular-nums">
-                  <MoneyText dollars={stats.collectedThisWeek} locale={locale} />
-                </p>
-              </li>
-            )}
-            {stats.outstanding > 0 && (
-              <li>
-                <Link
-                  href="/invoices"
-                  className="flex items-center justify-between px-3 py-3 rounded-xl hover:bg-zinc-50 transition-colors min-h-[56px]"
-                >
-                  <div>
-                    <p className="text-sm font-semibold text-zinc-900 dark:text-white">{L("dashboard.outstanding")}</p>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                      {tp(locale, "dashboard.unpaidInvoices", stats.outstandingCount)}
-                    </p>
-                  </div>
-                  <p className="text-base font-bold text-zinc-900 dark:text-white tabular-nums">
-                    <MoneyText dollars={stats.outstanding} locale={locale} />
-                  </p>
-                </Link>
-              </li>
-            )}
-            {stats.readyToInvoice.length > 0 && (
-              <li>
-                <Link
-                  href="/invoices/new"
-                  className="flex items-center justify-between px-3 py-3 rounded-xl hover:bg-zinc-50 transition-colors min-h-[56px]"
-                >
-                  <div>
-                    <p className="text-sm font-semibold text-zinc-900 dark:text-white">{L("dashboard.readyToInvoice")}</p>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                      {tp(locale, "dashboard.readyToInvoiceCount", stats.readyToInvoice.length)}
-                    </p>
-                  </div>
-                  <p className="text-base font-bold text-zinc-900 dark:text-white tabular-nums">
-                    <MoneyText dollars={stats.readyToInvoice.reduce((s, j) => s + j.price, 0)} locale={locale} />
-                  </p>
-                </Link>
-              </li>
-            )}
-            {stats.newLeads > 0 && (
-              <li>
-                <Link
-                  href="/leads"
-                  className="flex items-center justify-between px-3 py-3 rounded-xl hover:bg-zinc-50 transition-colors min-h-[56px]"
-                >
-                  <div>
-                    <p className="text-sm font-semibold text-zinc-900 dark:text-white">{L("dashboard.newLeads")}</p>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">{L("dashboard.newLeadsHint")}</p>
-                  </div>
-                  <p className="text-base font-bold text-zinc-900 dark:text-white tabular-nums">{stats.newLeads}</p>
-                </Link>
-              </li>
-            )}
-          </ul>
-        </Card>
-      )}
+  const layout = await getDashboardLayout(user.id, businessId, role);
+  const sections: Record<DashboardSectionKey, React.ReactNode> = {
+    collected: (
+      <CollectedSection businessId={businessId} timezone={timezone} regionCode={regionCode} />
+    ),
+    needsYou: <NeedsYou businessId={businessId} />,
+    keyNumbers: <KeyNumbers businessId={businessId} timezone={timezone} regionCode={regionCode} />,
+    visits: <TodaysVisits businessId={businessId} timezone={timezone} regionCode={regionCode} />,
+    pipeline: <MoneyPipeline businessId={businessId} />,
+    last8Weeks: <Last8Weeks businessId={businessId} timezone={timezone} regionCode={regionCode} />,
+  };
 
-      {/* 4. Setup checklist (until done). Renders nothing when complete. */}
-      <OnboardingChecklist locale={locale} businessId={businessId} completed={onboardingCompleted} tailoredSteps={tailoredSteps} />
+  return (
+    <div className="space-y-5">
+      <DashboardHeader businessId={businessId} timezone={timezone} regionCode={regionCode} />
+      <QuickActions />
+      {layout
+        .filter((s) => s.visible)
+        .map((s) => (
+          <Section key={s.key} errorMessage={errorMessage} retryLabel={retryLabel}>
+            {sections[s.key]}
+          </Section>
+        ))}
+      <CustomizePanel
+        initial={layout}
+        labels={{
+          customize: L("dashboard.customize"),
+          title: L("dashboard.customizeTitle"),
+          done: L("dashboard.customizeDone"),
+          reset: L("dashboard.customizeReset"),
+          moveUp: L("dashboard.customizeMoveUp"),
+          moveDown: L("dashboard.customizeMoveDown"),
+          show: L("dashboard.customizeShow"),
+          hide: L("dashboard.customizeHide"),
+          saved: L("dashboard.customizeSaved"),
+          saveFailed: L("dashboard.customizeSaveFailed"),
+          sectionNames: {
+            collected: L("dashboard.sectionCollected"),
+            needsYou: L("dashboard.sectionNeedsYou"),
+            keyNumbers: L("dashboard.sectionKeyNumbers"),
+            visits: L("dashboard.sectionVisits"),
+            pipeline: L("dashboard.sectionPipeline"),
+            last8Weeks: L("dashboard.sectionLast8Weeks"),
+          },
+        }}
+      />
+      <OnboardingChecklist
+        locale={locale}
+        businessId={businessId}
+        completed={onboardingCompleted}
+        tailoredSteps={tailoredSteps}
+      />
     </div>
   );
 }

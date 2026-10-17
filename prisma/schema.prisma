@@ -60,6 +60,20 @@ model Membership {
   @@index([userId])
 }
 
+// Part C (dashboard rebuild): per-user dashboard section layout. `sections`
+// is JSON: [{ "key": "collected", "visible": true }, ...] in display order.
+// One row per (user, business); missing row = role defaults.
+model DashboardLayout {
+  id         String   @id @default(cuid())
+  userId     String
+  businessId String
+  sections   String
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, businessId])
+  @@index([businessId])
+}
+
 model Session {
   id        String   @id @default(cuid())
   userId    String

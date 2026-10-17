@@ -14,7 +14,7 @@
  * Usage (staging):
  *   SEED_ALLOW_PROD=true DATABASE_URL="<staging url>" npx tsx scripts/seed-staging.ts
  */
-import { randomBytes, pbkdf2Sync } from 'node:crypto';
+import bcrypt from 'bcryptjs';
 import { writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { PrismaClient } from '@prisma/client';
 
@@ -40,12 +40,9 @@ console.log(`Seeding staging data into ${url.replace(/:[^:@]*@/, ':***@')} (SEED
 
 const db = new PrismaClient({ datasources: { db: { url } } });
 const SEED_PASSWORD = 'SeedPass123!';
-const hashPassword = (pw: string) => {
-  const salt = randomBytes(16).toString('hex');
-  const hash = pbkdf2Sync(pw, salt, 100000, 64, 'sha512').toString('hex');
-  return `${salt}:${hash}`;
-};
-const pwHash = hashPassword(SEED_PASSWORD);
+// The app verifies passwords with bcrypt (see src/app/actions/auth.ts), so
+// the seed must hash the same way - the old pbkdf2 format could never log in.
+const pwHash = await bcrypt.hash(SEED_PASSWORD, 12);
 
 // Tiny 1x1 transparent PNG (placeholder receipt — NOT a real receipt).
 const PLACEHOLDER_PNG = Buffer.from(
