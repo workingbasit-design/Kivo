@@ -69,6 +69,17 @@ import type {
   WeekStripDay,
 } from './index';
 import { kitButtonClass } from './kit-button';
+import {
+  ListScreen,
+  DetailScreen,
+  BuilderScreen,
+  HubScreen,
+  CustomerPage,
+} from '@/components/patterns';
+import type {
+  ListScreenFilter,
+  ListScreenGroup,
+} from '@/components/patterns';
 
 type Lang = 'en' | 'fr';
 
@@ -121,6 +132,97 @@ interface ShowcaseStrings {
   dCopilot: string;
   dPortal: string;
   dPay: string;
+  secPatterns: string;
+  dList: string;
+  dDetail: string;
+  dBuilder: string;
+  dHub: string;
+  dCustomer: string;
+  patterns: {
+    listTitle: string;
+    listSummary: string;
+    listAction: string;
+    searchPh: string;
+    searchLabel: string;
+    searchClear: string;
+    filtersLabel: string;
+    fAll: string;
+    fLate: string;
+    fToday: string;
+    fUpcoming: string;
+    fInvoice: string;
+    gLate: string;
+    gToday: string;
+    gTomorrow: string;
+    gEarlier: string;
+    emptyTitle: string;
+    emptyText: string;
+    rLate: string;
+    rLateSub: string;
+    rLateMeta: string;
+    rT1: string;
+    rT1Sub: string;
+    rT1Meta: string;
+    rT1Amt: string;
+    rT2: string;
+    rT2Sub: string;
+    rT2Meta: string;
+    rT2Amt: string;
+    rT3: string;
+    rT3Sub: string;
+    rT3Meta: string;
+    rT3Amt: string;
+    bLate: string;
+    bDone: string;
+    bNotInvoiced: string;
+    bNoTech: string;
+    bSched: string;
+    backJobs: string;
+    backMoney: string;
+    dTitle: string;
+    dSub: string;
+    sWhen: string;
+    sWho: string;
+    sNext: string;
+    sMoney: string;
+    sNotes: string;
+    sHist: string;
+    kvWhen: string;
+    kvWhenSub: string;
+    kvWhere: string;
+    kvWhereSub: string;
+    reschedule: string;
+    assign: string;
+    bTitle: string;
+    bSub: string;
+    linesTitle: string;
+    addBook: string;
+    addCustom: string;
+    optTitle: string;
+    termsTitle: string;
+    subtotal: string;
+    tax: string;
+    total: string;
+    noticeTitle: string;
+    noticeText: string;
+    stickyTotal: string;
+    preview: string;
+    send: string;
+    hubTitle: string;
+    hubSummary: string;
+    hubAction: string;
+    hubViews: string;
+    vTodo: string;
+    vInvoices: string;
+    vQuotes: string;
+    vPayments: string;
+    cTitle: string;
+    cIntro: string;
+    cTotal: string;
+    payNow: string;
+    download: string;
+    poweredBy: string;
+  };
   topbar: { brand: string; back: string; search: string; notif: string; call: string };
   tab: {
     aria: string;
@@ -289,6 +391,98 @@ const EN: ShowcaseStrings = {
   dCopilot: 'CopilotActionCard',
   dPortal: 'PortalHeader',
   dPay: 'PaymentMethodChoices',
+  secPatterns: 'Screen patterns',
+  dList: 'ListScreen',
+  dDetail: 'DetailScreen',
+  dBuilder: 'BuilderScreen',
+  dHub: 'HubScreen',
+  dCustomer: 'CustomerPage',
+  patterns: {
+    listTitle: 'Jobs',
+    listSummary: '9 jobs this week and next',
+    listAction: 'New job',
+    searchPh: 'Search jobs, customers or addresses',
+    searchLabel: 'Search jobs',
+    searchClear: 'Clear search',
+    filtersLabel: 'Filter jobs',
+    fAll: 'All',
+    fLate: 'Late',
+    fToday: 'Today',
+    fUpcoming: 'Upcoming',
+    fInvoice: 'To invoice',
+    gLate: 'Late',
+    gToday: 'Today',
+    gTomorrow: 'Tomorrow',
+    gEarlier: 'Earlier this week',
+    emptyTitle: 'Nothing here',
+    emptyText: 'No jobs match this filter yet.',
+    rLate: 'Eavestrough repair',
+    rLateSub: 'Omar Haddad, Vaughan',
+    rLateMeta: 'Was due Fri, Oct 9',
+    rT1: 'Gutter cleaning',
+    rT1Sub: 'Daniel Okafor, Etobicoke',
+    rT1Meta: '8:30 a.m.',
+    rT1Amt: '$440',
+    rT2: 'Deep clean, 3 bedroom',
+    rT2Sub: 'Priya Shah, Mississauga',
+    rT2Meta: '11:00 a.m.',
+    rT2Amt: '$240',
+    rT3: 'Furnace tune-up',
+    rT3Sub: 'Marc Tremblay, North York',
+    rT3Meta: '2:30 p.m.',
+    rT3Amt: '$189',
+    bLate: 'Late',
+    bDone: 'Done',
+    bNotInvoiced: 'Not invoiced',
+    bNoTech: 'No technician yet',
+    bSched: 'Scheduled',
+    backJobs: 'Jobs',
+    backMoney: 'Money',
+    dTitle: 'Furnace tune-up',
+    dSub: 'Job J-3317 for Marc Tremblay',
+    sWhen: 'When and where',
+    sWho: 'Who',
+    sNext: "What's next",
+    sMoney: 'Money',
+    sNotes: 'Notes and photos',
+    sHist: 'History',
+    kvWhen: 'Today, 2:30 to 3:30 p.m.',
+    kvWhenSub: 'Saturday, October 17',
+    kvWhere: '88 Birchmount Ave',
+    kvWhereSub: 'North York, ON',
+    reschedule: 'Reschedule',
+    assign: 'Assign Jay M.',
+    bTitle: 'New quote',
+    bSub: 'For Hannah Moore, Etobicoke, from a lead',
+    linesTitle: 'Line items',
+    addBook: 'Add from price book',
+    addCustom: 'Add a custom item',
+    optTitle: 'Optional for Hannah',
+    termsTitle: 'Terms',
+    subtotal: 'Subtotal',
+    tax: 'HST 13% (Ontario)',
+    total: 'Total',
+    noticeTitle: 'Ontario 10% rule',
+    noticeText:
+      'If the final bill would go more than 10% over this quote, Hannah must approve the change first.',
+    stickyTotal: 'Total with HST 13%',
+    preview: 'Preview',
+    send: 'Send quote',
+    hubTitle: 'Money',
+    hubSummary: 'What to bill, chase and follow up',
+    hubAction: 'New',
+    hubViews: 'Money views',
+    vTodo: 'To do',
+    vInvoices: 'Invoices',
+    vQuotes: 'Quotes',
+    vPayments: 'Payments',
+    cTitle: 'Invoice 1051',
+    cIntro: 'Gutter guards at your home in Oakville. Due Tue, Oct 27.',
+    cTotal: 'Balance due',
+    payNow: 'Pay $904.00',
+    download: 'Download PDF',
+    poweredBy: 'Powered by EveryJob',
+  },
   topbar: {
     brand: 'EveryJob',
     back: 'Customers',
@@ -531,6 +725,98 @@ const FR: ShowcaseStrings = {
   dCopilot: 'CopilotActionCard',
   dPortal: 'PortalHeader',
   dPay: 'PaymentMethodChoices',
+  secPatterns: 'Modèles d’écran',
+  dList: 'ListScreen',
+  dDetail: 'DetailScreen',
+  dBuilder: 'BuilderScreen',
+  dHub: 'HubScreen',
+  dCustomer: 'CustomerPage',
+  patterns: {
+    listTitle: 'Travaux',
+    listSummary: '9 travaux cette semaine et la prochaine',
+    listAction: 'Nouveau travail',
+    searchPh: 'Rechercher travaux, clients ou adresses',
+    searchLabel: 'Rechercher des travaux',
+    searchClear: 'Effacer la recherche',
+    filtersLabel: 'Filtrer les travaux',
+    fAll: 'Tous',
+    fLate: 'En retard',
+    fToday: 'Aujourd’hui',
+    fUpcoming: 'À venir',
+    fInvoice: 'À facturer',
+    gLate: 'En retard',
+    gToday: 'Aujourd’hui',
+    gTomorrow: 'Demain',
+    gEarlier: 'Plus tôt cette semaine',
+    emptyTitle: 'Rien ici',
+    emptyText: 'Aucun travail ne correspond à ce filtre.',
+    rLate: 'Réparation de gouttière',
+    rLateSub: 'Omar Haddad, Vaughan',
+    rLateMeta: 'Prévu ven. 9 oct.',
+    rT1: 'Nettoyage de gouttières',
+    rT1Sub: 'Daniel Okafor, Etobicoke',
+    rT1Meta: '8 h 30',
+    rT1Amt: '440 $',
+    rT2: 'Ménage en profondeur, 3 chambres',
+    rT2Sub: 'Priya Shah, Mississauga',
+    rT2Meta: '11 h 00',
+    rT2Amt: '240 $',
+    rT3: 'Mise au point de fournaise',
+    rT3Sub: 'Marc Tremblay, North York',
+    rT3Meta: '14 h 30',
+    rT3Amt: '189 $',
+    bLate: 'En retard',
+    bDone: 'Terminé',
+    bNotInvoiced: 'Non facturé',
+    bNoTech: 'Aucun technicien',
+    bSched: 'Planifié',
+    backJobs: 'Travaux',
+    backMoney: 'Argent',
+    dTitle: 'Mise au point de fournaise',
+    dSub: 'Travail J-3317 pour Marc Tremblay',
+    sWhen: 'Quand et où',
+    sWho: 'Qui',
+    sNext: 'Prochaine étape',
+    sMoney: 'Argent',
+    sNotes: 'Notes et photos',
+    sHist: 'Historique',
+    kvWhen: 'Aujourd’hui, 14 h 30 à 15 h 30',
+    kvWhenSub: 'Samedi 17 octobre',
+    kvWhere: '88, av. Birchmount',
+    kvWhereSub: 'North York, ON',
+    reschedule: 'Reporter',
+    assign: 'Assigner Jay M.',
+    bTitle: 'Nouvelle soumission',
+    bSub: 'Pour Hannah Moore, Etobicoke, d’une piste',
+    linesTitle: 'Articles',
+    addBook: 'Ajouter du livre de prix',
+    addCustom: 'Ajouter un article personnalisé',
+    optTitle: 'En option pour Hannah',
+    termsTitle: 'Conditions',
+    subtotal: 'Sous-total',
+    tax: 'TVH 13 % (Ontario)',
+    total: 'Total',
+    noticeTitle: 'Règle des 10 % de l’Ontario',
+    noticeText:
+      'Si la facture finale dépasse cette soumission de plus de 10 %, Hannah doit approuver le changement d’abord.',
+    stickyTotal: 'Total avec TVH 13 %',
+    preview: 'Aperçu',
+    send: 'Envoyer la soumission',
+    hubTitle: 'Argent',
+    hubSummary: 'Ce qu’il faut facturer, relancer et suivre',
+    hubAction: 'Nouveau',
+    hubViews: 'Vues argent',
+    vTodo: 'À faire',
+    vInvoices: 'Factures',
+    vQuotes: 'Soumissions',
+    vPayments: 'Paiements',
+    cTitle: 'Facture 1051',
+    cIntro: 'Protège-gouttières à votre domicile à Oakville. Échéance mar. 27 oct.',
+    cTotal: 'Solde dû',
+    payNow: 'Payer 904,00 $',
+    download: 'Télécharger le PDF',
+    poweredBy: 'Propulsé par EveryJob',
+  },
   topbar: {
     brand: 'EveryJob',
     back: 'Clients',
@@ -748,7 +1034,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 
 function Demo({ name, children }: { name: string; children: ReactNode }) {
   return (
-    <div>
+    <div className="min-w-0">
       <h3 className="mb-2 text-[15px] font-bold text-ink-2">{name}</h3>
       {children}
     </div>
@@ -777,6 +1063,11 @@ export function Showcase({ lang }: { lang: Lang }) {
   const [weekDay, setWeekDay] = useState('d17');
   const [payMethod, setPayMethod] = useState('card');
   const [portalLang, setPortalLang] = useState<PortalLang>(lang);
+  // Pattern demos.
+  const [patternQuery, setPatternQuery] = useState('');
+  const [patternFilter, setPatternFilter] = useState('all');
+  const [patternView, setPatternView] = useState('todo');
+  const [patternLang, setPatternLang] = useState<PortalLang>(lang);
 
   // BottomSheet is rendered open as a static demo. It locks body scroll and
   // steals focus on open; restore page usability afterwards.
@@ -819,6 +1110,150 @@ export function Showcase({ lang }: { lang: Lang }) {
     { id: 'card', title: t.pay.card, sub: t.pay.cardSub, recommended: true },
     { id: 'etransfer', title: t.pay.etransfer, sub: t.pay.etransferSub },
     { id: 'cash', title: t.pay.cash, sub: t.pay.cashSub },
+  ];
+
+  // Screen-pattern demos (Part 2). Sample data only — the /design page is a
+  // component showcase, not the app.
+  const p = t.patterns;
+  const patternEmpty = {
+    icon: Inbox,
+    title: p.emptyTitle,
+    text: p.emptyText,
+  };
+  const patternFilters: ListScreenFilter[] = [
+    { id: 'all', label: p.fAll, empty: patternEmpty },
+    { id: 'late', label: p.fLate, tone: 'danger', empty: patternEmpty },
+    { id: 'today', label: p.fToday, empty: patternEmpty },
+    { id: 'upcoming', label: p.fUpcoming, empty: patternEmpty },
+    { id: 'invoice', label: p.fInvoice, empty: patternEmpty },
+  ];
+  const patternGroups: ListScreenGroup[] = [
+    {
+      id: 'late',
+      heading: p.gLate,
+      headingTone: 'danger',
+      rows: [
+        {
+          rowKey: 'late-1',
+          filterIds: ['all', 'late'],
+          icon: Wrench,
+          title: p.rLate,
+          subtitle: p.rLateSub,
+          meta: (
+            <>
+              <span>{p.rLateMeta}</span>
+              <StatusBadge tone="late">{p.bLate}</StatusBadge>
+            </>
+          ),
+        },
+      ],
+    },
+    {
+      id: 'today',
+      heading: p.gToday,
+      headingMeta: '3',
+      rows: [
+        {
+          rowKey: 'today-1',
+          filterIds: ['all', 'today', 'invoice'],
+          icon: House,
+          title: p.rT1,
+          subtitle: p.rT1Sub,
+          meta: (
+            <>
+              <span>{p.rT1Meta}</span>
+              <StatusBadge tone="done">{p.bDone}</StatusBadge>
+              <StatusBadge tone="warn">{p.bNotInvoiced}</StatusBadge>
+            </>
+          ),
+          amount: p.rT1Amt,
+        },
+        {
+          rowKey: 'today-2',
+          filterIds: ['all', 'today', 'invoice'],
+          icon: Sparkles,
+          title: p.rT2,
+          subtitle: p.rT2Sub,
+          meta: (
+            <>
+              <span>{p.rT2Meta}</span>
+              <StatusBadge tone="done">{p.bDone}</StatusBadge>
+              <StatusBadge tone="warn">{p.bNotInvoiced}</StatusBadge>
+            </>
+          ),
+          amount: p.rT2Amt,
+        },
+        {
+          rowKey: 'today-3',
+          filterIds: ['all', 'today', 'upcoming'],
+          icon: Wrench,
+          title: p.rT3,
+          subtitle: p.rT3Sub,
+          meta: (
+            <>
+              <span>{p.rT3Meta}</span>
+              <StatusBadge tone="warn">{p.bNoTech}</StatusBadge>
+            </>
+          ),
+          amount: p.rT3Amt,
+        },
+      ],
+    },
+    {
+      id: 'tomorrow',
+      heading: p.gTomorrow,
+      headingMeta: '2',
+      rows: [
+        {
+          rowKey: 'tomorrow-1',
+          filterIds: ['all', 'upcoming'],
+          icon: Sparkles,
+          title: p.rT2,
+          subtitle: p.rT2Sub,
+          meta: (
+            <>
+              <span>{p.gTomorrow}</span>
+              <StatusBadge tone="scheduled">{p.bSched}</StatusBadge>
+            </>
+          ),
+          amount: p.rT2Amt,
+        },
+        {
+          rowKey: 'tomorrow-2',
+          filterIds: ['all', 'upcoming'],
+          icon: Wrench,
+          title: p.rT3,
+          subtitle: p.rT3Sub,
+          meta: (
+            <>
+              <span>{p.gTomorrow}</span>
+              <StatusBadge tone="scheduled">{p.bSched}</StatusBadge>
+            </>
+          ),
+          amount: p.rT3Amt,
+        },
+      ],
+    },
+    {
+      id: 'earlier',
+      heading: p.gEarlier,
+      rows: [
+        {
+          rowKey: 'earlier-1',
+          filterIds: ['all', 'invoice'],
+          icon: House,
+          title: p.rT1,
+          subtitle: p.rT1Sub,
+          meta: (
+            <>
+              <StatusBadge tone="done">{p.bDone}</StatusBadge>
+              <StatusBadge tone="warn">{p.bNotInvoiced}</StatusBadge>
+            </>
+          ),
+          amount: p.rT1Amt,
+        },
+      ],
+    },
   ];
 
   return (
@@ -1324,6 +1759,269 @@ export function Showcase({ lang }: { lang: Lang }) {
               onSelect={setPayMethod}
               recommendedLabel={t.pay.recommended}
             />
+          </Demo>
+        </Section>
+
+        <Section title={t.secPatterns}>
+          <Demo name={t.dList}>
+            <ListScreen
+              title={p.listTitle}
+              summary={p.listSummary}
+              actionLabel={p.listAction}
+              onAction={noop}
+              searchValue={patternQuery}
+              onSearchChange={setPatternQuery}
+              searchPlaceholder={p.searchPh}
+              searchLabel={p.searchLabel}
+              searchClearLabel={p.searchClear}
+              filtersLabel={p.filtersLabel}
+              filters={patternFilters}
+              selectedFilterId={patternFilter}
+              onSelectFilter={setPatternFilter}
+              groups={patternGroups}
+            />
+          </Demo>
+          <Demo name={t.dDetail}>
+            {/* Sticky/fixed kit pieces rendered in-flow and non-sticky so the
+                demo reads as a static screen while scrolling the showcase. */}
+            <div className="[transform:translateZ(0)] [&_[data-kit=sticky-action-bar]]:static [&_[data-kit=top-bar]]:static">
+              <DetailScreen
+                backLabel={p.backJobs}
+                onBack={noop}
+                icon={Wrench}
+                title={p.dTitle}
+                subtitle={p.dSub}
+                badges={[
+                  { tone: 'scheduled', children: p.bSched },
+                  { tone: 'warn', icon: Users, children: p.bNoTech },
+                ]}
+                whenWhere={{
+                  title: p.sWhen,
+                  content: (
+                    <>
+                      <KeyValueRow
+                        icon={Clock}
+                        label={p.kvWhen}
+                        sub={p.kvWhenSub}
+                      />
+                      <KeyValueRow
+                        icon={MapPin}
+                        label={p.kvWhere}
+                        sub={p.kvWhereSub}
+                      />
+                    </>
+                  ),
+                }}
+                who={{
+                  title: p.sWho,
+                  content: (
+                    <ContactButtons
+                      labels={t.contact}
+                      onCall={noop}
+                      onText={noop}
+                      onEmail={noop}
+                      onMap={noop}
+                    />
+                  ),
+                }}
+                whatsNext={{
+                  title: p.sNext,
+                  content: <ProgressSteps steps={steps} />,
+                }}
+                money={{
+                  title: p.sMoney,
+                  content: (
+                    <LineItems
+                      lines={[
+                        {
+                          title: t.lines.l1t,
+                          detail: t.lines.l1d,
+                          amountCents: 14900,
+                        },
+                        {
+                          title: t.lines.l2t,
+                          detail: t.lines.l2d,
+                          amountCents: 4000,
+                        },
+                      ]}
+                      subtotalLabel={t.lines.subtotal}
+                      subtotalCents={18900}
+                      taxLabel={t.lines.tax}
+                      taxCents={2457}
+                      totalLabel={t.lines.total}
+                      totalCents={21357}
+                    />
+                  ),
+                }}
+                notesPhotos={{
+                  title: p.sNotes,
+                  content: (
+                    <PhotoTiles
+                      photos={[
+                        { label: t.photos.before },
+                        { label: t.photos.after },
+                      ]}
+                      addLabel={t.photos.add}
+                      onAdd={noop}
+                    />
+                  ),
+                }}
+                history={{
+                  title: p.sHist,
+                  content: (
+                    <p className="py-2.5 text-[15px] text-ink-2">
+                      {t.empty.text}
+                    </p>
+                  ),
+                }}
+                primaryLabel={p.assign}
+                onPrimary={noop}
+                secondaryLabel={p.reschedule}
+                onSecondary={noop}
+              />
+            </div>
+          </Demo>
+          <Demo name={t.dBuilder}>
+            {/* Sticky/fixed kit pieces rendered in-flow and non-sticky so the
+                demo reads as a static screen. */}
+            <div className="[transform:translateZ(0)] [&_[data-kit=sticky-action-bar]]:static [&_[data-kit=top-bar]]:static">
+              <BuilderScreen
+                backLabel={p.backMoney}
+                onBack={noop}
+                icon={FileText}
+                title={p.bTitle}
+                subtitle={p.bSub}
+                lineItemsTitle={p.linesTitle}
+                lines={[
+                  {
+                    title: t.lines.l1t,
+                    detail: t.lines.l1d,
+                    amountCents: 12900,
+                  },
+                  {
+                    title: t.lines.l2t,
+                    detail: t.lines.l2d,
+                    amountCents: 18500,
+                  },
+                  { title: 'MERV 11', amountCents: 4000 },
+                ]}
+                subtotalLabel={p.subtotal}
+                subtotalCents={35400}
+                taxLabel={p.tax}
+                taxCents={4602}
+                totalLabel={p.total}
+                totalCents={40002}
+                addFromPriceBookLabel={p.addBook}
+                onAddFromPriceBook={noop}
+                addCustomItemLabel={p.addCustom}
+                onAddCustomItem={noop}
+                optionalTitle={p.optTitle}
+                optionalItems={
+                  <KeyValueRow
+                    icon={Zap}
+                    label={t.lines.l1t}
+                    sub={p.optTitle}
+                  />
+                }
+                termsTitle={p.termsTitle}
+                terms={
+                  <KeyValueRow
+                    icon={CalendarCheck}
+                    label={p.tax}
+                    sub={p.termsTitle}
+                  />
+                }
+                notice={
+                  <Banner
+                    tone="info"
+                    title={p.noticeTitle}
+                    text={p.noticeText}
+                  />
+                }
+                stickyTotalLabel={p.stickyTotal}
+                previewLabel={p.preview}
+                onPreview={noop}
+                primaryLabel={p.send}
+                onPrimary={noop}
+              />
+            </div>
+          </Demo>
+          <Demo name={t.dHub}>
+            <HubScreen
+              title={p.hubTitle}
+              summary={p.hubSummary}
+              actionLabel={p.hubAction}
+              onAction={noop}
+              views={[
+                { id: 'todo', label: p.vTodo },
+                { id: 'invoices', label: p.vInvoices },
+                { id: 'quotes', label: p.vQuotes },
+                { id: 'payments', label: p.vPayments },
+              ]}
+              selectedViewId={patternView}
+              onSelectView={setPatternView}
+              viewsLabel={p.hubViews}
+            >
+              <div className="overflow-hidden rounded-2xl border border-line bg-surface">
+                <ListRow
+                  avatarInitials="PS"
+                  title="Priya Shah"
+                  subtitle={p.rT2Sub}
+                  amount={p.rT2Amt}
+                  amountCaption={p.bNotInvoiced}
+                  amountTone="warn"
+                />
+                <ListRow
+                  avatarInitials="DO"
+                  title="Daniel Okafor"
+                  subtitle={p.rT1Sub}
+                  amount={p.rT1Amt}
+                  amountCaption={p.bNotInvoiced}
+                  amountTone="warn"
+                />
+              </div>
+            </HubScreen>
+          </Demo>
+          <Demo name={t.dCustomer}>
+            <CustomerPage
+              businessInitial="N"
+              businessName={t.portal.name}
+              areaLabel={t.portal.area}
+              lang={patternLang}
+              onLangChange={setPatternLang}
+              title={p.cTitle}
+              intro={<p className="m-0">{p.cIntro}</p>}
+              totalLabel={p.cTotal}
+              totalCents={90400}
+              primaryLabel={p.payNow}
+              onPrimary={noop}
+              secondaryLabel={p.download}
+              onSecondary={noop}
+              poweredByLabel={p.poweredBy}
+            >
+              <Card className="px-3.5 py-1">
+                <LineItems
+                  lines={[
+                    {
+                      title: t.lines.l1t,
+                      detail: t.lines.l1d,
+                      amountCents: 68000,
+                    },
+                    {
+                      title: t.lines.l2t,
+                      detail: t.lines.l2d,
+                      amountCents: 12000,
+                    },
+                  ]}
+                  subtotalLabel={p.subtotal}
+                  subtotalCents={80000}
+                  taxLabel={p.tax}
+                  taxCents={10400}
+                  totalLabel={p.total}
+                  totalCents={90400}
+                />
+              </Card>
+            </CustomerPage>
           </Demo>
         </Section>
       </div>
