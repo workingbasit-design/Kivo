@@ -36,7 +36,7 @@ test('F10-001: event -> notification text (en)', () => {
   );
   assert.equal(
     renderF10Body('lead_new', { phone: '416-555-0100', source: 'Website' }, 'en'),
-    '416-555-0100 · Website'
+    '416-555-0100, Website'
   );
   assert.equal(
     renderF10Title('quote_accepted', { number: 'Q-1042' }, 'en'),
@@ -44,7 +44,7 @@ test('F10-001: event -> notification text (en)', () => {
   );
   assert.equal(
     renderF10Body('quote_accepted', { customer: 'Jane Doe', amount: '249.9' }, 'en'),
-    'Jane Doe · 249.9'
+    'Jane Doe, 249.9'
   );
   assert.equal(
     renderF10Title('quote_declined', { number: 'Q-1043' }, 'en'),
@@ -63,7 +63,7 @@ test('F10-001: event -> notification text (fr)', () => {
   );
   assert.equal(
     renderF10Body('quote_declined', { customer: 'Jean', amount: '100' }, 'fr'),
-    'Jean · 100'
+    'Jean, 100'
   );
   assert.equal(
     renderF10Title('change_requested', { number: 'Q-1050' }, 'fr'),

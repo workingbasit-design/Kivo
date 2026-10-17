@@ -13,7 +13,7 @@ const fragment = {
     },
     recurringPage: {
       newTitle: 'New recurring plan',
-      newSubtitle: 'Set it once - EveryJob creates a job every week, fortnight, or month.',
+      newSubtitle: 'Set it once. EveryJob creates a job every week, fortnight, or month.',
       editTitle: 'Edit recurring plan',
       backLink: 'Back to recurring jobs',
     },
@@ -26,7 +26,7 @@ const fragment = {
     recurringPage: {
       newTitle: 'Nouveau plan récurrent',
       newSubtitle:
-        'Réglez une fois - EveryJob crée un travail chaque semaine, quinzaine ou mois.',
+        'Réglez une fois. EveryJob crée un travail chaque semaine, quinzaine ou mois.',
       editTitle: 'Modifier le plan récurrent',
       backLink: 'Retour aux travaux récurrents',
     },

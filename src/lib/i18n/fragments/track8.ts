@@ -11,7 +11,7 @@ export default {
       ruleNotFound: 'Automation rule not found.',
       automationsTitle: 'Automations',
       automationsSubtitle:
-        'Safe, scheduled helpers. They can only create in-app notifications and drafts - they never send messages or move money on their own.',
+        'Safe, scheduled helpers. They can only create in-app notifications and drafts. They never send messages or move money on their own.',
       safetyNote:
         'Safety: automations only create in-app notifications and drafts. External messages still go through the opt-in messaging system only, and payments only through your own Stripe account.',
       trigger_JOB_COMPLETED: 'Job completed',
@@ -39,7 +39,7 @@ export default {
     notifications: {
       t_review_request_draft: 'Review-request draft: {jobTitle}',
       b_review_request_draft:
-        'For {customerName} - copy and send it yourself; EveryJob never sends messages on its own.\n\n“{draft}”',
+        'For {customerName}. Copy and send it yourself; EveryJob never sends messages on its own.\n\n“{draft}”',
       t_workflow_quote_followup: 'Quote {number} still awaiting response',
       b_workflow_quote_followup:
         '“{title}” for {customerName} (${total}) was sent a while ago. Consider following up with the customer.',
@@ -54,7 +54,7 @@ export default {
       ruleNotFound: 'Règle d’automatisation introuvable.',
       automationsTitle: 'Automatisations',
       automationsSubtitle:
-        'Des assistants planifiés et sûrs. Ils ne peuvent créer que des notifications internes et des brouillons - ils n’envoient jamais de messages ni ne déplacent d’argent d’eux-mêmes.',
+        'Des assistants planifiés et sûrs. Ils ne peuvent créer que des notifications internes et des brouillons. Ils n’envoient jamais de messages ni ne déplacent d’argent d’eux-mêmes.',
       safetyNote:
         'Sécurité : les automatisations ne créent que des notifications internes et des brouillons. Les messages externes passent toujours uniquement par le système de messagerie avec consentement, et les paiements uniquement par votre propre compte Stripe.',
       trigger_JOB_COMPLETED: 'Travail terminé',
@@ -82,7 +82,7 @@ export default {
     notifications: {
       t_review_request_draft: 'Brouillon de demande d’avis : {jobTitle}',
       b_review_request_draft:
-        'Pour {customerName} - copiez-le et envoyez-le vous-même; EveryJob n’envoie jamais de messages de lui-même.\n\n« {draft} »',
+        'Pour {customerName}. Copiez-le et envoyez-le vous-même; EveryJob n’envoie jamais de messages de lui-même.\n\n« {draft} »',
       t_workflow_quote_followup: 'Soumission {number} toujours en attente',
       b_workflow_quote_followup:
         '« {title} » pour {customerName} ({total} $) a été envoyée il y a un moment. Pensez à faire un suivi auprès du client.',

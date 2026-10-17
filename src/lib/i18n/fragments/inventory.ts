@@ -52,7 +52,7 @@ const fragment = {
       noResults: 'Aucune pièce trouvée',
       noResultsDesc: 'Essayez un autre terme de recherche.',
       name: 'Nom de la pièce',
-      namePlaceholder: 'p. ex. Filtre à air, Tuyau PVC, Disjoncteur',
+      namePlaceholder: 'p. Ex. Filtre à air, Tuyau PVC, Disjoncteur',
       sku: 'SKU',
       quantity: 'Quantité en stock',
       reorderPoint: 'Seuil de réapprovisionnement',

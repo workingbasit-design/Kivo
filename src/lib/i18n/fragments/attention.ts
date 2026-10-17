@@ -42,7 +42,7 @@ const fragment = {
         },
         leadIdle: {
           title: 'New lead waiting: {name}',
-          detail: 'No contact in {hours}h · came in via {source}',
+          detail: 'No contact in {hours}h, came in via {source}',
         },
         lowStock: {
           title: 'Low stock: {name}',
@@ -103,7 +103,7 @@ const fragment = {
     },
     leaks: {
       title: 'Money leaks',
-      subtitle: 'Where money is slipping away - measured from your real data.',
+      subtitle: 'Where money is slipping away. Measured from your real data.',
       overdue: {
         title: 'Overdue invoices',
         detail: '{count} invoices {days}+ days past due',
@@ -114,11 +114,11 @@ const fragment = {
       },
       idleQuotes: {
         title: 'Quotes going cold',
-        detail: '{count} quotes waiting {days}+ days - {amount} in play',
+        detail: '{count} quotes waiting {days}+ days. {amount} in play',
       },
       totalAtRisk: 'Total at risk',
       measuredNote: 'Measured from invoices and jobs on your books.',
-      estimateNote: 'Estimate - pipeline value, not money lost.',
+      estimateNote: 'Estimate. Pipeline value, not money lost.',
     },
     health: {
       title: 'Business health',
@@ -140,7 +140,7 @@ const fragment = {
         monthlyRevenue: 'Average monthly revenue',
         projected: 'Projected monthly revenue',
         shortfall: 'Monthly shortfall',
-        note: 'Based on your trailing 90-day average. Fixed costs are not modelled - treat this as a top-line sketch.',
+        note: 'Based on your trailing 90-day average. Fixed costs are not modelled. Treat this as a top-line sketch.',
       },
       priceRise: {
         title: 'What if you raise prices 5%?',
@@ -163,7 +163,7 @@ const fragment = {
       startListening: 'Start listening',
       stopListening: 'Stop listening',
       listening: 'Listening…',
-      notSupported: 'Voice recognition isn’t supported in this browser. Use the big buttons below instead - they do the same thing.',
+      notSupported: 'Voice recognition isn’t supported in this browser. Use the big buttons below instead. They do the same thing.',
       todayJobs: 'Today’s jobs',
       noJobs: 'No jobs scheduled for today.',
       heard: 'Heard',
@@ -181,11 +181,11 @@ const fragment = {
       addMaterial: 'Add material',
       startJob: 'Start job',
       completeJob: 'Complete job',
-      tapHint: 'You can also just tap - every voice command has a button.',
+      tapHint: 'You can also just tap. Every voice command has a button.',
       micPermission: 'Allow microphone access when the browser asks.',
-      micDenied: 'Microphone blocked - allow mic access in your browser settings, then tap again.',
-      noSpeech: "I didn't hear anything - try again in a quieter spot.",
-      micError: 'Microphone trouble - try again, or use the buttons below instead.',
+      micDenied: 'Microphone blocked. Allow mic access in your browser settings, then tap again.',
+      noSpeech: "I didn't hear anything. Try again in a quieter spot.",
+      micError: 'Microphone trouble. Try again, or use the buttons below instead.',
     },
     cmdbar: {
       hint: 'Try “unpaid invoices”, “create quote for John Smith”…',
@@ -211,11 +211,11 @@ const fragment = {
       briefingSubtitle: 'Bonjour. Voici ce qui mérite votre attention en premier.',
       items: {
         overdueInvoice: {
-          title: 'Facture {number} en retard - {customer}',
+          title: 'Facture {number} en retard ({customer})',
           detail: '{days} jours de retard',
         },
         quoteFollowUp: {
-          title: 'Soumission {number} en attente - {customer}',
+          title: 'Soumission {number} en attente ({customer})',
           detail: 'Sans réponse depuis {days} jours',
         },
         jobAtRisk: {
@@ -232,11 +232,11 @@ const fragment = {
         },
         leadIdle: {
           title: 'Nouveau prospect en attente : {name}',
-          detail: 'Sans contact depuis {hours} h · arrivé via {source}',
+          detail: 'Sans contact depuis {hours} h, arrivé via {source}',
         },
         lowStock: {
           title: 'Stock bas : {name}',
-          detail: '{quantity} restant - au seuil de réapprovisionnement ou en dessous',
+          detail: '{quantity} restant. Au seuil de réapprovisionnement ou en dessous',
         },
         paidThisWeek: {
           title: '{count} factures payées cette semaine',
@@ -293,7 +293,7 @@ const fragment = {
     },
     leaks: {
       title: 'Fuites d’argent',
-      subtitle: 'Où l’argent s’échappe - mesuré à partir de vos vraies données.',
+      subtitle: 'Où l’argent s’échappe. Mesuré à partir de vos vraies données.',
       overdue: {
         title: 'Factures en retard',
         detail: '{count} factures en retard de {days}+ jours',
@@ -304,11 +304,11 @@ const fragment = {
       },
       idleQuotes: {
         title: 'Soumissions qui refroidissent',
-        detail: '{count} soumissions en attente depuis {days}+ jours - {amount} en jeu',
+        detail: '{count} soumissions en attente depuis {days}+ jours. {amount} en jeu',
       },
       totalAtRisk: 'Total à risque',
       measuredNote: 'Mesuré à partir de vos factures et travaux.',
-      estimateNote: 'Estimation - valeur du pipeline, pas de l’argent perdu.',
+      estimateNote: 'Estimation. Valeur du pipeline, pas de l’argent perdu.',
     },
     health: {
       title: 'Santé de l’entreprise',
@@ -330,7 +330,7 @@ const fragment = {
         monthlyRevenue: 'Revenu mensuel moyen',
         projected: 'Revenu mensuel projeté',
         shortfall: 'Manque à gagner mensuel',
-        note: 'Basé sur votre moyenne des 90 derniers jours. Les coûts fixes ne sont pas modélisés - considérez ceci comme une esquisse.',
+        note: 'Basé sur votre moyenne des 90 derniers jours. Les coûts fixes ne sont pas modélisés. Considérez ceci comme une esquisse.',
       },
       priceRise: {
         title: 'Et si vous augmentiez vos prix de 5 % ?',
@@ -353,7 +353,7 @@ const fragment = {
       startListening: 'Commencer l’écoute',
       stopListening: 'Arrêter l’écoute',
       listening: 'Écoute en cours…',
-      notSupported: 'La reconnaissance vocale n’est pas supportée dans ce navigateur. Utilisez les gros boutons ci-dessous - ils font la même chose.',
+      notSupported: 'La reconnaissance vocale n’est pas supportée dans ce navigateur. Utilisez les gros boutons ci-dessous. Ils font la même chose.',
       todayJobs: 'Travaux d’aujourd’hui',
       noJobs: 'Aucun travail prévu aujourd’hui.',
       heard: 'Entendu',
@@ -371,11 +371,11 @@ const fragment = {
       addMaterial: 'Ajouter du matériel',
       startJob: 'Commencer le travail',
       completeJob: 'Terminer le travail',
-      tapHint: 'Vous pouvez aussi simplement toucher - chaque commande vocale a un bouton.',
+      tapHint: 'Vous pouvez aussi simplement toucher. Chaque commande vocale a un bouton.',
       micPermission: 'Autorisez l’accès au micro quand le navigateur le demande.',
-      micDenied: 'Micro bloqué - autorisez l’accès au micro dans les réglages du navigateur, puis touchez de nouveau.',
-      noSpeech: 'Je n’ai rien entendu - réessayez dans un endroit plus calme.',
-      micError: 'Problème de micro - réessayez, ou utilisez les boutons ci-dessous.',
+      micDenied: 'Micro bloqué. Autorisez l’accès au micro dans les réglages du navigateur, puis touchez de nouveau.',
+      noSpeech: 'Je n’ai rien entendu. Réessayez dans un endroit plus calme.',
+      micError: 'Problème de micro. Réessayez, ou utilisez les boutons ci-dessous.',
     },
     cmdbar: {
       hint: 'Essayez « factures impayées », « créer une soumission pour Jean Tremblay »…',

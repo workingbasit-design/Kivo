@@ -20,7 +20,7 @@ const fragment = {
       schedToday: 'Today',
       schedAllDates: 'All scheduled dates',
       schedNewJobForDay: 'Create a job for this day',
-      schedEmptyDayNew: 'No jobs - create one',
+      schedEmptyDayNew: 'No jobs. Create one',
       schedPrevDay: 'Previous day',
       schedNextDay: 'Next day',
       schedSearch: 'Search schedule…',
@@ -42,9 +42,9 @@ const fragment = {
       schedStatusChanged: 'Job status updated',
       schedRescheduled: 'Job rescheduled',
       schedDeleted: 'Job removed from the schedule',
-      schedErrorStatus: 'Could not update the job - please try again.',
-      schedErrorDelete: 'Could not remove the job - please try again.',
-      schedErrorSeed: 'Could not add sample jobs - please try again.',
+      schedErrorStatus: 'Could not update the job. Please try again.',
+      schedErrorDelete: 'Could not remove the job. Please try again.',
+      schedErrorSeed: 'Could not add sample jobs. Please try again.',
       schedYesRemove: 'Yes, remove',
 
       // ---- Jobs list ----
@@ -53,7 +53,7 @@ const fragment = {
       jobsSearchPlaceholder: 'Search by job, customer, or address…',
       jobsTabAll: 'All',
       jobsEmptyTitle: 'No jobs yet',
-      jobsEmptyDesc: 'Create your first job - it takes less than 20 seconds.',
+      jobsEmptyDesc: 'Create your first job. It takes less than 20 seconds.',
       jobsCreateFirst: 'Create first job',
       jobsNoMatchTitle: 'No jobs match your filters',
       jobsNoMatchDesc: 'Try a different status or search term.',
@@ -71,12 +71,12 @@ const fragment = {
       jobWhatsAppLabel: 'WhatsApp',
       jobSmsLabel: 'SMS',
       jobRequestReview: 'Request review',
-      jobReviewLinkCopied: 'Review link copied - send it to the customer.',
+      jobReviewLinkCopied: 'Review link copied. Send it to the customer.',
       jobReviewLinkFailed: 'Couldn’t create the review link. Try again.',
 
       // ---- JobForm ----
       formTitleLabel: 'Job title',
-      formTitlePlaceholder: 'e.g. furnace repair, tap leakage, deep cleaning',
+      formTitlePlaceholder: 'e.g. Furnace repair, tap leakage, deep cleaning',
       formCustomerLabel: 'Customer',
       formNewCustomerOption: '+ New customer…',
       formNewCustomerName: 'New customer name',
@@ -84,7 +84,7 @@ const fragment = {
       formNewCustomerPhone: 'Phone (optional)',
       formPhonePlaceholder: '+1 …',
       formPriceLabel: 'Price ({symbol})',
-      formZeroPriceWarning: 'This job is priced at $0. Double-check before saving - you might forget to bill it.',
+      formZeroPriceWarning: 'This job is priced at $0. Double-check before saving. You might forget to bill it.',
       formNoCharge: 'No charge',
       formNoChargeHint: '(warranty callback, goodwill, etc.)',
       formOptional: 'optional',
@@ -92,7 +92,7 @@ const fragment = {
       formTechnicianPlaceholder: 'Who is doing this job?',
       formNotesPlaceholder: 'Anything the technician should know…',
       formOffline:
-        'You\u2019re offline - this job is saved on your device and will sync automatically when you\u2019re back online.',
+        'You\u2019re offline. This job is saved on your device and will sync automatically when you\u2019re back online.',
       formCreated: 'Job created',
       formUpdated: 'Job updated',
 
@@ -112,11 +112,11 @@ const fragment = {
         'This will permanently remove the job, its notes and time entries. This cannot be undone.',
       statusChanged: 'Job marked {status}',
       statusDeleted: 'Job deleted',
-      statusErrorUpdate: 'Could not update the job - please try again.',
-      statusErrorDelete: 'Could not delete the job - please try again.',
+      statusErrorUpdate: 'Could not update the job. Please try again.',
+      statusErrorDelete: 'Could not delete the job. Please try again.',
 
       // ---- Job notes ----
-      notePlaceholder: 'Add a note - e.g. customer asked to come after 4pm…',
+      notePlaceholder: 'Add a note. E.g. Customer asked to come after 4pm…',
       noteAdd: 'Add note',
       noteAdding: 'Adding…',
       noteAdded: 'Note added',
@@ -124,27 +124,27 @@ const fragment = {
       noteDelete: 'Delete note',
       noteDeleteTitle: 'Delete this note?',
       noteDeleteBody: 'The note will be permanently removed. This cannot be undone.',
-      noteErrorDelete: 'Could not delete the note - please try again.',
+      noteErrorDelete: 'Could not delete the note. Please try again.',
 
       // ---- Job checklist ----
       checklistProgress: 'Progress',
       checklistAdded: 'Checklist item added',
       checklistRemoved: 'Checklist item removed',
       checklistTemplateApplied: 'Template applied',
-      checklistErrorToggle: 'Could not update the item - please try again.',
-      checklistErrorDelete: 'Could not remove the item - please try again.',
+      checklistErrorToggle: 'Could not update the item. Please try again.',
+      checklistErrorDelete: 'Could not remove the item. Please try again.',
 
       // ---- Job expenses ----
       expenseAdded: 'Expense added',
       expenseDeleted: 'Expense removed',
-      expenseErrorDelete: 'Could not remove the expense - please try again.',
+      expenseErrorDelete: 'Could not remove the expense. Please try again.',
 
       // ---- Job costing ----
       costingActiveNow: 'active now',
 
       // ---- Milestone invoice form ----
       milestoneCreated: 'Progress invoice created',
-      milestoneCreateError: 'Could not create the invoice - please try again.',
+      milestoneCreateError: 'Could not create the invoice. Please try again.',
 
       // ---- Dashboard setup card ----
       setupReadyIn: '10 minutes to ready',
@@ -172,7 +172,7 @@ const fragment = {
       recurEmptyActive: 'No active plans',
       recurEmptyPaused: 'No paused plans',
       recurEmptyDescAll:
-        'Set up weekly or monthly visits once - EveryJob creates the jobs for you when they\u2019re due.',
+        'Set up weekly or monthly visits once. EveryJob creates the jobs for you when they\u2019re due.',
       recurEmptyDescFiltered: 'No plans match this filter. Try a different filter, or create a new plan.',
       recurCreateFirst: 'Create your first plan',
       recurShowAll: 'Show all plans',
@@ -184,7 +184,7 @@ const fragment = {
       freqMonthly: 'Every month',
       // ---- RecurringForm ----
       recurFormTitleLabel: 'Plan title',
-      recurFormTitlePlaceholder: 'e.g. monthly furnace servicing, weekly home cleaning',
+      recurFormTitlePlaceholder: 'e.g. Monthly furnace servicing, weekly home cleaning',
       recurFormFrequency: 'Frequency',
       recurFormFrequencyHint: 'How often a job is created from this plan.',
       recurFormNextRun: 'Next run date',
@@ -256,7 +256,7 @@ const fragment = {
       clockTitle: 'Track your time',
       clockSubtitle: 'Clock in when you start a job',
       clockJobAria: 'Job (optional)',
-      clockNoJob: 'No job - general work',
+      clockNoJob: 'No job. General work',
       clockIn: 'Clock in',
       clockingIn: 'Clocking in…',
       clockOut: 'Clock out',
@@ -271,16 +271,16 @@ const fragment = {
       manualStart: 'Start',
       manualEnd: 'End',
       manualJob: 'Job (optional)',
-      manualNoJob: 'No job - general work',
+      manualNoJob: 'No job. General work',
       manualNotes: 'Notes (optional)',
-      manualNotesPh: 'e.g. Overtime - rewiring 2nd floor',
+      manualNotesPh: 'e.g. Overtime. Rewiring 2nd floor',
       manualSave: 'Save entry',
       manualSaving: 'Saving…',
 
       // ---- Recurring generation ----
       recurGenerate: 'Generate due jobs',
       recurGenerating: 'Generating…',
-      recurNothingDue: 'Nothing due - all caught up.',
+      recurNothingDue: 'Nothing due. All caught up.',
       recurCreatedOne: '1 job created.',
       recurCreatedMany: '{n} jobs created.',
     },
@@ -299,7 +299,7 @@ const fragment = {
       schedToday: 'Aujourd\u2019hui',
       schedAllDates: 'Toutes les dates planifiées',
       schedNewJobForDay: 'Créer un travail pour ce jour',
-      schedEmptyDayNew: 'Aucun travail - en créer un',
+      schedEmptyDayNew: 'Aucun travail. En créer un',
       schedPrevDay: 'Jour précédent',
       schedNextDay: 'Jour suivant',
       schedSearch: 'Rechercher dans l\u2019horaire…',
@@ -321,9 +321,9 @@ const fragment = {
       schedStatusChanged: 'Statut du travail mis à jour',
       schedRescheduled: 'Travail replanifié',
       schedDeleted: 'Travail retiré de l\u2019horaire',
-      schedErrorStatus: 'Impossible de mettre à jour le travail - réessayez.',
-      schedErrorDelete: 'Impossible de retirer le travail - réessayez.',
-      schedErrorSeed: 'Impossible d\u2019ajouter les travaux d\u2019exemple - réessayez.',
+      schedErrorStatus: 'Impossible de mettre à jour le travail. Réessayez.',
+      schedErrorDelete: 'Impossible de retirer le travail. Réessayez.',
+      schedErrorSeed: 'Impossible d\u2019ajouter les travaux d\u2019exemple. Réessayez.',
       schedYesRemove: 'Oui, retirer',
 
       // ---- Jobs list ----
@@ -332,7 +332,7 @@ const fragment = {
       jobsSearchPlaceholder: 'Rechercher par travail, client ou adresse…',
       jobsTabAll: 'Tous',
       jobsEmptyTitle: 'Aucun travail pour l\u2019instant',
-      jobsEmptyDesc: 'Créez votre premier travail - cela prend moins de 20 secondes.',
+      jobsEmptyDesc: 'Créez votre premier travail. Cela prend moins de 20 secondes.',
       jobsCreateFirst: 'Créer le premier travail',
       jobsNoMatchTitle: 'Aucun travail ne correspond à vos filtres',
       jobsNoMatchDesc: 'Essayez un autre statut ou un autre terme de recherche.',
@@ -350,20 +350,20 @@ const fragment = {
       jobWhatsAppLabel: 'WhatsApp',
       jobSmsLabel: 'SMS',
       jobRequestReview: 'Demander un avis',
-      jobReviewLinkCopied: 'Lien d’avis copié - envoyez-le au client.',
+      jobReviewLinkCopied: 'Lien d’avis copié. Envoyez-le au client.',
       jobReviewLinkFailed: 'Impossible de créer le lien d’avis. Réessayez.',
 
       // ---- JobForm ----
       formTitleLabel: 'Titre du travail',
-      formTitlePlaceholder: 'p. ex. réparation de fournaise, fuite de robinet, grand ménage',
+      formTitlePlaceholder: 'p. Ex. Réparation de fournaise, fuite de robinet, grand ménage',
       formCustomerLabel: 'Client',
       formNewCustomerOption: '+ Nouveau client…',
       formNewCustomerName: 'Nom du nouveau client',
-      formNewCustomerNamePlaceholder: 'p. ex. Alex Tremblay',
+      formNewCustomerNamePlaceholder: 'p. Ex. Alex Tremblay',
       formNewCustomerPhone: 'Téléphone (facultatif)',
       formPhonePlaceholder: '+1 …',
       formPriceLabel: 'Prix ({symbol})',
-      formZeroPriceWarning: 'Ce job est à 0 $. Vérifiez avant d’enregistrer - vous pourriez oublier de le facturer.',
+      formZeroPriceWarning: 'Ce job est à 0 $. Vérifiez avant d’enregistrer. Vous pourriez oublier de le facturer.',
       formNoCharge: 'Sans frais',
       formNoChargeHint: '(rappel de garantie, geste commercial, etc.)',
       formOptional: 'facultatif',
@@ -371,7 +371,7 @@ const fragment = {
       formTechnicianPlaceholder: 'Qui effectue ce travail?',
       formNotesPlaceholder: 'Tout ce que le technicien doit savoir…',
       formOffline:
-        'Vous êtes hors ligne - ce travail est enregistré sur votre appareil et se synchronisera automatiquement à votre retour en ligne.',
+        'Vous êtes hors ligne. Ce travail est enregistré sur votre appareil et se synchronisera automatiquement à votre retour en ligne.',
       formCreated: 'Travail créé',
       formUpdated: 'Travail mis à jour',
 
@@ -391,11 +391,11 @@ const fragment = {
         'Cela supprimera définitivement le travail, ses notes et ses entrées de temps. Cette action est irréversible.',
       statusChanged: 'Travail marqué {status}',
       statusDeleted: 'Travail supprimé',
-      statusErrorUpdate: 'Impossible de mettre à jour le travail - réessayez.',
-      statusErrorDelete: 'Impossible de supprimer le travail - réessayez.',
+      statusErrorUpdate: 'Impossible de mettre à jour le travail. Réessayez.',
+      statusErrorDelete: 'Impossible de supprimer le travail. Réessayez.',
 
       // ---- Job notes ----
-      notePlaceholder: 'Ajouter une note - p. ex. le client demande de passer après 16 h…',
+      notePlaceholder: 'Ajouter une note. P. Ex. Le client demande de passer après 16 h…',
       noteAdd: 'Ajouter la note',
       noteAdding: 'Ajout en cours…',
       noteAdded: 'Note ajoutée',
@@ -403,27 +403,27 @@ const fragment = {
       noteDelete: 'Supprimer la note',
       noteDeleteTitle: 'Supprimer cette note?',
       noteDeleteBody: 'La note sera définitivement supprimée. Cette action est irréversible.',
-      noteErrorDelete: 'Impossible de supprimer la note - réessayez.',
+      noteErrorDelete: 'Impossible de supprimer la note. Réessayez.',
 
       // ---- Job checklist ----
       checklistProgress: 'Progrès',
       checklistAdded: 'Élément de liste ajouté',
       checklistRemoved: 'Élément de liste retiré',
       checklistTemplateApplied: 'Modèle appliqué',
-      checklistErrorToggle: 'Impossible de mettre à jour l\u2019élément - réessayez.',
-      checklistErrorDelete: 'Impossible de retirer l\u2019élément - réessayez.',
+      checklistErrorToggle: 'Impossible de mettre à jour l\u2019élément. Réessayez.',
+      checklistErrorDelete: 'Impossible de retirer l\u2019élément. Réessayez.',
 
       // ---- Job expenses ----
       expenseAdded: 'Dépense ajoutée',
       expenseDeleted: 'Dépense retirée',
-      expenseErrorDelete: 'Impossible de retirer la dépense - réessayez.',
+      expenseErrorDelete: 'Impossible de retirer la dépense. Réessayez.',
 
       // ---- Job costing ----
       costingActiveNow: 'en cours',
 
       // ---- Milestone invoice form ----
       milestoneCreated: 'Facture d\u2019étape créée',
-      milestoneCreateError: 'Impossible de créer la facture - réessayez.',
+      milestoneCreateError: 'Impossible de créer la facture. Réessayez.',
 
       // ---- Dashboard setup card ----
       setupReadyIn: '10 minutes avant d\u2019être prêt',
@@ -451,7 +451,7 @@ const fragment = {
       recurEmptyActive: 'Aucun plan actif',
       recurEmptyPaused: 'Aucun plan en pause',
       recurEmptyDescAll:
-        'Configurez vos visites hebdomadaires ou mensuelles une seule fois - EveryJob créera les travaux pour vous à l\u2019échéance.',
+        'Configurez vos visites hebdomadaires ou mensuelles une seule fois. EveryJob créera les travaux pour vous à l\u2019échéance.',
       recurEmptyDescFiltered: 'Aucun plan ne correspond à ce filtre. Essayez un autre filtre ou créez un nouveau plan.',
       recurCreateFirst: 'Créer votre premier plan',
       recurShowAll: 'Afficher tous les plans',
@@ -463,7 +463,7 @@ const fragment = {
       freqMonthly: 'Chaque mois',
       // ---- RecurringForm ----
       recurFormTitleLabel: 'Titre du plan',
-      recurFormTitlePlaceholder: 'p. ex. entretien mensuel de fournaise, ménage hebdomadaire',
+      recurFormTitlePlaceholder: 'p. Ex. Entretien mensuel de fournaise, ménage hebdomadaire',
       recurFormFrequency: 'Fréquence',
       recurFormFrequencyHint: 'À quelle fréquence un travail est créé à partir de ce plan.',
       recurFormNextRun: 'Date de la prochaine exécution',
@@ -473,7 +473,7 @@ const fragment = {
       recurFormServiceHint: 'En choisir un remplit le prix ci-dessous.',
       recurFormServicePick: '- choisir un service -',
       recurFormPrice: 'Prix ({symbol})',
-      recurFormPricePlaceholder: 'p. ex. 149',
+      recurFormPricePlaceholder: 'p. Ex. 149',
       recurFormAddressPlaceholder: 'Lieu du travail',
       recurFormNotesPlaceholder: 'Tout ce que le technicien doit savoir à chaque visite…',
       recurFormSaved: 'Plan enregistré',
@@ -535,7 +535,7 @@ const fragment = {
       clockTitle: 'Suivez votre temps',
       clockSubtitle: 'Pointez votre arrivée au début d’un travail',
       clockJobAria: 'Travail (facultatif)',
-      clockNoJob: 'Aucun travail - travail général',
+      clockNoJob: 'Aucun travail. Travail général',
       clockIn: 'Pointer',
       clockingIn: 'Pointage en cours…',
       clockOut: 'Dépointer',
@@ -550,16 +550,16 @@ const fragment = {
       manualStart: 'Début',
       manualEnd: 'Fin',
       manualJob: 'Travail (facultatif)',
-      manualNoJob: 'Aucun travail - travail général',
+      manualNoJob: 'Aucun travail. Travail général',
       manualNotes: 'Notes (facultatif)',
-      manualNotesPh: 'p. ex. Heures supplémentaires - recâblage 2e étage',
+      manualNotesPh: 'p. Ex. Heures supplémentaires. Recâblage 2e étage',
       manualSave: 'Enregistrer l’entrée',
       manualSaving: 'Enregistrement…',
 
       // ---- Recurring generation ----
       recurGenerate: 'Générer les travaux dus',
       recurGenerating: 'Génération…',
-      recurNothingDue: 'Rien à générer - tout est à jour.',
+      recurNothingDue: 'Rien à générer. Tout est à jour.',
       recurCreatedOne: '1 travail créé.',
       recurCreatedMany: '{n} travaux créés.',
     },

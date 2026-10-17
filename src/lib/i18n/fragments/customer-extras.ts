@@ -9,7 +9,7 @@ const fragment = {
   en: {
     properties: {
       title: 'Properties',
-      hint: 'Job sites for this customer - home, cottage, rental, and so on.',
+      hint: 'Job sites for this customer. Home, cottage, rental, and so on.',
       add: 'Add property',
       label: 'Label',
       labelPlaceholder: 'e.g. Home, Cottage',
@@ -22,7 +22,7 @@ const fragment = {
       deleteConfirm: 'Delete this property? This can’t be undone.',
       setPrimary: 'Set as primary',
       primary: 'Primary',
-      empty: 'No properties yet - add a home, cottage, or job site.',
+      empty: 'No properties yet. Add a home, cottage, or job site.',
       saving: 'Saving…',
       errors: {
         tooMany: 'Too many requests. Please wait a moment and try again.',
@@ -64,10 +64,10 @@ const fragment = {
   fr: {
     properties: {
       title: 'Propriétés',
-      hint: 'Lieux d’intervention de ce client - domicile, chalet, logement locatif, etc.',
+      hint: 'Lieux d’intervention de ce client. Domicile, chalet, logement locatif, etc.',
       add: 'Ajouter une propriété',
       label: 'Étiquette',
-      labelPlaceholder: 'p. ex. Domicile, Chalet',
+      labelPlaceholder: 'p. Ex. Domicile, Chalet',
       address: 'Adresse',
       notes: 'Notes (facultatif)',
       save: 'Enregistrer',
@@ -77,7 +77,7 @@ const fragment = {
       deleteConfirm: 'Supprimer cette propriété? Cette action est irréversible.',
       setPrimary: 'Définir comme principale',
       primary: 'Principale',
-      empty: 'Aucune propriété - ajoutez un domicile, un chalet ou un chantier.',
+      empty: 'Aucune propriété. Ajoutez un domicile, un chalet ou un chantier.',
       saving: 'Enregistrement…',
       errors: {
         tooMany: 'Trop de requêtes. Patientez un moment et réessayez.',
@@ -95,7 +95,7 @@ const fragment = {
       hint: 'Détails supplémentaires que vous définissez une fois et remplissez par client.',
       addField: 'Ajouter un champ',
       fieldName: 'Nom du champ',
-      fieldNamePlaceholder: 'p. ex. Code du portail',
+      fieldNamePlaceholder: 'p. Ex. Code du portail',
       rename: 'Renommer',
       delete: 'Supprimer',
       save: 'Enregistrer',
@@ -103,7 +103,7 @@ const fragment = {
       deleteConfirmTitle: 'Supprimer ce champ personnalisé?',
       deleteConfirm: 'Supprimer ce champ et toutes ses valeurs? Cette action est irréversible.',
       valuePlaceholder: '-',
-      empty: 'Aucun champ personnalisé. Ajoutez-en un, p. ex. « Code du portail » ou « Nom du chien ».',
+      empty: 'Aucun champ personnalisé. Ajoutez-en un, p. Ex. « Code du portail » ou « Nom du chien ».',
       saving: 'Enregistrement…',
       errors: {
         tooMany: 'Trop de requêtes. Patientez un moment et réessayez.',

@@ -53,11 +53,12 @@ function checkFile(filepath, content) {
       // Skip if it's mostly placeholders or short
       if (str.length < 3) continue;
       const withoutPlaceholders = str.replace(/\{[^}]+\}/g, '');
-      if (/[A-Z]{3,}/.test(withoutPlaceholders) && !/^[A-Z0-9\s.,'()-]+$/.test(withoutPlaceholders)) {
-        // Allowlist: common abbreviations
-        if (!/\b(CAD|USD|GST|HST|QST|PST|URL|API|SMS|PDF|CSV)\b/.test(withoutPlaceholders)) {
-          violations.push(`${filepath}:${lineNum}: all-caps string found: ${str.slice(0, 40)}`);
-        }
+      // Allowlist of legitimate abbreviations (whole words). Env-var style
+      // SNAKE_CASE (GOOGLE_CLIENT_ID) is also fine — dev-facing strings.
+      const ABBR = /\b(CAD|USD|GST|HST|QST|PST|TPS|TVQ|TVH|TVP|URL|API|SMS|PDF|CSV|JPG|PNG|WEBP|HEIC|MB|GB|KB|HVAC|CVCA|BBB|GPS|OAuth|Interac|POST|GET|PUT|DELETE)\b/g;
+      const cleaned = withoutPlaceholders.replace(ABBR, '').replace(/[A-Z][A-Z_]+/g, '');
+      if (/[A-Z]{3,}/.test(cleaned)) {
+        violations.push(`${filepath}:${lineNum}: all-caps string found: ${str.slice(0, 40)}`);
       }
     }
   });

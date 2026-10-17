@@ -42,7 +42,7 @@ const fragment = {
       // Overdue-invoice reminder queue (/money) - Phase 1 revenue recovery
       reminders: {
         title: 'Payment reminders',
-        desc: 'Overdue invoices that could use a nudge. Messages open in your own apps - nothing is ever sent automatically.',
+        desc: 'Overdue invoices that could use a nudge. Messages open in your own apps. Nothing is ever sent automatically.',
         daysOverdue: '{days} days overdue',
         balanceDue: 'Balance due',
         sendReminder: 'Send reminder',
@@ -51,7 +51,7 @@ const fragment = {
         noPhone: 'No phone number on file for this customer.',
         // {customerName} {businessName} {number} {amount} {days} {invoiceLink}
         message:
-          'Hi {customerName}, this is {businessName}. Invoice {number} for {amount} was due {days} days ago. You can view it here: {invoiceLink}. Reply if you have questions - thanks!',
+          'Hi {customerName}, this is {businessName}. Invoice {number} for {amount} was due {days} days ago. You can view it here: {invoiceLink}. Reply if you have questions. Thanks!',
       },
       // Quote follow-up queue (/quotes) - Phase 1 revenue recovery
       followups: {
@@ -99,14 +99,14 @@ const fragment = {
       reviewDeleted: 'Review deleted.',
       addonSaved: 'Add-on saved.',
       addonDeleted: 'Add-on deleted.',
-      portalLinkCreated: 'Portal link created - share it with the customer.',
+      portalLinkCreated: 'Portal link created. Share it with the customer.',
       portalLinkRevoked: 'Portal link revoked.',
-      actionFailed: 'Something went wrong - please try again.',
+      actionFailed: 'Something went wrong. Please try again.',
 
       // Portal link manager
       portalMgrTitle: 'Customer portal link',
       portalMgrDesc:
-        'A private magic link where {name} can see their jobs, quotes, invoices and balance. Share it over WhatsApp - the customer taps the button and sends it from their own WhatsApp app.',
+        'A private magic link where {name} can see their jobs, quotes, invoices and balance. Share it over WhatsApp. The customer taps the button and sends it from their own WhatsApp app.',
       portalMgrNoPhone:
         'Add a phone number for this customer to share their portal link over WhatsApp.',
       portalMgrWaTitle: 'Opens WhatsApp with the portal invite prefilled',
@@ -160,7 +160,7 @@ const fragment = {
       invVoidMsg:
         'Voiding keeps the invoice number and the audit trail. The invoice will be excluded from totals and reports.',
       invVoidReason: 'Reason (min 10 characters)',
-      invVoidReasonPh: 'e.g. Issued in error — reissued as INV-0005',
+      invVoidReasonPh: 'e.g. Issued in error. Reissued as INV-0005',
       invVoidReasonShort: 'Please give a reason of at least 10 characters.',
       invVoiding: 'Voiding…',
       invVoided: 'Invoice voided',
@@ -172,7 +172,7 @@ const fragment = {
       invPaymentVoided: 'Payment voided',
       invVoidedBadge: 'Voided',
       invBookkeepingNote:
-        'EveryJob only records payments you received - it never moves money itself.',
+        'EveryJob only records payments you received. It never moves money itself.',
       invDue: 'due',
 
       // Customer delete
@@ -180,7 +180,7 @@ const fragment = {
       // A7 / launch-pack item 6: deleting a customer NEVER cascades. Only
       // archived customers with zero linked records can be deleted.
       custDeleteMsg:
-        'Delete {name}? Only archived customers with no jobs, invoices, or quotes can be deleted — archive the customer first.',
+        'Delete {name}? Only archived customers with no jobs, invoices, or quotes can be deleted. Archive the customer first.',
       custDeleting: 'Deleting…',
       custArchive: 'Archive',
       custArchiving: 'Archiving…',
@@ -206,10 +206,10 @@ const fragment = {
       custPostal: 'Postal code',
       custPostalHint: 'e.g. M5V 2T6',
       custNotes: 'Notes',
-      custNotesHint: 'Gate code, parking, preferences - anything useful on a visit.',
+      custNotesHint: 'Gate code, parking, preferences. Anything useful on a visit.',
       custNotesPh: 'e.g. Call before arriving, 2nd floor, dog in house',
       custTags: 'Tags',
-      custTagsHint: 'Comma-separated, e.g. vip, senior - helps you filter this list.',
+      custTagsHint: 'Comma-separated, e.g. Vip, senior. Helps you filter this list.',
       custSave: 'Save customer',
       custSaving: 'Saving…',
 
@@ -224,7 +224,7 @@ const fragment = {
       depositRequestLabel: 'Request deposit',
       depositRequestPh: '0.00',
       depositRequestHint:
-        'Optional - ask for money upfront. When the customer approves the quote, they can pay this deposit online.',
+        'Optional. Ask for money upfront. When the customer approves the quote, they can pay this deposit online.',
 
       // Invoice overdue state
       overdue: 'Overdue',
@@ -257,7 +257,7 @@ const fragment = {
       qtyLabel: 'Quantity',
       rateLabel: 'Rate',
       removeItemLabel: 'Remove item',
-      itemPlaceholder: 'Item {n} - e.g. Fan installation',
+      itemPlaceholder: 'Item {n}. E.g. Fan installation',
 
       // Public link notices
       noticeExpiredTitle: 'This link is expired or invalid',
@@ -265,12 +265,12 @@ const fragment = {
         'The link may have been revoked, expired, or typed incorrectly. Please ask the business to send you a fresh link.',
       noticeLegacyTitle: 'This link format is no longer used',
       noticeLegacyBody:
-        'Share links have been upgraded for better security. Please ask the business to send you a new link - the document itself is unchanged.',
+        'Share links have been upgraded for better security. Please ask the business to send you a new link. The document itself is unchanged.',
       noticeRateTitle: 'Too many requests',
       noticeRateBody: 'Please wait a minute and try again.',
       noticeUnavailableTitle: 'We’re having trouble loading this',
       noticeUnavailableBody:
-        'Our system hiccuped while opening this page - the link itself is fine. Please wait a moment and try again.',
+        'Our system hiccuped while opening this page. The link itself is fine. Please wait a moment and try again.',
 
       // Public invoice portal
       invPortalFor: 'Invoice for',
@@ -287,12 +287,12 @@ const fragment = {
       invPortalInteracDesc:
         'Send an Interac e-Transfer to this email from your banking app, then share the confirmation on WhatsApp.',
       invPortalInteracNote:
-        'EveryJob never handles your money - payment happens directly between you and the business.',
+        'EveryJob never handles your money. Payment happens directly between you and the business.',
       invPortalWhatsapp: 'Questions? Chat on WhatsApp',
 
       // Public review page
       reviewPageFor: 'Leave a review for',
-      reviewPagePowered: 'Powered by EveryJob - every job, one place.',
+      reviewPagePowered: 'Powered by EveryJob. Every job, one place.',
       reviewThanksTitle: 'Thank you!',
       reviewThanksBody: 'Your review has been recorded.',
       reviewYourRating: 'Your rating',
@@ -308,7 +308,7 @@ const fragment = {
       reviewVerifiedBadge: 'Verified customer',
       reviewTokenTitle: 'How was your experience?',
       reviewTokenPostingAs: 'Posting as {name}',
-      reviewTokenJobLine: '{job} · {date}',
+      reviewTokenJobLine: '{job}, {date}',
       reviewTokenInvalidTitle: 'This review link isn’t valid',
       reviewTokenInvalidBody:
         'It may have already been used. Ask {business} for a fresh review link.',
@@ -317,7 +317,7 @@ const fragment = {
         'Review links are single-use and expire after 30 days. Ask {business} for a fresh link.',
       reviewVerifiedOnlyTitle: 'Verified reviews only',
       reviewVerifiedOnlyBody:
-        'EveryJob reviews come from real customers - every review is tied to a completed job with a paid invoice. Finished a job with {business}? Ask them for their personal review link.',
+        'EveryJob reviews come from real customers. Every review is tied to a completed job with a paid invoice. Finished a job with {business}? Ask them for their personal review link.',
       reviewAdd: 'Add review',
       reviewAddTitle: 'Add a review',
       reviewRating: 'Rating',
@@ -325,7 +325,7 @@ const fragment = {
       reviewStarMany: '{count} stars',
       reviewJobLabel: 'Job (completed & paid)',
       reviewJobHint: 'Reviews are always tied to a completed job with a paid invoice.',
-      reviewNoEligibleJobs: 'No completed, paid jobs yet - record one to add a review.',
+      reviewNoEligibleJobs: 'No completed, paid jobs yet. Record one to add a review.',
       reviewComment: 'Comment',
       reviewAddCommentPlaceholder: 'What did the customer say?',
       reviewSave: 'Save review',
@@ -346,15 +346,15 @@ const fragment = {
       // Directory business profile
       profileBack: '← Back to directory',
       profilePhoneVerified: 'Phone verified',
-      profileNoReviewsCta: 'No reviews yet - be the first',
+      profileNoReviewsCta: 'No reviews yet. Be the first',
       profileBookNow: 'Book now',
       profileWhatsapp: 'WhatsApp',
       profileCall: 'Call',
       profileAbout: 'About',
       profileAreas: 'Areas served',
       profileServices: 'Services & prices',
-      profileServicesEmpty: 'Services not listed yet - ask on WhatsApp for a quote.',
-      profilePricesNote: 'Prices are indicative - confirm with the business.',
+      profileServicesEmpty: 'Services not listed yet. Ask on WhatsApp for a quote.',
+      profilePricesNote: 'Prices are indicative. Confirm with the business.',
       profileReviewsOne: 'Review',
       profileReviewsMany: 'Reviews',
       profileRequestQuote: 'Request a quote',
@@ -362,25 +362,25 @@ const fragment = {
       profileLeaveReview: 'Leave a review →',
       profileReportTitle: 'Report this business',
       profileReportDesc:
-        'Seen something wrong - spam, fake details, bad behaviour? Tell us and we’ll look into it.',
+        'Seen something wrong. Spam, fake details, bad behaviour? Tell us and we’ll look into it.',
       profileSimilar: 'Similar pros nearby',
       profileListedNote:
-        'Listed on the EveryJob Directory - free for businesses, no commission.',
+        'Listed on the EveryJob Directory. Free for businesses, no commission.',
 
       // Review request (owner) page
       reviewLinkTitle: 'Your public review link',
       reviewLinkDesc:
-        'Share this link with customers after a job. Anyone with the link can leave a review - it only shows your business name, nothing else.',
+        'Share this link with customers after a job. Anyone with the link can leave a review. It only shows your business name, nothing else.',
       reviewLinkCopy: 'Copy link',
       reviewLinkCopyText: 'Copy WhatsApp text',
       reviewLinkPending: 'Recently completed jobs without a review ({count})',
       reviewLinkEmpty:
-        'Nothing here - every recent customer has already left a review, or there are no completed jobs in the last 60 days.',
+        'Nothing here. Every recent customer has already left a review, or there are no completed jobs in the last 60 days.',
       reviewLinkCopyRequest: 'Copy request',
       reviewLinkShareText:
-        'Hi! This is {business}. If you were happy with our work, please leave us a quick review here: {url} - Thank you!',
+        'Hi! This is {business}. If you were happy with our work, please leave us a quick review here: {url}. Thank you!',
       reviewLinkPersonalText:
-        'Hi {name}! This is {business}. If you were happy with our work ({job}), please leave us a quick review here: {url} - Thank you!',
+        'Hi {name}! This is {business}. If you were happy with our work ({job}), please leave us a quick review here: {url}. Thank you!',
 
       // Public booking form
       bookingFormYourName: 'Your name *',
@@ -393,9 +393,9 @@ const fragment = {
       bookingFormRequest: 'Request booking',
       bookingFormRequesting: 'Requesting…',
       bookingFormNoPayment:
-        'No advance payment needed - we confirm every request by phone.',
+        'No advance payment needed. We confirm every request by phone.',
       bookingFormReceived: 'Request received!',
-      bookingFormThanks: 'Thank you - we’ll call you back shortly to confirm your booking.',
+      bookingFormThanks: 'Thank you. We’ll call you back shortly to confirm your booking.',
       bookingFormCallUs: 'Call us: {phone}',
       bookingFormNamePlaceholder: 'e.g. Sarah Miller',
       bookingFormPhonePlaceholder: 'e.g. 416 555 0100',
@@ -419,7 +419,7 @@ const fragment = {
       leadSource: 'Source',
       leadSourceSelect: 'Select…',
       leadDetails: 'Details',
-      leadDetailsHint: 'What do they need? e.g. furnace not heating, 2nd floor',
+      leadDetailsHint: 'What do they need? e.g. Furnace not heating, 2nd floor',
       leadDetailsPlaceholder: 'Describe the enquiry…',
       leadSave: 'Save lead',
       leadSaving: 'Saving…',
@@ -488,7 +488,7 @@ const fragment = {
       // File de rappels de paiement (/money) - relance des revenus
       reminders: {
         title: 'Rappels de paiement',
-        desc: 'Factures en retard qui mériteraient un rappel. Les messages s’ouvrent dans vos propres applis - rien n’est jamais envoyé automatiquement.',
+        desc: 'Factures en retard qui mériteraient un rappel. Les messages s’ouvrent dans vos propres applis. Rien n’est jamais envoyé automatiquement.',
         daysOverdue: 'en retard de {days} jours',
         balanceDue: 'Solde dû',
         sendReminder: 'Envoyer un rappel',
@@ -497,7 +497,7 @@ const fragment = {
         noPhone: 'Aucun numéro de téléphone au dossier pour ce client.',
         // {customerName} {businessName} {number} {amount} {days} {invoiceLink}
         message:
-          'Bonjour {customerName}, ici {businessName}. La facture {number} de {amount} était due il y a {days} jours. Vous pouvez la voir ici : {invoiceLink}. Répondez si vous avez des questions - merci!',
+          'Bonjour {customerName}, ici {businessName}. La facture {number} de {amount} était due il y a {days} jours. Vous pouvez la voir ici : {invoiceLink}. Répondez si vous avez des questions. Merci!',
       },
       // File de relance des devis (/quotes) - relance des revenus
       followups: {
@@ -508,7 +508,7 @@ const fragment = {
         viewAll: 'Voir tous les devis',
         // {customerName} {businessName} {number} {amount} {signLink}
         message:
-          'Bonjour {customerName}, ici {businessName} - je fais suite au devis {number} de {amount}. Vous pouvez le voir et l’approuver ici : {signLink}. N’hésitez pas si vous avez des questions!',
+          'Bonjour {customerName}, ici {businessName}. Je fais suite au devis {number} de {amount}. Vous pouvez le voir et l’approuver ici : {signLink}. N’hésitez pas si vous avez des questions!',
       },
       customerSaved: 'Client enregistré.',
       customerDeleted: 'Client supprimé.',
@@ -544,14 +544,14 @@ const fragment = {
       reviewDeleted: 'Avis supprimé.',
       addonSaved: 'Option enregistrée.',
       addonDeleted: 'Option supprimée.',
-      portalLinkCreated: 'Lien portail créé - partagez-le avec le client.',
+      portalLinkCreated: 'Lien portail créé. Partagez-le avec le client.',
       portalLinkRevoked: 'Lien portail révoqué.',
-      actionFailed: 'Un problème est survenu - veuillez réessayer.',
+      actionFailed: 'Un problème est survenu. Veuillez réessayer.',
 
       // Portal link manager
       portalMgrTitle: 'Lien portail client',
       portalMgrDesc:
-        'Un lien magique privé où {name} peut voir ses travaux, soumissions, factures et son solde. Partagez-le via WhatsApp - le client touche le bouton et l’envoie depuis sa propre application WhatsApp.',
+        'Un lien magique privé où {name} peut voir ses travaux, soumissions, factures et son solde. Partagez-le via WhatsApp. Le client touche le bouton et l’envoie depuis sa propre application WhatsApp.',
       portalMgrNoPhone:
         'Ajoutez un numéro de téléphone à ce client pour partager son lien portail via WhatsApp.',
       portalMgrWaTitle: 'Ouvre WhatsApp avec l’invitation au portail pré-remplie',
@@ -589,8 +589,8 @@ const fragment = {
       invRecording: 'Enregistrement…',
       invAmount: 'Montant',
       invMode: 'Mode',
-      invTxnRef: 'Réf. de transaction (facultatif)',
-      invTxnPlaceholder: 'p. ex. n° de confirmation Interac',
+      invTxnRef: 'Réf. De transaction (facultatif)',
+      invTxnPlaceholder: 'p. Ex. N° de confirmation Interac',
       invProviderCash: 'Espèces',
       invProviderCheque: 'Chèque',
       invProviderOther: 'Autre',
@@ -605,7 +605,7 @@ const fragment = {
       invVoidMsg:
         'L’annulation conserve le numéro de facture et la piste d’audit. La facture sera exclue des totaux et des rapports.',
       invVoidReason: 'Motif (min 10 caractères)',
-      invVoidReasonPh: 'p. ex. Émise par erreur — réémise comme FAC-0005',
+      invVoidReasonPh: 'p. Ex. Émise par erreur. Réémise comme FAC-0005',
       invVoidReasonShort: 'Veuillez fournir un motif d’au moins 10 caractères.',
       invVoiding: 'Annulation…',
       invVoided: 'Facture annulée',
@@ -617,13 +617,13 @@ const fragment = {
       invPaymentVoided: 'Paiement annulé',
       invVoidedBadge: 'Annulée',
       invBookkeepingNote:
-        'EveryJob enregistre uniquement les paiements que vous avez reçus - il ne déplace jamais d’argent lui-même.',
+        'EveryJob enregistre uniquement les paiements que vous avez reçus. Il ne déplace jamais d’argent lui-même.',
       invDue: 'dû',
 
       // Customer delete
       custDelete: 'Supprimer',
       custDeleteMsg:
-        'Supprimer {name}? Seuls les clients archivés sans travaux, factures ni devis peuvent être supprimés — archivez d’abord le client.',
+        'Supprimer {name}? Seuls les clients archivés sans travaux, factures ni devis peuvent être supprimés. Archivez d’abord le client.',
       custDeleting: 'Suppression…',
       custArchive: 'Archiver',
       custArchiving: 'Archivage…',
@@ -638,21 +638,21 @@ const fragment = {
       custNewSubtitle: 'Enregistrez un client une fois, réutilisez-le pour chaque travail.',
       custBack: 'Retour',
       custName: 'Nom',
-      custNamePh: 'p. ex. Sarah Tremblay',
+      custNamePh: 'p. Ex. Sarah Tremblay',
       custPhone: 'Téléphone',
-      custPhoneHint: 'p. ex. +1 416 555 0100',
+      custPhoneHint: 'p. Ex. +1 416 555 0100',
       custEmail: 'Courriel',
       custEmailPh: 'client@exemple.ca',
       custAddress: 'Adresse',
       custAddressPh: 'Rue / unité / ville',
       custProvince: 'Province',
       custPostal: 'Code postal',
-      custPostalHint: 'p. ex. M5V 2T6',
+      custPostalHint: 'p. Ex. M5V 2T6',
       custNotes: 'Notes',
-      custNotesHint: 'Code de porte, stationnement, préférences - tout ce qui est utile lors d’une visite.',
-      custNotesPh: 'p. ex. Appeler avant d’arriver, 2e étage, chien dans la maison',
+      custNotesHint: 'Code de porte, stationnement, préférences. Tout ce qui est utile lors d’une visite.',
+      custNotesPh: 'p. Ex. Appeler avant d’arriver, 2e étage, chien dans la maison',
       custTags: 'Étiquettes',
-      custTagsHint: 'Séparées par des virgules, p. ex. vip, aîné - aide à filtrer cette liste.',
+      custTagsHint: 'Séparées par des virgules, p. Ex. Vip, aîné. Aide à filtrer cette liste.',
       custSave: 'Enregistrer le client',
       custSaving: 'Enregistrement…',
 
@@ -667,7 +667,7 @@ const fragment = {
       depositRequestLabel: 'Demander un acompte',
       depositRequestPh: '0,00',
       depositRequestHint:
-        'Optionnel - demandez un paiement d’avance. Quand le client approuvera la soumission, il pourra payer cet acompte en ligne.',
+        'Optionnel. Demandez un paiement d’avance. Quand le client approuvera la soumission, il pourra payer cet acompte en ligne.',
 
       overdue: 'En retard',
       overdueNote:
@@ -697,19 +697,19 @@ const fragment = {
       qtyLabel: 'Quantité',
       rateLabel: 'Prix',
       removeItemLabel: 'Retirer la ligne',
-      itemPlaceholder: 'Article {n} - p. ex. installation de ventilateur',
+      itemPlaceholder: 'Article {n}. P. Ex. Installation de ventilateur',
 
       noticeExpiredTitle: 'Ce lien est expiré ou invalide',
       noticeExpiredBody:
         'Le lien a peut-être été révoqué, expiré ou mal saisi. Demandez à l’entreprise de vous envoyer un nouveau lien.',
       noticeLegacyTitle: 'Ce format de lien n’est plus utilisé',
       noticeLegacyBody:
-        'Les liens de partage ont été renforcés. Demandez à l’entreprise un nouveau lien - le document lui-même est inchangé.',
+        'Les liens de partage ont été renforcés. Demandez à l’entreprise un nouveau lien. Le document lui-même est inchangé.',
       noticeRateTitle: 'Trop de requêtes',
       noticeRateBody: 'Veuillez attendre une minute puis réessayer.',
       noticeUnavailableTitle: 'Difficulté à charger cette page',
       noticeUnavailableBody:
-        'Notre système a eu un souci en ouvrant cette page - le lien est correct. Veuillez patienter un instant puis réessayer.',
+        'Notre système a eu un souci en ouvrant cette page. Le lien est correct. Veuillez patienter un instant puis réessayer.',
 
       invPortalFor: 'Facture pour',
       invPortalDated: 'Datée du',
@@ -725,17 +725,17 @@ const fragment = {
       invPortalInteracDesc:
         'Envoyez un Virement Interac à ce courriel depuis votre application bancaire, puis partagez la confirmation sur WhatsApp.',
       invPortalInteracNote:
-        'EveryJob ne touche jamais à votre argent - le paiement se fait directement entre vous et l’entreprise.',
+        'EveryJob ne touche jamais à votre argent. Le paiement se fait directement entre vous et l’entreprise.',
       invPortalWhatsapp: 'Des questions? Discutez sur WhatsApp',
 
       reviewPageFor: 'Laisser un avis pour',
-      reviewPagePowered: 'Propulsé par EveryJob - chaque tâche, au même endroit.',
+      reviewPagePowered: 'Propulsé par EveryJob. Chaque tâche, au même endroit.',
       reviewThanksTitle: 'Merci!',
       reviewThanksBody: 'Votre avis a été enregistré.',
       reviewYourRating: 'Votre note',
       reviewTapToRate: 'Touchez une étoile pour noter.',
       reviewYourName: 'Votre nom (facultatif)',
-      reviewNamePlaceholder: 'p. ex. Léa',
+      reviewNamePlaceholder: 'p. Ex. Léa',
       reviewCommentLabel: 'Parlez-nous de votre expérience (facultatif)',
       reviewCommentPlaceholder: 'Qu’avez-vous aimé du travail réalisé?',
       reviewSubmit: 'Envoyer l’avis',
@@ -745,7 +745,7 @@ const fragment = {
       reviewVerifiedBadge: 'Client vérifié',
       reviewTokenTitle: 'Comment s’est passée votre expérience?',
       reviewTokenPostingAs: 'Avis publié sous le nom de {name}',
-      reviewTokenJobLine: '{job} · {date}',
+      reviewTokenJobLine: '{job}, {date}',
       reviewTokenInvalidTitle: 'Ce lien d’avis n’est pas valide',
       reviewTokenInvalidBody:
         'Il a peut-être déjà été utilisé. Demandez à {business} un nouveau lien d’avis.',
@@ -754,7 +754,7 @@ const fragment = {
         'Les liens d’avis sont à usage unique et expirent après 30 jours. Demandez à {business} un nouveau lien.',
       reviewVerifiedOnlyTitle: 'Avis vérifiés uniquement',
       reviewVerifiedOnlyBody:
-        'Les avis EveryJob proviennent de vrais clients - chaque avis est lié à un travail terminé avec une facture payée. Vous avez terminé un travail avec {business}? Demandez-leur leur lien d’avis personnel.',
+        'Les avis EveryJob proviennent de vrais clients. Chaque avis est lié à un travail terminé avec une facture payée. Vous avez terminé un travail avec {business}? Demandez-leur leur lien d’avis personnel.',
       reviewAdd: 'Ajouter un avis',
       reviewAddTitle: 'Ajouter un avis',
       reviewRating: 'Note',
@@ -762,7 +762,7 @@ const fragment = {
       reviewStarMany: '{count} étoiles',
       reviewJobLabel: 'Travail (terminé et payé)',
       reviewJobHint: 'Les avis sont toujours liés à un travail terminé avec une facture payée.',
-      reviewNoEligibleJobs: 'Aucun travail terminé et payé pour l’instant - enregistrez-en un pour ajouter un avis.',
+      reviewNoEligibleJobs: 'Aucun travail terminé et payé pour l’instant. Enregistrez-en un pour ajouter un avis.',
       reviewComment: 'Commentaire',
       reviewAddCommentPlaceholder: 'Qu’a dit le client?',
       reviewSave: 'Enregistrer l’avis',
@@ -782,15 +782,15 @@ const fragment = {
 
       profileBack: '← Retour au répertoire',
       profilePhoneVerified: 'Téléphone vérifié',
-      profileNoReviewsCta: 'Aucun avis pour l’instant - soyez le premier',
+      profileNoReviewsCta: 'Aucun avis pour l’instant. Soyez le premier',
       profileBookNow: 'Réserver',
       profileWhatsapp: 'WhatsApp',
       profileCall: 'Appeler',
       profileAbout: 'À propos',
       profileAreas: 'Zones desservies',
       profileServices: 'Services et prix',
-      profileServicesEmpty: 'Services non listés pour l’instant - demandez un devis sur WhatsApp.',
-      profilePricesNote: 'Les prix sont indicatifs - confirmez avec l’entreprise.',
+      profileServicesEmpty: 'Services non listés pour l’instant. Demandez un devis sur WhatsApp.',
+      profilePricesNote: 'Les prix sont indicatifs. Confirmez avec l’entreprise.',
       profileReviewsOne: 'Avis',
       profileReviewsMany: 'Avis',
       profileRequestQuote: 'Demander un devis',
@@ -798,24 +798,24 @@ const fragment = {
       profileLeaveReview: 'Laisser un avis →',
       profileReportTitle: 'Signaler cette entreprise',
       profileReportDesc:
-        'Un problème - pourriel, fausses informations, mauvais comportement? Dites-le-nous et nous vérifierons.',
+        'Un problème. Pourriel, fausses informations, mauvais comportement? Dites-le-nous et nous vérifierons.',
       profileSimilar: 'Pros similaires à proximité',
       profileListedNote:
-        'Inscrit au répertoire EveryJob - gratuit pour les entreprises, sans commission.',
+        'Inscrit au répertoire EveryJob. Gratuit pour les entreprises, sans commission.',
 
       reviewLinkTitle: 'Votre lien public d’avis',
       reviewLinkDesc:
-        'Partagez ce lien avec vos clients après un travail. Toute personne ayant le lien peut laisser un avis - seul le nom de votre entreprise est affiché, rien d’autre.',
+        'Partagez ce lien avec vos clients après un travail. Toute personne ayant le lien peut laisser un avis. Seul le nom de votre entreprise est affiché, rien d’autre.',
       reviewLinkCopy: 'Copier le lien',
       reviewLinkCopyText: 'Copier le texte WhatsApp',
       reviewLinkPending: 'Travaux récents sans avis ({count})',
       reviewLinkEmpty:
-        'Rien ici - chaque client récent a déjà laissé un avis, ou il n’y a aucun travail terminé dans les 60 derniers jours.',
+        'Rien ici. Chaque client récent a déjà laissé un avis, ou il n’y a aucun travail terminé dans les 60 derniers jours.',
       reviewLinkCopyRequest: 'Copier la demande',
       reviewLinkShareText:
-        'Bonjour! Ici {business}. Si vous avez aimé notre travail, laissez-nous un petit avis ici : {url} - Merci!',
+        'Bonjour! Ici {business}. Si vous avez aimé notre travail, laissez-nous un petit avis ici : {url}. Merci!',
       reviewLinkPersonalText:
-        'Bonjour {name}! Ici {business}. Si vous avez aimé notre travail ({job}), laissez-nous un petit avis ici : {url} - Merci!',
+        'Bonjour {name}! Ici {business}. Si vous avez aimé notre travail ({job}), laissez-nous un petit avis ici : {url}. Merci!',
 
       // Public booking form
       bookingFormYourName: 'Votre nom *',
@@ -828,12 +828,12 @@ const fragment = {
       bookingFormRequest: 'Demander la réservation',
       bookingFormRequesting: 'Demande en cours…',
       bookingFormNoPayment:
-        'Aucun paiement à l’avance nécessaire - nous confirmons chaque demande par téléphone.',
+        'Aucun paiement à l’avance nécessaire. Nous confirmons chaque demande par téléphone.',
       bookingFormReceived: 'Demande reçue!',
-      bookingFormThanks: 'Merci - nous vous rappellerons sous peu pour confirmer votre réservation.',
+      bookingFormThanks: 'Merci. Nous vous rappellerons sous peu pour confirmer votre réservation.',
       bookingFormCallUs: 'Appelez-nous : {phone}',
-      bookingFormNamePlaceholder: 'p. ex. Léa Tremblay',
-      bookingFormPhonePlaceholder: 'p. ex. 416 555 0100',
+      bookingFormNamePlaceholder: 'p. Ex. Léa Tremblay',
+      bookingFormPhonePlaceholder: 'p. Ex. 416 555 0100',
       bookingFormAddressPlaceholder: 'Où devrions-nous aller?',
       bookingFormNotesPlaceholder: 'Quelque chose à savoir?',
 
@@ -848,14 +848,14 @@ const fragment = {
       leadNew: 'Nouvelle piste',
       leadClose: 'Fermer',
       leadName: 'Nom *',
-      leadNamePlaceholder: 'p. ex. Alex Martin',
+      leadNamePlaceholder: 'p. Ex. Alex Martin',
       leadPhone: 'Téléphone',
-      leadPhoneHint: 'p. ex. +1 416 555 0100',
+      leadPhoneHint: 'p. Ex. +1 416 555 0100',
       leadEmail: 'Courriel',
       leadSource: 'Source',
       leadSourceSelect: 'Choisir…',
       leadDetails: 'Détails',
-      leadDetailsHint: 'De quoi ont-ils besoin? p. ex. fournaise qui ne chauffe pas, 2e étage',
+      leadDetailsHint: 'De quoi ont-ils besoin? p. Ex. Fournaise qui ne chauffe pas, 2e étage',
       leadDetailsPlaceholder: 'Décrivez la demande…',
       leadSave: 'Enregistrer la piste',
       leadSaving: 'Enregistrement…',
