@@ -5,7 +5,7 @@ import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card, EmptyState, inputClass } from '@/components/ui';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
-import { Wrench, Plus, ChevronRight } from 'lucide-react';
+import { Wrench, Plus, ChevronRight } from '@/components/icons';
 import EquipmentSearch from '@/components/EquipmentSearch';
 
 export const dynamic = 'force-dynamic';

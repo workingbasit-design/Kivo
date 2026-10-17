@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, LogOut, X, ChevronDown, SlidersHorizontal } from 'lucide-react';
+import { List, LogOut, X, ChevronDown, SlidersHorizontal } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { navSections, bottomTabs, advancedNavItems, type NavItem } from '@/components/nav-sections';
 import { NavIconView } from '@/components/animated-icons/nav-icon';
@@ -21,9 +21,10 @@ const ADVANCED_OPEN_KEY = 'ej-advanced-open';
  * always one tap away; "More" opens the full section menu as a bottom
  * sheet. Rendered only on small screens (md:hidden).
  *
- * Design (Part D): solid surface, no glass/blur. Active tab shows a filled
- * icon in lime with semibold label; inactive tabs are muted. All five items
- * (including More) share identical styling.
+ * Design (Part B, dashboard rebuild): full-width asphalt bar. The active tab
+ * shows a hi-vis pill behind the icon (duotone: outline + soft fill) with a
+ * hi-vis label; inactive tabs are muted. Hi-vis appears here only - it
+ * always means "look here".
  */
 export default function BottomNav({
   user,
@@ -67,23 +68,40 @@ export default function BottomNav({
 
   const tabClass = (active: boolean) =>
     cn(
-      'flex flex-col items-center justify-center gap-1 min-h-[60px] py-1.5 rounded-2xl text-[10px]',
-      'focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-ej-lime',
+      'flex flex-col items-center justify-center gap-1 min-h-[60px] py-2 text-[10px]',
+      'focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-hivis',
       'transition-colors',
-      active ? 'text-ej-lime font-bold' : 'text-white/70 font-semibold hover:text-white'
+      active ? 'text-hivis font-bold' : 'text-white/60 font-semibold hover:text-white'
     );
+
+  const renderTabIcon = (active: boolean, icon: NavItem['icon']) => (
+    <span
+      className={cn(
+        'flex items-center justify-center rounded-full transition-colors',
+        active ? 'bg-hivis px-4 py-1.5' : 'px-4 py-1.5'
+      )}
+    >
+      <NavIconView
+        icon={icon}
+        size={22}
+        filled={active}
+        aria-hidden
+        className={active ? 'text-asphalt' : undefined}
+      />
+    </span>
+  );
 
   return (
     <>
       <nav
         aria-label={t(locale, 'nav.primary') ?? 'Primary'}
-        className="md:hidden fixed bottom-0 inset-x-0 z-40 pointer-events-none"
+        className="md:hidden fixed bottom-0 inset-x-0 z-40"
       >
         <div
           className={cn(
-            'pointer-events-auto mx-3 mb-3 grid grid-cols-5 rounded-3xl px-1.5 py-1.5',
-            'bg-ej-ink',
-            'pb-[calc(0.375rem+env(safe-area-inset-bottom))]'
+            'grid grid-cols-5 bg-asphalt dark:bg-coal',
+            'border-t border-white/10',
+            'pb-[env(safe-area-inset-bottom)]'
           )}
         >
           {bottomTabs.map((tab) => {
@@ -95,15 +113,8 @@ export default function BottomNav({
                 aria-current={active ? 'page' : undefined}
                 className={tabClass(active)}
               >
-                <NavIconView icon={tab.icon} size={22} filled={active} aria-hidden />
+                {renderTabIcon(active, tab.icon)}
                 <span className="leading-none">{t(locale, tab.nameKey)}</span>
-                <span
-                  aria-hidden
-                  className={cn(
-                    'h-1 w-8 rounded-full transition-colors',
-                    active ? 'bg-ej-lime' : 'bg-transparent'
-                  )}
-                />
               </Link>
             );
           })}
@@ -114,9 +125,8 @@ export default function BottomNav({
             aria-label={t(locale, 'nav.more') ?? 'More'}
             className={tabClass(!anyPrimaryActive && moreOpen)}
           >
-            <Menu size={22} aria-hidden />
+            {renderTabIcon(!anyPrimaryActive && moreOpen, List)}
             <span className="leading-none">{t(locale, 'nav.more') ?? 'More'}</span>
-            <span aria-hidden className="h-1 w-8 rounded-full bg-transparent" />
           </button>
         </div>
       </nav>

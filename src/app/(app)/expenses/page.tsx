@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Plus, Receipt, Search, X } from 'lucide-react';
+import { Plus, Receipt, Search, X } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import {

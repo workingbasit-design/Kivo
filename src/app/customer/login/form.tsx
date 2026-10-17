@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useActionState } from 'react';
-import { LogIn, AlertCircle, Search } from 'lucide-react';
+import { LogIn, AlertCircle, Search } from '@/components/icons';
 import { customerLogin } from '@/app/actions/customer-auth';
 import { t, type Locale } from '@/lib/i18n';
 import { Field, inputClass, primaryBtnClass } from '@/components/ui';

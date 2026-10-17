@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Check, Link2, Loader2 } from 'lucide-react';
+import { Check, Link2, Loader2 } from '@/components/icons';
 import { createReviewRequest } from '@/app/actions/review-requests';
 import { cn } from '@/lib/utils';
 

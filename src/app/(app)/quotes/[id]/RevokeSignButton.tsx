@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { X } from 'lucide-react';
+import { X } from '@/components/icons';
 import { toast } from 'sonner';
 import { revokeSignRequest } from '@/app/actions/esign';
 

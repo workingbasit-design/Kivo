@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useActionState } from 'react';
-import { LogIn, AlertCircle } from 'lucide-react';
+import { LogIn, AlertCircle } from '@/components/icons';
 import { login } from '@/app/actions/auth';
 import { verifyTotpLogin } from '@/app/actions/totp';
 import { useT } from '@/components/LanguageToggle';

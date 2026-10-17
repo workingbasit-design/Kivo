@@ -13,7 +13,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from '@/components/icons';
 import { toast } from 'sonner';
 import { updateJobSchedule } from '@/app/actions/jobs';
 import { cn } from '@/lib/utils';

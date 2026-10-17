@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState } from 'react';
-import { AlertCircle, CheckCircle2, Flag } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Flag } from '@/components/icons';
 import { reportBusiness, type DirectoryActionResult } from '@/app/actions/directory';
 import { useResolvedT } from '@/hooks/useResolvedLocale';
 

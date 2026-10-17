@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { AlertCircle, Plus } from 'lucide-react';
+import { AlertCircle, Plus } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { logPiiAccess } from '@/lib/pii-audit';

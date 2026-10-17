@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useTransition } from 'react';
-import { CheckCircle2, X, MessageSquare, Clock, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
+import { CheckCircle2, X, MessageSquare, Clock, ArrowRight, ShieldCheck, Zap } from '@/components/icons';
 import { completeBusinessSetup } from '@/app/actions/settings';
 import { useResolvedT } from '@/hooks/useResolvedLocale';
 

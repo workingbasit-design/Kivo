@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card, EmptyState, primaryBtnClass, inputClass, Field } from '@/components/ui';
 import { dayRange, toISODateLocal, formatDateLabel, localeDateTag } from '@/lib/utils';
-import { MapPinned } from 'lucide-react';
+import { MapPinned } from '@/components/icons';
 import RoutesClient from '@/components/RoutesClient';
 import type { RouteStop } from '@/lib/routes';
 import { getLocale } from '@/lib/i18n/server';

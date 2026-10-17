@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Check, Link2, Loader2, Star } from 'lucide-react';
+import { Check, Link2, Loader2, Star } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { Card } from '@/components/ui';
 import { createReviewRequest } from '@/app/actions/review-requests';

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
-import { BellRing, Loader2 } from 'lucide-react';
+import { BellRing, Loader2 } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import SmsButton from '@/components/SmsButton';
 import WhatsAppButton from '@/components/WhatsAppButton';

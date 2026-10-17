@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Heart } from 'lucide-react';
+import { Heart } from '@/components/icons';
 import { toggleSavePro } from '@/app/actions/customer-pros';
 import { t, type Locale } from '@/lib/i18n';
 import ProCard, { type ProCardData } from '@/components/ProCard';

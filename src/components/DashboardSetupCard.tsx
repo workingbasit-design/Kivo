@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { CheckCircle2, ArrowRight, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, ArrowRight, ShieldCheck } from '@/components/icons';
 import FinishSetupModal from './FinishSetupModal';
 import { t, type Locale } from '@/lib/i18n';
 import { primaryBtnClass } from '@/components/ui';

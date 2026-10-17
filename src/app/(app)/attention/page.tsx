@@ -7,7 +7,7 @@ import { tp } from "@/lib/i18n/plural";
 import { localeMoneyTag } from "@/lib/utils";
 import { PageHeader, Card, EmptyState } from "@/components/ui";
 import { AttentionRow } from "@/components/AttentionBriefing";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2 } from '@/components/icons';
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 

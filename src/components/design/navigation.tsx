@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Search, X } from 'lucide-react';
+import { Search, X } from '@/components/icons';
 import { cn } from '@/lib/utils';
 
 export interface SearchFieldProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> {

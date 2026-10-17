@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { CalendarDays, RefreshCw } from 'lucide-react';
+import { CalendarDays, RefreshCw } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import { Badge, primaryBtnClass } from '@/components/ui';

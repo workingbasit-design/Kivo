@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { t, type Locale } from '@/lib/i18n';
 import { updateProject, deleteProject } from '@/app/actions/projects';
 import { inputClass, selectClass, primaryBtnClass, dangerBtnClass } from '@/components/ui';
-import { Trash2 } from 'lucide-react';
+import { Trash2 } from '@/components/icons';
 import { useRouter } from 'next/navigation';
 
 const STATUSES = ['ACTIVE', 'ON_HOLD', 'COMPLETED', 'CANCELLED'] as const;

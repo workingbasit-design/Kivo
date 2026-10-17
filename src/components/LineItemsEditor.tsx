@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2 } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { Field, inputClass, secondaryBtnClass } from '@/components/ui';
 import { currencySymbol, formatMoney } from '@/lib/money';

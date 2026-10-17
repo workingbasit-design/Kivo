@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Plus, FileText, Clock, Hourglass } from 'lucide-react';
+import { Plus, FileText, Clock, Hourglass } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';

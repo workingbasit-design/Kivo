@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Bell, CheckCheck } from 'lucide-react';
+import { Bell, CheckCheck } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { getNotificationSummary } from '@/app/actions/notifications-f10';
 import {

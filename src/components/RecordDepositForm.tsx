@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState, useState } from 'react';
-import { HandCoins, Plus } from 'lucide-react';
+import { HandCoins, Plus } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { Card, Field, inputClass, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
 import { formatMoney } from '@/lib/money';

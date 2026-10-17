@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
-import { PlusCircle, AlertCircle } from 'lucide-react';
+import { PlusCircle, AlertCircle } from '@/components/icons';
 import { createManualEntry } from '@/app/actions/timesheets';
 import { Field, inputClass, primaryBtnClass } from '@/components/ui';
 import { useResolvedT } from '@/hooks/useResolvedLocale';

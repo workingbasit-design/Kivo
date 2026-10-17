@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { Star, BadgeCheck, Heart, MessageSquareQuote, MapPin } from 'lucide-react';
+import { Star, BadgeCheck, Heart, MessageSquareQuote, MapPin } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 

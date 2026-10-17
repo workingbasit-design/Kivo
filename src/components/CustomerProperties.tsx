@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { MapPin, Plus, Pencil, Trash2, Star, Loader2 } from 'lucide-react';
+import { MapPin, Plus, Pencil, Trash2, Star, Loader2 } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import { Card, Field, inputClass, primaryBtnClass, secondaryBtnClass } from '@/components/ui';

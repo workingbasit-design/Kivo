@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useActionState, useState } from 'react';
-import { AlertCircle, CheckCircle2, Star } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Star } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import {
   submitTokenReview,

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Check, X } from 'lucide-react';
+import { Check, X } from '@/components/icons';
 import { toast } from 'sonner';
 import { portalQuoteDecisionByToken } from '@/app/actions/quotes';
 import { formatMoney } from '@/lib/money';

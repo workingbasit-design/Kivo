@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState, useTransition } from 'react';
-import { Search } from 'lucide-react';
+import { Search } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 
 /** Debounce delay before a keystroke triggers a search navigation. */

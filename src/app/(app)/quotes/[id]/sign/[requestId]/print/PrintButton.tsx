@@ -1,6 +1,6 @@
 'use client';
 
-import { Printer } from 'lucide-react';
+import { Printer } from '@/components/icons';
 import { secondaryBtnClass } from '@/components/ui';
 
 /** Print button for the signed-document view. Hidden in the printed output. */

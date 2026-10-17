@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { MapPin, Search, Star, BadgeCheck, MessageSquareQuote, User } from 'lucide-react';
+import { MapPin, Search, Star, BadgeCheck, MessageSquareQuote, User } from '@/components/icons';
 import Logo from '@/components/Logo';
 import { prisma } from '@/lib/prisma';
 import { getLocale } from '@/lib/i18n/server';

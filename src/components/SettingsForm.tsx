@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useActionState, useEffect, useState } from 'react';
-import { AlertCircle, Globe, Save } from 'lucide-react';
+import { AlertCircle, Globe, Save } from '@/components/icons';
 import { toast } from 'sonner';
 import { updateBusinessSettings, type SettingsResult } from '@/app/actions/settings';
 import { Card, Field, inputClass, primaryBtnClass } from '@/components/ui';

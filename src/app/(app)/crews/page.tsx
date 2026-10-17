@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Users, ChevronRight } from 'lucide-react';
+import { Users, ChevronRight } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { getLocale } from '@/lib/i18n/server';

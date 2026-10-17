@@ -246,6 +246,7 @@ model Service {
   unit          String   @default("each") // F6: each | hour | job | sqft
   taxCategory   String   @default("TAXABLE_GST_HST") // F6: feeds F2 PDFs + C3 tax engine
   category      String? // F6: owner-defined grouping, e.g. Plumbing
+  iconKey       String? // Part B: owner-chosen trade icon key (see TRADE_KEYS in src/lib/trade-icons.ts); null = auto-detected
   active        Boolean  @default(true) // F6: archived items are hidden, never hard-deleted by UI
   businessId    String
   business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)

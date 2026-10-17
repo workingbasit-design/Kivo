@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { Plus, X } from 'lucide-react';
+import { Plus, X } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { saveBrandKit } from '@/app/actions/brand';
 import { inputClass, primaryBtnClass } from '@/components/ui';

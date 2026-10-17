@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Megaphone, Plus, Star } from 'lucide-react';
+import { Megaphone, Plus, Star } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { PageHeader, Card, StatusBadge, EmptyState } from '@/components/ui';

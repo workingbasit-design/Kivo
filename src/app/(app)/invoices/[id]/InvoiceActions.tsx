@@ -2,7 +2,7 @@
 
 import React, { useActionState, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AlertCircle, Wallet, Trash2, Mail } from 'lucide-react';
+import { AlertCircle, Wallet, Trash2, Mail } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import {

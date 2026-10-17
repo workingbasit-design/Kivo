@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState, useTransition, type ElementType } from 'react';
-import { CalendarDays, Upload, CheckCircle2, AlertTriangle, Download } from 'lucide-react';
+import { CalendarDays, Upload, CheckCircle2, AlertTriangle, Download } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import { Card, inputClass, primaryBtnClass, secondaryBtnClass } from '@/components/ui';

@@ -11,7 +11,7 @@ import {
   Plus,
   CalendarDays,
   Receipt,
-} from "lucide-react";
+} from '@/components/icons';
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getDashboardStats } from "@/lib/dashboard";
@@ -29,7 +29,7 @@ import {
   StatusBadge,
   EmptyState,
   GlassIcon,
-  primaryBtnClass,
+  hivisBtnClass,
 } from "@/components/ui";
 import OnboardingChecklist from "@/components/OnboardingChecklist";
 import AttentionBriefing from "@/components/AttentionBriefing";
@@ -119,7 +119,7 @@ export default async function DashboardPage() {
           title={L("dashboard.title")}
           subtitle={dateLine}
           actions={
-            <Link href="/jobs/new" className={primaryBtnClass}>
+            <Link href="/jobs/new" className={hivisBtnClass}>
               <Plus size={16} /> {L("dashboard.newJob")}
             </Link>
           }
@@ -129,15 +129,15 @@ export default async function DashboardPage() {
         <OnboardingChecklist locale={locale} businessId={businessId} completed={onboardingCompleted} tailoredSteps={tailoredSteps} />
 
         {/* One clear action: create the first job. */}
-        <Card className="p-6 text-center">
-          <CalendarDays size={32} className="mx-auto mb-3 text-zinc-400" aria-hidden />
-          <h2 className="text-lg font-bold text-zinc-900 mb-1">
+        <Card className="p-6 text-center dark:bg-coal dark:border-white/10">
+          <CalendarDays size={32} className="mx-auto mb-3 text-zinc-400 dark:text-zinc-500" aria-hidden />
+          <h2 className="text-lg font-bold text-zinc-900 dark:text-white mb-1">
             {L("dashboard.noJobsYet")}
           </h2>
-          <p className="text-sm text-zinc-600 mb-4">
+          <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
             {L("dashboard.breather")}
           </p>
-          <Link href="/jobs/new" className={primaryBtnClass}>
+          <Link href="/jobs/new" className={hivisBtnClass}>
             <Plus size={16} /> {L("dashboard.newJob")}
           </Link>
         </Card>
@@ -153,7 +153,7 @@ export default async function DashboardPage() {
         title={L("dashboard.title")}
         subtitle={dateLine}
         actions={
-          <Link href="/jobs/new" className={primaryBtnClass}>
+          <Link href="/jobs/new" className={hivisBtnClass}>
             <Plus size={16} /> {L("dashboard.newJob")}
           </Link>
         }
@@ -163,14 +163,14 @@ export default async function DashboardPage() {
       <AttentionBriefing businessId={businessId} currency={currency} timezone={timezone} />
 
       {/* 2. Today's agenda: today's visits + upcoming. */}
-      <Card>
+      <Card className="dark:bg-coal dark:border-white/10">
         <div className="flex items-center justify-between px-5 pt-5 pb-3">
-          <h2 className="text-sm font-bold text-zinc-900 flex items-center gap-2.5">
+          <h2 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2.5">
             <GlassIcon icon={<Clock size={14} />} tone="zinc" size="sm" /> {L("dashboard.todaysSchedule")}
           </h2>
           <Link
             href="/schedule"
-            className="text-xs font-semibold text-ink hover:underline inline-flex items-center gap-1 min-h-[44px] px-2 -mr-2"
+            className="text-xs font-semibold text-ink dark:text-zinc-300 hover:underline inline-flex items-center gap-1 min-h-[44px] px-2 -mr-2"
           >
             {L("dashboard.schedule")} <ChevronRight size={13} />
           </Link>
@@ -182,20 +182,20 @@ export default async function DashboardPage() {
             description={L("dashboard.breather")}
           />
         ) : (
-          <ul className="divide-y divide-zinc-100 px-2 pb-2">
+          <ul className="divide-y divide-zinc-100 dark:divide-white/10 px-2 pb-2">
             {/* Today's jobs first. */}
             {stats.todayJobs.map((job, i) => (
               <li key={`today-${job.id}`} className="ej-row-in" style={rowDelay(i)}>
                 <Link
                   href={`/jobs/${job.id}`}
-                  className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-50 transition-colors min-h-[56px]"
+                  className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors min-h-[56px]"
                 >
                   <div className="w-14 shrink-0 text-center">
-                    <p className="text-xs font-bold text-zinc-900 tabular-nums">{hasJobTime(job.time) ? formatJobTime(job.time, locale) : "-"}</p>
+                    <p className="text-xs font-bold text-zinc-900 dark:text-white tabular-nums">{hasJobTime(job.time) ? formatJobTime(job.time, locale) : "-"}</p>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-zinc-900 truncate">{job.title}</p>
-                    <p className="text-xs text-zinc-700 truncate">{job.customerName}</p>
+                    <p className="text-sm font-semibold text-zinc-900 dark:text-white truncate">{job.title}</p>
+                    <p className="text-xs text-zinc-700 dark:text-zinc-300 truncate">{job.customerName}</p>
                   </div>
                   <StatusBadge status={jobDisplayStatus(job.status, job.date)} locale={locale} />
                 </Link>
@@ -206,18 +206,18 @@ export default async function DashboardPage() {
               <li key={`upcoming-${job.id}`} className="ej-row-in" style={rowDelay(stats.todayJobs.length + i)}>
                 <Link
                   href={`/jobs/${job.id}`}
-                  className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-50 transition-colors min-h-[56px]"
+                  className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors min-h-[56px]"
                 >
                   <div className="w-14 shrink-0 text-center">
                     {/* Part A: one date style everywhere — the shared formatter,
                         so this agrees with the briefing ("Tomorrow", not "Oct 18, 2026"). */}
-                    <p className="text-xs font-bold text-zinc-900 tabular-nums">
+                    <p className="text-xs font-bold text-zinc-900 dark:text-white tabular-nums">
                       {formatDisplayDate(job.date, timezone, locale)}
                     </p>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-zinc-900 truncate">{job.title}</p>
-                    <p className="text-xs text-zinc-700 truncate">
+                    <p className="text-sm font-semibold text-zinc-900 dark:text-white truncate">{job.title}</p>
+                    <p className="text-xs text-zinc-700 dark:text-zinc-300 truncate">
                       {job.customerName}
                       {hasJobTime(job.time) ? ` · ${formatJobTime(job.time, locale)}` : ""}
                     </p>
@@ -232,20 +232,20 @@ export default async function DashboardPage() {
 
       {/* 3. Money: compact rows, only metrics with data. No $0.00 cards. */}
       {hasMoneyData && (
-        <Card>
+        <Card className="dark:bg-coal dark:border-white/10">
           <div className="px-5 pt-5 pb-3">
-            <h2 className="text-sm font-bold text-zinc-900 flex items-center gap-2.5">
+            <h2 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2.5">
               <GlassIcon icon={<Banknote size={14} />} tone="emerald" size="sm" /> {L("dashboard.moneyTitle")}
             </h2>
           </div>
-          <ul className="divide-y divide-zinc-100 px-2 pb-2">
+          <ul className="divide-y divide-zinc-100 dark:divide-white/10 px-2 pb-2">
             {stats.collectedThisWeek > 0 && (
               <li className="flex items-center justify-between px-3 py-3 min-h-[56px]">
                 <div>
-                  <p className="text-sm font-semibold text-zinc-900">{L("dashboard.collected7")}</p>
-                  <p className="text-xs text-zinc-500">{L("dashboard.paymentsReceived")}</p>
+                  <p className="text-sm font-semibold text-zinc-900 dark:text-white">{L("dashboard.collected7")}</p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">{L("dashboard.paymentsReceived")}</p>
                 </div>
-                <p className="text-base font-bold text-zinc-900 tabular-nums">
+                <p className="text-base font-bold text-zinc-900 dark:text-white tabular-nums">
                   <MoneyText dollars={stats.collectedThisWeek} locale={locale} />
                 </p>
               </li>
@@ -257,12 +257,12 @@ export default async function DashboardPage() {
                   className="flex items-center justify-between px-3 py-3 rounded-xl hover:bg-zinc-50 transition-colors min-h-[56px]"
                 >
                   <div>
-                    <p className="text-sm font-semibold text-zinc-900">{L("dashboard.outstanding")}</p>
-                    <p className="text-xs text-zinc-500">
+                    <p className="text-sm font-semibold text-zinc-900 dark:text-white">{L("dashboard.outstanding")}</p>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
                       {tp(locale, "dashboard.unpaidInvoices", stats.outstandingCount)}
                     </p>
                   </div>
-                  <p className="text-base font-bold text-zinc-900 tabular-nums">
+                  <p className="text-base font-bold text-zinc-900 dark:text-white tabular-nums">
                     <MoneyText dollars={stats.outstanding} locale={locale} />
                   </p>
                 </Link>
@@ -275,12 +275,12 @@ export default async function DashboardPage() {
                   className="flex items-center justify-between px-3 py-3 rounded-xl hover:bg-zinc-50 transition-colors min-h-[56px]"
                 >
                   <div>
-                    <p className="text-sm font-semibold text-zinc-900">{L("dashboard.readyToInvoice")}</p>
-                    <p className="text-xs text-zinc-500">
+                    <p className="text-sm font-semibold text-zinc-900 dark:text-white">{L("dashboard.readyToInvoice")}</p>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
                       {tp(locale, "dashboard.readyToInvoiceCount", stats.readyToInvoice.length)}
                     </p>
                   </div>
-                  <p className="text-base font-bold text-zinc-900 tabular-nums">
+                  <p className="text-base font-bold text-zinc-900 dark:text-white tabular-nums">
                     <MoneyText dollars={stats.readyToInvoice.reduce((s, j) => s + j.price, 0)} locale={locale} />
                   </p>
                 </Link>
@@ -293,10 +293,10 @@ export default async function DashboardPage() {
                   className="flex items-center justify-between px-3 py-3 rounded-xl hover:bg-zinc-50 transition-colors min-h-[56px]"
                 >
                   <div>
-                    <p className="text-sm font-semibold text-zinc-900">{L("dashboard.newLeads")}</p>
-                    <p className="text-xs text-zinc-500">{L("dashboard.newLeadsHint")}</p>
+                    <p className="text-sm font-semibold text-zinc-900 dark:text-white">{L("dashboard.newLeads")}</p>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">{L("dashboard.newLeadsHint")}</p>
                   </div>
-                  <p className="text-base font-bold text-zinc-900 tabular-nums">{stats.newLeads}</p>
+                  <p className="text-base font-bold text-zinc-900 dark:text-white tabular-nums">{stats.newLeads}</p>
                 </Link>
               </li>
             )}

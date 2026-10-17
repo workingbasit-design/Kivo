@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Search, Inbox, Heart, MessageCircle, User } from 'lucide-react';
+import { Search, Inbox, Heart, MessageCircle, User } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 

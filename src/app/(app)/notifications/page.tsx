@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Bell, CheckCheck, Check, ChevronRight } from 'lucide-react';
+import { Bell, CheckCheck, Check, ChevronRight } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';

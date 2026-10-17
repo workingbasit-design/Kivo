@@ -13,7 +13,7 @@
  * shell is being redesigned in parallel. Mount it in the root layout.
  */
 import { useEffect, useState, useSyncExternalStore } from 'react';
-import { CloudOff, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { CloudOff, RefreshCw, CheckCircle2 } from '@/components/icons';
 import {
   onOutboxStatus,
   startOutboxSync,

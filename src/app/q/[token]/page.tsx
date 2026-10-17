@@ -1,5 +1,5 @@
 import { headers } from 'next/headers';
-import { CheckCircle2, Clock, FileText, MessageCircle, Phone, XCircle } from 'lucide-react';
+import { CheckCircle2, Clock, FileText, MessageCircle, Phone, XCircle } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
 import { rateLimit } from '@/lib/rate-limit';
 import { isLegacyCuid, resolveShareToken } from '@/lib/share';

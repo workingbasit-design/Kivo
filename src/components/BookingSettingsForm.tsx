@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState, useEffect, useState } from 'react';
-import { Check, CheckCircle2, Copy, ExternalLink, Link2, AlertCircle } from 'lucide-react';
+import { Check, CheckCircle2, Copy, ExternalLink, Link2, AlertCircle } from '@/components/icons';
 import { toast } from 'sonner';
 import { saveBookingSettings } from '@/app/actions/booking';
 import { Card, Field, inputClass, primaryBtnClass } from '@/components/ui';

@@ -5,7 +5,7 @@ import { t, type Locale } from '@/lib/i18n';
 import { createProject } from '@/app/actions/projects';
 import { Input, Textarea, Select, DateField, MoneyInput } from '@/components/design/fields';
 import { Button, IconButton } from '@/components/design/Button';
-import { ArrowUp, ArrowDown, X, Plus } from 'lucide-react';
+import { ArrowUp, ArrowDown, X, Plus } from '@/components/icons';
 import { useRouter } from 'next/navigation';
 
 /** Phase templates by trade. Kept as component constants because t() is string-only. */

@@ -9,7 +9,7 @@ import {
   MessageCircle,
   Phone,
   Star,
-} from 'lucide-react';
+} from '@/components/icons';
 import { prisma } from '@/lib/prisma';
 import { waLink } from '@/lib/whatsapp';
 import { formatCents } from '@/lib/money';

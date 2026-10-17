@@ -1,5 +1,5 @@
 import { headers } from 'next/headers';
-import { MapPin, MessageCircle, Phone, ReceiptText } from 'lucide-react';
+import { MapPin, MessageCircle, Phone, ReceiptText } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
 import { rateLimit } from '@/lib/rate-limit';
 import { isLegacyCuid, resolveShareToken } from '@/lib/share';

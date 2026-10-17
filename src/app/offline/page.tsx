@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { WifiOff } from 'lucide-react';
+import { WifiOff } from '@/components/icons';
 import EveryJobLogo from '@/components/EveryJobLogo';
 import TryAgainButton from './try-again-button';
 

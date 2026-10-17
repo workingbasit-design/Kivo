@@ -2,7 +2,7 @@
 
 import React, { useActionState, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AlertCircle, Eye, Users } from 'lucide-react';
+import { AlertCircle, Eye, Users } from '@/components/icons';
 import {
   createCampaign,
   updateCampaign,

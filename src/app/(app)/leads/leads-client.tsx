@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useActionState, useEffect, useRef, useState } from 'react';
-import { AlertCircle, Phone, ArrowRight, Trash2, UserCheck, Plus, X } from 'lucide-react';
+import { AlertCircle, Phone, ArrowRight, Trash2, UserCheck, Plus, X } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import { createLead, updateLeadStatus, deleteLead } from '@/app/actions/leads';

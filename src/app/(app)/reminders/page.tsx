@@ -1,5 +1,5 @@
 import React from 'react';
-import { BellRing, CalendarClock, FileText, PhoneMissed } from 'lucide-react';
+import { BellRing, CalendarClock, FileText, PhoneMissed } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';

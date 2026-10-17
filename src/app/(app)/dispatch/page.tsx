@@ -6,7 +6,7 @@ import { PageHeader, Card, EmptyState } from '@/components/ui';
 import { dayRange, toISODateLocal, formatDateShort } from '@/lib/utils';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
-import { CalendarDays } from 'lucide-react';
+import { CalendarDays } from '@/components/icons';
 import DispatchBoardClient from '@/components/DispatchBoardClient';
 import DispatchDatePicker from '@/components/DispatchDatePicker';
 import { centsToDollars } from '@/lib/money';

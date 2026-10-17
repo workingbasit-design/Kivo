@@ -1,4 +1,4 @@
-import { CloudOff, FileWarning, Link2Off, Timer } from 'lucide-react';
+import { CloudOff, FileWarning, Link2Off, Timer } from '@/components/icons';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { Card } from '@/components/ui';

@@ -1,6 +1,6 @@
 import { headers } from 'next/headers';
 import Logo from '@/components/Logo';
-import { Briefcase, FileText, Phone, ReceiptText, Wallet } from 'lucide-react';
+import { Briefcase, FileText, Phone, ReceiptText, Wallet } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
 import { rateLimit } from '@/lib/rate-limit';
 import { resolveCustomerPortalToken } from '@/lib/portal';

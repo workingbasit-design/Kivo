@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Plus, FileText, Wallet, Receipt } from 'lucide-react';
+import { Plus, FileText, Wallet, Receipt } from '@/components/icons';
 import { PageHeader, Card, StatusBadge, EmptyState, StatCard, Badge, primaryBtnClass } from '@/components/ui';
 import { statusLabel } from '@/lib/utils';
 import { formatDateShort, cn } from '@/lib/utils';

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { AlertCircle, CheckCircle2, Zap } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Zap } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import { Card, secondaryBtnClass } from '@/components/ui';

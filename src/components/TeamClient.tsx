@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useActionState, useTransition } from 'react';
-import { AlertCircle, Trash2, UserPlus, ShieldCheck, User } from 'lucide-react';
+import { AlertCircle, Trash2, UserPlus, ShieldCheck, User } from '@/components/icons';
 import { toast } from 'sonner';
 import { inviteTeamMember, removeTeamMember, type SettingsResult } from '@/app/actions/settings';
 import ConfirmDialog from '@/components/ConfirmDialog';

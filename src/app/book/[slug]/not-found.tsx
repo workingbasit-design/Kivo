@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { CalendarX2 } from 'lucide-react';
+import { CalendarX2 } from '@/components/icons';
 import { getLocale } from '@/lib/i18n/server';
 import { Card } from '@/components/ui';
 

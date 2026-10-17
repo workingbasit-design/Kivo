@@ -7,7 +7,7 @@
  * entry into any authenticator app.
  */
 import { useState } from 'react';
-import { ShieldCheck, ShieldAlert, Copy, Check } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, Copy, Check } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { Field, inputClass, primaryBtnClass } from '@/components/ui';
 import { beginTotpSetup, confirmTotpSetup, disableTotp } from '@/app/actions/totp';

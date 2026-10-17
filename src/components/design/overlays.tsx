@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { X, AlertTriangle } from 'lucide-react';
+import { X, AlertTriangle } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import { Button } from './Button';
 

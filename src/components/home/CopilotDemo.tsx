@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { Check, Bot } from 'lucide-react';
+import { Check, Bot } from '@/components/icons';
 
 export interface CopilotDemoStrings {
   chatTitle: string;

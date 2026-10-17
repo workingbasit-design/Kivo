@@ -2,7 +2,7 @@
 
 import React, { useActionState, useEffect, useRef, useState, useTransition } from 'react';
 import Link from 'next/link';
-import { CheckSquare, Plus, Trash2, AlertCircle, Square } from 'lucide-react';
+import { CheckSquare, Plus, Trash2, AlertCircle, Square } from '@/components/icons';
 import { toast } from 'sonner';
 import {
   addChecklistItem,

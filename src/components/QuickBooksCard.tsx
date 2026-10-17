@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { PlugZap, Unplug, RefreshCw, CheckCircle2, XCircle, MinusCircle, ExternalLink } from 'lucide-react';
+import { PlugZap, Unplug, RefreshCw, CheckCircle2, XCircle, MinusCircle, ExternalLink } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import { Badge, Card, dangerBtnClass, primaryBtnClass, secondaryBtnClass } from '@/components/ui';

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
-import { PlusCircle, AlertCircle, Clock } from 'lucide-react';
+import { PlusCircle, AlertCircle, Clock } from '@/components/icons';
 import { createManualEntry } from '@/app/actions/timesheets';
 import { Card, Field, inputClass, primaryBtnClass } from '@/components/ui';
 import { cn } from '@/lib/utils';

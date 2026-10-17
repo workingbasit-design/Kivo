@@ -15,7 +15,7 @@ export default async function PriceBookPage() {
   const services = await prisma.service.findMany({
     where: { businessId },
     orderBy: { name: 'asc' },
-    select: { id: true, name: true, priceCents: true, durationMin: true, description: true },
+    select: { id: true, name: true, priceCents: true, durationMin: true, description: true, iconKey: true },
   });
 
   const initialServices = services.map((s) => ({
@@ -24,6 +24,7 @@ export default async function PriceBookPage() {
     price: centsToDollars(s.priceCents),
     durationMin: s.durationMin,
     description: s.description,
+    iconKey: s.iconKey,
   }));
 
   return <PriceBookClient initialServices={initialServices} currency={currency} locale={locale} />;

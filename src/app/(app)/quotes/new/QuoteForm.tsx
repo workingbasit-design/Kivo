@@ -2,7 +2,7 @@
 
 import React, { useActionState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { AlertCircle, FileCheck } from 'lucide-react';
+import { AlertCircle, FileCheck } from '@/components/icons';
 import { toast } from 'sonner';
 import { createQuote, type ActionResult } from '@/app/actions/quotes';
 import LineItemsEditor from '@/components/LineItemsEditor';

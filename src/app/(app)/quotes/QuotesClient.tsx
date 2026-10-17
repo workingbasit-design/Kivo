@@ -2,7 +2,7 @@
 
 import { useMemo, useState, type CSSProperties } from 'react';
 import Link from 'next/link';
-import { Plus, ClipboardList, Clock } from 'lucide-react';
+import { Plus, ClipboardList, Clock } from '@/components/icons';
 import { fillTemplate, daysWaiting } from '@/lib/revenue';
 import { PageHeader, Card, StatusBadge, EmptyState, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
 import { formatDateShort, cn } from '@/lib/utils';

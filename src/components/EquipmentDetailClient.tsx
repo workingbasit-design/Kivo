@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Trash2 } from 'lucide-react';
+import { Trash2 } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { Card, Field } from '@/components/ui';
 import ConfirmDialog from '@/components/ConfirmDialog';

@@ -6,7 +6,7 @@ import { PageHeader, Card, EmptyState } from '@/components/ui';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { formatMoney, centsToDollars } from '@/lib/money';
-import { Package, Plus } from 'lucide-react';
+import { Package, Plus } from '@/components/icons';
 import InventoryClient from '@/components/InventoryClient';
 
 export const dynamic = 'force-dynamic';

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Bell } from 'lucide-react';
+import { Bell } from '@/components/icons';
 import { toast } from 'sonner';
 import { Card, primaryBtnClass } from '@/components/ui';
 import { t, type Locale } from '@/lib/i18n';

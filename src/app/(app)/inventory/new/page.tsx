@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { PageHeader, Card } from '@/components/ui';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from '@/components/icons';
 import PartForm from '@/components/PartForm';
 
 export const dynamic = 'force-dynamic';

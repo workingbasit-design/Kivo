@@ -1,8 +1,8 @@
-import type { LucideIcon } from 'lucide-react';
+import type { IconComponent } from '@/components/icons';
 import { AnimatedIcon, type AnimatedIconName } from './AnimatedIcon';
 
-/** A nav icon is either a Lucide component or a free animated icon name. */
-export type NavIcon = LucideIcon | AnimatedIconName;
+/** A nav icon is either an icon component or a free animated icon name. */
+export type NavIcon = IconComponent | AnimatedIconName;
 
 export function NavIconView({
   icon,
@@ -13,14 +13,21 @@ export function NavIconView({
   icon: NavIcon;
   size?: number;
   className?: string;
-  /** Filled variant for active states (Part D: active tab shows filled icon). */
+  /** Duotone (outline + soft fill) variant for active states. */
   filled?: boolean;
 }) {
   if (typeof icon === 'string') {
     return <AnimatedIcon name={icon} size={size} className={className} />;
   }
-  const Cmp = icon as LucideIcon;
-  return <Cmp size={size} strokeWidth={2} className={className} fill={filled ? 'currentColor' : 'none'} />;
+  const Cmp = icon as IconComponent;
+  return (
+    <Cmp
+      size={size}
+      strokeWidth={2}
+      className={className}
+      weight={filled ? 'duotone' : 'regular'}
+    />
+  );
 }
 
 export { AnimatedIcon, type AnimatedIconName };

@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Part B (dashboard rebuild): class-based dark mode. `dark:` variants apply
+   under `.dark` anywhere in the tree (the theme script in app/layout.tsx
+   toggles it on <html>). */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ---------- EveryJob Vector design tokens ---------- */
 @theme {
   --color-ink: #161616; /* primary text, dark surfaces */
@@ -24,13 +29,20 @@
 
   /* ---------- Part B design tokens (docs/DESIGN.md) ----------
      Full semantic palette. All text pairs measured >= 4.5:1 (2026-10-17).
-     Use bg-ej-*, text-ej-*, border-ej-* utilities. */
+     Use bg-ej-*, text-ej-*, border-ej-* utilities.
+     Dark mode (Part B) is explicit: components opt in with `dark:` variants
+     (see @custom-variant above). Semantic tokens stay single-valued so
+     unmigrated screens never flip into an unreadable state. */
+  --color-ej-ink: #14181a;
+  --color-ej-muted: #5a6366;
+  --color-ej-secondary: #55554e;
+  --color-ej-disabled: #71717a;
   --color-ej-bg: #ffffff;
   --color-ej-surface: #fafaf7;
   --color-ej-raised: #ffffff;
+  --color-ej-paper: #ffffff;
+  --color-ej-smoke: #f2f4f3;
   --color-ej-border: #e8e8e3;
-  --color-ej-secondary: #55554e;
-  --color-ej-disabled: #71717a;
   --color-ej-primary: #161616;
   --color-ej-on-primary: #ffffff;
   --color-ej-accent: #c8f04a;
@@ -43,15 +55,6 @@
   --color-ej-danger-bg: #fef2f2;
   --color-ej-info: #1d4ed8;
   --color-ej-info-bg: #eff6ff;
-  /* Dark mode (forward-compat; no toggle yet) */
-  --color-ej-bg-dark: #161616;
-  --color-ej-surface-dark: #1e2426;
-  --color-ej-ink-dark: #f5f5f4;
-  --color-ej-muted-dark: #a8b0b3;
-  --color-ej-accent-dark: #c8f04a;
-  --color-ej-success-dark: #6ee7b7;
-  --color-ej-warning-dark: #fcd34d;
-  --color-ej-danger-dark: #fda4af;
   /* Radius by hierarchy */
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -63,6 +66,30 @@
   --motion-slow: 250ms;
   /* Type: system stack (migrate from Geist in Part C) */
   --font-ej-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  /* ---------- Part B (dashboard rebuild): hi-vis visual direction ----------
+     Lime (#D4F24C) appears in four places only: the main action, the active
+     tab, the money bars, and the "now" marker. Everything else stays neutral
+     so lime always means "look here". Lime is never text on white. */
+  --color-asphalt: #1d2024; /* text, the Collected panel, tab bar */
+  --color-concrete: #f2f3ef; /* page background (light) */
+  --color-hivis: #d4f24c; /* hi-vis lime: main action, active tab, money bars, now marker */
+  --color-reflective: #c7ccd1; /* the stripe motif */
+  --color-safety: #e8590c; /* needs attention */
+  --color-safety-ink: #b54708; /* safety-orange text on light surfaces */
+  --color-signal: #c8322b; /* late, overdue */
+  --color-pine: #1c7c45; /* done */
+  --color-steel: #8b939b; /* charts on white (3:1+), secondary marks */
+  /* Dark-mode surfaces, sampled from the Part B mockup. */
+  --color-night: #131518; /* page background (dark) */
+  --color-coal: #1c1f23; /* cards, tab bar (dark) */
+  --color-soot: #22262b; /* Collected panel (dark) */
+  /* Type: Barlow for interface text, Barlow Condensed for numbers and big
+     figures (self-hosted woff2, OFL - see docs/LICENSES.md). */
+  --font-sans: var(--font-barlow), -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-condensed: var(--font-barlow-condensed), var(--font-barlow),
+    -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 :root {
@@ -75,14 +102,14 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), sans-serif;
+  font-family: var(--font-barlow), -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
   /* Animated decorative blobs/chips sit at negative offsets; clip any
      horizontal overshoot at the page level so no x-scrollbar appears.
      `clip` (not `hidden`) avoids creating a scroll container, so
@@ -908,4 +935,50 @@ section[id] h2, section[id] h3, [id] > h2:first-child {
     corner-shape: squircle;
     border-radius: 14px;
   }
+}
+
+/* ---------- Part B (dashboard rebuild): hi-vis motif + dark mode ---------- */
+
+/* Dark colour scheme for native controls (scrollbars, form elements). */
+.dark {
+  color-scheme: dark;
+}
+
+/* Reflective stripe motif: diagonal safety striping, like the reflective
+   band on a hi-vis vest. Used once at the top of the Collected panel
+   (Part C); the utility is defined here in Part B. */
+.ej-reflective-stripe {
+  background: repeating-linear-gradient(
+    -55deg,
+    var(--color-reflective) 0 7px,
+    color-mix(in srgb, var(--color-reflective) 35%, transparent) 7px 14px
+  );
+}
+.ej-reflective-stripe-lime {
+  background: repeating-linear-gradient(
+    -55deg,
+    var(--color-hivis) 0 10px,
+    color-mix(in srgb, var(--color-hivis) 45%, var(--color-asphalt)) 10px 20px
+  );
+}
+
+/* Striped "today" bar for charts (Part C): diagonal hi-vis striping. */
+.ej-bar-today {
+  background: repeating-linear-gradient(
+    -55deg,
+    var(--color-hivis) 0 6px,
+    color-mix(in srgb, var(--color-hivis) 55%, transparent) 6px 12px
+  );
+}
+/* Dashed "future" bar outline for charts (Part C). */
+.ej-bar-future {
+  background: transparent;
+  border: 2px dashed var(--color-steel);
+}
+
+/* Big figures use Barlow Condensed with tabular figures. */
+.ej-figure {
+  font-family: var(--font-condensed);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
 }

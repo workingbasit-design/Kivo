@@ -16,8 +16,8 @@ export function PageHeader({
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div>
         {/* DESIGN.md page title: 24px / 1.25, weight 700. */}
-        <h1 className="text-2xl font-bold text-ej-ink tracking-tight">{title}</h1>
-        {subtitle && <p className="text-ej-muted mt-1 text-sm">{subtitle}</p>}
+        <h1 className="text-2xl font-bold text-ej-ink dark:text-white tracking-tight">{title}</h1>
+        {subtitle && <p className="text-ej-muted dark:text-zinc-400 mt-1 text-sm">{subtitle}</p>}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
     </div>
@@ -231,6 +231,12 @@ export const ghostBtnClass =
 
 export const limeBtnClass =
   'ej-squircle bg-gradient-to-b from-[#d4f55e] to-lime hover:brightness-105 active:brightness-95 text-ink min-h-12 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 inline-flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(22,22,22,0.15),inset_0_1px_0_rgba(255,255,255,0.5)] hover:shadow-[0_4px_14px_rgba(200,240,74,0.4)] disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/60 focus-visible:ring-offset-2';
+
+/* Part B (dashboard rebuild): the ONE hi-vis main action. Flat #D4F24C with
+   asphalt text - lime always means "look here", so it never gradients,
+   never appears on other buttons. Dark text on lime passes AA. */
+export const hivisBtnClass =
+  'ej-squircle bg-hivis hover:brightness-105 active:brightness-95 text-asphalt min-h-12 px-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 inline-flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(22,22,22,0.15),inset_0_1px_0_rgba(255,255,255,0.4)] hover:shadow-[0_4px_14px_rgba(212,242,76,0.45)] disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-asphalt/60 focus-visible:ring-offset-2';
 
 /* ---------- Loading skeletons (never blank screens) ---------- */
 

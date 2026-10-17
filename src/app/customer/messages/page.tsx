@@ -3,7 +3,7 @@ import { requireCustomerAuth } from '@/lib/customer-auth';
 import { prisma } from '@/lib/prisma';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
-import { MessageCircle, ChevronRight } from 'lucide-react';
+import { MessageCircle, ChevronRight } from '@/components/icons';
 import {
   Avatar,
   Card,

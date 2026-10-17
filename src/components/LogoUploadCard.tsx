@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { ImagePlus, Loader2, Trash2 } from 'lucide-react';
+import { ImagePlus, Loader2, Trash2 } from '@/components/icons';
 import { toast } from 'sonner';
 import { Card } from '@/components/ui';
 import { t, type Locale } from '@/lib/i18n';

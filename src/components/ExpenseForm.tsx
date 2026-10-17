@@ -2,7 +2,7 @@
 
 import React, { useActionState, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Receipt, X } from 'lucide-react';
+import { Receipt, X } from '@/components/icons';
 import { toast } from 'sonner';
 import {
   createExpense,

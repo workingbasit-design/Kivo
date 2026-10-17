@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useActionState, useEffect, useTransition } from 'react';
-import { BadgeCheck, Star, Trash2, AlertCircle, Plus } from 'lucide-react';
+import { BadgeCheck, Star, Trash2, AlertCircle, Plus } from '@/components/icons';
 import { toast } from 'sonner';
 import { createReview, deleteReview, type ReviewResult } from '@/app/actions/reviews';
 import ConfirmDialog from '@/components/ConfirmDialog';

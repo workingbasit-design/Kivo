@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash2 } from '@/components/icons';
 import { deleteEntry } from '@/app/actions/timesheets';
 import ConfirmDialog from '@/components/ConfirmDialog';
 

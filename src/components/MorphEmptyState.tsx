@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'motion/react';
-import { SearchX, WifiOff, Inbox, CalendarX } from 'lucide-react';
+import { SearchX, WifiOff, Inbox, CalendarX } from '@/components/icons';
 
 /**
  * MorphEmptyState - a single illustration that morphs between scenes.

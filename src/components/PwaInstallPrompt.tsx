@@ -11,7 +11,7 @@
  * Mount once near the top of the app shell:  <PwaInstallPrompt locale={locale} />
  */
 import { useEffect, useState } from 'react';
-import { Download, X } from 'lucide-react';
+import { Download, X } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { primaryBtnClass } from '@/components/ui';
 

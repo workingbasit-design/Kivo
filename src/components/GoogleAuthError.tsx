@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle } from '@/components/icons';
 import { useT } from '@/components/LanguageToggle';
 
 /** Map ?google=<code> callback failures to a localized message. */

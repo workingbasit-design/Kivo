@@ -1,4 +1,4 @@
-import { Inbox } from 'lucide-react';
+import { Inbox } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { PageHeader, Card, EmptyState } from '@/components/ui';

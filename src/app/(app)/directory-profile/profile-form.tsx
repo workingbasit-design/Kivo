@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState, useEffect } from 'react';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle } from '@/components/icons';
 import { toast } from 'sonner';
 import { updateDirectoryProfile } from '@/app/actions/directory-profile';
 import { Field, inputClass, primaryBtnClass, Card } from '@/components/ui';

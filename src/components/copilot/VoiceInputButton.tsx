@@ -10,7 +10,7 @@
  * unavailable.
  */
 import { useEffect, useRef } from 'react';
-import { Mic, MicOff, Square } from 'lucide-react';
+import { Mic, MicOff, Square } from '@/components/icons';
 import { useVoiceInput, type VoiceLang } from '@/hooks/useVoiceInput';
 import { useResolvedT } from '@/hooks/useResolvedLocale';
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Clock3, Filter, Timer } from 'lucide-react';
+import { Clock3, Filter, Timer } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card, EmptyState, Field } from '@/components/ui';

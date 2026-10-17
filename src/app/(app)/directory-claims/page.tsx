@@ -1,4 +1,4 @@
-import { ShieldCheck, Inbox } from 'lucide-react';
+import { ShieldCheck, Inbox } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card, EmptyState } from '@/components/ui';
 import { isDirectoryAdminEmail } from '@/lib/directory';

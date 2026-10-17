@@ -7,7 +7,7 @@ import { formatMoney, centsToDollars } from "@/lib/money";
 import { Card } from "@/components/ui";
 import { PhaseCard, AddPhaseForm, type Phase } from "@/components/ProjectPhases";
 import { ProjectHeaderForm } from "@/components/ProjectHeaderForm";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft } from '@/components/icons';
 import Link from "next/link";
 import { notFound } from "next/navigation";
 

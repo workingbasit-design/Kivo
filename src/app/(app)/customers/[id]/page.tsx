@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, Phone, Mail, MapPin, MessageSquare, Navigation, Plus } from 'lucide-react';
+import { ArrowLeft, Phone, Mail, MapPin, MessageSquare, Navigation, Plus } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { logPiiAccess } from '@/lib/pii-audit';

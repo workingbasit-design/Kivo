@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState, useEffect, useRef } from 'react';
-import { BellRing } from 'lucide-react';
+import { BellRing } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import { Badge, Card, checkboxClass, primaryBtnClass } from '@/components/ui';

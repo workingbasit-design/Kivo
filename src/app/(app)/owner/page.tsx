@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Droplets, Gauge } from "lucide-react";
+import { ArrowRight, Droplets, Gauge } from '@/components/icons';
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getAttentionItems } from "@/lib/attention";

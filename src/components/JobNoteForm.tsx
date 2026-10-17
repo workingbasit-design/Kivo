@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useActionState, useEffect, useRef, useState, useTransition } from 'react';
-import { AlertCircle, Send, Trash2 } from 'lucide-react';
+import { AlertCircle, Send, Trash2 } from '@/components/icons';
 import { toast } from 'sonner';
 import { addJobNote, deleteJobNote, type JobActionResult } from '@/app/actions/jobs';
 import { primaryBtnClass, textareaClass } from '@/components/ui';

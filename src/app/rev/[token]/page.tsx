@@ -1,4 +1,4 @@
-import { BadgeCheck, Link2Off, Star } from 'lucide-react';
+import { BadgeCheck, Link2Off, Star } from '@/components/icons';
 import EveryJobLogo from '@/components/EveryJobLogo';
 import TokenReviewForm from '@/components/TokenReviewForm';
 import { getTokenReviewContext } from '@/app/actions/review-requests';

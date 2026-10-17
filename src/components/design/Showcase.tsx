@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Plus, Search, Calendar, FileText, Trash2 } from 'lucide-react';
+import { Plus, Search, Calendar, FileText, Trash2 } from '@/components/icons';
 import { Button, IconButton, Link } from './Button';
 import { Input, Textarea, Select, DateField, TimeField, MoneyInput, PhoneInput, FieldWrapper } from './fields';
 import { Checkbox, Radio, Switch, SegmentedControl } from './controls';

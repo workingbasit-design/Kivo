@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { KeyRound, Plus, Copy, Check } from 'lucide-react';
+import { KeyRound, Plus, Copy, Check } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import {

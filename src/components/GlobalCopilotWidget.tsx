@@ -6,7 +6,7 @@ import {
   MapPin, Phone, Wallet, Check, PencilLine, Sparkles, ArrowLeft,
   UserPlus, TrendingUp, MessageSquare, Search, RotateCcw,
   CheckCircle2, ChevronRight,
-} from 'lucide-react';
+} from '@/components/icons';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { currencySymbol } from '@/lib/money';
 import { formatDateShort, toISODateLocal } from '@/lib/utils';

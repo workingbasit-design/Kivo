@@ -6,7 +6,7 @@ import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card } from '@/components/ui';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
-import { ArrowLeft, Pencil } from 'lucide-react';
+import { ArrowLeft, Pencil } from '@/components/icons';
 import EquipmentDetailClient from '@/components/EquipmentDetailClient';
 
 export const dynamic = 'force-dynamic';

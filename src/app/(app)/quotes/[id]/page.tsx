@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, User } from 'lucide-react';
+import { ArrowLeft, User } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { PageHeader, Card, StatusBadge } from '@/components/ui';

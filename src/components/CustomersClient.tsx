@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Users, Plus, Search, Phone, Upload } from 'lucide-react';
+import { Users, Plus, Search, Phone, Upload } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import MoneyText from '@/components/MoneyText';
 import {

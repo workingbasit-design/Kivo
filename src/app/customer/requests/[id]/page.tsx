@@ -3,7 +3,7 @@ import { requireCustomerAuth } from '@/lib/customer-auth';
 import { prisma } from '@/lib/prisma';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
-import { ArrowLeft, BadgeCheck, Send } from 'lucide-react';
+import { ArrowLeft, BadgeCheck, Send } from '@/components/icons';
 import { sendCustomerMessage } from '@/app/actions/customer-requests';
 import { cn } from '@/lib/utils';
 import { Avatar, BackLink, Card } from '@/components/customer/ui';

@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState } from 'react';
-import { AlertCircle, Phone } from 'lucide-react';
+import { AlertCircle, Phone } from '@/components/icons';
 import { saveWelcomePhone, skipWelcomePhone } from '@/app/actions/auth';
 import { t, type Locale } from '@/lib/i18n';
 

@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useActionState } from 'react';
-import { MailQuestion, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { MailQuestion, AlertCircle, CheckCircle2 } from '@/components/icons';
 import { requestPasswordReset } from '@/app/actions/password-reset';
 import { useT } from '@/components/LanguageToggle';
 import { Field, inputClass, primaryBtnClass } from '@/components/ui';

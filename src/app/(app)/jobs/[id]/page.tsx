@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import {
   ArrowLeft, Calendar, Clock, MapPin, User, Phone, Pencil,
   DollarSign, FileText, StickyNote, TrendingUp,
-} from 'lucide-react';
+} from '@/components/icons';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card, StatusBadge, SectionTitle } from '@/components/ui';

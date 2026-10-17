@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ChevronLeft, Receipt, Pencil, Trash2 } from 'lucide-react';
+import { ChevronLeft, Receipt, Pencil, Trash2 } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card, primaryBtnClass, secondaryBtnClass } from '@/components/ui';

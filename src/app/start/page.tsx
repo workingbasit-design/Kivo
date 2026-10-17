@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Search, Briefcase, ArrowRight } from 'lucide-react';
+import { Search, Briefcase, ArrowRight } from '@/components/icons';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import EveryJobLogo from '@/components/EveryJobLogo';

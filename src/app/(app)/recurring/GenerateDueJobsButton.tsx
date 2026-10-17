@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useActionState } from 'react';
-import { Wand2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Wand2, CheckCircle2, AlertCircle } from '@/components/icons';
 import { runRecurringGeneration } from '@/app/actions/recurring';
 import { secondaryBtnClass } from '@/components/ui';
 import { useResolvedT } from '@/hooks/useResolvedLocale';

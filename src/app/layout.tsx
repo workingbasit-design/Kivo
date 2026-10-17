@@ -1,20 +1,45 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
+import { Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import PwaRegister from "@/components/PwaRegister";
 import { getLocale } from "@/lib/i18n/server";
 import { getCspNonce } from "@/lib/csp-nonce";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+/* Part B (dashboard rebuild): Barlow for interface text, Barlow Condensed
+   for numbers and big figures. Self-hosted woff2 (SIL Open Font License -
+   see docs/LICENSES.md), font-display swap, latin subsets only. */
+const barlow = localFont({
+  variable: "--font-barlow",
+  display: "swap",
+  src: [
+    { path: "../../public/fonts/barlow-400.woff2", weight: "400", style: "normal" },
+    { path: "../../public/fonts/barlow-500.woff2", weight: "500", style: "normal" },
+    { path: "../../public/fonts/barlow-600.woff2", weight: "600", style: "normal" },
+    { path: "../../public/fonts/barlow-700.woff2", weight: "700", style: "normal" },
+  ],
+});
+
+const barlowCondensed = localFont({
+  variable: "--font-barlow-condensed",
+  display: "swap",
+  src: [
+    { path: "../../public/fonts/barlowcondensed-500.woff2", weight: "500", style: "normal" },
+    { path: "../../public/fonts/barlowcondensed-600.woff2", weight: "600", style: "normal" },
+    { path: "../../public/fonts/barlowcondensed-700.woff2", weight: "700", style: "normal" },
+  ],
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+/* Pre-paint theme init: reads the saved appearance (localStorage ej-theme,
+   default follows the OS) and toggles .dark on <html> before first paint so
+   there is no light/dark flash. Runs before React hydrates. */
+const THEME_SCRIPT = `(function(){try{var t=localStorage.getItem('ej-theme')||'system';var d=t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d);}catch(e){}})();`;
 
 const SITE_URL = "https://kivo-nine-silk.vercel.app";
 const SITE_TITLE = "EveryJob - Every job. One place.";
@@ -76,15 +101,17 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // "9:00 AM" even when the whole UI was French. The locale toggle does a
   // full reload, so the server-rendered lang stays in sync.
   const locale = await getLocale();
+  const nonce = await getCspNonce();
   return (
     <html
       lang={locale === 'fr' ? 'fr-CA' : 'en-CA'}
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${barlow.variable} ${barlowCondensed.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
+        <script nonce={nonce} dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         <script
           type="application/ld+json"
-          nonce={await getCspNonce()}
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",

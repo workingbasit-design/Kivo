@@ -4,7 +4,7 @@ import { getLocale } from "@/lib/i18n/server";
 import { t } from "@/lib/i18n";
 import { PageHeader, Card } from "@/components/ui";
 import { NewProjectForm } from "@/components/NewProjectForm";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft } from '@/components/icons';
 import Link from "next/link";
 
 export default async function NewProjectPage() {

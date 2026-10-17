@@ -19,7 +19,7 @@ import {
   Phone,
   ShieldCheck,
   User,
-} from 'lucide-react';
+} from '@/components/icons';
 import { prisma } from '@/lib/prisma';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
 import { PROPOSAL_STATUS, isProposalExpired } from '@/lib/agent-protocol';

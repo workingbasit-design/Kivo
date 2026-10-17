@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useActionState, useEffect, useRef, useState } from 'react';
-import { Timer, AlertCircle } from 'lucide-react';
+import { Timer, AlertCircle } from '@/components/icons';
 import { saveHourlyRate, type JobOpsActionResult } from '@/app/actions/jobops';
 import { Card } from '@/components/ui';
 import { jInputClass, jPrimaryBtnClass, jSecondaryBtnClass } from '@/components/jobops-classes';

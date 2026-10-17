@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useActionState, useEffect, useRef, useState } from 'react';
-import { AlertCircle, Link2, MessageCircle, RefreshCw, ShieldOff } from 'lucide-react';
+import { AlertCircle, Link2, MessageCircle, RefreshCw, ShieldOff } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import CopyButton from '@/components/CopyButton';

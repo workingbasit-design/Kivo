@@ -10,7 +10,7 @@ import {
   CheckCircle2,
   AlertCircle,
   ExternalLink,
-} from 'lucide-react';
+} from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import {
   listGoogleLocations,

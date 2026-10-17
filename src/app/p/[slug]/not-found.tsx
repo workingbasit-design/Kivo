@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Store } from 'lucide-react';
+import { Store } from '@/components/icons';
 import { getLocale } from '@/lib/i18n/server';
 import { Card } from '@/components/ui';
 

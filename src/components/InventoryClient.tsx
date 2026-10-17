@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Search, Minus, Plus, AlertTriangle } from 'lucide-react';
+import { Search, Minus, Plus, AlertTriangle } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { Card, Badge } from '@/components/ui';
 import { adjustPartQuantity } from '@/app/actions/inventory';

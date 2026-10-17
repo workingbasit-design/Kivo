@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useActionState, useState } from 'react';
-import { AlertCircle, CheckCircle2, Pencil, Send, Trash2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Pencil, Send, Trash2 } from '@/components/icons';
 import { useRouter } from 'next/navigation';
 import {
   advanceCampaignStatus,

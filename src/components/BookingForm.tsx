@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState, useEffect, useState } from 'react';
-import { CalendarCheck, CheckCircle2, Clock, Phone } from 'lucide-react';
+import { CalendarCheck, CheckCircle2, Clock, Phone } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { getBookingSlots, submitBookingWithTime, type SlotsResult } from '@/app/actions/booking-slots';
 import { HONEYPOT_FIELD, FORM_STARTED_FIELD } from '@/lib/bot-check';

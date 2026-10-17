@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Plus, Briefcase, Search, ArrowUpDown, MoreVertical } from 'lucide-react';
+import { Plus, Briefcase, Search, ArrowUpDown, MoreVertical } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card, EmptyState, primaryBtnClass, inputClass } from '@/components/ui';

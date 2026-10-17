@@ -3,7 +3,7 @@
 import { useActionState, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { useRouter } from 'next/navigation';
-import { Bot, Check, Copy, KeyRound, Plus, ShieldCheck } from 'lucide-react';
+import { Bot, Check, Copy, KeyRound, Plus, ShieldCheck } from '@/components/icons';
 import { generateAgentKeyAction, revokeAgentKeyAction } from '@/app/actions/customer-agent-keys';
 
 type KeyRow = {

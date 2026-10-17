@@ -2,7 +2,7 @@
 
 import React, { useActionState, useEffect, useRef, useState, useTransition } from 'react';
 import Link from 'next/link';
-import { Clock, ListChecks, Pencil, Plus, Trash2, AlertCircle, Briefcase } from 'lucide-react';
+import { Clock, ListChecks, Pencil, Plus, Trash2, AlertCircle, Briefcase } from '@/components/icons';
 import {
   createChecklistTemplate,
   updateChecklistTemplate,

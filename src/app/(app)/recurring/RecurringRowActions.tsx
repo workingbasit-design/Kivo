@@ -2,7 +2,7 @@
 
 import React, { useState, useTransition } from 'react';
 import Link from 'next/link';
-import { Pause, Play, Pencil, Trash2 } from 'lucide-react';
+import { Pause, Play, Pencil, Trash2 } from '@/components/icons';
 import { toggleRecurringActive, deleteRecurring } from '@/app/actions/recurring';
 import ConfirmDialog from '@/components/ConfirmDialog';
 

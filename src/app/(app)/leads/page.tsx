@@ -1,5 +1,5 @@
 import React from 'react';
-import { UserPlus } from 'lucide-react';
+import { UserPlus } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';

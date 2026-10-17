@@ -1,4 +1,4 @@
-import { Palette } from 'lucide-react';
+import { Palette } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { getLocale } from '@/lib/i18n/server';

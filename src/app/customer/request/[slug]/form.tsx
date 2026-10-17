@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from 'react';
-import { ArrowLeft, Send, AlertCircle, BadgeCheck } from 'lucide-react';
+import { ArrowLeft, Send, AlertCircle, BadgeCheck } from '@/components/icons';
 import { sendQuoteRequest } from '@/app/actions/customer-requests';
 import { t, type Locale } from '@/lib/i18n';
 import { Field, inputClass, primaryBtnClass } from '@/components/ui';

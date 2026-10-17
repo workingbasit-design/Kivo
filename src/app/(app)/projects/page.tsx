@@ -5,7 +5,7 @@ import { t } from "@/lib/i18n";
 import { localeMoneyTag } from "@/lib/utils";
 import { formatMoney, centsToDollars } from "@/lib/money";
 import { PageHeader, Card, EmptyState } from "@/components/ui";
-import { FolderKanban, Plus, ArrowRight } from "lucide-react";
+import { FolderKanban, Plus, ArrowRight } from '@/components/icons';
 import Link from "next/link";
 
 const STATUS_TONE: Record<string, string> = {

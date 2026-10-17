@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { Calendar, FileText, MessageSquare, ReceiptText, type LucideIcon } from 'lucide-react';
+import { Calendar, FileText, MessageSquare, ReceiptText, type LucideIcon } from '@/components/icons';
 import EveryJobLogo from '@/components/EveryJobLogo';
 import styles from './HeroVisual.module.css';
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Download } from 'lucide-react';
+import { Download } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { escapeCsvCell } from '@/lib/costing';
 import { formatMoney } from '@/lib/money';

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { Webhook, Plus, Pause, Play, Trash2, Copy, Check } from 'lucide-react';
+import { Webhook, Plus, Pause, Play, Trash2, Copy, Check } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import {

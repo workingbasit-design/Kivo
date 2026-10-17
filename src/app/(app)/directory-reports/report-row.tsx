@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Check, X } from 'lucide-react';
+import { Check, X } from '@/components/icons';
 import { toast } from 'sonner';
 import { updateReportStatus } from '@/app/actions/directory';
 import { useResolvedT } from '@/hooks/useResolvedLocale';

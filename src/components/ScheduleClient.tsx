@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {
   Calendar as CalendarIcon, Clock, MapPin, GripVertical,
   User as UserIcon, Trash2, Edit3, Search, ListPlus, CheckCircle2
-} from 'lucide-react';
+} from '@/components/icons';
 import { toast } from 'sonner';
 import { updateJobStatus, deleteJob, seedSampleJobs, updateJobSchedule } from '@/app/actions/jobs';
 import { validNextStatuses, JOB_STATUSES } from '@/lib/job-status';

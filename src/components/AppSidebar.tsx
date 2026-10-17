@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Bell, Bot, LogOut, ChevronDown, SlidersHorizontal } from 'lucide-react';
+import { Bell, Bot, LogOut, ChevronDown, SlidersHorizontal } from '@/components/icons';
 import EveryJobLogo from '@/components/EveryJobLogo';
 import PaletteTrigger from '@/components/PaletteTrigger';
 import CopilotTriggerButton from '@/components/CopilotTriggerButton';
@@ -63,7 +63,7 @@ export default function AppSidebar({
         aria-current={active ? 'page' : undefined}
         className={`ej-icon-hover flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70 ${
           active
-            ? 'bg-lime text-ink shadow-sm'
+            ? 'bg-hivis text-asphalt shadow-sm'
             : 'text-white/75 hover:bg-white/10 hover:text-white'
         }`}
       >
@@ -120,7 +120,7 @@ export default function AppSidebar({
             {unreadCount > 0 && (
               <span
                 aria-hidden
-                className="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-lime px-1 text-[10px] font-bold text-ink"
+                className="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-signal px-1 text-[10px] font-bold text-white"
               >
                 {unreadCount > 99 ? '99+' : unreadCount}
               </span>
@@ -198,7 +198,7 @@ export default function AppSidebar({
       <div className="p-4 border-t border-white/10 mt-auto space-y-3">
         <form action={logout}>
           <button className="ej-icon-hover flex items-center gap-3 px-3 py-2.5 text-white/75 hover:bg-white/10 hover:text-white transition-colors rounded-xl w-full text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70">
-            <div className="w-9 h-9 rounded-full bg-lime text-ink flex items-center justify-center text-sm font-bold shrink-0">
+            <div className="w-9 h-9 rounded-full bg-hivis text-asphalt flex items-center justify-center text-sm font-bold shrink-0">
               {(user.name || user.email).charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">

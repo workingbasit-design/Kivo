@@ -5,7 +5,7 @@ import { getAgentKeys } from '@/app/actions/customer-agent-keys';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { Field, inputClass, primaryBtnClass } from '@/components/ui';
-import { LogOut, Save, MapPin, Phone, Mail } from 'lucide-react';
+import { LogOut, Save, MapPin, Phone, Mail } from '@/components/icons';
 import AgentKeysSection from './agent-keys-client';
 
 export default async function CustomerProfilePage() {

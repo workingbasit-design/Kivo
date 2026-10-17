@@ -1,6 +1,6 @@
 import { headers } from 'next/headers';
 import Logo from '@/components/Logo';
-import { FileText, PenLine } from 'lucide-react';
+import { FileText, PenLine } from '@/components/icons';
 import {
   resolveSignatureRequest,
   recordView,

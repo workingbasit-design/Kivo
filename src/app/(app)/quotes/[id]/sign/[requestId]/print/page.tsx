@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { PenLine } from 'lucide-react';
+import { PenLine } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { Card, PageHeader } from '@/components/ui';

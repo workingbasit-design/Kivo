@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ExternalLink, Check, X } from 'lucide-react';
+import { ExternalLink, Check, X } from '@/components/icons';
 import { toast } from 'sonner';
 import { approveDirectoryClaim, rejectDirectoryClaim } from '@/app/actions/directory-profile';
 import { useResolvedT } from '@/hooks/useResolvedLocale';

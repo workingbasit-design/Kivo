@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Search } from "lucide-react";
+import { Search } from '@/components/icons';
 import { cn } from "@/lib/utils";
 
 /** Button that opens the global command palette (⌘K / Ctrl+K). */

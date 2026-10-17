@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useActionState, useEffect, useRef, useState } from 'react';
-import { Plus, Pencil, Trash2, AlertCircle, Check } from 'lucide-react';
+import { Plus, Pencil, Trash2, AlertCircle, Check } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import {

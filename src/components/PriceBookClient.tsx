@@ -2,13 +2,15 @@
 
 import React, { useState, useTransition } from 'react';
 import Link from 'next/link';
-import { Clock, Plus, Search, Tag, Trash2, ListPlus, Briefcase, Pencil } from 'lucide-react';
+import { Clock, Plus, Search, Tag, Trash2, ListPlus, Briefcase, Pencil } from '@/components/icons';
 import { toast } from 'sonner';
 import { createService, updateService, deleteService, seedDefaultServices } from '@/app/actions/services';
 import { currencySymbol, formatMoney } from '@/lib/money';
 import { t, type Locale } from '@/lib/i18n';
 import { Dialog, Field, inputClass, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import TradeIcon from '@/components/TradeIcon';
+import { TRADE_KEYS, tradeKeyForService, type TradeKey } from '@/lib/trade-icons';
 
 type Service = {
   id: string;
@@ -16,6 +18,21 @@ type Service = {
   price: number;
   durationMin: number | null;
   description: string | null;
+  iconKey: string | null;
+};
+
+/** i18n key per trade for the icon picker labels. */
+const TRADE_LABEL_KEYS: Record<TradeKey, string> = {
+  cleaning: 't10misc.pricebook.tradeCleaning',
+  gutters: 't10misc.pricebook.tradeGutters',
+  furnace: 't10misc.pricebook.tradeFurnace',
+  windows: 't10misc.pricebook.tradeWindows',
+  plumbing: 't10misc.pricebook.tradePlumbing',
+  electrical: 't10misc.pricebook.tradeElectrical',
+  landscaping: 't10misc.pricebook.tradeLandscaping',
+  snow: 't10misc.pricebook.tradeSnow',
+  painting: 't10misc.pricebook.tradePainting',
+  general: 't10misc.pricebook.tradeGeneral',
 };
 
 export default function PriceBookClient({
@@ -36,6 +53,7 @@ export default function PriceBookClient({
   const [price, setPrice] = useState('');
   const [durationMin, setDurationMin] = useState('');
   const [description, setDescription] = useState('');
+  const [iconKey, setIconKey] = useState(''); // '' = auto-detect from name
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
@@ -53,6 +71,7 @@ export default function PriceBookClient({
     setPrice('');
     setDurationMin('');
     setDescription('');
+    setIconKey('');
     setError(null);
     setIsModalOpen(true);
   };
@@ -63,6 +82,7 @@ export default function PriceBookClient({
     setPrice(String(service.price));
     setDurationMin(service.durationMin != null ? String(service.durationMin) : '');
     setDescription(service.description ?? '');
+    setIconKey(service.iconKey ?? '');
     setError(null);
     setIsModalOpen(true);
   };
@@ -76,6 +96,7 @@ export default function PriceBookClient({
     fd.append('price', price);
     fd.append('durationMin', durationMin);
     fd.append('description', description);
+    fd.append('iconKey', iconKey);
 
     startTransition(async () => {
       setError(null);
@@ -91,6 +112,7 @@ export default function PriceBookClient({
       setPrice('');
       setDurationMin('');
       setDescription('');
+      setIconKey('');
       setEditingId(null);
       setIsModalOpen(false);
       toast.success(tr(editingId ? 't10misc.pricebook.updated' : 't10misc.pricebook.added'));
@@ -196,9 +218,7 @@ export default function PriceBookClient({
               className="p-5 border border-zinc-200 rounded-2xl hover:border-smoke hover:shadow-md transition-all group relative bg-white"
             >
               <div className="flex justify-between items-start mb-3">
-                <div className="w-10 h-10 rounded-xl bg-smoke text-ink flex items-center justify-center">
-                  <Tag size={18} />
-                </div>
+                <TradeIcon trade={tradeKeyForService(service)} size={24} className="text-zinc-700" />
 
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-lg text-zinc-900">
@@ -353,6 +373,37 @@ export default function PriceBookClient({
               onChange={(e) => setDescription(e.target.value)}
               className={inputClass}
             />
+          </Field>
+
+          {/* Part B: trade icon picker. Auto (blank) detects from the name. */}
+          <Field label={tr('t10misc.pricebook.tradeIconLabel')} hint={tr('t10misc.pricebook.tradeIconHint')}>
+            <div className="grid grid-cols-6 gap-2" role="radiogroup" aria-label={tr('t10misc.pricebook.tradeIconLabel')}>
+              <button
+                type="button"
+                role="radio"
+                aria-checked={iconKey === ''}
+                title={tr('t10misc.pricebook.tradeIconAuto')}
+                onClick={() => setIconKey('')}
+                className={`min-h-[52px] rounded-xl border flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold transition-colors ${iconKey === '' ? 'border-ink bg-ink text-white' : 'border-zinc-200 text-zinc-500 hover:bg-zinc-50'}`}
+              >
+                <span className="text-sm font-bold">A</span>
+                {tr('t10misc.pricebook.tradeIconAuto')}
+              </button>
+              {TRADE_KEYS.map((key) => (
+                <button
+                  key={key}
+                  type="button"
+                  role="radio"
+                  aria-checked={iconKey === key}
+                  title={tr(TRADE_LABEL_KEYS[key])}
+                  onClick={() => setIconKey(key)}
+                  className={`min-h-[52px] rounded-xl border flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold transition-colors ${iconKey === key ? 'border-ink bg-ink text-white' : 'border-zinc-200 text-zinc-500 hover:bg-zinc-50'}`}
+                >
+                  <TradeIcon trade={key} size={20} />
+                  <span className="max-w-full truncate px-0.5">{tr(TRADE_LABEL_KEYS[key])}</span>
+                </button>
+              ))}
+            </div>
           </Field>
 
           <div className="pt-2 flex flex-col sm:flex-row gap-2">

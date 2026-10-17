@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from 'react';
 import Link from 'next/link';
-import { AlertCircle, CheckCircle2, Clock, MessageSquareQuote, Send } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Clock, MessageSquareQuote, Send } from '@/components/icons';
 import { submitQuoteRequest, type DirectoryActionResult } from '@/app/actions/directory';
 import { HONEYPOT_FIELD, FORM_STARTED_FIELD } from '@/lib/bot-check';
 import { useResolvedT } from '@/hooks/useResolvedLocale';

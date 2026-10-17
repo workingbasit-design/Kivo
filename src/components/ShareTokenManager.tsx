@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useActionState, useState } from 'react';
-import { AlertCircle, CalendarClock, Link2, RefreshCw, ShieldOff } from 'lucide-react';
+import { AlertCircle, CalendarClock, Link2, RefreshCw, ShieldOff } from '@/components/icons';
 import CopyButton from '@/components/CopyButton';
 import { inputClass, secondaryBtnClass } from '@/components/ui';
 import type { ActionResult } from '@/app/actions/invoices';

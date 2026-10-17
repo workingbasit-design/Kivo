@@ -7,6 +7,7 @@ import { requireAuth } from '@/lib/auth';
 import { serviceSchema } from '@/lib/validations';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { dollarsToCents } from '@/lib/money';
+import { TRADE_KEYS } from '@/lib/trade-icons';
 
 export type ServiceResult = { error?: string; ok?: boolean };
 
@@ -25,6 +26,14 @@ const serviceFieldsSchema = serviceSchema.extend({
       .optional()
   ),
   description: z.string().trim().max(500, 'Description is too long.').optional().default(''),
+  // Part B: owner-chosen trade icon. Blank = auto-detect from the name.
+  iconKey: z.preprocess(
+    (v) => {
+      const t = String(v ?? '').trim();
+      return t === '' ? undefined : t;
+    },
+    z.enum(TRADE_KEYS).optional()
+  ),
 });
 
 type ServiceFields = z.infer<typeof serviceFieldsSchema>;
@@ -59,6 +68,7 @@ export async function createService(formData: FormData): Promise<ServiceResult> 
     price: formData.get('price'),
     durationMin: formData.get('durationMin'),
     description: formData.get('description'),
+    iconKey: formData.get('iconKey'),
   });
   if (error || !data) return { error: error ?? 'Invalid service details.' };
 
@@ -79,6 +89,7 @@ export async function createService(formData: FormData): Promise<ServiceResult> 
       priceCents: dollarsToCents(data.price) ?? BigInt(0),
       durationMin: data.durationMin ?? null,
       description: nullIfBlank(data.description),
+      iconKey: data.iconKey ?? null,
       businessId,
     },
   });
@@ -100,6 +111,7 @@ export async function updateService(id: string, formData: FormData): Promise<Ser
     price: formData.get('price'),
     durationMin: formData.get('durationMin'),
     description: formData.get('description'),
+    iconKey: formData.get('iconKey'),
   });
   if (error || !data) return { error: error ?? 'Invalid service details.' };
 
@@ -110,6 +122,7 @@ export async function updateService(id: string, formData: FormData): Promise<Ser
       priceCents: dollarsToCents(data.price) ?? BigInt(0),
       durationMin: data.durationMin ?? null,
       description: nullIfBlank(data.description),
+      iconKey: data.iconKey ?? null,
     },
   });
   revalidatePath('/pricebook');

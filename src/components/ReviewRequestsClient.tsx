@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ArrowLeft, Star } from 'lucide-react';
+import { ArrowLeft, Star } from '@/components/icons';
 import ReviewLinkButton from '@/components/ReviewLinkButton';
 import { Card } from '@/components/ui';
 import { t, type Locale } from '@/lib/i18n';

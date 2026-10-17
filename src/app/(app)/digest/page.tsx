@@ -16,7 +16,7 @@ import {
   CheckCircle2,
   MapPin,
   User,
-} from "lucide-react";
+} from '@/components/icons';
 import Link from "next/link";
 
 function greetingKey(dayPart: string) {

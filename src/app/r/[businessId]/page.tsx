@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { BadgeCheck, ShieldCheck } from 'lucide-react';
+import { BadgeCheck, ShieldCheck } from '@/components/icons';
 import EveryJobLogo from '@/components/EveryJobLogo';
 import { prisma } from '@/lib/prisma';
 import { getLocale } from '@/lib/i18n/server';

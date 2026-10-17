@@ -1,6 +1,6 @@
 'use client';
 
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw } from '@/components/icons';
 
 /** Client-only "try again" button for the offline fallback page. */
 export default function TryAgainButton() {

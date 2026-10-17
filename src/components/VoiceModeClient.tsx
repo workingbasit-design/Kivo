@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Mic, Play, Check, StickyNote, Wrench } from "lucide-react";
+import { Mic, Play, Check, StickyNote, Wrench } from '@/components/icons';
 import { updateJobStatus, addJobNote } from "@/app/actions/jobs";
 import {
   parseVoiceCommand,

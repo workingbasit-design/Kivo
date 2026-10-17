@@ -2,7 +2,7 @@
 
 import React, { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, ArrowLeft, Ban, RotateCcw, Trash2, AlertCircle } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Ban, RotateCcw, Trash2, AlertCircle } from '@/components/icons';
 import { toast } from 'sonner';
 import { updateJobStatus, deleteJob } from '@/app/actions/jobs';
 import {

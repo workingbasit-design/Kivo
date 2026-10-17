@@ -14,7 +14,7 @@ import {
   ChevronRight,
   Lightbulb,
   Database,
-} from "lucide-react";
+} from '@/components/icons';
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getInsights } from "@/lib/insights";

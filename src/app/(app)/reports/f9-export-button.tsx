@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Download, Loader2 } from 'lucide-react';
+import { Download, Loader2 } from '@/components/icons';
 import { exportF9Csv } from '@/app/actions/reports-f9';
 
 export type F9ReportKey = 'revenue' | 'aging' | 'profit' | 'tax' | 'expenses' | 'leads';

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Check, Copy } from 'lucide-react';
+import { Check, Copy } from '@/components/icons';
 import { cn } from '@/lib/utils';
 
 /** Copy-to-clipboard button. Never sends anything - just copies text. */

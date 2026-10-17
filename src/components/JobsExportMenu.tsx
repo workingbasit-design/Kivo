@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { EllipsisVertical, Download } from 'lucide-react';
+import { EllipsisVertical, Download } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { useExportDownloads, type ExportColumn, type ExportRow } from '@/components/ExportButtons';
 import { cn } from '@/lib/utils';

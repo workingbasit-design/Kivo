@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { CreditCard, Link2, PlugZap } from 'lucide-react';
+import { CreditCard, Link2, PlugZap } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
 import { Card, primaryBtnClass, secondaryBtnClass } from '@/components/ui';

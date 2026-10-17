@@ -11,7 +11,7 @@ import {
   detachJobFromProject,
 } from '@/app/actions/projects';
 import { inputClass, secondaryBtnClass, ghostBtnClass } from '@/components/ui';
-import { Plus, Trash2, X, Check } from 'lucide-react';
+import { Plus, Trash2, X, Check } from '@/components/icons';
 import Link from 'next/link';
 
 export interface PhaseJob {

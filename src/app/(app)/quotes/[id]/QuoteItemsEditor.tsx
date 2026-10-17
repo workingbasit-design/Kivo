@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState, useEffect, useRef, useState } from 'react';
-import { Pencil } from 'lucide-react';
+import { Pencil } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import { Card, secondaryBtnClass, primaryBtnClass } from '@/components/ui';

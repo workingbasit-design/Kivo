@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle } from '@/components/icons';
 import { waLink } from '@/lib/whatsapp';
 
 /**

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { BadgeCheck, Clock3, EyeOff, ExternalLink, Store } from 'lucide-react';
+import { BadgeCheck, Clock3, EyeOff, ExternalLink, Store } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { PageHeader, Card, EmptyState } from '@/components/ui';

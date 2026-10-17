@@ -2,7 +2,7 @@
 
 import React, { useActionState, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { AlertCircle, Receipt } from 'lucide-react';
+import { AlertCircle, Receipt } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import { createInvoice, type ActionResult } from '@/app/actions/invoices';

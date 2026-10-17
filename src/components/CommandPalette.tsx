@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Plus, CornerDownLeft, X, Sparkles } from "lucide-react";
+import { Search, Plus, CornerDownLeft, X, Sparkles } from '@/components/icons';
 import { navSections } from "@/components/nav-sections";
 import { t, type Locale } from "@/lib/i18n";
 import { parseCommand, commandLabel } from "@/lib/cmdbar";

@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { MoreVertical, Play, Check, Pencil, Trash2, FileText } from 'lucide-react';
+import { MoreVertical, Play, Check, Pencil, Trash2, FileText } from '@/components/icons';
 import { updateJobStatus } from '@/app/actions/jobs';
 import { t } from '@/lib/i18n';
 

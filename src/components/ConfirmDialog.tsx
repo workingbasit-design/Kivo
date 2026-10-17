@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, type ReactNode } from 'react';
-import { X } from 'lucide-react';
+import { X } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { dangerBtnClass, secondaryBtnClass } from '@/components/ui';
 

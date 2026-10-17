@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useTransition } from 'react';
-import { Play, Square, AlertCircle, Timer } from 'lucide-react';
+import { Play, Square, AlertCircle, Timer } from '@/components/icons';
 import { clockIn, clockOut } from '@/app/actions/timesheets';
 import { primaryBtnClass, secondaryBtnClass, inputClass } from '@/components/ui';
 import { useResolvedT } from '@/hooks/useResolvedLocale';

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { CreditCard } from 'lucide-react';
+import { CreditCard } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
 

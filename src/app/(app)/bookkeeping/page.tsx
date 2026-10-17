@@ -5,7 +5,7 @@ import { t, type Locale } from "@/lib/i18n";
 import { localeMoneyTag } from "@/lib/utils";
 import { formatMoney } from "@/lib/money";
 import { PageHeader, Card, StatCard, EmptyState } from "@/components/ui";
-import { Wallet, TrendingUp, TrendingDown, PiggyBank, Receipt } from "lucide-react";
+import { Wallet, TrendingUp, TrendingDown, PiggyBank, Receipt } from '@/components/icons';
 import Link from "next/link";
 
 function catLabel(locale: Locale, category: string): string {

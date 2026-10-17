@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Check, Copy, Link2, PenLine, CalendarDays, Type } from 'lucide-react';
+import { Check, Copy, Link2, PenLine, CalendarDays, Type } from '@/components/icons';
 import { createSignRequest } from '@/app/actions/esign';
 import type { SignField } from '@/lib/esign';
 import { primaryBtnClass, secondaryBtnClass } from '@/components/ui';

@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { MapPin, Phone } from 'lucide-react';
+import { MapPin, Phone } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
 import EveryJobLogo from '@/components/EveryJobLogo';
 import BookingForm, { type BookingSlotStrings } from '@/components/BookingForm';

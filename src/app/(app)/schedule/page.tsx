@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { CalendarDays, AlertTriangle } from 'lucide-react';
+import { CalendarDays, AlertTriangle } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card, primaryBtnClass } from '@/components/ui';

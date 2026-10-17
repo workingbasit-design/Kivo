@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronDown, Check } from 'lucide-react';
+import { ChevronDown, Check } from '@/components/icons';
 
 /**
  * MorphSelect - the trigger button physically expands into the dropdown

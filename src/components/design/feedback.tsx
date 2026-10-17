@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { AlertCircle, CheckCircle2, Info, AlertTriangle, X } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Info, AlertTriangle, X } from '@/components/icons';
 import { cn } from '@/lib/utils';
 
 export type BannerTone = 'info' | 'success' | 'warning' | 'error';

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Award, Download, Languages, ListChecks, ShieldCheck, Users } from 'lucide-react';
+import { Award, Download, Languages, ListChecks, ShieldCheck, Users } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { PageHeader, Card, secondaryBtnClass } from '@/components/ui';
@@ -18,6 +18,7 @@ import { parseSettings } from '@/lib/notifications';
 import { EXPORT_TYPES } from '@/lib/export';
 import SettingsSearch from '@/components/SettingsSearch';
 import DemoSwitchCard from '@/components/DemoSwitchCard';
+import ThemePicker from '@/components/ThemePicker';
 
 export const metadata = { title: 'Settings | EveryJob' };
 
@@ -325,7 +326,7 @@ export default async function SettingsPage() {
       <section
         id="settings-account"
         data-settings-section
-        data-keywords={kw(groups[5].title, groups[5].desc, 'profile google security 2fa two-factor sessions password')}
+        data-keywords={kw(groups[5].title, groups[5].desc, 'profile google security 2fa two-factor sessions password appearance dark mode theme')}
         className="scroll-mt-24 space-y-4"
       >
         <div>
@@ -364,6 +365,18 @@ export default async function SettingsPage() {
           <Link href="/settings/security" className={secondaryBtnClass}>
             {tr('t10misc.settingsMain.manageSecurity')}
           </Link>
+        </Card>
+        {/* Part B: appearance (light/dark/system). */}
+        <Card className="p-5 md:p-6">
+          <h2 className="text-sm font-bold text-zinc-900 mb-1">{tr('t10misc.settingsMain.appearanceTitle')}</h2>
+          <p className="text-xs text-zinc-500 mb-4">{tr('t10misc.settingsMain.appearanceDesc')}</p>
+          <ThemePicker
+            labels={{
+              light: tr('t10misc.settingsMain.appearanceLight'),
+              dark: tr('t10misc.settingsMain.appearanceDark'),
+              system: tr('t10misc.settingsMain.appearanceSystem'),
+            }}
+          />
         </Card>
         <Card className="p-5 md:p-6">
           <h2 className="text-sm font-bold text-zinc-900 mb-1">{t(locale, 'integrations.title')}</h2>

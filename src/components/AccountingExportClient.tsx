@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Download } from 'lucide-react';
+import { Download } from '@/components/icons';
 import { exportAccountingCSV } from '@/app/actions/accounting-export';
 
 type Format = 'quickbooks' | 'xero' | 'wave';

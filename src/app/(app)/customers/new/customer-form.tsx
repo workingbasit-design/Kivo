@@ -2,7 +2,7 @@
 
 import React, { useActionState } from 'react';
 import Link from 'next/link';
-import { AlertCircle, ArrowLeft, UserPlus } from 'lucide-react';
+import { AlertCircle, ArrowLeft, UserPlus } from '@/components/icons';
 import { createCustomer } from '@/app/actions/customers';
 import { PageHeader, Card, Field, inputClass, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
 import AddressAutocomplete from '@/components/AddressAutocomplete';

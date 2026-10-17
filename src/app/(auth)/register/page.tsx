@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useActionState, useState } from 'react';
-import { BadgeCheck, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { BadgeCheck, AlertCircle, CheckCircle2 } from '@/components/icons';
 import { register } from '@/app/actions/auth';
 import { useT } from '@/components/LanguageToggle';
 import { Field, inputClass, primaryBtnClass } from '@/components/ui';

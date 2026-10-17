@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Sparkles, Play, Trash2, Loader2, Save } from 'lucide-react';
+import { Sparkles, Play, Trash2, Loader2, Save } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
 import {

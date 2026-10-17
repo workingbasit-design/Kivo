@@ -10,7 +10,7 @@ import {
   FileSpreadsheet,
   Loader2,
   AlertTriangle,
-} from 'lucide-react';
+} from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { Card, Dialog, Skeleton, secondaryBtnClass, dangerBtnClass } from '@/components/ui';
 import {

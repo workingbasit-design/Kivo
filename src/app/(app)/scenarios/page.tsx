@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FlaskConical } from "lucide-react";
+import { FlaskConical } from '@/components/icons';
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { computeScenarios, getScenarioData } from "@/lib/scenarios";

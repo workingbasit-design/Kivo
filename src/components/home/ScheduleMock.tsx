@@ -1,4 +1,4 @@
-import { Check, Share2 } from 'lucide-react';
+import { Check, Share2 } from '@/components/icons';
 
 export interface ScheduleMockStrings {
   title: string;

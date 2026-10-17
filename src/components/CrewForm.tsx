@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { Plus, X, Trash2 } from 'lucide-react';
+import { Plus, X, Trash2 } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { Field, inputClass, primaryBtnClass } from '@/components/ui';
 import { updateCrew, deleteCrew, addMember, removeMember, createCrew } from '@/app/actions/crews';

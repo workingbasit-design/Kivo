@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState, useEffect } from 'react';
-import { AlertCircle, CheckCircle2, UserRound } from 'lucide-react';
+import { AlertCircle, CheckCircle2, UserRound } from '@/components/icons';
 import { toast } from 'sonner';
 import { updateProfile } from '@/app/actions/auth';
 import { t, type Locale } from '@/lib/i18n';

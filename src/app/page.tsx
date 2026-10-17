@@ -31,7 +31,7 @@ import {
   UserCog,
   Users,
   Wallet,
-} from 'lucide-react';
+} from '@/components/icons';
 
 export const metadata: Metadata = {
   title: 'EveryJob - Every job. One place.',

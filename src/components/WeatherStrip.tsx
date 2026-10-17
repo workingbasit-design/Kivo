@@ -8,7 +8,7 @@ import {
   CloudSnow,
   CloudLightning,
   Umbrella,
-} from 'lucide-react';
+} from '@/components/icons';
 import type { DailyWeather } from '@/lib/weather';
 import { weatherLabel } from '@/lib/weather';
 import { cn } from '@/lib/utils';

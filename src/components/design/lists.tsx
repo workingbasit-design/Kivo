@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ChevronRight, MoreVertical } from 'lucide-react';
+import { ChevronRight, MoreVertical } from '@/components/icons';
 import { cn } from '@/lib/utils';
 
 export interface ListRowProps {

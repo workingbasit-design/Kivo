@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
-import { Clock, MapPin, Phone, User, ChevronRight } from 'lucide-react';
+import { Clock, MapPin, Phone, User, ChevronRight } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { StatusBadge } from '@/components/ui';
 import { formatMoney } from '@/lib/money';

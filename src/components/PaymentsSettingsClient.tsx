@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState, useEffect, useState, useTransition } from 'react';
-import { CreditCard, Unplug, ShieldCheck, ExternalLink, Receipt } from 'lucide-react';
+import { CreditCard, Unplug, ShieldCheck, ExternalLink, Receipt } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import { Card, dangerBtnClass, primaryBtnClass } from '@/components/ui';

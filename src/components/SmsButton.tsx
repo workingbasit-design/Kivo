@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { MessageSquareText } from 'lucide-react';
+import { MessageSquareText } from '@/components/icons';
 import { smsLink } from '@/lib/sms';
 
 /**

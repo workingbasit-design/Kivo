@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AlertCircle, MessageCircle, PhoneMissed, Smartphone } from 'lucide-react';
+import { AlertCircle, MessageCircle, PhoneMissed, Smartphone } from '@/components/icons';
 import { draftMissedCall } from '@/app/actions/reminders';
 import CopyButton from '@/components/CopyButton';
 import WhatsAppButton from '@/components/WhatsAppButton';

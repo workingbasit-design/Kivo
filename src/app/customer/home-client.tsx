@@ -16,7 +16,7 @@ import {
   Bug,
   SearchX,
   ArrowRight,
-} from 'lucide-react';
+} from '@/components/icons';
 import { toggleSavePro } from '@/app/actions/customer-pros';
 import { t, type Locale } from '@/lib/i18n';
 import ProCard, { type ProCardData } from '@/components/ProCard';

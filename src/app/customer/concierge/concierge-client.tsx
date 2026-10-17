@@ -14,7 +14,7 @@ import {
   User,
   Phone,
   MapPin,
-} from 'lucide-react';
+} from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import {
   matchConciergePros,

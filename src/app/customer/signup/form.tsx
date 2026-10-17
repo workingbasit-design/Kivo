@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useActionState, useState } from 'react';
-import { UserPlus, AlertCircle, Search } from 'lucide-react';
+import { UserPlus, AlertCircle, Search } from '@/components/icons';
 import { customerSignup } from '@/app/actions/customer-auth';
 import { t, type Locale } from '@/lib/i18n';
 import { Field, inputClass, primaryBtnClass } from '@/components/ui';

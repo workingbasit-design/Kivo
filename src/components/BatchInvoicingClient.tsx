@@ -2,7 +2,7 @@
 
 import { useState, useTransition, type CSSProperties } from 'react';
 import Link from 'next/link';
-import { FileText, AlertTriangle, CheckCircle2, Receipt } from 'lucide-react';
+import { FileText, AlertTriangle, CheckCircle2, Receipt } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import { Card, EmptyState, primaryBtnClass, secondaryBtnClass } from '@/components/ui';

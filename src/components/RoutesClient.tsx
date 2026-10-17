@@ -5,7 +5,7 @@ import {
   Route as RouteIcon, ArrowUp, ArrowDown, Play, X, ChevronLeft, ChevronRight,
   CheckCircle2, MapPin, Clock, RotateCcw, AlertCircle, Car, Loader2,
   MapPinOff, Info, Navigation,
-} from 'lucide-react';
+} from '@/components/icons';
 import { toast } from 'sonner';
 import { Card, StatusBadge, primaryBtnClass, secondaryBtnClass, inputClass } from '@/components/ui';
 import { hasJobTime, formatJobTime, cn, jobDisplayStatus } from '@/lib/utils';

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useActionState, useEffect, useRef, useState, useTransition } from 'react';
-import { Receipt, Trash2, AlertCircle } from 'lucide-react';
+import { Receipt, Trash2, AlertCircle } from '@/components/icons';
 import { toast } from 'sonner';
 import {
   addExpense,

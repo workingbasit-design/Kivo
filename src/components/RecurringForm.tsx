@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useActionState, useEffect, useRef, useState } from 'react';
-import { AlertCircle, Save } from 'lucide-react';
+import { AlertCircle, Save } from '@/components/icons';
 import { toast } from 'sonner';
 import { Field, inputClass, primaryBtnClass } from '@/components/ui';
 import { toISODateLocal } from '@/lib/utils';

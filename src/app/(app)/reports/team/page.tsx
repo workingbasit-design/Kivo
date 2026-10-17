@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Users, Clock3, Briefcase, DollarSign, Trophy } from 'lucide-react';
+import { ArrowLeft, Users, Clock3, Briefcase, DollarSign, Trophy } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';

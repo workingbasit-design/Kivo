@@ -6,7 +6,7 @@
  * alternative to blocking agents (Amazon) or letting them run wild.
  */
 import Link from 'next/link';
-import { ArrowRight, Bot, FileJson, MousePointerClick, Search, ShieldCheck, UserCheck } from 'lucide-react';
+import { ArrowRight, Bot, FileJson, MousePointerClick, Search, ShieldCheck, UserCheck } from '@/components/icons';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import Logo from '@/components/Logo';

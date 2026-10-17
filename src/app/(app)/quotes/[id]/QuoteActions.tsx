@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useActionState, useEffect, useRef, useState } from 'react';
-import { Send, CheckCircle2, XCircle, Undo2, Trash2, Briefcase, AlertCircle, Mail } from 'lucide-react';
+import { Send, CheckCircle2, XCircle, Undo2, Trash2, Briefcase, AlertCircle, Mail } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import {

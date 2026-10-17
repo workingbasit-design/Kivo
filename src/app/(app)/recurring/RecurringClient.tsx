@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Plus, Repeat, Clock, MapPin } from 'lucide-react';
+import { Plus, Repeat, Clock, MapPin } from '@/components/icons';
 import { PageHeader, Card, EmptyState, Badge, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
 import { formatDateShort, formatJobTime, cn } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';

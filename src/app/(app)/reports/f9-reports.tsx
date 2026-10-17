@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
 import { fetchF9Data, type F9Data } from '@/lib/reports-f9-data';
 import { formatCents } from '@/lib/money';

@@ -10,7 +10,7 @@ import {
   Unplug,
   ShieldCheck,
   Clock,
-} from 'lucide-react';
+} from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import { Card, Field, inputClass, primaryBtnClass, secondaryBtnClass } from '@/components/ui';

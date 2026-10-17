@@ -1,14 +1,15 @@
 import {
-  LayoutDashboard, Briefcase, FileText, Wallet,
+  Sun, FileText, Wallet,
   ClipboardList, Tag, Star, PieChart, Sparkles,
   UserPlus, Megaphone, Repeat, Route, Timer,
   UserCog, Import, ClipboardCheck, Wrench, Package,
-  Siren, Gauge, Mic, Calculator, Calendar, MapPin, Users, Bell, Settings,
+  Siren, Gauge, Mic, Calculator, CalendarBlank, MapPin, Users, Bell, Settings,
   Sunrise,
   FolderKanban,
   Receipt,
   Palette,
-} from 'lucide-react';
+  Toolbox,
+} from '@/components/icons';
 import type { NavIcon } from './animated-icons/nav-icon';
 
 export interface NavItem {
@@ -33,12 +34,12 @@ export const navSections: NavSection[] = [
   {
     labelKey: 'nav.sections.work',
     items: [
-      { nameKey: 'nav.dashboard', href: '/dashboard', icon: LayoutDashboard },
+      { nameKey: 'nav.dashboard', href: '/dashboard', icon: Sun },
       { nameKey: 'nav.attention', href: '/attention', icon: Siren },
       { nameKey: 'nav.digest', href: '/digest', icon: Sunrise },
       { nameKey: 'nav.voice', href: '/voice', icon: Mic },
-      { nameKey: 'nav.schedule', href: '/schedule', icon: Calendar },
-      { nameKey: 'nav.jobs', href: '/jobs', icon: Briefcase },
+      { nameKey: 'nav.schedule', href: '/schedule', icon: CalendarBlank },
+      { nameKey: 'nav.jobs', href: '/jobs', icon: Toolbox },
       { nameKey: 'nav.projects', href: '/projects', icon: FolderKanban },
       { nameKey: 'nav.crews', href: '/crews', icon: Users },
       { nameKey: 'nav.dispatch', href: '/dispatch', icon: ClipboardCheck },
@@ -105,8 +106,8 @@ export const navBadgeKeys: Record<string, string> = {
 
 /** Primary thumb-reachable tabs for the mobile bottom bar (More is 5th, rendered separately). */
 export const bottomTabs: NavItem[] = [
-  { nameKey: 'nav.dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { nameKey: 'nav.schedule', href: '/schedule', icon: Calendar },
-  { nameKey: 'nav.jobs', href: '/jobs', icon: Briefcase },
+  { nameKey: 'nav.dashboard', href: '/dashboard', icon: Sun },
+  { nameKey: 'nav.schedule', href: '/schedule', icon: CalendarBlank },
+  { nameKey: 'nav.jobs', href: '/jobs', icon: Toolbox },
   { nameKey: 'nav.money', href: '/money', icon: Wallet },
 ];

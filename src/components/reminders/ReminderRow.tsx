@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AlertCircle, MessageCircle, Mail, Smartphone } from 'lucide-react';
+import { AlertCircle, MessageCircle, Mail, Smartphone } from '@/components/icons';
 import { draftJobReminder, draftInvoiceFollowup, type DraftResult } from '@/app/actions/reminders';
 import CopyButton from '@/components/CopyButton';
 import WhatsAppButton from '@/components/WhatsAppButton';

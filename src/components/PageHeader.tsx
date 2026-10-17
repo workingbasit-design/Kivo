@@ -5,7 +5,7 @@
  * ({ title, actions, backHref }).
  */
 import Link from 'next/link';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft } from '@/components/icons';
 import { PageHeader as UiPageHeader } from './ui';
 
 export default function PageHeader({
