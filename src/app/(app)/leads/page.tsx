@@ -32,6 +32,7 @@ export default async function LeadsPage() {
     details: l.details,
     source: l.source,
     status: l.status,
+    declineReason: l.declineReason,
     createdAt: l.createdAt.toISOString(),
   }));
 

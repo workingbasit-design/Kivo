@@ -105,7 +105,14 @@ export async function updateLeadStatus(
   });
   if (!existing) return { error: 'Lead not found.' };
 
-  await prisma.lead.update({ where: { id, businessId }, data: { status } });
+  // E5: capture the decline reason when a lead is declined.
+  const declineReason =
+    status === 'DECLINED' ? nullIfEmpty(String(formData.get('declineReason') ?? '')) : undefined;
+
+  await prisma.lead.update({
+    where: { id, businessId },
+    data: declineReason === undefined ? { status } : { status, declineReason },
+  });
 
   revalidatePath('/leads');
   return { ok: true };

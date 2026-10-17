@@ -614,6 +614,7 @@ model Lead {
   details    String?
   status     String // "NEW", "CONTACTED", "CONVERTED", "EXPIRED"
   source     String? // e.g., "WhatsApp", "Phone", "Website"
+  declineReason String? // E5: reason captured when a lead is declined
   businessId String
   business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
   expiresAt  DateTime? // directory quote-request leads expire after 30 days if not contacted

@@ -56,6 +56,7 @@ export type LeadItem = {
   details: string | null;
   source: string | null;
   status: string;
+  declineReason: string | null; // E5: reason captured on decline
   createdAt: string; // ISO string (serialized across the RSC boundary)
 };
 
@@ -168,23 +169,97 @@ function DeleteButton({ leadId, locale }: { leadId: string; locale: Locale }) {
   );
 }
 
+import { BottomSheet } from '@/components/design/overlays';
+
+const DECLINE_REASONS = [
+  { value: 'tooFar', labelKey: 't10money.leadDeclineReasonTooFar' },
+  { value: 'wrongWork', labelKey: 't10money.leadDeclineReasonWrongWork' },
+  { value: 'priceLow', labelKey: 't10money.leadDeclineReasonPriceLow' },
+  { value: 'booked', labelKey: 't10money.leadDeclineReasonBooked' },
+  { value: 'noResponse', labelKey: 't10money.leadDeclineReasonNoResponse' },
+  { value: 'other', labelKey: 't10money.leadDeclineReasonOther' },
+];
+
 function DeclineButton({ lead, locale }: { lead: LeadItem; locale: Locale }) {
   const [state, formAction, isPending] = useActionState(updateLeadStatus, {});
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState('tooFar');
+  const [notes, setNotes] = useState('');
   useResultToast(state, {
     success: t(locale, 't10money.leadStatusUpdated'),
   });
+
+  // E5: decline with reason captured. The reason value is stored on the lead.
+  const declineReasonText = () => {
+    const reasonLabel = t(locale, DECLINE_REASONS.find((r) => r.value === reason)?.labelKey ?? 't10money.leadDeclineReasonOther');
+    return notes.trim() ? `${reasonLabel}: ${notes.trim()}` : reasonLabel;
+  };
+
   return (
-    <form action={formAction}>
-      <input type="hidden" name="id" value={lead.id} />
-      <input type="hidden" name="status" value="DECLINED" />
+    <>
       <button
-        type="submit"
-        disabled={isPending}
+        type="button"
+        onClick={() => setOpen(true)}
         className="min-h-[44px] inline-flex items-center gap-1 text-xs font-semibold text-zinc-400 hover:text-rose-600 disabled:opacity-50"
       >
-        <X size={12} /> {isPending ? t(locale, 't10money.leadDeclining') : t(locale, 't10money.leadDecline')}
+        <X size={12} /> {t(locale, 't10money.leadDecline')}
       </button>
-    </form>
+      <BottomSheet open={open} onClose={() => setOpen(false)} title={t(locale, 't10money.leadDeclineTitle')}>
+        <form action={formAction} onSubmit={() => setOpen(false)}>
+          <input type="hidden" name="id" value={lead.id} />
+          <input type="hidden" name="status" value="DECLINED" />
+          <input type="hidden" name="declineReason" value={declineReasonText()} />
+          <p className="text-sm font-semibold text-ej-ink mb-3">
+            {t(locale, 't10money.leadDeclineWhy')}
+          </p>
+          <div className="space-y-2 mb-4" role="radiogroup" aria-label={t(locale, 't10money.leadDeclineWhy')}>
+            {DECLINE_REASONS.map((r) => (
+              <label
+                key={r.value}
+                className="flex items-center gap-3 min-h-[48px] px-3 rounded-xl bg-ej-surface cursor-pointer"
+              >
+                <input
+                  type="radio"
+                  name="reasonOption"
+                  value={r.value}
+                  checked={reason === r.value}
+                  onChange={() => setReason(r.value)}
+                  className="w-4 h-4 accent-black"
+                />
+                <span className="text-sm text-ej-ink">{t(locale, r.labelKey)}</span>
+              </label>
+            ))}
+          </div>
+          <label className="block text-sm font-semibold text-ej-ink mb-1.5">
+            {t(locale, 't10money.leadDeclineNotes')}
+          </label>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder={t(locale, 't10money.leadDeclineNotesPlaceholder')}
+            rows={2}
+            className="w-full rounded-xl border border-ej-border bg-ej-bg px-3 py-2.5 text-base text-ej-ink placeholder:text-ej-muted mb-4"
+          />
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              disabled={isPending}
+              className="flex-1 min-h-[48px] rounded-xl bg-ej-primary text-ej-on-primary text-sm font-bold disabled:opacity-50"
+            >
+              {isPending ? t(locale, 't10money.leadDeclining') : t(locale, 't10money.leadDeclineConfirm')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="min-h-[48px] px-4 rounded-xl bg-ej-surface text-sm font-semibold text-ej-ink"
+            >
+              {t(locale, 't10money.leadCancel')}
+            </button>
+          </div>
+          {state?.error && <p className="text-xs text-ej-danger mt-2">{state.error}</p>}
+        </form>
+      </BottomSheet>
+    </>
   );
 }
 
@@ -210,6 +285,12 @@ function LeadCard({ lead, locale }: { lead: LeadItem; locale: Locale }) {
         </a>
       )}
       {lead.details && <p className="text-xs text-zinc-500 mt-1 line-clamp-3">{lead.details}</p>}
+      {/* E5: show the captured decline reason on declined leads */}
+      {lead.status === 'DECLINED' && lead.declineReason && (
+        <p className="text-xs text-zinc-500 mt-1">
+          {fill(t(locale, 't10money.leadDeclinedReason'), { reason: lead.declineReason })}
+        </p>
+      )}
       <p className="text-[10px] text-zinc-400 font-semibold mt-2">
         {lead.source ?? 'No source'} · {formatDateShort(lead.createdAt)}
       </p>

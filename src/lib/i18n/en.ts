@@ -157,6 +157,17 @@ const en: Dict = {
     addACustomer: 'Add a customer',
     detailSubtitle: 'Customer details, history and notes.',
     allCustomers: 'All customers',
+    // E5: quick contact actions
+    actionCall: 'Call',
+    actionText: 'Text',
+    actionEmail: 'Email',
+    actionMap: 'Map',
+    getDirections: 'Get directions',
+    customerSince: 'Customer since {date}',
+    lifetimeValue: '{amount} lifetime',
+    historyTitle: 'History',
+    propertiesTitle: 'Properties',
+    noHistory: 'No activity yet. Jobs, invoices and quotes will appear here.',
   },
   schedule: {
     title: 'Schedule',

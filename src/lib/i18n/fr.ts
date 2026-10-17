@@ -156,6 +156,17 @@ const fr: Dictionary = {
     addACustomer: 'Ajouter un client',
     detailSubtitle: 'Détails, historique et notes du client.',
     allCustomers: 'Tous les clients',
+    // E5: quick contact actions
+    actionCall: 'Appeler',
+    actionText: 'Texto',
+    actionEmail: 'Courriel',
+    actionMap: 'Carte',
+    getDirections: 'Itinéraire',
+    customerSince: 'Client depuis le {date}',
+    lifetimeValue: '{amount} au total',
+    historyTitle: 'Historique',
+    propertiesTitle: 'Propriétés',
+    noHistory: 'Aucune activité pour l’instant. Les travaux, factures et soumissions apparaîtront ici.',
   },
   schedule: {
     title: 'Horaire',

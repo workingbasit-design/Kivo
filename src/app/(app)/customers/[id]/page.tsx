@@ -1,14 +1,17 @@
 import React from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, Phone, Mail, MapPin, StickyNote, Briefcase, FileText, Star, Wrench } from 'lucide-react';
+import { ArrowLeft, Phone, Mail, MapPin, MessageSquare, Navigation, Plus } from 'lucide-react';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { logPiiAccess } from '@/lib/pii-audit';
-import { formatDateShort, jobDisplayStatus } from '@/lib/utils';
-import { formatMoney, formatCents, centsToDollars } from '@/lib/money';
-import { PageHeader, Card, StatusBadge, Badge } from '@/components/ui';
-import { secondaryBtnClass } from '@/components/ui';
+import { formatDateShort } from '@/lib/utils';
+import { formatMoney, centsToDollars } from '@/lib/money';
+import { formatDisplayDate } from '@/lib/attention';
+import { PageHeader, Card, Badge } from '@/components/ui';
+import { secondaryBtnClass, primaryBtnClass } from '@/components/ui';
+import { Timeline, SectionHeader } from '@/components/design/lists';
+import { EmptyState } from '@/components/design/feedback';
 import { EditCustomerForm, DeleteCustomerButton, ArchiveCustomerButton } from './customer-forms';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import SmsButton from '@/components/SmsButton';
@@ -72,6 +75,37 @@ async function loadCustomer(id: string, businessId: string) {
   });
 }
 
+/** E5: Quick contact action button. 48px touch target, icon + label. */
+function ContactAction({
+  href,
+  icon,
+  label,
+  disabled,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  label: string;
+  disabled?: boolean;
+}) {
+  if (disabled) {
+    return (
+      <span className="flex-1 min-w-0 flex flex-col items-center gap-1 py-3 rounded-xl bg-ej-surface text-ej-disabled cursor-not-allowed">
+        {icon}
+        <span className="text-xs font-semibold">{label}</span>
+      </span>
+    );
+  }
+  return (
+    <a
+      href={href}
+      className="flex-1 min-w-0 flex flex-col items-center gap-1 py-3 rounded-xl bg-ej-surface text-ej-ink hover:bg-ej-border/50 active:bg-ej-border transition-colors min-h-[48px] justify-center"
+    >
+      {icon}
+      <span className="text-xs font-semibold">{label}</span>
+    </a>
+  );
+}
+
 export default async function CustomerDetailPage({
   params,
 }: {
@@ -79,9 +113,7 @@ export default async function CustomerDetailPage({
 }) {
   const { businessId, user } = await requireAuth();
 
-  // Defensive: any DB failure (bad row, schema drift) renders the friendly
-  // error boundary instead of a raw 500 - see the 2026-09-23 /customers incident.
-  let business: { currency: string | null; name: string | null } | null = null;
+  let business: { currency: string | null; name: string | null; timezone: string | null } | null = null;
   let customer: Awaited<ReturnType<typeof loadCustomer>> = null;
   let activePortalToken: { id: string; createdAt: Date } | null = null;
   let fieldDefs: { id: string; name: string }[] = [];
@@ -89,11 +121,10 @@ export default async function CustomerDetailPage({
     const { id } = await params;
     business = await prisma.business.findUnique({
       where: { id: businessId },
-      select: { currency: true, name: true },
+      select: { currency: true, name: true, timezone: true },
     });
     customer = await loadCustomer(id, businessId);
     if (!customer) notFound();
-    // PIPEDA accountability: log PII detail access (fire-and-forget).
     logPiiAccess({
       businessId,
       userId: user.id,
@@ -118,9 +149,6 @@ export default async function CustomerDetailPage({
       select: { id: true, name: true },
     });
   } catch (e) {
-    // notFound() throws a NEXT_NOT_FOUND sentinel (older Next) or
-    // NEXT_HTTP_ERROR_FALLBACK;404 (newer Next) - let it through so a
-    // cross-tenant probe renders the 404 page, not the error page.
     const digest = e instanceof Error ? (e as { digest?: string }).digest : undefined;
     if (digest === 'NEXT_NOT_FOUND' || digest?.startsWith('NEXT_HTTP_ERROR_FALLBACK;404')) throw e;
     console.error('[customers] failed to load customer detail:', e);
@@ -129,6 +157,7 @@ export default async function CustomerDetailPage({
 
   const currency = business?.currency ?? 'CAD';
   const locale = await getLocale();
+  const tz = business?.timezone ?? 'America/Toronto';
   const custL = (k: string) => t(locale, 'customers.' + k);
   const customerName = customer.name ?? custL('unnamed');
   const totalRevenue = (customer.jobs ?? []).reduce(
@@ -140,6 +169,39 @@ export default async function CustomerDetailPage({
   const provinceLabel = customer.province
     ? (CA_PROVINCES.find((p) => p.code === customer.province)?.name ?? customer.province)
     : '';
+  const fullAddress = [
+    customer.address,
+    [provinceLabel, customer.postalCode].filter(Boolean).join(' '),
+  ].filter(Boolean).join(', ');
+
+  // E5: Build unified history timeline (jobs + invoices + reviews, newest first).
+  const timelineItems = [
+    ...(customer.jobs ?? []).map((j) => ({
+      title: j.title,
+      timestamp: formatDisplayDate(j.date, tz, locale),
+      description: `${formatMoney(centsToDollars(j.priceCents), currency)}`,
+      sortKey: j.date.getTime(),
+    })),
+    ...(customer.invoices ?? []).map((inv) => ({
+      title: `Invoice ${inv.number}`,
+      timestamp: formatDisplayDate(inv.date, tz, locale),
+      description: `${formatMoney(centsToDollars(inv.totalCents), currency)}, ${inv.status.toLowerCase()}`,
+      sortKey: inv.date.getTime(),
+    })),
+    ...(customer.reviews ?? []).map((r) => ({
+      title: `${r.rating} star review${r.source ? ` via ${r.source}` : ''}`,
+      timestamp: formatDisplayDate(r.createdAt, tz, locale),
+      description: r.comment ?? undefined,
+      sortKey: r.createdAt.getTime(),
+    })),
+  ].sort((a, b) => b.sortKey - a.sortKey).slice(0, 15);
+
+  const phoneHref = customer.phone ? `tel:${customer.phone.replace(/\s/g, '')}` : '';
+  const smsHref = customer.phone ? `sms:${customer.phone.replace(/\s/g, '')}` : '';
+  const emailHref = customer.email ? `mailto:${customer.email}` : '';
+  const mapHref = fullAddress
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`
+    : '';
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -147,105 +209,112 @@ export default async function CustomerDetailPage({
         title={customerName}
         subtitle={custL('detailSubtitle')}
         actions={
-          <Link href="/customers" className={secondaryBtnClass}>
-            <ArrowLeft size={14} /> {custL('allCustomers')}
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link href="/customers" className={secondaryBtnClass}>
+              <ArrowLeft size={14} /> {custL('allCustomers')}
+            </Link>
+            <Link href={`/jobs/new?customerId=${customer.id}`} className={primaryBtnClass}>
+              <Plus size={14} /> {t(locale, 'jobs.newJob')}
+            </Link>
+          </div>
         }
       />
 
-      {/* Info + edit */}
+      {/* E5: Identity + quick contact actions */}
       <Card className="p-6 md:p-8">
         <div className="flex items-start gap-4 mb-6">
-          <div className="w-14 h-14 rounded-2xl bg-ink/10 text-ink flex items-center justify-center font-bold text-xl shrink-0">
+          <div className="w-14 h-14 rounded-2xl bg-ej-surface text-ej-ink flex items-center justify-center font-bold text-xl shrink-0">
             {initial}
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-lg font-bold text-zinc-900 flex items-center gap-2 flex-wrap">
+            <h2 className="text-lg font-bold text-ej-ink flex items-center gap-2 flex-wrap">
               {customerName}
               {customer.archivedAt && (
                 <Badge>{t(locale, 't10money.custArchivedBadge')}</Badge>
               )}
             </h2>
-            <p className="text-xs text-zinc-500">
-              Customer since {formatDateShort(customer.createdAt)} · {formatMoney(totalRevenue, currency)} lifetime
+            <p className="text-xs text-ej-muted mt-0.5">
+              {custL('customerSince').replace('{date}', formatDateShort(customer.createdAt))}
+              {', '}
+              {custL('lifetimeValue').replace('{amount}', formatMoney(totalRevenue, currency))}
             </p>
           </div>
         </div>
 
-        <div className="grid sm:grid-cols-2 gap-4 text-sm mb-6">
-          <div className="flex items-start gap-2.5">
-            <Phone size={15} className="text-zinc-400 mt-0.5 shrink-0" />
-            <div className="min-w-0">
-              <p className="text-[11px] font-bold text-zinc-400">Phone</p>
-              {customer.phone ? (
-                <a
-                  href={`tel:${customer.phone.replace(/\s/g, '')}`}
-                  className="text-ink font-semibold hover:underline min-h-[44px] inline-flex items-center"
-                >
-                  {customer.phone}
-                </a>
-              ) : (
-                <p className="text-zinc-800">-</p>
-              )}
-            </div>
-          </div>
-          <div className="flex items-start gap-2.5">
-            <Mail size={15} className="text-zinc-400 mt-0.5 shrink-0" />
-            <div className="min-w-0">
-              <p className="text-[11px] font-bold text-zinc-400">Email</p>
-              {customer.email ? (
-                <a
-                  href={`mailto:${customer.email}`}
-                  className="text-ink font-semibold hover:underline break-all min-h-[44px] inline-flex items-center"
-                >
-                  {customer.email}
-                </a>
-              ) : (
-                <p className="text-zinc-800">-</p>
-              )}
-            </div>
-          </div>
-          <div className="flex items-start gap-2.5 sm:col-span-2">
-            <MapPin size={15} className="text-zinc-400 mt-0.5 shrink-0" />
-            <div>
-              <p className="text-[11px] font-bold text-zinc-400">Address</p>
-              <p className="text-zinc-800 whitespace-pre-line">{customer.address ?? '-'}</p>
-              {(provinceLabel || customer.postalCode) && (
-                <p className="text-xs text-zinc-500 mt-1">
-                  {[provinceLabel, customer.postalCode].filter(Boolean).join(' · ')}
-                </p>
-              )}
-            </div>
-          </div>
-          {customer.notes && (
-            <div className="flex items-start gap-2.5 sm:col-span-2">
-              <StickyNote size={15} className="text-zinc-400 mt-0.5 shrink-0" />
-              <div>
-                <p className="text-[11px] font-bold text-zinc-400">Notes</p>
-                <p className="text-zinc-800 whitespace-pre-line">{customer.notes}</p>
-              </div>
-            </div>
-          )}
-          {customer.tags && (
-            <div className="flex items-start gap-2.5 sm:col-span-2">
-              <StickyNote size={15} className="text-zinc-400 mt-0.5 shrink-0" />
-              <div>
-                <p className="text-[11px] font-bold text-zinc-400">Tags</p>
-                <div className="flex flex-wrap gap-1.5 mt-1">
-                  {customer.tags.split(',').filter(Boolean).map((tag) => (
-                    <span key={tag} className="text-[11px] font-semibold bg-zinc-100 text-zinc-700 rounded-full px-2.5 py-1">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
+        {/* E5: One-tap contact actions. 48px targets, native protocols. */}
+        <div className="flex gap-2 mb-6">
+          <ContactAction
+            href={phoneHref}
+            icon={<Phone size={20} />}
+            label={custL('actionCall')}
+            disabled={!customer.phone}
+          />
+          <ContactAction
+            href={smsHref}
+            icon={<MessageSquare size={20} />}
+            label={custL('actionText')}
+            disabled={!customer.phone}
+          />
+          <ContactAction
+            href={emailHref}
+            icon={<Mail size={20} />}
+            label={custL('actionEmail')}
+            disabled={!customer.email}
+          />
+          <ContactAction
+            href={mapHref}
+            icon={<Navigation size={20} />}
+            label={custL('actionMap')}
+            disabled={!fullAddress}
+          />
         </div>
 
-        <div className="flex flex-wrap gap-2 pt-4 border-t border-zinc-100">
-          {/* Opens a wa.me chat with the customer - user taps to send from
-              their own WhatsApp; EveryJob never sends anything automatically. */}
+        {/* Address with directions link */}
+        {(customer.address || provinceLabel || customer.postalCode) && (
+          <div className="flex items-start gap-2.5 mb-4">
+            <MapPin size={15} className="text-ej-muted mt-0.5 shrink-0" />
+            <div className="min-w-0">
+              <p className="text-sm text-ej-ink whitespace-pre-line">{customer.address}</p>
+              {(provinceLabel || customer.postalCode) && (
+                <p className="text-xs text-ej-muted mt-0.5">
+                  {[provinceLabel, customer.postalCode].filter(Boolean).join(', ')}
+                </p>
+              )}
+              {mapHref && (
+                <a
+                  href={mapHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-semibold text-ej-ink underline underline-offset-2 mt-1 inline-block min-h-[44px] py-2"
+                >
+                  {custL('getDirections')}
+                </a>
+              )}
+            </div>
+          </div>
+        )}
+
+        {customer.notes && (
+          <div className="mb-4">
+            <p className="text-xs font-semibold text-ej-muted mb-1">Notes</p>
+            <p className="text-sm text-ej-ink whitespace-pre-line">{customer.notes}</p>
+          </div>
+        )}
+
+        {customer.tags && (
+          <div className="mb-6">
+            <div className="flex flex-wrap gap-1.5">
+              {customer.tags.split(',').filter(Boolean).map((tag) => (
+                <span key={tag} className="text-xs font-semibold bg-ej-surface text-ej-secondary rounded-full px-2.5 py-1">
+                  {tag.trim()}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Secondary actions */}
+        <div className="flex flex-wrap gap-2 pt-4 border-t border-ej-border">
           <WhatsAppButton
             phone={customer.phone}
             regionCode={regionCode}
@@ -285,7 +354,21 @@ export default async function CustomerDetailPage({
         </div>
       </Card>
 
-      {/* Customer portal link - magic link on WhatsApp */}
+      {/* E5: Unified history timeline */}
+      <Card className="p-6 md:p-8">
+        <SectionHeader title={custL('historyTitle')} />
+        {timelineItems.length === 0 ? (
+          <EmptyState
+            title={custL('historyTitle')}
+            description={custL('noHistory')}
+            compact
+          />
+        ) : (
+          <Timeline items={timelineItems} />
+        )}
+      </Card>
+
+      {/* Customer portal link */}
       <Card className="p-6 md:p-8">
         <PortalLinkManager
           customerId={customer.id}
@@ -298,7 +381,7 @@ export default async function CustomerDetailPage({
         />
       </Card>
 
-      {/* CASL consent for automated messaging */}
+      {/* CASL consent */}
       <CustomerConsentCard
         customerId={customer.id}
         consent={customer.messageConsent ?? false}
@@ -307,20 +390,23 @@ export default async function CustomerDetailPage({
         locale={locale}
       />
 
-      {/* Properties (home, cottage, job sites) */}
-      <CustomerProperties
-        customerId={customer.id}
-        locale={locale}
-        initial={customer.properties.map((p) => ({
-          id: p.id,
-          label: p.label,
-          address: p.address,
-          notes: p.notes,
-          isPrimary: p.isPrimary,
-        }))}
-      />
+      {/* Properties */}
+      <Card className="p-6 md:p-8">
+        <SectionHeader title={custL('propertiesTitle')} />
+        <CustomerProperties
+          customerId={customer.id}
+          locale={locale}
+          initial={customer.properties.map((p) => ({
+            id: p.id,
+            label: p.label,
+            address: p.address,
+            notes: p.notes,
+            isPrimary: p.isPrimary,
+          }))}
+        />
+      </Card>
 
-      {/* Business-defined custom fields */}
+      {/* Custom fields */}
       <CustomerCustomFields
         customerId={customer.id}
         locale={locale}
@@ -333,123 +419,30 @@ export default async function CustomerDetailPage({
         }}
       />
 
-      {/* Job history */}
-      <Card className="!p-0 overflow-hidden">
-        <div className="px-5 py-4 border-b border-zinc-100 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Briefcase size={16} className="text-zinc-400" />
-            <h3 className="font-bold text-sm text-zinc-900">Job history</h3>
-          </div>
-          {customer.jobs.length > 0 && (
-            <Badge tone="neutral">{customer.jobs.length}</Badge>
-          )}
-        </div>
-        {customer.jobs.length === 0 ? (
-          <p className="px-6 py-8 text-sm text-zinc-500 text-center">No jobs yet.</p>
-        ) : (
-          <ul className="divide-y divide-zinc-100">
-            {customer.jobs.map((j, i) => (
-              <li
-                key={j.id}
-                className="ej-row-in flex items-center gap-3 px-5 py-3.5"
-                style={{ '--row-delay': `${Math.min(i, 10) * 30}ms` } as React.CSSProperties}
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-zinc-900 truncate">{j.title}</p>
-                  <p className="text-xs text-zinc-500">{formatDateShort(j.date)}</p>
-                </div>
-                <div className="flex flex-col items-end gap-1 shrink-0">
-                  <span className="text-sm font-bold text-zinc-900">{formatCents(j.priceCents, currency)}</span>
-                  <StatusBadge status={jobDisplayStatus(j.status, j.date)} />
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Card>
-
-      {/* Invoice history */}
-      <Card className="!p-0 overflow-hidden">
-        <div className="px-5 py-4 border-b border-zinc-100 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <FileText size={16} className="text-zinc-400" />
-            <h3 className="font-bold text-sm text-zinc-900">Invoices</h3>
-          </div>
-          {customer.invoices.length > 0 && (
-            <Badge tone="neutral">{customer.invoices.length}</Badge>
-          )}
-        </div>
-        {customer.invoices.length === 0 ? (
-          <p className="px-6 py-8 text-sm text-zinc-500 text-center">No invoices yet.</p>
-        ) : (
-          <ul className="divide-y divide-zinc-100">
-            {customer.invoices.map((inv, i) => (
-              <li key={inv.id}>
-                <Link
-                  href={`/invoices/${inv.id}`}
-                  className="ej-row-in flex items-center gap-3 px-5 py-3.5 hover:bg-zinc-50 active:bg-zinc-100 transition-colors"
-                  style={{ '--row-delay': `${Math.min(i, 10) * 30}ms` } as React.CSSProperties}
-                >
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-zinc-900">#{inv.number}</p>
-                    <p className="text-xs text-zinc-500">{formatDateShort(inv.date)}</p>
-                  </div>
-                  <div className="flex flex-col items-end gap-1 shrink-0">
-                    <span className="text-sm font-bold text-zinc-900">{formatCents(inv.totalCents, currency)}</span>
-                    <StatusBadge status={inv.status} />
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Card>
-
       {/* Equipment */}
-      <Card>
-        <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Wrench size={16} className="text-zinc-400" />
-            <h3 className="font-bold text-sm text-zinc-900">Equipment</h3>
-          </div>
-          <Link
-            href={`/equipment/new?customerId=${customer.id}`}
-            className="text-xs font-semibold text-lime-700 hover:text-lime-800 min-h-[36px] inline-flex items-center px-2"
-          >
-            + Add equipment
-          </Link>
-        </div>
-        {customer.equipment.length === 0 ? (
-          <p className="px-6 py-4 text-sm text-zinc-500">No equipment recorded for this customer.</p>
-        ) : (
-          <ul className="divide-y divide-zinc-100">
-            {customer.equipment.map((eq) => (
-              <li key={eq.id} className="px-6 py-3.5">
-                <Link href={`/equipment/${eq.id}`} className="block hover:bg-zinc-50 -mx-6 px-6 py-1">
-                  <p className="text-sm font-semibold text-zinc-900">{eq.name}</p>
-                  <p className="text-xs text-zinc-500 mt-0.5">
-                    {[eq.brand, eq.model].filter(Boolean).join(' · ')}
-                    {eq.serial ? ` · S/N ${eq.serial}` : ''}
+      {(customer.equipment ?? []).length > 0 && (
+        <Card className="p-6 md:p-8">
+          <SectionHeader
+            title="Equipment"
+            action={
+              <Link
+                href={`/equipment/new?customerId=${customer.id}`}
+                className="text-sm font-semibold text-ej-ink underline underline-offset-2 min-h-[44px] inline-flex items-center"
+              >
+                Add equipment
+              </Link>
+            }
+          />
+          <ul className="divide-y divide-ej-border">
+            {(customer.equipment ?? []).map((eq) => (
+              <li key={eq.id} className="py-3">
+                <Link href={`/equipment/${eq.id}`} className="block">
+                  <p className="text-sm font-semibold text-ej-ink">{eq.name}</p>
+                  <p className="text-xs text-ej-muted mt-0.5">
+                    {[eq.brand, eq.model].filter(Boolean).join(', ')}
+                    {eq.serial ? `, S/N ${eq.serial}` : ''}
                   </p>
                 </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Card>
-
-      {/* Reviews */}
-      {customer.reviews.length > 0 && (        <Card>
-          <div className="px-6 py-4 border-b border-zinc-100 flex items-center gap-2">
-            <Star size={16} className="text-zinc-400" />
-            <h3 className="font-bold text-sm text-zinc-900">Reviews</h3>
-          </div>
-          <ul className="divide-y divide-zinc-100">
-            {customer.reviews.map((r) => (
-              <li key={r.id} className="px-6 py-3.5">
-                <p className="text-sm text-amber-500 font-bold">{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</p>
-                {r.comment && <p className="text-sm text-zinc-700 mt-1">{r.comment}</p>}
-                <p className="text-xs text-zinc-500 mt-1">{formatDateShort(r.createdAt)}{r.source ? ` · ${r.source}` : ''}</p>
               </li>
             ))}
           </ul>
