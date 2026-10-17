@@ -12,15 +12,15 @@ export type ExportType =
   | 'services'
   | 'reviews';
 
-export const EXPORT_TYPES: { value: ExportType; label: string }[] = [
-  { value: 'customers', label: 'Customers' },
-  { value: 'leads', label: 'Leads' },
-  { value: 'jobs', label: 'Jobs' },
-  { value: 'quotes', label: 'Quotes' },
-  { value: 'invoices', label: 'Invoices' },
-  { value: 'payments', label: 'Payments' },
-  { value: 'services', label: 'Price book services' },
-  { value: 'reviews', label: 'Reviews' },
+export const EXPORT_TYPES: { value: ExportType; label: string; i18nKey: string }[] = [
+  { value: 'customers', label: 'Customers', i18nKey: 'exportCustomers' },
+  { value: 'leads', label: 'Leads', i18nKey: 'exportLeads' },
+  { value: 'jobs', label: 'Jobs', i18nKey: 'exportJobs' },
+  { value: 'quotes', label: 'Quotes', i18nKey: 'exportQuotes' },
+  { value: 'invoices', label: 'Invoices', i18nKey: 'exportInvoices' },
+  { value: 'payments', label: 'Payments', i18nKey: 'exportPayments' },
+  { value: 'services', label: 'Price book services', i18nKey: 'exportServices' },
+  { value: 'reviews', label: 'Reviews', i18nKey: 'exportReviews' },
 ];
 
 function csv(headers: string[], rows: (string | number | null | undefined | Date)[][]): string {

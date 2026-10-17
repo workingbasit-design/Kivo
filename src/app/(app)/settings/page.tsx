@@ -220,7 +220,7 @@ export default async function SettingsPage() {
                 href={`/api/export?type=${t.value}`}
                 className="bg-white hover:bg-zinc-50 text-zinc-700 px-3.5 py-2 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 border border-zinc-200 shadow-sm"
               >
-                <Download size={13} /> {t.label}
+                <Download size={13} /> {tr(`t10misc.settingsMain.${t.i18nKey}`)}
               </a>
             ))}
           </div>
