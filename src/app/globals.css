@@ -145,6 +145,17 @@ body {
 
   /* ---------- EveryJob landing-page motion (CSS only, no JS cost) ---------- */
 
+  @keyframes sheetUp {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   @keyframes ej-fade-up {
     from {
       opacity: 0;
