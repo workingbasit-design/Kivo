@@ -1,17 +1,16 @@
 import Link from 'next/link';
-import { Plus, ClipboardList, FileText, BellRing } from 'lucide-react';
+import { Plus, FileText, Clock, Hourglass } from 'lucide-react';
 import { requireAuth } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { prisma } from '@/lib/prisma';
 import { PageHeader, Card, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
-import EmptyState from '@/components/EmptyState';
+import { ListRow, SectionHeader } from '@/components/design/lists';
+import { EmptyState } from '@/components/design/feedback';
 import MoneyText from '@/components/MoneyText';
 import { formatMoney, centsToDollars } from '@/lib/money';
-import SmsButton from '@/components/SmsButton';
-import WhatsAppButton from '@/components/WhatsAppButton';
-import { fillTemplate, daysOverdue, remainingBalance, OVERDUE_AFTER_DAYS, DAY_MS } from '@/lib/revenue';
-import { getMoneySummary } from '@/lib/job-queries';
+import { daysOverdue, remainingBalance, OVERDUE_AFTER_DAYS, DAY_MS } from '@/lib/revenue';
+import { formatDisplayDate } from '@/lib/attention';
 
 /**
  * "Now" for overdue-threshold math. A plain module helper (not a component),
@@ -22,36 +21,45 @@ function overdueThreshold(): Date {
 }
 
 /**
- * Money hub (Phase 1): a simple overview of what's outstanding.
- * Tenant-scoped open-quote value + unpaid-invoice balance, with links
- * into /quotes and /invoices. Reachable from the mobile bottom bar.
+ * Money hub (Part E4): three lists, not stat cards.
+ * 1. Ready to invoice — completed jobs with no invoice yet
+ * 2. Awaiting payment — unpaid/partially-paid invoices, oldest first
+ * 3. Awaiting a decision — sent quotes waiting on the customer
+ *
+ * Each section shows its items with amounts and one-tap actions.
+ * No giant $0.00 numbers. Empty sections show a compact empty state.
  */
 export default async function MoneyPage() {
   const { businessId } = await requireAuth();
   const locale = await getLocale();
   const L = (path: string) => t(locale, path);
 
-  const [business, openQuotes, unpaidInvoices, overdueInvoices, unbilledJobs, moneySummary] = await Promise.all([
+  const [business, openQuotes, unpaidInvoices, unbilledJobs] = await Promise.all([
     prisma.business.findUnique({
       where: { id: businessId },
       select: { currency: true, name: true, regionCode: true, timezone: true },
     }),
+    // Awaiting a decision: sent quotes, oldest first (longest waiting on top).
     prisma.quote.findMany({
       where: { businessId, status: 'SENT' },
-      select: { totalCents: true },
+      select: {
+        id: true,
+        number: true,
+        title: true,
+        totalCents: true,
+        updatedAt: true,
+        customer: { select: { name: true } },
+      },
+      orderBy: { updatedAt: 'asc' },
+      take: 10,
     }),
-    prisma.invoice.findMany({
-      where: { businessId, status: { not: 'PAID' }, voidedAt: null },
-      select: { id: true },
-    }),
-    // Overdue queue: unpaid/partially-paid invoices older than Net-30, oldest first.
+    // Awaiting payment: unpaid/partially-paid invoices, oldest first.
     // Excludes voided invoices.
     prisma.invoice.findMany({
       where: {
         businessId,
         status: { not: 'PAID' },
         voidedAt: null,
-        date: { lt: overdueThreshold() },
       },
       select: {
         id: true,
@@ -65,9 +73,8 @@ export default async function MoneyPage() {
       take: 10,
     }),
     // Ready to invoice: completed jobs with no invoice yet - the most common
-    // cash leak for small trades. Without this, Money says "all caught up"
-    // while billable work sits unbilled. Uses the invoice relation (not
-    // invoicedAt, which is never cleared when a draft invoice is deleted).
+    // cash leak for small trades. Uses the invoice relation (not invoicedAt,
+    // which is never cleared when a draft invoice is deleted).
     prisma.job.findMany({
       where: {
         businessId,
@@ -77,6 +84,7 @@ export default async function MoneyPage() {
       select: {
         id: true,
         title: true,
+        date: true,
         priceCents: true,
         noCharge: true,
         customer: { select: { name: true } },
@@ -84,239 +92,199 @@ export default async function MoneyPage() {
       orderBy: { date: 'asc' },
       take: 10,
     }),
-    // Shared money summary (one source of truth with Dashboard): the
-    // outstanding and ready-to-invoice card totals come from here.
-    getMoneySummary(businessId),
   ]);
 
-  const openQuoteValue = openQuotes.reduce((s, q) => s + centsToDollars(q.totalCents), 0);
-  // Outstanding total from the shared summary (cents-aware, voided
-  // excluded). The unpaid list above is still used for its count.
-  const unpaidBalance = moneySummary.outstanding;
-  // Ready-to-invoice total from the shared summary (ALL unbilled jobs, not
-  // just the 10 rows rendered below - the old list-derived total
-  // underreported when more than 10 jobs were waiting).
-  const unbilledValue = moneySummary.readyToInvoice;
-  const allCaughtUp = openQuotes.length === 0 && unpaidInvoices.length === 0 && unbilledJobs.length === 0;
+  const readyTotal = unbilledJobs.reduce(
+    (s, j) => s + (j.noCharge || j.priceCents == null ? 0 : centsToDollars(j.priceCents)),
+    0
+  );
+  const awaitingTotal = unpaidInvoices.reduce((s, inv) => {
+    const remaining = remainingBalance(
+      centsToDollars(inv.totalCents),
+      inv.payments.map((p) => centsToDollars(p.amountCents))
+    );
+    return s + remaining;
+  }, 0);
+  const decisionTotal = openQuotes.reduce((s, q) => s + centsToDollars(q.totalCents), 0);
+
+  const allCaughtUp =
+    unbilledJobs.length === 0 && unpaidInvoices.length === 0 && openQuotes.length === 0;
 
   return (
     <div className="space-y-6">
-      <PageHeader title={L('t10money.money.title')} subtitle={L('t10money.money.subtitle')} />
+      <PageHeader
+        title={L('t10money.money.title')}
+        subtitle={L('t10money.money.subtitle')}
+        actions={
+          <Link href="/invoices/new" className={primaryBtnClass}>
+            <Plus className="h-4 w-4" aria-hidden />
+            {L('t10money.money.newInvoice')}
+          </Link>
+        }
+      />
 
-      {/* One clear empty state with one next action - instead of three
-          repeated "nothing here" lines (all-caught-up banner + "No open
-          quotes" + "No unpaid invoices"). */}
-      {allCaughtUp && (
+      {allCaughtUp ? (
         <Card>
           <EmptyState
             title={L('t10money.money.emptyTitle')}
             description={L('t10money.money.emptyDesc')}
-            actionLabel={L('t10money.money.emptyAction')}
-            actionHref="/quotes/new"
+            action={
+              <Link href="/invoices/new" className={primaryBtnClass}>
+                <Plus className="h-4 w-4" aria-hidden />
+                {L('t10money.money.newInvoice')}
+              </Link>
+            }
           />
         </Card>
-      )}
-
-      {!allCaughtUp && (
-      <>
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card className="p-6">
-          <div className="flex items-center gap-3">
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-ej-smoke text-ej-muted">
-              <ClipboardList className="h-5 w-5" aria-hidden />
-            </span>
-            <div>
-              <h2 className="font-semibold">{L('t10money.money.quotesCardTitle')}</h2>
-              <p className="text-sm text-ej-muted">{L('t10money.money.quotesCardDesc')}</p>
-            </div>
-          </div>
-          <p className="mt-4 text-3xl font-bold tabular-nums">
-            <MoneyText dollars={Math.round(openQuoteValue * 100) / 100} locale={locale} />
-          </p>
-          <p className="mt-1 text-sm text-ej-muted">
-            {openQuotes.length === 0
-              ? L('t10money.money.noQuotesYet')
-              : L('t10money.money.quotesCount').replace('{count}', String(openQuotes.length))}
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Link href="/quotes" className={secondaryBtnClass}>
-              {L('t10money.money.viewQuotes')}
-            </Link>
-            <Link href="/quotes/new" className={primaryBtnClass}>
-              <Plus className="h-4 w-4" aria-hidden />
-              {L('t10money.money.newQuote')}
-            </Link>
-          </div>
-        </Card>
-
-        <Card className="p-6">
-          <div className="flex items-center gap-3">
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-ej-smoke text-ej-muted">
-              <FileText className="h-5 w-5" aria-hidden />
-            </span>
-            <div>
-              <h2 className="font-semibold">{L('t10money.money.invoicesCardTitle')}</h2>
-              <p className="text-sm text-ej-muted">{L('t10money.money.invoicesCardDesc')}</p>
-            </div>
-          </div>
-          <p className="mt-4 text-3xl font-bold tabular-nums">
-            <MoneyText dollars={Math.round(unpaidBalance * 100) / 100} locale={locale} />
-          </p>
-          <p className="mt-1 text-sm text-ej-muted">
-            {unpaidInvoices.length === 0
-              ? L('t10money.money.noInvoicesYet')
-              : L('t10money.money.invoicesCount').replace('{count}', String(unpaidInvoices.length))}
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Link href="/invoices" className={secondaryBtnClass}>
-              {L('t10money.money.viewInvoices')}
-            </Link>
-            <Link href="/invoices/new" className={primaryBtnClass}>
-              <Plus className="h-4 w-4" aria-hidden />
-              {L('t10money.money.newInvoice')}
-            </Link>
-          </div>
-        </Card>
-      </div>
-
-      {/* Ready to invoice - completed jobs with no invoice yet. */}
-      {unbilledJobs.length > 0 && (
-        <Card className="!p-0 overflow-hidden">
-          <div className="px-5 pt-5 pb-3">
-            <div className="flex items-center gap-2.5">
-              <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
-                <FileText className="h-4 w-4" aria-hidden />
-              </span>
-              <div>
-                <h2 className="font-semibold">{L('t10money.money.unbilledTitle')}</h2>
-                <p className="text-xs text-ej-muted">{L('t10money.money.unbilledDesc')}</p>
-              </div>
-              <span className="ml-auto text-lg font-bold tabular-nums text-emerald-700">
-                <MoneyText dollars={Math.round(unbilledValue * 100) / 100} locale={locale} />
-              </span>
-            </div>
-          </div>
-          <ul className="divide-y divide-zinc-100">
-            {unbilledJobs.map((j) => (
-              <li key={j.id} className="px-4 sm:px-5 py-3">
-                <div className="flex items-center justify-between gap-4 min-h-[44px]">
-                  <Link
-                    href={`/jobs/${j.id}`}
-                    className="min-w-0 flex-1"
-                  >
-                    <span className="block text-sm font-semibold text-zinc-900 truncate">
-                      {j.title}
-                    </span>
-                    <span className="block text-xs text-zinc-500 truncate">
-                      {j.customer.name}
-                    </span>
-                  </Link>
-                  <span className="shrink-0 text-sm font-bold tabular-nums text-zinc-900">
-                    {j.noCharge ? (
-                      <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-700">
-                        No charge
-                      </span>
-                    ) : (
-                      <MoneyText dollars={j.priceCents != null ? centsToDollars(j.priceCents) : null} locale={locale} />
-                    )}
+      ) : (
+        <>
+          {/* 1. Ready to invoice — completed jobs with no invoice yet. */}
+          <section aria-labelledby="ready-to-invoice">
+            <SectionHeader
+              title={`${L('t10money.money.unbilledTitle')} (${unbilledJobs.length})`}
+              action={
+                unbilledJobs.length > 0 ? (
+                  <span className="text-base font-bold tabular-nums text-ej-ink">
+                    <MoneyText dollars={readyTotal} locale={locale} />
                   </span>
-                  <Link
-                    href={`/invoices/new?jobId=${j.id}`}
-                    className={secondaryBtnClass + " shrink-0"}
-                  >
-                    Create invoice
-                  </Link>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </Card>
-      )}
+                ) : undefined
+              }
+            />
+            {unbilledJobs.length === 0 ? (
+              <p className="text-sm text-ej-muted px-1">
+                {L('t10money.money.noUnbilled')}
+              </p>
+            ) : (
+              <Card className="!p-0 overflow-hidden">
+                <ul className="divide-y divide-ej-border">
+                  {unbilledJobs.map((j) => (
+                    <ListRow
+                      key={j.id}
+                      title={j.title}
+                      subtitle={`${j.customer.name} · ${L('t10money.money.completedOn')} ${formatDisplayDate(new Date(j.date), business?.timezone, locale)}`}
+                      trailing={
+                        j.noCharge ? (
+                          <span className="text-sm text-ej-muted">{L('t10money.money.noCharge')}</span>
+                        ) : (
+                          <MoneyText
+                            dollars={j.priceCents != null ? centsToDollars(j.priceCents) : null}
+                            locale={locale}
+                          />
+                        )
+                      }
+                      href={`/jobs/${j.id}`}
+                      menuLabel={L('t10money.money.jobActions').replace('{title}', j.title)}
+                    />
+                  ))}
+                </ul>
+              </Card>
+            )}
+            {unbilledJobs.length > 0 && (
+              <p className="mt-2 text-xs text-ej-muted px-1">{L('t10money.money.unbilledDesc')}</p>
+            )}
+          </section>
 
-      {/* Overdue-invoice reminder queue - revenue recovery.
-          EveryJob never sends anything itself: SmsButton/WhatsAppButton only
-          open the user's own apps with the message prefilled. */}
-      {overdueInvoices.length > 0 && (
-        <Card className="!p-0 overflow-hidden">
-          <div className="px-5 pt-5 pb-3">
-            <div className="flex items-center gap-2.5">
-              <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600">
-                <BellRing className="h-4 w-4" aria-hidden />
-              </span>
-              <div>
-                <h2 className="font-semibold">{L('t10money.reminders.title')}</h2>
-                <p className="text-xs text-ej-muted">{L('t10money.reminders.desc')}</p>
+          {/* 2. Awaiting payment — unpaid invoices, oldest first. */}
+          <section aria-labelledby="awaiting-payment">
+            <SectionHeader
+              title={`${L('t10money.money.invoicesCardTitle')} (${unpaidInvoices.length})`}
+              action={
+                unpaidInvoices.length > 0 ? (
+                  <span className="text-base font-bold tabular-nums text-ej-ink">
+                    <MoneyText dollars={awaitingTotal} locale={locale} />
+                  </span>
+                ) : undefined
+              }
+            />
+            {unpaidInvoices.length === 0 ? (
+              <p className="text-sm text-ej-muted px-1">
+                {L('t10money.money.noInvoicesYet')}
+              </p>
+            ) : (
+              <Card className="!p-0 overflow-hidden">
+                <ul className="divide-y divide-ej-border">
+                  {unpaidInvoices.map((inv) => {
+                    const remaining = remainingBalance(
+                      centsToDollars(inv.totalCents),
+                      inv.payments.map((p) => centsToDollars(p.amountCents))
+                    );
+                    const isOverdue = new Date(inv.date) < overdueThreshold();
+                    const overdueDays = isOverdue
+                      ? Math.max(1, daysOverdue(new Date(inv.date), new Date(), business?.timezone))
+                      : 0;
+                    return (
+                      <ListRow
+                        key={inv.id}
+                        title={inv.number}
+                        subtitle={
+                          isOverdue
+                            ? `${inv.customer.name} · ${L('t10money.reminders.daysOverdue').replace('{days}', String(overdueDays))}`
+                            : `${inv.customer.name} · ${L('t10money.money.balanceDue')}: ${formatMoney(remaining, business?.currency)}`
+                        }
+                        trailing={<MoneyText dollars={remaining} locale={locale} />}
+                        href={`/invoices/${inv.id}`}
+                        menuLabel={L('t10money.money.invoiceActions').replace('{number}', inv.number)}
+                      />
+                    );
+                  })}
+                </ul>
+              </Card>
+            )}
+          </section>
+
+          {/* 3. Awaiting a decision — sent quotes waiting on the customer. */}
+          <section aria-labelledby="awaiting-decision">
+            <SectionHeader
+              title={`${L('t10money.money.quotesCardTitle')} (${openQuotes.length})`}
+              action={
+                openQuotes.length > 0 ? (
+                  <span className="text-base font-bold tabular-nums text-ej-ink">
+                    <MoneyText dollars={decisionTotal} locale={locale} />
+                  </span>
+                ) : undefined
+              }
+            />
+            {openQuotes.length === 0 ? (
+              <p className="text-sm text-ej-muted px-1">
+                {L('t10money.money.noQuotesYet')}
+              </p>
+            ) : (
+              <Card className="!p-0 overflow-hidden">
+                <ul className="divide-y divide-ej-border">
+                  {openQuotes.map((q) => {
+                    const daysWaiting = Math.max(
+                      0,
+                      Math.floor((Date.now() - new Date(q.updatedAt).getTime()) / DAY_MS)
+                    );
+                    return (
+                      <ListRow
+                        key={q.id}
+                        title={q.number}
+                        subtitle={`${q.customer.name} · ${L('t10money.followups.daysWaiting').replace('{days}', String(daysWaiting))}`}
+                        trailing={
+                          <MoneyText dollars={centsToDollars(q.totalCents)} locale={locale} />
+                        }
+                        href={`/quotes/${q.id}`}
+                        menuLabel={L('t10money.money.quoteActions').replace('{number}', q.number)}
+                      />
+                    );
+                  })}
+                </ul>
+              </Card>
+            )}
+            {openQuotes.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2 px-1">
+                <Link href="/quotes" className={secondaryBtnClass}>
+                  {L('t10money.money.viewQuotes')}
+                </Link>
+                <Link href="/quotes/new" className={secondaryBtnClass}>
+                  <Plus className="h-4 w-4" aria-hidden />
+                  {L('t10money.money.newQuote')}
+                </Link>
               </div>
-            </div>
-          </div>
-          <ul className="divide-y divide-zinc-100">
-            {overdueInvoices.map((inv) => {
-              const remaining = remainingBalance(
-                centsToDollars(inv.totalCents),
-                inv.payments.map((p) => centsToDollars(p.amountCents))
-              );
-              // Overdue badge flips at local midnight in the business's timezone.
-              const overdueDays = Math.max(1, daysOverdue(new Date(inv.date), new Date(), business?.timezone));
-              const message = fillTemplate(L('t10money.reminders.message'), {
-                customerName: inv.customer.name,
-                businessName: business?.name ?? '',
-                number: inv.number,
-                amount: formatMoney(remaining, business?.currency),
-                days: overdueDays,
-                invoiceLink: `/invoices/${inv.id}`,
-              });
-              return (
-                <li key={inv.id} className="px-4 sm:px-5 py-4">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-zinc-900 truncate">
-                        <Link href={`/invoices/${inv.id}`} className="hover:underline">
-                          {inv.number}
-                        </Link>
-                      </p>
-                      <p className="text-xs text-zinc-500 truncate">{inv.customer.name}</p>
-                      <p className="text-xs text-zinc-500 mt-1 tabular-nums">
-                        <span className="font-semibold text-amber-700">
-                          {L('t10money.reminders.daysOverdue').replace('{days}', String(overdueDays))}
-                        </span>
-                        {', '}
-                        {L('t10money.reminders.balanceDue')}: <MoneyText dollars={remaining} locale={locale} />
-                      </p>
-                    </div>
-                  </div>
-                  <details className="mt-2 group">
-                    <summary className="inline-flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-sky-700 hover:underline min-h-[32px]">
-                      {L('t10money.reminders.sendReminder')}
-                    </summary>
-                    <div className="mt-2 rounded-xl bg-zinc-50 border border-zinc-200 p-3 space-y-3">
-                      <p className="text-xs text-zinc-700 whitespace-pre-wrap">{message}</p>
-                      {inv.customer.phone ? (
-                        <div className="flex flex-wrap gap-2">
-                          <SmsButton
-                            phone={inv.customer.phone}
-                            regionCode={business?.regionCode}
-                            message={message}
-                            label={L('t10money.reminders.smsLabel')}
-                          />
-                          <WhatsAppButton
-                            phone={inv.customer.phone}
-                            regionCode={business?.regionCode}
-                            message={message}
-                            label={L('t10money.reminders.waLabel')}
-                          />
-                        </div>
-                      ) : (
-                        <p className="text-xs text-zinc-500">{L('t10money.reminders.noPhone')}</p>
-                      )}
-                    </div>
-                  </details>
-                </li>
-              );
-            })}
-          </ul>
-        </Card>
-      )}
-      </>
+            )}
+          </section>
+        </>
       )}
     </div>
   );

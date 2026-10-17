@@ -31,6 +31,13 @@ const fragment = {
         unbilledDesc: 'Finished jobs with no invoice yet. Bill them before they slip.',
         noQuotesYet: 'No open quotes.',
         noInvoicesYet: 'No unpaid invoices.',
+        noUnbilled: 'Nothing waiting to be invoiced.',
+        completedOn: 'Completed',
+        noCharge: 'No charge',
+        balanceDue: 'Balance due',
+        jobActions: 'Actions for {title}',
+        invoiceActions: 'Actions for invoice {number}',
+        quoteActions: 'Actions for quote {number}',
       },
       // Overdue-invoice reminder queue (/money) - Phase 1 revenue recovery
       reminders: {
@@ -470,6 +477,13 @@ const fragment = {
         unbilledDesc: 'Travaux terminés sans facture. Facturez-les avant de les oublier.',
         noQuotesYet: 'Aucun devis ouvert.',
         noInvoicesYet: 'Aucune facture impayée.',
+        noUnbilled: 'Rien en attente de facturation.',
+        completedOn: 'Terminé',
+        noCharge: 'Sans frais',
+        balanceDue: 'Solde dû',
+        jobActions: 'Actions pour {title}',
+        invoiceActions: 'Actions pour la facture {number}',
+        quoteActions: 'Actions pour le devis {number}',
       },
       // File de rappels de paiement (/money) - relance des revenus
       reminders: {
