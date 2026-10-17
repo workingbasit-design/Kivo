@@ -40,7 +40,7 @@ export default async function CustomerMessagesPage() {
         action={
           unreadCount > 0 ? (
             <span className="ej-anim-scale-in text-xs font-bold text-white bg-rose-500 rounded-full px-2.5 py-1 shadow-sm shadow-rose-500/30">
-              {tr('customer.messages.newMessages').replace('{count}', String(unreadCount))}
+              {tr('customer.messages.newMessages').replace('{count}', String(unreadCount)).replace('{x}', unreadCount === 1 ? '' : 'x')}
             </span>
           ) : undefined
         }

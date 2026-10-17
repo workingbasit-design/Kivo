@@ -48,7 +48,7 @@ export default async function CustomerRequestsPage() {
         action={
           activeCount > 0 ? (
             <span className="text-xs font-bold text-indigo-700 bg-indigo-100 rounded-full px-2.5 py-1">
-              {tr('customer.requests.active').replace('{count}', String(activeCount))}
+              {tr('customer.requests.active').replace('{count}', String(activeCount)).replace('{s}', activeCount === 1 ? '' : 's')}
             </span>
           ) : undefined
         }
