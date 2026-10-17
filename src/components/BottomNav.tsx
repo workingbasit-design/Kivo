@@ -20,6 +20,10 @@ const ADVANCED_OPEN_KEY = 'ej-advanced-open';
  * Thumb-friendly mobile bottom tab bar. The four primary destinations are
  * always one tap away; "More" opens the full section menu as a bottom
  * sheet. Rendered only on small screens (md:hidden).
+ *
+ * Design (Part D): solid surface, no glass/blur. Active tab shows a filled
+ * icon in lime with semibold label; inactive tabs are muted. All five items
+ * (including More) share identical styling.
  */
 export default function BottomNav({
   user,
@@ -51,23 +55,37 @@ export default function BottomNav({
         onClick={() => setMoreOpen(false)}
         aria-current={active ? 'page' : undefined}
         className={cn(
-          'ej-icon-hover flex items-center gap-3 px-3 min-h-[48px] rounded-xl text-sm font-medium',
-          active ? 'bg-ink text-lime' : 'text-zinc-700 hover:bg-zinc-100'
+          'flex items-center gap-3 px-3 min-h-[48px] rounded-xl text-sm font-medium',
+          active ? 'bg-ej-ink text-ej-lime' : 'text-zinc-700 hover:bg-zinc-100'
         )}
       >
-        <NavIconView icon={item.icon} size={18} className={active ? 'text-lime' : 'text-zinc-400'} />
+        <NavIconView icon={item.icon} size={18} className={active ? 'text-ej-lime' : 'text-zinc-400'} filled={active} />
         {t(locale, item.nameKey)}
       </Link>
     );
   };
 
+  const tabClass = (active: boolean) =>
+    cn(
+      'flex flex-col items-center justify-center gap-1 min-h-[60px] py-1.5 rounded-2xl text-[10px]',
+      'focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-ej-lime',
+      'transition-colors',
+      active ? 'text-ej-lime font-bold' : 'text-white/70 font-semibold hover:text-white'
+    );
+
   return (
     <>
       <nav
         aria-label={t(locale, 'nav.primary') ?? 'Primary'}
-        className="md:hidden fixed bottom-0 inset-x-0 z-40 px-3 text-white ej-safe-bottom pointer-events-none"
+        className="md:hidden fixed bottom-0 inset-x-0 z-40 pointer-events-none"
       >
-        <div className="ej-glass-dark pointer-events-auto mb-3 grid grid-cols-5 rounded-[28px] px-1.5 py-1.5">
+        <div
+          className={cn(
+            'pointer-events-auto mx-3 mb-3 grid grid-cols-5 rounded-3xl px-1.5 py-1.5',
+            'bg-ej-ink',
+            'pb-[calc(0.375rem+env(safe-area-inset-bottom))]'
+          )}
+        >
           {bottomTabs.map((tab) => {
             const active = isActive(tab.href);
             return (
@@ -75,28 +93,15 @@ export default function BottomNav({
                 key={tab.href}
                 href={tab.href}
                 aria-current={active ? 'page' : undefined}
-                className={cn(
-                  'ej-icon-hover flex flex-col items-center justify-center gap-1 min-h-[60px] py-1.5 rounded-[20px] text-[10px] font-semibold',
-                  'focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-lime',
-                  active ? 'text-lime bg-lime/[0.07]' : 'text-white/90 hover:text-white'
-                )}
+                className={tabClass(active)}
               >
-                <span
-                  className={cn(
-                    'ej-liquid flex items-center justify-center w-11 h-9 rounded-2xl backdrop-blur-md saturate-150 ring-1 ring-inset transition-all duration-200',
-                    active
-                      ? 'bg-lime/20 ring-lime/40 text-lime shadow-[0_0_16px_rgba(198,242,78,0.30),inset_0_1px_0_rgba(255,255,255,0.25)]'
-                      : 'bg-white/[0.07] ring-white/12 text-white/85 shadow-[0_2px_8px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.14)]'
-                  )}
-                >
-                  <NavIconView icon={tab.icon} size={20} />
-                </span>
+                <NavIconView icon={tab.icon} size={22} filled={active} aria-hidden />
                 <span className="leading-none">{t(locale, tab.nameKey)}</span>
                 <span
                   aria-hidden
                   className={cn(
-                    'h-1 w-8 rounded-full transition-all',
-                    active ? 'bg-lime' : 'bg-transparent'
+                    'h-1 w-8 rounded-full transition-colors',
+                    active ? 'bg-ej-lime' : 'bg-transparent'
                   )}
                 />
               </Link>
@@ -106,13 +111,10 @@ export default function BottomNav({
             type="button"
             onClick={() => setMoreOpen(true)}
             aria-expanded={moreOpen}
-            className={cn(
-              'flex flex-col items-center justify-center gap-1 min-h-[60px] py-1.5 rounded-[20px] text-[10px] font-semibold transition-colors',
-              'focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-lime',
-              !anyPrimaryActive && moreOpen ? 'text-lime bg-lime/[0.07]' : 'text-white/90 hover:text-white'
-            )}
+            aria-label={t(locale, 'nav.more') ?? 'More'}
+            className={tabClass(!anyPrimaryActive && moreOpen)}
           >
-            <Menu size={22} />
+            <Menu size={22} aria-hidden />
             <span className="leading-none">{t(locale, 'nav.more') ?? 'More'}</span>
             <span aria-hidden className="h-1 w-8 rounded-full bg-transparent" />
           </button>
@@ -127,7 +129,7 @@ export default function BottomNav({
             if (items.length === 0) return null;
             return (
               <div key={section.labelKey}>
-                <p className="mb-1.5 text-[10px] font-bold tracking-[0.12em] text-zinc-400">
+                <p className="mb-1.5 text-xs font-semibold text-zinc-500">
                   {t(locale, section.labelKey)}
                 </p>
                 <div className="grid grid-cols-1 gap-1">{items.map(renderNavLink)}</div>
@@ -164,7 +166,7 @@ export default function BottomNav({
             )}
           </div>
           <div className="pt-1 pb-3 border-b border-zinc-100">
-            <p className="mb-2 px-3 text-[10px] font-bold tracking-[0.12em] text-zinc-400">
+            <p className="mb-2 px-3 text-xs font-semibold text-zinc-500">
               {t(locale, 'settings.language')}
             </p>
             <div className="px-3">

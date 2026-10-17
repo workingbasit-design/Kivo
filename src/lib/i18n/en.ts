@@ -26,7 +26,7 @@ const en: Dict = {
     retry: 'Try again',
   },
   nav: {
-    dashboard: 'Dashboard',
+    dashboard: 'Today',
     jobs: 'Jobs',
     schedule: 'Schedule',
     customers: 'Customers',
@@ -234,7 +234,7 @@ const en: Dict = {
     poweredBy: 'Shared privately by {business} · Powered by EveryJob',
   },
   dashboard: {
-    title: 'Dashboard',
+    title: 'Today',
     newJob: 'New job',
     newCustomer: 'New customer',
     newQuote: 'New quote',

@@ -194,14 +194,6 @@ export default async function DashboardPage() {
               icon={<CalendarDays size={22} />}
               title={L("dashboard.nothingScheduled")}
               description={L("dashboard.breather")}
-              action={
-                <Link
-                  href="/jobs/new"
-                  className="bg-ink hover:bg-graphite text-white min-h-[44px] px-4 py-2.5 rounded-xl font-semibold text-xs inline-flex items-center gap-2 transition-colors"
-                >
-                  <Plus size={14} /> {L("dashboard.newJob")}
-                </Link>
-              }
             />
           ) : (
             <ul className="divide-y divide-zinc-100 px-2 pb-2">

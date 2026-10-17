@@ -25,7 +25,7 @@ const fr: Dictionary = {
     retry: 'Réessayer',
   },
   nav: {
-    dashboard: 'Tableau de bord',
+    dashboard: "Aujourd'hui",
     jobs: 'Travaux',
     schedule: 'Horaire',
     customers: 'Clients',
@@ -234,7 +234,7 @@ const fr: Dictionary = {
     poweredBy: 'Partagé en privé par {business} · Propulsé par EveryJob',
   },
   dashboard: {
-    title: 'Tableau de bord',
+    title: "Aujourd'hui",
     newJob: 'Nouveau rendez-vous',
     newCustomer: 'Nouveau client',
     newQuote: 'Nouvelle soumission',
