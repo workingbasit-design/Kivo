@@ -25,6 +25,7 @@ const fragment = {
       },
       portal: {
         baseTotal: 'Quote total',
+        subtotal: 'Subtotal',
         addonsTitle: 'Optional add-ons',
         addonsHint:
           'Tick any extras to include. Your total updates instantly.',
@@ -95,6 +96,7 @@ const fragment = {
       },
       portal: {
         baseTotal: 'Total du devis',
+        subtotal: 'Sous-total',
         addonsTitle: 'Options supplémentaires',
         addonsHint:
           'Cochez les extras à inclure. Votre total se met à jour instantanément.',

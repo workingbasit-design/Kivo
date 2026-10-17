@@ -8,10 +8,12 @@ import { Card, StatusBadge } from '@/components/ui';
 import { formatCents, centsToDollars } from '@/lib/money';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
+import { getTaxConfig, totalTaxRate } from '@/lib/tax';
 import QuotePortalActions from '@/components/QuotePortalActions';
 import PortalNotice from '@/components/PortalNotice';
 import PayDepositButton from '@/components/PayDepositButton';
 import { clientIpFromHeaders } from '@/lib/client-ip';
+import { LanguageToggle } from '@/components/LanguageToggle';
 
 /**
  * Public client portal for a quote. No authentication - the share token in
@@ -74,6 +76,7 @@ export default async function QuotePortalPage({
           whatsappNumber: true,
           address: true,
           regionCode: true,
+          taxRegion: true,
           currency: true,
           stripeConnection: {
             select: { chargesEnabled: true, livemode: true, liveConfirmedAt: true },
@@ -89,6 +92,19 @@ export default async function QuotePortalPage({
   const L = (path: string) => t(locale, path);
   const moneyLocale = locale === 'fr' ? 'fr' : 'en';
   const dateLocale = locale === 'fr' ? 'fr-CA' : 'en-CA';
+
+  // E8: Tax breakdown — same math as the owner-side quote page.
+  // The stored total is tax-inclusive; back out the tax lines so they sum exactly.
+  const round2 = (n: number) => Math.round(n * 100) / 100;
+  const taxConfig = getTaxConfig(quote.business.regionCode, quote.business.taxRegion);
+  const taxRate = totalTaxRate(taxConfig);
+  const totalDollars = centsToDollars(quote.totalCents);
+  const taxAmount = taxRate > 0 ? round2((totalDollars * taxRate) / (100 + taxRate)) : 0;
+  const subtotal = round2(totalDollars - taxAmount);
+  const taxLines = taxConfig.taxes.map((tx) => ({
+    ...tx,
+    amount: taxConfig.taxes.length === 1 ? taxAmount : round2((subtotal * tx.rate) / 100),
+  }));
 
   const selectedAddons = quote.addons.filter((a) => a.selected);
   // Live client total: base quote total (cents) + prices of selected add-ons.
@@ -153,9 +169,21 @@ export default async function QuotePortalPage({
             <StatusBadge status={quote.status} />
           </div>
 
-          <div className="border-t border-zinc-100 pt-4 flex items-center justify-between">
-            <span className="text-sm text-zinc-500">{L('quotes.portal.total')}</span>
-            <span className="text-2xl font-bold text-zinc-900 tracking-tight">{formatCents(quote.totalCents, quote.business.currency, moneyLocale)}</span>
+          <div className="border-t border-zinc-100 pt-4 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-zinc-500">{L('quotes.portal.subtotal')}</span>
+              <span className="text-sm font-semibold text-zinc-900">${subtotal.toFixed(2)}</span>
+            </div>
+            {taxLines.map((tx) => (
+              <div key={tx.name} className="flex items-center justify-between">
+                <span className="text-sm text-zinc-500">{tx.name} ({tx.rate}%)</span>
+                <span className="text-sm font-semibold text-zinc-900">${tx.amount.toFixed(2)}</span>
+              </div>
+            ))}
+            <div className="flex items-center justify-between border-t border-zinc-100 pt-2">
+              <span className="text-sm text-zinc-500">{L('quotes.portal.total')}</span>
+              <span className="text-2xl font-bold text-zinc-900 tracking-tight">{formatCents(quote.totalCents, quote.business.currency, moneyLocale)}</span>
+            </div>
           </div>
         </Card>
 
@@ -273,6 +301,11 @@ export default async function QuotePortalPage({
             </a>
           </p>
         )}
+
+        {/* E8: Language toggle — customer can switch EN/FR */}
+        <div className="flex justify-center pt-2">
+          <LanguageToggle current={locale} />
+        </div>
       </main>
     </div>
   );

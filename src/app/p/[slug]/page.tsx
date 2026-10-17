@@ -26,6 +26,7 @@ import {
 import { parseServiceAreas } from '@/lib/directory-claim';
 import ReportBusinessForm from '@/components/ReportBusinessForm';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
+import { LanguageToggle } from '@/components/LanguageToggle';
 
 async function getProfile(slug: string) {
   // Public directory entry point: the slug is the public address of the
@@ -67,7 +68,7 @@ async function getProfile(slug: string) {
   if (!page || !page.enabled || !page.business.directoryOptIn || !page.business.directoryVerifiedAt) return null;
 
   const businessId = page.business.id;
-  const [services, reviews] = await Promise.all([
+  const [services, reviews, designations] = await Promise.all([
     prisma.service.findMany({
       where: { businessId },
       select: { name: true, priceCents: true },
@@ -79,8 +80,15 @@ async function getProfile(slug: string) {
       orderBy: { createdAt: 'desc' },
       take: 5,
     }),
+    // E8: Trust signals — self-declared licences, insurance, certifications.
+    // Displayed exactly as entered; never invented.
+    prisma.designation.findMany({
+      where: { businessId },
+      select: { type: true, title: true, issuer: true, number: true },
+      orderBy: { createdAt: 'asc' },
+    }),
   ]);
-  return { page, services, reviews };
+  return { page, services, reviews, designations };
 }
 
 export async function generateMetadata({
@@ -122,7 +130,7 @@ export default async function PublicProfilePage({
   const { slug } = await params;
   const data = await getProfile(slug);
   if (!data) notFound();
-  const { page, services, reviews } = data;
+  const { page, services, reviews, designations } = data;
   const b = page.business;
 
   const { count, avg } = ratingSummary(reviews.map((r) => ({ rating: r.rating })));
@@ -291,6 +299,29 @@ export default async function PublicProfilePage({
           </section>
         )}
 
+        {/* E8: Trust signals — licences, insurance, certifications.
+            Self-declared by the business; displayed exactly as entered. */}
+        {designations.length > 0 && (
+          <section className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
+            <h2 className="text-sm font-bold text-zinc-900 mb-3">{L('t10money.profileTrust')}</h2>
+            <ul className="space-y-2.5">
+              {designations.map((d) => (
+                <li key={d.title + d.type} className="flex items-start gap-2.5">
+                  <BadgeCheck size={18} className="text-emerald-700 shrink-0 mt-0.5" aria-hidden="true" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-zinc-900">{d.title}</p>
+                    {(d.issuer || d.number) && (
+                      <p className="text-xs text-zinc-500">
+                        {[d.issuer, d.number ? `#${d.number}` : null].filter(Boolean).join(' · ')}
+                      </p>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         <section className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
           <h2 className="text-sm font-bold text-zinc-900 mb-3">{L('t10money.profileServices')}</h2>
           {services.length === 0 ? (
@@ -388,9 +419,14 @@ export default async function PublicProfilePage({
           </section>
         )}
 
-        <p className="text-center text-[11px] text-zinc-400 pb-8 flex items-center justify-center gap-1.5">
+        <p className="text-center text-[11px] text-zinc-400 pb-4 flex items-center justify-center gap-1.5">
           <BadgeCheck size={11} /> {L('t10money.profileListedNote')}
         </p>
+
+        {/* E8: Language toggle */}
+        <div className="flex justify-center pb-8">
+          <LanguageToggle current={locale} />
+        </div>
       </main>
     </div>
   );

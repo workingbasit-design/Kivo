@@ -14,6 +14,7 @@ import PayNowButton from '@/components/PayNowButton';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { clientIpFromHeaders } from '@/lib/client-ip';
+import { LanguageToggle } from '@/components/LanguageToggle';
 
 /**
  * Public client portal for an invoice. No authentication - the share token
@@ -273,6 +274,11 @@ export default async function InvoicePortalPage({
             )}
           </div>
         )}
+
+        {/* E8: Language toggle */}
+        <div className="flex justify-center pt-2">
+          <LanguageToggle current={locale} />
+        </div>
       </main>
     </div>
   );
