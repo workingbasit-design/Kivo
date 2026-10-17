@@ -339,7 +339,7 @@ export default function ScheduleClient({
 
       {/* Jobs list - the day's agenda when a single day is selected */}
       {agendaJobs.length === 0 ? (
-        <Card>
+        <Card className="mb-28 md:mb-0">
           <EmptyState
             icon={<CalendarIcon size={24} />}
             title={T('schedEmptyTitle')}

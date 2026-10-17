@@ -150,7 +150,7 @@ export default function InvoicesClient({
       </div>
 
       {filtered.length === 0 ? (
-        <Card>
+        <Card className="mb-28 md:mb-0">
           <EmptyState
             icon={<FileText size={24} />}
             title={t(locale, 'billing.listEmptyTitle')}
