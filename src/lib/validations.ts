@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CA_PROVINCES } from "./tax.ts";
 
 export const JOB_STATUSES = [
   "NEW",
@@ -148,4 +149,34 @@ export const registerSchema = z.object({
 export const loginSchema = z.object({
   email: z.string().trim().toLowerCase().email("Enter a valid email").max(255),
   password: z.string().min(1, "Password is required").max(128),
+});
+
+/* ------------------------------------------------------------------ */
+/* E7 - first-run onboarding (trade, team size, province).             */
+/* ------------------------------------------------------------------ */
+
+export const ONBOARDING_TRADES = [
+  "plumbing",
+  "electrical",
+  "hvac",
+  "carpentry",
+  "painting",
+  "landscaping",
+  "cleaning",
+  "renovation",
+  "other",
+] as const;
+
+export const ONBOARDING_TEAM_SIZES = ["1", "2-5", "6+"] as const;
+
+/** Province codes for the E7 first-run question (single source: tax.ts). */
+export const ONBOARDING_PROVINCES = CA_PROVINCES.map((p) => p.code) as [
+  string,
+  ...string[],
+];
+
+export const onboardingSchema = z.object({
+  trade: z.enum(ONBOARDING_TRADES),
+  teamSize: z.enum(ONBOARDING_TEAM_SIZES),
+  province: z.enum(ONBOARDING_PROVINCES),
 });

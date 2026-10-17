@@ -12,7 +12,12 @@ export type OnboardingStepId =
   | 'google'
   | 'team';
 
-const STEPS: { id: OnboardingStepId; href: string }[] = [
+export interface OnboardingStep {
+  id: OnboardingStepId;
+  href: string;
+}
+
+const CORE_STEPS: OnboardingStep[] = [
   // Core flow only: a plumber should be working in 2 minutes.
   // Logo, Google, team are in Settings for those who want them.
   { id: 'customer', href: '/customers/new' },
@@ -40,6 +45,10 @@ function stepKey(
  * job count, quote/invoice count, Google linked, team size). Dismissal is
  * remembered per business in localStorage.
  *
+ * E7: the parent may pass `tailoredSteps` (built from the first-run
+ * answers: trade, team size, province). Defaults to the 3 core steps.
+ * The progress label always uses the real step count.
+ *
  * Mount example (server component):
  *   const completed = {
  *     logo: !!business.logoUrl,
@@ -49,16 +58,19 @@ function stepKey(
  *     google: !!business.googleId,
  *     team: teamCount > 1,
  *   };
- *   <OnboardingChecklist locale={locale} businessId={business.id} completed={completed} />
+ *   const steps = [{ id: 'customer', href: '/customers/new' }, ...];
+ *   <OnboardingChecklist locale={locale} businessId={business.id} completed={completed} tailoredSteps={steps} />
  */
 export default function OnboardingChecklist({
   locale,
   businessId,
   completed,
+  tailoredSteps,
 }: {
   locale: Locale;
   businessId: string;
   completed: Record<OnboardingStepId, boolean>;
+  tailoredSteps?: OnboardingStep[];
 }) {
   // Hydration-safe: server snapshot (false) matches the SSR HTML; the real
   // stored value takes over after hydration (useStoredFlag).
@@ -79,8 +91,9 @@ export default function OnboardingChecklist({
     );
   }
 
-  const done = STEPS.filter((s) => completed[s.id]).length;
-  const total = STEPS.length;
+  const steps = tailoredSteps ?? CORE_STEPS;
+  const done = steps.filter((s) => completed[s.id]).length;
+  const total = steps.length;
 
   // Part A Item 1: When every step is done, remove the card entirely.
   // A completed checklist has served its purpose; keeping it contradicts
@@ -113,12 +126,12 @@ export default function OnboardingChecklist({
         <ProgressBar
           value={done}
           max={total}
-          label={`${done} ${t(locale, 'support.onboardingProgress')}`}
+          label={`${done} ${t(locale, 'support.onboardingProgressOf')} ${total} ${t(locale, 'support.onboardingProgressDone')}`}
         />
       </div>
 
       <ol className="mt-4 space-y-2">
-          {STEPS.map((s) => {
+          {steps.map((s) => {
             const isDone = !!completed[s.id];
             return (
               <li

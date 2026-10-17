@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import {
   Calendar,
   Banknote,
@@ -47,9 +48,14 @@ export default async function DashboardPage() {
     }
   })();
   const [business] = await Promise.all([
-    prisma.business.findUnique({ where: { id: businessId }, select: { currency: true, logoUrl: true, timezone: true, regionCode: true } }),
+    prisma.business.findUnique({ where: { id: businessId }, select: { currency: true, logoUrl: true, timezone: true, regionCode: true, onboardingDone: true, teamSize: true } }),
     genPromise,
   ]);
+  // E7: first run goes to the 3-question flow. Existing businesses with
+  // real data were backfilled to done in m25; only true first-runs land here.
+  if (business && !business.onboardingDone) {
+    redirect('/onboarding');
+  }
   const currency = business?.currency;
   const [stats, counts] = await Promise.all([
     getDashboardStats(businessId, business),
@@ -71,6 +77,18 @@ export default async function DashboardPage() {
     google: !!googleConn,
     team: teamCount > 1,
   };
+
+  // E7: tailor the checklist to the first-run answers. Everyone gets the
+  // 3 core steps; businesses that said they have a team also get the
+  // team-invite step (skipped when the team is already invited).
+  const tailoredSteps: { id: 'customer' | 'job' | 'quote' | 'team'; href: string }[] = [
+    { id: 'customer', href: '/customers/new' },
+    { id: 'job', href: '/jobs/new' },
+    { id: 'quote', href: '/quotes/new' },
+  ];
+  if (business?.teamSize && business.teamSize !== '1' && teamCount <= 1) {
+    tailoredSteps.push({ id: 'team', href: '/settings/team' });
+  }
 
   // E1: New business detection. If no jobs, invoices, or customers exist,
   // show the checklist-first layout instead of $0.00 stat cards.
@@ -106,7 +124,7 @@ export default async function DashboardPage() {
         />
 
         {/* Setup checklist is the screen for a new business. */}
-        <OnboardingChecklist locale={locale} businessId={businessId} completed={onboardingCompleted} />
+        <OnboardingChecklist locale={locale} businessId={businessId} completed={onboardingCompleted} tailoredSteps={tailoredSteps} />
 
         {/* One clear action: create the first job. */}
         <Card className="p-6 text-center">
@@ -283,7 +301,7 @@ export default async function DashboardPage() {
       )}
 
       {/* 4. Setup checklist (until done). Renders nothing when complete. */}
-      <OnboardingChecklist locale={locale} businessId={businessId} completed={onboardingCompleted} />
+      <OnboardingChecklist locale={locale} businessId={businessId} completed={onboardingCompleted} tailoredSteps={tailoredSteps} />
     </div>
   );
 }
