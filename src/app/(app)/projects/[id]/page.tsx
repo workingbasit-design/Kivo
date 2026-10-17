@@ -51,10 +51,35 @@ export default async function ProjectDetailPage({
         },
         orderBy: { order: "asc" },
       },
+      jobs: { select: { id: true } },
     },
   });
 
   if (!project) notFound();
+
+  // E6: Money truth — contract price, invoiced, paid, remaining.
+  // Invoiced/paid come from non-voided invoices linked to this project's jobs.
+  const jobIds = project.jobs.map((j) => j.id);
+  let invoicedCents = BigInt(0);
+  let paidCents = BigInt(0);
+  if (jobIds.length > 0) {
+    const invoices = await prisma.invoice.findMany({
+      where: { businessId, jobId: { in: jobIds }, voidedAt: null },
+      select: {
+        totalCents: true,
+        payments: { select: { amountCents: true } },
+      },
+    });
+    for (const inv of invoices) {
+      invoicedCents += inv.totalCents;
+      for (const p of inv.payments) paidCents += p.amountCents;
+    }
+  }
+  const remainingCents = invoicedCents - paidCents;
+  const leftToInvoiceCents =
+    project.budgetCents != null && BigInt(project.budgetCents) > invoicedCents
+      ? BigInt(project.budgetCents) - invoicedCents
+      : BigInt(0);
 
   const phases: Phase[] = project.phases.map((ph) => ({
     id: ph.id,
@@ -75,16 +100,12 @@ export default async function ProjectDetailPage({
   }));
 
   const donePhases = phases.filter((p) => p.status === "DONE").length;
-  const jobValue = phases.reduce(
-    (s, p) => s + p.jobs.reduce((ss, j) => ss + j.price, 0),
-    0
-  );
 
   return (
     <div className="space-y-6">
       <Link
         href="/projects"
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-zinc-600 hover:text-zinc-900 min-h-[44px]"
+        className="inline-flex items-center gap-1.5 text-sm font-semibold text-ej-secondary hover:text-ej-ink min-h-[44px]"
       >
         <ArrowLeft size={16} aria-hidden /> {t(locale, "projects.back")}
       </Link>
@@ -102,36 +123,67 @@ export default async function ProjectDetailPage({
           }}
           moneyLocale={moneyLocale}
         />
-        <div className="flex flex-wrap gap-4 mt-4 text-sm text-zinc-600">
-          {project.budgetCents != null && (
-            <span>
-              {t(locale, "projects.budget")}:{" "}
-              <strong className="text-zinc-900 tabular-nums">
-                {formatMoney(project.budgetCents / 100, "CAD", moneyLocale)}
-              </strong>
-            </span>
-          )}
-          <span>
-            {t(locale, "projects.spent")}:{" "}
-            <strong className="text-zinc-900 tabular-nums">
-              {formatMoney(jobValue, "CAD", moneyLocale)}
-            </strong>
-          </span>
-          {phases.length > 0 && (
-            <span>
+        <section aria-label={t(locale, 'projects.contractPrice')} className="mt-4 rounded-lg border border-ej-border bg-ej-surface p-4">
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-5">
+            <div>
+              <dt className="text-sm text-ej-secondary">{t(locale, 'projects.contractPrice')}</dt>
+              <dd className="text-base font-bold text-ej-ink tabular-nums">
+                {project.budgetCents != null
+                  ? formatMoney(project.budgetCents / 100, 'CAD', moneyLocale)
+                  : '—'}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-sm text-ej-secondary">{t(locale, 'projects.moneyInvoiced')}</dt>
+              <dd className="text-base font-bold text-ej-ink tabular-nums">
+                {formatMoney(centsToDollars(invoicedCents), 'CAD', moneyLocale)}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-sm text-ej-secondary">{t(locale, 'projects.moneyPaid')}</dt>
+              <dd className="text-base font-bold text-ej-success tabular-nums">
+                {formatMoney(centsToDollars(paidCents), 'CAD', moneyLocale)}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-sm text-ej-secondary">{t(locale, 'projects.moneyRemaining')}</dt>
+              <dd className="text-base font-bold text-ej-ink tabular-nums">
+                {formatMoney(centsToDollars(remainingCents), 'CAD', moneyLocale)}
+              </dd>
+            </div>
+            {leftToInvoiceCents > BigInt(0) && (
+              <div>
+                <dt className="text-sm text-ej-secondary">{t(locale, 'projects.moneyLeftToInvoice')}</dt>
+                <dd className="text-base font-bold text-ej-warning tabular-nums">
+                  {formatMoney(centsToDollars(leftToInvoiceCents), 'CAD', moneyLocale)}
+                </dd>
+              </div>
+            )}
+          </dl>
+        </section>
+        {phases.length > 0 && (
+          <>
+            <p className="text-sm text-ej-secondary mt-4">
               {t(locale, "projects.progress")
                 .replace("{done}", String(donePhases))
                 .replace("{total}", String(phases.length))}
-            </span>
-          )}
-        </div>
-        {phases.length > 0 && (
-          <div className="h-2 rounded-full bg-zinc-100 mt-3 overflow-hidden">
+            </p>
             <div
-              className="h-full rounded-full bg-lime-500 transition-all"
-              style={{ width: `${Math.round((donePhases / phases.length) * 100)}%` }}
-            />
-          </div>
+              className="h-2 rounded-full bg-ej-border mt-2 overflow-hidden"
+              role="progressbar"
+              aria-valuenow={donePhases}
+              aria-valuemin={0}
+              aria-valuemax={phases.length}
+              aria-label={t(locale, "projects.progress")
+                .replace("{done}", String(donePhases))
+                .replace("{total}", String(phases.length))}
+            >
+              <div
+                className="h-full rounded-full bg-ej-ink"
+                style={{ width: `${Math.round((donePhases / phases.length) * 100)}%` }}
+              />
+            </div>
+          </>
         )}
       </Card>
 

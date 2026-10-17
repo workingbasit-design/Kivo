@@ -3,8 +3,33 @@
 import { useState, useTransition } from 'react';
 import { t, type Locale } from '@/lib/i18n';
 import { createProject } from '@/app/actions/projects';
-import { inputClass, selectClass, textareaClass, primaryBtnClass, Field } from '@/components/ui';
+import { Input, Textarea, Select, DateField, MoneyInput } from '@/components/design/fields';
+import { Button, IconButton } from '@/components/design/Button';
+import { ArrowUp, ArrowDown, X, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+
+/** Phase templates by trade. Kept as component constants because t() is string-only. */
+const PHASE_TEMPLATES: Record<string, Record<Locale, string[]>> = {
+  bathroom: {
+    en: ['Demolition', 'Rough-in', 'Tile and waterproofing', 'Fixtures and trim', 'Cleanup and handoff'],
+    fr: ['Démolition', 'Gros œuvre', 'Carrelage et étanchéité', 'Appareils et finition', 'Nettoyage et remise'],
+  },
+  kitchen: {
+    en: ['Demolition', 'Rough-in', 'Cabinets', 'Countertops and backsplash', 'Appliances and finishing', 'Cleanup and handoff'],
+    fr: ['Démolition', 'Gros œuvre', 'Armoires', 'Comptoirs et dosseret', 'Électroménagers et finition', 'Nettoyage et remise'],
+  },
+  general: {
+    en: ['Planning', 'Execution', 'Review', 'Handoff'],
+    fr: ['Planification', 'Exécution', 'Révision', 'Remise'],
+  },
+};
+
+const TEMPLATE_ORDER = ['bathroom', 'kitchen', 'general'] as const;
+const TEMPLATE_LABEL_KEYS: Record<(typeof TEMPLATE_ORDER)[number], string> = {
+  bathroom: 'projects.templateBathroom',
+  kitchen: 'projects.templateKitchen',
+  general: 'projects.templateGeneral',
+};
 
 export function NewProjectForm({
   locale,
@@ -20,9 +45,19 @@ export function NewProjectForm({
   const [budget, setBudget] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [phases, setPhases] = useState('');
+  const [phases, setPhases] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
+  const movePhase = (i: number, dir: -1 | 1) => {
+    const j = i + dir;
+    if (j < 0 || j >= phases.length) return;
+    const next = [...phases];
+    [next[i], next[j]] = [next[j], next[i]];
+    setPhases(next);
+  };
+
+  const removePhase = (i: number) => setPhases(phases.filter((_, k) => k !== i));
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +77,7 @@ export function NewProjectForm({
         budgetCents: budgetCents != null && Number.isFinite(budgetCents) ? budgetCents : undefined,
         startDate: startDate || undefined,
         endDate: endDate || undefined,
-        phases: phases.split('\n'),
+        phases: phases.map((p) => p.trim()).filter(Boolean),
       });
       if (r.ok && r.id) router.push(`/projects/${r.id}`);
       else setError(r.error ?? '');
@@ -50,97 +85,142 @@ export function NewProjectForm({
   };
 
   return (
-    <form onSubmit={submit} className="space-y-4 max-w-xl">
-      <Field label={t(locale, 'projects.titleLabel')}>
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className={inputClass}
-          required
-          minLength={2}
-          maxLength={120}
-        />
-      </Field>
+    <form onSubmit={submit} className="space-y-5 max-w-xl">
+      <Input
+        label={t(locale, 'projects.titleLabel')}
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        required
+        minLength={2}
+        maxLength={120}
+      />
 
-      <Field label={t(locale, 'projects.descriptionLabel')}>
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className={textareaClass}
-          rows={3}
-        />
-      </Field>
+      <Textarea
+        label={t(locale, 'projects.descriptionLabel')}
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        rows={3}
+      />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Field label={t(locale, 'projects.customerLabel')}>
-          <select
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <Select
+            label={t(locale, 'projects.customerLabel')}
             value={customerId}
             onChange={(e) => setCustomerId(e.target.value)}
-            className={selectClass}
+            options={[
+              { value: '', label: t(locale, 'projects.noCustomer') },
+              ...customers.map((c) => ({ value: c.id, label: c.name })),
+            ]}
+          />
+          <a
+            href="/customers/new"
+            className="text-sm font-semibold text-ej-ink hover:underline mt-1 inline-block min-h-[44px] py-2"
           >
-            <option value="">{t(locale, 'projects.noCustomer')}</option>
-            {customers.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-          <a href="/customers/new" className="text-xs font-semibold text-ink hover:underline mt-1.5 inline-block min-h-[32px]">
             {t(locale, 'projects.newCustomer')}
           </a>
-        </Field>
-        <Field label={t(locale, 'projects.budgetLabel')}>
-          <input
-            value={budget}
-            onChange={(e) => setBudget(e.target.value)}
-            className={inputClass}
-            inputMode="decimal"
-            placeholder="0.00"
-          />
-        </Field>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Field label={t(locale, 'projects.startLabel')}>
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className={inputClass}
-          />
-        </Field>
-        <Field label={t(locale, 'projects.endLabel')}>
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className={inputClass}
-            min={startDate || undefined}
-          />
-        </Field>
-      </div>
-
-      <Field
-        label={t(locale, 'projects.phasesLabel')}
-        hint={t(locale, 'projects.phasesHint')}
-      >
-        <textarea
-          value={phases}
-          onChange={(e) => setPhases(e.target.value)}
-          className={textareaClass}
-          rows={4}
+        </div>
+        <MoneyInput
+          label={t(locale, 'projects.budgetLabel')}
+          value={budget}
+          onChange={(e) => setBudget(e.target.value)}
+          placeholder="0.00"
         />
-      </Field>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <DateField
+          label={t(locale, 'projects.startLabel')}
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+        />
+        <DateField
+          label={t(locale, 'projects.endLabel')}
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+          min={startDate || undefined}
+        />
+      </div>
+
+      <fieldset>
+        <legend className="block text-sm font-semibold text-ej-ink mb-1.5">
+          {t(locale, 'projects.phasesLabel')}
+        </legend>
+        <p className="text-sm text-ej-muted mb-3">{t(locale, 'projects.phasesHint')}</p>
+
+        <p className="text-sm font-semibold text-ej-ink mb-2">
+          {t(locale, 'projects.phasesTemplateLabel')}
+        </p>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {TEMPLATE_ORDER.map((id) => (
+            <Button
+              key={id}
+              variant="secondary"
+              size="md"
+              onClick={() => setPhases([...PHASE_TEMPLATES[id][locale]])}
+            >
+              {t(locale, TEMPLATE_LABEL_KEYS[id])}
+            </Button>
+          ))}
+        </div>
+
+        <div className="space-y-2">
+          {phases.map((name, i) => (
+            <div key={i} className="flex items-center gap-1">
+              <div className="flex-1">
+                <Input
+                  label={t(locale, 'projects.phaseNameLabel').replace('{n}', String(i + 1))}
+                  value={name}
+                  onChange={(e) => {
+                    const next = [...phases];
+                    next[i] = e.target.value;
+                    setPhases(next);
+                  }}
+                />
+              </div>
+              <IconButton
+                label={t(locale, 'projects.phaseMoveUp')}
+                onClick={() => movePhase(i, -1)}
+                disabled={i === 0}
+              >
+                <ArrowUp size={18} aria-hidden />
+              </IconButton>
+              <IconButton
+                label={t(locale, 'projects.phaseMoveDown')}
+                onClick={() => movePhase(i, 1)}
+                disabled={i === phases.length - 1}
+              >
+                <ArrowDown size={18} aria-hidden />
+              </IconButton>
+              <IconButton
+                label={t(locale, 'projects.phaseRemove')}
+                onClick={() => removePhase(i)}
+              >
+                <X size={18} aria-hidden />
+              </IconButton>
+            </div>
+          ))}
+        </div>
+        <Button
+          variant="tertiary"
+          size="md"
+          onClick={() => setPhases([...phases, ''])}
+          className="mt-2"
+        >
+          <Plus size={18} aria-hidden className="mr-1" />
+          {t(locale, 'projects.addPhaseRow')}
+        </Button>
+      </fieldset>
 
       {error && (
-        <p className="text-sm text-red-600 font-medium" role="alert">
+        <p className="text-sm text-ej-danger font-medium" role="alert">
           {error}
         </p>
       )}
 
-      <button type="submit" disabled={pending} className={primaryBtnClass}>
-        {pending ? '…' : t(locale, 'projects.create')}
-      </button>
+      <Button type="submit" variant="primary" loading={pending}>
+        {t(locale, 'projects.create')}
+      </Button>
     </form>
   );
 }
