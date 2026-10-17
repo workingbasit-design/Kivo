@@ -1888,6 +1888,38 @@
     },
     {
       "type": "action",
+      "file": "demo.ts",
+      "function": "leaveDemoBusiness",
+      "auth": "session",
+      "hint": "manually reviewed 2026-10-17",
+      "expected": {
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerA": "allow",
+        "adminA": "allow",
+        "dispatcherA": "allow",
+        "technicianA": "allow",
+        "ownerB": "allow"
+      }
+    },
+    {
+      "type": "action",
+      "file": "demo.ts",
+      "function": "openDemoBusiness",
+      "auth": "session",
+      "hint": "manually reviewed 2026-10-17",
+      "expected": {
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerA": "allow",
+        "adminA": "deny",
+        "dispatcherA": "deny",
+        "technicianA": "deny",
+        "ownerB": "allow"
+      }
+    },
+    {
+      "type": "action",
       "file": "designations.ts",
       "function": "createDesignation",
       "auth": "session",
@@ -3436,6 +3468,38 @@
         "dispatcherA": "allow",
         "technicianA": "deny",
         "ownerB": "deny"
+      }
+    },
+    {
+      "type": "action",
+      "file": "onboarding.ts",
+      "function": "saveOnboarding",
+      "auth": "session",
+      "hint": "manually reviewed 2026-10-17",
+      "expected": {
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerA": "allow",
+        "adminA": "allow",
+        "dispatcherA": "allow",
+        "technicianA": "allow",
+        "ownerB": "allow"
+      }
+    },
+    {
+      "type": "action",
+      "file": "onboarding.ts",
+      "function": "skipOnboarding",
+      "auth": "session",
+      "hint": "manually reviewed 2026-10-17",
+      "expected": {
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerA": "allow",
+        "adminA": "allow",
+        "dispatcherA": "allow",
+        "technicianA": "allow",
+        "ownerB": "allow"
       }
     },
     {
