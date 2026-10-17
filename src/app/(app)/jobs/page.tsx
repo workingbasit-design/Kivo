@@ -1,13 +1,13 @@
 import React from 'react';
 import Link from 'next/link';
-import { Plus, Briefcase, Search } from 'lucide-react';
+import { Plus, Briefcase, Search, ArrowUpDown, MoreVertical } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card, EmptyState, primaryBtnClass, inputClass } from '@/components/ui';
 import StatusBadge from '@/components/StatusBadge';
-import { formatDateShort, hasJobTime, formatJobTime, formatStatusLabel, cn } from '@/lib/utils';
+import { hasJobTime, formatJobTime, formatStatusLabel, cn } from '@/lib/utils';
+import { formatDisplayDate } from '@/lib/attention';
 import MoneyText from '@/components/MoneyText';
-import DateTimeText from '@/components/DateTimeText';
 import { JOB_STATUSES, isJobLate } from '@/lib/job-status';
 import { getJobCounts, getJobs } from '@/lib/job-queries';
 import { getLocale } from '@/lib/i18n/server';
@@ -15,20 +15,27 @@ import { t } from '@/lib/i18n';
 import ExportButtons, { type ExportColumn, type ExportRow } from '@/components/ExportButtons';
 import JobsExportMenu from '@/components/JobsExportMenu';
 import { centsToDollars } from '@/lib/money';
+import JobRowMenu from '@/components/JobRowMenu';
+
+type SortKey = 'date' | 'amount' | 'customer';
+const SORT_KEYS: SortKey[] = ['date', 'amount', 'customer'];
 
 export default async function JobsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; q?: string }>;
+  searchParams: Promise<{ status?: string; q?: string; sort?: string }>;
 }) {
   const { businessId } = await requireAuth();
-  const { status, q } = await searchParams;
+  const { status, q, sort } = await searchParams;
   const locale = await getLocale();
   const T = (k: string) => t(locale, `t10work.${k}`);
   const jobsL = (k: string) => t(locale, `jobs.${k}`);
 
   const activeStatus =
     status && (JOB_STATUSES as readonly string[]).includes(status) ? status : 'ALL';
+  const activeSort: SortKey = sort && (SORT_KEYS as readonly string[]).includes(sort)
+    ? (sort as SortKey)
+    : 'date';
 
   const business = await prisma.business.findUnique({
     where: { id: businessId },
@@ -58,18 +65,35 @@ export default async function JobsPage({
       )
     : jobs;
 
+  // Sort: date (nearest first), amount (high to low), customer (A-Z).
+  const sorted = [...filtered].sort((a, b) => {
+    if (activeSort === 'amount') return Number(b.priceCents - a.priceCents);
+    if (activeSort === 'customer') return a.customer.name.localeCompare(b.customer.name, locale);
+    return new Date(a.date).getTime() - new Date(b.date).getTime();
+  });
+
   const statusLink = (s: string) => {
     const params = new URLSearchParams();
     if (s !== 'ALL') params.set('status', s);
     if (query) params.set('q', query);
+    if (activeSort !== 'date') params.set('sort', activeSort);
+    const qs = params.toString();
+    return `/jobs${qs ? `?${qs}` : ''}`;
+  };
+
+  const sortLink = (s: SortKey) => {
+    const params = new URLSearchParams();
+    if (activeStatus !== 'ALL') params.set('status', activeStatus);
+    if (query) params.set('q', query);
+    if (s !== 'date') params.set('sort', s);
     const qs = params.toString();
     return `/jobs${qs ? `?${qs}` : ''}`;
   };
 
   const countLabel =
-    filtered.length === 1
+    sorted.length === 1
       ? T('jobsCountOne').replace('{count}', '1')
-      : T('jobsCountMany').replace('{count}', String(filtered.length));
+      : T('jobsCountMany').replace('{count}', String(sorted.length));
 
   // Export the *currently filtered* list (2026-09-24).
   const exportColumns: ExportColumn[] = [
@@ -81,10 +105,10 @@ export default async function JobsPage({
     { key: 'price', label: t(locale, 'exports.colPrice'), kind: 'money' },
     { key: 'address', label: t(locale, 'exports.colAddress') },
   ];
-  const exportRows: ExportRow[] = filtered.map((j) => ({
+  const exportRows: ExportRow[] = sorted.map((j) => ({
     title: j.title,
     customer: j.customer.name,
-    date: formatDateShort(j.date),
+    date: formatDisplayDate(j.date, timezone, locale),
     time: j.time ?? '',
     status: j.status,
     price: centsToDollars(j.priceCents),
@@ -183,8 +207,30 @@ export default async function JobsPage({
         />
       </div>
 
+      {/* Sort control */}
+      <div className="flex items-center gap-2">
+        <ArrowUpDown size={14} className="text-ej-muted shrink-0" aria-hidden="true" />
+        <div role="group" aria-label={jobsL('sortLabel')} className="flex items-center gap-1.5">
+          {SORT_KEYS.map((s) => (
+            <Link
+              key={s}
+              href={sortLink(s)}
+              aria-current={activeSort === s ? 'true' : undefined}
+              className={cn(
+                'px-3 min-h-[44px] inline-flex items-center rounded-lg text-xs font-semibold whitespace-nowrap transition-colors',
+                activeSort === s
+                  ? 'bg-ej-ink text-white'
+                  : 'text-ej-secondary hover:bg-ej-surface'
+              )}
+            >
+              {jobsL(`sort${s.charAt(0).toUpperCase()}${s.slice(1)}`)}
+            </Link>
+          ))}
+        </div>
+      </div>
+
       {/* Job list - vertical list with dividers (DESIGN.md), not card grids. */}
-      {filtered.length === 0 ? (
+      {sorted.length === 0 ? (
         <Card>
           <EmptyState
             icon={<Briefcase size={24} />}
@@ -201,15 +247,15 @@ export default async function JobsPage({
         </Card>
       ) : (
         <div className="bg-white rounded-xl border border-zinc-200 overflow-hidden divide-y divide-ej-smoke">
-          {filtered.map((job, i) => (
-            <Link
+          {sorted.map((job) => (
+            <div
               key={job.id}
-              href={`/jobs/${job.id}`}
-              className="ej-row-in flex items-center justify-between gap-4 p-4 md:p-5 hover:bg-zinc-50 transition-colors"
-              // @ts-expect-error CSS custom property for the stagger animation
-              style={{ '--row-delay': `${Math.min(i, 12) * 35}ms` }}
+              className="flex items-center justify-between gap-2 p-4 md:p-5 hover:bg-zinc-50 transition-colors"
             >
-              <div className="min-w-0 flex-1">
+              <Link
+                href={`/jobs/${job.id}`}
+                className="min-w-0 flex-1"
+              >
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="font-semibold text-zinc-900 text-sm">{job.title}</p>
                   <StatusBadge
@@ -221,14 +267,17 @@ export default async function JobsPage({
                 <p className="text-xs text-zinc-500 mt-1 truncate">{job.customer.name}</p>
                 <p className="text-xs text-zinc-500 truncate">
                   {hasJobTime(job.time) ? `${formatJobTime(job.time, locale)}, ` : ''}
-                  <DateTimeText date={job.date} variant="short" locale={locale} />
+                  {formatDisplayDate(job.date, timezone, locale)}
                   {job.address ? `, ${job.address}` : ''}
                 </p>
+              </Link>
+              <div className="flex items-center gap-1 shrink-0">
+                <p className="font-bold text-zinc-900 text-sm whitespace-nowrap tabular-nums mr-1">
+                  <MoneyText dollars={centsToDollars(job.priceCents)} locale={locale} />
+                </p>
+                <JobRowMenu jobId={job.id} jobTitle={job.title} status={job.status} locale={locale} />
               </div>
-              <p className="font-bold text-zinc-900 text-sm whitespace-nowrap tabular-nums">
-                <MoneyText dollars={centsToDollars(job.priceCents)} locale={locale} />
-              </p>
-            </Link>
+            </div>
           ))}
         </div>
       )}

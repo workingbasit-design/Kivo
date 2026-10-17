@@ -8,7 +8,8 @@ import {
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { PageHeader, Card, StatusBadge, SectionTitle } from '@/components/ui';
-import { formatDateLabel, toISODateLocal, hasJobTime, formatJobTime, localeDateTag, localeMoneyTag } from '@/lib/utils';
+import { Timeline } from '@/components/design/lists';
+import { formatDateLabel, toISODateLocal, hasJobTime, formatJobTime, formatStatusLabel, localeDateTag, localeMoneyTag } from '@/lib/utils';
 import { formatMoney, centsToDollars } from '@/lib/money';
 import { entryMinutes, formatDuration } from '@/lib/timesheets';
 import { sumLaborMinutes, summarizeJobCost } from '@/lib/costing';
@@ -197,7 +198,22 @@ export default async function JobDetailPage({
     {
       icon: <MapPin size={14} className="text-zinc-400" />,
       label: jobsL('address'),
-      value: job.address || '-',
+      value: job.address ? (
+        <span>
+          {job.address}
+          <br />
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.address)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm font-semibold text-ej-info hover:underline inline-flex items-center gap-1 mt-1 min-h-[44px]"
+          >
+            <MapPin size={14} aria-hidden="true" /> {jobsL('getDirections')}
+          </a>
+        </span>
+      ) : (
+        '-'
+      ),
     },
     {
       icon: <User size={14} className="text-zinc-400" />,
@@ -266,6 +282,27 @@ export default async function JobDetailPage({
           jobDate={jobDateKey}
           createdLabel={T('jobCreatedOn').replace('{date}', formatDateLabel(job.createdAt, dateLocale))}
           locale={locale}
+        />
+      </Card>
+
+      {/* Status timeline - visual history of where this job has been. */}
+      <Card className="p-5">
+        <SectionTitle>{jobsL('timelineTitle')}</SectionTitle>
+        <Timeline
+          items={[
+            {
+              title: T('jobCreatedOn').replace('{date}', ''),
+              timestamp: formatDateLabel(job.createdAt, dateLocale),
+            },
+            ...(job.status !== 'NEW'
+              ? [
+                  {
+                    title: formatStatusLabel(job.status, locale),
+                    timestamp: formatDateLabel(job.updatedAt, dateLocale),
+                  },
+                ]
+              : []),
+          ]}
         />
       </Card>
 
