@@ -152,15 +152,33 @@ export function formatDateShort(
   });
 }
 
-/** "YYYY-MM-DD" in a specific IANA timezone (e.g. "America/Toronto"). */
-export function toISODateInTimezone(d: Date, timeZone: string): string {
-  try {
-    const parts = new Intl.DateTimeFormat('en-CA', {
+/**
+ * Cached "YYYY-MM-DD" formatters per timezone. Constructing an
+ * Intl.DateTimeFormat costs ~40us; the dashboard charts call
+ * toISODateInTimezone thousands of times per render (once per payment per
+ * bucket), so we reuse one formatter per timezone. Formatters are
+ * immutable and safe to share.
+ */
+const tzDayFormatterCache = new Map<string, Intl.DateTimeFormat>();
+
+function tzDayFormatter(timeZone: string): Intl.DateTimeFormat {
+  let f = tzDayFormatterCache.get(timeZone);
+  if (!f) {
+    f = new Intl.DateTimeFormat('en-CA', {
       timeZone,
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
-    }).formatToParts(d);
+    });
+    tzDayFormatterCache.set(timeZone, f);
+  }
+  return f;
+}
+
+/** "YYYY-MM-DD" in a specific IANA timezone (e.g. "America/Toronto"). */
+export function toISODateInTimezone(d: Date, timeZone: string): string {
+  try {
+    const parts = tzDayFormatter(timeZone).formatToParts(d);
     const get = (t: string) => parts.find((p) => p.type === t)?.value ?? '';
     return `${get('year')}-${get('month')}-${get('day')}`;
   } catch {

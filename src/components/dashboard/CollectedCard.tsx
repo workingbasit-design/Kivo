@@ -53,10 +53,14 @@ export default function CollectedCard({
     jobsDoneOfTemplate: string;
     chartSummaryTemplate: string;
     barLabelTemplate: string;
+    showNumbers: string;
+    hideNumbers: string;
+    periodLabel: string;
   };
 }) {
   const tag = locale === "fr" ? "fr-CA" : "en-CA";
   const [mode, setMode] = useState<Mode>("week");
+  const [numbersOpen, setNumbersOpen] = useState(false);
   const period: CollectedPeriod = data[mode];
 
   const weekdayLabel = (weekday: number) =>
@@ -92,7 +96,7 @@ export default function CollectedCard({
           <div
             role="radiogroup"
             aria-label={labels.collected}
-            className="inline-flex rounded-full bg-white/10 p-1"
+            className="ej-collected-toggle inline-flex rounded-full bg-white/10 p-1"
           >
             {(["week", "month"] as Mode[]).map((m) => (
               <button
@@ -131,7 +135,7 @@ export default function CollectedCard({
                 aria-label={fill(labels.barLabelTemplate, {
                   amount: formatMoney(bar.amount, null, locale),
                 })}
-                className="flex min-w-0 flex-1 flex-col items-center justify-end gap-1.5"
+                className="flex min-h-[44px] min-w-0 flex-1 flex-col items-center justify-end gap-1.5"
               >
                 {bar.isToday && bar.amount > 0 && (
                   <span className="text-[11px] font-bold tabular-nums text-white">
@@ -171,6 +175,48 @@ export default function CollectedCard({
               {fill(labels.jobsDoneOfTemplate, { done: period.jobsDone, total: period.jobsTotal })}
             </p>
           </div>
+        </div>
+
+        {/* Part D: screen-reader / low-vision data table for the chart. */}
+        <div className="mt-2">
+          <button
+            type="button"
+            aria-expanded={numbersOpen}
+            onClick={() => setNumbersOpen((o) => !o)}
+            className="inline-flex min-h-[44px] items-center px-1 text-[14px] font-semibold text-zinc-300 underline underline-offset-2"
+          >
+            {numbersOpen ? labels.hideNumbers : labels.showNumbers}
+          </button>
+          {numbersOpen && (
+            <table className="mt-1 w-full text-left text-[13px]">
+              <thead>
+                <tr className="border-b border-white/10 text-zinc-400">
+                  <th scope="col" className="py-2 pr-2 font-medium">
+                    {labels.periodLabel}
+                  </th>
+                  <th scope="col" className="py-2 text-right font-medium">
+                    {labels.collected}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {period.bars.map((bar, i) => (
+                  <tr key={bar.key} className="border-b border-white/5 last:border-0">
+                    <th scope="row" className="py-2 pr-2 font-medium text-white">
+                      {mode === "week"
+                        ? weekdayLabel(bar.weekday)
+                        : period.barMonths[i]
+                          ? monthLabel(period.barMonths[i])
+                          : ""}
+                    </th>
+                    <td className="py-2 text-right tabular-nums text-zinc-200">
+                      {formatMoney(bar.amount, null, locale)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </section>

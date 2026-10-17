@@ -324,6 +324,7 @@ const en: Dict = {
     jobsDoneOf: '{done} of {total}',
     collectedSummary: '{total} collected {period}.',
     collectedBar: '{amount} collected',
+    period: 'Period',
     needsYou: 'Needs you',
     needsYouCount: '{count} items need you',
     seeAll: 'See all',

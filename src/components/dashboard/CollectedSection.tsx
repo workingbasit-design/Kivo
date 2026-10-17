@@ -36,6 +36,9 @@ export default async function CollectedSection({
         jobsDoneOfTemplate: t(locale, "dashboard.jobsDoneOf"),
         chartSummaryTemplate: t(locale, "dashboard.collectedSummary"),
         barLabelTemplate: t(locale, "dashboard.collectedBar"),
+        showNumbers: t(locale, "dashboard.showNumbers"),
+        hideNumbers: t(locale, "dashboard.hideNumbers"),
+        periodLabel: t(locale, "dashboard.period"),
       }}
     />
   );

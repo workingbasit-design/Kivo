@@ -324,6 +324,7 @@ const fr: Dictionary = {
     jobsDoneOf: '{done} sur {total}',
     collectedSummary: '{total} encaissé {period}.',
     collectedBar: '{amount} encaissé',
+    period: 'Période',
     needsYou: 'À faire',
     needsYouCount: '{count} éléments à traiter',
     seeAll: 'Tout voir',

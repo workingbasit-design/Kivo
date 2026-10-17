@@ -720,6 +720,12 @@ body {
     opacity: 1;
     animation: none;
   }
+  /* Part D: the Collected week/month toggle switch is instant, never
+     animated, under reduced motion. */
+  .ej-collected-toggle,
+  .ej-collected-toggle * {
+    transition: none !important;
+  }
 }
 
 }
