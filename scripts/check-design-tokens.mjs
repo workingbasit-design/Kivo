@@ -6,8 +6,11 @@
  * token definition layers (src/app/globals.css @theme, src/components/ui.tsx
  * button classes). Colours must come from docs/DESIGN.md tokens.
  *
- * Grandfathered baseline: 20 pre-existing violations (2026-10-17). New
- * violations fail CI. Burn down the baseline over time; do not add to it.
+ * Grandfathered baseline: pre-existing violations (recorded 2026-10-17).
+ * Keyed by file+colour (not file:line) so adding lines above a violation
+ * does not false-positive as "new" (CI incident 2026-10-17: Part E8 shifted
+ * lines after the baseline was recorded). New (file, colour) pairs fail CI.
+ * Burn down the baseline over time; do not add to it.
  */
 import { readFileSync, readdirSync, statSync } from 'fs';
 import { join, relative } from 'path';
@@ -21,35 +24,35 @@ const ALLOWLIST = new Set([
   'src/components/ui.tsx',
 ]);
 
-// Grandfathered pre-existing violations (file:line). Do not add new entries.
+// Grandfathered pre-existing violations (file|colour). Do not add new entries.
 const BASELINE = new Set([
-  'src/app/q/[token]/page.tsx:260',
-  'src/app/i/[token]/page.tsx:246',
-  'src/app/p/[slug]/page.tsx:256',
-  'src/app/start/page.tsx:17',
-  'src/components/FinishSetupModal.tsx:95',
-  'src/components/FinishSetupModal.tsx:98',
-  'src/components/NotificationSettingsForm.tsx:59',
-  'src/components/WhatsAppButton.tsx:34',
-  'src/components/home/ScheduleMock.tsx:35',
-  'src/components/home/ScheduleMock.tsx:36',
-  'src/components/home/ScheduleMock.tsx:37',
-  'src/components/DispatcherMap.tsx:68',
-  'src/components/GlobalCopilotWidget.tsx:1390',
-  'src/components/GlobalCopilotWidget.tsx:1472',
-  'src/components/PortalLinkManager.tsx:158',
-  'src/components/animated-icons/lottie-lite.ts:301',
-  'src/components/home/HeroBackdrop.tsx:44',
-  'src/components/mascot/JobiMascot.tsx:282',
-  'src/components/mascot/JobiMascot.tsx:315',
-  'src/components/mascot/JobiMascot.tsx:324',
-  'src/components/mascot/JobiMascot.tsx:344',
+  'src/app/i/[token]/page.tsx|[#1fb857]',
+  'src/app/i/[token]/page.tsx|[#25d366]',
+  'src/app/p/[slug]/page.tsx|[#1a9449]',
+  'src/app/p/[slug]/page.tsx|[#1faa55]',
+  'src/app/q/[token]/page.tsx|[#1fb857]',
+  'src/app/q/[token]/page.tsx|[#25d366]',
+  'src/app/start/page.tsx|[#f4f4f2]',
+  'src/components/DispatcherMap.tsx|rgba(0,0,0,.35)',
+  'src/components/FinishSetupModal.tsx|[#ff7a59]',
+  'src/components/GlobalCopilotWidget.tsx|[#fbfbfd]',
+  'src/components/NotificationSettingsForm.tsx|[#161616]',
+  'src/components/PortalLinkManager.tsx|[#128c4a]',
+  'src/components/PortalLinkManager.tsx|[#25d366]',
+  'src/components/WhatsAppButton.tsx|[#128c4a]',
+  'src/components/WhatsAppButton.tsx|[#25d366]',
+  'src/components/animated-icons/lottie-lite.ts|rgba(${math.round(rr * 255)',
+  'src/components/home/HeroBackdrop.tsx|rgba(250,250,247,0.7)',
+  'src/components/home/ScheduleMock.tsx|[#28c840]',
+  'src/components/home/ScheduleMock.tsx|[#febc2e]',
+  'src/components/home/ScheduleMock.tsx|[#ff5f57]',
+  'src/components/mascot/JobiMascot.tsx|rgba(0,0,0,0.12)',
+  'src/components/mascot/JobiMascot.tsx|rgba(0,0,0,0.15)',
+  'src/components/mascot/JobiMascot.tsx|rgba(0,0,0,0.2)',
+  'src/components/mascot/JobiMascot.tsx|rgba(0,0,0,0.25)',
 ]);
 
-// Matches Tailwind arbitrary hex: [#fff], [#ffffff], [#ffffffff]
-// and rgb()/hsl() in class strings.
-const HEX_RE = /\[#(?:[0-9a-fA-F]{3,8})\]/g;
-const FUNC_RE = /\b(?:rgb|rgba|hsl|hsla)\(/g;
+// Colour signatures are extracted inline below via matchAll.
 
 function walk(dir, out = []) {
   for (const e of readdirSync(dir)) {
@@ -69,12 +72,15 @@ for (const file of walk(SRC)) {
     // Skip comments and SVG presentation attributes (separate concern).
     const code = line.replace(/\/\/.*$/, '');
     if (/^\s*(\*|\/\*)/.test(code)) return;
-    HEX_RE.lastIndex = 0;
-    FUNC_RE.lastIndex = 0;
-    if (HEX_RE.test(code) || FUNC_RE.test(code)) {
-      const key = `${rel}:${i + 1}`;
-      if (!BASELINE.has(key)) {
-        violations.push(`${key}: ${code.trim().slice(0, 100)}`);
+    // Signatures are the literal colours on the line, lower-cased. Keying on
+    // (file, colour) instead of (file, line) makes the check immune to line
+    // shifts from unrelated edits elsewhere in the file.
+    const sigs = new Set();
+    for (const m of code.matchAll(/\[#(?:[0-9a-fA-F]{3,8})\]/g)) sigs.add(m[0].toLowerCase());
+    for (const m of code.matchAll(/\b(?:rgb|rgba|hsl|hsla)\([^)]*\)/g)) sigs.add(m[0].toLowerCase());
+    for (const sig of sigs) {
+      if (!BASELINE.has(`${rel}|${sig}`)) {
+        violations.push(`${rel}:${i + 1} [${sig}]: ${code.trim().slice(0, 90)}`);
       }
     }
   });
