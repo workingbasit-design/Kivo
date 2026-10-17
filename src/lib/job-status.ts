@@ -66,12 +66,13 @@ import { toISODateInTimezone } from './utils.ts';
  */
 export const JOB_STATUSES: readonly JobStatus[] = ALL_JOB_STATUSES;
 
-/** Statuses for which a past-due date renders the Late badge. Late is
- *  derived, never stored: a job is Late when its scheduled start is before
- *  today in the business's time zone and its status is New, Scheduled, or
- *  In Progress (2026-10-15: unified per BUG-P4-001 — an in-progress job past
- *  its date is genuinely late, and every screen must agree). */
-const LATE_ELIGIBLE_STATUSES: readonly string[] = ['NEW', 'SCHEDULED', 'IN PROGRESS'];
+/** Statuses that count as "not started" for the Late rule: a job that has
+ *  begun (IN PROGRESS) is never Late. Reversed 2026-10-17 by the owner:
+ *  the 2026-10-15 "Everywhere" decision (BUG-P4-001) treated in-progress
+ *  past-due work as Late; the standing rule is now: Late = not started AND
+ *  the start time has passed. In-progress work past its end time is
+ *  "Running over" (see isRunningOver). */
+const LATE_ELIGIBLE_STATUSES: readonly string[] = ['NEW', 'SCHEDULED'];
 
 const JOB_STATUS_LABELS_EN: Record<string, string> = {
   NEW: 'New',
@@ -101,35 +102,72 @@ export function jobStatusLabel(status: string, locale: 'en' | 'fr' = 'en'): stri
 }
 
 /**
- * True when a job's date is before today (in the given IANA timezone) and
- * its status is New, Scheduled, or In Progress. Calendar-day comparison: a
- * job due today is not late; a job due yesterday or earlier with an open
- * status is.
+ * True when a job has not started (status New or Scheduled) and its start
+ * time has passed. Late is derived, never stored.
+ *
+ * Start-time precision: when the job has a canonical `startAt`, it is Late
+ * the moment that instant passes (a 9:00 a.m. job unstarted at 10:00 a.m.
+ * is Late, even though its calendar day is today). Without `startAt`, the
+ * calendar-day fallback applies: a job whose `date` is before today in the
+ * business's IANA timezone is Late; a job due today is not.
  *
  * Uses the business timezone (not server UTC) so a job dated "today" can't
  * flip Late in the evening when UTC has already rolled to tomorrow.
  */
 export function isJobLate(
-  job: { date: Date | string | null | undefined; status: string },
+  job: {
+    date: Date | string | null | undefined;
+    startAt?: Date | string | null | undefined;
+    status: string;
+  },
   now: Date = new Date(),
   timezone: string = 'America/Toronto',
 ): boolean {
-  if (!job.date) return false;
   if (!LATE_ELIGIBLE_STATUSES.includes(job.status)) return false;
-  let day: string;
-  if (job.date instanceof Date) {
-    if (Number.isNaN(job.date.getTime())) return false;
-    day = toISODateInTimezone(job.date, timezone);
-  } else if (/^\d{4}-\d{2}-\d{2}/.test(job.date)) {
-    // "YYYY-MM-DD" is already a calendar day - use it directly.
-    day = job.date.slice(0, 10);
-  } else {
-    const d = new Date(job.date);
-    if (Number.isNaN(d.getTime())) return false;
-    day = toISODateInTimezone(d, timezone);
-  }
+  const start = toValidDate(job.startAt);
+  if (start) return start.getTime() < now.getTime();
+  if (!job.date) return false;
+  const day = toDayKey(job.date, timezone);
+  if (!day) return false;
   const todayDay = toISODateInTimezone(now, timezone);
   return day < todayDay;
+}
+
+/** A value that is a real Date instant, or null when missing/invalid. */
+function toValidDate(v: Date | string | null | undefined): Date | null {
+  if (v == null) return null;
+  const d = v instanceof Date ? v : new Date(v);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+/** Calendar-day key (YYYY-MM-DD) for a date value, or null when invalid. */
+function toDayKey(v: Date | string, timezone: string): string | null {
+  if (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}/.test(v)) {
+    // "YYYY-MM-DD" is already a calendar day - use it directly.
+    return v.slice(0, 10);
+  }
+  const d = v instanceof Date ? v : new Date(v);
+  if (Number.isNaN(d.getTime())) return null;
+  return toISODateInTimezone(d, timezone);
+}
+
+/**
+ * True when a job is IN PROGRESS and its end time has passed. A job in
+ * progress is never "Late" (standing owner rule, 2026-10-17); it is
+ * "Running over" instead. Requires an `endAt` — without a scheduled end
+ * there is nothing to run over.
+ */
+export function isRunningOver(
+  job: {
+    status: string;
+    endAt?: Date | string | null | undefined;
+  },
+  now: Date = new Date(),
+): boolean {
+  if (job.status !== 'IN PROGRESS') return false;
+  const end = toValidDate(job.endAt);
+  if (!end) return false;
+  return end.getTime() < now.getTime();
 }
 
 /** Re-exported so call sites have one import location for status display. */

@@ -1,55 +1,53 @@
-import React from 'react';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import {
-  ArrowLeft, Calendar, Clock, MapPin, User, Phone, Pencil,
-  DollarSign, FileText, StickyNote, TrendingUp,
-} from '@/components/icons';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { PageHeader, Card, StatusBadge, SectionTitle } from '@/components/ui';
-import { Timeline } from '@/components/design/lists';
-import { formatDateLabel, toISODateLocal, hasJobTime, formatJobTime, formatStatusLabel, localeDateTag, localeMoneyTag } from '@/lib/utils';
-import { formatMoney, centsToDollars } from '@/lib/money';
-import { entryMinutes, formatDuration } from '@/lib/timesheets';
-import { sumLaborMinutes, summarizeJobCost } from '@/lib/costing';
-import JobStatusButtons from '@/components/JobStatusButtons';
-import { JobNoteForm, JobNoteItem } from '@/components/JobNoteForm';
-import MilestoneInvoiceForm from '@/components/MilestoneInvoiceForm';
-import { t } from '@/lib/i18n';
-import { JobChecklist } from '@/components/JobChecklist';
-import { JobExpenses } from '@/components/JobExpenses';
-import { JobCostingCard } from '@/components/JobCostingCard';
-import JobTimeEntryForm from '@/components/JobTimeEntryForm';
-import WhatsAppButton from '@/components/WhatsAppButton';
-import SmsButton from '@/components/SmsButton';
-import TechLocationSharer from '@/components/TechLocationSharer';
-import OnMyWayNotifier from '@/components/OnMyWayNotifier';
-import ReviewLinkButton from '@/components/ReviewLinkButton';
-import ReviewRequestCard from '@/components/ReviewRequestCard';
-import Attachments from '@/components/Attachments';
-import { getReviewEligibility } from '@/lib/review-eligibility';
 import { getLocale } from '@/lib/i18n/server';
+import { t, type Locale } from '@/lib/i18n';
+import { getTaxConfig, calcTaxCents, CA_PROVINCES } from '@/lib/tax';
+import { sumLaborMinutes, summarizeJobCost } from '@/lib/costing';
+import { entryMinutes, formatDuration } from '@/lib/timesheets';
+import { centsToDollars } from '@/lib/money';
+import { isJobLate, isRunningOver, jobStatusLabel } from '@/lib/job-status';
+import { tradeKeyForService } from '@/lib/trade-icons';
+import {
+  formatDateLabel,
+  hasJobTime,
+  formatJobTime,
+  localeDateTag,
+} from '@/lib/utils';
+import { formatDisplayDate } from '@/lib/attention';
+import { getReviewEligibility } from '@/lib/review-eligibility';
+import JobDetailClient, { type JobDetailVm } from './JobDetailClient';
 
-function ProfitRow({
-  label,
-  value,
-  strong,
-}: {
-  label: string;
-  value: string;
-  strong?: boolean;
-}) {
-  return (
-    <div className="flex items-baseline justify-between gap-3">
-      <dt className="text-graphite">{label}</dt>
-      <dd
-        className={`tabular-nums ${strong ? 'font-bold text-ink' : 'font-semibold text-ink'}`}
-      >
-        {value}
-      </dd>
-    </div>
-  );
+function initialsOf(name: string | null | undefined): string {
+  const parts = (name ?? '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '?';
+  return (parts[0][0] + (parts[parts.length - 1][0] ?? '')).toUpperCase();
+}
+
+/** "2:30 p.m." in the business timezone (lowercase, mockup style). */
+function formatInstantTime(d: Date, timezone: string, locale: Locale): string {
+  const parts = new Intl.DateTimeFormat(locale === 'fr' ? 'fr-CA' : 'en-CA', {
+    timeZone: timezone,
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  }).formatToParts(d);
+  const get = (t: string) => parts.find((p) => p.type === t)?.value ?? '';
+  const hm = `${get('hour')}:${get('minute')}`;
+  if (locale === 'fr') return `${hm}`;
+  const ap = get('dayPeriod').toLowerCase().replace('am', 'a.m.').replace('pm', 'p.m.');
+  return `${hm} ${ap}`;
+}
+
+/** "Saturday, October 17" in the business timezone. */
+function formatFullDate(d: Date, timezone: string, locale: Locale): string {
+  return new Intl.DateTimeFormat(locale === 'fr' ? 'fr-CA' : 'en-CA', {
+    timeZone: timezone,
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  }).format(d);
 }
 
 export default async function JobDetailPage({
@@ -59,19 +57,29 @@ export default async function JobDetailPage({
 }) {
   const { id } = await params;
   const { businessId, user, role } = await requireAuth();
-  const locale = await getLocale();
-  const T = (k: string) => t(locale, `t10work.${k}`);
-  const jobsL = (k: string) => t(locale, `jobs.${k}`);
+  const locale: Locale = await getLocale();
   const dateLocale = localeDateTag(locale);
-  const moneyLocale = localeMoneyTag(locale);
-  const business = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true, name: true, regionCode: true, defaultHourlyRateCents: true } });
-  const currency = business?.currency;
+  const business = await prisma.business.findUnique({
+    where: { id: businessId },
+    select: {
+      currency: true,
+      name: true,
+      regionCode: true,
+      taxRegion: true,
+      timezone: true,
+      defaultHourlyRateCents: true,
+    },
+  });
+  const timezone = business?.timezone ?? 'America/Toronto';
 
   const job = await prisma.job.findFirst({
     where: { id, businessId },
     include: {
       customer: true,
-      assignedTo: { select: { id: true, name: true, email: true } },
+      assignedTo: { select: { id: true, name: true } },
+      service: {
+        select: { name: true, nameFr: true, category: true, iconKey: true },
+      },
       jobNotes: {
         include: { author: { select: { name: true, email: true } } },
         orderBy: { createdAt: 'desc' },
@@ -83,9 +91,7 @@ export default async function JobDetailPage({
       checklistItems: {
         orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
       },
-      expenses: {
-        orderBy: { spentAt: 'desc' },
-      },
+      expenses: { orderBy: { spentAt: 'desc' } },
       invoices: {
         orderBy: { createdAt: 'desc' },
         select: {
@@ -100,520 +106,189 @@ export default async function JobDetailPage({
   });
   if (!job) notFound();
 
-  // Team members for the per-job time-entry form (tenant-scoped, via Membership).
-  const members = (
-    await prisma.membership.findMany({
-      where: { businessId, status: 'ACTIVE' },
-      include: { user: { select: { id: true, name: true, email: true } } },
-      orderBy: { user: { name: 'asc' } },
-    })
-  ).map((m) => ({ id: m.user.id, name: m.user.name, email: m.user.email }));
-  const isAdmin = role === 'ADMIN';
+  const [members, templates, customerJobCount, reviewEligibility] =
+    await Promise.all([
+      prisma.membership.findMany({
+        where: { businessId, status: 'ACTIVE' },
+        include: { user: { select: { id: true, name: true, email: true } } },
+        orderBy: { user: { name: 'asc' } },
+      }),
+      prisma.checklistTemplate.findMany({
+        where: { businessId },
+        select: { id: true, name: true },
+        orderBy: { createdAt: 'asc' },
+      }),
+      prisma.job.count({ where: { businessId, customerId: job.customerId } }),
+      getReviewEligibility(businessId, job.id),
+    ]);
 
-  // Review-moat eligibility: show the review-link button only for completed
-  // jobs with a paid invoice. Re-checked server-side at generation time.
-  const reviewEligible = (await getReviewEligibility(businessId, job.id)).ok;
+  const now = new Date();
+  const late = isJobLate(
+    { date: job.date, startAt: job.startAt, status: job.status },
+    now,
+    timezone,
+  );
+  const runningOver = isRunningOver(
+    { status: job.status, endAt: job.endAt },
+    now,
+  );
 
-  const templates = await prisma.checklistTemplate.findMany({
-    where: { businessId },
-    select: { id: true, name: true },
-    orderBy: { createdAt: 'asc' },
-  });
+  // When & where.
+  const jobDay = job.startAt ?? job.date;
+  const relativeDay = formatDisplayDate(jobDay, timezone, locale);
+  const startLabel = job.startAt
+    ? formatInstantTime(job.startAt, timezone, locale)
+    : hasJobTime(job.time)
+      ? formatJobTime(job.time, locale)
+      : null;
+  const endLabel = job.endAt
+    ? formatInstantTime(job.endAt, timezone, locale)
+    : null;
+  const whenPrimary =
+    startLabel && endLabel
+      ? `${relativeDay}, ${startLabel} – ${endLabel}`
+      : startLabel
+        ? `${relativeDay}, ${startLabel}`
+        : relativeDay;
+  const whenSecondary = formatFullDate(jobDay, timezone, locale);
 
-  // Labor minutes for costing exclude still-running sessions (null clockOut);
-  // the entry list below still shows live elapsed time for transparency.
+  // Money: quoted price + tax through the shared engine (integer cents).
+  const priceCents = Number(job.priceCents);
+  const taxConfig = getTaxConfig(business?.regionCode, business?.taxRegion);
+  const taxRates = taxConfig.taxes.map((tx) => ({
+    taxType: tx.name,
+    rateBps: Math.round(tx.rate * 1000),
+  }));
+  const { taxCents } = calcTaxCents(priceCents, taxRates);
+  const provinceName =
+    CA_PROVINCES.find((p) => p.code === taxConfig.taxRegion)?.name ?? '';
+  const taxLabel = provinceName
+    ? `${taxConfig.label} (${provinceName})`
+    : taxConfig.label;
+
+  // Costing: quoted price vs labor + expenses (same math as JobCostingCard).
   const laborMinutes = sumLaborMinutes(job.timeEntries);
   const hourlyRate =
     business?.defaultHourlyRateCents != null
       ? centsToDollars(business.defaultHourlyRateCents)
       : null;
-
-  // Profitability - read-only P&L snapshot. Revenue is what has actually been
-  // invoiced to date (quoted price shown as reference); costs are labor
-  // (hours × business rate) plus expenses. Reuses the tested
-  // summarizeJobCost math, which never divides by zero (marginPct is null
-  // when revenue is 0). Only rendered when at least one input is non-zero.
-  const invoicedToDate = job.invoices.reduce(
-    (s, inv) => s + centsToDollars(inv.totalCents),
-    0
-  );
-  const plSummary = summarizeJobCost({
-    price: invoicedToDate,
+  const costing = summarizeJobCost({
+    price: centsToDollars(priceCents),
     laborMinutes,
     hourlyRate,
-    expenses: job.expenses.map((e) => ({ category: e.category, amount: centsToDollars(e.amountCents) })),
+    expenses: job.expenses.map((e) => ({
+      category: e.category,
+      amount: centsToDollars(e.amountCents),
+    })),
   });
-  const showProfitability =
-    centsToDollars(job.priceCents) > 0 ||
-    invoicedToDate > 0 ||
-    laborMinutes > 0 ||
-    plSummary.expensesTotal > 0;
+  const showCosting =
+    priceCents > 0 || laborMinutes > 0 || costing.expensesTotal > 0;
 
-  // job.date is a date-only DB value (midnight): format its calendar-day
-  // key, never the Date instant, so the label can't shift a day when the
-  // runtime timezone differs from the one that wrote the row.
-  const jobDateKey = toISODateLocal(job.date);
-
-  const infoRows: Array<{ icon: React.ReactNode; label: string; value: React.ReactNode }> = [
-    {
-      icon: <Calendar size={14} className="text-ink-2" />,
-      label: jobsL('date'),
-      value: formatDateLabel(jobDateKey, dateLocale),
+  const vm: JobDetailVm = {
+    id: job.id,
+    title: job.title,
+    status: job.status,
+    tradeKey: job.service
+      ? tradeKeyForService(job.service)
+      : tradeKeyForService({ name: job.title }),
+    late,
+    runningOver,
+    whenPrimary,
+    whenSecondary,
+    address: job.address?.trim() ? job.address.trim() : null,
+    notes: job.notes?.trim() ? job.notes.trim() : null,
+    priceCents,
+    taxLabel,
+    taxCents,
+    totalCents: priceCents + taxCents,
+    customer: {
+      id: job.customer.id,
+      name: job.customer.name,
+      phone: job.customer.phone,
+      email: job.customer.email,
+      initials: initialsOf(job.customer.name),
+      sinceYear: job.customer.createdAt.getFullYear(),
+      jobsCount: customerJobCount,
     },
-    {
-      icon: <Clock size={14} className="text-ink-2" />,
-      label: jobsL('time'),
-      value: hasJobTime(job.time) ? formatJobTime(job.time, locale) : '-',
-    },
-    {
-      icon: <DollarSign size={14} className="text-ink-2" />,
-      label: jobsL('price'),
-      value: <span className="font-bold text-ink tabular-nums">{formatMoney(centsToDollars(job.priceCents), currency, moneyLocale)}</span>,
-    },
-    {
-      icon: <User size={14} className="text-ink-2" />,
-      label: jobsL('customer'),
-      value: (
-        <Link
-          href={`/customers/${job.customer.id}`}
-          className="font-semibold text-ink hover:underline"
-        >
-          {job.customer.name}
-        </Link>
-      ),
-    },
-    ...(job.customer.phone
-      ? [
-          {
-            icon: <Phone size={14} className="text-ink-2" />,
-            label: T('jobPhone'),
-            value: (
-              <a href={`tel:${job.customer.phone}`} className="hover:underline">
-                {job.customer.phone}
-              </a>
-            ),
-          },
-        ]
-      : []),
-    {
-      icon: <MapPin size={14} className="text-ink-2" />,
-      label: jobsL('address'),
-      value: job.address ? (
-        <span>
-          {job.address}
-          <br />
-          <a
-            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.address)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm font-semibold text-ej-info hover:underline inline-flex items-center gap-1 mt-1 min-h-[44px]"
-          >
-            <MapPin size={14} aria-hidden="true" /> {jobsL('getDirections')}
-          </a>
-        </span>
-      ) : (
-        '-'
-      ),
-    },
-    {
-      icon: <User size={14} className="text-ink-2" />,
-      label: jobsL('technician'),
-      value: job.technician || job.assignedTo?.name || T('jobUnassigned'),
-    },
-  ];
-
-  return (
-    <div className="space-y-6 max-w-3xl">
-      <Link
-        href="/jobs"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-2 hover:text-ink min-h-[44px] px-2 -ml-2"
-      >
-        <ArrowLeft size={14} /> {T('jobBackToJobs')}
-      </Link>
-
-      <PageHeader
-        title={job.title}
-        actions={
-          <div className="flex items-center gap-2 flex-wrap">
-            {/* wa.me chat with the customer - user taps to send from their own
-                WhatsApp; EveryJob never sends anything automatically. */}
-            <WhatsAppButton
-              phone={job.customer.phone}
-              regionCode={business?.regionCode}
-              message={`Hi ${job.customer.name}! ${business?.name ?? 'We'} have your "${job.title}" booking scheduled for ${formatDateLabel(jobDateKey, dateLocale)}${hasJobTime(job.time) ? ` at ${formatJobTime(job.time, locale)}` : ''}.`}
-              label={T('jobWhatsAppLabel')}
-            />
-            {/* Free SMS: opens the phone's SMS app with the same message
-                prefilled - sent from the user's own mobile plan, $0. */}
-            <SmsButton
-              phone={job.customer.phone}
-              regionCode={business?.regionCode}
-              message={`Hi ${job.customer.name}! ${business?.name ?? 'We'} have your "${job.title}" booking scheduled for ${formatDateLabel(jobDateKey, dateLocale)}${hasJobTime(job.time) ? ` at ${formatJobTime(job.time, locale)}` : ''}.`}
-              label={T('jobSmsLabel')}
-            />
-            {/* Review moat: a single-use review link is offered only when the
-                job is complete AND the customer has a paid invoice. The
-                eligibility is re-checked server-side when the link is
-                generated and again at submission time. */}
-            {reviewEligible && (
-              <ReviewLinkButton
-                jobId={job.id}
-                idleLabel={T('jobRequestReview')}
-                copiedLabel={T('jobReviewLinkCopied')}
-                errorLabel={T('jobReviewLinkFailed')}
-              />
-            )}
-            <Link
-              href={`/jobs/${job.id}/edit`}
-              className="bg-surface hover:bg-surface-2 text-ink min-h-[44px] px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 border border-line shadow-sm"
-            >
-              <Pencil size={14} /> {t(locale, 'common.edit')}
-            </Link>
-          </div>
+    tech: job.assignedTo
+      ? {
+          id: job.assignedTo.id,
+          name: job.assignedTo.name ?? '',
+          initials: initialsOf(job.assignedTo.name),
         }
-      />
+      : job.technician?.trim()
+        ? { id: '', name: job.technician.trim(), initials: initialsOf(job.technician) }
+        : null,
+    members: members.map((m) => ({
+      id: m.user.id,
+      name: m.user.name ?? '',
+      initials: initialsOf(m.user.name),
+    })),
+    progressStage: ['NEW', 'SCHEDULED', 'IN PROGRESS', 'COMPLETED', 'PAID'].indexOf(
+      job.status,
+    ),
+    bookedLabel: formatDateLabel(job.createdAt, dateLocale),
+    statusChangedLabel: formatDateLabel(job.updatedAt, dateLocale),
+    statusLabel: jobStatusLabel(job.status, locale),
+    createdLabel: t(locale, 't10work.jobCreatedOn').replace(
+      '{date}',
+      formatDateLabel(job.createdAt, dateLocale),
+    ),
+    invoices: job.invoices.map((inv) => ({
+      id: inv.id,
+      number: inv.number,
+      label: inv.milestoneLabel || inv.number,
+      totalCents: Number(inv.totalCents),
+      status: inv.status,
+    })),
+    uninvoiced: job.status === 'COMPLETED' && job.invoices.length === 0,
+    costing: showCosting
+      ? {
+          profitCents: Math.round(costing.profit * 100),
+          marginPct: costing.marginPct,
+          costCents: Math.round(costing.totalCost * 100),
+          laborCents: Math.round(costing.laborCost * 100),
+          laborDuration: formatDuration(laborMinutes),
+          expensesCents: Math.round(costing.expensesTotal * 100),
+          hourlyRate,
+        }
+      : null,
+    jobNotes: job.jobNotes.map((n) => ({
+      id: n.id,
+      content: n.content,
+      authorName: n.author.name || n.author.email,
+      createdAtLabel: formatDateLabel(n.createdAt, dateLocale),
+    })),
+    checklistItems: job.checklistItems.map((i) => ({
+      id: i.id,
+      label: i.label,
+      done: i.done,
+    })),
+    checklistTemplates: templates.map((tpl) => ({ id: tpl.id, name: tpl.name })),
+    expenses: job.expenses.map((e) => ({
+      id: e.id,
+      description: e.description,
+      amount: centsToDollars(e.amountCents),
+      category: e.category,
+      spentAt: formatDateLabel(e.spentAt, dateLocale),
+    })),
+    currency: business?.currency ?? 'CAD',
+    timeEntries: job.timeEntries.slice(0, 8).map((e) => ({
+      name: e.user.name || e.user.email,
+      dateLabel: formatDateLabel(e.clockIn, dateLocale),
+      active: !e.clockOut,
+      minutes: entryMinutes(e.clockIn, e.clockOut),
+    })),
+    timeEntryMembers: members.map((m) => ({
+      id: m.user.id,
+      name: m.user.name,
+      email: m.user.email ?? '',
+    })),
+    isAdmin: role === 'ADMIN',
+    selfId: user.id,
+    reviewEligible: reviewEligibility.ok,
+    locale,
+  };
 
-      {/* Status badge + controls - one client component so the badge updates
-          instantly when the status changes (no stale server render). */}
-      <Card className="p-5">
-        <JobStatusButtons
-          jobId={job.id}
-          status={job.status}
-          jobDate={jobDateKey}
-          createdLabel={T('jobCreatedOn').replace('{date}', formatDateLabel(job.createdAt, dateLocale))}
-          locale={locale}
-        />
-      </Card>
-
-      {/* Status timeline - visual history of where this job has been. */}
-      <Card className="p-5">
-        <SectionTitle>{jobsL('timelineTitle')}</SectionTitle>
-        <Timeline
-          items={[
-            {
-              title: T('jobCreatedOn').replace('{date}', ''),
-              timestamp: formatDateLabel(job.createdAt, dateLocale),
-            },
-            ...(job.status !== 'NEW'
-              ? [
-                  {
-                    title: formatStatusLabel(job.status, locale),
-                    timestamp: formatDateLabel(job.updatedAt, dateLocale),
-                  },
-                ]
-              : []),
-          ]}
-        />
-      </Card>
-
-      {/* Live location sharing - per-job controls. Shown only while the job
-          is scheduled or in progress; the server rejects pings for jobs in
-          any other status. */}
-      {(job.status === 'SCHEDULED' || job.status === 'IN PROGRESS') && (
-        <>
-          <Card className="p-5">
-            <TechLocationSharer
-              jobs={[
-                {
-                  id: job.id,
-                  title: job.title,
-                  customerName: job.customer.name,
-                  address: job.customer.address ?? undefined,
-                },
-              ]}
-            />
-          </Card>
-
-          {/* "On my way" customer notification - pre-written message with
-              SMS/WhatsApp send buttons. Shown only while the job is active,
-              matching the tracking-share endpoint's ACTIVE_STATUSES. The
-              pro taps to send from their own apps; nothing is sent
-              automatically. */}
-          <Card className="p-5">
-            <OnMyWayNotifier
-              jobId={job.id}
-              jobTitle={job.title}
-              customerName={job.customer.name}
-              phone={job.customer.phone}
-              regionCode={business?.regionCode}
-              businessName={business?.name ?? ''}
-              techName={
-                job.technician ||
-                job.assignedTo?.name ||
-                t(locale, 'jobops.notify.ourTech')
-              }
-              locale={locale}
-            />
-          </Card>
-        </>
-      )}
-
-      {/* Post-job review request - COMPLETED jobs only. The single-use link
-          is created via the server action, which re-checks the review moat
-          (completed job + paid invoice) and never bypasses it. */}
-      {job.status === 'COMPLETED' && (
-        <ReviewRequestCard
-          jobId={job.id}
-          customerName={job.customer.name}
-          businessName={business?.name ?? ''}
-          phone={job.customer.phone}
-          regionCode={business?.regionCode}
-          locale={locale}
-        />
-      )}
-
-      {/* Details */}
-      <Card className="p-5 md:p-6">
-        <SectionTitle>
-          <span className="inline-flex items-center gap-2 normal-case tracking-normal">
-            <FileText size={14} /> {T('jobDetailsTitle')}
-          </span>
-        </SectionTitle>
-        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-          {infoRows.map((row) => (
-            <div key={row.label} className="flex items-start gap-2.5">
-              <span className="mt-0.5">{row.icon}</span>
-              <div className="min-w-0">
-                <dt className="text-[11px] font-bold text-ink-2">
-                  {row.label}
-                </dt>
-                <dd className="text-sm text-ink mt-0.5 break-words">{row.value}</dd>
-              </div>
-            </div>
-          ))}
-        </dl>
-        {job.notes && (
-          <div className="mt-5 pt-5 border-t border-line">
-            <p className="text-[11px] font-bold text-ink-2 mb-1.5">
-              {jobsL('notes')}
-            </p>
-            <p className="text-sm text-ink whitespace-pre-wrap">{job.notes}</p>
-          </div>
-        )}
-      </Card>
-
-      {/* Checklist (with progress bar) */}
-      <JobChecklist
-        jobId={job.id}
-        locale={locale}
-        items={job.checklistItems.map((i) => ({ id: i.id, label: i.label, done: i.done }))}
-        templates={templates}
-      />
-
-      {/* Expenses */}
-      <div id="job-expenses" className="scroll-mt-24">
-        <JobExpenses
-          jobId={job.id}
-          locale={locale}
-          currency={currency}
-          expenses={job.expenses.map((e) => ({
-            id: e.id,
-            description: e.description,
-            amount: centsToDollars(e.amountCents),
-            category: e.category,
-            spentAt: formatDateLabel(e.spentAt, dateLocale),
-          }))}
-        />
-      </div>
-
-      {/* Log time for this job (manual time entry, pre-scoped) */}
-      <JobTimeEntryForm
-        jobId={job.id}
-        jobTitle={job.title}
-        members={members}
-        isAdmin={isAdmin}
-        selfId={user.id}
-        locale={locale}
-      />
-
-      {/* Job costing - quoted price vs labor + expenses */}
-      <JobCostingCard
-        jobId={job.id}
-        locale={locale}
-        currency={currency}
-        price={centsToDollars(job.priceCents)}
-        laborMinutes={laborMinutes}
-        timeEntryCount={job.timeEntries.length}
-        hourlyRate={hourlyRate}
-        expenses={job.expenses.map((e) => ({ category: e.category, amount: centsToDollars(e.amountCents) }))}
-        entries={job.timeEntries.slice(0, 8).map((e) => ({
-          name: e.user.name || e.user.email,
-          dateLabel: formatDateLabel(e.clockIn, dateLocale),
-          active: !e.clockOut,
-          minutes: entryMinutes(e.clockIn, e.clockOut),
-        }))}
-      />
-
-      {/* Profitability - read-only P&L snapshot: what has actually been
-          invoiced to date vs labor (hours × rate) and expenses. Purely
-          derived from the job query above; no new data entry, no new
-          models. Rendered only when at least one input is non-zero. */}
-      {showProfitability && (
-        <Card className="p-5 md:p-6">
-          <SectionTitle>
-            <span className="inline-flex items-center gap-2 normal-case tracking-normal">
-              <TrendingUp size={14} /> {t(locale, 'jobops.profitability.title')}
-            </span>
-          </SectionTitle>
-          <p className="text-xs text-ink-2 -mt-3 mb-4">
-            {t(locale, 'jobops.profitability.subtitle')}
-          </p>
-          <dl className="space-y-2.5 text-sm">
-            <ProfitRow
-              label={t(locale, 'jobops.profitability.quotedPrice')}
-              value={formatMoney(centsToDollars(job.priceCents), currency, moneyLocale)}
-            />
-            <ProfitRow
-              label={t(locale, 'jobops.profitability.invoiced')}
-              value={formatMoney(invoicedToDate, currency, moneyLocale)}
-              strong
-            />
-            <div className="flex items-baseline justify-between gap-3">
-              <dt className="text-graphite">{t(locale, 'jobops.profitability.labor')}</dt>
-              <dd className="font-semibold text-ink tabular-nums text-right">
-                {formatDuration(laborMinutes)}{' '}
-                <span className="text-[11px] font-semibold text-graphite">
-                  ×{' '}
-                  {hourlyRate !== null
-                    ? formatMoney(hourlyRate, currency, moneyLocale)
-                    : '-'}
-                  /h
-                </span>{' '}
-                {formatMoney(plSummary.laborCost, currency, moneyLocale)}
-              </dd>
-            </div>
-            {plSummary.materialsCost > 0 && (
-              <ProfitRow
-                label={t(locale, 'jobops.profitability.materials')}
-                value={formatMoney(plSummary.materialsCost, currency, moneyLocale)}
-              />
-            )}
-            {plSummary.travelCost > 0 && (
-              <ProfitRow
-                label={t(locale, 'jobops.profitability.travel')}
-                value={formatMoney(plSummary.travelCost, currency, moneyLocale)}
-              />
-            )}
-            {plSummary.otherCost > 0 && (
-              <ProfitRow
-                label={t(locale, 'jobops.profitability.other')}
-                value={formatMoney(plSummary.otherCost, currency, moneyLocale)}
-              />
-            )}
-
-            <div className="border-t border-smoke pt-2.5" />
-
-            <ProfitRow
-              label={t(locale, 'jobops.profitability.totalCost')}
-              value={formatMoney(plSummary.totalCost, currency, moneyLocale)}
-              strong
-            />
-            <div className="flex items-baseline justify-between gap-3">
-              <dt className="text-graphite">{t(locale, 'jobops.profitability.profit')}</dt>
-              <dd
-                className={`font-bold tabular-nums ${
-                  plSummary.profit >= 0 ? 'text-ok' : 'text-danger'
-                }`}
-              >
-                {formatMoney(plSummary.profit, currency, moneyLocale)}
-                <span className="text-[11px] font-semibold ml-2">
-                  {plSummary.marginPct !== null
-                    ? `${plSummary.marginPct.toFixed(1)}% ${t(
-                        locale,
-                        'jobops.profitability.margin'
-                      ).toLowerCase()}`
-                    : '-'}
-                </span>
-              </dd>
-            </div>
-          </dl>
-        </Card>
-      )}
-
-      {/* Job photos & files - the deferred job-photo decision resolves to
-          universal Attachments (Vercel Blob, Track 6A). */}
-      <Attachments entityType="job" entityId={job.id} locale={locale} />
-
-      {/* Progress invoicing - milestone invoices linked to this job */}
-      <Card className="p-5 md:p-6">
-        <SectionTitle>
-          <span className="inline-flex items-center gap-2 normal-case tracking-normal">
-            <DollarSign size={14} /> {t(locale, 'billing.progressTitle')}
-          </span>
-        </SectionTitle>
-        <p className="text-xs text-ink-2 mb-4">
-          {t(locale, 'billing.progressDesc')}
-        </p>
-        {job.invoices.length > 0 ? (
-          <ul className="divide-y divide-line mb-2">
-            {job.invoices.map((inv) => (
-              <li key={inv.id}>
-                <Link
-                  href={`/invoices/${inv.id}`}
-                  className="flex items-center justify-between gap-3 py-2.5 hover:bg-surface-2 rounded-lg px-2 -mx-2 min-h-[56px]"
-                >
-                  <div className="min-w-0 flex items-center gap-2">
-                    <span className="inline-flex items-center rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-semibold text-ink-2 shrink-0">
-                      {t(locale, 'billing.milestoneBadge')}
-                    </span>
-                    <span className="text-sm font-semibold text-ink truncate">
-                      {inv.milestoneLabel || inv.number}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    <span className="text-sm font-bold text-ink tabular-nums">
-                      {formatMoney(centsToDollars(inv.totalCents), currency, moneyLocale)}
-                    </span>
-                    <StatusBadge status={inv.status} />
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-xs text-ink-2 py-2">
-            {t(locale, 'billing.noProgressInvoices')}
-          </p>
-        )}
-        <MilestoneInvoiceForm jobId={job.id} locale={locale} />
-      </Card>
-
-      {/* Job notes */}
-      <Card className="p-5 md:p-6">
-        <SectionTitle
-          action={
-            <span className="text-[11px] font-semibold text-ink-2 tabular-nums">
-              ({job.jobNotes.length})
-            </span>
-          }
-        >
-          <span className="inline-flex items-center gap-2 normal-case tracking-normal">
-            <StickyNote size={14} /> {T('jobNotesTitle')}
-          </span>
-        </SectionTitle>
-        {job.jobNotes.length === 0 ? (
-          <p className="text-xs text-ink-2 py-3">
-            {T('jobNotesEmpty')}
-          </p>
-        ) : (
-          <div className="mb-2">
-            {job.jobNotes.map((note) => (
-              <JobNoteItem
-                key={note.id}
-                jobId={job.id}
-                locale={locale}
-                noteId={note.id}
-                content={note.content}
-                authorName={note.author.name || note.author.email}
-                createdAt={formatDateLabel(note.createdAt, dateLocale)}
-              />
-            ))}
-          </div>
-        )}
-        <div className="pt-4 border-t border-line mt-2">
-          <JobNoteForm jobId={job.id} locale={locale} />
-        </div>
-      </Card>
-    </div>
-  );
+  return <JobDetailClient vm={vm} />;
 }

@@ -95,6 +95,7 @@ export default function BottomNav({
     <>
       <nav
         aria-label={t(locale, 'nav.primary') ?? 'Primary'}
+        data-chrome="bottom-nav"
         className="md:hidden fixed bottom-0 inset-x-0 z-40"
       >
         <div

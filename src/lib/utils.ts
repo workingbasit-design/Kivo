@@ -334,6 +334,10 @@ export function statusClasses(status: string): string {
 /** Job statuses that count as "still open" for overdue computation. */
 export const OPEN_JOB_STATUSES = ['NEW', 'SCHEDULED', 'IN PROGRESS'] as const;
 
+/** Job statuses that count as "not started" for the Late rule: a job in
+ *  progress is never Late (standing owner rule, 2026-10-17). */
+export const NOT_STARTED_JOB_STATUSES = ['NEW', 'SCHEDULED'] as const;
+
 /**
  * Localized status label (job / invoice / quote / lead badges). Falls back
  * to the raw status string for values not yet translated, so no badge ever
@@ -345,9 +349,14 @@ export function statusLabel(status: string, locale: 'en' | 'fr' = 'en'): string 
 }
 
 /**
- * True when a job's date has passed and it still isn't done/cancelled.
- * Compares calendar days in the given IANA timezone: a job due today is
- * not overdue; a job due yesterday or earlier with an open status is.
+ * True when a job has not started (status New or Scheduled) and its date
+ * has passed. Compares calendar days in the given IANA timezone: a job due
+ * today is not overdue; a job due yesterday or earlier with an unstarted
+ * status is.
+ *
+ * Standing owner rule (2026-10-17, reversing the 2026-10-15 "Everywhere"
+ * decision): a job in progress is never Late — past its end time it is
+ * "Running over" instead (see isRunningOver in lib/job-status.ts).
  *
  * The timezone parameter fixes the server-UTC bug where a job dated
  * "today" would flip overdue in the evening once UTC rolled to tomorrow.
@@ -361,7 +370,7 @@ export function isJobOverdue(
   timezone: string = 'America/Toronto',
 ): boolean {
   if (!date) return false;
-  if (!(OPEN_JOB_STATUSES as readonly string[]).includes(status)) return false;
+  if (!(NOT_STARTED_JOB_STATUSES as readonly string[]).includes(status)) return false;
   let day: string;
   if (date instanceof Date) {
     if (Number.isNaN(date.getTime())) return false;

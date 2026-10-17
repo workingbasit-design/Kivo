@@ -40,7 +40,7 @@ export function PageHeader({
       className="flex flex-wrap items-end justify-between gap-x-3 gap-y-2.5 px-0 pb-[14px] pt-1.5"
     >
       <div className="min-w-0 flex-[1_1_200px]">
-        <h1 className="m-0 text-[28px] font-bold leading-[1.1] tracking-tight">{title}</h1>
+        <h1 className="m-0 text-[28px] font-bold leading-[1.1] tracking-tight text-ink">{title}</h1>
         {summary != null && <p className="mb-0 mt-[5px] text-[16px] text-ink-2">{summary}</p>}
       </div>
       {actionHref ? (

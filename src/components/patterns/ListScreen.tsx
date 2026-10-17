@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils';
+import type { ReactNode } from 'react';
 import type { IconComponent } from '@/components/icons';
 import {
   PageHeader,
@@ -58,6 +59,9 @@ export interface ListScreenProps {
   /** Groups are pre-filtered for the search query by the caller; chip counts
    * are computed from these rows, so they always match the list. */
   groups: ListScreenGroup[];
+  /** Optional content rendered between the filter chips and the groups
+   * (e.g. the Jobs screen's sort row). */
+  belowChips?: ReactNode;
 }
 
 /**
@@ -84,6 +88,7 @@ export function ListScreen({
   selectedFilterId,
   onSelectFilter,
   groups,
+  belowChips,
 }: ListScreenProps) {
   const filterIds = filters.map((f) => f.id);
   const counts = computeFilterCounts(groups, filterIds);
@@ -119,6 +124,7 @@ export function ListScreen({
         onSelect={onSelectFilter}
         ariaLabel={filtersLabel}
       />
+      {belowChips}
       {visible.length === 0 ? (
         activeFilter && (
           <EmptyState

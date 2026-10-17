@@ -1130,3 +1130,9 @@ section[id] h2, section[id] h3, [id] > h2:first-child {
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.01em;
 }
+
+/* Detail screens (patterns/DetailScreen) hide the bottom tab bar; the
+   sticky action bar takes its place (mockup detail chrome). */
+body:has([data-pattern='detail-screen']) [data-chrome='bottom-nav'] {
+  display: none;
+}

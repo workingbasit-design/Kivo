@@ -16,10 +16,10 @@ const yesterday = new Date('2026-09-25T10:00:00');
 const today = new Date('2026-09-26T09:00:00');
 const tomorrow = new Date('2026-09-27T10:00:00');
 
-test('isJobOverdue: open job with past date is overdue', () => {
+test('isJobOverdue: unstarted job with past date is overdue; in-progress never (standing rule 2026-10-17)', () => {
   assert.equal(isJobOverdue('SCHEDULED', yesterday, now), true);
   assert.equal(isJobOverdue('NEW', yesterday, now), true);
-  assert.equal(isJobOverdue('IN PROGRESS', yesterday, now), true);
+  assert.equal(isJobOverdue('IN PROGRESS', yesterday, now), false);
 });
 
 test('isJobOverdue: job due today or in the future is not overdue', () => {

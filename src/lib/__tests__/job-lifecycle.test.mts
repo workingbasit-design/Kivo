@@ -10,7 +10,7 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { isJobLate, jobStatusLabel, JOB_STATUSES } from '../job-status.ts';
+import { isJobLate, isRunningOver, jobStatusLabel, JOB_STATUSES } from '../job-status.ts';
 
 const D = (iso: string) => new Date(iso);
 
@@ -95,14 +95,12 @@ test('isJobLate: DST fallback Sunday Nov 1 2026 (America/St_Johns)', () => {
   assert.equal(isJobLate(job, D('2026-11-02T14:00:00Z'), 'America/St_Johns'), true);
 });
 
-test('isJobLate: finished/cancelled jobs are never late; IN PROGRESS past-due IS late (BUG-P4-001 "Everywhere")', () => {
+test('isJobLate: finished/cancelled/in-progress jobs are never late (standing owner rule 2026-10-17)', () => {
   const now = D('2026-10-13T12:00:00Z');
   const past = D('2026-10-10T16:00:00Z');
-  for (const s of ['COMPLETED', 'PAID', 'CANCELLED']) {
+  for (const s of ['COMPLETED', 'PAID', 'CANCELLED', 'IN PROGRESS']) {
     assert.equal(isJobLate({ date: past, status: s }, now, 'America/Toronto'), false, s);
   }
-  // 2026-10-15 user decision: past-due IN PROGRESS jobs show Late everywhere.
-  assert.equal(isJobLate({ date: past, status: 'IN PROGRESS' }, now, 'America/Toronto'), true, 'IN PROGRESS');
 });
 
 test('isJobLate: future dates and missing dates are not late', () => {
@@ -116,4 +114,59 @@ test('isJobLate: YYYY-MM-DD string dates work as calendar days', () => {
   const now = D('2026-10-13T12:00:00Z');
   assert.equal(isJobLate({ date: '2026-10-12', status: 'SCHEDULED' }, now, 'America/Toronto'), true);
   assert.equal(isJobLate({ date: '2026-10-13', status: 'SCHEDULED' }, now, 'America/Toronto'), false);
+});
+
+test('isJobLate: startAt precision - a today job whose start time passed is late', () => {
+  // 2026-10-13 14:00 UTC = 10:00 Toronto. A 9:00 a.m. Toronto start that has
+  // not begun is Late, even though its calendar day is today.
+  const now = D('2026-10-13T14:00:00Z');
+  assert.equal(
+    isJobLate({ date: '2026-10-13', startAt: D('2026-10-13T13:00:00Z'), status: 'SCHEDULED' }, now, 'America/Toronto'),
+    true,
+  );
+  // …but a 3:00 p.m. start later today is not.
+  assert.equal(
+    isJobLate({ date: '2026-10-13', startAt: D('2026-10-13T19:00:00Z'), status: 'SCHEDULED' }, now, 'America/Toronto'),
+    false,
+  );
+});
+
+test('isJobLate: startAt wins over the calendar-day fallback', () => {
+  // startAt tomorrow, date yesterday (stale legacy date): not late, because
+  // the canonical start has not passed.
+  const now = D('2026-10-13T14:00:00Z');
+  assert.equal(
+    isJobLate({ date: '2026-10-12', startAt: D('2026-10-14T13:00:00Z'), status: 'NEW' }, now, 'America/Toronto'),
+    false,
+  );
+  // Invalid startAt falls back to the calendar-day rule.
+  assert.equal(
+    isJobLate({ date: '2026-10-12', startAt: 'not-a-date', status: 'NEW' }, now, 'America/Toronto'),
+    true,
+  );
+});
+
+test('isRunningOver: IN PROGRESS past its end time', () => {
+  const now = D('2026-10-13T18:00:00Z'); // 14:00 Toronto
+  assert.equal(
+    isRunningOver({ status: 'IN PROGRESS', endAt: D('2026-10-13T17:00:00Z') }, now),
+    true,
+  );
+  // End time in the future: not running over.
+  assert.equal(
+    isRunningOver({ status: 'IN PROGRESS', endAt: D('2026-10-13T20:00:00Z') }, now),
+    false,
+  );
+  // No end time: cannot run over.
+  assert.equal(isRunningOver({ status: 'IN PROGRESS', endAt: null }, now), false);
+  assert.equal(isRunningOver({ status: 'IN PROGRESS' }, now), false);
+  // Not in progress: never running over, even past the end time.
+  assert.equal(
+    isRunningOver({ status: 'SCHEDULED', endAt: D('2026-10-13T17:00:00Z') }, now),
+    false,
+  );
+  assert.equal(
+    isRunningOver({ status: 'COMPLETED', endAt: D('2026-10-13T17:00:00Z') }, now),
+    false,
+  );
 });

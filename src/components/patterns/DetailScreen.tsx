@@ -7,6 +7,12 @@ export interface DetailSection {
   /** Section heading rendered above the card; omit for an unlabeled card. */
   title?: string;
   content: ReactNode;
+  /**
+   * When true, the section renders without the wrapping card — the content
+   * brings its own titled cards (e.g. the Job detail "what's next" section
+   * holds the assign, progress and checklist cards). Order is unchanged.
+   */
+  bare?: boolean;
 }
 
 export interface DetailScreenProps {
@@ -106,9 +112,13 @@ export function DetailScreen({
               </h2>
             </div>
           )}
-          <Card className={section.title ? 'px-3.5 py-1' : 'mt-3 px-3.5 py-1'}>
-            {section.content}
-          </Card>
+          {section.bare ? (
+            section.content
+          ) : (
+            <Card className={section.title ? 'px-3.5 py-1' : 'mt-3 px-3.5 py-1'}>
+              {section.content}
+            </Card>
+          )}
         </section>
       ))}
       <StickyActionBar

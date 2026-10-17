@@ -50,11 +50,12 @@ test('P4-U-011: Vancouver (PDT, UTC-7) evening boundary', () => {
   assert.equal(isJobOverdue('SCHEDULED', '2026-10-13', m, 'America/Vancouver'), true);
 });
 
-test('P4-U-012: isJobOverdue — NEW/SCHEDULED/IN PROGRESS can be late; closed never', () => {
+test('P4-U-012: isJobOverdue — NEW/SCHEDULED can be late; IN PROGRESS never; closed never', () => {
   const m = new Date('2026-10-15T12:00:00Z');
-  for (const s of ['NEW', 'SCHEDULED', 'IN PROGRESS']) {
+  for (const s of ['NEW', 'SCHEDULED']) {
     assert.equal(isJobOverdue(s, '2026-10-01', m, 'America/Toronto'), true, s);
   }
+  assert.equal(isJobOverdue('IN PROGRESS', '2026-10-01', m, 'America/Toronto'), false, 'IN PROGRESS');
   for (const s of ['COMPLETED', 'PAID', 'CANCELLED']) {
     assert.equal(isJobOverdue(s, '2026-10-01', m, 'America/Toronto'), false, s);
   }
@@ -62,13 +63,14 @@ test('P4-U-012: isJobOverdue — NEW/SCHEDULED/IN PROGRESS can be late; closed n
   assert.equal(isJobOverdue('SCHEDULED', undefined, m), false);
 });
 
-test('P4-U-012: isJobLate (job-status.ts) — NEW/SCHEDULED/IN PROGRESS (BUG-P4-001 fixed)', () => {
-  // 2026-10-15: unified per user decision ("Everywhere") — a past-due job
-  // that is still being worked is genuinely late; every screen must agree.
+test('P4-U-012: isJobLate (job-status.ts) — NEW/SCHEDULED only (standing owner rule 2026-10-17)', () => {
+  // 2026-10-17: the owner reversed the 2026-10-15 "Everywhere" decision.
+  // Late = not started AND start time passed; an in-progress job is never
+  // Late (it is "Running over" past its end time instead).
   const m = new Date('2026-10-15T12:00:00Z');
   assert.equal(isJobLate({ date: '2026-10-01', status: 'NEW' }, m, 'America/Toronto'), true);
   assert.equal(isJobLate({ date: '2026-10-01', status: 'SCHEDULED' }, m, 'America/Toronto'), true);
-  assert.equal(isJobLate({ date: '2026-10-01', status: 'IN PROGRESS' }, m, 'America/Toronto'), true);
+  assert.equal(isJobLate({ date: '2026-10-01', status: 'IN PROGRESS' }, m, 'America/Toronto'), false);
   assert.equal(isJobLate({ date: '2026-10-01', status: 'COMPLETED' }, m, 'America/Toronto'), false);
 });
 

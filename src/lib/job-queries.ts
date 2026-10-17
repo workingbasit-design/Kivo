@@ -77,6 +77,7 @@ export async function getJobCounts(
       id: true,
       status: true,
       date: true,
+      startAt: true,
       invoices: { select: { id: true } },
     },
   });
@@ -264,3 +265,39 @@ export async function getJobs(
     orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
   });
 }
+
+/**
+ * Jobs list screen (all-modules redesign, Part 3 group 1): every job for
+ * the business with exactly the fields the ListScreen rows need — trade
+ * icon (via service), assignee, invoice linkage (for "not invoiced"), and
+ * the start/end instants the Late / Running-over rules need. One source of
+ * truth with getJobCounts and the Dashboard / Schedule screens.
+ */
+export async function getJobsForList(businessId: string, db: Db = defaultPrisma) {
+  return db.job.findMany({
+    where: { businessId },
+    select: {
+      id: true,
+      title: true,
+      date: true,
+      time: true,
+      timeTbd: true,
+      startAt: true,
+      endAt: true,
+      status: true,
+      priceCents: true,
+      noCharge: true,
+      address: true,
+      technician: true,
+      customer: { select: { id: true, name: true } },
+      service: {
+        select: { name: true, nameFr: true, category: true, iconKey: true },
+      },
+      assignedTo: { select: { id: true, name: true } },
+      invoices: { select: { id: true, status: true } },
+    },
+    orderBy: [{ date: 'asc' }, { createdAt: 'asc' }],
+  });
+}
+
+export type JobsForListRow = Awaited<ReturnType<typeof getJobsForList>>[number];
