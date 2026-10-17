@@ -4,7 +4,7 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { computeAttention, sortAttention, type AttentionInput } from '../attention.ts';
+import { computeAttention, sortAttention, daypartGreeting, type AttentionInput } from '../attention.ts';
 
 const DAY = 86_400_000;
 const NOW = new Date('2026-10-04T14:00:00-04:00'); // Oct 4 2026, 2pm Toronto
@@ -205,4 +205,47 @@ test('sorting: critical first, then attention, then positive; money sorts by amo
     items.map((i) => i.id),
     ['c1', 'a1', 'a2', 'p']
   );
+});
+
+// Part A (dashboard rebuild): the briefing greeting matches the business's
+// local time instead of a hardcoded "Good morning".
+test('daypartGreeting follows America/Toronto time', () => {
+  // 9:00am Toronto -> morning
+  assert.equal(
+    daypartGreeting(new Date('2026-10-17T09:00:00-04:00'), 'America/Toronto', 'en'),
+    'Good morning'
+  );
+  // 2:00pm Toronto -> afternoon
+  assert.equal(
+    daypartGreeting(new Date('2026-10-17T14:00:00-04:00'), 'America/Toronto', 'en'),
+    'Good afternoon'
+  );
+  // 10:47pm Toronto (already the next day in UTC) -> evening
+  assert.equal(
+    daypartGreeting(new Date('2026-10-17T22:47:00-04:00'), 'America/Toronto', 'en'),
+    'Good evening'
+  );
+  // 8:00pm Toronto in French -> Bonsoir
+  assert.equal(
+    daypartGreeting(new Date('2026-10-17T20:00:00-04:00'), 'America/Toronto', 'fr'),
+    'Bonsoir'
+  );
+  // 2:00pm Toronto in French -> Bonjour (used all day until evening)
+  assert.equal(
+    daypartGreeting(new Date('2026-10-17T14:00:00-04:00'), 'America/Toronto', 'fr'),
+    'Bonjour'
+  );
+});
+
+test('daypartGreeting: the same UTC instant greets differently per timezone', () => {
+  // 2026-10-18T02:47:00Z is 10:47pm Oct 17 in Toronto (evening)
+  // but 6:47pm Oct 17 in Vancouver (still evening) — and 7:47am Oct 18 in
+  // Auckland would be morning; use a clearer split instead:
+  // 2026-10-17T15:00:00Z = 11:00am Toronto (morning), 8:00am Vancouver (morning).
+  const instant = new Date('2026-10-17T15:00:00Z');
+  assert.equal(daypartGreeting(instant, 'America/Toronto', 'en'), 'Good morning');
+  // 2026-10-17T23:00:00Z = 7:00pm Toronto (evening), 4:00pm Vancouver (afternoon)
+  const split = new Date('2026-10-17T23:00:00Z');
+  assert.equal(daypartGreeting(split, 'America/Toronto', 'en'), 'Good evening');
+  assert.equal(daypartGreeting(split, 'America/Vancouver', 'en'), 'Good afternoon');
 });

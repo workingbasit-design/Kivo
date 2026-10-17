@@ -12,33 +12,47 @@ const fragment = {
     },
     attention: {
       title: 'Needs your attention',
-      subtitle: 'The {count} things that matter most right now.',
+      // Part A: plural-aware (French treats 0 and 1 as singular). Render with tp().
+      subtitle: {
+        one: 'The {count} thing that matters most right now.',
+        other: 'The {count} things that matter most right now.',
+      },
       emptyTitle: 'All clear',
       emptyDesc:
         'Nothing needs your attention right now. New risks, overdue money and idle leads will show up here.',
       viewAll: 'View all',
       briefingTitle: 'Today’s briefing',
-      briefingSubtitle: 'Good morning. Here’s what needs you first.',
+      // Part A: the greeting matches the business's local time ({greeting} is
+      // filled by daypartGreeting), instead of a hardcoded "Good morning".
+      briefingSubtitle: '{greeting}. Here’s what needs you first.',
       items: {
         overdueInvoice: {
           title: 'Invoice {number} overdue ({customer})',
-          detail: '{days} days overdue',
+          detail: {
+            one: '{days} day overdue',
+            other: '{days} days overdue',
+          },
         },
         quoteFollowUp: {
           title: 'Quote {number} waiting ({customer})',
-          detail: 'No response in {days} days',
+          detail: {
+            one: 'No response in {days} day',
+            other: 'No response in {days} days',
+          },
         },
+        // Part A: no quotation marks around job titles; the title names the
+        // job and its state on one line, the customer follows on the next.
         jobAtRisk: {
-          title: '“{title}” hasn’t started ({customer})',
-          detail: 'Was scheduled for {date}',
+          title: '{title} hasn’t started',
+          detail: '{customer}, {date}',
         },
         jobUnassigned: {
-          title: '“{title}” has no technician ({date})',
-          detail: 'For {customer}. Assign someone before the day slips.',
+          title: '{title} has no technician',
+          detail: '{customer}, {date}',
         },
         jobUnbilled: {
-          title: '“{title}” finished but not invoiced ({customer})',
-          detail: 'Completed work with no invoice yet',
+          title: '{title} finished but not invoiced',
+          detail: '{customer}, no invoice yet',
         },
         leadIdle: {
           title: 'New lead waiting: {name}',
@@ -49,7 +63,10 @@ const fragment = {
           detail: '{quantity} left, at or below your reorder point',
         },
         paidThisWeek: {
-          title: '{count} invoices paid this week',
+          title: {
+            one: '{count} invoice paid this week',
+            other: '{count} invoices paid this week',
+          },
           detail: 'Collected this week. Nice work.',
         },
       },
@@ -202,33 +219,47 @@ const fragment = {
     },
     attention: {
       title: 'À surveiller',
-      subtitle: 'Les {count} choses qui comptent le plus en ce moment.',
+      // Part A : pluriel (0 et 1 au singulier). Rendre avec tp().
+      subtitle: {
+        one: 'La {count} chose qui compte le plus en ce moment.',
+        other: 'Les {count} choses qui comptent le plus en ce moment.',
+      },
       emptyTitle: 'Tout est en ordre',
       emptyDesc:
         'Rien ne requiert votre attention pour l’instant. Les nouveaux risques, les sommes en retard et les prospects en attente apparaîtront ici.',
       viewAll: 'Tout voir',
       briefingTitle: 'Briefing du jour',
-      briefingSubtitle: 'Bonjour. Voici ce qui mérite votre attention en premier.',
+      // Part A : la salutation suit l’heure locale de l’entreprise ({greeting}
+      // est rempli par daypartGreeting), au lieu d’un « Bonjour » figé.
+      briefingSubtitle: '{greeting}. Voici ce qui mérite votre attention en premier.',
       items: {
         overdueInvoice: {
           title: 'Facture {number} en retard ({customer})',
-          detail: '{days} jours de retard',
+          detail: {
+            one: '{days} jour de retard',
+            other: '{days} jours de retard',
+          },
         },
         quoteFollowUp: {
           title: 'Soumission {number} en attente ({customer})',
-          detail: 'Sans réponse depuis {days} jours',
+          detail: {
+            one: 'Sans réponse depuis {days} jour',
+            other: 'Sans réponse depuis {days} jours',
+          },
         },
+        // Part A : pas de guillemets autour des titres de travaux; le titre
+        // nomme le travail et son état sur une ligne, le client suit sur la suivante.
         jobAtRisk: {
-          title: '« {title} » jamais commencé ({customer})',
-          detail: 'Prévu le {date}',
+          title: '{title} jamais commencé',
+          detail: '{customer}, {date}',
         },
         jobUnassigned: {
-          title: '« {title} » sans technicien ({date})',
-          detail: 'Pour {customer}. Assignez quelqu’un avant que la journée dérape.',
+          title: '{title} sans technicien',
+          detail: '{customer}, {date}',
         },
         jobUnbilled: {
-          title: '« {title} » terminé mais non facturé ({customer})',
-          detail: 'Travail terminé sans facture',
+          title: '{title} terminé mais non facturé',
+          detail: '{customer}, aucune facture pour l’instant',
         },
         leadIdle: {
           title: 'Nouveau prospect en attente : {name}',
@@ -239,7 +270,10 @@ const fragment = {
           detail: '{quantity} restant. Au seuil de réapprovisionnement ou en dessous',
         },
         paidThisWeek: {
-          title: '{count} factures payées cette semaine',
+          title: {
+            one: '{count} facture payée cette semaine',
+            other: '{count} factures payées cette semaine',
+          },
           detail: 'Encaissé cette semaine. Beau travail.',
         },
       },

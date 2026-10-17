@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { dayRange, todayInTimezone } from "@/lib/utils";
+import { dayRangeInTimezone, todayInTimezone } from "@/lib/utils";
 import { centsToDollars } from "@/lib/money";
 import {
   bucketRevenueByService,
@@ -116,7 +116,10 @@ export async function getDashboardStats(
       select: { timezone: true, regionCode: true },
     }));
   const todayStr = todayInTimezone(b?.timezone, b?.regionCode);
-  const { gte: todayStart, lte: todayEnd } = dayRange(todayStr);
+  // Part A: the day window is anchored in the business timezone, not the
+  // server's. This is the single definition of "today" shared with the
+  // attention engine and the shared date formatter.
+  const { gte: todayStart, lte: todayEnd } = dayRangeInTimezone(todayStr, b?.timezone);
   const weekStart = daysAgo(6); // last 7 days incl. today
 
   // Job counts, job lists, and the money summary come from the shared
@@ -321,7 +324,7 @@ export async function getReportStats(
     select: { timezone: true, regionCode: true },
   });
   const todayStr = todayInTimezone(biz?.timezone, biz?.regionCode);
-  const { gte: todayStart } = dayRange(todayStr);
+  const { gte: todayStart } = dayRangeInTimezone(todayStr, biz?.timezone);
   const workloadEnd = new Date(todayStart);
   workloadEnd.setDate(workloadEnd.getDate() + 14);
 

@@ -173,9 +173,16 @@ export function defaultTimezoneForRegion(_regionCode?: string | null): string {
   return 'America/Toronto';
 }
 
-/** "YYYY-MM-DD" for "today" in the business's timezone. */
-export function todayInTimezone(timeZone?: string | null, regionCode?: string | null): string {
-  return toISODateInTimezone(new Date(), timeZone || defaultTimezoneForRegion(regionCode));
+/**
+ * "YYYY-MM-DD" for "today" in the business's timezone.
+ * The `now` parameter is injectable for tests (defaults to the real clock).
+ */
+export function todayInTimezone(
+  timeZone?: string | null,
+  regionCode?: string | null,
+  now: Date = new Date()
+): string {
+  return toISODateInTimezone(now, timeZone || defaultTimezoneForRegion(regionCode));
 }
 
 /**
@@ -246,6 +253,30 @@ export function dayRange(dateStr: string): { gte: Date; lte: Date } {
   const [y, m, d] = dateStr.split("-").map(Number);
   const gte = new Date(y, m - 1, d, 0, 0, 0, 0);
   const lte = new Date(y, m - 1, d, 23, 59, 59, 999);
+  return { gte, lte };
+}
+
+/**
+ * Start/end of a business-timezone calendar day as UTC Dates for Prisma.
+ *
+ * Part A (dashboard rebuild): `dayRange` builds the window with
+ * `new Date(y, m - 1, d)`, which is midnight SERVER-local. On Vercel (UTC)
+ * that instant is up to 5 hours off the business day, so "today's" queries
+ * showed the wrong day's jobs in the evening. This version anchors both
+ * ends at midnight in the business timezone, matching the attention
+ * engine's day keys and `formatDisplayDate`.
+ */
+export function dayRangeInTimezone(
+  dateStr: string,
+  timeZone?: string | null
+): { gte: Date; lte: Date } {
+  const gte = parseDateInputInTimezone(dateStr, timeZone);
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const nextDay = new Date(Date.UTC(y, m - 1, d + 1));
+  const nextStr = `${nextDay.getUTCFullYear()}-${String(
+    nextDay.getUTCMonth() + 1
+  ).padStart(2, "0")}-${String(nextDay.getUTCDate()).padStart(2, "0")}`;
+  const lte = new Date(parseDateInputInTimezone(nextStr, timeZone).getTime() - 1);
   return { gte, lte };
 }
 

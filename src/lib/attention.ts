@@ -30,6 +30,12 @@ export interface AttentionItem {
   titleParams: Record<string, string | number>;
   detailKey: string;
   detailParams: Record<string, string | number>;
+  /**
+   * Part A: plural resolution. When the title or detail template is a
+   * `{one, other}` message, this names which line it is and the count that
+   * drives the choice (rendered with `tp()`; French treats 0 and 1 as singular).
+   */
+  plural?: { key: 'title' | 'detail'; count: number };
   /** CAD amount, set for money items so the UI can show it. */
   amount?: number;
   /** Deep link to act on the item. */
@@ -144,6 +150,47 @@ export function formatDisplayDate(
   }).format(d);
 }
 
+/**
+ * "Now" for the briefing greeting. A plain module helper (not a component),
+ * so it evaluates fresh on every request without tripping render-purity rules
+ * (same pattern as requestNowMs in the Money page).
+ */
+export function greetingNow(): Date {
+  return new Date();
+}
+
+/**
+ * Part A: time-of-day greeting in the business timezone.
+ * Pure — `now` is injectable for tests.
+ * EN: morning 5–11, afternoon 12–16, evening otherwise.
+ * FR: "Bonjour" 5–17, "Bonsoir" otherwise.
+ */
+export function daypartGreeting(
+  now: Date,
+  timeZone?: string | null,
+  locale: 'en' | 'fr' = 'en'
+): string {
+  const tz = timeZone || 'America/Toronto';
+  let hour = 12;
+  try {
+    hour = Number(
+      new Intl.DateTimeFormat('en-CA', {
+        timeZone: tz,
+        hour: 'numeric',
+        hour12: false,
+      }).format(now)
+    );
+  } catch {
+    // keep the noon default
+  }
+  if (locale === 'fr') {
+    return hour >= 18 || hour < 5 ? 'Bonsoir' : 'Bonjour';
+  }
+  if (hour >= 5 && hour < 12) return 'Good morning';
+  if (hour >= 12 && hour < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
 export function sortAttention(items: AttentionItem[]): AttentionItem[] {
   return [...items].sort((a, b) => {
     const s = SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity];
@@ -173,6 +220,7 @@ export function computeAttention(input: AttentionInput): AttentionItem[] {
       titleParams: { number: inv.number, customer: inv.customerName },
       detailKey: 'items.overdueInvoice.detail',
       detailParams: { days: overdueDays, amount: balance.toFixed(2) },
+      plural: { key: 'detail', count: overdueDays },
       amount: balance,
       href: `/invoices/${inv.id}`,
       ctaKey: 'actions.reviewInvoice',
@@ -183,6 +231,7 @@ export function computeAttention(input: AttentionInput): AttentionItem[] {
   for (const q of input.quotes) {
     if (q.status !== 'SENT') continue;
     if (!needsFollowUp(q.updatedAt, now)) continue;
+    const waitingDays = daysWaiting(q.updatedAt, now);
     items.push({
       id: `quote-${q.id}`,
       severity: 'attention',
@@ -190,7 +239,8 @@ export function computeAttention(input: AttentionInput): AttentionItem[] {
       titleKey: 'items.quoteFollowUp.title',
       titleParams: { number: q.number, customer: q.customerName },
       detailKey: 'items.quoteFollowUp.detail',
-      detailParams: { days: daysWaiting(q.updatedAt, now), amount: q.total.toFixed(2) },
+      detailParams: { days: waitingDays, amount: q.total.toFixed(2) },
+      plural: { key: 'detail', count: waitingDays },
       amount: q.total,
       href: `/quotes/${q.id}`,
       ctaKey: 'actions.followUp',
@@ -299,6 +349,7 @@ export function computeAttention(input: AttentionInput): AttentionItem[] {
       titleParams: { count: input.paidThisWeek.count },
       detailKey: 'items.paidThisWeek.detail',
       detailParams: { amount: input.paidThisWeek.total.toFixed(2) },
+      plural: { key: 'title', count: input.paidThisWeek.count },
       amount: input.paidThisWeek.total,
       href: `/invoices?status=PAID`,
       ctaKey: 'actions.viewInvoices',

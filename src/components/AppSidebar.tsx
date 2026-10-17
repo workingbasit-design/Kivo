@@ -10,6 +10,7 @@ import CopilotTriggerButton from '@/components/CopilotTriggerButton';
 import { logout } from '@/app/actions/auth';
 import { formatMoney } from '@/lib/money';
 import { t, type Locale } from '@/lib/i18n';
+import { tp } from '@/lib/i18n/plural';
 import { navSections, navBadgeKeys, advancedNavItems, type NavItem } from '@/components/nav-sections';
 import { NavIconView } from '@/components/animated-icons/nav-icon';
 import { useAutoExpandFlag } from '@/hooks/useStoredFlag';
@@ -137,10 +138,7 @@ export default function AppSidebar({
           </div>
           <p className="text-xs text-white/75 mt-1">
             {t(locale, 'nav.bookedToday')} ·{' '}
-            {t(locale, stats.jobsLeftToday === 1 ? 'nav.jobLeft' : 'nav.jobsLeft').replace(
-              '{count}',
-              String(stats.jobsLeftToday)
-            )}
+            {tp(locale, 'nav.jobsLeft', stats.jobsLeftToday)}
           </p>
         </div>
       </div>

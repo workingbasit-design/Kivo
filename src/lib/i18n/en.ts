@@ -67,8 +67,11 @@ const en: Dict = {
     },
     todayView: 'Today, in one view',
     bookedToday: 'booked today',
-    jobLeft: '{count} job left',
-    jobsLeft: '{count} jobs left',
+    // Part A: plural-aware (French treats 0 and 1 as singular). Render with tp().
+    jobsLeft: {
+      one: '{count} job left',
+      other: '{count} jobs left',
+    },
   },
   jobs: {
     title: 'Jobs',
@@ -266,8 +269,11 @@ const en: Dict = {
     collected7: 'Collected last 7 days',
     paymentsReceived: 'Payments received',
     outstanding: 'Outstanding',
-    unpaidInvoice: '{count} unpaid invoice',
-    unpaidInvoices: '{count} unpaid invoices',
+    // Part A: plural-aware (French treats 0 and 1 as singular). Render with tp().
+    unpaidInvoices: {
+      one: '{count} unpaid invoice',
+      other: '{count} unpaid invoices',
+    },
     newLeads: 'New leads',
     totalCustomers: '{count} total customers',
     todaysSchedule: "Today's schedule",
@@ -285,7 +291,11 @@ const en: Dict = {
     quickActions: 'Quick actions',
     viewReports: 'View business reports',
     readyToInvoice: 'Ready to invoice',
-    readyToInvoiceCount: '{count} jobs ready to bill',
+    // Part A: plural-aware, so "1 jobs ready to bill" is impossible.
+    readyToInvoiceCount: {
+      one: '{count} job ready to bill',
+      other: '{count} jobs ready to bill',
+    },
     createInvoice: 'Create invoice',
     moneyTitle: 'Money',
     newLeadsHint: 'Leads from the last 30 days',

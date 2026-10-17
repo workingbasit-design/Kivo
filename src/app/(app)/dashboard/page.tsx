@@ -21,6 +21,8 @@ import MoneyText from "@/components/MoneyText";
 import DateTimeText from "@/components/DateTimeText";
 import { getLocale } from "@/lib/i18n/server";
 import { t } from "@/lib/i18n";
+import { tp } from "@/lib/i18n/plural";
+import { formatDisplayDate } from "@/lib/attention";
 import {
   PageHeader,
   Card,
@@ -158,7 +160,7 @@ export default async function DashboardPage() {
       />
 
       {/* 1. What needs you (attention engine). Renders nothing when calm. */}
-      <AttentionBriefing businessId={businessId} currency={currency} />
+      <AttentionBriefing businessId={businessId} currency={currency} timezone={timezone} />
 
       {/* 2. Today's agenda: today's visits + upcoming. */}
       <Card>
@@ -207,8 +209,10 @@ export default async function DashboardPage() {
                   className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-50 transition-colors min-h-[56px]"
                 >
                   <div className="w-14 shrink-0 text-center">
+                    {/* Part A: one date style everywhere — the shared formatter,
+                        so this agrees with the briefing ("Tomorrow", not "Oct 18, 2026"). */}
                     <p className="text-xs font-bold text-zinc-900 tabular-nums">
-                      <DateTimeText date={job.date} variant="short" timezone={timezone} locale={locale} />
+                      {formatDisplayDate(job.date, timezone, locale)}
                     </p>
                   </div>
                   <div className="flex-1 min-w-0">
@@ -255,7 +259,7 @@ export default async function DashboardPage() {
                   <div>
                     <p className="text-sm font-semibold text-zinc-900">{L("dashboard.outstanding")}</p>
                     <p className="text-xs text-zinc-500">
-                      {L(stats.outstandingCount === 1 ? "dashboard.unpaidInvoice" : "dashboard.unpaidInvoices").replace("{count}", String(stats.outstandingCount))}
+                      {tp(locale, "dashboard.unpaidInvoices", stats.outstandingCount)}
                     </p>
                   </div>
                   <p className="text-base font-bold text-zinc-900 tabular-nums">
@@ -273,7 +277,7 @@ export default async function DashboardPage() {
                   <div>
                     <p className="text-sm font-semibold text-zinc-900">{L("dashboard.readyToInvoice")}</p>
                     <p className="text-xs text-zinc-500">
-                      {L("dashboard.readyToInvoiceCount").replace("{count}", String(stats.readyToInvoice.length))}
+                      {tp(locale, "dashboard.readyToInvoiceCount", stats.readyToInvoice.length)}
                     </p>
                   </div>
                   <p className="text-base font-bold text-zinc-900 tabular-nums">

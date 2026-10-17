@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getAttentionItems, type AttentionItem, type AttentionCategory } from "@/lib/attention";
 import { getLocale } from "@/lib/i18n/server";
 import { t } from "@/lib/i18n";
+import { tp } from "@/lib/i18n/plural";
 import { localeMoneyTag } from "@/lib/utils";
 import { PageHeader, Card, EmptyState } from "@/components/ui";
 import { AttentionRow } from "@/components/AttentionBriefing";
@@ -54,7 +55,7 @@ export default async function AttentionPage({
         title={t(locale, "attention.title")}
         subtitle={
           allItems.length > 0
-            ? t(locale, "attention.subtitle").replace("{count}", String(allItems.length))
+            ? tp(locale, "attention.subtitle", allItems.length)
             : undefined
         }
       />

@@ -66,8 +66,11 @@ const fr: Dictionary = {
     },
     todayView: 'Aujourd’hui, en un coup d’œil',
     bookedToday: 'réservé aujourd’hui',
-    jobLeft: '{count} rendez-vous restant',
-    jobsLeft: '{count} rendez-vous restants',
+    // Part A : pluriel (0 et 1 au singulier). Rendre avec tp().
+    jobsLeft: {
+      one: '{count} rendez-vous restant',
+      other: '{count} rendez-vous restants',
+    },
   },
   jobs: {
     title: 'Travaux',
@@ -266,8 +269,11 @@ const fr: Dictionary = {
     collected7: 'Encaissé 7 derniers jours',
     paymentsReceived: 'Paiements reçus',
     outstanding: 'En souffrance',
-    unpaidInvoice: '{count} facture impayée',
-    unpaidInvoices: '{count} factures impayées',
+    // Part A : pluriel (0 et 1 au singulier). Rendre avec tp().
+    unpaidInvoices: {
+      one: '{count} facture impayée',
+      other: '{count} factures impayées',
+    },
     newLeads: 'Nouveaux prospects',
     totalCustomers: '{count} clients au total',
     todaysSchedule: 'Horaire d’aujourd’hui',
@@ -285,7 +291,11 @@ const fr: Dictionary = {
     quickActions: 'Actions rapides',
     viewReports: 'Voir les rapports d’affaires',
     readyToInvoice: 'Prêt à facturer',
-    readyToInvoiceCount: '{count} travaux prêts à facturer',
+    // Part A : pluriel, « 1 travaux prêts à facturer » est impossible.
+    readyToInvoiceCount: {
+      one: '{count} travail prêt à facturer',
+      other: '{count} travaux prêts à facturer',
+    },
     createInvoice: 'Créer une facture',
     moneyTitle: 'Argent',
     newLeadsHint: 'Prospects des 30 derniers jours',

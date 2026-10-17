@@ -1,10 +1,17 @@
 import Link from "next/link";
 import { AlertTriangle, BellRing, CheckCircle2, Info } from "lucide-react";
-import { getAttentionItems, type AttentionItem, type AttentionSeverity } from "@/lib/attention";
+import {
+  getAttentionItems,
+  daypartGreeting,
+  greetingNow,
+  type AttentionItem,
+  type AttentionSeverity,
+} from "@/lib/attention";
 import { fillTemplate } from "@/lib/revenue";
 import { formatMoney } from "@/lib/money";
 import { getLocale } from "@/lib/i18n/server";
 import { t, type Locale } from "@/lib/i18n";
+import { tp } from "@/lib/i18n/plural";
 import { localeMoneyTag } from "@/lib/utils";
 import { Card } from "@/components/ui";
 
@@ -27,8 +34,18 @@ export function AttentionRow({
   currency?: string | null;
 }) {
   const style = SEVERITY_STYLE[item.severity];
-  const title = fillTemplate(t(locale, `attention.${item.titleKey}`), item.titleParams);
-  const detail = fillTemplate(t(locale, `attention.${item.detailKey}`), item.detailParams);
+  // Part A: lines whose template is a {one, other} plural message render
+  // through tp() with the item's count (French treats 0 and 1 as singular).
+  const renderLine = (
+    which: 'title' | 'detail',
+    key: string,
+    params: Record<string, string | number>
+  ) =>
+    item.plural && item.plural.key === which
+      ? tp(locale, `attention.${key}`, item.plural.count, params)
+      : fillTemplate(t(locale, `attention.${key}`), params);
+  const title = renderLine('title', item.titleKey, item.titleParams);
+  const detail = renderLine('detail', item.detailKey, item.detailParams);
   // Part A Item 7: One urgency signal per row (the icon), not a dot plus an icon.
   return (
     <Link
@@ -65,10 +82,13 @@ export default async function AttentionBriefing({
   businessId,
   currency,
   limit = 5,
+  timezone,
 }: {
   businessId: string;
   currency?: string | null;
   limit?: number;
+  /** Business IANA timezone — drives the time-of-day greeting. */
+  timezone?: string | null;
 }) {
   const locale = await getLocale();
   const moneyLocale = localeMoneyTag(locale);
@@ -80,6 +100,9 @@ export default async function AttentionBriefing({
     return null;
   }
   if (items.length === 0) return null;
+
+  // Part A: the greeting matches the business's local time.
+  const greeting = daypartGreeting(greetingNow(), timezone, locale);
 
   return (
     <Card className="overflow-hidden">
@@ -95,7 +118,7 @@ export default async function AttentionBriefing({
         </Link>
       </div>
       <p className="px-5 text-xs text-zinc-500 pb-1">
-        {t(locale, "attention.briefingSubtitle")}
+        {fillTemplate(t(locale, "attention.briefingSubtitle"), { greeting })}
       </p>
       <div className="px-2 pb-2 divide-y divide-zinc-100">
         {items.map((item) => (
