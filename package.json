@@ -33,7 +33,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/web-push": "^3.6.4",
-    "eslint": "^9",
+    "eslint": "^10",
     "next": "16.4.1",
     "prisma": "^5.22.0",
     "react": "19.3.1",
