@@ -23,12 +23,10 @@ import { t } from "@/lib/i18n";
 import {
   PageHeader,
   Card,
-  StatCard,
   StatusBadge,
   EmptyState,
   GlassIcon,
   primaryBtnClass,
-  secondaryBtnClass,
 } from "@/components/ui";
 import OnboardingChecklist from "@/components/OnboardingChecklist";
 import AttentionBriefing from "@/components/AttentionBriefing";
@@ -38,19 +36,9 @@ export default async function DashboardPage() {
   const locale = await getLocale();
   const L = (path: string) => t(locale, path);
   const moneyLocale = localeMoneyTag(locale);
-  const QUICK_ACTIONS = [
-    { label: L("dashboard.newJob"), href: "/jobs/new", icon: Plus },
-    { label: L("dashboard.newCustomer"), href: "/customers/new", icon: Plus },
-    { label: L("dashboard.newQuote"), href: "/quotes/new", icon: Plus },
-    { label: L("dashboard.newInvoice"), href: "/invoices/new", icon: Plus },
-  ];
 
   // Lazy auto-generation: create jobs for any due recurring plans before
   // rendering, so jobs appear without the user tapping "Generate due jobs".
-  // Best-effort - a failure here must never break the dashboard itself.
-  // It runs alongside the business lookup (independent), and everything
-  // below only starts once generation has finished, so fresh due jobs
-  // are included in the stats.
   const genPromise = (async () => {
     try {
       await generateDueJobs(businessId);
@@ -63,9 +51,6 @@ export default async function DashboardPage() {
     genPromise,
   ]);
   const currency = business?.currency;
-  // Stats and onboarding counts are mutually independent - one round instead of two.
-  // Part A Item 2: Profile strength (growth data) removed — the onboarding checklist
-  // is now the single source of truth for setup progress.
   const [stats, counts] = await Promise.all([
     getDashboardStats(businessId, business),
     Promise.all([
@@ -77,7 +62,7 @@ export default async function DashboardPage() {
     ]),
   ]);
   const [customerCount, quoteCount, invoiceCount, teamCount, googleConn] = counts;
-  const jobCount = stats.totalJobs; // shared getJobCounts, not a parallel count query
+  const jobCount = stats.totalJobs;
   const onboardingCompleted = {
     logo: !!business?.logoUrl,
     customer: customerCount > 0,
@@ -86,18 +71,67 @@ export default async function DashboardPage() {
     google: !!googleConn,
     team: teamCount > 1,
   };
-  // Best-effort: profile strength (already resolved above, in parallel
-  // with the stats) must never break the dashboard.
-  const todayLabel = (
-    <DateTimeText date={new Date()} variant="weekday" timezone={business?.timezone ?? 'America/Toronto'} locale={locale} />
-  );
+
+  // E1: New business detection. If no jobs, invoices, or customers exist,
+  // show the checklist-first layout instead of $0.00 stat cards.
+  const isNewBusiness = jobCount === 0 && invoiceCount === 0 && customerCount === 0;
+
+  // E1: Money section shows only metrics with data.
+  const hasMoneyData =
+    stats.collectedThisWeek > 0 ||
+    stats.outstanding > 0 ||
+    stats.readyToInvoice.length > 0 ||
+    stats.newLeads > 0;
+
+  const timezone = business?.timezone ?? 'America/Toronto';
   const rowDelay = (i: number) => ({ ["--row-delay" as string]: `${Math.min(i, 8) * 45}ms` });
 
+  // E1: Date line reads "Saturday, October 17" (long weekday, long month, no year).
+  const dateLine = (
+    <DateTimeText date={new Date()} variant="dateline" timezone={timezone} locale={locale} />
+  );
+
+  // E1: New business layout — checklist replaces $0.00 cards.
+  if (isNewBusiness) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title={L("dashboard.title")}
+          subtitle={dateLine}
+          actions={
+            <Link href="/jobs/new" className={primaryBtnClass}>
+              <Plus size={16} /> {L("dashboard.newJob")}
+            </Link>
+          }
+        />
+
+        {/* Setup checklist is the screen for a new business. */}
+        <OnboardingChecklist locale={locale} businessId={businessId} completed={onboardingCompleted} />
+
+        {/* One clear action: create the first job. */}
+        <Card className="p-6 text-center">
+          <CalendarDays size={32} className="mx-auto mb-3 text-zinc-400" aria-hidden />
+          <h2 className="text-lg font-bold text-zinc-900 mb-1">
+            {L("dashboard.noJobsYet")}
+          </h2>
+          <p className="text-sm text-zinc-600 mb-4">
+            {L("dashboard.breather")}
+          </p>
+          <Link href="/jobs/new" className={primaryBtnClass}>
+            <Plus size={16} /> {L("dashboard.newJob")}
+          </Link>
+        </Card>
+      </div>
+    );
+  }
+
+  // E1: Existing business layout.
+  // Order: needs you → today's agenda → money → checklist.
   return (
     <div className="space-y-6">
       <PageHeader
         title={L("dashboard.title")}
-        subtitle={todayLabel}
+        subtitle={dateLine}
         actions={
           <Link href="/jobs/new" className={primaryBtnClass}>
             <Plus size={16} /> {L("dashboard.newJob")}
@@ -105,272 +139,151 @@ export default async function DashboardPage() {
         }
       />
 
-      {/* New-business setup checklist (real completion state, dismissable) */}
-      <OnboardingChecklist locale={locale} businessId={businessId} completed={onboardingCompleted} />
-
-      {/* Stat cards - key metrics render immediately with no entrance fade,
-          so a slow device can never leave a card looking "faded". */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">        {(
-          [
-            {
-              label: L("dashboard.bookedToday"),
-              value: <MoneyText dollars={stats.bookedToday} locale={locale} />,
-              numericValue: stats.bookedToday,
-              formatKind: 'money' as const,
-              sub: L(stats.jobsLeftToday === 1 ? "dashboard.jobStillOpen" : "dashboard.jobsStillOpen").replace("{count}", String(stats.jobsLeftToday)),
-              icon: <Calendar size={16} />,
-              tone: 'zinc',
-            },
-            {
-              label: L("dashboard.collected7"),
-              value: <MoneyText dollars={stats.collectedThisWeek} locale={locale} />,
-              numericValue: stats.collectedThisWeek,
-              formatKind: 'money' as const,
-              sub: L("dashboard.paymentsReceived"),
-              icon: <Banknote size={16} />,
-              tone: 'emerald',
-            },
-            {
-              label: L("dashboard.outstanding"),
-              value: <MoneyText dollars={stats.outstanding} locale={locale} />,
-              numericValue: stats.outstanding,
-              formatKind: 'money' as const,
-              sub: L(stats.outstandingCount === 1 ? "dashboard.unpaidInvoice" : "dashboard.unpaidInvoices").replace("{count}", String(stats.outstandingCount)),
-              icon: <AlertCircle size={16} />,
-              tone: 'amber',
-            },
-            {
-              label: L("dashboard.newLeads"),
-              value: String(stats.newLeads),
-              numericValue: stats.newLeads,
-              // Part A Item 5: No subtitle — "total customers" does not describe the new-leads count.
-              sub: undefined,
-              icon: <UserPlus size={16} />,
-              tone: 'blue',
-            },
-          ] as const
-        ).map((c, i) => (
-          <div key={c.label}>
-            <StatCard
-              label={c.label}
-              value={c.value}
-              numericValue={'numericValue' in c && typeof c.numericValue === 'number' && Number.isFinite(c.numericValue) ? c.numericValue : undefined}
-              formatKind={'formatKind' in c ? c.formatKind : undefined}
-              currency={currency}
-              moneyLocale={moneyLocale}
-              sub={c.sub}
-              icon={c.icon}
-              tone={c.tone}
-              index={i}
-            />
-          </div>
-        ))}
-      </div>
-
-      {/* Daily briefing - the 5 things that need attention first. Renders
-          nothing when there is nothing to flag, so a quiet business sees a
-          calm dashboard, not an empty card. */}
+      {/* 1. What needs you (attention engine). Renders nothing when calm. */}
       <AttentionBriefing businessId={businessId} currency={currency} />
 
-      {/* Part A Item 2: Profile strength card removed. The onboarding checklist above
-          is now the single source of truth for setup progress. */}
-
-      {/* Today's schedule + payments due */}
-      <div className="grid lg:grid-cols-2 gap-3 md:gap-4">
-        <Card>
-          <div className="flex items-center justify-between px-5 pt-5 pb-3">
-            <h2 className="text-sm font-bold text-zinc-900 flex items-center gap-2.5">
-              <GlassIcon icon={<Clock size={14} />} tone="zinc" size="sm" /> {L("dashboard.todaysSchedule")}
-            </h2>
-            <Link
-              href="/schedule"
-              className="text-xs font-semibold text-ink hover:underline inline-flex items-center gap-1 min-h-[44px] px-2 -mr-2"
-            >
-              {L("dashboard.schedule")} <ChevronRight size={13} />
-            </Link>
-          </div>
-          {stats.todayJobs.length === 0 ? (
-            <EmptyState
-              icon={<CalendarDays size={22} />}
-              title={L("dashboard.nothingScheduled")}
-              description={L("dashboard.breather")}
-            />
-          ) : (
-            <ul className="divide-y divide-zinc-100 px-2 pb-2">
-              {stats.todayJobs.map((job, i) => (
-                <li key={job.id} className="ej-row-in" style={rowDelay(i)}>
-                  <Link
-                    href={`/jobs/${job.id}`}
-                    className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-50 transition-colors min-h-[56px]"
-                  >
-                    <div className="w-14 shrink-0 text-center">
-                      <p className="text-xs font-bold text-zinc-900 tabular-nums">{hasJobTime(job.time) ? formatJobTime(job.time, locale) : "-"}</p>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-zinc-900 truncate">{job.title}</p>
-                      <p className="text-xs text-zinc-700 truncate">{job.customerName}</p>
-                    </div>
-                    <StatusBadge status={jobDisplayStatus(job.status, job.date)} locale={locale} />
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-
-        <Card>
-          <div className="flex items-center justify-between px-5 pt-5 pb-3">
-            <h2 className="text-sm font-bold text-zinc-900 flex items-center gap-2.5">
-              <GlassIcon icon={<Receipt size={14} />} tone="amber" size="sm" /> {L("dashboard.paymentsDue")}
-            </h2>
-            <Link
-              href="/invoices"
-              className="text-xs font-semibold text-ink hover:underline inline-flex items-center gap-1 min-h-[44px] px-2 -mr-2"
-            >
-              {L("dashboard.invoices")} <ChevronRight size={13} />
-            </Link>
-          </div>
-          {stats.dueInvoices.length === 0 ? (
-            <EmptyState
-              icon={<Banknote size={22} />}
-              title={L("dashboard.allCaughtUp")}
-              description={L("dashboard.noUnpaid")}
-            />
-          ) : (
-            <ul className="divide-y divide-zinc-100 px-2 pb-2">
-              {stats.dueInvoices.map((inv, i) => (
-                <li key={inv.id} className="ej-row-in" style={rowDelay(i)}>
-                  <Link
-                    href={`/invoices/${inv.id}`}
-                    className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-50 transition-colors min-h-[56px]"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-zinc-900 truncate">
-                        {inv.number} · {inv.customerName}
-                      </p>
-                      <p className="text-xs text-zinc-700"><DateTimeText date={inv.date} variant="weekday" timezone={business?.timezone ?? 'America/Toronto'} locale={locale} /></p>
-                    </div>
-                    <p className="text-sm font-bold text-zinc-900 tabular-nums"><MoneyText dollars={inv.outstanding} locale={locale} /></p>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-      </div>
-
-      {/* Ready to invoice */}
-      {stats.readyToInvoice.length > 0 && (
-        <div className="grid lg:grid-cols-3 gap-3 md:gap-4 mt-3 md:mt-4">
-          <Card className="lg:col-span-2 p-5">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-bold text-zinc-900">
-                {L("dashboard.readyToInvoice")} ({stats.readyToInvoice.length})
-              </h2>
-              <Link
-                href="/invoices/new"
-                className="text-xs font-semibold text-ink hover:underline inline-flex items-center gap-1 min-h-[44px] px-2 -mr-2"
-              >
-                {L("dashboard.createInvoice")} <ChevronRight size={13} />
-              </Link>
-            </div>
-            <ul className="divide-y divide-zinc-100">
-              {stats.readyToInvoice.map((job, i) => (
-                <li key={job.id} className="ej-row-in" style={rowDelay(i)}>
-                  <Link
-                    href={`/jobs/${job.id}`}
-                    className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-50 transition-colors min-h-[56px]"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-zinc-900 truncate">
-                        {job.title}
-                      </p>
-                      <p className="text-xs text-zinc-700">{job.customerName}</p>
-                    </div>
-                    <p className="text-sm font-bold text-zinc-900 tabular-nums">
-                      <MoneyText dollars={job.price} locale={locale} />
-                    </p>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </Card>
+      {/* 2. Today's agenda: today's visits + upcoming. */}
+      <Card>
+        <div className="flex items-center justify-between px-5 pt-5 pb-3">
+          <h2 className="text-sm font-bold text-zinc-900 flex items-center gap-2.5">
+            <GlassIcon icon={<Clock size={14} />} tone="zinc" size="sm" /> {L("dashboard.todaysSchedule")}
+          </h2>
+          <Link
+            href="/schedule"
+            className="text-xs font-semibold text-ink hover:underline inline-flex items-center gap-1 min-h-[44px] px-2 -mr-2"
+          >
+            {L("dashboard.schedule")} <ChevronRight size={13} />
+          </Link>
         </div>
+        {stats.todayJobs.length === 0 && stats.upcomingJobs.length === 0 ? (
+          <EmptyState
+            icon={<CalendarDays size={22} />}
+            title={L("dashboard.nothingScheduled")}
+            description={L("dashboard.breather")}
+          />
+        ) : (
+          <ul className="divide-y divide-zinc-100 px-2 pb-2">
+            {/* Today's jobs first. */}
+            {stats.todayJobs.map((job, i) => (
+              <li key={`today-${job.id}`} className="ej-row-in" style={rowDelay(i)}>
+                <Link
+                  href={`/jobs/${job.id}`}
+                  className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-50 transition-colors min-h-[56px]"
+                >
+                  <div className="w-14 shrink-0 text-center">
+                    <p className="text-xs font-bold text-zinc-900 tabular-nums">{hasJobTime(job.time) ? formatJobTime(job.time, locale) : "-"}</p>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-zinc-900 truncate">{job.title}</p>
+                    <p className="text-xs text-zinc-700 truncate">{job.customerName}</p>
+                  </div>
+                  <StatusBadge status={jobDisplayStatus(job.status, job.date)} locale={locale} />
+                </Link>
+              </li>
+            ))}
+            {/* Upcoming jobs follow. */}
+            {stats.upcomingJobs.map((job, i) => (
+              <li key={`upcoming-${job.id}`} className="ej-row-in" style={rowDelay(stats.todayJobs.length + i)}>
+                <Link
+                  href={`/jobs/${job.id}`}
+                  className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-50 transition-colors min-h-[56px]"
+                >
+                  <div className="w-14 shrink-0 text-center">
+                    <p className="text-xs font-bold text-zinc-900 tabular-nums">
+                      <DateTimeText date={job.date} variant="short" timezone={timezone} locale={locale} />
+                    </p>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-zinc-900 truncate">{job.title}</p>
+                    <p className="text-xs text-zinc-700 truncate">
+                      {job.customerName}
+                      {hasJobTime(job.time) ? ` · ${formatJobTime(job.time, locale)}` : ""}
+                    </p>
+                  </div>
+                  <StatusBadge status={jobDisplayStatus(job.status, job.date)} locale={locale} />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
+
+      {/* 3. Money: compact rows, only metrics with data. No $0.00 cards. */}
+      {hasMoneyData && (
+        <Card>
+          <div className="px-5 pt-5 pb-3">
+            <h2 className="text-sm font-bold text-zinc-900 flex items-center gap-2.5">
+              <GlassIcon icon={<Banknote size={14} />} tone="emerald" size="sm" /> {L("dashboard.moneyTitle")}
+            </h2>
+          </div>
+          <ul className="divide-y divide-zinc-100 px-2 pb-2">
+            {stats.collectedThisWeek > 0 && (
+              <li className="flex items-center justify-between px-3 py-3 min-h-[56px]">
+                <div>
+                  <p className="text-sm font-semibold text-zinc-900">{L("dashboard.collected7")}</p>
+                  <p className="text-xs text-zinc-500">{L("dashboard.paymentsReceived")}</p>
+                </div>
+                <p className="text-base font-bold text-zinc-900 tabular-nums">
+                  <MoneyText dollars={stats.collectedThisWeek} locale={locale} />
+                </p>
+              </li>
+            )}
+            {stats.outstanding > 0 && (
+              <li>
+                <Link
+                  href="/invoices"
+                  className="flex items-center justify-between px-3 py-3 rounded-xl hover:bg-zinc-50 transition-colors min-h-[56px]"
+                >
+                  <div>
+                    <p className="text-sm font-semibold text-zinc-900">{L("dashboard.outstanding")}</p>
+                    <p className="text-xs text-zinc-500">
+                      {L(stats.outstandingCount === 1 ? "dashboard.unpaidInvoice" : "dashboard.unpaidInvoices").replace("{count}", String(stats.outstandingCount))}
+                    </p>
+                  </div>
+                  <p className="text-base font-bold text-zinc-900 tabular-nums">
+                    <MoneyText dollars={stats.outstanding} locale={locale} />
+                  </p>
+                </Link>
+              </li>
+            )}
+            {stats.readyToInvoice.length > 0 && (
+              <li>
+                <Link
+                  href="/invoices/new"
+                  className="flex items-center justify-between px-3 py-3 rounded-xl hover:bg-zinc-50 transition-colors min-h-[56px]"
+                >
+                  <div>
+                    <p className="text-sm font-semibold text-zinc-900">{L("dashboard.readyToInvoice")}</p>
+                    <p className="text-xs text-zinc-500">
+                      {L("dashboard.readyToInvoiceCount").replace("{count}", String(stats.readyToInvoice.length))}
+                    </p>
+                  </div>
+                  <p className="text-base font-bold text-zinc-900 tabular-nums">
+                    <MoneyText dollars={stats.readyToInvoice.reduce((s, j) => s + j.price, 0)} locale={locale} />
+                  </p>
+                </Link>
+              </li>
+            )}
+            {stats.newLeads > 0 && (
+              <li>
+                <Link
+                  href="/leads"
+                  className="flex items-center justify-between px-3 py-3 rounded-xl hover:bg-zinc-50 transition-colors min-h-[56px]"
+                >
+                  <div>
+                    <p className="text-sm font-semibold text-zinc-900">{L("dashboard.newLeads")}</p>
+                    <p className="text-xs text-zinc-500">{L("dashboard.newLeadsHint")}</p>
+                  </div>
+                  <p className="text-base font-bold text-zinc-900 tabular-nums">{stats.newLeads}</p>
+                </Link>
+              </li>
+            )}
+          </ul>
+        </Card>
       )}
 
-      {/* Upcoming + jobs by status + quick actions */}
-      <div className="grid lg:grid-cols-3 gap-3 md:gap-4">
-        <Card className="lg:col-span-2 p-5">
-          <h2 className="text-sm font-bold text-zinc-900 mb-3">{L("dashboard.upcomingJobs")}</h2>
-          {stats.upcomingJobs.length === 0 ? (
-            <p className="text-sm text-zinc-700">{L("dashboard.noUpcoming")}</p>
-          ) : (
-            <ul className="divide-y divide-zinc-100">
-              {stats.upcomingJobs.map((job, i) => (
-                <li key={job.id} className="ej-row-in" style={rowDelay(i)}>
-                  <Link
-                    href={`/jobs/${job.id}`}
-                    className="flex items-center gap-3 py-2.5 hover:bg-zinc-50 rounded-lg px-2 -mx-2 transition-colors min-h-[56px]"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-zinc-900 truncate">{job.title}</p>
-                      <p className="text-xs text-zinc-700 truncate">
-                        {job.customerName}
-                        {hasJobTime(job.time) ? ` · ${formatJobTime(job.time, locale)}` : ""}
-                      </p>
-                    </div>
-                    <StatusBadge status={jobDisplayStatus(job.status, job.date)} locale={locale} />
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-          <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-zinc-100">
-            <p className="w-full text-[11px] font-bold text-zinc-600 mb-1">
-              {L("dashboard.jobsByStatus")}
-            </p>
-            {stats.jobsByStatus.length === 0 ? (
-              <p className="text-sm text-zinc-700">{L("dashboard.noJobsYet")}</p>
-            ) : (
-              stats.jobsByStatus.map((g) => (
-                <Link
-                  key={g.status}
-                  href="/jobs"
-                  className="inline-flex items-center gap-2 bg-zinc-50 border border-zinc-200 rounded-full px-3 py-2 min-h-[44px] text-xs font-semibold text-zinc-700 hover:border-smoke transition-colors"
-                >
-                  <StatusBadge status={g.status} locale={locale} />
-                  <span className="tabular-nums">{g.count}</span>
-                </Link>
-              ))
-            )}
-          </div>
-        </Card>
-
-        <Card className="p-5">
-          <h2 className="text-sm font-bold text-zinc-900 mb-3">{L("dashboard.quickActions")}</h2>
-          <div className="grid grid-cols-2 gap-2">
-            {QUICK_ACTIONS.map((a) => (
-              <Link
-                key={a.label}
-                href={a.href}
-                className="ej-icon-hover flex flex-col items-center justify-center gap-2 bg-zinc-50 hover:bg-ink/5 border border-zinc-200 hover:border-smoke rounded-2xl p-4 min-h-[88px] transition-colors"
-              >
-                <span className="w-9 h-9 rounded-xl bg-ink/10 text-ink flex items-center justify-center">
-                  <a.icon size={16} />
-                </span>
-                <span className="text-xs font-semibold text-zinc-700 text-center leading-tight">{a.label}</span>
-              </Link>
-            ))}
-          </div>
-          <Link
-            href="/reports"
-            className={secondaryBtnClass + " mt-4 w-full !justify-between"}
-          >
-            <span className="text-xs font-semibold">{L("dashboard.viewReports")}</span>
-            <ChevronRight size={14} />
-          </Link>
-        </Card>
-      </div>
+      {/* 4. Setup checklist (until done). Renders nothing when complete. */}
+      <OnboardingChecklist locale={locale} businessId={businessId} completed={onboardingCompleted} />
     </div>
   );
 }

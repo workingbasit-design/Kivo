@@ -12,7 +12,7 @@
  */
 import { cn } from '@/lib/utils';
 
-type DateVariant = 'datetime' | 'date' | 'time' | 'weekday' | 'short';
+type DateVariant = 'datetime' | 'date' | 'time' | 'weekday' | 'short' | 'dateline';
 
 function isDateOnlyString(s: string): boolean {
   return /^\d{4}-\d{2}-\d{2}$/.test(s);
@@ -41,7 +41,7 @@ export default function DateTimeText({
   className?: string;
 }) {
   const tag = locale === 'fr' ? 'fr-CA' : 'en-CA';
-  const isDateVariant = variant === 'date' || variant === 'weekday' || variant === 'short';
+  const isDateVariant = variant === 'date' || variant === 'weekday' || variant === 'short' || variant === 'dateline';
 
   // Null/undefined renders "-" (matches formatDateLabel/formatDateShort).
   if (date === null || date === undefined || date === '') {
@@ -55,6 +55,8 @@ export default function DateTimeText({
     const opts: Intl.DateTimeFormatOptions =
       variant === 'weekday'
         ? { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }
+        : variant === 'dateline'
+          ? { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'UTC' }
         : variant === 'short'
           ? { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }
           : { dateStyle: 'medium', timeZone: 'UTC' };
@@ -73,7 +75,9 @@ export default function DateTimeText({
       ? { dateStyle: 'medium', timeZone: tz }
       : variant === 'time'
         ? { timeStyle: 'short', timeZone: tz }
-        : variant === 'weekday'
+        : variant === 'dateline'
+          ? { weekday: 'long', month: 'long', day: 'numeric', timeZone: tz }
+          : variant === 'weekday'
           ? { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', timeZone: tz }
           : variant === 'short'
             ? { day: 'numeric', month: 'short', year: 'numeric', timeZone: tz }

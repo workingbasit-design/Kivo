@@ -264,7 +264,10 @@ const en: Dict = {
     quickActions: 'Quick actions',
     viewReports: 'View business reports',
     readyToInvoice: 'Ready to invoice',
+    readyToInvoiceCount: '{count} jobs ready to bill',
     createInvoice: 'Create invoice',
+    moneyTitle: 'Money',
+    newLeadsHint: 'Leads from the last 30 days',
   },
   home: {
     nav: {

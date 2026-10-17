@@ -264,7 +264,10 @@ const fr: Dictionary = {
     quickActions: 'Actions rapides',
     viewReports: 'Voir les rapports d’affaires',
     readyToInvoice: 'Prêt à facturer',
+    readyToInvoiceCount: '{count} travaux prêts à facturer',
     createInvoice: 'Créer une facture',
+    moneyTitle: 'Argent',
+    newLeadsHint: 'Prospects des 30 derniers jours',
   },
   home: {
     nav: {
