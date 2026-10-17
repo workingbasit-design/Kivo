@@ -94,6 +94,16 @@ export async function register(
       // Canada-only defaults.
       currency: 'CAD',
       timezone: 'America/Toronto',
+      // Zero-config defaults: a new plumber/tech can start working immediately
+      // without touching settings. Everything here is changeable later.
+      // Standard trade hours: Mon-Fri 8am-6pm.
+      workingHours: JSON.stringify({
+        mon: ['08:00', '18:00'],
+        tue: ['08:00', '18:00'],
+        wed: ['08:00', '18:00'],
+        thu: ['08:00', '18:00'],
+        fri: ['08:00', '18:00'],
+      }),
     },
   });
 

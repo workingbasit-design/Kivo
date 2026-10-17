@@ -13,12 +13,11 @@ export type OnboardingStepId =
   | 'team';
 
 const STEPS: { id: OnboardingStepId; href: string }[] = [
-  { id: 'logo', href: '/settings#logo' },
+  // Core flow only: a plumber should be working in 2 minutes.
+  // Logo, Google, team are in Settings for those who want them.
   { id: 'customer', href: '/customers/new' },
   { id: 'job', href: '/jobs/new' },
   { id: 'quote', href: '/quotes/new' },
-  { id: 'google', href: '/settings/integrations' },
-  { id: 'team', href: '/settings/team' },
 ];
 
 function storageKey(businessId: string): string {

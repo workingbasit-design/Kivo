@@ -116,6 +116,14 @@ export async function GET(req: Request) {
       regionCode: 'CA',
       currency: 'CAD',
       timezone: 'America/Toronto',
+      // Zero-config defaults: Mon-Fri 8am-6pm. Changeable in settings.
+      workingHours: JSON.stringify({
+        mon: ['08:00', '18:00'],
+        tue: ['08:00', '18:00'],
+        wed: ['08:00', '18:00'],
+        thu: ['08:00', '18:00'],
+        fri: ['08:00', '18:00'],
+      }),
     },
   });
 
