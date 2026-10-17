@@ -17,6 +17,7 @@ import PushSettingsCard from '@/components/PushSettingsCard';
 import { parseSettings } from '@/lib/notifications';
 import { EXPORT_TYPES } from '@/lib/export';
 import SettingsSearch from '@/components/SettingsSearch';
+import DemoSwitchCard from '@/components/DemoSwitchCard';
 
 export const metadata = { title: 'Settings | EveryJob' };
 
@@ -33,7 +34,7 @@ const SHOW_ADVANCED_SETTINGS_LINKS = false;
  * so the client-side search filters instantly with no refetch.
  */
 export default async function SettingsPage() {
-  const { businessId, user } = await requireAuth();
+  const { businessId, user, role } = await requireAuth();
 
   const business = await prisma.business.findUnique({
     where: { id: businessId },
@@ -55,6 +56,7 @@ export default async function SettingsPage() {
       yearsInBusiness: true,
       specialties: true,
       logoUrl: true,
+      isDemo: true,
     },
   });
 
@@ -391,6 +393,24 @@ export default async function SettingsPage() {
           </Link>
         </Card>
       </section>
+
+      {/* Part 0: owner-only demo business switch (UAT demos, design reviews). */}
+      {role === 'OWNER' && (
+        <div
+          data-settings-section
+          data-keywords={kw(t(locale, 'demo.settingsTitle'), t(locale, 'demo.settingsDesc'), 'demo sample data uat review')}
+          className="scroll-mt-24"
+        >
+          <DemoSwitchCard
+            isDemo={!!business?.isDemo}
+            title={t(locale, 'demo.settingsTitle')}
+            description={t(locale, 'demo.settingsDesc')}
+            viewingLabel={t(locale, 'demo.viewingDemo')}
+            openLabel={t(locale, 'demo.openDemo')}
+            backLabel={t(locale, 'demo.backToBusiness')}
+          />
+        </div>
+      )}
 
       {/* Phase 1: Automations is deferred. The /settings/automations route
           stays live; only this surface link is hidden. Flip

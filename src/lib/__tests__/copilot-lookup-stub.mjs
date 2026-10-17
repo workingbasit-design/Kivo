@@ -52,6 +52,11 @@ function pick(row, select) {
 }
 
 export const prisma = {
+  // Part 0: getActiveMembershipForUser checks User.activeMembershipId first;
+  // the stub user has no override, so the membership fallback applies.
+  user: {
+    findUnique: async () => ({ activeMembershipId: null }),
+  },
   // M9: the copilot route resolves the tenant via the ACTIVE membership.
   membership: {
     findFirst: async ({ where }) => {

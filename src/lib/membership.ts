@@ -73,8 +73,13 @@ export async function getUserMembership(
 }
 
 /**
- * The user's current business context: their earliest-created ACTIVE
- * membership (M1 backfilled exactly one per user, so this is deterministic).
+ * The user's current business context. Part 0 (dashboard rebuild) added an
+ * explicit override: when the user has picked a business (the Settings
+ * "Demo business" switch), `User.activeMembershipId` points at it and wins.
+ * The override is guarded — it must reference an ACTIVE membership belonging
+ * to this user, otherwise it is ignored and we fall back to the
+ * earliest-created ACTIVE membership (M1 backfilled exactly one per user,
+ * so the fallback is deterministic).
  * Used by requireAuth() (M9) now that User.businessId is dropped.
  */
 export async function getActiveMembershipForUser(
@@ -84,13 +89,32 @@ export async function getActiveMembershipForUser(
   // (same category as the User exclusion in tenant-guard.ts) — the userId
   // IS the authorization, and no tenant is known yet at this point.
   // This is the hot path of requireAuth(): every authenticated request.
-  return unsafeUnscoped('membership:active-for-user', (db) =>
-    db.membership.findFirst({
+  const rowSelect = {
+    id: true,
+    userId: true,
+    businessId: true,
+    role: true,
+    status: true,
+  } as const;
+  return unsafeUnscoped('membership:active-for-user', async (db) => {
+    const user = await db.user.findUnique({
+      where: { id: userId },
+      select: { activeMembershipId: true },
+    });
+    if (user?.activeMembershipId) {
+      const chosen = await db.membership.findFirst({
+        where: { id: user.activeMembershipId, userId, status: 'ACTIVE' },
+        select: rowSelect,
+      });
+      if (chosen) return chosen;
+      // Stale override (membership removed or suspended): fall through.
+    }
+    return db.membership.findFirst({
       where: { userId, status: 'ACTIVE' },
       orderBy: { createdAt: 'asc' },
-      select: { id: true, userId: true, businessId: true, role: true, status: true },
-    })
-  );
+      select: rowSelect,
+    });
+  });
 }
 
 /**

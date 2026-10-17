@@ -20,6 +20,7 @@ model User {
   // in requireAuth() (src/lib/auth.ts).
   sessions      Session[]
   passwordResetTokens PasswordResetToken[]
+  activeMembershipId String? // Part 0: explicit business-context override (Settings demo switch); null = earliest ACTIVE membership
   assignedJobs  Job[]       @relation("JobAssignedTo")
   jobNotes      JobNote[]   @relation("JobNoteAuthor")
   jobPhotos     JobPhoto[]  @relation("JobPhotoUploadedBy")
@@ -139,6 +140,7 @@ model Business {
   bookingRequests      BookingRequest[] // F7: customer booking submissions
   checklistTemplates   ChecklistTemplate[]
   expenses             JobExpense[]
+  isDemo               Boolean               @default(false) // Part 0: seeded demo business — UI labels it "Demo" everywhere; never set for real businesses
   trade                String? // primary trade: plumbing|electrical|hvac|carpentry|painting|landscaping|cleaning|renovation|other
   teamSize             String? // E7 first-run answer: '1' | '2-5' | '6+'
   onboardingDone       Boolean               @default(false) // E7: true once the 3-question first run is completed or skipped

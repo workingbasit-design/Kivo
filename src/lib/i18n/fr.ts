@@ -484,6 +484,17 @@ const fr: Dictionary = {
     CONVERTED: 'Converti',
     CONTACTED: 'Contacté',
   },
+  // Part 0 (dashboard rebuild): demo business switch.
+  demo: {
+    banner: 'Entreprise de démonstration : données fictives uniquement',
+    backToBusiness: 'Retour à mon entreprise',
+    settingsTitle: 'Entreprise de démonstration',
+    settingsDesc:
+      'Ouvrez une entreprise de démonstration réaliste avec six mois de tâches, clients et factures fictifs. Pratique pour les démos et les revues de conception. Les données de démonstration restent séparées et ne sont jamais mélangées à vos données réelles.',
+    openDemo: 'Ouvrir l’entreprise de démonstration',
+    viewingDemo: 'Vous consultez l’entreprise de démonstration.',
+    notSeeded: 'L’entreprise de démonstration n’a pas encore été configurée ici.',
+  },
 };
 
 export default fr;

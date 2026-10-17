@@ -29,6 +29,8 @@ export const prisma = {
       }
       return null;
     },
+    // Part 0: getActiveMembershipForUser checks the override column first.
+    findUnique: async () => ({ activeMembershipId: null }),
   },
   // M9: dispatch.ts checks team membership via Membership, not User.
   membership: {

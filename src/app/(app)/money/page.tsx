@@ -21,6 +21,14 @@ function overdueThreshold(): Date {
 }
 
 /**
+ * "Now" snapshot for waiting-day math. A plain module helper (not a component),
+ * so it evaluates fresh on every request without tripping render-purity rules.
+ */
+function requestNowMs(): number {
+  return Date.now();
+}
+
+/**
  * Money hub (Part E4): three lists, not stat cards.
  * 1. Ready to invoice — completed jobs with no invoice yet
  * 2. Awaiting payment — unpaid/partially-paid invoices, oldest first
@@ -254,7 +262,7 @@ export default async function MoneyPage() {
                   {openQuotes.map((q) => {
                     const daysWaiting = Math.max(
                       0,
-                      Math.floor((Date.now() - new Date(q.updatedAt).getTime()) / DAY_MS)
+                      Math.floor((requestNowMs() - new Date(q.updatedAt).getTime()) / DAY_MS)
                     );
                     return (
                       <ListRow

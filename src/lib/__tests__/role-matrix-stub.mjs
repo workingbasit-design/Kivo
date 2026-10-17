@@ -9,6 +9,10 @@ export async function requireAuth() {
 }
 
 export const prisma = {
+  // Part 0: getActiveMembershipForUser checks User.activeMembershipId first.
+  user: {
+    findUnique: async () => ({ activeMembershipId: null }),
+  },
   membership: {
     findFirst: async ({ where }) => {
       if (!state.hasMembership) return null;

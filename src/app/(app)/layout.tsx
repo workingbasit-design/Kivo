@@ -7,6 +7,7 @@ import { summarizeTodayJobs } from '@/lib/dashboard';
 import AppSidebar from '@/components/AppSidebar';
 import MobileNav from '@/components/MobileNav';
 import BottomNav from '@/components/BottomNav';
+import DemoBanner from '@/components/DemoBanner';
 import LazyOverlays from '@/components/LazyOverlays';
 import PortalNotice from '@/components/PortalNotice';
 import { getLocale } from '@/lib/i18n/server';
@@ -37,7 +38,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const loadShell = async () => {
     const business = await prisma.business.findUnique({
       where: { id: businessId },
-      select: { currency: true, regionCode: true, timezone: true },
+      select: { currency: true, regionCode: true, timezone: true, isDemo: true },
     });
 
     // "Today" in the business's own timezone (falls back to America/Toronto).
@@ -106,6 +107,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         unreadCount={unreadCount}
       />
       <div className="flex-1 min-w-0 flex flex-col">
+        {business?.isDemo && <DemoBanner locale={locale} />}
         <MobileNav locale={locale} unreadCount={unreadCount} />
         <main id="main-content" className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-8 pb-[calc(12rem+env(safe-area-inset-bottom))] md:pb-8">
           {children}

@@ -10,7 +10,8 @@
     "test": "node --test --import ./src/lib/__tests__/register-loader.mjs src/lib/__tests__/*.test.mts",
     "test:db": "node --test --import ./src/lib/__tests__/register-loader.mjs src/lib/__tests__/*.test.db.mts src/lib/__tests__/rls.test.mts src/lib/__tests__/constraints.test.mts src/lib/__tests__/numbering-concurrency.test.mts",
     "test:e2e": "playwright test",
-    "start:e2e": "next start -p 3100"
+    "start:e2e": "next start -p 3100",
+    "seed:demo": "node --experimental-strip-types scripts/seed-demo.ts"
   },
   "dependencies": {
     "@bible-strong/avatar-react": "^0.1.0",

@@ -483,6 +483,17 @@ const en: Dict = {
     CONVERTED: 'Converted',
     CONTACTED: 'Contacted',
   },
+  // Part 0 (dashboard rebuild): demo business switch.
+  demo: {
+    banner: 'Demo business: sample data only',
+    backToBusiness: 'Back to my business',
+    settingsTitle: 'Demo business',
+    settingsDesc:
+      'Open a realistic demo business with six months of sample jobs, customers and invoices. Handy for demos and design reviews. Demo data stays separate and never mixes with your real data.',
+    openDemo: 'Open the demo business',
+    viewingDemo: 'You are viewing the demo business.',
+    notSeeded: 'The demo business has not been set up here yet.',
+  },
 };
 
 export type Dictionary = Dict;

@@ -30,8 +30,14 @@ const USERS = {
   ownerB: { id: 'user-b', email: 'b@test.ca' },
 };
 
-// @/lib/prisma — only membership lookups are stubbed (that's all membership.ts needs).
+// @/lib/prisma — membership lookups + the User.activeMembershipId override
+// check in getActiveMembershipForUser are stubbed.
 export const prisma = {
+  user: {
+    async findUnique() {
+      return { activeMembershipId: null };
+    },
+  },
   membership: {
     async findFirst({ where }) {
       const m = MEMBERSHIPS[persona];

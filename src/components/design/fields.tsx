@@ -30,12 +30,20 @@ export function FieldWrapper({ label, hint, error, required, children, className
           <span className="text-ej-danger ml-1" aria-hidden="true">*</span>
         )}
       </label>
-      {React.cloneElement(children as React.ReactElement, {
-        id,
-        'aria-describedby': describedBy,
-        'aria-invalid': !!error,
-        'aria-required': required,
-      } as any)}
+      {React.cloneElement(
+        children as React.ReactElement<{
+          id?: string;
+          'aria-describedby'?: string;
+          'aria-invalid'?: boolean;
+          'aria-required'?: boolean;
+        }>,
+        {
+          id,
+          'aria-describedby': describedBy,
+          'aria-invalid': !!error,
+          'aria-required': required,
+        }
+      )}
       <div className="min-h-[20px] mt-1">
         {error ? (
           <p id={errorId} className="text-sm text-ej-danger" role="alert">
