@@ -35,11 +35,11 @@ export default function RecordDepositForm({
 
   return (
     <Card className="p-6">
-      <h2 className="text-sm font-bold text-zinc-900 mb-1 flex items-center gap-2">
-        <HandCoins size={14} className="text-zinc-400" />
+      <h2 className="text-sm font-bold text-ink mb-1 flex items-center gap-2">
+        <HandCoins size={14} className="text-ink-2" />
         {t(locale, 'quoteItems.deposit.title')}
       </h2>
-      <p className="text-xs text-zinc-500 mb-4">{t(locale, 'quoteItems.deposit.hint')}</p>
+      <p className="text-xs text-ink-2 mb-4">{t(locale, 'quoteItems.deposit.hint')}</p>
 
       {!open ? (
         <button type="button" onClick={() => setOpen(true)} className={secondaryBtnClass}>
@@ -76,14 +76,14 @@ export default function RecordDepositForm({
           <Field label={t(locale, 'quoteItems.deposit.note')}>
             <input name="note" maxLength={500} className={inputClass} />
           </Field>
-          <p className="text-[11px] text-zinc-400">
+          <p className="text-[11px] text-ink-2">
             {t(locale, 'quoteItems.deposit.amount')} ≤ {formatMoney(maxAmount, 'CAD', locale)}
           </p>
           {state?.error && (
-            <p className="text-xs font-semibold text-rose-600">{state.error}</p>
+            <p className="text-xs font-semibold text-danger">{state.error}</p>
           )}
           {state?.ok && (
-            <p className="text-xs font-semibold text-emerald-700">
+            <p className="text-xs font-semibold text-ok">
               {t(locale, 'quoteItems.deposit.recorded')}
             </p>
           )}

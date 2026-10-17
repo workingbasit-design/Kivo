@@ -49,15 +49,15 @@ export default async function BookingSettingsPage() {
         suggestedSlug={slugify(business.name)}
       />
       <Card className="p-5 md:p-6 max-w-2xl">
-        <h2 className="text-sm font-bold text-zinc-900 mb-1">{tr('t10misc.booking.hoursTitle')}</h2>
+        <h2 className="text-sm font-bold text-ink mb-1">{tr('t10misc.booking.hoursTitle')}</h2>
         {hoursSummary ? (
-          <p className="text-sm text-zinc-600">{hoursSummary}</p>
+          <p className="text-sm text-ink-2">{hoursSummary}</p>
         ) : (
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-ink-2">
             {tr('t10misc.booking.hoursEmpty')}
           </p>
         )}
-        <p className="text-[11px] text-zinc-400 mt-2">
+        <p className="text-[11px] text-ink-2 mt-2">
           {tr('t10misc.booking.hoursNote')}
         </p>
       </Card>

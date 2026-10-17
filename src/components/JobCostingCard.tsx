@@ -214,7 +214,7 @@ export function JobCostingCard({
           <dt className="text-graphite">{t(locale, 'jobops.costing.profit')}</dt>
           <dd
             className={`font-bold tabular-nums ${
-              liveSummary.profit >= 0 ? 'text-emerald-600' : 'text-rose-600'
+              liveSummary.profit >= 0 ? 'text-ok' : 'text-danger'
             }`}
           >
             {formatMoney(liveSummary.profit, currency)}
@@ -232,7 +232,7 @@ export function JobCostingCard({
             <div
               role="img"
               aria-label={`${t(locale, 'jobops.costing.profitBarLabel')}: ${liveSummary.marginPct.toFixed(1)}%`}
-              className="h-2.5 rounded-full bg-zinc-100 overflow-hidden"
+              className="h-2.5 rounded-full bg-surface-2 overflow-hidden"
             >
               <div
                 className={`h-full rounded-full transition-all duration-500 ${barColor}`}
@@ -244,7 +244,7 @@ export function JobCostingCard({
       </dl>
 
       {!hasCostData && (
-        <div className="mt-3 rounded-2xl bg-zinc-50 border border-smoke p-4 text-center">
+        <div className="mt-3 rounded-2xl bg-surface-2 border border-smoke p-4 text-center">
           <p className="text-xs font-semibold text-graphite mb-1">
             {t(locale, 'jobops.costing.noCostsYet')}
           </p>
@@ -358,7 +358,7 @@ function RateForm({
         </button>
       </div>
       {state?.error && (
-        <div className="mt-2 flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="mt-2 flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{state.error}</span>
         </div>

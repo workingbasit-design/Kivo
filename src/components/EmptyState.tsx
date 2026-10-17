@@ -28,9 +28,9 @@ export default function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center p-12 md:p-16 text-center">
-      {icon && <div className="mb-4 text-zinc-400">{icon}</div>}
-      <h3 className="text-base font-bold text-zinc-900 mb-1">{title}</h3>
-      <p className="text-sm text-zinc-500 max-w-sm mb-6">{description}</p>
+      {icon && <div className="mb-4 text-ink-2">{icon}</div>}
+      <h3 className="text-base font-bold text-ink mb-1">{title}</h3>
+      <p className="text-sm text-ink-2 max-w-sm mb-6">{description}</p>
       {actionLabel && actionHref && (
         <Link href={actionHref} className={primaryBtnClass}>
           {actionLabel}

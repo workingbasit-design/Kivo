@@ -70,7 +70,7 @@ export default function CustomizePanel({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-[20px] border-2 border-dashed border-zinc-300 text-[15px] font-semibold text-asphalt transition-colors hover:border-zinc-400 dark:border-white/20 dark:text-white"
+        className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-[20px] border-2 border-dashed border-line-strong text-[15px] font-semibold text-asphalt transition-colors hover:border-zinc-400 dark:border-white/20 dark:text-white"
       >
         <SlidersHorizontal size={18} aria-hidden /> {labels.customize}
       </button>
@@ -80,7 +80,7 @@ export default function CustomizePanel({
   return (
     <section
       aria-label={labels.title}
-      className="rounded-[24px] border border-zinc-200/70 bg-white p-5 dark:border-white/10 dark:bg-coal"
+      className="rounded-[24px] border border-line/70 bg-surface p-5 dark:border-white/10 dark:bg-coal"
     >
       <div className="flex items-center justify-between">
         <h2 className="text-[17px] font-bold text-asphalt dark:text-white">{labels.title}</h2>
@@ -97,7 +97,7 @@ export default function CustomizePanel({
           {error}
         </p>
       )}
-      <ul className="mt-2 divide-y divide-zinc-100 dark:divide-white/10">
+      <ul className="mt-2 divide-y divide-line dark:divide-white/10">
         {sections.map((s, i) => (
           <li key={s.key} className="flex items-center gap-2 py-2">
             <button
@@ -114,7 +114,7 @@ export default function CustomizePanel({
               <span
                 aria-hidden
                 className={cn(
-                  "absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-all",
+                  "absolute top-0.5 h-6 w-6 rounded-full bg-surface shadow transition-all",
                   s.visible ? "left-[22px]" : "left-0.5"
                 )}
               />
@@ -122,7 +122,7 @@ export default function CustomizePanel({
             <span
               className={cn(
                 "flex-1 text-[15px]",
-                s.visible ? "text-asphalt dark:text-white" : "text-zinc-400 dark:text-zinc-500"
+                s.visible ? "text-asphalt dark:text-white" : "text-ink-2 dark:text-zinc-500"
               )}
             >
               {labels.sectionNames[s.key]}
@@ -132,7 +132,7 @@ export default function CustomizePanel({
               aria-label={`${labels.moveUp}: ${labels.sectionNames[s.key]}`}
               disabled={i === 0 || pending}
               onClick={() => move(i, -1)}
-              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-zinc-500 disabled:opacity-30 dark:text-zinc-400"
+              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-ink-2 disabled:opacity-30 dark:text-zinc-400"
             >
               <ArrowUp size={18} aria-hidden />
             </button>
@@ -141,7 +141,7 @@ export default function CustomizePanel({
               aria-label={`${labels.moveDown}: ${labels.sectionNames[s.key]}`}
               disabled={i === sections.length - 1 || pending}
               onClick={() => move(i, 1)}
-              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-zinc-500 disabled:opacity-30 dark:text-zinc-400"
+              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-ink-2 disabled:opacity-30 dark:text-zinc-400"
             >
               <ArrowDown size={18} aria-hidden />
             </button>
@@ -152,7 +152,7 @@ export default function CustomizePanel({
         <button
           type="button"
           onClick={() => persist(initial)}
-          className="inline-flex min-h-[44px] items-center px-2 text-[13px] font-semibold text-zinc-500 underline underline-offset-2 dark:text-zinc-400"
+          className="inline-flex min-h-[44px] items-center px-2 text-[13px] font-semibold text-ink-2 underline underline-offset-2 dark:text-zinc-400"
         >
           {labels.reset}
         </button>

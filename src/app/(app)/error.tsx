@@ -25,12 +25,12 @@ export default function AppError({
 
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-6">
-      <div className="max-w-md w-full text-center bg-white border border-zinc-200 rounded-3xl p-8 md:p-10 shadow-sm">
-        <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center mx-auto mb-5">
+      <div className="max-w-md w-full text-center bg-surface border border-line rounded-3xl p-8 md:p-10 shadow-sm">
+        <div className="w-12 h-12 rounded-2xl bg-amber-100 text-warn-text flex items-center justify-center mx-auto mb-5">
           <AlertTriangle size={22} />
         </div>
-        <h1 className="text-xl font-bold text-zinc-900 mb-2">Something went wrong</h1>
-        <p className="text-sm text-zinc-500 leading-relaxed mb-6">
+        <h1 className="text-xl font-bold text-ink mb-2">Something went wrong</h1>
+        <p className="text-sm text-ink-2 leading-relaxed mb-6">
           This page couldn&apos;t load. Your data is safe - try again, and if it
           keeps happening, contact support with the code below.
         </p>
@@ -42,7 +42,7 @@ export default function AppError({
           <RotateCcw size={15} /> Try again
         </button>
         {error.digest && (
-          <p className="mt-5 text-[11px] font-mono text-zinc-400">Error code: {error.digest}</p>
+          <p className="mt-5 text-[11px] font-mono text-ink-2">Error code: {error.digest}</p>
         )}
       </div>
     </div>

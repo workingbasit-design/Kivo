@@ -24,7 +24,7 @@ export default async function SupportInboxPage() {
       <div className="space-y-6 max-w-3xl">
         <PageHeader title={tr('inboxTitle')} subtitle={tr('inboxSub')} />
         <Card className="p-6">
-          <p className="text-sm text-zinc-500">{tr('inboxRestricted')}</p>
+          <p className="text-sm text-ink-2">{tr('inboxRestricted')}</p>
         </Card>
       </div>
     );
@@ -53,7 +53,7 @@ export default async function SupportInboxPage() {
       <PageHeader title={tr('inboxTitle')} subtitle={tr('inboxSub')} />
       {tickets.length === 0 ? (
         <Card className="p-6">
-          <p className="text-sm text-zinc-500">{tr('inboxEmpty')}</p>
+          <p className="text-sm text-ink-2">{tr('inboxEmpty')}</p>
         </Card>
       ) : (
         <div className="space-y-4">
@@ -61,16 +61,16 @@ export default async function SupportInboxPage() {
             <Card key={ticket.id} className="p-5">
               <div className="flex items-start justify-between gap-3 mb-2">
                 <div className="min-w-0">
-                  <p className="text-sm font-bold text-zinc-900 truncate">{ticket.subject}</p>
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-sm font-bold text-ink truncate">{ticket.subject}</p>
+                  <p className="text-xs text-ink-2">
                     {ticket.name} ·{' '}
-                    <a href={`mailto:${ticket.email}`} className="underline hover:text-zinc-800">
+                    <a href={`mailto:${ticket.email}`} className="underline hover:text-ink">
                       {ticket.email}
                     </a>{' '}
                     · {formatDateShort(ticket.createdAt, dateLocale)}
                   </p>
                 </div>
-                <span className="inline-flex px-2.5 py-1 rounded-md text-[10px] font-bold border whitespace-nowrap bg-zinc-100 text-zinc-600 border-zinc-200">
+                <span className="inline-flex px-2.5 py-1 rounded-md text-[10px] font-bold border whitespace-nowrap bg-surface-2 text-ink-2 border-line">
                   {ticket.status === 'open'
                     ? tr('inboxOpen')
                     : ticket.status === 'answered'
@@ -78,7 +78,7 @@ export default async function SupportInboxPage() {
                       : tr('inboxClosed')}
                 </span>
               </div>
-              <p className="text-sm text-zinc-600 whitespace-pre-wrap mb-4">{ticket.message}</p>
+              <p className="text-sm text-ink-2 whitespace-pre-wrap mb-4">{ticket.message}</p>
               <TicketStatusButtons id={ticket.id} status={ticket.status} locale={locale} />
             </Card>
           ))}

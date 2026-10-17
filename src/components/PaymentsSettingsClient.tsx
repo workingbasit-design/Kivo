@@ -34,12 +34,12 @@ function PaymentCards({
   return (
     <ul className="space-y-2.5 md:hidden">
       {rows.map((p) => (
-        <li key={p.id} className="rounded-xl border border-zinc-200/70 bg-white p-3.5 text-xs">
+        <li key={p.id} className="rounded-xl border border-line/70 bg-surface p-3.5 text-xs">
           <div className="flex items-start justify-between gap-2">
-            <p className="font-bold text-zinc-800 truncate">{p.customerName}</p>
-            <p className="font-bold text-zinc-900 shrink-0">{formatMoney(p.amount, 'CAD', locale)}</p>
+            <p className="font-bold text-ink truncate">{p.customerName}</p>
+            <p className="font-bold text-ink shrink-0">{formatMoney(p.amount, 'CAD', locale)}</p>
           </div>
-          <p className="text-zinc-500 mt-1">
+          <p className="text-ink-2 mt-1">
             {new Date(p.createdAt).toLocaleDateString(locale === 'fr' ? 'fr-CA' : 'en-CA')} · {refLabel(p)} · {p.status}
           </p>
           {p.receiptUrl && (
@@ -95,23 +95,23 @@ export default function PaymentsSettingsClient({
   return (
     <div className="space-y-6">
       {connectFailed && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
+        <div className="rounded-xl border border-red-200 bg-danger-bg px-4 py-3 text-sm font-semibold text-red-800">
           {t(locale, 'payments.connectFailed')}
         </div>
       )}
       {!initial.stripeConfigured && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
+        <div className="rounded-xl border border-amber-200 bg-warn-bg px-4 py-3 text-sm font-semibold text-amber-800">
           {t(locale, 'payments.notConfigured')}
         </div>
       )}
 
       {/* Stripe Connect */}
       <Card className="p-5">
-        <h2 className="text-sm font-bold text-zinc-900 mb-1 flex items-center gap-2">
+        <h2 className="text-sm font-bold text-ink mb-1 flex items-center gap-2">
           <CreditCard size={15} className="text-indigo-600" />
           {t(locale, 'payments.connectTitle')}
         </h2>
-        <p className="text-xs text-zinc-500 mb-4">{t(locale, 'payments.connectDesc')}</p>
+        <p className="text-xs text-ink-2 mb-4">{t(locale, 'payments.connectDesc')}</p>
 
         {!conn ? (
           <a href="/api/stripe/connect" className={primaryBtnClass}>
@@ -120,47 +120,47 @@ export default function PaymentsSettingsClient({
         ) : (
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-3 py-1">
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-ok bg-ok-bg border border-emerald-200 rounded-full px-3 py-1">
                 <ShieldCheck size={13} /> {t(locale, 'payments.connected')}
               </span>
               {conn.livemode ? (
-                <span className="text-xs font-bold text-zinc-700 bg-zinc-100 border border-zinc-200 rounded-full px-3 py-1">
+                <span className="text-xs font-bold text-ink bg-surface-2 border border-line rounded-full px-3 py-1">
                   {t(locale, 'payments.liveModeBadge')}
                 </span>
               ) : (
-                <span className="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-3 py-1">
+                <span className="text-xs font-bold text-warn-text bg-warn-bg border border-amber-200 rounded-full px-3 py-1">
                   {t(locale, 'payments.testModeBadge')}
                 </span>
               )}
-              <span className="text-xs text-zinc-500">
+              <span className="text-xs text-ink-2">
                 {t(locale, 'payments.accountId')}: {conn.stripeAccountId}
               </span>
             </div>
             {!conn.livemode && (
-              <p className="text-xs text-zinc-500">{t(locale, 'payments.testModeDesc')}</p>
+              <p className="text-xs text-ink-2">{t(locale, 'payments.testModeDesc')}</p>
             )}
             {!conn.onboardingComplete && (
-              <p className="text-xs font-semibold text-amber-700">
+              <p className="text-xs font-semibold text-warn-text">
                 {t(locale, 'payments.onboardingIncomplete')}
               </p>
             )}
             {conn.livemode && !conn.liveConfirmedAt && (
-              <form action={liveAction} className="rounded-xl border border-rose-200 bg-rose-50/60 p-3 space-y-2">
-                <p className="text-xs font-bold text-zinc-800">{t(locale, 'payments.liveConfirmTitle')}</p>
-                <p className="text-xs text-zinc-600">{t(locale, 'payments.liveConfirmDesc')}</p>
-                <label className="flex items-start gap-2 text-xs text-zinc-800 cursor-pointer">
+              <form action={liveAction} className="rounded-xl border border-rose-200 bg-danger-bg/60 p-3 space-y-2">
+                <p className="text-xs font-bold text-ink">{t(locale, 'payments.liveConfirmTitle')}</p>
+                <p className="text-xs text-ink-2">{t(locale, 'payments.liveConfirmDesc')}</p>
+                <label className="flex items-start gap-2 text-xs text-ink cursor-pointer">
                   <input type="checkbox" name="confirm" value="yes" required className="mt-0.5 h-4 w-4 accent-rose-600" />
                   <span className="font-semibold">{t(locale, 'payments.liveConfirmLabel')}</span>
                 </label>
-                {liveState.error && <p className="text-xs font-semibold text-rose-600">{liveState.error}</p>}
-                {liveState.ok && <p className="text-xs font-semibold text-emerald-600">{t(locale, 'payments.liveConfirmed')}</p>}
+                {liveState.error && <p className="text-xs font-semibold text-danger">{liveState.error}</p>}
+                {liveState.ok && <p className="text-xs font-semibold text-ok">{t(locale, 'payments.liveConfirmed')}</p>}
                 <button type="submit" disabled={livePending} className={primaryBtnClass}>
                   {t(locale, 'payments.liveConfirmButton')}
                 </button>
               </form>
             )}
             {conn.livemode && conn.liveConfirmedAt && (
-              <p className="text-xs font-semibold text-emerald-700">{t(locale, 'payments.liveConfirmed')}</p>
+              <p className="text-xs font-semibold text-ok">{t(locale, 'payments.liveConfirmed')}</p>
             )}
             <div>
               <button onClick={() => setConfirmingDisconnect(true)} className={dangerBtnClass}>
@@ -173,16 +173,16 @@ export default function PaymentsSettingsClient({
 
       {/* Recent online payments */}
       <Card className="p-5">
-        <h2 className="text-sm font-bold text-zinc-900 mb-3">{t(locale, 'payments.recentPayments')}</h2>
+        <h2 className="text-sm font-bold text-ink mb-3">{t(locale, 'payments.recentPayments')}</h2>
         {initial.payments.length === 0 ? (
-          <p className="text-xs text-zinc-500">{t(locale, 'payments.empty')}</p>
+          <p className="text-xs text-ink-2">{t(locale, 'payments.empty')}</p>
         ) : (
           <>
             <PaymentCards rows={initial.payments} locale={locale} refLabel={(p) => String(p.invoiceNumber ?? '')} />
             <div className="overflow-x-auto hidden md:block mt-0.5">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="text-left text-zinc-400 border-b border-zinc-100">
+                  <tr className="text-left text-ink-2 border-b border-line">
                     <th className="py-1.5 pr-2 font-semibold">{t(locale, 'payments.colDate')}</th>
                     <th className="py-1.5 pr-2 font-semibold">{t(locale, 'payments.colCustomer')}</th>
                     <th className="py-1.5 pr-2 font-semibold">{t(locale, 'payments.colRef')}</th>
@@ -194,7 +194,7 @@ export default function PaymentsSettingsClient({
                 <tbody>
                   {initial.payments.map((p) => (
                     <tr key={p.id} className="border-b border-zinc-50">
-                      <td className="py-1.5 pr-2 text-zinc-500 whitespace-nowrap">
+                      <td className="py-1.5 pr-2 text-ink-2 whitespace-nowrap">
                         {new Date(p.createdAt).toLocaleDateString(locale === 'fr' ? 'fr-CA' : 'en-CA')}
                       </td>
                       <td className="py-1.5 pr-2">{p.customerName}</td>
@@ -221,16 +221,16 @@ export default function PaymentsSettingsClient({
 
       {/* Recent online deposits */}
       <Card className="p-5">
-        <h2 className="text-sm font-bold text-zinc-900 mb-3">{t(locale, 'payments.recentDeposits')}</h2>
+        <h2 className="text-sm font-bold text-ink mb-3">{t(locale, 'payments.recentDeposits')}</h2>
         {initial.deposits.length === 0 ? (
-          <p className="text-xs text-zinc-500">{t(locale, 'payments.empty')}</p>
+          <p className="text-xs text-ink-2">{t(locale, 'payments.empty')}</p>
         ) : (
           <>
             <PaymentCards rows={initial.deposits} locale={locale} refLabel={(d) => String(d.quoteNumber ?? '')} />
             <div className="overflow-x-auto hidden md:block mt-0.5">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="text-left text-zinc-400 border-b border-zinc-100">
+                  <tr className="text-left text-ink-2 border-b border-line">
                     <th className="py-1.5 pr-2 font-semibold">{t(locale, 'payments.colDate')}</th>
                     <th className="py-1.5 pr-2 font-semibold">{t(locale, 'payments.colCustomer')}</th>
                     <th className="py-1.5 pr-2 font-semibold">{t(locale, 'payments.colRef')}</th>
@@ -242,7 +242,7 @@ export default function PaymentsSettingsClient({
                 <tbody>
                   {initial.deposits.map((d) => (
                     <tr key={d.id} className="border-b border-zinc-50">
-                      <td className="py-1.5 pr-2 text-zinc-500 whitespace-nowrap">
+                      <td className="py-1.5 pr-2 text-ink-2 whitespace-nowrap">
                         {new Date(d.createdAt).toLocaleDateString(locale === 'fr' ? 'fr-CA' : 'en-CA')}
                       </td>
                       <td className="py-1.5 pr-2">{d.customerName}</td>

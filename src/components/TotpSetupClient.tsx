@@ -86,24 +86,24 @@ export default function TotpSetupClient({
     <div className="ej-glass-card rounded-2xl p-5 space-y-4">
       <div className="flex items-center gap-3">
         {enabled ? (
-          <ShieldCheck size={22} className="text-emerald-600" />
+          <ShieldCheck size={22} className="text-ok" />
         ) : (
-          <ShieldAlert size={22} className="text-amber-600" />
+          <ShieldAlert size={22} className="text-warn-text" />
         )}
         <div>
-          <h2 className="text-base font-bold text-zinc-900">{t(locale, 'security.totpTitle')}</h2>
-          <p className="text-sm text-zinc-500">{t(locale, 'security.totpSubtitle')}</p>
+          <h2 className="text-base font-bold text-ink">{t(locale, 'security.totpTitle')}</h2>
+          <p className="text-sm text-ink-2">{t(locale, 'security.totpSubtitle')}</p>
         </div>
       </div>
 
       {requiredNotice && !enabled && (
-        <div role="alert" className="rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm px-4 py-3">
+        <div role="alert" className="rounded-xl bg-warn-bg border border-amber-200 text-amber-800 text-sm px-4 py-3">
           {t(locale, 'security.totpRequiredNotice')}
         </div>
       )}
 
       {error && (
-        <div role="alert" className="rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm px-4 py-3">
+        <div role="alert" className="rounded-xl bg-danger-bg border border-rose-200 text-danger text-sm px-4 py-3">
           {error}
         </div>
       )}
@@ -116,21 +116,21 @@ export default function TotpSetupClient({
 
       {!enabled && secret && !backupCodes && (
         <div className="space-y-4">
-          <p className="text-sm text-zinc-600">{t(locale, 'security.totpManualEntry')}</p>
+          <p className="text-sm text-ink-2">{t(locale, 'security.totpManualEntry')}</p>
           <div className="flex items-center gap-2">
-            <code className="flex-1 rounded-lg bg-zinc-100 px-3 py-2 text-sm font-mono tracking-wider break-all">
+            <code className="flex-1 rounded-lg bg-surface-2 px-3 py-2 text-sm font-mono tracking-wider break-all">
               {secret}
             </code>
             <button
               onClick={copySecret}
-              className="rounded-lg border border-zinc-200 p-2 text-zinc-600 hover:bg-zinc-50"
+              className="rounded-lg border border-line p-2 text-ink-2 hover:bg-surface-2"
               aria-label={t(locale, 'security.copySecret')}
             >
               {copied ? <Check size={16} /> : <Copy size={16} />}
             </button>
           </div>
           {otpauthUrl && (
-            <p className="text-xs text-zinc-400 break-all">
+            <p className="text-xs text-ink-2 break-all">
               {t(locale, 'security.otpauthHint')}
               <span className="font-mono">{otpauthUrl}</span>
             </p>
@@ -154,11 +154,11 @@ export default function TotpSetupClient({
 
       {backupCodes && (
         <div className="space-y-3">
-          <p className="text-sm font-semibold text-zinc-900">{t(locale, 'security.backupCodesTitle')}</p>
-          <p className="text-sm text-zinc-600">{t(locale, 'security.backupCodesHint')}</p>
+          <p className="text-sm font-semibold text-ink">{t(locale, 'security.backupCodesTitle')}</p>
+          <p className="text-sm text-ink-2">{t(locale, 'security.backupCodesHint')}</p>
           <div className="grid grid-cols-2 gap-2">
             {backupCodes.map((c) => (
-              <code key={c} className="rounded-lg bg-zinc-100 px-3 py-2 text-sm font-mono text-center">
+              <code key={c} className="rounded-lg bg-surface-2 px-3 py-2 text-sm font-mono text-center">
                 {c}
               </code>
             ))}
@@ -168,7 +168,7 @@ export default function TotpSetupClient({
 
       {enabled && !backupCodes && (
         <div className="space-y-4">
-          <p className="text-sm text-emerald-700 font-medium">{t(locale, 'security.totpOn')}</p>
+          <p className="text-sm text-ok font-medium">{t(locale, 'security.totpOn')}</p>
           <Field label={t(locale, 'security.confirmPasswordLabel')}>
             <input
               type="password"
@@ -181,7 +181,7 @@ export default function TotpSetupClient({
           <button
             onClick={disable}
             disabled={busy || !password}
-            className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-700 hover:bg-rose-100 disabled:opacity-50"
+            className="rounded-xl border border-rose-200 bg-danger-bg px-4 py-2.5 text-sm font-semibold text-danger hover:bg-rose-100 disabled:opacity-50"
           >
             {busy ? t(locale, 'security.working') : t(locale, 'security.disableTotp')}
           </button>

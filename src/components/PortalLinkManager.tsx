@@ -111,7 +111,7 @@ export default function PortalLinkManager({
 
   if (!customerPhone) {
     return (
-      <p className="text-xs text-zinc-500">
+      <p className="text-xs text-ink-2">
         {t(locale, 't10money.portalMgrNoPhone')}
       </p>
     );
@@ -128,15 +128,15 @@ export default function PortalLinkManager({
 
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
+      <h3 className="text-sm font-bold text-ink flex items-center gap-2">
         <Link2 size={14} /> {t(locale, 't10money.portalMgrTitle')}
       </h3>
-      <p className="text-xs text-zinc-500">
+      <p className="text-xs text-ink-2">
         {t(locale, 't10money.portalMgrDesc').replace('{name}', customerName)}
       </p>
 
       {error && (
-        <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{error}</span>
         </div>
@@ -145,7 +145,7 @@ export default function PortalLinkManager({
       {url ? (
         <>
           <div className="flex items-center gap-2">
-            <code className="flex-1 min-w-0 text-xs bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 break-all select-all text-zinc-700">
+            <code className="flex-1 min-w-0 text-xs bg-surface-2 border border-line rounded-xl px-3 py-2.5 break-all select-all text-ink">
               {url}
             </code>
             <CopyButton text={url} />
@@ -155,7 +155,7 @@ export default function PortalLinkManager({
               href={waHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="min-h-[44px] inline-flex items-center gap-1.5 px-3 rounded-xl text-xs font-semibold transition-colors border bg-[#25D366]/10 border-[#25D366]/30 text-[#128C4A] hover:bg-[#25D366]/20"
+              className="min-h-[44px] inline-flex items-center gap-1.5 px-3 rounded-xl text-xs font-semibold transition-colors border bg-wa/10 border-wa/30 text-wa-deep hover:bg-wa/20"
               title={t(locale, 't10money.portalMgrWaTitle')}
             >
               <MessageCircle size={13} /> {t(locale, 't10money.portalMgrWaShare')}
@@ -164,15 +164,15 @@ export default function PortalLinkManager({
               <button
                 type="button"
                 onClick={() => setConfirming('revoke')}
-                className="min-h-[44px] text-xs font-semibold text-rose-600 hover:text-rose-700 inline-flex items-center gap-1.5 px-2"
+                className="min-h-[44px] text-xs font-semibold text-danger hover:text-danger inline-flex items-center gap-1.5 px-2"
               >
                 <ShieldOff size={13} /> {t(locale, 't10money.portalMgrRevoke')}
               </button>
             ) : (
-              <form action={revokeFormAction} className="flex flex-wrap items-center gap-2 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2">
+              <form action={revokeFormAction} className="flex flex-wrap items-center gap-2 bg-danger-bg border border-rose-200 rounded-xl px-3 py-2">
                 <input type="hidden" name="tokenId" value={tokenId ?? ''} />
                 <input type="hidden" name="customerId" value={customerId} />
-                <span className="text-xs text-rose-700 font-medium">{t(locale, 't10money.portalMgrRevokeConfirm')}</span>
+                <span className="text-xs text-danger font-medium">{t(locale, 't10money.portalMgrRevokeConfirm')}</span>
                 <button
                   type="submit"
                   disabled={revokePending}
@@ -183,7 +183,7 @@ export default function PortalLinkManager({
                 <button
                   type="button"
                   onClick={() => setConfirming(null)}
-                  className="min-h-[44px] text-xs font-semibold text-zinc-600 hover:text-zinc-800 px-3"
+                  className="min-h-[44px] text-xs font-semibold text-ink-2 hover:text-ink px-3"
                 >
                   {t(locale, 't10money.portalMgrKeep')}
                 </button>
@@ -196,7 +196,7 @@ export default function PortalLinkManager({
           <input type="hidden" name="customerId" value={customerId} />
           {tokenId && confirming !== 'regen' ? (
             <div className="flex flex-wrap items-center gap-2">
-              <p className="text-xs text-zinc-500">{t(locale, 't10money.portalMgrActive')}</p>
+              <p className="text-xs text-ink-2">{t(locale, 't10money.portalMgrActive')}</p>
               <button
                 type="button"
                 onClick={() => setConfirming('regen')}
@@ -206,7 +206,7 @@ export default function PortalLinkManager({
               </button>
             </div>
           ) : confirming === 'regen' ? (
-            <div className="flex flex-wrap items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+            <div className="flex flex-wrap items-center gap-2 bg-warn-bg border border-amber-200 rounded-xl px-3 py-2">
               <span className="text-xs text-amber-800 font-medium">{t(locale, 't10money.portalMgrRegenConfirm')}</span>
               <button
                 type="submit"
@@ -218,7 +218,7 @@ export default function PortalLinkManager({
               <button
                 type="button"
                 onClick={() => setConfirming(null)}
-                className="min-h-[44px] text-xs font-semibold text-zinc-600 hover:text-zinc-800 px-3"
+                className="min-h-[44px] text-xs font-semibold text-ink-2 hover:text-ink px-3"
               >
                 {t(locale, 't10money.portalMgrKeep')}
               </button>

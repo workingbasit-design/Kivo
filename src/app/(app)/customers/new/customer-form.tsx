@@ -105,7 +105,7 @@ export default function NewCustomerForm() {
           </Field>
 
           {state?.error && (
-            <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+            <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
               <AlertCircle size={14} className="mt-0.5 shrink-0" />
               <span>{state.error}</span>
             </div>

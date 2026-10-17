@@ -19,12 +19,12 @@ export default function OfflinePage() {
         <div className="mx-auto mb-5 w-fit">
           <EveryJobLogo size={52} />
         </div>
-        <div className="bg-white rounded-3xl border border-zinc-200/60 shadow-sm p-8">
+        <div className="bg-surface rounded-3xl border border-line/60 shadow-sm p-8">
           <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center mx-auto mb-4">
-            <WifiOff className="w-6 h-6 text-amber-600" />
+            <WifiOff className="w-6 h-6 text-warn-text" />
           </div>
-          <h1 className="text-xl font-bold text-zinc-900 tracking-tight">You&apos;re offline</h1>
-          <p className="text-sm text-zinc-500 mt-2 leading-relaxed">
+          <h1 className="text-xl font-bold text-ink tracking-tight">You&apos;re offline</h1>
+          <p className="text-sm text-ink-2 mt-2 leading-relaxed">
             No connection right now. Anything you queued - new jobs, quotes -
             will sync automatically the moment you&apos;re back online.
           </p>
@@ -35,7 +35,7 @@ export default function OfflinePage() {
             </Link>
           </div>
         </div>
-        <p className="text-[11px] text-zinc-400 mt-4">EveryJob works in low-signal areas - your work is safe.</p>
+        <p className="text-[11px] text-ink-2 mt-4">EveryJob works in low-signal areas - your work is safe.</p>
       </div>
     </div>
   );

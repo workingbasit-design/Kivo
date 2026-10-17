@@ -86,25 +86,25 @@ export default async function SignedDocumentPrintPage({
 
         {/* Signed document */}
         <Card className="p-8 print:border-0 print:shadow-none">
-          <div className="mb-6 border-b border-zinc-200 pb-6">
-            <p className="text-[11px] font-semibold text-zinc-400">
+          <div className="mb-6 border-b border-line pb-6">
+            <p className="text-[11px] font-semibold text-ink-2">
               {business.name}
             </p>
-            <h1 className="mt-1 text-2xl font-bold text-zinc-900">{quote.title}</h1>
-            <p className="mt-1 text-sm text-zinc-500">
+            <h1 className="mt-1 text-2xl font-bold text-ink">{quote.title}</h1>
+            <p className="mt-1 text-sm text-ink-2">
               {quote.number}
               {quote.customer ? ` · ${quote.customer.name}` : ''}
             </p>
-            <p className="mt-3 text-3xl font-bold text-zinc-900">
+            <p className="mt-3 text-3xl font-bold text-ink">
               {formatMoney(centsToDollars(quote.totalCents), 'CAD', moneyLocale)}
             </p>
           </div>
 
           <div className="mb-6">
-            <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-zinc-500">
+            <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-ink-2">
               <PenLine size={12} /> {L('esign.statusSigned')}
             </p>
-            <div className="rounded-lg border border-zinc-200 bg-white px-6 py-5">
+            <div className="rounded-lg border border-line bg-surface px-6 py-5">
               {drawn ? (
                 <img
                   src={request.signatureData!}
@@ -113,41 +113,41 @@ export default async function SignedDocumentPrintPage({
                 />
               ) : (
                 <p
-                  className="text-4xl text-zinc-900"
+                  className="text-4xl text-ink"
                   style={{ fontFamily: '"Brush Script MT", "Segoe Script", cursive' }}
                 >
                   {typedName ?? request.signerName}
                 </p>
               )}
-              <p className="mt-3 text-sm font-bold text-zinc-900">{request.signerName}</p>
-              <p className="text-xs text-zinc-500">
+              <p className="mt-3 text-sm font-bold text-ink">{request.signerName}</p>
+              <p className="text-xs text-ink-2">
                 {formatDateShort(request.signedAt, locale === 'fr' ? 'fr-CA' : 'en-CA')}
               </p>
             </div>
           </div>
 
           <div className="mb-6">
-            <p className="mb-2 text-xs font-semibold text-zinc-500">
+            <p className="mb-2 text-xs font-semibold text-ink-2">
               {L('esign.auditTitle')}
             </p>
-            <ul className="divide-y divide-zinc-100 rounded-lg border border-zinc-200">
+            <ul className="divide-y divide-line rounded-lg border border-line">
               {audit.map((e, i) => (
                 <li key={i} className="flex items-center justify-between px-4 py-2.5">
-                  <span className="text-sm font-semibold text-zinc-800">
+                  <span className="text-sm font-semibold text-ink">
                     {L(AUDIT_LABEL[e.event] ?? 'esign.title')}
                   </span>
-                  <span className="text-xs text-zinc-500">
+                  <span className="text-xs text-ink-2">
                     {formatDateShort(e.at, locale === 'fr' ? 'fr-CA' : 'en-CA')}
                   </span>
                 </li>
               ))}
             </ul>
-            <p className="mt-3 font-mono text-[11px] text-zinc-400">
+            <p className="mt-3 font-mono text-[11px] text-ink-2">
               doc {request.docHash.slice(0, 12)}
             </p>
           </div>
 
-          <p className="border-t border-zinc-200 pt-4 text-center text-[11px] leading-relaxed text-zinc-400">
+          <p className="border-t border-line pt-4 text-center text-[11px] leading-relaxed text-ink-2">
             {L('esign.legalLine')}
           </p>
         </Card>

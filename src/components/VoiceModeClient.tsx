@@ -314,7 +314,7 @@ export default function VoiceModeClient({
       {/* Mic toggle */}
       <Card className="p-5 text-center">
         {!supported ? (
-          <p className="text-sm text-zinc-600">{t(locale, "voice.notSupported")}</p>
+          <p className="text-sm text-ink-2">{t(locale, "voice.notSupported")}</p>
         ) : (
           <>
             <button
@@ -323,7 +323,7 @@ export default function VoiceModeClient({
               aria-pressed={listening}
               className={cn(
                 "ej-spring mx-auto flex h-24 w-24 items-center justify-center rounded-full text-white shadow-lg transition-colors min-h-[96px] min-w-[96px]",
-                listening ? "bg-red-600 hover:bg-red-700" : "bg-ink hover:bg-graphite"
+                listening ? "bg-red-600 hover:bg-red-700" : "bg-asphalt hover:bg-graphite"
               )}
             >
               {listening ? (
@@ -332,14 +332,14 @@ export default function VoiceModeClient({
                 <Mic size={36} aria-hidden />
               )}
             </button>
-            <p className="mt-3 text-sm font-bold text-zinc-900">
+            <p className="mt-3 text-sm font-bold text-ink">
               {listening ? t(locale, "voice.listening") : t(locale, "voice.startListening")}
             </p>
-            <p className="mt-1 text-xs text-zinc-500">{t(locale, "voice.micPermission")}</p>
+            <p className="mt-1 text-xs text-ink-2">{t(locale, "voice.micPermission")}</p>
             {voiceError && (
               <p
                 role="alert"
-                className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+                className="mt-3 rounded-xl border border-amber-200 bg-warn-bg px-4 py-3 text-sm text-amber-800"
               >
                 {voiceError}
               </p>
@@ -347,7 +347,7 @@ export default function VoiceModeClient({
           </>
         )}
         {heard && (
-          <p className="mt-4 rounded-xl bg-zinc-50 px-4 py-3 text-sm text-zinc-700">
+          <p className="mt-4 rounded-xl bg-surface-2 px-4 py-3 text-sm text-ink">
             <span className="font-bold">{t(locale, "voice.heard")}: </span>“{heard}”
           </p>
         )}
@@ -355,7 +355,7 @@ export default function VoiceModeClient({
 
       {/* Today's jobs - big tap targets */}
       <section>
-        <h2 className="text-xs font-bold text-zinc-500 mb-2 px-1">
+        <h2 className="text-xs font-bold text-ink-2 mb-2 px-1">
           {t(locale, "voice.todayJobs")}
         </h2>
         {jobs.length === 0 ? (
@@ -368,8 +368,8 @@ export default function VoiceModeClient({
               const isBusy = busy?.startsWith(job.id);
               return (
                 <Card key={job.id} className="p-4">
-                  <p className="text-sm font-bold text-zinc-900">{job.title}</p>
-                  <p className="text-xs text-zinc-500 mb-3">
+                  <p className="text-sm font-bold text-ink">{job.title}</p>
+                  <p className="text-xs text-ink-2 mb-3">
                     {job.customerName} · {job.status}
                   </p>
                   <div className="grid grid-cols-2 gap-2">
@@ -377,7 +377,7 @@ export default function VoiceModeClient({
                       type="button"
                       disabled={!!isBusy}
                       onClick={() => tap({ kind: "start", jobId: job.id })}
-                      className="min-h-[56px] rounded-xl bg-ink text-white text-sm font-bold inline-flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="min-h-[56px] rounded-xl bg-asphalt text-white text-sm font-bold inline-flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       <Play size={16} /> {t(locale, "voice.startJob")}
                     </button>
@@ -393,7 +393,7 @@ export default function VoiceModeClient({
                       type="button"
                       disabled={!!isBusy}
                       onClick={() => tap({ kind: "needText", action: "note", jobId: job.id })}
-                      className="min-h-[56px] rounded-xl bg-white border border-zinc-200 text-zinc-800 text-sm font-bold inline-flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="min-h-[56px] rounded-xl bg-surface border border-line text-ink text-sm font-bold inline-flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       <StickyNote size={16} /> {t(locale, "voice.addNote")}
                     </button>
@@ -401,7 +401,7 @@ export default function VoiceModeClient({
                       type="button"
                       disabled={!!isBusy}
                       onClick={() => tap({ kind: "needText", action: "material", jobId: job.id })}
-                      className="min-h-[56px] rounded-xl bg-white border border-zinc-200 text-zinc-800 text-sm font-bold inline-flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="min-h-[56px] rounded-xl bg-surface border border-line text-ink text-sm font-bold inline-flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       <Wrench size={16} /> {t(locale, "voice.addMaterial")}
                     </button>
@@ -411,20 +411,20 @@ export default function VoiceModeClient({
             })}
           </div>
         )}
-        <p className="text-[11px] text-zinc-400 mt-3 px-1">{t(locale, "voice.tapHint")}</p>
+        <p className="text-[11px] text-ink-2 mt-3 px-1">{t(locale, "voice.tapHint")}</p>
       </section>
 
       {/* Action log */}
       {log.length > 0 && (
         <section>
-          <h2 className="text-xs font-bold text-zinc-500 mb-2 px-1">
+          <h2 className="text-xs font-bold text-ink-2 mb-2 px-1">
             {t(locale, "voice.didAction")}
           </h2>
-          <Card className="px-2 py-2 divide-y divide-zinc-100">
+          <Card className="px-2 py-2 divide-y divide-line">
             {log.map((e) => (
               <div key={e.id} className="px-3 py-2.5">
-                <p className="text-xs text-zinc-500 truncate">“{e.heard}”</p>
-                <p className={cn("text-sm font-semibold", e.ok ? "text-emerald-700" : "text-amber-700")}>
+                <p className="text-xs text-ink-2 truncate">“{e.heard}”</p>
+                <p className={cn("text-sm font-semibold", e.ok ? "text-ok" : "text-warn-text")}>
                   {e.result}
                 </p>
               </div>

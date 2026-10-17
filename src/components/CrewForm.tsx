@@ -57,7 +57,7 @@ export function CrewForm({
       </Field>
 
       <div>
-        <span className="block text-sm font-semibold text-zinc-900 mb-2">{L('color')}</span>
+        <span className="block text-sm font-semibold text-ink mb-2">{L('color')}</span>
         <div className="flex gap-2" role="radiogroup" aria-label={L('color')}>
           {CREW_COLORS.map((c) => (
             <button
@@ -86,7 +86,7 @@ export function CrewForm({
       </button>
 
       <div>
-        <span className="block text-sm font-semibold text-zinc-900 mb-2">
+        <span className="block text-sm font-semibold text-ink mb-2">
           {L('members')} · {initial.members.length}
         </span>
         {initial.members.length > 0 && (
@@ -94,15 +94,15 @@ export function CrewForm({
             {initial.members.map((m) => (
               <li
                 key={m.id}
-                className="flex items-center justify-between gap-2 rounded-xl border border-zinc-200 px-3 py-2 min-h-[44px]"
+                className="flex items-center justify-between gap-2 rounded-xl border border-line px-3 py-2 min-h-[44px]"
               >
-                <span className="text-sm font-medium text-zinc-900 truncate">{m.name}</span>
+                <span className="text-sm font-medium text-ink truncate">{m.name}</span>
                 <button
                   type="button"
                   disabled={pending}
                   onClick={() => run(() => removeMember(m.id), L('memberRemoved'))}
                   aria-label={`${L('removeMember')}: ${m.name}`}
-                  className="shrink-0 w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-zinc-400 hover:text-rose-600 hover:bg-rose-50 disabled:opacity-50"
+                  className="shrink-0 w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-ink-2 hover:text-danger hover:bg-danger-bg disabled:opacity-50"
                 >
                   <X size={18} aria-hidden />
                 </button>
@@ -136,7 +136,7 @@ export function CrewForm({
                 return r;
               }), L('memberAdded'))
             }
-            className="shrink-0 min-w-[44px] min-h-[44px] px-4 rounded-xl bg-zinc-900 text-white text-sm font-semibold disabled:opacity-50 flex items-center gap-1.5"
+            className="shrink-0 min-w-[44px] min-h-[44px] px-4 rounded-xl bg-asphalt text-white text-sm font-semibold disabled:opacity-50 flex items-center gap-1.5"
           >
             <Plus size={16} aria-hidden /> {L('addMember')}
           </button>
@@ -144,7 +144,7 @@ export function CrewForm({
       </div>
 
       {confirmingDelete ? (
-        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 space-y-3">
+        <div className="rounded-xl border border-rose-200 bg-danger-bg p-4 space-y-3">
           <p className="text-sm text-rose-800">{L('deleteConfirm')}</p>
           <div className="flex gap-2">
             <button
@@ -158,7 +158,7 @@ export function CrewForm({
             <button
               type="button"
               onClick={() => setConfirmingDelete(false)}
-              className="min-h-[44px] px-4 rounded-xl border border-zinc-300 text-sm font-semibold text-zinc-700"
+              className="min-h-[44px] px-4 rounded-xl border border-line-strong text-sm font-semibold text-ink"
             >
               {L('cancel')}
             </button>
@@ -168,14 +168,14 @@ export function CrewForm({
         <button
           type="button"
           onClick={() => setConfirmingDelete(true)}
-          className="min-h-[44px] px-4 rounded-xl text-sm font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-1.5"
+          className="min-h-[44px] px-4 rounded-xl text-sm font-semibold text-danger hover:bg-danger-bg flex items-center gap-1.5"
         >
           <Trash2 size={16} aria-hidden /> {L('delete')}
         </button>
       )}
 
       {msg && (
-        <p className="text-sm font-medium text-zinc-700" role="status">
+        <p className="text-sm font-medium text-ink" role="status">
           {msg}
         </p>
       )}
@@ -216,7 +216,7 @@ export function CrewCreateForm({ locale }: { locale: Locale }) {
         />
       </Field>
       <div>
-        <span className="block text-sm font-semibold text-zinc-900 mb-2">{L('color')}</span>
+        <span className="block text-sm font-semibold text-ink mb-2">{L('color')}</span>
         <div className="flex gap-2" role="radiogroup" aria-label={L('color')}>
           {CREW_COLORS.map((c) => (
             <button
@@ -243,7 +243,7 @@ export function CrewCreateForm({ locale }: { locale: Locale }) {
         {L('create')}
       </button>
       {msg && (
-        <p className="text-sm font-medium text-zinc-700" role="status">
+        <p className="text-sm font-medium text-ink" role="status">
           {msg}
         </p>
       )}

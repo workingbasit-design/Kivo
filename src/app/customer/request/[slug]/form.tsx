@@ -42,18 +42,18 @@ export default function CustomerQuoteForm({
             <Avatar name={businessName} logoUrl={logoUrl} size="lg" />
             <div>
               <div className="flex items-center gap-1.5">
-                <h1 className="font-bold text-[16px] text-zinc-900">{businessName}</h1>
+                <h1 className="font-bold text-[16px] text-ink">{businessName}</h1>
                 <BadgeCheck className="w-4 h-4 text-indigo-600 fill-indigo-100" />
               </div>
-              <p className="text-xs text-zinc-500">{tr('customer.quote.verifiedPro')} · {tr('customer.quote.respondsWithinDay')}</p>
+              <p className="text-xs text-ink-2">{tr('customer.quote.verifiedPro')} · {tr('customer.quote.respondsWithinDay')}</p>
             </div>
           </div>
         </Card>
       </div>
 
       <div className="ej-anim-fade-up" style={{ animationDelay: '120ms' }}>
-        <h2 className="text-lg font-bold tracking-tight text-zinc-900">{tr('customer.quote.title')}</h2>
-        <p className="text-sm text-zinc-500 mt-0.5">
+        <h2 className="text-lg font-bold tracking-tight text-ink">{tr('customer.quote.title')}</h2>
+        <p className="text-sm text-ink-2 mt-0.5">
           {tr('customer.quote.hint')}
         </p>
       </div>
@@ -99,7 +99,7 @@ export default function CustomerQuoteForm({
         {state?.error && (
           <div
             role="alert"
-            className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5"
+            className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5"
           >
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             {state.error}
@@ -111,7 +111,7 @@ export default function CustomerQuoteForm({
           {isPending ? tr('customer.quote.sending') : tr('customer.quote.send')}
         </button>
 
-        <p className="text-xs text-zinc-400 text-center">
+        <p className="text-xs text-ink-2 text-center">
           {tr('customer.quote.freeNote')}
         </p>
       </form>

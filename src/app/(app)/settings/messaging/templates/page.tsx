@@ -23,7 +23,7 @@ export default async function TemplatesPage() {
       />
       <Link
         href="/settings/messaging"
-        className="text-sm text-zinc-600 underline"
+        className="text-sm text-ink-2 underline"
       >
         ← {loc === 'fr' ? 'Retour aux paramètres' : 'Back to settings'}
       </Link>

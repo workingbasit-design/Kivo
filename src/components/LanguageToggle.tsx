@@ -55,7 +55,7 @@ export function LanguageToggle({ current, tone = 'light' }: { current: Locale; t
       role="group"
       aria-label="Language / Langue"
       className={`inline-flex rounded-full border p-0.5 text-xs font-bold ${
-        dark ? 'border-white/15 bg-white/10' : 'border-zinc-200 bg-white'
+        dark ? 'border-white/15 bg-surface/10' : 'border-line bg-surface'
       }`}
     >
       {LOCALES.map((l) => (
@@ -67,11 +67,11 @@ export function LanguageToggle({ current, tone = 'light' }: { current: Locale; t
           className={`rounded-full px-3 py-1.5 transition-colors min-h-[44px] min-w-[44px] inline-flex items-center justify-center ${
             current === l.code
               ? dark
-                ? 'bg-white text-ink shadow-sm'
-                : 'bg-ink text-white shadow-sm'
+                ? 'bg-surface text-ink shadow-sm'
+                : 'bg-asphalt text-white shadow-sm'
               : dark
                 ? 'text-white/60 hover:text-white'
-                : 'text-zinc-500 hover:text-zinc-900'
+                : 'text-ink-2 hover:text-ink'
           }`}
         >
           {l.code.toUpperCase()}

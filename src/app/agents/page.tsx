@@ -24,8 +24,8 @@ export default async function AgentsPage() {
   const rules = [1, 2, 3, 4, 5].map((n) => tr(`agent.policy.rule${n}`));
 
   return (
-    <div className="min-h-dvh bg-white">
-      <header className="border-b border-zinc-200/70 bg-white/95 backdrop-blur">
+    <div className="min-h-dvh bg-surface">
+      <header className="border-b border-line/70 bg-surface/95 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-3xl items-center px-4">
           <Link href="/" aria-label="EveryJob home">
             <Logo size={26} />
@@ -40,17 +40,17 @@ export default async function AgentsPage() {
             <Bot className="h-3.5 w-3.5" />
             {tr('agent.policy.badge')}
           </span>
-          <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-zinc-900 sm:text-4xl">
+          <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
             {tr('agent.policy.title')}
           </h1>
-          <p className="mx-auto mt-3 max-w-xl text-base leading-relaxed text-zinc-600">
+          <p className="mx-auto mt-3 max-w-xl text-base leading-relaxed text-ink-2">
             {tr('agent.policy.subtitle')}
           </p>
         </Stagger>
 
         {/* How it works */}
         <Stagger index={1} className="mt-10">
-          <h2 className="text-lg font-bold text-zinc-900">{tr('agent.policy.howTitle')}</h2>
+          <h2 className="text-lg font-bold text-ink">{tr('agent.policy.howTitle')}</h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-3">
             {steps.map((s, i) => (
               <Card key={s.title} className="p-5">
@@ -60,8 +60,8 @@ export default async function AgentsPage() {
                 <p className="mt-3 text-xs font-semibold text-indigo-600">
                   {i + 1}
                 </p>
-                <h3 className="mt-1 font-bold text-zinc-900">{s.title}</h3>
-                <p className="mt-1 text-sm leading-relaxed text-zinc-600">{s.body}</p>
+                <h3 className="mt-1 font-bold text-ink">{s.title}</h3>
+                <p className="mt-1 text-sm leading-relaxed text-ink-2">{s.body}</p>
               </Card>
             ))}
           </div>
@@ -70,13 +70,13 @@ export default async function AgentsPage() {
         {/* Manifest */}
         <Stagger index={2} className="mt-6">
           <Card className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-zinc-900 text-white">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-asphalt text-white">
               <FileJson className="h-6 w-6" />
             </span>
             <div className="flex-1">
-              <h3 className="font-bold text-zinc-900">{tr('agent.policy.manifestTitle')}</h3>
-              <p className="mt-1 text-sm text-zinc-600">{tr('agent.policy.manifestBody')}</p>
-              <code className="mt-2 inline-block rounded-lg bg-zinc-100 px-2 py-1 text-xs text-zinc-700">
+              <h3 className="font-bold text-ink">{tr('agent.policy.manifestTitle')}</h3>
+              <p className="mt-1 text-sm text-ink-2">{tr('agent.policy.manifestBody')}</p>
+              <code className="mt-2 inline-block rounded-lg bg-surface-2 px-2 py-1 text-xs text-ink">
                 /.well-known/everyjob.json
               </code>
             </div>
@@ -91,17 +91,17 @@ export default async function AgentsPage() {
 
         {/* Rules */}
         <Stagger index={3} className="mt-6">
-          <h2 className="flex items-center gap-2 text-lg font-bold text-zinc-900">
+          <h2 className="flex items-center gap-2 text-lg font-bold text-ink">
             <ShieldCheck className="h-5 w-5 text-indigo-600" />
             {tr('agent.policy.rulesTitle')}
           </h2>
-          <Card className="mt-4 divide-y divide-zinc-100 p-2">
+          <Card className="mt-4 divide-y divide-line p-2">
             {rules.map((rule, i) => (
               <div key={i} className="flex items-start gap-3 px-4 py-3">
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-xs font-bold text-indigo-700">
                   {i + 1}
                 </span>
-                <p className="text-sm leading-relaxed text-zinc-700">{rule}</p>
+                <p className="text-sm leading-relaxed text-ink">{rule}</p>
               </div>
             ))}
           </Card>
@@ -110,11 +110,11 @@ export default async function AgentsPage() {
         {/* For customers */}
         <Stagger index={4} className="mt-6">
           <Card className="border-indigo-100 bg-indigo-50/60 p-6">
-            <h2 className="font-bold text-zinc-900">{tr('agent.policy.customerTitle')}</h2>
-            <p className="mt-1 text-sm leading-relaxed text-zinc-600">{tr('agent.policy.customerBody')}</p>
+            <h2 className="font-bold text-ink">{tr('agent.policy.customerTitle')}</h2>
+            <p className="mt-1 text-sm leading-relaxed text-ink-2">{tr('agent.policy.customerBody')}</p>
             <Link
               href="/customer/profile"
-              className="mt-4 inline-flex items-center gap-1.5 rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-indigo-700 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
+              className="mt-4 inline-flex items-center gap-1.5 rounded-2xl bg-surface px-5 py-3 text-sm font-semibold text-indigo-700 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
             >
               {tr('agent.policy.customerCta')} <ArrowRight className="h-4 w-4" />
             </Link>

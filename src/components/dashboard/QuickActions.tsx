@@ -13,7 +13,7 @@ import { hivisBtnClass } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 const TILE =
-  "flex flex-col items-start justify-between gap-2 rounded-[20px] border border-zinc-200/70 bg-white p-4 min-h-[104px] text-left transition-transform active:scale-[0.98] dark:bg-coal dark:border-white/10";
+  "flex flex-col items-start justify-between gap-2 rounded-[20px] border border-line/70 bg-surface p-4 min-h-[104px] text-left transition-transform active:scale-[0.98] dark:bg-coal dark:border-white/10";
 
 export default async function QuickActions() {
   const locale: Locale = await getLocale();

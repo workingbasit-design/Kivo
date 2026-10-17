@@ -101,7 +101,7 @@ export default function InvoicesClient({
             />
             <Link
               href="/invoices/batch"
-              className="bg-white hover:bg-zinc-50 text-zinc-700 px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 border border-zinc-200 shadow-sm min-h-[44px]"
+              className="bg-surface hover:bg-surface-2 text-ink px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 border border-line shadow-sm min-h-[44px]"
             >
               <Receipt size={14} /> {t(locale, 'billing.batchTitle')}
             </Link>
@@ -118,14 +118,14 @@ export default function InvoicesClient({
           value={<MoneyText dollars={Math.round(outstanding * 100) / 100} locale={locale} />}
           sub={t(locale, 'billing.statYetToCollect')}
           icon={<Wallet size={16} />}
-          accent="bg-amber-100 text-amber-700"
+          accent="bg-amber-100 text-warn-text"
         />
         <StatCard
           label={t(locale, 'billing.statCollected')}
           value={<MoneyText dollars={Math.round(collected * 100) / 100} locale={locale} />}
           sub={t(locale, 'billing.statPaymentsRecorded')}
           icon={<FileText size={16} />}
-          accent="bg-emerald-100 text-emerald-700"
+          accent="bg-emerald-100 text-ok"
         />
       </div>
 
@@ -140,8 +140,8 @@ export default function InvoicesClient({
             className={cn(
               'min-h-[44px] inline-flex items-center px-4 rounded-full text-xs font-semibold border transition-colors',
               activeFilter === f
-                ? 'bg-ink text-white border-ink'
-                : 'bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300'
+                ? 'bg-asphalt text-white border-asphalt'
+                : 'bg-surface text-ink-2 border-line hover:border-line-strong'
             )}
           >
             {statusLabel(f, locale)}
@@ -164,7 +164,7 @@ export default function InvoicesClient({
         </Card>
       ) : (
         <Card className="!p-0 overflow-hidden">
-          <ul className="divide-y divide-zinc-100">
+          <ul className="divide-y divide-line">
             {filtered.map((inv) => {
               const paid = inv.payments.reduce((s, p) => s + p.amount, 0);
               const due = Math.round((inv.total - paid) * 100) / 100;
@@ -179,23 +179,23 @@ export default function InvoicesClient({
                   <Link
                     href={`/invoices/${inv.id}`}
                     className={cn(
-                      'flex items-center justify-between gap-4 px-4 sm:px-5 py-4 hover:bg-zinc-50 active:bg-zinc-100 transition-colors min-h-[76px] border-l-4',
+                      'flex items-center justify-between gap-4 px-4 sm:px-5 py-4 hover:bg-surface-2 active:bg-surface-2 transition-colors min-h-[76px] border-l-4',
                       overdue ? 'border-l-rose-500' : 'border-l-transparent'
                     )}
                   >
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-zinc-900 truncate">
+                      <p className="text-sm font-semibold text-ink truncate">
                         {inv.number} · {inv.customer.name}
                       </p>
-                      <p className="text-xs text-zinc-500 mt-1 tabular-nums">
+                      <p className="text-xs text-ink-2 mt-1 tabular-nums">
                         <DateTimeText date={inv.date} variant="short" locale={locale} />
                         {due > 0 && inv.status !== 'PAID' && (
-                          <span className="text-amber-700 font-semibold"> · {t(locale, 'billing.dueSuffix').replace('{amount}', formatMoney(due, currency))}</span>
+                          <span className="text-warn-text font-semibold"> · {t(locale, 'billing.dueSuffix').replace('{amount}', formatMoney(due, currency))}</span>
                         )}
                       </p>
                     </div>
                     <div className="flex flex-col items-end gap-1.5 shrink-0">
-                      <span className="text-sm font-bold text-zinc-900 tabular-nums"><MoneyText dollars={inv.total} locale={locale} /></span>
+                      <span className="text-sm font-bold text-ink tabular-nums"><MoneyText dollars={inv.total} locale={locale} /></span>
                       <span className="flex items-center gap-1.5">
                         {overdue && (
                           <Badge tone="danger">{t(locale, 't10money.overdue')}</Badge>

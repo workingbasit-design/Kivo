@@ -156,22 +156,22 @@ export default async function JobDetailPage({
 
   const infoRows: Array<{ icon: React.ReactNode; label: string; value: React.ReactNode }> = [
     {
-      icon: <Calendar size={14} className="text-zinc-400" />,
+      icon: <Calendar size={14} className="text-ink-2" />,
       label: jobsL('date'),
       value: formatDateLabel(jobDateKey, dateLocale),
     },
     {
-      icon: <Clock size={14} className="text-zinc-400" />,
+      icon: <Clock size={14} className="text-ink-2" />,
       label: jobsL('time'),
       value: hasJobTime(job.time) ? formatJobTime(job.time, locale) : '-',
     },
     {
-      icon: <DollarSign size={14} className="text-zinc-400" />,
+      icon: <DollarSign size={14} className="text-ink-2" />,
       label: jobsL('price'),
-      value: <span className="font-bold text-zinc-900 tabular-nums">{formatMoney(centsToDollars(job.priceCents), currency, moneyLocale)}</span>,
+      value: <span className="font-bold text-ink tabular-nums">{formatMoney(centsToDollars(job.priceCents), currency, moneyLocale)}</span>,
     },
     {
-      icon: <User size={14} className="text-zinc-400" />,
+      icon: <User size={14} className="text-ink-2" />,
       label: jobsL('customer'),
       value: (
         <Link
@@ -185,7 +185,7 @@ export default async function JobDetailPage({
     ...(job.customer.phone
       ? [
           {
-            icon: <Phone size={14} className="text-zinc-400" />,
+            icon: <Phone size={14} className="text-ink-2" />,
             label: T('jobPhone'),
             value: (
               <a href={`tel:${job.customer.phone}`} className="hover:underline">
@@ -196,7 +196,7 @@ export default async function JobDetailPage({
         ]
       : []),
     {
-      icon: <MapPin size={14} className="text-zinc-400" />,
+      icon: <MapPin size={14} className="text-ink-2" />,
       label: jobsL('address'),
       value: job.address ? (
         <span>
@@ -216,7 +216,7 @@ export default async function JobDetailPage({
       ),
     },
     {
-      icon: <User size={14} className="text-zinc-400" />,
+      icon: <User size={14} className="text-ink-2" />,
       label: jobsL('technician'),
       value: job.technician || job.assignedTo?.name || T('jobUnassigned'),
     },
@@ -226,7 +226,7 @@ export default async function JobDetailPage({
     <div className="space-y-6 max-w-3xl">
       <Link
         href="/jobs"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900 min-h-[44px] px-2 -ml-2"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-2 hover:text-ink min-h-[44px] px-2 -ml-2"
       >
         <ArrowLeft size={14} /> {T('jobBackToJobs')}
       </Link>
@@ -265,7 +265,7 @@ export default async function JobDetailPage({
             )}
             <Link
               href={`/jobs/${job.id}/edit`}
-              className="bg-white hover:bg-zinc-50 text-zinc-700 min-h-[44px] px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 border border-zinc-200 shadow-sm"
+              className="bg-surface hover:bg-surface-2 text-ink min-h-[44px] px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 border border-line shadow-sm"
             >
               <Pencil size={14} /> {t(locale, 'common.edit')}
             </Link>
@@ -374,20 +374,20 @@ export default async function JobDetailPage({
             <div key={row.label} className="flex items-start gap-2.5">
               <span className="mt-0.5">{row.icon}</span>
               <div className="min-w-0">
-                <dt className="text-[11px] font-bold text-zinc-400">
+                <dt className="text-[11px] font-bold text-ink-2">
                   {row.label}
                 </dt>
-                <dd className="text-sm text-zinc-800 mt-0.5 break-words">{row.value}</dd>
+                <dd className="text-sm text-ink mt-0.5 break-words">{row.value}</dd>
               </div>
             </div>
           ))}
         </dl>
         {job.notes && (
-          <div className="mt-5 pt-5 border-t border-zinc-100">
-            <p className="text-[11px] font-bold text-zinc-400 mb-1.5">
+          <div className="mt-5 pt-5 border-t border-line">
+            <p className="text-[11px] font-bold text-ink-2 mb-1.5">
               {jobsL('notes')}
             </p>
-            <p className="text-sm text-zinc-700 whitespace-pre-wrap">{job.notes}</p>
+            <p className="text-sm text-ink whitespace-pre-wrap">{job.notes}</p>
           </div>
         )}
       </Card>
@@ -455,7 +455,7 @@ export default async function JobDetailPage({
               <TrendingUp size={14} /> {t(locale, 'jobops.profitability.title')}
             </span>
           </SectionTitle>
-          <p className="text-xs text-zinc-500 -mt-3 mb-4">
+          <p className="text-xs text-ink-2 -mt-3 mb-4">
             {t(locale, 'jobops.profitability.subtitle')}
           </p>
           <dl className="space-y-2.5 text-sm">
@@ -512,7 +512,7 @@ export default async function JobDetailPage({
               <dt className="text-graphite">{t(locale, 'jobops.profitability.profit')}</dt>
               <dd
                 className={`font-bold tabular-nums ${
-                  plSummary.profit >= 0 ? 'text-emerald-600' : 'text-rose-600'
+                  plSummary.profit >= 0 ? 'text-ok' : 'text-danger'
                 }`}
               >
                 {formatMoney(plSummary.profit, currency, moneyLocale)}
@@ -541,27 +541,27 @@ export default async function JobDetailPage({
             <DollarSign size={14} /> {t(locale, 'billing.progressTitle')}
           </span>
         </SectionTitle>
-        <p className="text-xs text-zinc-500 mb-4">
+        <p className="text-xs text-ink-2 mb-4">
           {t(locale, 'billing.progressDesc')}
         </p>
         {job.invoices.length > 0 ? (
-          <ul className="divide-y divide-zinc-100 mb-2">
+          <ul className="divide-y divide-line mb-2">
             {job.invoices.map((inv) => (
               <li key={inv.id}>
                 <Link
                   href={`/invoices/${inv.id}`}
-                  className="flex items-center justify-between gap-3 py-2.5 hover:bg-zinc-50 rounded-lg px-2 -mx-2 min-h-[56px]"
+                  className="flex items-center justify-between gap-3 py-2.5 hover:bg-surface-2 rounded-lg px-2 -mx-2 min-h-[56px]"
                 >
                   <div className="min-w-0 flex items-center gap-2">
-                    <span className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-semibold text-zinc-600 shrink-0">
+                    <span className="inline-flex items-center rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-semibold text-ink-2 shrink-0">
                       {t(locale, 'billing.milestoneBadge')}
                     </span>
-                    <span className="text-sm font-semibold text-zinc-900 truncate">
+                    <span className="text-sm font-semibold text-ink truncate">
                       {inv.milestoneLabel || inv.number}
                     </span>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
-                    <span className="text-sm font-bold text-zinc-900 tabular-nums">
+                    <span className="text-sm font-bold text-ink tabular-nums">
                       {formatMoney(centsToDollars(inv.totalCents), currency, moneyLocale)}
                     </span>
                     <StatusBadge status={inv.status} />
@@ -571,7 +571,7 @@ export default async function JobDetailPage({
             ))}
           </ul>
         ) : (
-          <p className="text-xs text-zinc-400 py-2">
+          <p className="text-xs text-ink-2 py-2">
             {t(locale, 'billing.noProgressInvoices')}
           </p>
         )}
@@ -582,7 +582,7 @@ export default async function JobDetailPage({
       <Card className="p-5 md:p-6">
         <SectionTitle
           action={
-            <span className="text-[11px] font-semibold text-zinc-400 tabular-nums">
+            <span className="text-[11px] font-semibold text-ink-2 tabular-nums">
               ({job.jobNotes.length})
             </span>
           }
@@ -592,7 +592,7 @@ export default async function JobDetailPage({
           </span>
         </SectionTitle>
         {job.jobNotes.length === 0 ? (
-          <p className="text-xs text-zinc-400 py-3">
+          <p className="text-xs text-ink-2 py-3">
             {T('jobNotesEmpty')}
           </p>
         ) : (
@@ -610,7 +610,7 @@ export default async function JobDetailPage({
             ))}
           </div>
         )}
-        <div className="pt-4 border-t border-zinc-100 mt-2">
+        <div className="pt-4 border-t border-line mt-2">
           <JobNoteForm jobId={job.id} locale={locale} />
         </div>
       </Card>

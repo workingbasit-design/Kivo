@@ -25,7 +25,7 @@ export default async function NewExpensePage() {
     <div className="space-y-6 max-w-2xl">
       <Link
         href="/expenses"
-        className="inline-flex items-center gap-1 text-sm font-semibold text-zinc-500 hover:text-zinc-800"
+        className="inline-flex items-center gap-1 text-sm font-semibold text-ink-2 hover:text-ink"
       >
         <ChevronLeft size={16} /> {T('back')}
       </Link>

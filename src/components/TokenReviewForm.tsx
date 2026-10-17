@@ -36,14 +36,14 @@ export default function TokenReviewForm({
 
   if (state?.ok) {
     return (
-      <div className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-8 text-center">
-        <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-4">
+      <div className="bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-8 text-center">
+        <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-ok flex items-center justify-center mx-auto mb-4">
           <CheckCircle2 size={24} />
         </div>
-        <h2 className="text-lg font-bold text-zinc-900 mb-1">
+        <h2 className="text-lg font-bold text-ink mb-1">
           {L('t10money.reviewThanksTitle')}
         </h2>
-        <p className="text-sm text-zinc-500">{L('t10money.reviewThanksBody')}</p>
+        <p className="text-sm text-ink-2">{L('t10money.reviewThanksBody')}</p>
       </div>
     );
   }
@@ -53,7 +53,7 @@ export default function TokenReviewForm({
   return (
     <form
       action={formAction}
-      className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-6 md:p-8 space-y-5"
+      className="bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-6 md:p-8 space-y-5"
     >
       <input type="hidden" name="token" value={token} />
       <input type="hidden" name="rating" value={rating} />
@@ -70,20 +70,20 @@ export default function TokenReviewForm({
       </div>
 
       {state?.error && (
-        <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />{' '}
           <span>{state.error}</span>
         </div>
       )}
 
-      <p className="text-xs text-zinc-500">
+      <p className="text-xs text-ink-2">
         {L('t10money.reviewTokenPostingAs').replace('{name}', customerName)}
       </p>
 
       <div>
         <p
           id="review-rating-label"
-          className="block text-xs font-semibold text-zinc-700 mb-2"
+          className="block text-xs font-semibold text-ink mb-2"
         >
           {L('t10money.reviewYourRating')}
         </p>
@@ -116,7 +116,7 @@ export default function TokenReviewForm({
           ))}
         </div>
         {rating === 0 && (
-          <p className="text-[11px] text-zinc-400 mt-1">
+          <p className="text-[11px] text-ink-2 mt-1">
             {L('t10money.reviewTapToRate')}
           </p>
         )}

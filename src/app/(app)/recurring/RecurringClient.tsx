@@ -102,8 +102,8 @@ export default function RecurringClient({
             className={cn(
               'px-4 min-h-[44px] inline-flex items-center rounded-lg text-xs font-semibold whitespace-nowrap transition-colors border',
               activeFilter === f
-                ? 'bg-ink text-white border-ink'
-                : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50'
+                ? 'bg-asphalt text-white border-asphalt'
+                : 'bg-surface text-ink-2 border-line hover:bg-surface-2'
             )}
           >
             {f === 'ALL' ? T('recurTabAll') : f === 'active' ? T('recurActive') : T('recurPaused')}
@@ -151,38 +151,38 @@ export default function RecurringClient({
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-bold text-zinc-900 text-sm">{plan.title}</h3>
+                    <h3 className="font-bold text-ink text-sm">{plan.title}</h3>
                     <Badge tone={plan.active ? 'success' : 'neutral'}>
                       {plan.active ? T('recurActive') : T('recurPaused')}
                     </Badge>
                   </div>
-                  <p className="text-xs text-zinc-500 mt-1">
+                  <p className="text-xs text-ink-2 mt-1">
                     {plan.customer.name} · {freqLabel(plan.frequency)}
                   </p>
                 </div>
                 <RecurringRowActions id={plan.id} active={plan.active} />
               </div>
 
-              <div className="mt-4 space-y-1.5 text-xs text-zinc-600">
+              <div className="mt-4 space-y-1.5 text-xs text-ink-2">
                 <p className="flex items-center gap-2">
-                  <Clock size={13} className="text-zinc-400 shrink-0" />
+                  <Clock size={13} className="text-ink-2 shrink-0" />
                   {T('recurNextRun')}:{' '}
-                  <span className="font-semibold text-zinc-900">
+                  <span className="font-semibold text-ink">
                     {formatDateShort(plan.nextRun)}
                   </span>
-                  {plan.time && <span className="text-zinc-500">· {formatJobTime(plan.time, locale)}</span>}
+                  {plan.time && <span className="text-ink-2">· {formatJobTime(plan.time, locale)}</span>}
                 </p>
                 {plan.address && (
                   <p className="flex items-center gap-2">
-                    <MapPin size={13} className="text-zinc-400 shrink-0" />
+                    <MapPin size={13} className="text-ink-2 shrink-0" />
                     <span className="truncate">{plan.address}</span>
                   </p>
                 )}
               </div>
 
-              <div className="mt-4 pt-3 border-t border-zinc-100 flex items-center justify-between">
-                <span className="text-sm font-bold text-zinc-900 tabular-nums">{formatMoney(plan.price, currency)}</span>
-                <span className="text-[11px] text-zinc-400 font-medium">
+              <div className="mt-4 pt-3 border-t border-line flex items-center justify-between">
+                <span className="text-sm font-bold text-ink tabular-nums">{formatMoney(plan.price, currency)}</span>
+                <span className="text-[11px] text-ink-2 font-medium">
                   {plan.jobCount === 1
                     ? T('recurJobsGeneratedOne').replace('{count}', '1')
                     : T('recurJobsGeneratedMany').replace('{count}', String(plan.jobCount))}

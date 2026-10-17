@@ -29,18 +29,18 @@ export default async function WelcomePage() {
       </nav>
       <div className="flex-1 flex items-center justify-center px-4 pb-16">
         <div className="w-full max-w-md">
-          <div className="bg-white rounded-3xl border border-zinc-200/70 shadow-xl shadow-zinc-200/50 p-8">
-            <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
+          <div className="bg-surface rounded-3xl border border-line/70 shadow-xl shadow-zinc-200/50 p-8">
+            <h1 className="text-2xl font-bold tracking-tight text-ink">
               {t(locale, 'googleAuth.welcomeTitle')}
             </h1>
-            <p className="text-sm text-zinc-500 mt-1 mb-6">
+            <p className="text-sm text-ink-2 mt-1 mb-6">
               {t(locale, 'googleAuth.welcomeSubtitle')}
             </p>
             <WelcomeClient locale={locale} userName={session.user.name} />
           </div>
         </div>
       </div>
-      <p className="text-center text-xs text-zinc-400 pb-6">Every job. One place.</p>
+      <p className="text-center text-xs text-ink-2 pb-6">Every job. One place.</p>
     </div>
   );
 }

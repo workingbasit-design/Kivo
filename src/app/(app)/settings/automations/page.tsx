@@ -24,7 +24,7 @@ export default async function AutomationsPage() {
         subtitle={t(locale, 'track8.automationsSubtitle')}
       />
       <Card className="p-5 md:p-6">
-        <p className="text-xs text-zinc-500 leading-relaxed">{t(locale, 'track8.safetyNote')}</p>
+        <p className="text-xs text-ink-2 leading-relaxed">{t(locale, 'track8.safetyNote')}</p>
       </Card>
       <AutomationsClient locale={locale} initial={state} />
     </div>

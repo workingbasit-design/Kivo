@@ -145,11 +145,11 @@ export default function ConciergeClient({
   }
 
   const inputCls =
-    'w-full min-h-[52px] rounded-2xl bg-white border border-zinc-200 px-4 text-[15px] text-zinc-900 placeholder:text-zinc-400 outline-none shadow-sm transition-all focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100';
+    'w-full min-h-[52px] rounded-2xl bg-surface border border-line px-4 text-[15px] text-ink placeholder:text-ink-2 outline-none shadow-sm transition-all focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100';
   const btnPrimary =
     'min-h-[52px] px-6 rounded-2xl bg-indigo-600 text-white text-[15px] font-bold shadow-sm shadow-indigo-600/20 transition-all hover:bg-indigo-700 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2';
   const btnGhost =
-    'min-h-[52px] px-5 rounded-2xl bg-white border border-zinc-200 text-[15px] font-semibold text-zinc-700 transition-all hover:border-zinc-300 active:scale-[0.97] flex items-center justify-center gap-2';
+    'min-h-[52px] px-5 rounded-2xl bg-surface border border-line text-[15px] font-semibold text-ink transition-all hover:border-line-strong active:scale-[0.97] flex items-center justify-center gap-2';
 
   return (
     <div className="ej-anim-fade-up">
@@ -159,17 +159,17 @@ export default function ConciergeClient({
           <button
             onClick={() => setStep(step === 'preview' ? 'match' : 'describe')}
             aria-label={tr('customer.concierge.back')}
-            className="w-10 h-10 rounded-xl bg-white border border-zinc-200 flex items-center justify-center text-zinc-600 active:scale-95"
+            className="w-10 h-10 rounded-xl bg-surface border border-line flex items-center justify-center text-ink-2 active:scale-95"
           >
             <ArrowLeft size={18} />
           </button>
         )}
         <div>
-          <h1 className="text-[22px] font-bold text-zinc-900 tracking-tight flex items-center gap-2">
+          <h1 className="text-[22px] font-bold text-ink tracking-tight flex items-center gap-2">
             <Sparkles size={20} className="text-indigo-600" />
             {tr('customer.concierge.title')}
           </h1>
-          <p className="text-[13px] text-zinc-500 mt-0.5">
+          <p className="text-[13px] text-ink-2 mt-0.5">
             {tr(
               stepIndex === 0
                 ? 'customer.concierge.stepDescribe'
@@ -190,7 +190,7 @@ export default function ConciergeClient({
             <div
               key={i}
               className={`h-1.5 flex-1 rounded-full transition-colors ${
-                i <= stepIndex ? 'bg-indigo-600' : 'bg-zinc-200'
+                i <= stepIndex ? 'bg-indigo-600' : 'bg-line'
               }`}
             />
           ))}
@@ -198,7 +198,7 @@ export default function ConciergeClient({
       )}
 
       {error && (
-        <div className="mb-4 rounded-2xl bg-rose-50 border border-rose-200 px-4 py-3 text-[14px] text-rose-800">
+        <div className="mb-4 rounded-2xl bg-danger-bg border border-rose-200 px-4 py-3 text-[14px] text-rose-800">
           {error}
         </div>
       )}
@@ -207,7 +207,7 @@ export default function ConciergeClient({
       {step === 'describe' && (
         <div className="space-y-4">
           <div>
-            <label htmlFor="cj-desc" className="block text-[14px] font-semibold text-zinc-800 mb-1.5">
+            <label htmlFor="cj-desc" className="block text-[14px] font-semibold text-ink mb-1.5">
               {tr('customer.concierge.describeLabel')}
             </label>
             <textarea
@@ -219,11 +219,11 @@ export default function ConciergeClient({
               maxLength={1000}
               className={`${inputCls} py-3.5 resize-none`}
             />
-            <p className="text-[12px] text-zinc-500 mt-1.5">{tr('customer.concierge.describeHint')}</p>
+            <p className="text-[12px] text-ink-2 mt-1.5">{tr('customer.concierge.describeHint')}</p>
           </div>
           <div className="grid grid-cols-1 gap-3">
             <label className="relative block">
-              <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" />
+              <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-2" />
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -235,7 +235,7 @@ export default function ConciergeClient({
             </label>
             <div className="grid grid-cols-2 gap-3">
               <label className="relative block">
-                <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" />
+                <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-2" />
                 <input
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
@@ -247,7 +247,7 @@ export default function ConciergeClient({
                 />
               </label>
               <label className="relative block">
-                <MapPin size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" />
+                <MapPin size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-2" />
                 <input
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
@@ -270,14 +270,14 @@ export default function ConciergeClient({
       {step === 'match' && (
         <div>
           {pros.length === 0 ? (
-            <div className="rounded-3xl bg-white border border-zinc-200/80 shadow-sm p-8 text-center">
-              <span className="mx-auto w-14 h-14 rounded-2xl bg-zinc-100 flex items-center justify-center mb-4">
-                <SearchX size={26} className="text-zinc-500" />
+            <div className="rounded-3xl bg-surface border border-line/80 shadow-sm p-8 text-center">
+              <span className="mx-auto w-14 h-14 rounded-2xl bg-surface-2 flex items-center justify-center mb-4">
+                <SearchX size={26} className="text-ink-2" />
               </span>
-              <h2 className="text-[17px] font-bold text-zinc-900 mb-2">
+              <h2 className="text-[17px] font-bold text-ink mb-2">
                 {tr('customer.concierge.noMatchTitle')}
               </h2>
-              <p className="text-[14px] text-zinc-600 mb-6">
+              <p className="text-[14px] text-ink-2 mb-6">
                 {tr('customer.concierge.noMatchHint')
                   .replace('{service}', serviceLabel)
                   .replace('{city}', city.trim())}
@@ -288,10 +288,10 @@ export default function ConciergeClient({
             </div>
           ) : (
             <>
-              <h2 className="text-[16px] font-bold text-zinc-900 mb-1">
+              <h2 className="text-[16px] font-bold text-ink mb-1">
                 {tr('customer.concierge.matchedTitle').replace('{service}', serviceLabel)}
               </h2>
-              <p className="text-[13px] text-zinc-500 mb-4">{tr('customer.concierge.matchedHint')}</p>
+              <p className="text-[13px] text-ink-2 mb-4">{tr('customer.concierge.matchedHint')}</p>
               <div className="space-y-2.5 mb-6">
                 {pros.map((p) => {
                   const checked = selected.has(p.id);
@@ -303,21 +303,21 @@ export default function ConciergeClient({
                       className={`w-full text-left rounded-2xl border p-4 flex items-center gap-3.5 transition-all active:scale-[0.98] ${
                         checked
                           ? 'bg-indigo-50/60 border-indigo-300 shadow-sm'
-                          : 'bg-white border-zinc-200'
+                          : 'bg-surface border-line'
                       }`}
                     >
                       <span
                         className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center shrink-0 transition-colors ${
-                          checked ? 'bg-indigo-600 border-indigo-600' : 'border-zinc-300 bg-white'
+                          checked ? 'bg-indigo-600 border-indigo-600' : 'border-line-strong bg-surface'
                         }`}
                       >
                         {checked && <Check size={14} className="text-white" strokeWidth={3} />}
                       </span>
                       <span className="flex-1 min-w-0">
-                        <span className="block text-[15px] font-bold text-zinc-900 truncate">
+                        <span className="block text-[15px] font-bold text-ink truncate">
                           {p.name}
                         </span>
-                        <span className="block text-[12px] text-zinc-500 truncate">
+                        <span className="block text-[12px] text-ink-2 truncate">
                           {[p.locality, p.serviceNames.slice(0, 2).join(' · ')]
                             .filter(Boolean)
                             .join(' - ')}
@@ -344,53 +344,53 @@ export default function ConciergeClient({
       {step === 'preview' && (
         <div className="space-y-4">
           <div>
-            <h2 className="text-[16px] font-bold text-zinc-900 mb-1">
+            <h2 className="text-[16px] font-bold text-ink mb-1">
               {tr('customer.concierge.previewTitle')}
             </h2>
-            <p className="text-[13px] text-zinc-500">{tr('customer.concierge.previewHint')}</p>
+            <p className="text-[13px] text-ink-2">{tr('customer.concierge.previewHint')}</p>
           </div>
 
-          <div className="rounded-2xl bg-white border border-zinc-200/80 shadow-sm p-4">
-            <h3 className="text-[13px] font-bold text-zinc-500 mb-2.5">
+          <div className="rounded-2xl bg-surface border border-line/80 shadow-sm p-4">
+            <h3 className="text-[13px] font-bold text-ink-2 mb-2.5">
               {tr('customer.concierge.sendingTo')} ({selected.size})
             </h3>
             <ul className="space-y-1.5">
               {pros
                 .filter((p) => selected.has(p.id))
                 .map((p) => (
-                  <li key={p.id} className="flex items-center gap-2 text-[14px] font-semibold text-zinc-800">
-                    <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                  <li key={p.id} className="flex items-center gap-2 text-[14px] font-semibold text-ink">
+                    <CheckCircle2 size={16} className="text-ok shrink-0" />
                     {p.name}
                   </li>
                 ))}
             </ul>
           </div>
 
-          <div className="rounded-2xl bg-white border border-zinc-200/80 shadow-sm p-4">
-            <h3 className="text-[13px] font-bold text-zinc-500 mb-2.5">
+          <div className="rounded-2xl bg-surface border border-line/80 shadow-sm p-4">
+            <h3 className="text-[13px] font-bold text-ink-2 mb-2.5">
               {tr('customer.concierge.exactMessage')}
             </h3>
-            <p className="text-[14px] text-zinc-800 whitespace-pre-wrap leading-relaxed">
+            <p className="text-[14px] text-ink whitespace-pre-wrap leading-relaxed">
               {previewMessage}
             </p>
           </div>
 
-          <div className="rounded-2xl bg-zinc-50 border border-zinc-200/80 p-4">
-            <h3 className="text-[13px] font-bold text-zinc-500 mb-2.5">
+          <div className="rounded-2xl bg-surface-2 border border-line/80 p-4">
+            <h3 className="text-[13px] font-bold text-ink-2 mb-2.5">
               {tr('customer.concierge.detailsShared')}
             </h3>
             <dl className="text-[14px] space-y-1">
               <div className="flex gap-2">
-                <dt className="text-zinc-500 w-20 shrink-0">{tr('customer.concierge.nameLabel')}</dt>
-                <dd className="font-semibold text-zinc-800">{name.trim()}</dd>
+                <dt className="text-ink-2 w-20 shrink-0">{tr('customer.concierge.nameLabel')}</dt>
+                <dd className="font-semibold text-ink">{name.trim()}</dd>
               </div>
               <div className="flex gap-2">
-                <dt className="text-zinc-500 w-20 shrink-0">{tr('customer.concierge.phoneLabel')}</dt>
-                <dd className="font-semibold text-zinc-800">{phone.trim()}</dd>
+                <dt className="text-ink-2 w-20 shrink-0">{tr('customer.concierge.phoneLabel')}</dt>
+                <dd className="font-semibold text-ink">{phone.trim()}</dd>
               </div>
               <div className="flex gap-2">
-                <dt className="text-zinc-500 w-20 shrink-0">{tr('customer.concierge.cityLabel')}</dt>
-                <dd className="font-semibold text-zinc-800">{city.trim()}</dd>
+                <dt className="text-ink-2 w-20 shrink-0">{tr('customer.concierge.cityLabel')}</dt>
+                <dd className="font-semibold text-ink">{city.trim()}</dd>
               </div>
             </dl>
           </div>
@@ -404,16 +404,16 @@ export default function ConciergeClient({
 
       {/* STEP 4 - done */}
       {step === 'done' && (
-        <div className="rounded-3xl bg-white border border-zinc-200/80 shadow-sm p-8 text-center">
-          <span className="mx-auto w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center mb-4">
-            <CheckCircle2 size={28} className="text-emerald-600" />
+        <div className="rounded-3xl bg-surface border border-line/80 shadow-sm p-8 text-center">
+          <span className="mx-auto w-14 h-14 rounded-2xl bg-ok-bg flex items-center justify-center mb-4">
+            <CheckCircle2 size={28} className="text-ok" />
           </span>
-          <h2 className="text-[19px] font-bold text-zinc-900 mb-2">
+          <h2 className="text-[19px] font-bold text-ink mb-2">
             {tr('customer.concierge.sentTitle')}
           </h2>
-          <p className="text-[14px] text-zinc-600 mb-2">{tr('customer.concierge.sentHint')}</p>
+          <p className="text-[14px] text-ink-2 mb-2">{tr('customer.concierge.sentHint')}</p>
           {sentNames.length > 0 && (
-            <p className="text-[13px] text-zinc-500 mb-6">
+            <p className="text-[13px] text-ink-2 mb-6">
               {sentNames.join(' · ')}
             </p>
           )}

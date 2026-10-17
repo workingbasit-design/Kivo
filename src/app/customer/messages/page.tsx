@@ -70,10 +70,10 @@ export default async function CustomerMessagesPage() {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className={`text-[15px] truncate ${isUnread ? 'font-bold text-zinc-900' : 'font-semibold text-zinc-800'}`}>
+                        <h3 className={`text-[15px] truncate ${isUnread ? 'font-bold text-ink' : 'font-semibold text-ink'}`}>
                           {t.business.name}
                         </h3>
-                        <p className={`text-xs truncate mt-0.5 ${isUnread ? 'text-zinc-700 font-medium' : 'text-zinc-500'}`}>
+                        <p className={`text-xs truncate mt-0.5 ${isUnread ? 'text-ink font-medium' : 'text-ink-2'}`}>
                           {lastMsg ? (
                             <>
                               {lastMsg.senderType === 'business' ? '' : `${tr('customer.messages.you')}: `}

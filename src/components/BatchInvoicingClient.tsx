@@ -75,12 +75,12 @@ export default function BatchInvoicingClient({
     return (
       <Card className="p-8">
         <div className="flex items-start gap-3">
-          <CheckCircle2 size={22} className="text-emerald-600 shrink-0 mt-0.5" />
+          <CheckCircle2 size={22} className="text-ok shrink-0 mt-0.5" />
           <div>
-            <h2 className="text-base font-bold text-zinc-900">
+            <h2 className="text-base font-bold text-ink">
               {t(locale, 'billing.batchDone')}
             </h2>
-            <p className="text-sm text-zinc-600 mt-1">
+            <p className="text-sm text-ink-2 mt-1">
               {fill(t(locale, 'billing.batchCreated'), created)}
             </p>
             <div className="flex gap-2 mt-4">
@@ -104,7 +104,7 @@ export default function BatchInvoicingClient({
   return (
     <div className="space-y-4">
       {error && (
-        <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+        <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-danger-bg px-4 py-3 text-sm text-red-800">
           <AlertTriangle size={16} className="shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
@@ -121,21 +121,21 @@ export default function BatchInvoicingClient({
       ) : (
         <>
           <Card className="!p-0 overflow-hidden">
-            <div className="px-5 py-3 border-b border-zinc-100 flex items-center gap-3">
+            <div className="px-5 py-3 border-b border-line flex items-center gap-3">
               <label className="min-h-[44px] min-w-[44px] flex items-center justify-center -ml-2 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={rows.length > 0 && rows.every((r) => checked[r.jobId])}
                   onChange={toggleAll}
-                  className="h-5 w-5 rounded border-zinc-300 accent-zinc-900"
+                  className="h-5 w-5 rounded border-line-strong accent-zinc-900"
                   aria-label={t(locale, 'billing.selectAll')}
                 />
               </label>
-              <span className="text-xs font-semibold text-zinc-500">
+              <span className="text-xs font-semibold text-ink-2">
                 {fill(t(locale, 'billing.selected'), selected.length)}
               </span>
             </div>
-            <ul className="divide-y divide-zinc-100">
+            <ul className="divide-y divide-line">
               {rows.map((r, i) => (
                 <li
                   key={r.jobId}
@@ -147,24 +147,24 @@ export default function BatchInvoicingClient({
                       type="checkbox"
                       checked={!!checked[r.jobId]}
                       onChange={() => toggle(r.jobId)}
-                      className="h-5 w-5 rounded border-zinc-300 accent-zinc-900"
+                      className="h-5 w-5 rounded border-line-strong accent-zinc-900"
                       aria-label={r.title}
                     />
                   </label>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-zinc-900 flex items-center gap-2">
-                      <FileText size={14} className="text-zinc-400 shrink-0" />
+                    <p className="text-sm font-semibold text-ink flex items-center gap-2">
+                      <FileText size={14} className="text-ink-2 shrink-0" />
                       <span className="truncate">{r.title}</span>
                     </p>
-                    <p className="text-xs text-zinc-500 mt-0.5">
+                    <p className="text-xs text-ink-2 mt-0.5">
                       {r.customerName} · {r.date}
                     </p>
-                    <p className="text-[11px] text-zinc-400 mt-0.5">
+                    <p className="text-[11px] text-ink-2 mt-0.5">
                       {formatMoney(r.subtotal, 'CAD')} + {formatMoney(r.taxAmount, 'CAD')}{' '}
                       {t(locale, 'billing.colTax').toLowerCase()}
                     </p>
                   </div>
-                  <p className="text-sm font-bold text-zinc-900 shrink-0 pt-0.5">
+                  <p className="text-sm font-bold text-ink shrink-0 pt-0.5">
                     {formatMoney(r.total, 'CAD')}
                   </p>
                 </li>
@@ -173,14 +173,14 @@ export default function BatchInvoicingClient({
           </Card>
 
           {confirming ? (
-            <Card className="p-6 border-amber-200 bg-amber-50/50">
+            <Card className="p-6 border-amber-200 bg-warn-bg/50">
               <div className="flex items-start gap-3">
-                <AlertTriangle size={20} className="text-amber-600 shrink-0 mt-0.5" />
+                <AlertTriangle size={20} className="text-warn-text shrink-0 mt-0.5" />
                 <div>
-                  <h2 className="text-sm font-bold text-zinc-900">
+                  <h2 className="text-sm font-bold text-ink">
                     {t(locale, 't10money.batchConfirmTitle')}
                   </h2>
-                  <p className="text-sm text-zinc-600 mt-1 leading-relaxed">
+                  <p className="text-sm text-ink-2 mt-1 leading-relaxed">
                     {t(locale, 't10money.batchConfirmBody')
                       .replace('{count}', String(selected.length))
                       .replace('{total}', formatMoney(grandTotal, 'CAD'))}
@@ -213,9 +213,9 @@ export default function BatchInvoicingClient({
             </Card>
           ) : (
             <div className="flex items-center justify-between gap-4 flex-wrap">
-              <p className="text-sm text-zinc-600">
+              <p className="text-sm text-ink-2">
                 {t(locale, 'billing.grandTotal')}:{' '}
-                <span className="font-bold text-zinc-900">
+                <span className="font-bold text-ink">
                   {formatMoney(grandTotal, 'CAD')}
                 </span>
               </p>

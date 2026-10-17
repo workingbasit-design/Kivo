@@ -51,16 +51,16 @@ export default function ReminderDraft({
       </button>
 
       {error && (
-        <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       {text && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+        <div className="bg-warn-bg border border-amber-200 rounded-2xl p-4">
           <div className="flex items-center justify-between gap-2 mb-2">
-            <p className="text-[11px] font-bold text-amber-700">
+            <p className="text-[11px] font-bold text-warn-text">
               Reminder draft - send it yourself
             </p>
             <div className="flex items-center gap-2 shrink-0">
@@ -68,8 +68,8 @@ export default function ReminderDraft({
               <CopyButton text={text} label="Copy" />
             </div>
           </div>
-          <p className="text-sm text-zinc-700 whitespace-pre-wrap">{text}</p>
-          <p className="text-[11px] text-amber-700/70 mt-2">
+          <p className="text-sm text-ink whitespace-pre-wrap">{text}</p>
+          <p className="text-[11px] text-warn-text/70 mt-2">
             EveryJob never sends messages itself - tap the WhatsApp button or copy this
             and send it via WhatsApp or SMS.
           </p>

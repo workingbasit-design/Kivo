@@ -84,7 +84,7 @@ export default function OnboardingChecklist({
       <button
         type="button"
         onClick={show}
-        className="inline-flex items-center gap-1.5 rounded-xl border border-dashed border-zinc-300 bg-zinc-50 px-4 py-2.5 text-sm font-medium text-zinc-500 hover:text-zinc-800 hover:border-zinc-400 hover:bg-zinc-100 min-h-[44px] transition-colors"
+        className="inline-flex items-center gap-1.5 rounded-xl border border-dashed border-line-strong bg-surface-2 px-4 py-2.5 text-sm font-medium text-ink-2 hover:text-ink hover:border-zinc-400 hover:bg-surface-2 min-h-[44px] transition-colors"
       >
         {t(locale, 'support.onboardingShow')}
       </button>
@@ -106,17 +106,17 @@ export default function OnboardingChecklist({
     <Card className="p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-lg font-bold text-zinc-900">
+          <h2 className="text-lg font-bold text-ink">
             {t(locale, 'support.onboardingTitle')}
           </h2>
-          <p className="mt-0.5 text-sm text-zinc-600">
+          <p className="mt-0.5 text-sm text-ink-2">
             {t(locale, 'support.onboardingSub')}
           </p>
         </div>
         <button
           type="button"
           onClick={dismiss}
-          className="shrink-0 inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold text-zinc-600 hover:text-zinc-900 hover:border-zinc-300 hover:bg-zinc-50 min-h-[40px] transition-colors"
+          className="shrink-0 inline-flex items-center gap-1.5 rounded-xl border border-line bg-surface px-3 py-2 text-xs font-semibold text-ink-2 hover:text-ink hover:border-line-strong hover:bg-surface-2 min-h-[40px] transition-colors"
         >
           {t(locale, 'support.onboardingDismiss')}
         </button>
@@ -137,23 +137,23 @@ export default function OnboardingChecklist({
               <li
                 key={s.id}
                 className={`flex items-center gap-3 rounded-xl border p-3 ${
-                  isDone ? 'border-lime-200 bg-lime-50/60' : 'border-zinc-200 bg-white'
+                  isDone ? 'border-lime-200 bg-lime-50/60' : 'border-line bg-surface'
                 }`}
               >
                 <span
                   aria-hidden
                   className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
-                    isDone ? 'bg-lime-500 text-white' : 'bg-zinc-100 text-zinc-400'
+                    isDone ? 'bg-lime-500 text-white' : 'bg-surface-2 text-ink-2'
                   }`}
                 >
                   {isDone ? '✓' : '·'}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <div className={`text-sm font-semibold ${isDone ? 'text-zinc-500 line-through' : 'text-zinc-900'}`}>
+                  <div className={`text-sm font-semibold ${isDone ? 'text-ink-2 line-through' : 'text-ink'}`}>
                     {t(locale, stepKey(s.id, 'title'))}
                   </div>
                   {!isDone && (
-                    <div className="line-clamp-2 text-xs text-zinc-500">
+                    <div className="line-clamp-2 text-xs text-ink-2">
                       {t(locale, stepKey(s.id, 'desc'))}
                     </div>
                   )}
@@ -161,7 +161,7 @@ export default function OnboardingChecklist({
                 {!isDone && (
                   <a
                     href={s.href}
-                    className="shrink-0 rounded-lg bg-zinc-900 px-3 py-2 text-xs font-semibold text-white hover:bg-zinc-700 min-h-[36px] inline-flex items-center"
+                    className="shrink-0 rounded-lg bg-asphalt px-3 py-2 text-xs font-semibold text-white hover:bg-zinc-700 min-h-[36px] inline-flex items-center"
                   >
                     {t(locale, stepKey(s.id, 'cta'))}
                   </a>

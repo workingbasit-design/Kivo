@@ -49,14 +49,14 @@ export default function EquipmentSearch({
       }}
       className="relative"
     >
-      <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" />
+      <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-2" />
       <input
         type="search"
         value={value}
         onChange={(e) => setValue(e.target.value)}
         placeholder={T('searchPlaceholder')}
         aria-label={T('searchPlaceholder')}
-        className="w-full rounded-xl border border-zinc-200 bg-white pl-10 pr-4 py-3 text-sm min-h-[48px] focus:outline-none focus:ring-2 focus:ring-lime-500/40 focus:border-lime-500"
+        className="w-full rounded-xl border border-line bg-surface pl-10 pr-4 py-3 text-sm min-h-[48px] focus:outline-none focus:ring-2 focus:ring-lime-500/40 focus:border-lime-500"
       />
     </form>
   );

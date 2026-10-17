@@ -102,7 +102,7 @@ export default async function QuoteDetailPage({
     <div className="space-y-6 max-w-3xl">
       <Link
         href="/quotes"
-        className="min-h-[44px] inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-800"
+        className="min-h-[44px] inline-flex items-center gap-1.5 text-xs font-semibold text-ink-2 hover:text-ink"
       >
         <ArrowLeft size={14} /> Back to quotes
       </Link>
@@ -116,12 +116,12 @@ export default async function QuoteDetailPage({
       <Card className="p-6 space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-zinc-100 text-zinc-500 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-surface-2 text-ink-2 flex items-center justify-center shrink-0">
               <User size={18} />
             </div>
             <div>
-              <p className="text-sm font-bold text-zinc-900">{quote.customer.name}</p>
-              <p className="text-xs text-zinc-500">
+              <p className="text-sm font-bold text-ink">{quote.customer.name}</p>
+              <p className="text-xs text-ink-2">
                 {[quote.customer.phone, quote.customer.address].filter(Boolean).join(' · ') || 'No contact details'}
               </p>
               {/* wa.me chat with the customer - user taps to send from their
@@ -142,22 +142,22 @@ export default async function QuoteDetailPage({
               </div>
             </div>
           </div>
-          <p className="text-2xl font-bold text-zinc-900 sm:text-right tabular-nums"><MoneyText dollars={centsToDollars(quote.totalCents)} locale={locale} /></p>
+          <p className="text-2xl font-bold text-ink sm:text-right tabular-nums"><MoneyText dollars={centsToDollars(quote.totalCents)} locale={locale} /></p>
         </div>
 
         {hasLineItems && (
-          <div className="border-t border-zinc-100 pt-4">
-            <h2 className="text-sm font-bold text-zinc-900 mb-1">{L('quoteItems.title')}</h2>
+          <div className="border-t border-line pt-4">
+            <h2 className="text-sm font-bold text-ink mb-1">{L('quoteItems.title')}</h2>
             <ul className="mt-2 space-y-2">
               {quote.lineItems.map((item) => (
                 <li
                   key={item.id}
-                  className="rounded-xl border border-zinc-100 bg-zinc-50/50 px-3 py-2.5"
+                  className="rounded-xl border border-line bg-surface-2/50 px-3 py-2.5"
                 >
-                  <p className="text-sm font-semibold text-zinc-900">{item.description}</p>
-                  <p className="text-xs text-zinc-500 mt-1 tabular-nums">
+                  <p className="text-sm font-semibold text-ink">{item.description}</p>
+                  <p className="text-xs text-ink-2 mt-1 tabular-nums">
                     {item.qty} × <MoneyText dollars={centsToDollars(item.unitPriceCents)} locale={locale} />
-                    <span className="font-bold text-zinc-800">
+                    <span className="font-bold text-ink">
                       {' '}· <MoneyText dollars={round2(item.qty * centsToDollars(item.unitPriceCents))} locale={locale} />
                     </span>
                   </p>
@@ -167,32 +167,32 @@ export default async function QuoteDetailPage({
           </div>
         )}
 
-        <dl className="border-t border-zinc-100 pt-4 space-y-1.5 text-sm tabular-nums">
-          <div className="flex justify-between text-zinc-600">
+        <dl className="border-t border-line pt-4 space-y-1.5 text-sm tabular-nums">
+          <div className="flex justify-between text-ink-2">
             <dt>{L('t10money.subtotalLabel')}</dt>
             <dd className="font-semibold"><MoneyText dollars={subtotal} locale={locale} /></dd>
           </div>
           {showDiscount && (
-            <div className="flex justify-between text-emerald-700">
+            <div className="flex justify-between text-ok">
               <dt>{discountLabel}</dt>
               <dd className="font-semibold">−<MoneyText dollars={discountAmount} locale={locale} /></dd>
             </div>
           )}
           {taxLines.map((l) => (
-            <div key={l.name} className="flex justify-between text-zinc-600">
+            <div key={l.name} className="flex justify-between text-ink-2">
               <dt>
                 {l.name} {l.rate}%
               </dt>
               <dd className="font-semibold"><MoneyText dollars={l.amount} locale={locale} /></dd>
             </div>
           ))}
-          <div className="flex justify-between items-center text-base bg-ink text-white rounded-xl px-4 py-3 -mx-1 mt-2">
+          <div className="flex justify-between items-center text-base bg-asphalt text-white rounded-xl px-4 py-3 -mx-1 mt-2">
             <dt className="font-bold">{L('t10money.totalLabel')}</dt>
             <dd className="font-bold"><MoneyText dollars={centsToDollars(quote.totalCents)} locale={locale} /></dd>
           </div>
         </dl>
 
-        <div className="border-t border-zinc-100 pt-5 space-y-3">
+        <div className="border-t border-line pt-5 space-y-3">
           <QuoteActions id={quote.id} status={quote.status} locale={locale} />
           <Link
             href={`/quotes/${quote.id}/sign`}
@@ -284,7 +284,7 @@ export default async function QuoteDetailPage({
         />
       </Card>
 
-      <p className="text-[11px] text-zinc-400">
+      <p className="text-[11px] text-ink-2">
         {taxConfig.label} is included in this quote, based on your region settings
         (Settings → Region & tax).
       </p>
@@ -329,7 +329,7 @@ async function SignatureRequestsCard({
 
   return (
     <Card className="p-6 space-y-4">
-      <h3 className="text-sm font-bold text-zinc-900">{L('esign.status')}</h3>
+      <h3 className="text-sm font-bold text-ink">{L('esign.status')}</h3>
 
       {requests.map((req) => {
         const revocable = req.status === 'sent' || req.status === 'viewed';
@@ -342,20 +342,20 @@ async function SignatureRequestsCard({
         }
 
         return (
-          <div key={req.id} className="border-t border-zinc-100 pt-4 space-y-2">
+          <div key={req.id} className="border-t border-line pt-4 space-y-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <StatusBadge status={STATUS_LABELS[req.status] ?? req.status} />
-                <span className="text-xs text-zinc-500">
+                <span className="text-xs text-ink-2">
                   <DateTimeText date={req.createdAt} variant="short" locale={locale === 'fr' ? 'fr' : 'en'} />
                 </span>
                 {req.signedAt && (
-                  <span className="text-xs text-zinc-500">
+                  <span className="text-xs text-ink-2">
                     · {L('esign.statusSigned')} <DateTimeText date={req.signedAt} variant="short" locale={locale === 'fr' ? 'fr' : 'en'} />
                   </span>
                 )}
                 {req.signerName && (
-                  <span className="text-xs font-semibold text-zinc-700">
+                  <span className="text-xs font-semibold text-ink">
                     · {req.signerName}
                   </span>
                 )}
@@ -383,10 +383,10 @@ async function SignatureRequestsCard({
 
             {audit.length > 0 && (
               <details className="text-xs">
-                <summary className="cursor-pointer font-semibold text-zinc-500 hover:text-zinc-700">
+                <summary className="cursor-pointer font-semibold text-ink-2 hover:text-ink">
                   {L('esign.auditTitle')}
                 </summary>
-                <ul className="mt-1.5 space-y-1 text-zinc-500">
+                <ul className="mt-1.5 space-y-1 text-ink-2">
                   {audit.map((a, i) => (
                     <li key={i} className="font-mono">
                       {a.event} · {a.at}
@@ -399,7 +399,7 @@ async function SignatureRequestsCard({
         );
       })}
 
-      <p className="text-[11px] text-zinc-400">{L('esign.legalLine')}</p>
+      <p className="text-[11px] text-ink-2">{L('esign.legalLine')}</p>
     </Card>
   );
 }

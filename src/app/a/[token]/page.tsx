@@ -33,7 +33,7 @@ type SearchParams = { declined?: string };
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-dvh bg-white">
+    <div className="min-h-dvh bg-surface">
       <header className="flex justify-center pt-8 pb-2">
         <Link href="/" aria-label="EveryJob home" className="ej-icon-hover rounded-2xl p-1">
           <Logo size={30} />
@@ -56,9 +56,9 @@ function StateCard({
   tone?: 'zinc' | 'green' | 'amber';
 }) {
   const tones = {
-    zinc: 'bg-zinc-100 text-zinc-500',
-    green: 'bg-green-100 text-green-600',
-    amber: 'bg-amber-100 text-amber-600',
+    zinc: 'bg-surface-2 text-ink-2',
+    green: 'bg-green-100 text-ok',
+    amber: 'bg-amber-100 text-warn-text',
   } as const;
   return (
     <Stagger index={0}>
@@ -66,8 +66,8 @@ function StateCard({
         <div className={`mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl ${tones[tone]}`}>
           {icon}
         </div>
-        <h1 className="text-xl font-bold text-zinc-900">{title}</h1>
-        <p className="mt-2 text-sm leading-relaxed text-zinc-600">{body}</p>
+        <h1 className="text-xl font-bold text-ink">{title}</h1>
+        <p className="mt-2 text-sm leading-relaxed text-ink-2">{body}</p>
         <Link
           href="/directory"
           className="mt-6 inline-flex items-center justify-center rounded-2xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-600/25 transition-all duration-200 hover:bg-indigo-500 hover:-translate-y-0.5 active:translate-y-0"
@@ -150,11 +150,11 @@ export default async function AgentConfirmPage({
       <Shell>
         <Stagger index={0}>
           <Card className="p-8 text-center">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-green-100 text-green-600">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-green-100 text-ok">
               <CheckCircle2 className="h-7 w-7" />
             </div>
-            <h1 className="text-xl font-bold text-zinc-900">{tr('agent.approved.title')}</h1>
-            <p className="mt-2 text-sm leading-relaxed text-zinc-600">
+            <h1 className="text-xl font-bold text-ink">{tr('agent.approved.title')}</h1>
+            <p className="mt-2 text-sm leading-relaxed text-ink-2">
               {tr('agent.approved.body', { business: proposal.business.name })}
             </p>
           </Card>
@@ -163,8 +163,8 @@ export default async function AgentConfirmPage({
         {claimable && claimEmail ? (
           <Stagger index={1} className="mt-4">
             <Card className="p-6">
-              <h2 className="text-base font-bold text-zinc-900">{tr('agent.approved.claimTitle')}</h2>
-              <p className="mt-1 text-sm text-zinc-600">
+              <h2 className="text-base font-bold text-ink">{tr('agent.approved.claimTitle')}</h2>
+              <p className="mt-1 text-sm text-ink-2">
                 {tr('agent.approved.claimBody', { email: claimEmail })}
               </p>
               <div className="mt-4">
@@ -181,7 +181,7 @@ export default async function AgentConfirmPage({
         ) : (
           <Stagger index={1} className="mt-4">
             <Card className="p-6 text-center">
-              <p className="text-sm text-zinc-600">{tr('agent.approved.haveAccount')}</p>
+              <p className="text-sm text-ink-2">{tr('agent.approved.haveAccount')}</p>
               <div className="mt-4 flex gap-2">
                 <Link
                   href="/customer/login"
@@ -191,7 +191,7 @@ export default async function AgentConfirmPage({
                 </Link>
                 <Link
                   href="/directory"
-                  className="flex-1 rounded-2xl bg-zinc-100 px-6 py-3 text-center text-sm font-semibold text-zinc-700 transition-colors hover:bg-zinc-200"
+                  className="flex-1 rounded-2xl bg-surface-2 px-6 py-3 text-center text-sm font-semibold text-ink transition-colors hover:bg-line"
                 >
                   {tr('agent.approved.browse')}
                 </Link>
@@ -233,53 +233,53 @@ export default async function AgentConfirmPage({
             <Bot className="h-5 w-5" />
           </span>
           <div>
-            <p className="text-sm font-semibold text-zinc-900">
+            <p className="text-sm font-semibold text-ink">
               {tr('agent.confirm.proposedBy', { agent: proposal.agentName })}
             </p>
-            <p className="text-xs text-zinc-500">{tr('agent.confirm.title')}</p>
+            <p className="text-xs text-ink-2">{tr('agent.confirm.title')}</p>
           </div>
         </div>
       </Stagger>
 
       <Stagger index={1}>
         <Card className="p-6">
-          <p className="text-xs font-semibold text-zinc-400">
+          <p className="text-xs font-semibold text-ink-2">
             {tr('agent.confirm.to')}
           </p>
           <div className="mt-2 flex items-center gap-3">
             <Avatar name={proposal.business.name} logoUrl={null} size="md" />
             <div>
-              <p className="font-bold text-zinc-900">{proposal.business.name}</p>
-              <p className="flex items-center gap-1 text-xs text-green-700">
+              <p className="font-bold text-ink">{proposal.business.name}</p>
+              <p className="flex items-center gap-1 text-xs text-ok">
                 <BadgeCheck className="h-3.5 w-3.5" /> Verified pro
               </p>
             </div>
           </div>
 
-          <div className="mt-5 border-t border-zinc-100 pt-5">
-            <p className="text-xs font-semibold text-zinc-400">
+          <div className="mt-5 border-t border-line pt-5">
+            <p className="text-xs font-semibold text-ink-2">
               {tr('agent.confirm.service')}
             </p>
-            <p className="mt-1 text-lg font-bold text-zinc-900">{proposal.service}</p>
+            <p className="mt-1 text-lg font-bold text-ink">{proposal.service}</p>
           </div>
 
           <div className="mt-4">
-            <p className="text-xs font-semibold text-zinc-400">
+            <p className="text-xs font-semibold text-ink-2">
               {tr('agent.confirm.details')}
             </p>
-            <p className="mt-1 rounded-xl bg-zinc-50 px-4 py-3 text-sm leading-relaxed text-zinc-700">
+            <p className="mt-1 rounded-xl bg-surface-2 px-4 py-3 text-sm leading-relaxed text-ink">
               {proposal.description}
             </p>
           </div>
 
           <div className="mt-4">
-            <p className="text-xs font-semibold text-zinc-400">
+            <p className="text-xs font-semibold text-ink-2">
               {tr('agent.confirm.contact')}
             </p>
             <ul className="mt-2 space-y-2">
               {contactRows.map((row) => (
-                <li key={row.label} className="flex items-center gap-2.5 text-sm text-zinc-700">
-                  <row.icon className="h-4 w-4 shrink-0 text-zinc-400" />
+                <li key={row.label} className="flex items-center gap-2.5 text-sm text-ink">
+                  <row.icon className="h-4 w-4 shrink-0 text-ink-2" />
                   {row.label}
                 </li>
               ))}
@@ -289,7 +289,7 @@ export default async function AgentConfirmPage({
       </Stagger>
 
       <Stagger index={2} className="mt-4">
-        <p className="flex items-center justify-center gap-1.5 text-center text-xs text-zinc-500">
+        <p className="flex items-center justify-center gap-1.5 text-center text-xs text-ink-2">
           <Clock className="h-3.5 w-3.5" /> {tr('agent.confirm.expiry')}
         </p>
       </Stagger>
@@ -304,7 +304,7 @@ export default async function AgentConfirmPage({
       </Stagger>
 
       <Stagger index={4} className="mt-4">
-        <p className="flex items-start justify-center gap-1.5 px-2 text-center text-xs leading-relaxed text-zinc-500">
+        <p className="flex items-start justify-center gap-1.5 px-2 text-center text-xs leading-relaxed text-ink-2">
           <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-indigo-500" />
           {tr('agent.confirm.note')}
         </p>

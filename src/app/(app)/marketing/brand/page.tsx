@@ -30,14 +30,14 @@ function BrandHeaderPreview({
   locale: Locale;
 }) {
   return (
-    <div className="rounded-2xl border border-zinc-200 overflow-hidden bg-white">
+    <div className="rounded-2xl border border-line overflow-hidden bg-surface">
       <div className="h-2.5" style={{ backgroundColor: accent }} aria-hidden />
       <div className="p-5 flex items-center gap-4">
         {logoUrl ? (
           <img
             src={logoUrl}
             alt=""
-            className="w-14 h-14 rounded-xl object-cover border border-zinc-200"
+            className="w-14 h-14 rounded-xl object-cover border border-line"
           />
         ) : (
           <span
@@ -53,9 +53,9 @@ function BrandHeaderPreview({
             {name}
           </p>
           {tagline && (
-            <p className="text-sm text-zinc-500 truncate">{tagline}</p>
+            <p className="text-sm text-ink-2 truncate">{tagline}</p>
           )}
-          <p className="text-xs text-zinc-400 mt-0.5">
+          <p className="text-xs text-ink-2 mt-0.5">
             {t(locale, 'brand.previewSubtitle')}
           </p>
         </div>
@@ -117,7 +117,7 @@ export default async function BrandPage() {
       />
 
       <section>
-        <h2 className="text-xs font-bold text-zinc-500 mb-2 px-1 flex items-center gap-1.5">
+        <h2 className="text-xs font-bold text-ink-2 mb-2 px-1 flex items-center gap-1.5">
           <Palette size={14} aria-hidden /> {tr('brand.sectionBrand')}
         </h2>
         <Card className="p-5">
@@ -134,7 +134,7 @@ export default async function BrandPage() {
       </section>
 
       <section>
-        <h2 className="text-xs font-bold text-zinc-500 mb-2 px-1">
+        <h2 className="text-xs font-bold text-ink-2 mb-2 px-1">
           {tr('brand.previewTitle')}
         </h2>
         <BrandHeaderPreview
@@ -148,22 +148,22 @@ export default async function BrandPage() {
       </section>
 
       <section>
-        <h2 className="text-xs font-bold text-zinc-500 mb-2 px-1">
+        <h2 className="text-xs font-bold text-ink-2 mb-2 px-1">
           {tr('brand.templatesTitle')}
         </h2>
-        <p className="text-sm text-zinc-500 px-1 mb-3">{tr('brand.templatesSubtitle')}</p>
+        <p className="text-sm text-ink-2 px-1 mb-3">{tr('brand.templatesSubtitle')}</p>
         <div className="space-y-3">
           {templates.map((tpl) => (
             <Card key={tpl.id} className="p-5">
               <div className="flex items-center justify-between gap-3 mb-2">
-                <h3 className="text-sm font-bold text-zinc-900">{tpl.title}</h3>
+                <h3 className="text-sm font-bold text-ink">{tpl.title}</h3>
                 <CopyButton
                   text={tpl.body}
                   label={tr('brand.copy')}
                   className="min-h-[44px]"
                 />
               </div>
-              <p className="text-sm text-zinc-700 whitespace-pre-line">{tpl.body}</p>
+              <p className="text-sm text-ink whitespace-pre-line">{tpl.body}</p>
             </Card>
           ))}
         </div>

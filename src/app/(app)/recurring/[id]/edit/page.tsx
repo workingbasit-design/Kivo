@@ -43,7 +43,7 @@ export default async function EditRecurringPage({
     <div className="space-y-6 max-w-2xl">
       <Link
         href="/recurring"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-2 hover:text-ink"
       >
         <ArrowLeft size={14} /> {t(locale, 'recurringPage.backLink')}
       </Link>

@@ -50,7 +50,7 @@ export default function ManualEntryForm({
     <div className="ej-glass-card rounded-[20px] p-5">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 text-sm font-bold text-zinc-900"
+        className="flex items-center gap-2 text-sm font-bold text-ink"
       >
         <PlusCircle size={16} className="text-ink" />
         {open ? t('t10work.manualHide') : t('t10work.manualAdd')}
@@ -97,7 +97,7 @@ export default function ManualEntryForm({
             </Field>
           </div>
           {error && (
-            <div className="sm:col-span-2 flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+            <div className="sm:col-span-2 flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
               <AlertCircle size={14} className="mt-0.5 shrink-0" />
               <span>{error}</span>
             </div>

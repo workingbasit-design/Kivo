@@ -104,7 +104,7 @@ export default function InvoiceForm({
               ))}
             </select>
             {customers.length === 0 && (
-              <p className="text-[11px] text-zinc-400 mt-1">
+              <p className="text-[11px] text-ink-2 mt-1">
                 No customers yet -{' '}
                 <Link href="/customers/new" className="text-ink font-semibold hover:underline">
                   add one first
@@ -135,12 +135,12 @@ export default function InvoiceForm({
       </Card>
 
       <Card className="p-6">
-        <h2 className="text-sm font-bold text-zinc-900 mb-3">Line items</h2>
+        <h2 className="text-sm font-bold text-ink mb-3">Line items</h2>
         <LineItemsEditor onSubtotal={setSubtotal} currency={taxConfig.currency} locale={locale} />
       </Card>
 
       <Card className="p-6 space-y-4">
-        <h2 className="text-sm font-bold text-zinc-900">Tax</h2>
+        <h2 className="text-sm font-bold text-ink">Tax</h2>
         <FormGrid>
           <Field label="Tax type">
             <select
@@ -176,8 +176,8 @@ export default function InvoiceForm({
                   onClick={() => setTaxRate(r)}
                   className={`min-h-[44px] px-3.5 rounded-lg text-[11px] font-bold border transition-colors ${
                     taxRate === r
-                      ? 'bg-ink text-white border-ink'
-                      : 'bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300'
+                      ? 'bg-asphalt text-white border-asphalt'
+                      : 'bg-surface text-ink-2 border-line hover:border-line-strong'
                   }`}
                 >
                   {r}%
@@ -187,13 +187,13 @@ export default function InvoiceForm({
           </Field>
         </FormGrid>
 
-        <dl className="border-t border-zinc-100 pt-4 space-y-1.5 text-sm">
-          <div className="flex justify-between text-zinc-600">
+        <dl className="border-t border-line pt-4 space-y-1.5 text-sm">
+          <div className="flex justify-between text-ink-2">
             <dt>{t(locale, 't10money.subtotalLabel')}</dt>
             <dd className="font-semibold">{formatMoney(subtotal, taxConfig.currency)}</dd>
           </div>
           {lines.map((l) => (
-            <div key={l.name} className="flex justify-between text-zinc-600">
+            <div key={l.name} className="flex justify-between text-ink-2">
               <dt>
                 {l.name} {l.rate}%
               </dt>
@@ -201,14 +201,14 @@ export default function InvoiceForm({
             </div>
           ))}
           <div className="flex justify-between text-base pt-1">
-            <dt className="font-bold text-zinc-900">{t(locale, 't10money.totalLabel')}</dt>
-            <dd className="font-bold text-zinc-900">{formatMoney(total, taxConfig.currency)}</dd>
+            <dt className="font-bold text-ink">{t(locale, 't10money.totalLabel')}</dt>
+            <dd className="font-bold text-ink">{formatMoney(total, taxConfig.currency)}</dd>
           </div>
         </dl>
       </Card>
 
       {state?.error && (
-        <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{state.error}</span>
         </div>

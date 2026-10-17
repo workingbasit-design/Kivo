@@ -43,7 +43,7 @@ function InviteForm() {
         </button>
       ) : (
         <Card className="p-5 mb-6">
-          <h3 className="font-bold text-zinc-900 mb-4">{t('t10misc.team.inviteTitle')}</h3>
+          <h3 className="font-bold text-ink mb-4">{t('t10misc.team.inviteTitle')}</h3>
           <form action={formAction} className="space-y-4">
             <div className="grid sm:grid-cols-2 gap-4">
               <Field label={t('t10misc.team.nameLabel')}>
@@ -66,7 +66,7 @@ function InviteForm() {
             </div>
 
             {state?.error && (
-              <div role="alert" className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+              <div role="alert" className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
                 <AlertCircle size={14} className="mt-0.5 shrink-0" />
                 <span>{state.error}</span>
               </div>
@@ -79,7 +79,7 @@ function InviteForm() {
               <button
                 type="button"
                 onClick={() => setShow(false)}
-                className="min-h-[44px] px-4 py-2.5 rounded-xl text-xs font-semibold text-zinc-500 hover:bg-zinc-100"
+                className="min-h-[44px] px-4 py-2.5 rounded-xl text-xs font-semibold text-ink-2 hover:bg-surface-2"
               >
                 {t('t10misc.team.cancel')}
               </button>
@@ -114,18 +114,18 @@ function MemberRow({ member, isSelf }: { member: TeamMember; isSelf: boolean }) 
   const displayName = member.name || member.email;
 
   return (
-    <div className="px-5 py-4 border-b border-zinc-100 last:border-0">
+    <div className="px-5 py-4 border-b border-line last:border-0">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-10 h-10 rounded-full bg-smoke text-ink flex items-center justify-center shrink-0">
             {member.role === 'ADMIN' ? <ShieldCheck size={18} /> : <User size={18} />}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-bold text-zinc-900 truncate">
+            <p className="text-sm font-bold text-ink truncate">
               {displayName}
-              {isSelf && <span className="ml-2 text-[10px] font-bold text-zinc-400">{t('t10misc.team.you')}</span>}
+              {isSelf && <span className="ml-2 text-[10px] font-bold text-ink-2">{t('t10misc.team.you')}</span>}
             </p>
-            <p className="text-xs text-zinc-500 truncate">{member.email}</p>
+            <p className="text-xs text-ink-2 truncate">{member.email}</p>
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -134,7 +134,7 @@ function MemberRow({ member, isSelf }: { member: TeamMember; isSelf: boolean }) 
             <button
               onClick={() => setConfirming(true)}
               disabled={isPending}
-              className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center text-zinc-400 hover:text-rose-600 p-2.5 rounded-lg hover:bg-rose-50 transition-colors"
+              className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center text-ink-2 hover:text-danger p-2.5 rounded-lg hover:bg-danger-bg transition-colors"
               aria-label={t('t10misc.team.removeTitle').replace('{name}', displayName)}
             >
               <Trash2 size={18} />
@@ -143,7 +143,7 @@ function MemberRow({ member, isSelf }: { member: TeamMember; isSelf: boolean }) 
         </div>
       </div>
       {error && (
-        <p className="text-[11px] text-rose-600 mt-2 font-medium" role="alert">{error}</p>
+        <p className="text-[11px] text-danger mt-2 font-medium" role="alert">{error}</p>
       )}
       <ConfirmDialog
         open={confirming}
@@ -185,7 +185,7 @@ export default function TeamClient({
           </div>
         )}
       </Card>
-      <p className="text-xs text-zinc-400 leading-relaxed">{t('t10misc.team.rolesHint')}</p>
+      <p className="text-xs text-ink-2 leading-relaxed">{t('t10misc.team.rolesHint')}</p>
     </div>
   );
 }

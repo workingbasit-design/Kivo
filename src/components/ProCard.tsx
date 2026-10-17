@@ -37,7 +37,7 @@ export default function ProCard({
 }) {
   const tr = (path: string) => t(locale, path as never);
   return (
-    <article className="group bg-white rounded-3xl border border-zinc-200/80 p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all duration-300 hover:shadow-[0_12px_32px_rgba(79,70,229,0.12)] hover:border-indigo-200 hover:-translate-y-0.5">
+    <article className="group bg-surface rounded-3xl border border-line/80 p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all duration-300 hover:shadow-[0_12px_32px_rgba(79,70,229,0.12)] hover:border-indigo-200 hover:-translate-y-0.5">
       <div className="flex items-start gap-3">
         <div className="relative shrink-0">
           <div className="w-14 h-14 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center overflow-hidden transition-transform duration-300 group-hover:scale-105">
@@ -50,30 +50,30 @@ export default function ProCard({
             )}
           </div>
           {pro.verified && (
-            <span className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 shadow-sm transition-transform duration-300 group-hover:scale-110">
+            <span className="absolute -bottom-1 -right-1 bg-surface rounded-full p-0.5 shadow-sm transition-transform duration-300 group-hover:scale-110">
               <BadgeCheck className="w-5 h-5 text-indigo-600 fill-indigo-100" aria-label={tr('customer.proCard.verified')} />
             </span>
           )}
         </div>
 
         <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-[16px] text-zinc-900 truncate leading-tight">
+          <h3 className="font-bold text-[16px] text-ink truncate leading-tight">
             {pro.name}
           </h3>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
             {pro.avg != null ? (
-              <span className="inline-flex items-center gap-1 text-xs font-bold text-zinc-800 bg-amber-50 border border-amber-200/70 rounded-full px-2 py-0.5">
+              <span className="inline-flex items-center gap-1 text-xs font-bold text-ink bg-warn-bg border border-amber-200/70 rounded-full px-2 py-0.5">
                 <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                 {pro.avg.toFixed(1)}
-                <span className="font-medium text-zinc-500">({pro.count})</span>
+                <span className="font-medium text-ink-2">({pro.count})</span>
               </span>
             ) : (
-              <span className="text-[11px] font-medium text-zinc-400 bg-zinc-100 rounded-full px-2 py-0.5">
+              <span className="text-[11px] font-medium text-ink-2 bg-surface-2 rounded-full px-2 py-0.5">
                 {tr('customer.proCard.newPro')}
               </span>
             )}
             {pro.locality && (
-              <span className="inline-flex items-center gap-0.5 text-xs text-zinc-500">
+              <span className="inline-flex items-center gap-0.5 text-xs text-ink-2">
                 <MapPin className="w-3 h-3" />
                 <span className="truncate max-w-[120px]">{pro.locality}</span>
               </span>
@@ -99,7 +99,7 @@ export default function ProCard({
             aria-label={saved ? tr('customer.proCard.unsave') : tr('customer.proCard.save')}
             className={cn(
               'ej-icon-hover p-2 -m-1 shrink-0 rounded-full',
-              saved ? 'text-rose-500' : 'text-zinc-300 hover:text-rose-400 hover:bg-rose-50'
+              saved ? 'text-rose-500' : 'text-zinc-300 hover:text-rose-400 hover:bg-danger-bg'
             )}
           >
             <Heart
@@ -119,7 +119,7 @@ export default function ProCard({
         </Link>
         <Link
           href={`/p/${pro.slug}`}
-          className="min-h-[46px] px-5 inline-flex items-center justify-center rounded-2xl bg-zinc-100 text-zinc-700 text-sm font-semibold transition-all duration-200 hover:bg-zinc-200 hover:-translate-y-px active:translate-y-0 active:scale-[0.98]"
+          className="min-h-[46px] px-5 inline-flex items-center justify-center rounded-2xl bg-surface-2 text-ink text-sm font-semibold transition-all duration-200 hover:bg-line hover:-translate-y-px active:translate-y-0 active:scale-[0.98]"
         >
           {tr('customer.proCard.view')}
         </Link>

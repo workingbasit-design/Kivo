@@ -140,19 +140,19 @@ export default async function QuotePortalPage({
             <img
               src={quote.business.logoUrl}
               alt={`${quote.business.name} logo`}
-              className="w-16 h-16 rounded-2xl object-contain mx-auto mb-3 border border-zinc-200 bg-white"
+              className="w-16 h-16 rounded-2xl object-contain mx-auto mb-3 border border-line bg-surface"
             />
           ) : (
-            <div className="w-11 h-11 rounded-xl bg-ink flex items-center justify-center mx-auto mb-3">
+            <div className="w-11 h-11 rounded-xl bg-asphalt flex items-center justify-center mx-auto mb-3">
               <FileText className="w-6 h-6 text-white" />
             </div>
           )}
-          <h1 className="text-xl font-bold text-zinc-900 tracking-tight">{quote.business.name}</h1>
-          <p className="text-sm text-zinc-500 mt-0.5">{L('quotes.portal.quoteFor')} {quote.customer.name}</p>
+          <h1 className="text-xl font-bold text-ink tracking-tight">{quote.business.name}</h1>
+          <p className="text-sm text-ink-2 mt-0.5">{L('quotes.portal.quoteFor')} {quote.customer.name}</p>
         </div>
 
         {paid === '1' && (
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 text-center">
+          <div className="rounded-2xl border border-emerald-200 bg-ok-bg px-4 py-3 text-sm font-semibold text-emerald-800 text-center">
             {L('payments.depositPaidThanks')}
           </div>
         )}
@@ -160,29 +160,29 @@ export default async function QuotePortalPage({
         <Card className="p-6">
           <div className="flex items-start justify-between gap-3 mb-4">
             <div>
-              <p className="text-xs font-semibold text-zinc-400">{quote.number}</p>
-              <h2 className="text-lg font-bold text-zinc-900 mt-0.5">{quote.title}</h2>
-              <p className="text-xs text-zinc-400 mt-1">
+              <p className="text-xs font-semibold text-ink-2">{quote.number}</p>
+              <h2 className="text-lg font-bold text-ink mt-0.5">{quote.title}</h2>
+              <p className="text-xs text-ink-2 mt-1">
                 {L('quotes.portal.issued')} {quote.createdAt.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })}
               </p>
             </div>
             <StatusBadge status={quote.status} />
           </div>
 
-          <div className="border-t border-zinc-100 pt-4 space-y-2">
+          <div className="border-t border-line pt-4 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-zinc-500">{L('quotes.portal.subtotal')}</span>
-              <span className="text-sm font-semibold text-zinc-900">${subtotal.toFixed(2)}</span>
+              <span className="text-sm text-ink-2">{L('quotes.portal.subtotal')}</span>
+              <span className="text-sm font-semibold text-ink">${subtotal.toFixed(2)}</span>
             </div>
             {taxLines.map((tx) => (
               <div key={tx.name} className="flex items-center justify-between">
-                <span className="text-sm text-zinc-500">{tx.name} ({tx.rate}%)</span>
-                <span className="text-sm font-semibold text-zinc-900">${tx.amount.toFixed(2)}</span>
+                <span className="text-sm text-ink-2">{tx.name} ({tx.rate}%)</span>
+                <span className="text-sm font-semibold text-ink">${tx.amount.toFixed(2)}</span>
               </div>
             ))}
-            <div className="flex items-center justify-between border-t border-zinc-100 pt-2">
-              <span className="text-sm text-zinc-500">{L('quotes.portal.total')}</span>
-              <span className="text-2xl font-bold text-zinc-900 tracking-tight">{formatCents(quote.totalCents, quote.business.currency, moneyLocale)}</span>
+            <div className="flex items-center justify-between border-t border-line pt-2">
+              <span className="text-sm text-ink-2">{L('quotes.portal.total')}</span>
+              <span className="text-2xl font-bold text-ink tracking-tight">{formatCents(quote.totalCents, quote.business.currency, moneyLocale)}</span>
             </div>
           </div>
         </Card>
@@ -220,8 +220,8 @@ export default async function QuotePortalPage({
           <Card className="p-6 text-center">
             {quote.status === 'APPROVED' ? (
               <>
-                <CheckCircle2 size={32} className="mx-auto text-emerald-600 mb-2" />
-                <p className="text-sm font-semibold text-zinc-900">{L('quotes.portal.approved')}</p>
+                <CheckCircle2 size={32} className="mx-auto text-ok mb-2" />
+                <p className="text-sm font-semibold text-ink">{L('quotes.portal.approved')}</p>
                 {selectedAddons.length > 0 && (
                   <div className="text-left mt-4 border-t border-smoke pt-4">
                     <p className="text-xs font-bold text-ink mb-2">
@@ -245,19 +245,19 @@ export default async function QuotePortalPage({
                     </div>
                   </div>
                 )}
-                <p className="text-xs text-zinc-500 mt-3">{L('quotes.portal.approvedNote')}</p>
+                <p className="text-xs text-ink-2 mt-3">{L('quotes.portal.approvedNote')}</p>
               </>
             ) : quote.status === 'DECLINED' ? (
               <>
-                <XCircle size={32} className="mx-auto text-zinc-400 mb-2" />
-                <p className="text-sm font-semibold text-zinc-900">{L('quotes.portal.declined')}</p>
-                <p className="text-xs text-zinc-500 mt-1">{L('quotes.portal.declinedNote')}</p>
+                <XCircle size={32} className="mx-auto text-ink-2 mb-2" />
+                <p className="text-sm font-semibold text-ink">{L('quotes.portal.declined')}</p>
+                <p className="text-xs text-ink-2 mt-1">{L('quotes.portal.declinedNote')}</p>
               </>
             ) : (
               <>
-                <Clock size={32} className="mx-auto text-zinc-400 mb-2" />
-                <p className="text-sm font-semibold text-zinc-900">{L('quotes.portal.notReady')}</p>
-                <p className="text-xs text-zinc-500 mt-1">{L('quotes.portal.notReadyNote')}</p>
+                <Clock size={32} className="mx-auto text-ink-2 mb-2" />
+                <p className="text-sm font-semibold text-ink">{L('quotes.portal.notReady')}</p>
+                <p className="text-xs text-ink-2 mt-1">{L('quotes.portal.notReadyNote')}</p>
               </>
             )}
           </Card>
@@ -265,8 +265,8 @@ export default async function QuotePortalPage({
 
         {showDeposit && (
           <Card className="p-6">
-            <h2 className="text-sm font-bold text-zinc-900 mb-1">{L('payments.depositTitle')}</h2>
-            <p className="text-xs text-zinc-500 mb-3">
+            <h2 className="text-sm font-bold text-ink mb-1">{L('payments.depositTitle')}</h2>
+            <p className="text-xs text-ink-2 mb-3">
               {depositPaid > BigInt(0)
                 ? `${L('payments.depositRemaining')} ${formatCents(depositRemaining, quote.business.currency, moneyLocale)}`
                 : L('payments.depositDesc')}
@@ -285,7 +285,7 @@ export default async function QuotePortalPage({
             href={whatsappHref}
             target="_blank"
             rel="noreferrer"
-            className="min-h-[44px] flex items-center justify-center gap-2 w-full bg-[#25D366] hover:bg-[#1fb857] text-white font-bold text-sm py-3 rounded-2xl transition-colors"
+            className="min-h-[44px] flex items-center justify-center gap-2 w-full bg-wa hover:bg-wa-dark text-white font-bold text-sm py-3 rounded-2xl transition-colors"
           >
             <MessageCircle size={16} /> {L('quotes.portal.whatsappCta')}
           </a>

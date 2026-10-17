@@ -41,8 +41,8 @@ export default function CopyButton({
       className={cn(
         'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border',
         copied
-          ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-          : 'bg-white border-zinc-200 text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900',
+          ? 'bg-ok-bg border-emerald-200 text-ok'
+          : 'bg-surface border-line text-ink-2 hover:bg-surface-2 hover:text-ink',
         className
       )}
     >

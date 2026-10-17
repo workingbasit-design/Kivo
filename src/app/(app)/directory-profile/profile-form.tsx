@@ -33,8 +33,8 @@ export default function DirectoryProfileForm({ initial }: { initial: ProfileInit
     <Card>
       <form action={formAction} className="space-y-5">
         <div>
-          <h3 className="font-bold text-sm text-zinc-900">{t('t10misc.profile.formTitle')}</h3>
-          <p className="text-xs text-zinc-500 mt-0.5">{t('t10misc.profile.formDesc')}</p>
+          <h3 className="font-bold text-sm text-ink">{t('t10misc.profile.formTitle')}</h3>
+          <p className="text-xs text-ink-2 mt-0.5">{t('t10misc.profile.formDesc')}</p>
         </div>
 
         <div className="grid sm:grid-cols-2 gap-4">
@@ -69,24 +69,24 @@ export default function DirectoryProfileForm({ initial }: { initial: ProfileInit
         </Field>
 
         <div className="space-y-2.5">
-          <label className="flex items-start gap-2.5 text-xs text-zinc-700 cursor-pointer">
+          <label className="flex items-start gap-2.5 text-xs text-ink cursor-pointer">
             <input type="checkbox" name="showPhone" defaultChecked={initial.showPhone} className="mt-0.5 w-5 h-5 accent-zinc-900 shrink-0" />
             <span>
               <span className="font-semibold">{t('t10misc.profile.showPhone')}</span>
-              <span className="block text-zinc-500">{t('t10misc.profile.showPhoneHint')}</span>
+              <span className="block text-ink-2">{t('t10misc.profile.showPhoneHint')}</span>
             </span>
           </label>
-          <label className="flex items-start gap-2.5 text-xs text-zinc-700 cursor-pointer">
+          <label className="flex items-start gap-2.5 text-xs text-ink cursor-pointer">
             <input type="checkbox" name="enabled" defaultChecked={initial.enabled} className="mt-0.5 w-5 h-5 accent-zinc-900 shrink-0" />
             <span>
               <span className="font-semibold">{t('t10misc.profile.bookingEnabled')}</span>
-              <span className="block text-zinc-500">{t('t10misc.profile.bookingEnabledHint')}</span>
+              <span className="block text-ink-2">{t('t10misc.profile.bookingEnabledHint')}</span>
             </span>
           </label>
         </div>
 
         {state?.error && (
-          <div role="alert" className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+          <div role="alert" className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
             <AlertCircle size={14} className="mt-0.5 shrink-0" /> <span>{state.error}</span>
           </div>
         )}

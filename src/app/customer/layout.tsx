@@ -16,8 +16,8 @@ export default async function CustomerLayout({ children }: { children: React.Rea
   const tr = (path: string) => t(locale, path as never);
   // login/signup pages handle their own redirect when already logged in
   return (
-    <div className="min-h-dvh bg-zinc-50 flex flex-col">
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-zinc-200/70">
+    <div className="min-h-dvh bg-surface-2 flex flex-col">
+      <header className="sticky top-0 z-30 bg-surface/95 backdrop-blur border-b border-line/70">
         <div className="max-w-lg md:max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link href="/customer" className="inline-flex items-center gap-2 group">
             <span className="transition-transform duration-300 group-hover:scale-105 group-active:scale-95">
@@ -29,14 +29,14 @@ export default async function CustomerLayout({ children }: { children: React.Rea
           </Link>
           {session && (
             <div className="flex items-center gap-4">
-              <nav className="hidden md:flex items-center gap-4 text-sm font-medium text-zinc-600">
+              <nav className="hidden md:flex items-center gap-4 text-sm font-medium text-ink-2">
                 <Link href="/customer" className="hover:text-indigo-600 transition-colors">{tr('customer.nav.search')}</Link>
                 <Link href="/customer/requests" className="hover:text-indigo-600 transition-colors">{tr('customer.nav.requests')}</Link>
                 <Link href="/customer/saved" className="hover:text-indigo-600 transition-colors">{tr('customer.nav.saved')}</Link>
                 <Link href="/customer/messages" className="hover:text-indigo-600 transition-colors">{tr('customer.nav.messages')}</Link>
                 <Link href="/customer/profile" className="hover:text-indigo-600 transition-colors">{tr('customer.nav.profile')}</Link>
               </nav>
-              <span className="text-sm text-zinc-600 truncate max-w-[160px]">
+              <span className="text-sm text-ink-2 truncate max-w-[160px]">
                 Hi, {session.customer.name?.split(' ')[0] || 'there'}
               </span>
             </div>

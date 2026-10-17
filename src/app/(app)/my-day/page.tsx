@@ -94,7 +94,7 @@ export default async function MyDayPage() {
               </div>
 
               {job.notes && (
-                <div className="text-sm bg-yellow-50 p-2 rounded mb-3">
+                <div className="text-sm bg-warn-bg p-2 rounded mb-3">
                   <span className="font-medium">{t.notes}:</span> {job.notes}
                 </div>
               )}

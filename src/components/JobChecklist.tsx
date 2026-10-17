@@ -148,7 +148,7 @@ function ApplyTemplateForm({
         </button>
       </div>
       {error && (
-        <p className="text-[11px] text-rose-600 mt-1.5 font-medium">{error}</p>
+        <p className="text-[11px] text-danger mt-1.5 font-medium">{error}</p>
       )}
     </div>
   );
@@ -194,7 +194,7 @@ function ChecklistRow({ item, locale }: { item: ChecklistItemData; locale: Local
         aria-pressed={item.done}
         aria-label={item.label}
         className={`shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors disabled:opacity-60 ${
-          item.done ? 'text-emerald-600' : 'text-zinc-300 hover:text-graphite'
+          item.done ? 'text-ok' : 'text-zinc-300 hover:text-graphite'
         }`}
       >
         {item.done ? <CheckSquare size={22} /> : <Square size={22} />}
@@ -206,14 +206,14 @@ function ChecklistRow({ item, locale }: { item: ChecklistItemData; locale: Local
       >
         {item.label}
       </span>
-      {error && <span className="text-[11px] text-rose-600 font-medium">{error}</span>}
+      {error && <span className="text-[11px] text-danger font-medium">{error}</span>}
       <button
         type="button"
         onClick={() => setConfirming(true)}
         disabled={isPending}
         title={t(locale, 'jobops.checklist.deleteItem')}
         aria-label={t(locale, 'jobops.checklist.deleteItem')}
-        className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-zinc-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors shrink-0 disabled:opacity-60"
+        className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-zinc-300 hover:text-danger hover:bg-danger-bg rounded-lg transition-colors shrink-0 disabled:opacity-60"
       >
         <Trash2 size={15} />
       </button>
@@ -264,7 +264,7 @@ function AddItemForm({ jobId, locale }: { jobId: string; locale: Locale }) {
         </button>
       </div>
       {state?.error && (
-        <div className="mt-2 flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="mt-2 flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{state.error}</span>
         </div>

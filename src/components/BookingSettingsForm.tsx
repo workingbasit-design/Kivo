@@ -58,14 +58,14 @@ export default function BookingSettingsForm({
               className="mt-1 w-5 h-5 accent-ink shrink-0"
             />
             <span>
-              <span className="block text-sm font-semibold text-zinc-900">{t('t10misc.booking.enableTitle')}</span>
-              <span className="block text-xs text-zinc-500 mt-0.5">{t('t10misc.booking.enableDesc')}</span>
+              <span className="block text-sm font-semibold text-ink">{t('t10misc.booking.enableTitle')}</span>
+              <span className="block text-xs text-ink-2 mt-0.5">{t('t10misc.booking.enableDesc')}</span>
             </span>
           </label>
 
           <Field label={t('t10misc.booking.linkLabel')} hint={t('t10misc.booking.linkHint')}>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-zinc-400 whitespace-nowrap">/book/</span>
+              <span className="text-xs text-ink-2 whitespace-nowrap">/book/</span>
               <input
                 name="slug"
                 value={slug}
@@ -101,13 +101,13 @@ export default function BookingSettingsForm({
           </Field>
 
           {state.error && (
-            <div role="alert" className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+            <div role="alert" className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
               <AlertCircle size={14} className="mt-0.5 shrink-0" />
               <span>{state.error}</span>
             </div>
           )}
           {state.ok && (
-            <p role="status" className="flex items-center gap-2 text-sm font-medium text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-2.5">
+            <p role="status" className="flex items-center gap-2 text-sm font-medium text-ok bg-ok-bg border border-emerald-100 rounded-xl px-4 py-2.5">
               <CheckCircle2 size={15} className="shrink-0" /> {t('t10misc.booking.saved')}
             </p>
           )}
@@ -119,30 +119,30 @@ export default function BookingSettingsForm({
       </form>
 
       <Card className="p-6">
-        <h2 className="text-sm font-bold text-zinc-900 mb-1 flex items-center gap-2">
+        <h2 className="text-sm font-bold text-ink mb-1 flex items-center gap-2">
           <Link2 size={15} /> {t('t10misc.booking.shareTitle')}
         </h2>
         {initial ? (
           <>
-            <p className="text-xs text-zinc-500 mb-3">{t('t10misc.booking.shareDesc')}</p>
+            <p className="text-xs text-ink-2 mb-3">{t('t10misc.booking.shareDesc')}</p>
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-              <code className="flex-1 min-h-[44px] flex items-center text-xs bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 break-all select-all text-zinc-700">
+              <code className="flex-1 min-h-[44px] flex items-center text-xs bg-surface-2 border border-line rounded-xl px-3 py-2.5 break-all select-all text-ink">
                 {publicUrl}
               </code>
               <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={copyLink}
-                  className="min-h-[44px] shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2.5 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-700"
+                  className="min-h-[44px] shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2.5 rounded-xl border border-line bg-surface hover:bg-surface-2 text-ink"
                 >
-                  {copied ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
+                  {copied ? <Check size={14} className="text-ok" /> : <Copy size={14} />}
                   {copied ? t('t10misc.booking.copied') : t('t10misc.booking.copy')}
                 </button>
                 <a
                   href={publicUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="min-h-[44px] shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2.5 rounded-xl bg-ink text-white hover:bg-graphite"
+                  className="min-h-[44px] shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2.5 rounded-xl bg-asphalt text-white hover:bg-graphite"
                 >
                   <ExternalLink size={14} /> {t('t10misc.booking.open')}
                 </a>
@@ -150,7 +150,7 @@ export default function BookingSettingsForm({
             </div>
           </>
         ) : (
-          <p className="text-xs text-zinc-500 leading-relaxed">
+          <p className="text-xs text-ink-2 leading-relaxed">
             {t('t10misc.booking.shareUnsaved')}
           </p>
         )}

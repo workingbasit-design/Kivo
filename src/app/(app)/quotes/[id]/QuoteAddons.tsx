@@ -125,19 +125,19 @@ export default function QuoteAddons({
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-sm font-bold text-zinc-900">{s.title}</h3>
+        <h3 className="text-sm font-bold text-ink">{s.title}</h3>
         <p className="text-xs text-graphite mt-0.5">{s.hint}</p>
       </div>
 
       {error && (
-        <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       {locked && (
-        <p className="text-xs text-graphite bg-zinc-50 border border-smoke rounded-xl px-3 py-2.5">
+        <p className="text-xs text-graphite bg-surface-2 border border-smoke rounded-xl px-3 py-2.5">
           {s.locked}
         </p>
       )}
@@ -161,7 +161,7 @@ export default function QuoteAddons({
                       defaultValue={a.title}
                       required
                       maxLength={200}
-                      className="mt-1 w-full rounded-lg border border-smoke px-3 py-2.5 min-h-[44px] text-sm focus:border-ink focus:outline-none"
+                      className="mt-1 w-full rounded-lg border border-smoke px-3 py-2.5 min-h-[44px] text-sm focus:border-asphalt focus:outline-none"
                     />
                   </label>
                   <label className="w-28">
@@ -173,21 +173,21 @@ export default function QuoteAddons({
                       pattern="[0-9]*\.?[0-9]*"
                       defaultValue={a.price}
                       required
-                      className="mt-1 w-full rounded-lg border border-smoke px-3 py-2.5 min-h-[44px] text-sm focus:border-ink focus:outline-none"
+                      className="mt-1 w-full rounded-lg border border-smoke px-3 py-2.5 min-h-[44px] text-sm focus:border-asphalt focus:outline-none"
                     />
                   </label>
                   <div className="flex items-center gap-1.5">
                     <button
                       type="submit"
                       disabled={updatePending}
-                      className="min-h-[44px] inline-flex items-center gap-1 text-xs font-bold text-emerald-700 hover:text-emerald-800 px-2"
+                      className="min-h-[44px] inline-flex items-center gap-1 text-xs font-bold text-ok hover:text-emerald-800 px-2"
                     >
                       <Check size={13} /> {s.save}
                     </button>
                     <button
                       type="button"
                       onClick={() => setEditingId(null)}
-                      className="min-h-[44px] text-xs font-semibold text-graphite hover:text-zinc-700 px-2"
+                      className="min-h-[44px] text-xs font-semibold text-graphite hover:text-ink px-2"
                     >
                       {s.cancel}
                     </button>
@@ -196,15 +196,15 @@ export default function QuoteAddons({
               ) : (
                 <>
                   <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-sm font-semibold text-zinc-900 truncate">{a.title}</span>
+                    <span className="text-sm font-semibold text-ink truncate">{a.title}</span>
                     {a.selected && (
-                      <span className="shrink-0 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
+                      <span className="shrink-0 text-[10px] font-bold text-ok bg-ok-bg border border-emerald-200 rounded-full px-2 py-0.5">
                         ✓
                       </span>
                     )}
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
-                    <span className="text-sm font-bold text-zinc-900 mr-1">
+                    <span className="text-sm font-bold text-ink mr-1">
                       +{formatMoney(a.price, currency)}
                     </span>
                     {!locked && (
@@ -215,14 +215,14 @@ export default function QuoteAddons({
                             setEditingId(a.id);
                             setConfirmingDeleteId(null);
                           }}
-                          className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-lg text-graphite hover:bg-smoke hover:text-zinc-800"
+                          className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-lg text-graphite hover:bg-smoke hover:text-ink"
                           aria-label={`${s.edit} ${a.title}`}
                         >
                           <Pencil size={13} />
                         </button>
                         {confirmingDeleteId === a.id ? (
                           <span className="flex flex-wrap items-center gap-1.5 text-xs">
-                            <span className="font-medium text-zinc-600">{s.deleteConfirm}</span>
+                            <span className="font-medium text-ink-2">{s.deleteConfirm}</span>
                             <form action={deleteAction} className="inline">
                               <input type="hidden" name="id" value={a.id} />
                               <button
@@ -236,7 +236,7 @@ export default function QuoteAddons({
                             <button
                               type="button"
                               onClick={() => setConfirmingDeleteId(null)}
-                              className="min-h-[44px] font-semibold text-graphite hover:text-zinc-700 px-2"
+                              className="min-h-[44px] font-semibold text-graphite hover:text-ink px-2"
                             >
                               {s.cancel}
                             </button>
@@ -248,7 +248,7 @@ export default function QuoteAddons({
                               setConfirmingDeleteId(a.id);
                               setEditingId(null);
                             }}
-                            className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-lg text-graphite hover:bg-rose-50 hover:text-rose-600"
+                            className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-lg text-graphite hover:bg-danger-bg hover:text-danger"
                             aria-label={`${s.delete} ${a.title}`}
                           >
                             <Trash2 size={13} />
@@ -288,7 +288,7 @@ export default function QuoteAddons({
                     required
                     maxLength={200}
                     placeholder={s.nameLabel}
-                    className="mt-1 w-full rounded-lg border border-smoke bg-white px-3 py-2.5 min-h-[44px] text-sm focus:border-ink focus:outline-none"
+                    className="mt-1 w-full rounded-lg border border-smoke bg-surface px-3 py-2.5 min-h-[44px] text-sm focus:border-asphalt focus:outline-none"
                   />
                 </label>
                 <label>
@@ -300,7 +300,7 @@ export default function QuoteAddons({
                     pattern="[0-9]*\.?[0-9]*"
                     required
                     placeholder="0.00"
-                    className="mt-1 w-full rounded-lg border border-smoke bg-white px-3 py-2.5 min-h-[44px] text-sm focus:border-ink focus:outline-none"
+                    className="mt-1 w-full rounded-lg border border-smoke bg-surface px-3 py-2.5 min-h-[44px] text-sm focus:border-asphalt focus:outline-none"
                   />
                 </label>
               </div>
@@ -308,14 +308,14 @@ export default function QuoteAddons({
                 <button
                   type="submit"
                   disabled={createPending}
-                  className="min-h-[44px] inline-flex items-center gap-1.5 bg-ink hover:bg-ink/90 disabled:opacity-60 text-white px-4 rounded-xl font-semibold text-xs transition-colors"
+                  className="min-h-[44px] inline-flex items-center gap-1.5 bg-asphalt hover:bg-asphalt/90 disabled:opacity-60 text-white px-4 rounded-xl font-semibold text-xs transition-colors"
                 >
                   <Plus size={13} /> {createPending ? '…' : s.add}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowAdd(false)}
-                  className="min-h-[44px] text-xs font-semibold text-graphite hover:text-zinc-700 px-3"
+                  className="min-h-[44px] text-xs font-semibold text-graphite hover:text-ink px-3"
                 >
                   {s.cancel}
                 </button>

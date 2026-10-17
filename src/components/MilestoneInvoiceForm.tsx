@@ -57,15 +57,15 @@ export default function MilestoneInvoiceForm({
   }
 
   return (
-    <div className="mt-4 pt-4 border-t border-zinc-100">
+    <div className="mt-4 pt-4 border-t border-line">
       {error && (
-        <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 mb-4">
+        <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-danger-bg px-4 py-3 text-sm text-red-800 mb-4">
           <AlertTriangle size={16} className="shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
       )}
       {invoiceId && (
-        <div className="flex items-start gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 mb-4">
+        <div className="flex items-start gap-2.5 rounded-xl border border-emerald-200 bg-ok-bg px-4 py-3 text-sm text-emerald-800 mb-4">
           <CheckCircle2 size={16} className="shrink-0 mt-0.5" />
           <span>
             {t(locale, 'billing.milestoneCreated')}{' '}

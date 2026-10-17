@@ -87,7 +87,7 @@ export default function PwaInstallPrompt({ locale = 'en' }: { locale?: Locale })
     <div
       role="dialog"
       aria-label={tr('title')}
-      className="fixed bottom-4 inset-x-4 sm:inset-x-auto sm:right-6 sm:max-w-sm z-50 rounded-2xl bg-zinc-900 text-white p-4 shadow-2xl"
+      className="fixed bottom-4 inset-x-4 sm:inset-x-auto sm:right-6 sm:max-w-sm z-50 rounded-2xl bg-asphalt text-white p-4 shadow-2xl"
     >
       <div className="flex items-start gap-3">
         <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-lime text-ink">
@@ -104,7 +104,7 @@ export default function PwaInstallPrompt({ locale = 'en' }: { locale?: Locale })
               type="button"
               onClick={dismiss}
               aria-label={tr('dismissBtn')}
-              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl px-3 text-sm font-semibold text-zinc-300 hover:text-white hover:bg-white/10"
+              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl px-3 text-sm font-semibold text-zinc-300 hover:text-white hover:bg-surface/10"
             >
               <X size={16} />
             </button>

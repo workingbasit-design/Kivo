@@ -60,14 +60,14 @@ function leaflet(): LeafletNS | null {
 function makeIcon(tone: 'active' | 'arrived'): unknown {
   const L = leaflet();
   if (!L) return undefined;
-  const color = tone === 'arrived' ? '#16a34a' : '#2563eb';
+  const color = tone === 'arrived' ? 'var(--ok)' : 'var(--info)';
   return L.divIcon({
     className: 'ej-map-pin',
     html:
       `<div style="width:28px;height:28px;border-radius:50%;background:${color};` +
-      `border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.35);` +
+      `border:3px solid var(--surface);box-shadow:0 2px 8px color-mix(in srgb, var(--asphalt) 35%, transparent);` +
       `display:flex;align-items:center;justify-content:center;">` +
-      `<div style="width:8px;height:8px;border-radius:50%;background:#fff;"></div></div>`,
+      `<div style="width:8px;height:8px;border-radius:50%;background:var(--surface);"></div></div>`,
     iconSize: [28, 28],
     iconAnchor: [14, 14],
     popupAnchor: [0, -14],
@@ -177,7 +177,7 @@ export default function DispatcherMap({
           `<strong>${escapeHtml(p.label)}</strong>` +
             (p.sub ? `<br/>${escapeHtml(p.sub)}` : '') +
             (p.status ? `<br/><em>${escapeHtml(p.status)}</em>` : '') +
-            (ago ? `<br/><span style="color:#71717a;font-size:12px;">Updated ${escapeHtml(ago)}</span>` : '')
+            (ago ? `<br/><span style="color:var(--ink-2);font-size:12px;">Updated ${escapeHtml(ago)}</span>` : '')
         )
         .addTo(layer);
     }
@@ -256,24 +256,24 @@ export default function DispatcherMap({
     <div className="relative" style={{ height, width: '100%' }}>
       {!mapReady && !mapFailed && (
         <div
-          className="absolute inset-0 flex items-center justify-center rounded-2xl bg-zinc-100"
+          className="absolute inset-0 flex items-center justify-center rounded-2xl bg-surface-2"
           aria-hidden={mapReady}
         >
-          <div className="flex flex-col items-center gap-2 text-zinc-400">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-300 border-t-lime-500" />
+          <div className="flex flex-col items-center gap-2 text-ink-2">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-line-strong border-t-lime-500" />
             <span className="text-xs font-medium">Loading map…</span>
           </div>
         </div>
       )}
       {mapFailed && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl bg-zinc-100 px-6 text-center">
-          <p className="text-sm text-zinc-500">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl bg-surface-2 px-6 text-center">
+          <p className="text-sm text-ink-2">
             Map unavailable - check your connection. The job list below is still up to date.
           </p>
           <button
             type="button"
             onClick={() => setAttempt((a) => a + 1)}
-            className="rounded-xl bg-zinc-900 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-700"
+            className="rounded-xl bg-asphalt px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-700"
           >
             Retry map
           </button>
@@ -290,7 +290,7 @@ export default function DispatcherMap({
         <button
           type="button"
           onClick={recenter}
-          className="absolute bottom-3 right-3 z-10 rounded-xl bg-white/95 px-3 py-2 text-xs font-semibold text-zinc-700 shadow-md border border-zinc-200 hover:bg-white"
+          className="absolute bottom-3 right-3 z-10 rounded-xl bg-surface/95 px-3 py-2 text-xs font-semibold text-ink shadow-md border border-line hover:bg-surface"
           aria-label="Recenter map on technician locations"
         >
           ⌖ Recenter

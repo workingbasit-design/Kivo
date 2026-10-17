@@ -116,10 +116,10 @@ export default function CustomerProperties({
 
   return (
     <Card>
-      <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between">
+      <div className="px-6 py-4 border-b border-line flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <MapPin size={16} className="text-zinc-400" />
-          <h3 className="font-bold text-sm text-zinc-900">{L('properties.title')}</h3>
+          <MapPin size={16} className="text-ink-2" />
+          <h3 className="font-bold text-sm text-ink">{L('properties.title')}</h3>
         </div>
         {!showForm && (
           <button
@@ -133,16 +133,16 @@ export default function CustomerProperties({
       </div>
 
       <div className="px-6 py-4">
-        <p className="text-xs text-zinc-500 mb-4">{L('properties.hint')}</p>
+        <p className="text-xs text-ink-2 mb-4">{L('properties.hint')}</p>
 
         {error && (
-          <p className="text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2.5 mb-4">
+          <p className="text-xs font-semibold text-danger bg-danger-bg border border-rose-200 rounded-xl px-3 py-2.5 mb-4">
             {error}
           </p>
         )}
 
         {showForm && (
-          <div className="space-y-3 rounded-xl border border-zinc-200/70 bg-zinc-50/60 p-4 mb-4">
+          <div className="space-y-3 rounded-xl border border-line/70 bg-surface-2/60 p-4 mb-4">
             <div className="grid sm:grid-cols-2 gap-3">
               <Field label={L('properties.label')}>
                 <input
@@ -189,13 +189,13 @@ export default function CustomerProperties({
         )}
 
         {properties.length === 0 && !showForm ? (
-          <p className="text-sm text-zinc-500 text-center py-6">{L('properties.empty')}</p>
+          <p className="text-sm text-ink-2 text-center py-6">{L('properties.empty')}</p>
         ) : (
-          <ul className="divide-y divide-zinc-100">
+          <ul className="divide-y divide-line">
             {properties.map((p) => (
               <li key={p.id} className="py-3.5 flex items-start gap-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-zinc-900 flex items-center gap-2 flex-wrap">
+                  <p className="text-sm font-semibold text-ink flex items-center gap-2 flex-wrap">
                     {p.label}
                     {p.isPrimary && (
                       <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-amber-100 text-amber-800 rounded-full px-2 py-0.5">
@@ -203,9 +203,9 @@ export default function CustomerProperties({
                       </span>
                     )}
                   </p>
-                  <p className="text-xs text-zinc-500 mt-0.5 whitespace-pre-line">{p.address}</p>
+                  <p className="text-xs text-ink-2 mt-0.5 whitespace-pre-line">{p.address}</p>
                   {p.notes && (
-                    <p className="text-xs text-zinc-400 mt-1 whitespace-pre-line">{p.notes}</p>
+                    <p className="text-xs text-ink-2 mt-1 whitespace-pre-line">{p.notes}</p>
                   )}
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
@@ -214,7 +214,7 @@ export default function CustomerProperties({
                       type="button"
                       title={L('properties.setPrimary')}
                       onClick={() => startTransition(() => makePrimary(p.id))}
-                      className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-zinc-400 hover:text-amber-600 hover:bg-amber-50"
+                      className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-ink-2 hover:text-warn-text hover:bg-warn-bg"
                       aria-label={L('properties.setPrimary')}
                     >
                       <Star size={14} />
@@ -223,7 +223,7 @@ export default function CustomerProperties({
                   <button
                     type="button"
                     onClick={() => startTransition(() => openEdit(p))}
-                    className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100"
+                    className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-ink-2 hover:text-ink hover:bg-surface-2"
                     aria-label={L('properties.edit')}
                   >
                     <Pencil size={14} />
@@ -231,7 +231,7 @@ export default function CustomerProperties({
                   <button
                     type="button"
                     onClick={() => setPendingDelete(p.id)}
-                    className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-zinc-400 hover:text-rose-600 hover:bg-rose-50"
+                    className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-ink-2 hover:text-danger hover:bg-danger-bg"
                     aria-label={L('properties.delete')}
                   >
                     <Trash2 size={14} />

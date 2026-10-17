@@ -42,7 +42,7 @@ export function JobNoteForm({ jobId, locale }: { jobId: string; locale: Locale }
         className={textareaClass}
       />
       {state?.error && (
-        <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{state.error}</span>
         </div>
@@ -96,18 +96,18 @@ export function JobNoteItem({
   };
 
   return (
-    <div className="flex items-start justify-between gap-3 py-3 border-b border-zinc-100 last:border-0">
+    <div className="flex items-start justify-between gap-3 py-3 border-b border-line last:border-0">
       <div className="min-w-0">
-        <p className="text-sm text-zinc-800 whitespace-pre-wrap">{content}</p>
-        <p className="text-[11px] text-zinc-400 mt-1">
+        <p className="text-sm text-ink whitespace-pre-wrap">{content}</p>
+        <p className="text-[11px] text-ink-2 mt-1">
           {authorName} · {createdAt}
         </p>
-        {error && <p className="text-[11px] text-rose-600 mt-1 font-medium">{error}</p>}
+        {error && <p className="text-[11px] text-danger mt-1 font-medium">{error}</p>}
       </div>
       <button
         onClick={() => setConfirming(true)}
         disabled={isPending}
-        className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-zinc-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors shrink-0 disabled:opacity-60"
+        className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-zinc-300 hover:text-danger hover:bg-danger-bg rounded-lg transition-colors shrink-0 disabled:opacity-60"
         title={T('noteDelete')}
         aria-label={T('noteDelete')}
       >

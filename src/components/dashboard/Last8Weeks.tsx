@@ -48,12 +48,12 @@ export default async function Last8Weeks({
   return (
     <section
       aria-label={t(locale, "dashboard.last8Weeks")}
-      className="rounded-[24px] border border-zinc-200/70 bg-white p-5 dark:border-white/10 dark:bg-coal"
+      className="rounded-[24px] border border-line/70 bg-surface p-5 dark:border-white/10 dark:bg-coal"
     >
       <h2 className="text-[17px] font-bold text-asphalt dark:text-white">
         {t(locale, "dashboard.last8Weeks")}
       </h2>
-      <div className="mt-3 flex items-center gap-4 text-[13px] text-zinc-600 dark:text-zinc-400">
+      <div className="mt-3 flex items-center gap-4 text-[13px] text-ink-2 dark:text-zinc-400">
         <span className="flex items-center gap-1.5">
           <span aria-hidden className="h-2.5 w-2.5 rounded-[3px] bg-asphalt dark:bg-white" />
           {t(locale, "dashboard.legendCollected")}
@@ -84,12 +84,12 @@ export default async function Last8Weeks({
                 "ej-figure text-[13px] font-bold tabular-nums",
                 w.isCurrent
                   ? "border-b-[3px] border-hivis text-asphalt dark:text-white"
-                  : "text-zinc-600 dark:text-zinc-400"
+                  : "text-ink-2 dark:text-zinc-400"
               )}
             >
               {w.dayLabel}
             </span>
-            <span className="h-4 text-[11px] text-zinc-500 dark:text-zinc-500">{labels[i] ?? ""}</span>
+            <span className="h-4 text-[11px] text-ink-2 dark:text-zinc-500">{labels[i] ?? ""}</span>
           </div>
         ))}
       </div>

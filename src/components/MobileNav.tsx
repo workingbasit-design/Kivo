@@ -24,7 +24,7 @@ export default function MobileNav({ locale = 'en', unreadCount = 0 }: { locale?:
         <div className="flex items-center gap-2">
           <CopilotTriggerButton
             ariaLabel={t(locale, 'copilot.openLabel')}
-            className="p-2.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-white/10 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ej-ink/70"
+            className="p-2.5 rounded-xl hover:bg-surface-2 dark:hover:bg-white/10 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ej-ink/70"
           >
             <Bot size={20} />
           </CopilotTriggerButton>
@@ -36,7 +36,7 @@ export default function MobileNav({ locale = 'en', unreadCount = 0 }: { locale?:
                 ? `${t(locale, 'notifications.title')} (${unreadCount} ${t(locale, 'notifications.unread')})`
                 : t(locale, 'notifications.title')
             }
-            className="relative p-2.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-white/10 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ej-ink/70"
+            className="relative p-2.5 rounded-xl hover:bg-surface-2 dark:hover:bg-white/10 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ej-ink/70"
           >
             <Bell size={20} />
             {unreadCount > 0 && (

@@ -17,9 +17,9 @@ type Report = {
 };
 
 const STATUS_STYLE: Record<string, string> = {
-  OPEN: 'bg-amber-50 text-amber-700 border-amber-200',
+  OPEN: 'bg-warn-bg text-warn-text border-amber-200',
   REVIEWED: 'bg-sky-50 text-sky-700 border-sky-200',
-  DISMISSED: 'bg-zinc-100 text-zinc-500 border-zinc-200',
+  DISMISSED: 'bg-surface-2 text-ink-2 border-line',
 };
 
 export default function ReportRow({ report }: { report: Report }) {
@@ -60,18 +60,18 @@ export default function ReportRow({ report }: { report: Report }) {
       <div className="flex flex-col gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-bold text-zinc-900">{report.businessName}</p>
+            <p className="text-sm font-bold text-ink">{report.businessName}</p>
             <span
               className={`text-[11px] font-bold border rounded-full px-2 py-0.5 ${STATUS_STYLE[status] ?? STATUS_STYLE.OPEN}`}
             >
               {status}
             </span>
           </div>
-          <p className="text-xs text-zinc-600 mt-1">
+          <p className="text-xs text-ink-2 mt-1">
             <span className="font-semibold">{REASON_LABELS[report.reason] ?? report.reason}</span>
             {report.details && <span> - {report.details}</span>}
           </p>
-          <p className="text-[11px] text-zinc-400 mt-1">
+          <p className="text-[11px] text-ink-2 mt-1">
             {new Date(report.createdAt).toLocaleString(dateLocale, { dateStyle: 'medium', timeStyle: 'short' })}
             {report.reporterContact && ` · ${t('t10misc.reports.reporter')}: ${report.reporterContact}`}
           </p>
@@ -88,7 +88,7 @@ export default function ReportRow({ report }: { report: Report }) {
             <button
               onClick={() => setStatusTo('DISMISSED')}
               disabled={busy}
-              className="min-h-[44px] inline-flex items-center justify-center gap-1.5 text-xs font-bold px-4 rounded-xl border border-zinc-200 hover:bg-zinc-50 text-zinc-600 disabled:opacity-60"
+              className="min-h-[44px] inline-flex items-center justify-center gap-1.5 text-xs font-bold px-4 rounded-xl border border-line hover:bg-surface-2 text-ink-2 disabled:opacity-60"
             >
               <X size={14} /> {t('t10misc.reports.dismiss')}
             </button>

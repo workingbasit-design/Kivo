@@ -101,8 +101,8 @@ export default function TemplateEditor({
             onClick={() => setSelected(id)}
             className={`px-3 py-2 rounded text-sm ${
               selected === id
-                ? 'bg-ink text-white'
-                : 'bg-zinc-100 text-zinc-700'
+                ? 'bg-asphalt text-white'
+                : 'bg-surface-2 text-ink'
             }`}
           >
             {TEMPLATE_LABELS[id][locale]}
@@ -114,13 +114,13 @@ export default function TemplateEditor({
       <div className="flex gap-2">
         <button
           onClick={() => setEditLocale('en')}
-          className={`px-3 py-1 rounded text-sm ${editLocale === 'en' ? 'bg-ink text-white' : 'bg-zinc-100'}`}
+          className={`px-3 py-1 rounded text-sm ${editLocale === 'en' ? 'bg-asphalt text-white' : 'bg-surface-2'}`}
         >
           English
         </button>
         <button
           onClick={() => setEditLocale('fr')}
-          className={`px-3 py-1 rounded text-sm ${editLocale === 'fr' ? 'bg-ink text-white' : 'bg-zinc-100'}`}
+          className={`px-3 py-1 rounded text-sm ${editLocale === 'fr' ? 'bg-asphalt text-white' : 'bg-surface-2'}`}
         >
           Français
         </button>
@@ -155,7 +155,7 @@ export default function TemplateEditor({
           className="w-full px-3 py-2 border rounded font-mono text-sm"
           placeholder={t('Message body with {variables}', 'Corps du message avec {variables}')}
         />
-        <p className="text-xs text-zinc-500 mt-1">
+        <p className="text-xs text-ink-2 mt-1">
           {t(
             'Must include "Reply STOP to opt out." for CASL compliance.',
             'Doit inclure « Répondez ARRÊT pour vous désinscrire. » pour conformité LCAP.'
@@ -172,7 +172,7 @@ export default function TemplateEditor({
             <button
               key={v}
               onClick={() => insertVar(v)}
-              className="px-2 py-1 bg-zinc-100 rounded text-xs font-mono"
+              className="px-2 py-1 bg-surface-2 rounded text-xs font-mono"
             >
               {v}
             </button>
@@ -184,7 +184,7 @@ export default function TemplateEditor({
         <button
           onClick={handleSave}
           disabled={pending || !subject.trim() || !body.trim()}
-          className="px-4 py-2 bg-ink text-white rounded disabled:opacity-50"
+          className="px-4 py-2 bg-asphalt text-white rounded disabled:opacity-50"
         >
           {t('Save template', 'Enregistrer le modèle')}
         </button>
@@ -192,7 +192,7 @@ export default function TemplateEditor({
           <button
             onClick={handleReset}
             disabled={pending}
-            className="px-4 py-2 bg-zinc-200 rounded"
+            className="px-4 py-2 bg-line rounded"
           >
             {t('Reset to built-in', 'Réinitialiser')}
           </button>

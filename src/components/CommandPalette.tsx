@@ -171,7 +171,7 @@ export default function CommandPalette({ locale = "en" }: { locale?: Locale }) {
       role="presentation"
     >
       <div
-        className="absolute inset-0 bg-ink/50 backdrop-blur-[2px] cursor-pointer"
+        className="absolute inset-0 bg-asphalt/50 backdrop-blur-[2px] cursor-pointer"
         aria-hidden
         onMouseDown={close}
       />
@@ -182,10 +182,10 @@ export default function CommandPalette({ locale = "en" }: { locale?: Locale }) {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 500, damping: 35 }}
         aria-label={locale === "fr" ? "Recherche rapide" : "Quick search"}
-        className="relative w-full max-w-xl overflow-hidden rounded-2xl bg-white shadow-2xl border border-zinc-200"
+        className="relative w-full max-w-xl overflow-hidden rounded-2xl bg-surface shadow-2xl border border-line"
       >
-        <div className="flex items-center gap-3 border-b border-zinc-100 px-4">
-          <Search size={18} className="text-zinc-400 shrink-0" />
+        <div className="flex items-center gap-3 border-b border-line px-4">
+          <Search size={18} className="text-ink-2 shrink-0" />
           <input
             ref={inputRef}
             value={query}
@@ -196,23 +196,23 @@ export default function CommandPalette({ locale = "en" }: { locale?: Locale }) {
             aria-controls="cmdk-list"
             aria-activedescendant={filtered[active] ? `cmdk-item-${filtered[active].id}` : undefined}
             placeholder={t(locale, "cmdbar.hint")}
-            className="h-14 w-full bg-transparent text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none"
+            className="h-14 w-full bg-transparent text-sm text-ink placeholder:text-ink-2 focus:outline-none"
           />
-          <kbd className="shrink-0 rounded-md border border-zinc-200 bg-zinc-50 px-1.5 py-0.5 text-[10px] font-semibold text-zinc-500">
+          <kbd className="shrink-0 rounded-md border border-line bg-surface-2 px-1.5 py-0.5 text-[10px] font-semibold text-ink-2">
             ESC
           </kbd>
           <button
             type="button"
             onClick={close}
             aria-label={locale === "fr" ? "Fermer la recherche" : "Close search"}
-            className="ej-liquid ej-spring shrink-0 rounded-xl p-2 text-zinc-500 bg-white/60 backdrop-blur-md saturate-150 ring-1 ring-inset ring-zinc-900/10 hover:text-zinc-800 focus-visible:outline-2 focus-visible:outline-lime"
+            className="ej-liquid ej-spring shrink-0 rounded-xl p-2 text-ink-2 bg-surface/60 backdrop-blur-md saturate-150 ring-1 ring-inset ring-zinc-900/10 hover:text-ink focus-visible:outline-2 focus-visible:outline-lime"
           >
             <X size={16} />
           </button>
         </div>
         <div ref={listRef} id="cmdk-list" role="listbox" className="max-h-[40vh] overflow-y-auto p-2">
           {filtered.length === 0 ? (
-            <p className="px-3 py-8 text-center text-sm text-zinc-500">
+            <p className="px-3 py-8 text-center text-sm text-ink-2">
               {t(locale, "cmdbar.noResults")}
             </p>
           ) : (
@@ -233,16 +233,16 @@ export default function CommandPalette({ locale = "en" }: { locale?: Locale }) {
                 {e.smart ? (
                   <Sparkles size={16} className="text-lime-600 shrink-0" />
                 ) : e.action ? (
-                  <Plus size={16} className="text-zinc-400 shrink-0" />
+                  <Plus size={16} className="text-ink-2 shrink-0" />
                 ) : (
-                  <CornerDownLeft size={16} className="text-zinc-400 shrink-0" />
+                  <CornerDownLeft size={16} className="text-ink-2 shrink-0" />
                 )}
                 <span className="flex-1 min-w-0">
-                  <span className="block text-sm font-semibold text-zinc-900 truncate">{e.label}</span>
-                  <span className="block text-[11px] text-zinc-400">{e.hint}</span>
+                  <span className="block text-sm font-semibold text-ink truncate">{e.label}</span>
+                  <span className="block text-[11px] text-ink-2">{e.hint}</span>
                 </span>
                 {i === active && (
-                  <kbd className="rounded-md border border-zinc-200 bg-zinc-50 px-1.5 py-0.5 text-[10px] font-semibold text-zinc-500">
+                  <kbd className="rounded-md border border-line bg-surface-2 px-1.5 py-0.5 text-[10px] font-semibold text-ink-2">
                     ↵
                   </kbd>
                 )}
@@ -250,13 +250,13 @@ export default function CommandPalette({ locale = "en" }: { locale?: Locale }) {
             ))
           )}
         </div>
-        <div className="border-t border-zinc-100 px-4 py-2.5 flex items-center gap-4 text-[11px] text-zinc-400">
+        <div className="border-t border-line px-4 py-2.5 flex items-center gap-4 text-[11px] text-ink-2">
           <span>
-            <kbd className="rounded border border-zinc-200 bg-zinc-50 px-1">↑↓</kbd>{" "}
+            <kbd className="rounded border border-line bg-surface-2 px-1">↑↓</kbd>{" "}
             {locale === "fr" ? "naviguer" : "navigate"}
           </span>
           <span>
-            <kbd className="rounded border border-zinc-200 bg-zinc-50 px-1">↵</kbd>{" "}
+            <kbd className="rounded border border-line bg-surface-2 px-1">↵</kbd>{" "}
             {locale === "fr" ? "ouvrir" : "open"}
           </span>
           <span className="ml-auto">⌘K / Ctrl+K</span>

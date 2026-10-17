@@ -123,12 +123,12 @@ function TemplateRow({
           {(template.price != null || template.durationMin != null) && (
             <div className="flex flex-wrap gap-1.5 mt-2">
               {template.price != null && (
-                <span className="text-[11px] font-semibold text-ink bg-zinc-100 rounded-lg px-2 py-0.5">
+                <span className="text-[11px] font-semibold text-ink bg-surface-2 rounded-lg px-2 py-0.5">
                   {formatMoney(template.price, undefined, locale === 'fr' ? 'fr' : 'en')}
                 </span>
               )}
               {template.durationMin != null && (
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-graphite bg-zinc-100 rounded-lg px-2 py-0.5">
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-graphite bg-surface-2 rounded-lg px-2 py-0.5">
                   <Clock size={10} /> {template.durationMin} min
                 </span>
               )}
@@ -153,7 +153,7 @@ function TemplateRow({
           >
             <Briefcase size={11} /> {bundle('useAsJob')}
           </Link>
-          {error && <p className="text-[11px] text-rose-600 mt-2 font-medium">{error}</p>}
+          {error && <p className="text-[11px] text-danger mt-2 font-medium">{error}</p>}
         </div>
         <div className="flex items-center gap-1 shrink-0">
           <button
@@ -162,7 +162,7 @@ function TemplateRow({
             disabled={editing || isPending}
             title={t(locale, 'jobops.templates.edit')}
             aria-label={`${t(locale, 'jobops.templates.edit')}: ${template.name}`}
-            className="min-w-[44px] min-h-[44px] inline-flex items-center justify-center text-graphite hover:text-ink hover:bg-zinc-100 rounded-lg transition-colors"
+            className="min-w-[44px] min-h-[44px] inline-flex items-center justify-center text-graphite hover:text-ink hover:bg-surface-2 rounded-lg transition-colors"
           >
             <Pencil size={14} />
           </button>
@@ -172,7 +172,7 @@ function TemplateRow({
             disabled={editing || isPending}
             title={t(locale, 'jobops.templates.delete')}
             aria-label={`${t(locale, 'jobops.templates.delete')}: ${template.name}`}
-            className="min-w-[44px] min-h-[44px] inline-flex items-center justify-center text-zinc-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+            className="min-w-[44px] min-h-[44px] inline-flex items-center justify-center text-zinc-300 hover:text-danger hover:bg-danger-bg rounded-lg transition-colors"
           >
             <Trash2 size={14} />
           </button>
@@ -288,7 +288,7 @@ function TemplateEditor({
           <p className="text-[11px] text-graphite mt-1">{t(locale, 'jobops.templates.itemsHint')}</p>
         </div>
         {state?.error && (
-          <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+          <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
             <AlertCircle size={14} className="mt-0.5 shrink-0" />
             <span>{state.error}</span>
           </div>

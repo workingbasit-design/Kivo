@@ -33,8 +33,8 @@ function SetupChecklist({ locale }: { locale: Locale }) {
     G(locale, 'setupStep4'),
   ];
   return (
-    <div className="text-xs text-zinc-600 space-y-2">
-      <p className="font-bold text-zinc-900 text-sm">{G(locale, 'setupTitle')}</p>
+    <div className="text-xs text-ink-2 space-y-2">
+      <p className="font-bold text-ink text-sm">{G(locale, 'setupTitle')}</p>
       <ol className="list-decimal ml-4 space-y-1.5">
         {steps.slice(0, 2).map((s, i) => (
           <li key={i}>{s}</li>
@@ -47,7 +47,7 @@ function SetupChecklist({ locale }: { locale: Locale }) {
         </li>
         <li>{steps[3]}</li>
       </ol>
-      <p className="text-zinc-400">{G(locale, 'setupNote')}</p>
+      <p className="text-ink-2">{G(locale, 'setupNote')}</p>
     </div>
   );
 }
@@ -174,11 +174,11 @@ export default function GoogleReviewsPanel({
           <path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84z" />
           <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15A11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z" />
         </svg>
-        <h3 className="font-bold text-sm text-zinc-900">{G(locale, 'title')}</h3>
+        <h3 className="font-bold text-sm text-ink">{G(locale, 'title')}</h3>
       </div>
 
       {msg && (
-        <div className={`flex items-start gap-2 text-xs font-medium rounded-xl px-3 py-2.5 mb-3 ${msg.ok ? 'bg-emerald-50 border border-emerald-200 text-emerald-700' : 'bg-rose-50 border border-rose-200 text-rose-700'}`}>
+        <div className={`flex items-start gap-2 text-xs font-medium rounded-xl px-3 py-2.5 mb-3 ${msg.ok ? 'bg-ok-bg border border-emerald-200 text-ok' : 'bg-danger-bg border border-rose-200 text-danger'}`}>
           {msg.ok ? <CheckCircle2 size={14} className="mt-0.5 shrink-0" /> : <AlertCircle size={14} className="mt-0.5 shrink-0" />}
           <span>{msg.text}</span>
         </div>
@@ -188,25 +188,25 @@ export default function GoogleReviewsPanel({
         <SetupChecklist locale={locale} />
       ) : !connectedState.connected ? (
         <div className="space-y-2">
-          <p className="text-xs text-zinc-600">{G(locale, 'connectDesc')}</p>
+          <p className="text-xs text-ink-2">{G(locale, 'connectDesc')}</p>
           <a
             href="/api/google/connect"
-            className="min-h-[44px] inline-flex items-center gap-2 bg-ink hover:bg-graphite text-white px-4 rounded-xl font-bold text-xs"
+            className="min-h-[44px] inline-flex items-center gap-2 bg-asphalt hover:bg-graphite text-white px-4 rounded-xl font-bold text-xs"
           >
             <ExternalLink size={13} /> {G(locale, 'connectButton')}
           </a>
         </div>
       ) : !connectedState.hasLocation ? (
         <div className="space-y-3">
-          <p className="text-xs text-zinc-600 font-semibold">{G(locale, 'pickTitle')}</p>
-          {locLoading && <p className="text-xs text-zinc-500">{G(locale, 'loadingLocations')}</p>}
-          {locError && <p className="text-xs text-rose-600">{locError}</p>}
+          <p className="text-xs text-ink-2 font-semibold">{G(locale, 'pickTitle')}</p>
+          {locLoading && <p className="text-xs text-ink-2">{G(locale, 'loadingLocations')}</p>}
+          {locError && <p className="text-xs text-danger">{locError}</p>}
           {locations && locations.length > 0 && (
             <div className="space-y-2">
               {locations.map((l) => (
-                <form key={l.locationId} action={doSelectLocation} className="flex items-center justify-between gap-2 bg-paper border border-zinc-200/60 rounded-xl px-3 py-2.5">
-                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-800 min-w-0">
-                    <MapPin size={13} className="text-zinc-400 shrink-0" />
+                <form key={l.locationId} action={doSelectLocation} className="flex items-center justify-between gap-2 bg-paper border border-line/60 rounded-xl px-3 py-2.5">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink min-w-0">
+                    <MapPin size={13} className="text-ink-2 shrink-0" />
                     <span className="truncate">{l.title}</span>
                   </span>
                   <input type="hidden" name="locationId" value={l.locationId} />
@@ -219,14 +219,14 @@ export default function GoogleReviewsPanel({
             </div>
           )}
           {!locLoading && (
-            <button onClick={loadLocations} className="min-h-[44px] text-xs font-semibold text-zinc-500 hover:text-zinc-800">
+            <button onClick={loadLocations} className="min-h-[44px] text-xs font-semibold text-ink-2 hover:text-ink">
               {G(locale, 'reloadLocations')}
             </button>
           )}
         </div>
       ) : (
         <div className="space-y-2">
-          <p className="text-xs text-zinc-600">
+          <p className="text-xs text-ink-2">
             {connectedState.locationName
               ? G(locale, 'connectedAs').replace('{name}', connectedState.locationName)
               : G(locale, 'connectedNoName')}
@@ -246,7 +246,7 @@ export default function GoogleReviewsPanel({
             <button
               onClick={doSync}
               disabled={syncing}
-              className="min-h-[44px] inline-flex items-center gap-1.5 bg-ink hover:bg-graphite text-white px-4 rounded-xl font-bold text-xs disabled:opacity-60"
+              className="min-h-[44px] inline-flex items-center gap-1.5 bg-asphalt hover:bg-graphite text-white px-4 rounded-xl font-bold text-xs disabled:opacity-60"
             >
               <RefreshCw size={13} className={syncing ? 'animate-spin' : ''} />
               {syncing ? G(locale, 'syncing') : G(locale, 'syncNow')}
@@ -254,7 +254,7 @@ export default function GoogleReviewsPanel({
             <button
               onClick={() => setConfirmingDisconnect(true)}
               disabled={disconnecting}
-              className="min-h-[44px] inline-flex items-center gap-1.5 border border-zinc-300 hover:border-zinc-500 text-zinc-600 px-4 rounded-xl font-bold text-xs disabled:opacity-60"
+              className="min-h-[44px] inline-flex items-center gap-1.5 border border-line-strong hover:border-zinc-500 text-ink-2 px-4 rounded-xl font-bold text-xs disabled:opacity-60"
             >
               <Unplug size={13} /> {G(locale, 'disconnect')}
             </button>
@@ -267,7 +267,7 @@ export default function GoogleReviewsPanel({
             onConfirm={doDisconnect}
             onClose={() => setConfirmingDisconnect(false)}
           />
-          <p className="text-[11px] text-zinc-400">{G(locale, 'syncNote')}</p>
+          <p className="text-[11px] text-ink-2">{G(locale, 'syncNote')}</p>
         </div>
       )}
     </Card>

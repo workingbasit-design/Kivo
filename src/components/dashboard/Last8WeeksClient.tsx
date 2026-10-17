@@ -39,7 +39,7 @@ export default function Last8WeeksClient({
       {open && (
         <table className="mt-2 w-full text-left text-[13px]">
           <thead>
-            <tr className="border-b border-zinc-200 text-zinc-500 dark:border-white/10 dark:text-zinc-400">
+            <tr className="border-b border-line text-ink-2 dark:border-white/10 dark:text-zinc-400">
               <th scope="col" className="py-2 pr-2 font-medium">{weekLabel}</th>
               <th scope="col" className="py-2 pr-2 text-right font-medium">{collectedLabel}</th>
               <th scope="col" className="py-2 text-right font-medium">{invoicedLabel}</th>
@@ -47,7 +47,7 @@ export default function Last8WeeksClient({
           </thead>
           <tbody>
             {weeks.map((w) => (
-              <tr key={w.key} className="border-b border-zinc-100 last:border-0 dark:border-white/5">
+              <tr key={w.key} className="border-b border-line last:border-0 dark:border-white/5">
                 <th scope="row" className="py-2 pr-2 font-medium text-asphalt dark:text-white">
                   {w.key}
                 </th>

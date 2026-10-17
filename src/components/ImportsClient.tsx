@@ -45,8 +45,8 @@ function SectionTitle({ icon: Icon, title, desc }: { icon: ElementType; title: s
         <Icon size={20} />
       </div>
       <div>
-        <h2 className="text-lg font-bold text-zinc-900">{title}</h2>
-        <p className="text-sm text-zinc-500 mt-0.5">{desc}</p>
+        <h2 className="text-lg font-bold text-ink">{title}</h2>
+        <p className="text-sm text-ink-2 mt-0.5">{desc}</p>
       </div>
     </div>
   );
@@ -240,7 +240,7 @@ export default function ImportsClient({
         <SectionTitle icon={CalendarDays} title={t(locale, 'imports.calendarTitle')} desc={t(locale, 'imports.calendarDesc')} />
 
         {!googleStatus.connected ? (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+          <div className="rounded-xl border border-amber-200 bg-warn-bg p-4">
             <p className="font-semibold text-amber-900">{t(locale, 'imports.notConnected')}</p>
             <p className="text-sm text-amber-800 mt-1">{t(locale, 'imports.notConnectedDesc')}</p>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -256,11 +256,11 @@ export default function ImportsClient({
           <>
             <div className="flex flex-wrap items-end gap-3">
               <label className="text-sm">
-                <span className="block text-zinc-600 mb-1 font-medium">{t(locale, 'imports.from')}</span>
+                <span className="block text-ink-2 mb-1 font-medium">{t(locale, 'imports.from')}</span>
                 <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className={inputClass} />
               </label>
               <label className="text-sm">
-                <span className="block text-zinc-600 mb-1 font-medium">{t(locale, 'imports.to')}</span>
+                <span className="block text-ink-2 mb-1 font-medium">{t(locale, 'imports.to')}</span>
                 <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className={inputClass} />
               </label>
               <button onClick={loadEvents} disabled={calBusy} className={primaryBtnClass}>
@@ -269,7 +269,7 @@ export default function ImportsClient({
             </div>
 
             {calErr && (
-              <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800 flex gap-2">
+              <div className="rounded-xl border border-rose-200 bg-danger-bg p-4 text-sm text-rose-800 flex gap-2">
                 <AlertTriangle size={18} className="shrink-0 mt-0.5" />
                 <div>
                   <p>{calErr}</p>
@@ -280,7 +280,7 @@ export default function ImportsClient({
               </div>
             )}
             {calMsg && (
-              <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800 flex gap-2">
+              <div className="rounded-xl border border-emerald-200 bg-ok-bg p-4 text-sm text-emerald-800 flex gap-2">
                 <CheckCircle2 size={18} className="shrink-0 mt-0.5" />
                 <p>{calMsg}</p>
               </div>
@@ -289,7 +289,7 @@ export default function ImportsClient({
             {drafts.length > 0 && (
               <div className="space-y-3">
                 {drafts.map((d) => (
-                  <div key={d.googleEventId} className="rounded-xl border border-zinc-200 p-4 flex flex-col md:flex-row md:items-center gap-3">
+                  <div key={d.googleEventId} className="rounded-xl border border-line p-4 flex flex-col md:flex-row md:items-center gap-3">
                     <input
                       type="checkbox"
                       checked={!!checked[d.googleEventId]}
@@ -298,13 +298,13 @@ export default function ImportsClient({
                       aria-label={d.title}
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-zinc-900 truncate">{d.title}</p>
-                      <p className="text-xs text-zinc-500 mt-0.5">
+                      <p className="font-semibold text-ink truncate">{d.title}</p>
+                      <p className="text-xs text-ink-2 mt-0.5">
                         {t(locale, 'imports.when')}: {fmtWhen(d.startISO, locale)}
                         {d.location ? ` · ${d.location}` : ''}
                       </p>
                       {d.description && (
-                        <p className="text-xs text-zinc-500 mt-1 line-clamp-2">{d.description}</p>
+                        <p className="text-xs text-ink-2 mt-1 line-clamp-2">{d.description}</p>
                       )}
                     </div>
                     <select
@@ -328,7 +328,7 @@ export default function ImportsClient({
                     {selectableCount > 0 ? ` (${selectableCount})` : ''}
                   </button>
                   {selectableCount < drafts.filter((d) => checked[d.googleEventId]).length && (
-                    <span className="text-xs text-amber-700">{t(locale, 'imports.eventNeedsCustomer')}</span>
+                    <span className="text-xs text-warn-text">{t(locale, 'imports.eventNeedsCustomer')}</span>
                   )}
                 </div>
               </div>
@@ -343,7 +343,7 @@ export default function ImportsClient({
 
         <div className="flex flex-wrap items-end gap-3">
           <label className="text-sm">
-            <span className="block text-zinc-600 mb-1 font-medium">{t(locale, 'imports.typeLabel')}</span>
+            <span className="block text-ink-2 mb-1 font-medium">{t(locale, 'imports.typeLabel')}</span>
             <select
               value={csvType}
               onChange={(e) => {
@@ -365,22 +365,22 @@ export default function ImportsClient({
             </span>
           </a>
           <label className="text-sm">
-            <span className="block text-zinc-600 mb-1 font-medium">{t(locale, 'imports.chooseFile')}</span>
+            <span className="block text-ink-2 mb-1 font-medium">{t(locale, 'imports.chooseFile')}</span>
             <input
               ref={fileRef}
               type="file"
               accept=".csv,text/csv"
               onChange={(e) => handleFile(e.target.files?.[0])}
-              className="text-sm text-zinc-600 file:mr-3 file:rounded-lg file:border-0 file:bg-zinc-100 file:px-3 file:py-2 file:text-sm file:font-semibold hover:file:bg-zinc-200"
+              className="text-sm text-ink-2 file:mr-3 file:rounded-lg file:border-0 file:bg-surface-2 file:px-3 file:py-2 file:text-sm file:font-semibold hover:file:bg-line"
             />
           </label>
         </div>
 
-        {csvFileName && <p className="text-xs text-zinc-500">{csvFileName}</p>}
-        {csvBusy && <p className="text-sm text-zinc-500">{t(locale, 'imports.validating')}</p>}
+        {csvFileName && <p className="text-xs text-ink-2">{csvFileName}</p>}
+        {csvBusy && <p className="text-sm text-ink-2">{t(locale, 'imports.validating')}</p>}
 
         {csvErrors.length > 0 && (
-          <div className="rounded-xl border border-rose-200 bg-rose-50 p-4">
+          <div className="rounded-xl border border-rose-200 bg-danger-bg p-4">
             <p className="font-semibold text-rose-900 text-sm">
               {t(locale, 'imports.rowsWithErrors').replace('{count}', String(csvErrors.length))}
             </p>
@@ -400,12 +400,12 @@ export default function ImportsClient({
               {t(locale, 'imports.validRows').replace('{count}', String(csvValid.length))}
             </p>
             {/* Desktop table */}
-            <div className="overflow-x-auto rounded-xl border border-zinc-200 hidden md:block">
+            <div className="overflow-x-auto rounded-xl border border-line hidden md:block">
               <table className="min-w-full text-sm">
                 <thead>
-                  <tr className="bg-zinc-50">
+                  <tr className="bg-surface-2">
                     {csvCols[csvType].map((c) => (
-                      <th key={c.key} className="px-3 py-2 text-left font-semibold text-zinc-600 whitespace-nowrap">
+                      <th key={c.key} className="px-3 py-2 text-left font-semibold text-ink-2 whitespace-nowrap">
                         {c.label}
                       </th>
                     ))}
@@ -413,9 +413,9 @@ export default function ImportsClient({
                 </thead>
                 <tbody>
                   {csvValid.slice(0, 20).map((r, i) => (
-                    <tr key={i} className="border-t border-zinc-100">
+                    <tr key={i} className="border-t border-line">
                       {csvCols[csvType].map((c) => (
-                        <td key={c.key} className="px-3 py-2 text-zinc-700 whitespace-nowrap max-w-64 truncate">
+                        <td key={c.key} className="px-3 py-2 text-ink whitespace-nowrap max-w-64 truncate">
                           {cellValue(r, c.key)}
                         </td>
                       ))}
@@ -427,15 +427,15 @@ export default function ImportsClient({
             {/* Mobile cards */}
             <div className="space-y-2.5 md:hidden">
               {csvValid.slice(0, 20).map((r, i) => (
-                <div key={i} className="rounded-xl border border-zinc-200 bg-white p-3.5">
+                <div key={i} className="rounded-xl border border-line bg-surface p-3.5">
                   <dl className="space-y-1.5">
                     {csvCols[csvType].map((c) => {
                       const v = cellValue(r, c.key);
                       if (!v) return null;
                       return (
                         <div key={c.key} className="flex items-start justify-between gap-3 text-sm">
-                          <dt className="shrink-0 font-medium text-zinc-500">{c.label}</dt>
-                          <dd className="min-w-0 text-right text-zinc-800 break-words">{v}</dd>
+                          <dt className="shrink-0 font-medium text-ink-2">{c.label}</dt>
+                          <dd className="min-w-0 text-right text-ink break-words">{v}</dd>
                         </div>
                       );
                     })}
@@ -444,7 +444,7 @@ export default function ImportsClient({
               ))}
             </div>
             {csvValid.length > 20 && (
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-ink-2">
                 {t(locale, 't10misc.imports.moreRows').replace('{count}', String(csvValid.length - 20))}
               </p>
             )}
@@ -457,7 +457,7 @@ export default function ImportsClient({
               {t(locale, 'imports.importRecords').replace('{count}', String(csvValid.length))}
             </button>
             {csvErrors.length > 0 && (
-              <p className="text-xs text-amber-600 mt-2">
+              <p className="text-xs text-warn-text mt-2">
                 {t(locale, 'imports.errorsWillBeSkipped').replace('{count}', String(csvErrors.length))}
               </p>
             )}
@@ -465,7 +465,7 @@ export default function ImportsClient({
         )}
 
         {csvMsg && (
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800 flex gap-2">
+          <div className="rounded-xl border border-emerald-200 bg-ok-bg p-4 text-sm text-emerald-800 flex gap-2">
             <CheckCircle2 size={18} className="shrink-0 mt-0.5" />
             <p>{csvMsg}</p>
           </div>

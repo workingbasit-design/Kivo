@@ -40,11 +40,11 @@ export default function DashboardSetupCard({ initialCompleted = false }: { initi
         <div className="flex justify-between items-start gap-3 mb-4">
           <div>
             <p className={`text-[10px] font-boldst mb-1 ${
-              isCompleted ? 'text-emerald-700' : 'text-zinc-400'
+              isCompleted ? 'text-ok' : 'text-ink-2'
             }`}>
               {isCompleted ? T('setupComplete') : T('setupReadyIn')}
             </p>
-            <h2 className="text-lg font-bold text-zinc-900">
+            <h2 className="text-lg font-bold text-ink">
               {isCompleted ? T('setupTitleDone') : T('setupTitle')}
             </h2>
           </div>
@@ -61,12 +61,12 @@ export default function DashboardSetupCard({ initialCompleted = false }: { initi
               <span
                 aria-hidden
                 className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
-                  s.done ? (isCompleted ? 'bg-emerald-600 text-white' : 'bg-ink text-lime') : 'border-2 border-zinc-300'
+                  s.done ? (isCompleted ? 'bg-emerald-600 text-white' : 'bg-asphalt text-lime') : 'border-2 border-line-strong'
                 }`}
               >
                 {s.done && <CheckCircle2 size={12} />}
               </span>
-              <span className={`text-sm ${s.done ? 'font-semibold text-zinc-900' : 'font-medium text-zinc-700'}`}>
+              <span className={`text-sm ${s.done ? 'font-semibold text-ink' : 'font-medium text-ink'}`}>
                 {s.label}
               </span>
             </li>
@@ -74,8 +74,8 @@ export default function DashboardSetupCard({ initialCompleted = false }: { initi
         </ul>
 
         {isCompleted ? (
-          <div className="bg-white/80 p-3.5 rounded-xl border border-emerald-200 text-xs font-semibold text-emerald-800 flex items-center gap-2">
-            <ShieldCheck size={16} className="text-emerald-600 shrink-0" />
+          <div className="bg-surface/80 p-3.5 rounded-xl border border-emerald-200 text-xs font-semibold text-emerald-800 flex items-center gap-2">
+            <ShieldCheck size={16} className="text-ok shrink-0" />
             <span>{T('setupOperational')}</span>
           </div>
         ) : (

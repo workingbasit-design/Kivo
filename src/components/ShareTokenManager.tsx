@@ -100,21 +100,21 @@ export default function ShareTokenManager({
 
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
+      <h3 className="text-sm font-bold text-ink flex items-center gap-2">
         <Link2 size={14} /> Public share link
       </h3>
-      <p className="text-xs text-zinc-500">
+      <p className="text-xs text-ink-2">
         Anyone with this link can view the {kind}. Revoke it anytime to cut off access.
       </p>
 
       {error && (
-        <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{error}</span>
         </div>
       )}
       {okMsg && (
-        <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="bg-ok-bg border border-emerald-200 text-ok text-xs font-medium rounded-xl px-3 py-2.5">
           {okMsg}
         </div>
       )}
@@ -122,7 +122,7 @@ export default function ShareTokenManager({
       {url ? (
         <>
           <div className="flex items-center gap-2">
-            <code className="flex-1 text-xs bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 break-all select-all text-zinc-700">
+            <code className="flex-1 text-xs bg-surface-2 border border-line rounded-xl px-3 py-2.5 break-all select-all text-ink">
               {url}
             </code>
             <CopyButton text={url} />
@@ -131,7 +131,7 @@ export default function ShareTokenManager({
           <form action={expiryFormAction} className="flex flex-wrap items-end gap-2">
             <input type="hidden" name="tokenId" value={tokenId ?? ''} />
             <div className="flex-1 min-w-[160px]">
-              <label className="block text-[11px] font-semibold text-zinc-500 mb-1">
+              <label className="block text-[11px] font-semibold text-ink-2 mb-1">
                 Link expires (optional)
               </label>
               <input
@@ -149,7 +149,7 @@ export default function ShareTokenManager({
             </button>
           </form>
           {expiresAt && (
-            <p className="text-[11px] text-zinc-400">
+            <p className="text-[11px] text-ink-2">
               This link stops working after {expiresAt}.
             </p>
           )}
@@ -164,7 +164,7 @@ export default function ShareTokenManager({
                 <RefreshCw size={13} /> Regenerate link
               </button>
             ) : (
-              <form action={regenFormAction} className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+              <form action={regenFormAction} className="flex items-center gap-2 bg-warn-bg border border-amber-200 rounded-xl px-3 py-2">
                 <input type="hidden" name={field} value={docId} />
                 <span className="text-xs text-amber-800 font-medium">Old link stops working. Continue?</span>
                 <button
@@ -177,7 +177,7 @@ export default function ShareTokenManager({
                 <button
                   type="button"
                   onClick={() => setConfirming(null)}
-                  className="text-xs font-semibold text-zinc-600 hover:text-zinc-800 px-2 py-1.5"
+                  className="text-xs font-semibold text-ink-2 hover:text-ink px-2 py-1.5"
                 >
                   Keep
                 </button>
@@ -188,14 +188,14 @@ export default function ShareTokenManager({
               <button
                 type="button"
                 onClick={() => setConfirming('revoke')}
-                className="text-xs font-semibold text-rose-600 hover:text-rose-700 inline-flex items-center gap-1.5 px-2 py-2"
+                className="text-xs font-semibold text-danger hover:text-danger inline-flex items-center gap-1.5 px-2 py-2"
               >
                 <ShieldOff size={13} /> Revoke link
               </button>
             ) : (
-              <form action={revokeFormAction} className="flex items-center gap-2 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2">
+              <form action={revokeFormAction} className="flex items-center gap-2 bg-danger-bg border border-rose-200 rounded-xl px-3 py-2">
                 <input type="hidden" name={field} value={docId} />
-                <span className="text-xs text-rose-700 font-medium">Revoke this link?</span>
+                <span className="text-xs text-danger font-medium">Revoke this link?</span>
                 <button
                   type="submit"
                   disabled={revokePending}
@@ -206,7 +206,7 @@ export default function ShareTokenManager({
                 <button
                   type="button"
                   onClick={() => setConfirming(null)}
-                  className="text-xs font-semibold text-zinc-600 hover:text-zinc-800 px-2 py-1.5"
+                  className="text-xs font-semibold text-ink-2 hover:text-ink px-2 py-1.5"
                 >
                   Keep
                 </button>

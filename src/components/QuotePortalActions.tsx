@@ -98,7 +98,7 @@ export default function QuotePortalActions({
   return (
     <div className="space-y-4">
       {message && (
-        <p className="text-sm font-medium text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-2.5">
+        <p className="text-sm font-medium text-danger bg-danger-bg border border-red-100 rounded-xl px-4 py-2.5">
           {message}
         </p>
       )}
@@ -115,7 +115,7 @@ export default function QuotePortalActions({
                   <label
                     className={`flex items-center justify-between gap-3 border rounded-xl px-3.5 py-3 cursor-pointer transition-colors ${
                       checked
-                        ? 'border-ink bg-ink/5'
+                        ? 'border-asphalt bg-asphalt/5'
                         : 'border-smoke hover:border-graphite/50'
                     }`}
                   >
@@ -127,11 +127,11 @@ export default function QuotePortalActions({
                         disabled={pending}
                         className="w-4 h-4 accent-ink shrink-0"
                       />
-                      <span className="text-sm font-semibold text-zinc-900 truncate">
+                      <span className="text-sm font-semibold text-ink truncate">
                         {a.title}
                       </span>
                     </span>
-                    <span className="text-sm font-bold text-zinc-900 shrink-0">
+                    <span className="text-sm font-bold text-ink shrink-0">
                       +{formatMoney(a.price, currency, moneyLocale)}
                     </span>
                   </label>
@@ -174,7 +174,7 @@ export default function QuotePortalActions({
             disabled={pending}
             autoComplete="name"
             maxLength={100}
-            className="w-full border border-smoke rounded-xl px-3.5 py-2.5 text-sm text-ink bg-white focus:outline-none focus:ring-2 focus:ring-ink/20 disabled:opacity-60"
+            className="w-full border border-smoke rounded-xl px-3.5 py-2.5 text-sm text-ink bg-surface focus:outline-none focus:ring-2 focus:ring-ink/20 disabled:opacity-60"
           />
         </div>
         <label className="flex items-start gap-2.5 cursor-pointer">
@@ -196,7 +196,7 @@ export default function QuotePortalActions({
           type="button"
           disabled={pending}
           onClick={() => decide('APPROVED')}
-          className="bg-ink hover:bg-ink/90 text-white justify-center px-4 py-3 rounded-xl font-semibold text-sm transition-colors inline-flex items-center gap-2 shadow-sm disabled:opacity-60"
+          className="bg-asphalt hover:bg-asphalt/90 text-white justify-center px-4 py-3 rounded-xl font-semibold text-sm transition-colors inline-flex items-center gap-2 shadow-sm disabled:opacity-60"
         >
           <Check size={16} /> {pending ? strings.waitLabel : strings.approveLabel}
         </button>
@@ -204,7 +204,7 @@ export default function QuotePortalActions({
           type="button"
           disabled={pending}
           onClick={() => decide('DECLINED')}
-          className="bg-white hover:bg-paper text-graphite justify-center px-4 py-3 rounded-xl font-semibold text-sm transition-colors inline-flex items-center gap-2 border border-smoke shadow-sm disabled:opacity-60"
+          className="bg-surface hover:bg-paper text-graphite justify-center px-4 py-3 rounded-xl font-semibold text-sm transition-colors inline-flex items-center gap-2 border border-smoke shadow-sm disabled:opacity-60"
         >
           <X size={16} /> {strings.declineLabel}
         </button>

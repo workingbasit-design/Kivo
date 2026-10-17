@@ -55,12 +55,12 @@ export default function RevokeSignButton({
             setConfirming(true);
           }}
           disabled={busy || done}
-          className="min-h-[44px] inline-flex items-center text-xs font-semibold text-rose-600 hover:text-rose-700 disabled:opacity-60"
+          className="min-h-[44px] inline-flex items-center text-xs font-semibold text-danger hover:text-danger disabled:opacity-60"
         >
           {busy ? '…' : done ? revokedText : revokeText}
         </button>
         {done && (
-          <span className="text-[11px] font-semibold text-emerald-600">{revokedText}</span>
+          <span className="text-[11px] font-semibold text-ok">{revokedText}</span>
         )}
       </span>
 
@@ -73,24 +73,24 @@ export default function RevokeSignButton({
           onClick={() => !busy && setConfirming(false)}
         >
           <div
-            className="w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-zinc-200 p-6"
+            className="w-full max-w-sm bg-surface rounded-2xl shadow-2xl border border-line p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-3">
-              <h3 className="text-sm font-bold text-zinc-900">{revokeText}?</h3>
+              <h3 className="text-sm font-bold text-ink">{revokeText}?</h3>
               <button
                 type="button"
                 onClick={() => setConfirming(false)}
                 disabled={busy}
-                className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center text-zinc-400 hover:text-zinc-700 transition-colors rounded-xl"
+                className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center text-ink-2 hover:text-ink transition-colors rounded-xl"
                 aria-label={cancelText}
               >
                 <X size={16} />
               </button>
             </div>
-            <p className="mt-2 text-xs text-zinc-500 leading-relaxed">{confirmText}</p>
+            <p className="mt-2 text-xs text-ink-2 leading-relaxed">{confirmText}</p>
             {error && (
-              <p className="mt-3 text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg px-2.5 py-2">
+              <p className="mt-3 text-xs font-semibold text-danger bg-danger-bg border border-rose-200 rounded-lg px-2.5 py-2">
                 {error}
               </p>
             )}
@@ -99,7 +99,7 @@ export default function RevokeSignButton({
                 type="button"
                 onClick={() => setConfirming(false)}
                 disabled={busy}
-                className="flex-1 bg-zinc-100 hover:bg-zinc-200 disabled:opacity-50 text-zinc-700 text-xs font-semibold min-h-[44px] py-2.5 rounded-xl transition-colors"
+                className="flex-1 bg-surface-2 hover:bg-line disabled:opacity-50 text-ink text-xs font-semibold min-h-[44px] py-2.5 rounded-xl transition-colors"
               >
                 {cancelText}
               </button>

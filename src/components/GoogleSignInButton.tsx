@@ -40,7 +40,7 @@ export default function GoogleSignInButton({
   return (
     <a
       href={href}
-      className="w-full bg-white hover:bg-zinc-50 border border-zinc-300 text-zinc-800 font-semibold text-sm py-3 rounded-xl transition-colors flex items-center justify-center gap-2.5"
+      className="w-full bg-surface hover:bg-surface-2 border border-line-strong text-ink font-semibold text-sm py-3 rounded-xl transition-colors flex items-center justify-center gap-2.5"
     >
       <GoogleG />
       {t('googleAuth.continueWithGoogle')}

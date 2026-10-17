@@ -56,7 +56,7 @@ export default function JobsExportMenu({
   }, [open ]);
 
   const itemClass =
-    'w-full min-h-[44px] px-4 flex items-center gap-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed';
+    'w-full min-h-[44px] px-4 flex items-center gap-2.5 text-sm font-semibold text-ink hover:bg-surface-2 disabled:opacity-50 disabled:cursor-not-allowed';
 
   return (
     <div ref={ref} className="relative md:hidden">
@@ -68,7 +68,7 @@ export default function JobsExportMenu({
         aria-label={t(locale, 'common.more')}
         title={t(locale, 'common.more')}
         className={cn(
-          'min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-zinc-700 transition-all hover:scale-105 active:scale-95',
+          'min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-ink transition-all hover:scale-105 active:scale-95',
           glassClass('zinc')
         )}
       >
@@ -77,7 +77,7 @@ export default function JobsExportMenu({
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-full z-30 mt-2 w-56 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-lg"
+          className="absolute right-0 top-full z-30 mt-2 w-56 overflow-hidden rounded-2xl border border-line bg-surface shadow-lg"
         >
           <button
             type="button"

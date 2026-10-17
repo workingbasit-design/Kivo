@@ -74,7 +74,7 @@ export function Card({
   return (
     <div
       className={cn(
-        'bg-white rounded-3xl border border-zinc-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.04)]',
+        'bg-surface rounded-3xl border border-line/80 shadow-[0_2px_12px_rgba(0,0,0,0.04)]',
         hover &&
           'transition-all duration-300 hover:shadow-[0_12px_32px_rgba(79,70,229,0.12)] hover:border-indigo-200 hover:-translate-y-0.5',
         className
@@ -105,8 +105,8 @@ export function PageHeader({
     <div className="ej-anim-fade-up" style={{ animationDelay: `${delay}ms` }}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-zinc-900">{title}</h1>
-          {subtitle && <p className="text-sm text-zinc-500 mt-0.5">{subtitle}</p>}
+          <h1 className="text-xl font-bold tracking-tight text-ink">{title}</h1>
+          {subtitle && <p className="text-sm text-ink-2 mt-0.5">{subtitle}</p>}
         </div>
         {action}
       </div>
@@ -168,14 +168,14 @@ export function EmptyState({
 }) {
   return (
     <div
-      className="ej-anim-fade-up bg-white rounded-3xl border border-zinc-200/80 p-10 text-center shadow-sm"
+      className="ej-anim-fade-up bg-surface rounded-3xl border border-line/80 p-10 text-center shadow-sm"
       style={{ animationDelay: `${delay}ms` }}
     >
       <div className="ej-anim-scale-in w-14 h-14 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center mx-auto mb-4">
         <Icon className="w-7 h-7 text-indigo-400" />
       </div>
-      <p className="font-bold text-zinc-900">{title}</p>
-      {hint && <p className="text-sm text-zinc-500 mt-1 max-w-xs mx-auto">{hint}</p>}
+      <p className="font-bold text-ink">{title}</p>
+      {hint && <p className="text-sm text-ink-2 mt-1 max-w-xs mx-auto">{hint}</p>}
       {action && <div className="mt-5">{action}</div>}
     </div>
   );
@@ -188,9 +188,9 @@ export function EmptyState({
 const STATUS_STYLES: Record<string, string> = {
   sent: 'bg-sky-50 text-sky-700 border-sky-200',
   replied: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-  accepted: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  declined: 'bg-rose-50 text-rose-700 border-rose-200',
-  completed: 'bg-zinc-100 text-zinc-600 border-zinc-200',
+  accepted: 'bg-ok-bg text-ok border-emerald-200',
+  declined: 'bg-danger-bg text-danger border-rose-200',
+  completed: 'bg-surface-2 text-ink-2 border-line',
 };
 
 export function StatusBadge({ status, label }: { status: string; label: string }) {
@@ -214,7 +214,7 @@ export function BackLink({ href, children }: { href: string; children: React.Rea
   return (
     <Link
       href={href}
-      className="group inline-flex items-center gap-1 text-sm font-semibold text-zinc-500 hover:text-zinc-800 min-h-[44px] transition-colors"
+      className="group inline-flex items-center gap-1 text-sm font-semibold text-ink-2 hover:text-ink min-h-[44px] transition-colors"
     >
       {children}
     </Link>

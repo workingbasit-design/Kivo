@@ -22,7 +22,7 @@ export default async function NewProjectPage() {
     <div className="space-y-6">
       <Link
         href="/projects"
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-zinc-600 hover:text-zinc-900 min-h-[44px]"
+        className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink-2 hover:text-ink min-h-[44px]"
       >
         <ArrowLeft size={16} aria-hidden /> {t(locale, "projects.back")}
       </Link>

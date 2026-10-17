@@ -16,7 +16,7 @@ export default async function NewPartPage() {
     <div className="space-y-5 max-w-2xl">
       <Link
         href="/inventory"
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-600 hover:text-zinc-900 min-h-[44px]"
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-2 hover:text-ink min-h-[44px]"
       >
         <ArrowLeft size={16} /> {T('back')}
       </Link>

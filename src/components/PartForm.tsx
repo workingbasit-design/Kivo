@@ -107,12 +107,12 @@ export default function PartForm({
         <textarea name="notes" rows={3} maxLength={2000} defaultValue={existing?.notes ?? ''} className={inputClass} />
       </Field>
 
-      {state.error && <p className="text-sm font-medium text-red-600">{state.error}</p>}
+      {state.error && <p className="text-sm font-medium text-danger">{state.error}</p>}
 
       <button
         type="submit"
         disabled={pending}
-        className="w-full inline-flex items-center justify-center rounded-xl bg-ink px-4 py-3 text-sm font-semibold text-white hover:bg-graphite disabled:opacity-50 min-h-[48px]"
+        className="w-full inline-flex items-center justify-center rounded-xl bg-asphalt px-4 py-3 text-sm font-semibold text-white hover:bg-graphite disabled:opacity-50 min-h-[48px]"
       >
         {pending ? '…' : mode === 'create' ? T('save') : T('update')}
       </button>

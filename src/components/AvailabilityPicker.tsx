@@ -53,7 +53,7 @@ export default function AvailabilityPicker({
               disabled={!hasSlots}
               onClick={() => pickDay(day.date)}
               className={`relative min-w-[64px] min-h-[72px] rounded-2xl flex flex-col items-center justify-center gap-0.5 shrink-0 transition-colors ${
-                selected ? 'text-ink' : hasSlots ? 'text-zinc-700 hover:bg-zinc-100' : 'text-zinc-300'
+                selected ? 'text-ink' : hasSlots ? 'text-ink hover:bg-surface-2' : 'text-zinc-300'
               }`}
               aria-pressed={selected}
             >
@@ -66,7 +66,7 @@ export default function AvailabilityPicker({
               )}
               <span className="relative text-[11px] font-semibold">{day.label}</span>
               <span className="relative text-lg font-bold tabular-nums">{day.dayNum}</span>
-              <span className={`relative w-1.5 h-1.5 rounded-full ${hasSlots ? 'bg-emerald-500' : 'bg-zinc-200'}`} />
+              <span className={`relative w-1.5 h-1.5 rounded-full ${hasSlots ? 'bg-emerald-500' : 'bg-line'}`} />
             </button>
           );
         })}
@@ -86,7 +86,7 @@ export default function AvailabilityPicker({
             {loading ? (
               <div className="grid grid-cols-3 gap-2">
                 {[0, 1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="h-[44px] rounded-xl bg-zinc-100 animate-pulse" />
+                  <div key={i} className="h-[44px] rounded-xl bg-surface-2 animate-pulse" />
                 ))}
               </div>
             ) : selectedDay && selectedDay.slots.length > 0 ? (
@@ -101,7 +101,7 @@ export default function AvailabilityPicker({
                       aria-checked={selected}
                       onClick={() => onSelect(selectedDay.date, slot)}
                       className={`relative min-h-[44px] rounded-xl text-sm font-semibold transition-colors ${
-                        selected ? 'text-ink' : 'text-zinc-700 bg-white border border-zinc-200 hover:border-zinc-300'
+                        selected ? 'text-ink' : 'text-ink bg-surface border border-line hover:border-line-strong'
                       }`}
                     >
                       {selected && (
@@ -117,9 +117,9 @@ export default function AvailabilityPicker({
                 })}
               </div>
             ) : selectedDay ? (
-              <p className="text-sm text-zinc-500 text-center py-8">No slots available this day</p>
+              <p className="text-sm text-ink-2 text-center py-8">No slots available this day</p>
             ) : (
-              <p className="text-sm text-zinc-500 text-center py-8">Select a day to see available times</p>
+              <p className="text-sm text-ink-2 text-center py-8">Select a day to see available times</p>
             )}
           </motion.div>
         </AnimatePresence>

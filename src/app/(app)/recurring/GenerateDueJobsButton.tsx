@@ -24,7 +24,7 @@ export default function GenerateDueJobsButton() {
         </button>
       </form>
       {state.ok && (
-        <p className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+        <p className="flex items-center gap-1 text-[11px] font-semibold text-ok">
           <CheckCircle2 size={12} />
           {state.created === 0
             ? t('t10work.recurNothingDue')
@@ -34,7 +34,7 @@ export default function GenerateDueJobsButton() {
         </p>
       )}
       {state.error && (
-        <p className="flex items-center gap-1 text-[11px] font-semibold text-red-600">
+        <p className="flex items-center gap-1 text-[11px] font-semibold text-danger">
           <AlertCircle size={12} />
           {state.error}
         </p>

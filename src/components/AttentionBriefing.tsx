@@ -16,10 +16,10 @@ import { localeMoneyTag } from "@/lib/utils";
 import { Card } from "@/components/ui";
 
 const SEVERITY_STYLE: Record<AttentionSeverity, { icon: React.ReactNode }> = {
-  critical: { icon: <AlertTriangle size={14} className="text-red-600" /> },
-  attention: { icon: <BellRing size={14} className="text-amber-600" /> },
+  critical: { icon: <AlertTriangle size={14} className="text-danger" /> },
+  attention: { icon: <BellRing size={14} className="text-warn-text" /> },
   info: { icon: <Info size={14} className="text-sky-600" /> },
-  positive: { icon: <CheckCircle2 size={14} className="text-emerald-600" /> },
+  positive: { icon: <CheckCircle2 size={14} className="text-ok" /> },
 };
 
 export function AttentionRow({
@@ -50,19 +50,19 @@ export function AttentionRow({
   return (
     <Link
       href={item.href}
-      className="flex items-start gap-3 px-4 py-3.5 rounded-xl hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors min-h-[56px]"
+      className="flex items-start gap-3 px-4 py-3.5 rounded-xl hover:bg-surface-2 dark:hover:bg-white/5 transition-colors min-h-[56px]"
     >
       <span className="mt-1 shrink-0" aria-hidden>
         {style.icon}
       </span>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-zinc-900 dark:text-white leading-snug">{title}</p>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+        <p className="text-sm font-semibold text-ink dark:text-white leading-snug">{title}</p>
+        <p className="text-xs text-ink-2 dark:text-zinc-400 mt-0.5">
           <span className="truncate">{detail}</span>
         </p>
       </div>
       {item.amount != null && item.amount > 0 && (
-        <span className="shrink-0 text-sm font-bold text-zinc-900 dark:text-white tabular-nums">
+        <span className="shrink-0 text-sm font-bold text-ink dark:text-white tabular-nums">
           {formatMoney(item.amount, currency, moneyLocale)}
         </span>
       )}
@@ -107,7 +107,7 @@ export default async function AttentionBriefing({
   return (
     <Card className="overflow-hidden dark:bg-coal dark:border-white/10">
       <div className="flex items-center justify-between px-5 pt-5 pb-2">
-        <h2 className="text-sm font-bold text-zinc-900 dark:text-white">
+        <h2 className="text-sm font-bold text-ink dark:text-white">
           {t(locale, "attention.briefingTitle")}
         </h2>
         <Link
@@ -117,10 +117,10 @@ export default async function AttentionBriefing({
           {t(locale, "attention.viewAll")}
         </Link>
       </div>
-      <p className="px-5 text-xs text-zinc-500 dark:text-zinc-400 pb-1">
+      <p className="px-5 text-xs text-ink-2 dark:text-zinc-400 pb-1">
         {fillTemplate(t(locale, "attention.briefingSubtitle"), { greeting })}
       </p>
-      <div className="px-2 pb-2 divide-y divide-zinc-100 dark:divide-white/10">
+      <div className="px-2 pb-2 divide-y divide-line dark:divide-white/10">
         {items.map((item) => (
           <AttentionRow
             key={item.id}

@@ -68,8 +68,8 @@ export default async function AttentionPage({
             className={cn(
               "shrink-0 px-4 py-2 rounded-full text-sm font-semibold border transition-colors min-h-[44px] flex items-center",
               !activeCat
-                ? "bg-zinc-900 text-white border-zinc-900"
-                : "bg-white text-zinc-700 border-zinc-200 hover:border-zinc-400"
+                ? "bg-asphalt text-white border-zinc-900"
+                : "bg-surface text-ink border-line hover:border-zinc-400"
             )}
           >
             {t(locale, "attention.filterAll")} · {allItems.length}
@@ -83,8 +83,8 @@ export default async function AttentionPage({
               className={cn(
                 "shrink-0 px-4 py-2 rounded-full text-sm font-semibold border transition-colors min-h-[44px] flex items-center",
                 activeCat === c
-                  ? "bg-zinc-900 text-white border-zinc-900"
-                  : "bg-white text-zinc-700 border-zinc-200 hover:border-zinc-400"
+                  ? "bg-asphalt text-white border-zinc-900"
+                  : "bg-surface text-ink border-line hover:border-zinc-400"
               )}
             >
               {t(locale, `attention.category.${c}`)} · {count}
@@ -103,10 +103,10 @@ export default async function AttentionPage({
       ) : (
         groups.map((g) => (
           <section key={g.severity}>
-            <h2 className="text-xs font-bold text-zinc-500 mb-2 px-1">
+            <h2 className="text-xs font-bold text-ink-2 mb-2 px-1">
               {t(locale, `attention.severity.${g.severity}`)} · {g.items.length}
             </h2>
-            <Card className="px-2 py-2 divide-y divide-zinc-100">
+            <Card className="px-2 py-2 divide-y divide-line">
               {g.items.map((item) => (
                 <AttentionRow
                   key={item.id}

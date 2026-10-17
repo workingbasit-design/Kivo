@@ -16,12 +16,12 @@ export default function RegisterPage() {
   const [formStartedAt] = useState(() => String(Date.now()));
 
   return (
-    <div className="bg-white rounded-3xl border border-zinc-200/70 shadow-xl shadow-zinc-200/50 p-6 sm:p-8">
-      <div className="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-bold px-2.5 py-1 rounded-full mb-4">
+    <div className="bg-surface rounded-3xl border border-line/70 shadow-xl shadow-zinc-200/50 p-6 sm:p-8">
+      <div className="inline-flex items-center gap-1.5 bg-ok-bg border border-emerald-200 text-ok text-[11px] font-bold px-2.5 py-1 rounded-full mb-4">
         <BadgeCheck size={12} /> {t('t10misc.auth.freePlanBadge')}
       </div>
-      <h1 className="text-2xl font-bold tracking-tight text-zinc-900">{t('t10misc.auth.registerTitle')}</h1>
-      <p className="text-sm text-zinc-500 mt-1 mb-6">{t('t10misc.auth.registerSubtitle')}</p>
+      <h1 className="text-2xl font-bold tracking-tight text-ink">{t('t10misc.auth.registerTitle')}</h1>
+      <p className="text-sm text-ink-2 mt-1 mb-6">{t('t10misc.auth.registerSubtitle')}</p>
 
       <GoogleAuthSection />
 
@@ -94,7 +94,7 @@ export default function RegisterPage() {
         {state?.error && (
           <div
             role="alert"
-            className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5"
+            className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5"
           >
             <AlertCircle size={14} className="mt-0.5 shrink-0" />
             <span>{state.error}</span>
@@ -107,19 +107,19 @@ export default function RegisterPage() {
         </button>
       </form>
 
-      <p className="text-center text-xs text-zinc-500 mt-5">
+      <p className="text-center text-xs text-ink-2 mt-5">
         {t('t10misc.auth.termsPrefix')}{' '}
-        <Link href="/terms" className="underline hover:text-zinc-700">
+        <Link href="/terms" className="underline hover:text-ink">
           {t('t10misc.auth.termsLink')}
         </Link>{' '}
         {t('t10misc.auth.termsAnd')}{' '}
-        <Link href="/privacy" className="underline hover:text-zinc-700">
+        <Link href="/privacy" className="underline hover:text-ink">
           {t('t10misc.auth.privacyLink')}
         </Link>
         .
       </p>
 
-      <p className="text-center text-xs text-zinc-500 mt-4">
+      <p className="text-center text-xs text-ink-2 mt-4">
         {t('t10misc.auth.haveAccount')}{' '}
         <Link href="/login" className="font-semibold text-ink hover:underline">
           {t('t10misc.auth.loginLink')}

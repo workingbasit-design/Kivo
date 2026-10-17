@@ -86,33 +86,33 @@ export default function DispatchBoardClient({
       {COLUMNS.map((col) => {
         const colJobs = jobs.filter((j) => j.status === col.status);
         return (
-          <div key={col.status} className="rounded-2xl border border-zinc-200/70 bg-zinc-50/50 p-3">
+          <div key={col.status} className="rounded-2xl border border-line/70 bg-surface-2/50 p-3">
             <div className="flex items-center justify-between px-1 pb-3">
-              <h2 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
+              <h2 className="text-sm font-bold text-ink flex items-center gap-2">
                 <StatusBadge status={col.status} />
-                <span className="tabular-nums text-zinc-500 font-semibold">{colJobs.length}</span>
+                <span className="tabular-nums text-ink-2 font-semibold">{colJobs.length}</span>
               </h2>
             </div>
             <div className="space-y-3">
               {colJobs.length === 0 ? (
-                <p className="text-xs text-zinc-400 text-center py-6">{T('emptyColumn')}</p>
+                <p className="text-xs text-ink-2 text-center py-6">{T('emptyColumn')}</p>
               ) : (
                 colJobs.map((job) => (
                   <div
                     key={job.id}
-                    className="bg-white rounded-xl border border-zinc-200/70 shadow-sm p-4 space-y-2.5"
+                    className="bg-surface rounded-xl border border-line/70 shadow-sm p-4 space-y-2.5"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
-                        <p className="font-semibold text-sm text-zinc-900 truncate">{job.title}</p>
-                        <p className="text-xs text-zinc-500 truncate mt-0.5">{job.customerName}</p>
+                        <p className="font-semibold text-sm text-ink truncate">{job.title}</p>
+                        <p className="text-xs text-ink-2 truncate mt-0.5">{job.customerName}</p>
                       </div>
-                      <p className="text-sm font-bold tabular-nums text-zinc-900 whitespace-nowrap">
+                      <p className="text-sm font-bold tabular-nums text-ink whitespace-nowrap">
                         {formatMoney(job.price, currency)}
                       </p>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-zinc-500">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-2">
                       {hasJobTime(job.time) && (
                         <span className="inline-flex items-center gap-1">
                           <Clock size={12} /> {formatJobTime(job.time, locale)}
@@ -127,14 +127,14 @@ export default function DispatchBoardClient({
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <User size={12} className="text-zinc-400 shrink-0" />
+                      <User size={12} className="text-ink-2 shrink-0" />
                       {team.length > 0 ? (
                         <select
                           value={job.assignedToId ?? ''}
                           onChange={(e) => assign(job, e.target.value)}
                           disabled={pending}
                           aria-label={T('assignTech')}
-                          className="text-xs font-medium text-zinc-700 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 min-h-[36px] max-w-full"
+                          className="text-xs font-medium text-ink bg-surface-2 border border-line rounded-lg px-2 py-1.5 min-h-[36px] max-w-full"
                         >
                           <option value="">{T('unassigned')}</option>
                           {team.map((m) => (
@@ -144,7 +144,7 @@ export default function DispatchBoardClient({
                           ))}
                         </select>
                       ) : (
-                        <span className="text-xs text-zinc-400">{T('noTeam')}</span>
+                        <span className="text-xs text-ink-2">{T('noTeam')}</span>
                       )}
                     </div>
 
@@ -154,14 +154,14 @@ export default function DispatchBoardClient({
                           type="button"
                           onClick={() => advance(job, col.next!)}
                           disabled={pending}
-                          className="flex-1 inline-flex items-center justify-center gap-1 rounded-xl bg-ink px-3 py-2 text-xs font-semibold text-white hover:bg-graphite disabled:opacity-50 min-h-[40px] transition-colors"
+                          className="flex-1 inline-flex items-center justify-center gap-1 rounded-xl bg-asphalt px-3 py-2 text-xs font-semibold text-white hover:bg-graphite disabled:opacity-50 min-h-[40px] transition-colors"
                         >
                           {col.next === 'IN PROGRESS' ? T('startJob') : T('completeJob')}
                         </button>
                       )}
                       <Link
                         href={`/jobs/${job.id}`}
-                        className="inline-flex items-center justify-center rounded-xl border border-zinc-200 px-3 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 min-h-[40px]"
+                        className="inline-flex items-center justify-center rounded-xl border border-line px-3 py-2 text-xs font-semibold text-ink hover:bg-surface-2 min-h-[40px]"
                         aria-label={T('viewDetails')}
                       >
                         <ChevronRight size={14} />
@@ -169,7 +169,7 @@ export default function DispatchBoardClient({
                       {job.customerPhone && (
                         <a
                           href={`tel:${job.customerPhone}`}
-                          className="inline-flex items-center justify-center rounded-xl border border-zinc-200 px-3 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 min-h-[40px]"
+                          className="inline-flex items-center justify-center rounded-xl border border-line px-3 py-2 text-xs font-semibold text-ink hover:bg-surface-2 min-h-[40px]"
                           aria-label={T('callCustomer')}
                         >
                           <Phone size={14} />

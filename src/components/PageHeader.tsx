@@ -26,7 +26,7 @@ export default function PageHeader({
       {backHref && (
         <Link
           href={backHref}
-          className="mb-2 inline-flex min-h-[44px] items-center gap-1 text-sm font-semibold text-zinc-600 hover:text-zinc-900"
+          className="mb-2 inline-flex min-h-[44px] items-center gap-1 text-sm font-semibold text-ink-2 hover:text-ink"
         >
           <ChevronLeft size={16} />
           {backLabel}

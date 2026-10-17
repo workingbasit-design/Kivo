@@ -15,10 +15,10 @@ export default async function ProfileNotFound() {
       <main className="max-w-lg mx-auto px-4 py-16">
         <Card className="p-8 text-center">
           <Store size={36} className="mx-auto text-zinc-300 mb-3" />
-          <h1 className="text-lg font-bold text-zinc-900">
+          <h1 className="text-lg font-bold text-ink">
             {fr ? 'Profil d’entreprise introuvable' : 'Business profile not found'}
           </h1>
-          <p className="text-sm text-zinc-500 mt-2 leading-relaxed">
+          <p className="text-sm text-ink-2 mt-2 leading-relaxed">
             {fr
               ? 'Cette entreprise n’est pas inscrite au répertoire EveryJob ou son profil n’est plus disponible.'
               : 'This business isn’t listed in the EveryJob directory, or its profile is no longer available.'}

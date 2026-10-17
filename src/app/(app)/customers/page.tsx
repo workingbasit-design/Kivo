@@ -95,13 +95,13 @@ export default async function CustomersPage() {
 
       {loadError ? (
         <Card className="p-8 text-center">
-          <div className="mx-auto w-11 h-11 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mb-4">
+          <div className="mx-auto w-11 h-11 rounded-2xl bg-danger-bg text-danger flex items-center justify-center mb-4">
             <AlertCircle size={22} />
           </div>
-          <h2 className="text-base font-semibold text-zinc-900 mb-1">
+          <h2 className="text-base font-semibold text-ink mb-1">
             {custL('loadErrorTitle')}
           </h2>
-          <p className="text-sm text-zinc-600 mb-5">{loadError}</p>
+          <p className="text-sm text-ink-2 mb-5">{loadError}</p>
           <div className="flex items-center justify-center gap-3">
             <Link href="/customers" className={primaryBtnClass}>
               {custL('tryAgain')}

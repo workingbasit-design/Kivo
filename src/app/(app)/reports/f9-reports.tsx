@@ -104,8 +104,8 @@ function SectionHead({
   return (
     <div className="flex items-start justify-between gap-3 mb-4" id={id}>
       <div>
-        <h2 className="text-sm font-bold text-zinc-900">{title}</h2>
-        <p className="text-[11px] text-zinc-400 font-medium mt-0.5">{sub}</p>
+        <h2 className="text-sm font-bold text-ink">{title}</h2>
+        <p className="text-[11px] text-ink-2 font-medium mt-0.5">{sub}</p>
       </div>
       <F9ExportButton report={report} year={year} label={exportLabel} />
     </div>
@@ -165,7 +165,7 @@ export async function F9Reports({
           <a
             key={t.key}
             href={t.href}
-            className="shrink-0 text-xs font-semibold px-3 py-2 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 transition-colors"
+            className="shrink-0 text-xs font-semibold px-3 py-2 rounded-full bg-surface-2 hover:bg-line text-ink transition-colors"
           >
             {r.tabs[t.key]}
           </a>
@@ -183,7 +183,7 @@ export async function F9Reports({
           exportLabel={r.exportCsv}
         />
         {data.totals.invoicedCents === 0 && data.totals.collectedCents === 0 ? (
-          <p className="text-sm text-zinc-500">{r.noInvoices}</p>
+          <p className="text-sm text-ink-2">{r.noInvoices}</p>
         ) : (
           <>
             <div className="overflow-x-auto">
@@ -193,7 +193,7 @@ export async function F9Reports({
                     <div key={m.key} className="flex-1 flex flex-col items-center gap-1 min-w-0">
                       <div className="flex items-end gap-1 h-36 w-full justify-center">
                         <div
-                          className="w-3 rounded-t bg-ink"
+                          className="w-3 rounded-t bg-asphalt"
                           style={{ height: `${Math.max(2, (m.invoicedCents / maxRev) * 100)}%` }}
                           title={`${r.invoiced}: ${money(m.invoicedCents)}`}
                         />
@@ -205,16 +205,16 @@ export async function F9Reports({
                       </div>
                       <Link
                         href="/invoices"
-                        className="text-[10px] font-semibold text-zinc-500 hover:text-ink hover:underline"
+                        className="text-[10px] font-semibold text-ink-2 hover:text-ink hover:underline"
                       >
                         {m.label}
                       </Link>
                     </div>
                   ))}
                 </div>
-                <div className="flex items-center justify-center gap-4 mt-3 text-[11px] text-zinc-500 font-medium">
+                <div className="flex items-center justify-center gap-4 mt-3 text-[11px] text-ink-2 font-medium">
                   <span className="inline-flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-sm bg-ink" /> {r.invoiced}
+                    <span className="w-2.5 h-2.5 rounded-sm bg-asphalt" /> {r.invoiced}
                   </span>
                   <span className="inline-flex items-center gap-1.5">
                     <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500" /> {r.collected}
@@ -223,13 +223,13 @@ export async function F9Reports({
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3 mt-4">
-              <div className="bg-zinc-50 rounded-xl p-3">
-                <p className="text-[11px] text-zinc-500 font-medium">{r.invoiced}</p>
-                <p className="text-lg font-bold text-zinc-900">{money(data.totals.invoicedCents)}</p>
+              <div className="bg-surface-2 rounded-xl p-3">
+                <p className="text-[11px] text-ink-2 font-medium">{r.invoiced}</p>
+                <p className="text-lg font-bold text-ink">{money(data.totals.invoicedCents)}</p>
               </div>
-              <div className="bg-zinc-50 rounded-xl p-3">
-                <p className="text-[11px] text-zinc-500 font-medium">{r.collected}</p>
-                <p className="text-lg font-bold text-zinc-900">{money(data.totals.collectedCents)}</p>
+              <div className="bg-surface-2 rounded-xl p-3">
+                <p className="text-[11px] text-ink-2 font-medium">{r.collected}</p>
+                <p className="text-lg font-bold text-ink">{money(data.totals.collectedCents)}</p>
               </div>
             </div>
           </>
@@ -247,29 +247,29 @@ export async function F9Reports({
           exportLabel={r.exportCsv}
         />
         {data.aging.totalCount === 0 ? (
-          <p className="text-sm text-zinc-500">{r.noInvoices}</p>
+          <p className="text-sm text-ink-2">{r.noInvoices}</p>
         ) : (
-          <ul className="divide-y divide-zinc-100">
+          <ul className="divide-y divide-line">
             {AGING_BUCKETS.map((b) => {
               const row = data.aging.buckets[b];
               return (
                 <li key={b} className="flex items-center justify-between py-3 gap-3">
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-zinc-900">{r.bucketLabels[b]}</p>
-                    <p className="text-[11px] text-zinc-500">
+                    <p className="text-sm font-semibold text-ink">{r.bucketLabels[b]}</p>
+                    <p className="text-[11px] text-ink-2">
                       {row.count} {row.count === 1 ? r.invoice : r.invoices}
                     </p>
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
-                    <p className="text-sm font-bold text-zinc-900">{money(row.outstandingCents)}</p>
+                    <p className="text-sm font-bold text-ink">{money(row.outstandingCents)}</p>
                     {row.count > 0 && <ViewLink href="/invoices?status=UNPAID" label={r.view} />}
                   </div>
                 </li>
               );
             })}
             <li className="flex items-center justify-between py-3 gap-3">
-              <p className="text-sm font-bold text-zinc-900">{r.total}</p>
-              <p className="text-sm font-bold text-zinc-900">{money(data.aging.totalOutstandingCents)}</p>
+              <p className="text-sm font-bold text-ink">{r.total}</p>
+              <p className="text-sm font-bold text-ink">{money(data.aging.totalOutstandingCents)}</p>
             </li>
           </ul>
         )}
@@ -286,28 +286,28 @@ export async function F9Reports({
           exportLabel={r.exportCsv}
         />
         {data.profit.length === 0 ? (
-          <p className="text-sm text-zinc-500">{r.noJobs}</p>
+          <p className="text-sm text-ink-2">{r.noJobs}</p>
         ) : (
-          <ul className="divide-y divide-zinc-100">
+          <ul className="divide-y divide-line">
             {data.profit.slice(0, 25).map((j) => (
               <li key={j.id} className="py-3">
                 <div className="flex items-center justify-between gap-3">
                   <Link
                     href={`/jobs/${j.id}`}
-                    className="text-sm font-semibold text-zinc-900 hover:underline truncate min-w-0"
+                    className="text-sm font-semibold text-ink hover:underline truncate min-w-0"
                   >
                     {j.title}
                   </Link>
                   <p
                     className={cn(
                       'text-sm font-bold shrink-0',
-                      j.profitCents < 0 ? 'text-red-600' : 'text-emerald-600',
+                      j.profitCents < 0 ? 'text-danger' : 'text-ok',
                     )}
                   >
                     {money(j.profitCents)}
                   </p>
                 </div>
-                <div className="flex items-center gap-3 mt-1 text-[11px] text-zinc-500">
+                <div className="flex items-center gap-3 mt-1 text-[11px] text-ink-2">
                   <span>{money(j.revenueCents)}</span>
                   <span>− {r.costs.toLowerCase()} {money(j.costCents)}</span>
                   {j.marginPct !== null && (
@@ -331,12 +331,12 @@ export async function F9Reports({
           exportLabel={r.exportCsv}
         />
         {data.tax.types.length === 0 ? (
-          <p className="text-sm text-zinc-500">{r.noTax}</p>
+          <p className="text-sm text-ink-2">{r.noTax}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm min-w-[420px]">
               <thead>
-                <tr className="text-left text-[11px] text-zinc-400 font-semibold border-b border-zinc-100">
+                <tr className="text-left text-[11px] text-ink-2 font-semibold border-b border-line">
                   <th className="py-2 pr-2 font-semibold"></th>
                   {data.tax.types.map((t) => (
                     <th key={t} className="py-2 px-2 font-semibold text-right">{t}</th>
@@ -350,28 +350,28 @@ export async function F9Reports({
                   .map((row) => (
                     <tr key={row.key} className="border-b border-zinc-50">
                       <td className="py-2 pr-2">
-                        <Link href="/invoices" className="font-semibold text-zinc-700 hover:underline">
+                        <Link href="/invoices" className="font-semibold text-ink hover:underline">
                           {row.label}
                         </Link>
                       </td>
                       {data.tax.types.map((t) => (
-                        <td key={t} className="py-2 px-2 text-right tabular-nums text-zinc-600">
+                        <td key={t} className="py-2 px-2 text-right tabular-nums text-ink-2">
                           {money(row.byType[t] ?? 0)}
                         </td>
                       ))}
-                      <td className="py-2 pl-2 text-right font-bold tabular-nums text-zinc-900">
+                      <td className="py-2 pl-2 text-right font-bold tabular-nums text-ink">
                         {money(row.totalCents)}
                       </td>
                     </tr>
                   ))}
                 <tr>
-                  <td className="py-2 pr-2 font-bold text-zinc-900">{r.total}</td>
+                  <td className="py-2 pr-2 font-bold text-ink">{r.total}</td>
                   {data.tax.types.map((t) => (
-                    <td key={t} className="py-2 px-2 text-right font-bold tabular-nums text-zinc-900">
+                    <td key={t} className="py-2 px-2 text-right font-bold tabular-nums text-ink">
                       {money(data.tax.totals[t] ?? 0)}
                     </td>
                   ))}
-                  <td className="py-2 pl-2 text-right font-bold tabular-nums text-zinc-900">
+                  <td className="py-2 pl-2 text-right font-bold tabular-nums text-ink">
                     {money(Object.values(data.tax.totals).reduce((s, v) => s + v, 0))}
                   </td>
                 </tr>
@@ -392,28 +392,28 @@ export async function F9Reports({
           exportLabel={r.exportCsv}
         />
         {data.expenses.length === 0 ? (
-          <p className="text-sm text-zinc-500">{r.noExpenses}</p>
+          <p className="text-sm text-ink-2">{r.noExpenses}</p>
         ) : (
-          <ul className="divide-y divide-zinc-100">
+          <ul className="divide-y divide-line">
             {data.expenses.map((e) => (
               <li key={e.category} className="flex items-center justify-between py-3 gap-3">
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-zinc-900 capitalize">
+                  <p className="text-sm font-semibold text-ink capitalize">
                     {e.category.toLowerCase().replace(/_/g, ' ')}
                   </p>
-                  <p className="text-[11px] text-zinc-500">
+                  <p className="text-[11px] text-ink-2">
                     {r.taxPaid}: {money(e.taxCents)} · {e.count} {e.count === 1 ? r.entry : r.entries}
                   </p>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  <p className="text-sm font-bold text-zinc-900">{money(e.amountCents)}</p>
+                  <p className="text-sm font-bold text-ink">{money(e.amountCents)}</p>
                   <ViewLink href="/expenses" label={r.view} />
                 </div>
               </li>
             ))}
             <li className="flex items-center justify-between py-3 gap-3">
-              <p className="text-sm font-bold text-zinc-900">{r.total}</p>
-              <p className="text-sm font-bold text-zinc-900">{money(data.totals.expenseCents)}</p>
+              <p className="text-sm font-bold text-ink">{r.total}</p>
+              <p className="text-sm font-bold text-ink">{money(data.totals.expenseCents)}</p>
             </li>
           </ul>
         )}
@@ -430,12 +430,12 @@ export async function F9Reports({
           exportLabel={r.exportCsv}
         />
         {data.leads.rows.length === 0 ? (
-          <p className="text-sm text-zinc-500">{r.noLeads}</p>
+          <p className="text-sm text-ink-2">{r.noLeads}</p>
         ) : (
           <>
-            <div className="bg-zinc-50 rounded-xl p-3 mb-4 flex items-center justify-between">
-              <p className="text-[11px] text-zinc-500 font-medium">{r.overallConversion}</p>
-              <p className="text-lg font-bold text-zinc-900">{data.leads.conversionPct}%</p>
+            <div className="bg-surface-2 rounded-xl p-3 mb-4 flex items-center justify-between">
+              <p className="text-[11px] text-ink-2 font-medium">{r.overallConversion}</p>
+              <p className="text-lg font-bold text-ink">{data.leads.conversionPct}%</p>
             </div>
             <ul className="space-y-3">
               {data.leads.rows.map((l) => (
@@ -443,21 +443,21 @@ export async function F9Reports({
                   <div className="flex items-center justify-between mb-1 gap-3">
                     <Link
                       href="/leads"
-                      className="text-xs font-semibold text-zinc-700 hover:underline truncate min-w-0"
+                      className="text-xs font-semibold text-ink hover:underline truncate min-w-0"
                     >
                       {l.source}
                     </Link>
-                    <p className="text-xs font-bold text-zinc-900 shrink-0 tabular-nums">
+                    <p className="text-xs font-bold text-ink shrink-0 tabular-nums">
                       {l.converted}/{l.total} · {l.conversionPct}%
                     </p>
                   </div>
-                  <div className="h-2.5 bg-zinc-100 rounded-full overflow-hidden">
+                  <div className="h-2.5 bg-surface-2 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-ink rounded-full"
+                      className="h-full bg-asphalt rounded-full"
                       style={{ width: `${Math.max(2, Math.min(100, l.conversionPct))}%` }}
                     />
                   </div>
-                  <p className="text-[11px] text-zinc-400 mt-1">
+                  <p className="text-[11px] text-ink-2 mt-1">
                     {l.total} · {l.converted} {r.converted.toLowerCase()}
                   </p>
                 </li>

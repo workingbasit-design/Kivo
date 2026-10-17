@@ -22,9 +22,9 @@ type Claim = {
 };
 
 const STATUS_STYLE: Record<string, string> = {
-  PENDING: 'bg-amber-50 text-amber-700 border-amber-200',
-  APPROVED: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  REJECTED: 'bg-zinc-100 text-zinc-500 border-zinc-200',
+  PENDING: 'bg-warn-bg text-warn-text border-amber-200',
+  APPROVED: 'bg-ok-bg text-ok border-emerald-200',
+  REJECTED: 'bg-surface-2 text-ink-2 border-line',
 };
 
 export default function ClaimRow({ claim }: { claim: Claim }) {
@@ -81,16 +81,16 @@ export default function ClaimRow({ claim }: { claim: Claim }) {
       <div className="flex flex-col gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="text-sm font-bold text-zinc-900">{claim.businessName}</p>
+            <p className="text-sm font-bold text-ink">{claim.businessName}</p>
             <span className={`text-[11px] font-bold border rounded-full px-2 py-0.5 ${STATUS_STYLE[status] ?? STATUS_STYLE.PENDING}`}>
               {status}
             </span>
           </div>
-          <p className="text-xs text-zinc-600 mt-1">
+          <p className="text-xs text-ink-2 mt-1">
             {[claim.address, claim.phone].filter(Boolean).join(' · ') || t('t10misc.claims.noContact')}
           </p>
           {claim.services.length > 0 && (
-            <p className="text-xs text-zinc-500 mt-0.5">
+            <p className="text-xs text-ink-2 mt-0.5">
               {t('t10misc.claims.services')}: {claim.services.join(', ')}
             </p>
           )}
@@ -104,11 +104,11 @@ export default function ClaimRow({ claim }: { claim: Claim }) {
             </Link>
           )}
           {claim.note && (
-            <p className="text-xs text-zinc-500 mt-1 italic">
+            <p className="text-xs text-ink-2 mt-1 italic">
               {t('t10misc.claims.note')}: {claim.note}
             </p>
           )}
-          <p className="text-[11px] text-zinc-400 mt-1">
+          <p className="text-[11px] text-ink-2 mt-1">
             {t('t10misc.claims.requested')} {new Date(claim.createdAt).toLocaleString(dateLocale, { dateStyle: 'medium', timeStyle: 'short' })}
             {claim.decidedBy ? ` · ${t('t10misc.claims.decidedBy')} ${claim.decidedBy}` : ''}
           </p>
@@ -126,7 +126,7 @@ export default function ClaimRow({ claim }: { claim: Claim }) {
               onClick={() => setRejecting((v) => !v)}
               disabled={busy}
               aria-expanded={rejecting}
-              className="min-h-[44px] inline-flex items-center justify-center gap-1.5 text-xs font-bold px-4 rounded-xl border border-zinc-300 hover:border-rose-400 text-zinc-600 hover:text-rose-600 disabled:opacity-60"
+              className="min-h-[44px] inline-flex items-center justify-center gap-1.5 text-xs font-bold px-4 rounded-xl border border-line-strong hover:border-rose-400 text-ink-2 hover:text-danger disabled:opacity-60"
             >
               <X size={14} /> {t('t10misc.claims.reject')}
             </button>
@@ -144,7 +144,7 @@ export default function ClaimRow({ claim }: { claim: Claim }) {
             onChange={(e) => setNote(e.target.value)}
             placeholder={t('t10misc.claims.reasonPlaceholder')}
             maxLength={500}
-            className="flex-1 min-h-[44px] rounded-xl border border-zinc-300 px-3 py-2 text-xs outline-none focus:border-zinc-500"
+            className="flex-1 min-h-[44px] rounded-xl border border-line-strong px-3 py-2 text-xs outline-none focus:border-zinc-500"
           />
           <button
             type="submit"

@@ -119,7 +119,7 @@ export default async function DirectoryPage({
         nonce={await getCspNonce()}
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <header className="bg-ink text-white">
+      <header className="bg-asphalt text-white">
         <div className="max-w-4xl mx-auto px-4 py-10">
           <div className="ej-anim-fade-up flex items-center gap-3 mb-4">
             <Logo tone="onDark" size={30} />
@@ -128,7 +128,7 @@ export default async function DirectoryPage({
               {customerSession ? (
                 <Link
                   href="/customer"
-                  className="inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-full bg-white/10 border border-white/20 text-sm font-semibold whitespace-nowrap shrink-0 transition-all hover:bg-white/20 hover:-translate-y-px active:translate-y-0 active:scale-[0.97]"
+                  className="inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-full bg-surface/10 border border-white/20 text-sm font-semibold whitespace-nowrap shrink-0 transition-all hover:bg-surface/20 hover:-translate-y-px active:translate-y-0 active:scale-[0.97]"
                 >
                   <User size={14} />
                   My account
@@ -153,26 +153,26 @@ export default async function DirectoryPage({
           <form action="/directory" method="get" className="ej-anim-fade-up mt-6 grid sm:grid-cols-[1fr_1fr_auto] gap-2" style={{ animationDelay: '200ms' }}>
             <label className="relative block group">
               <span className="sr-only">{tr('t10misc.directory.whatPlaceholder')}</span>
-              <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 transition-colors group-focus-within:text-lime" />
+              <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-2 transition-colors group-focus-within:text-lime" />
               <input
                 name="q"
                 defaultValue={q}
                 placeholder={tr('t10misc.directory.whatPlaceholder')}
                 maxLength={100}
                 aria-label={tr('t10misc.directory.whatPlaceholder')}
-                className="w-full min-h-[52px] rounded-2xl bg-white border-2 border-transparent pl-11 pr-4 text-[15px] text-zinc-900 placeholder:text-zinc-400 outline-none shadow-lg transition-all focus:border-lime hover:border-white/40"
+                className="w-full min-h-[52px] rounded-2xl bg-surface border-2 border-transparent pl-11 pr-4 text-[15px] text-ink placeholder:text-ink-2 outline-none shadow-lg transition-all focus:border-lime hover:border-white/40"
               />
             </label>
             <label className="relative block group">
               <span className="sr-only">{tr('t10misc.directory.cityPlaceholder')}</span>
-              <MapPin size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 transition-colors group-focus-within:text-lime" />
+              <MapPin size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-2 transition-colors group-focus-within:text-lime" />
               <input
                 name="city"
                 defaultValue={city}
                 placeholder={tr('t10misc.directory.cityPlaceholder')}
                 maxLength={100}
                 aria-label={tr('t10misc.directory.cityPlaceholder')}
-                className="w-full min-h-[52px] rounded-2xl bg-white border-2 border-transparent pl-11 pr-4 text-[15px] text-zinc-900 placeholder:text-zinc-400 outline-none shadow-lg transition-all focus:border-lime hover:border-white/40"
+                className="w-full min-h-[52px] rounded-2xl bg-surface border-2 border-transparent pl-11 pr-4 text-[15px] text-ink placeholder:text-ink-2 outline-none shadow-lg transition-all focus:border-lime hover:border-white/40"
               />
             </label>
             <button
@@ -191,7 +191,7 @@ export default async function DirectoryPage({
             />
             <Link
               href="/directory/request"
-              className="sm:ml-auto inline-flex items-center gap-1.5 min-h-[44px] text-white font-semibold py-2 px-3 rounded-full bg-white/10 border border-white/20 whitespace-nowrap shrink-0 transition-all hover:bg-white/20 hover:-translate-y-px active:translate-y-0 active:scale-[0.97]"
+              className="sm:ml-auto inline-flex items-center gap-1.5 min-h-[44px] text-white font-semibold py-2 px-3 rounded-full bg-surface/10 border border-white/20 whitespace-nowrap shrink-0 transition-all hover:bg-surface/20 hover:-translate-y-px active:translate-y-0 active:scale-[0.97]"
             >
               <MessageSquareQuote size={14} /> {tr('t10misc.directory.requestQuotes')}
             </Link>
@@ -201,7 +201,7 @@ export default async function DirectoryPage({
 
       <main className="max-w-4xl mx-auto px-4 py-6">
         {searching && (
-          <p className="text-xs text-zinc-500 mb-4">
+          <p className="text-xs text-ink-2 mb-4">
             {resultsLine}
             {city && (
               <>
@@ -213,18 +213,18 @@ export default async function DirectoryPage({
         )}
 
         {results.length === 0 ? (
-          <div className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-10 text-center">
+          <div className="bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-10 text-center">
             <div className="w-12 h-12 rounded-2xl bg-smoke flex items-center justify-center mx-auto mb-4">
               <Search className="w-6 h-6 text-ink" />
             </div>
-            <h2 className="font-bold text-zinc-900">{tr('t10misc.directory.noProsTitle')}</h2>
-            <p className="text-sm text-zinc-500 mt-1 max-w-sm mx-auto">
+            <h2 className="font-bold text-ink">{tr('t10misc.directory.noProsTitle')}</h2>
+            <p className="text-sm text-ink-2 mt-1 max-w-sm mx-auto">
               {searching ? tr('t10misc.directory.noProsSearching') : tr('t10misc.directory.noProsIdle')}
             </p>
             {!searching && (
               <Link
                 href="/register"
-                className="inline-flex items-center justify-center mt-4 rounded-xl min-h-[44px] bg-ink hover:bg-graphite text-white text-sm font-bold px-6 py-2.5 transition-colors"
+                className="inline-flex items-center justify-center mt-4 rounded-xl min-h-[44px] bg-asphalt hover:bg-graphite text-white text-sm font-bold px-6 py-2.5 transition-colors"
               >
                 {tr('t10misc.directory.listBusiness')}
               </Link>
@@ -236,33 +236,33 @@ export default async function DirectoryPage({
               <li key={b.slug} className="ej-anim-fade-up" style={{ animationDelay: `${Math.min(results.indexOf(b), 8) * 50}ms` }}>
                 <Link
                   href={`/p/${b.slug}`}
-                  className="group block bg-white rounded-3xl border border-zinc-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-5 transition-all duration-300 hover:shadow-[0_12px_32px_rgba(0,0,0,0.10)] hover:border-smoke hover:-translate-y-1 active:translate-y-0 active:scale-[0.99]"
+                  className="group block bg-surface rounded-3xl border border-line/80 shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-5 transition-all duration-300 hover:shadow-[0_12px_32px_rgba(0,0,0,0.10)] hover:border-smoke hover:-translate-y-1 active:translate-y-0 active:scale-[0.99]"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-12 h-12 rounded-2xl bg-ink flex items-center justify-center shrink-0 overflow-hidden transition-transform duration-300 group-hover:scale-105">
+                      <div className="w-12 h-12 rounded-2xl bg-asphalt flex items-center justify-center shrink-0 overflow-hidden transition-transform duration-300 group-hover:scale-105">
                         {b.logoUrl ? (
                           <img src={b.logoUrl} alt="" className="w-full h-full object-cover" />
                         ) : (
                           <span className="text-lg font-bold text-lime">{b.name.charAt(0).toUpperCase()}</span>
                         )}
                       </div>
-                      <h2 className="font-bold text-zinc-900 leading-snug">{b.name}</h2>
+                      <h2 className="font-bold text-ink leading-snug">{b.name}</h2>
                     </div>
                     {b.verified && (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1 shrink-0">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-ok bg-ok-bg border border-emerald-200 rounded-full px-2.5 py-1 shrink-0">
                         <BadgeCheck size={12} /> {tr('t10misc.directory.verified')}
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-3 mt-2.5 text-xs text-zinc-500">
+                  <div className="flex items-center gap-3 mt-2.5 text-xs text-ink-2">
                     {b.avg !== null ? (
-                      <span className="inline-flex items-center gap-1 font-bold text-zinc-800 bg-amber-50 border border-amber-200/70 rounded-full px-2.5 py-1">
+                      <span className="inline-flex items-center gap-1 font-bold text-ink bg-warn-bg border border-amber-200/70 rounded-full px-2.5 py-1">
                         <Star size={12} className="fill-amber-400 text-amber-400" />
-                        {b.avg} <span className="font-medium text-zinc-500">({b.count})</span>
+                        {b.avg} <span className="font-medium text-ink-2">({b.count})</span>
                       </span>
                     ) : (
-                      <span className="text-[11px] font-medium text-zinc-400 bg-zinc-100 rounded-full px-2.5 py-1">{tr('t10misc.directory.noReviews')}</span>
+                      <span className="text-[11px] font-medium text-ink-2 bg-surface-2 rounded-full px-2.5 py-1">{tr('t10misc.directory.noReviews')}</span>
                     )}
                     {b.locality && (
                       <span className="inline-flex items-center gap-1">

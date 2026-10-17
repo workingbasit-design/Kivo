@@ -31,11 +31,11 @@ export default function DemoSwitchCard({
 
   return (
     <Card className="p-5 md:p-6">
-      <h2 className="text-sm font-bold text-zinc-900 mb-1">{title}</h2>
-      <p className="text-xs text-zinc-500 mb-4">{description}</p>
+      <h2 className="text-sm font-bold text-ink mb-1">{title}</h2>
+      <p className="text-xs text-ink-2 mb-4">{description}</p>
       {isDemo ? (
         <>
-          <p className="text-xs font-semibold text-amber-700 mb-3">{viewingLabel}</p>
+          <p className="text-xs font-semibold text-warn-text mb-3">{viewingLabel}</p>
           <form action={leaveAction}>
             <button type="submit" className={secondaryBtnClass}>
               {backLabel}
@@ -48,7 +48,7 @@ export default function DemoSwitchCard({
             {openLabel}
           </button>
           {openState?.error && (
-            <p role="alert" className="mt-2 text-xs font-medium text-red-700">
+            <p role="alert" className="mt-2 text-xs font-medium text-danger">
               {openState.error}
             </p>
           )}

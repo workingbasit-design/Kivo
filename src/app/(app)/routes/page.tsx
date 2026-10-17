@@ -74,7 +74,7 @@ export default async function RoutesPage({
               </div>
               <button
                 type="submit"
-                className="bg-zinc-900 hover:bg-zinc-700 text-white min-h-[44px] px-5 rounded-xl font-semibold text-xs transition-colors"
+                className="bg-asphalt hover:bg-zinc-700 text-white min-h-[44px] px-5 rounded-xl font-semibold text-xs transition-colors"
               >
                 {T('routesShow')}
               </button>

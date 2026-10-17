@@ -31,7 +31,7 @@ export default function WhatsAppButton({
       rel="noopener noreferrer"
       className={
         className ??
-        'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border bg-[#25D366]/10 border-[#25D366]/30 text-[#128C4A] hover:bg-[#25D366]/20'
+        'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border bg-wa/10 border-wa/30 text-wa-deep hover:bg-wa/20'
       }
       title="Opens WhatsApp with this message prefilled"
     >

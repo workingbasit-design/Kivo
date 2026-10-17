@@ -71,7 +71,7 @@ export default function CampaignForm({
     <form action={formAction} className="space-y-6 max-w-3xl">
       {initial && <input type="hidden" name="id" value={initial.id} />}
       {state?.error && (
-        <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{state.error}</span>
         </div>
@@ -106,7 +106,7 @@ export default function CampaignForm({
             </select>
           </Field>
           <div className="flex items-center justify-between mt-1.5">
-            <p className="text-[11px] text-zinc-400">{audienceHint ? t(locale, audienceHint) : ''}</p>
+            <p className="text-[11px] text-ink-2">{audienceHint ? t(locale, audienceHint) : ''}</p>
             <button
               type="button"
               onClick={handlePreview}
@@ -165,14 +165,14 @@ export default function CampaignForm({
       </Card>
 
       <Card className="p-6">
-        <h3 className="text-sm font-bold text-zinc-900 flex items-center gap-2 mb-3">
-          <Eye size={14} className="text-zinc-400" /> {t(locale, 't10misc.marketing.livePreview')}
+        <h3 className="text-sm font-bold text-ink flex items-center gap-2 mb-3">
+          <Eye size={14} className="text-ink-2" /> {t(locale, 't10misc.marketing.livePreview')}
         </h3>
-        <div className="bg-zinc-50 border border-zinc-200 rounded-xl p-4">
-          <p className="text-xs font-bold text-zinc-900">{subject || t(locale, 't10misc.marketing.previewSubjectFallback')}</p>
-          <p className="text-sm text-zinc-600 mt-1.5 whitespace-pre-wrap">{livePreview}</p>
+        <div className="bg-surface-2 border border-line rounded-xl p-4">
+          <p className="text-xs font-bold text-ink">{subject || t(locale, 't10misc.marketing.previewSubjectFallback')}</p>
+          <p className="text-sm text-ink-2 mt-1.5 whitespace-pre-wrap">{livePreview}</p>
         </div>
-        <p className="text-[11px] text-zinc-400 mt-2">
+        <p className="text-[11px] text-ink-2 mt-2">
           {t(locale, 't10misc.marketing.previewNote')}
         </p>
       </Card>
@@ -190,7 +190,7 @@ export default function CampaignForm({
         </button>
       </div>
 
-      <p className="text-[11px] text-zinc-400">
+      <p className="text-[11px] text-ink-2">
         {t(locale, 't10misc.marketing.neverSends')}
       </p>
     </form>

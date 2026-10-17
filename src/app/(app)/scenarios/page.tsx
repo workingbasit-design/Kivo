@@ -78,20 +78,20 @@ export default async function ScenariosPage() {
         cards.map((c) => (
           <Card key={c.title} className="p-5">
             <div className="flex items-center justify-between gap-3 mb-4">
-              <h2 className="text-sm font-bold text-zinc-900">{c.title}</h2>
-              <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5 shrink-0">
+              <h2 className="text-sm font-bold text-ink">{c.title}</h2>
+              <span className="text-[10px] font-bold text-warn-text bg-warn-bg border border-amber-200 rounded-full px-2 py-0.5 shrink-0">
                 {t(locale, "scenarios.estimateLabel")}
               </span>
             </div>
             <dl className="space-y-2.5">
               {c.rows.map(([label, value]) => (
                 <div key={label as string} className="flex items-baseline justify-between gap-3">
-                  <dt className="text-xs text-zinc-500">{label}</dt>
-                  <dd className="text-sm font-bold text-zinc-900 tabular-nums shrink-0">{value}</dd>
+                  <dt className="text-xs text-ink-2">{label}</dt>
+                  <dd className="text-sm font-bold text-ink tabular-nums shrink-0">{value}</dd>
                 </div>
               ))}
             </dl>
-            <p className="text-[11px] text-zinc-400 mt-4 leading-relaxed">{c.note}</p>
+            <p className="text-[11px] text-ink-2 mt-4 leading-relaxed">{c.note}</p>
           </Card>
         ))
       )}

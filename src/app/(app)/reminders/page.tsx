@@ -111,10 +111,10 @@ export default async function RemindersPage() {
       <section aria-label={t(locale, 'reminders.upcomingJobs')}>
         <Card className="p-4 sm:p-5">
           <div className="flex items-center gap-2 mb-4">
-            <span className="w-8 h-8 rounded-xl bg-ink text-lime flex items-center justify-center shrink-0">
+            <span className="w-8 h-8 rounded-xl bg-asphalt text-lime flex items-center justify-center shrink-0">
               <CalendarClock size={16} />
             </span>
-            <h2 className="text-sm font-bold text-zinc-900">
+            <h2 className="text-sm font-bold text-ink">
               {t(locale, 'reminders.upcomingJobs')}
             </h2>
           </div>
@@ -138,7 +138,7 @@ export default async function RemindersPage() {
                   regionCode={regionCode}
                   ui={ui}
                 >
-                  <p className="text-sm font-bold text-zinc-900 truncate">
+                  <p className="text-sm font-bold text-ink truncate">
                     {job.customer.name}
                   </p>
                   <p className="text-xs text-graphite truncate">{job.title}</p>
@@ -156,10 +156,10 @@ export default async function RemindersPage() {
       <section aria-label={t(locale, 'reminders.invoiceFollowups')}>
         <Card className="p-4 sm:p-5">
           <div className="flex items-center gap-2 mb-4">
-            <span className="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+            <span className="w-8 h-8 rounded-xl bg-amber-100 text-warn-text flex items-center justify-center shrink-0">
               <FileText size={16} />
             </span>
-            <h2 className="text-sm font-bold text-zinc-900">
+            <h2 className="text-sm font-bold text-ink">
               {t(locale, 'reminders.invoiceFollowups')}
             </h2>
           </div>
@@ -184,7 +184,7 @@ export default async function RemindersPage() {
                   ui={ui}
                 >
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-bold text-zinc-900 truncate">
+                    <p className="text-sm font-bold text-ink truncate">
                       {inv.customer.name}
                     </p>
                     <StatusBadge status={inv.status} />

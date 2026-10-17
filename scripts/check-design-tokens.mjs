@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 /**
- * Design token lint (Part B, docs/DESIGN.md).
+ * Design token lint (Part 1, all-modules redesign).
  *
- * Fails on raw hex/rgb/hsl colours in component classNames outside the
- * token definition layers (src/app/globals.css @theme, src/components/ui.tsx
- * button classes). Colours must come from docs/DESIGN.md tokens.
+ * Fails on ANY hex / rgb / hsl colour literal in src ts/tsx files outside the
+ * token definitions (src/app/globals.css) and the documented EXCEPTIONS below.
+ * Colours must come from the mockup token set (docs/design/app-mockup.html):
+ * bg-surface, text-ink, border-line, bg-hivis, text-warn-text, bg-danger-bg,
+ * text-ok, bg-info-bg, bg-hero, bg-nav, ... or var(--token) references.
  *
- * Grandfathered baseline: pre-existing violations (recorded 2026-10-17).
- * Keyed by file+colour (not file:line) so adding lines above a violation
- * does not false-positive as "new" (CI incident 2026-10-17: Part E8 shifted
- * lines after the baseline was recorded). New (file, colour) pairs fail CI.
- * Burn down the baseline over time; do not add to it.
+ * This is the enforcement arm of "no hard-coded colours": it is what keeps
+ * dark mode from ever going half-light again. Do not add exceptions without
+ * a genuine reason (brand artwork, HTML email, user colour data).
  */
 import { readFileSync, readdirSync, statSync } from 'fs';
 import { join, relative } from 'path';
@@ -18,41 +18,25 @@ import { join, relative } from 'path';
 const ROOT = new URL('..', import.meta.url).pathname;
 const SRC = join(ROOT, 'src');
 
-// Token layers: raw colours are allowed here (they ARE the definitions).
-const ALLOWLIST = new Set([
-  'src/app/globals.css',
-  'src/components/ui.tsx',
-]);
+// Token definitions: raw colours are allowed here (they ARE the tokens).
+const TOKEN_FILES = new Set(['src/app/globals.css']);
 
-// Grandfathered pre-existing violations (file|colour). Do not add new entries.
-const BASELINE = new Set([
-  'src/app/i/[token]/page.tsx|[#1fb857]',
-  'src/app/i/[token]/page.tsx|[#25d366]',
-  'src/app/p/[slug]/page.tsx|[#1a9449]',
-  'src/app/p/[slug]/page.tsx|[#1faa55]',
-  'src/app/q/[token]/page.tsx|[#1fb857]',
-  'src/app/q/[token]/page.tsx|[#25d366]',
-  'src/app/start/page.tsx|[#f4f4f2]',
-  'src/components/DispatcherMap.tsx|rgba(0,0,0,.35)',
-  'src/components/FinishSetupModal.tsx|[#ff7a59]',
-  'src/components/GlobalCopilotWidget.tsx|[#fbfbfd]',
-  'src/components/NotificationSettingsForm.tsx|[#161616]',
-  'src/components/PortalLinkManager.tsx|[#128c4a]',
-  'src/components/PortalLinkManager.tsx|[#25d366]',
-  'src/components/WhatsAppButton.tsx|[#128c4a]',
-  'src/components/WhatsAppButton.tsx|[#25d366]',
-  'src/components/animated-icons/lottie-lite.ts|rgba(${math.round(rr * 255)',
-  'src/components/home/HeroBackdrop.tsx|rgba(250,250,247,0.7)',
-  'src/components/home/ScheduleMock.tsx|[#28c840]',
-  'src/components/home/ScheduleMock.tsx|[#febc2e]',
-  'src/components/home/ScheduleMock.tsx|[#ff5f57]',
-  'src/components/mascot/JobiMascot.tsx|rgba(0,0,0,0.12)',
-  'src/components/mascot/JobiMascot.tsx|rgba(0,0,0,0.15)',
-  'src/components/mascot/JobiMascot.tsx|rgba(0,0,0,0.2)',
-  'src/components/mascot/JobiMascot.tsx|rgba(0,0,0,0.25)',
+// Documented exceptions: file -> reason. Keep this list short.
+const EXCEPTIONS = new Map([
+  ['src/lib/messaging/email-templates.ts', 'HTML email: no CSS custom properties or Tailwind.'],
+  ['src/components/EveryJobLogo.tsx', 'Brand logo SVG artwork.'],
+  ['src/components/GoogleSignInButton.tsx', 'Google brand SVG artwork.'],
+  ['src/components/GoogleReviewsPanel.tsx', 'Google brand SVG artwork.'],
+  ['src/components/home/ScheduleMock.tsx', 'macOS window-chrome mimicry (intentional).'],
+  ['src/components/home/HeroVisual.tsx', 'Marketing-site SVG artwork (light-only surface).'],
+  ['src/components/BrandKitForm.tsx', 'User-selectable brand palettes (data, not UI).'],
+  ['src/components/CrewForm.tsx', 'User-selectable crew colours (data, not UI).'],
+  ['src/app/actions/crews.ts', 'User colour data + validation regex.'],
+  ['src/app/actions/brand.ts', 'User colour data + validation regex.'],
+  ['src/lib/brand-templates.ts', 'Brand palette data.'],
+  ['src/components/animated-icons/lottie-lite.ts', 'Animation colour math, not UI.'],
+  ['src/components/PwaRegister.tsx', 'Single theme-color fallback literal.'],
 ]);
-
-// Colour signatures are extracted inline below via matchAll.
 
 function walk(dir, out = []) {
   for (const e of readdirSync(dir)) {
@@ -66,30 +50,49 @@ function walk(dir, out = []) {
 const violations = [];
 for (const file of walk(SRC)) {
   const rel = relative(ROOT, file);
-  if (ALLOWLIST.has(rel)) continue;
+  if (TOKEN_FILES.has(rel) || EXCEPTIONS.has(rel)) continue;
   const lines = readFileSync(file, 'utf8').split('\n');
+  let inBlock = false;
   lines.forEach((line, i) => {
-    // Skip comments and SVG presentation attributes (separate concern).
-    const code = line.replace(/\/\/.*$/, '');
+    // Strip line comments, block comments (incl. multi-line {/* ... */}),
+    // and block-comment-only lines.
+    let code = line.replace(/\/\/.*$/, '');
+    if (inBlock) {
+      const end = code.indexOf('*/');
+      if (end === -1) return;
+      code = code.slice(end + 2);
+      inBlock = false;
+    }
+    for (;;) {
+      const start = code.indexOf('/*');
+      if (start === -1) break;
+      const end = code.indexOf('*/', start + 2);
+      if (end === -1) { code = code.slice(0, start); inBlock = true; break; }
+      code = code.slice(0, start) + code.slice(end + 2);
+    }
     if (/^\s*(\*|\/\*)/.test(code)) return;
-    // Signatures are the literal colours on the line, lower-cased. Keying on
-    // (file, colour) instead of (file, line) makes the check immune to line
-    // shifts from unrelated edits elsewhere in the file.
+    // Remove known false positives before checking:
+    // - URL fragments: href="#section", actionHref="#add"
+    // - Reference numbers: 'Invoice #1042', 'Order #123'
+    code = code
+      .replace(/(href|to|actionHref)=["']#[A-Za-z][\w-]*["']/g, '$1=""')
+      .replace(/\b(Invoice|Order|PO|Ticket|Job)\s+#\d+/gi, '$1 REF');
     const sigs = new Set();
-    for (const m of code.matchAll(/\[#(?:[0-9a-fA-F]{3,8})\]/g)) sigs.add(m[0].toLowerCase());
+    for (const m of code.matchAll(/#[0-9a-fA-F]{3,8}\b/g)) sigs.add(m[0].toLowerCase());
     for (const m of code.matchAll(/\b(?:rgb|rgba|hsl|hsla)\([^)]*\)/g)) sigs.add(m[0].toLowerCase());
     for (const sig of sigs) {
-      if (!BASELINE.has(`${rel}|${sig}`)) {
-        violations.push(`${rel}:${i + 1} [${sig}]: ${code.trim().slice(0, 90)}`);
-      }
+      violations.push(`${rel}:${i + 1} [${sig}]: ${code.trim().slice(0, 100)}`);
     }
   });
 }
 
 if (violations.length) {
-  console.error('design-tokens: raw colours outside token layers:\n');
+  console.error('design-tokens: raw colours outside the token system:\n');
   for (const v of violations) console.error('  ' + v);
-  console.error(`\n${violations.length} new violation(s). Use docs/DESIGN.md tokens (bg-ej-*, text-ej-*, border-ej-*).`);
+  console.error(
+    `\n${violations.length} violation(s). Use mockup tokens (bg-surface, text-ink, ...) or var(--token).`
+  );
+  console.error('Genuine exceptions (brand artwork, HTML email, user colour data) go in EXCEPTIONS with a reason.');
   process.exit(1);
 }
-console.log('design-tokens: OK (no new violations)');
+console.log('design-tokens: OK (no raw colours outside tokens)');

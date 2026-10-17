@@ -47,33 +47,33 @@ export default async function CrewsPage() {
                 <div className="flex items-center gap-3">
                   <span
                     className="w-4 h-4 rounded-full shrink-0"
-                    style={{ backgroundColor: crew.color ?? '#a3e635' }}
+                    style={{ backgroundColor: crew.color ?? 'var(--hivis)' }}
                     aria-hidden
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-base font-bold text-zinc-900 truncate">
+                    <p className="text-base font-bold text-ink truncate">
                       {crew.name}
                     </p>
-                    <p className="text-xs text-zinc-500 mt-0.5">
+                    <p className="text-xs text-ink-2 mt-0.5">
                       {L('memberCount').replace('{count}', String(crew.members.length))}
                       {' · '}
                       {L('jobs').replace('{count}', String(crew._count.jobs))}
                     </p>
                   </div>
-                  <ChevronRight size={18} className="text-zinc-400 shrink-0" aria-hidden />
+                  <ChevronRight size={18} className="text-ink-2 shrink-0" aria-hidden />
                 </div>
                 {crew.members.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mt-3">
                     {crew.members.slice(0, 6).map((m) => (
                       <span
                         key={m.id}
-                        className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700"
+                        className="inline-flex items-center rounded-full bg-surface-2 px-2.5 py-1 text-xs font-medium text-ink"
                       >
                         {m.name}
                       </span>
                     ))}
                     {crew.members.length > 6 && (
-                      <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-500">
+                      <span className="inline-flex items-center rounded-full bg-surface-2 px-2.5 py-1 text-xs font-medium text-ink-2">
                         +{crew.members.length - 6}
                       </span>
                     )}
@@ -86,7 +86,7 @@ export default async function CrewsPage() {
       )}
 
       <section>
-        <h2 className="text-xs font-bold text-zinc-500 mb-2 px-1">
+        <h2 className="text-xs font-bold text-ink-2 mb-2 px-1">
           {L('newCrew')}
         </h2>
         <Card className="p-5">

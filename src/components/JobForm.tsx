@@ -215,7 +215,7 @@ export default function JobForm({
             }}
           />
           {showZeroWarning && (
-            <p role="alert" className="mt-2 flex items-start gap-2 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+            <p role="alert" className="mt-2 flex items-start gap-2 text-xs font-semibold text-warn-text bg-warn-bg border border-amber-200 rounded-xl px-3 py-2">
               <AlertCircle size={14} className="shrink-0 mt-0.5" aria-hidden />
               No price set - is this a no-charge job?
             </p>
@@ -226,11 +226,11 @@ export default function JobForm({
               name="noCharge"
               checked={noCharge}
               onChange={(e) => setNoCharge(e.target.checked)}
-              className="h-5 w-5 rounded border-zinc-300 text-lime-600 focus:ring-lime-500"
+              className="h-5 w-5 rounded border-line-strong text-lime-600 focus:ring-lime-500"
             />
-            <span className="text-sm text-zinc-700">
+            <span className="text-sm text-ink">
               {T('formNoCharge')}{' '}
-              <span className="text-zinc-500">{T('formNoChargeHint')}</span>
+              <span className="text-ink-2">{T('formNoChargeHint')}</span>
             </span>
           </label>
         </Field>
@@ -286,14 +286,14 @@ export default function JobForm({
       </div>
 
       {state?.queued && (
-        <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-warn-bg border border-amber-200 text-amber-800 text-xs font-medium rounded-xl px-3 py-2.5">
           <CloudOff size={14} className="mt-0.5 shrink-0" />
           <span>{T('formOffline')}</span>
         </div>
       )}
 
       {state?.error && (
-        <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{state.error}</span>
         </div>

@@ -96,7 +96,7 @@ export default async function CustomerPortalPage({
 
   return (
     <div className="min-h-screen bg-paper font-sans">
-      <header className="bg-ink text-white">
+      <header className="bg-asphalt text-white">
         <div className="max-w-lg mx-auto px-4 py-8">
           <div className="mb-4">
             <Logo tone="onDark" size={28} />
@@ -113,15 +113,15 @@ export default async function CustomerPortalPage({
 
       <main className="max-w-lg mx-auto px-4 py-6 space-y-5 pb-12">
         {totalOwed > BigInt(0) && (
-          <Card className="p-5 bg-amber-50/60 border-amber-200">
+          <Card className="p-5 bg-warn-bg/60 border-amber-200">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-zinc-700 flex items-center gap-2">
-                <Wallet size={15} className="text-amber-600" /> {L('portal.balanceDue')}
+              <p className="text-sm font-semibold text-ink flex items-center gap-2">
+                <Wallet size={15} className="text-warn-text" /> {L('portal.balanceDue')}
               </p>
-              <p className="text-xl font-bold text-zinc-900">{formatCents(totalOwed, currency, moneyLocale)}</p>
+              <p className="text-xl font-bold text-ink">{formatCents(totalOwed, currency, moneyLocale)}</p>
             </div>
             {customer.business.phone && (
-              <p className="text-xs text-zinc-500 mt-2 flex items-center gap-1.5">
+              <p className="text-xs text-ink-2 mt-2 flex items-center gap-1.5">
                 <Phone size={12} /> {L('portal.questionsCall').replace('{business}', customer.business.name).replace('{phone}', customer.business.phone)}
               </p>
             )}
@@ -129,24 +129,24 @@ export default async function CustomerPortalPage({
         )}
 
         <section>
-          <h2 className="text-sm font-bold text-zinc-900 mb-2 flex items-center gap-2">
-            <Briefcase size={14} className="text-zinc-400" /> {L('portal.jobs')}
+          <h2 className="text-sm font-bold text-ink mb-2 flex items-center gap-2">
+            <Briefcase size={14} className="text-ink-2" /> {L('portal.jobs')}
           </h2>
           <Card>
             {jobs.length === 0 ? (
-              <p className="px-5 py-6 text-sm text-zinc-500 text-center">{L('portal.noJobs')}</p>
+              <p className="px-5 py-6 text-sm text-ink-2 text-center">{L('portal.noJobs')}</p>
             ) : (
-              <ul className="divide-y divide-zinc-100">
+              <ul className="divide-y divide-line">
                 {jobs.map((j) => (
                   <li key={j.id} className="px-5 py-3.5">
                     <div className="flex items-start justify-between gap-3">
-                      <p className="text-sm font-semibold text-zinc-900 flex-1 min-w-0">{j.title}</p>
-                      <span className="text-sm font-bold text-zinc-900 shrink-0">
+                      <p className="text-sm font-semibold text-ink flex-1 min-w-0">{j.title}</p>
+                      <span className="text-sm font-bold text-ink shrink-0">
                         {formatCents(j.priceCents, currency, moneyLocale)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between gap-3 mt-1.5">
-                      <p className="text-xs text-zinc-500">
+                      <p className="text-xs text-ink-2">
                         {formatDateShort(j.date, dateLocale)}{j.time ? ` · ${formatJobTime(j.time, locale)}` : ''}
                       </p>
                       <StatusBadge status={jobDisplayStatus(j.status, j.date)} />
@@ -159,24 +159,24 @@ export default async function CustomerPortalPage({
         </section>
 
         <section>
-          <h2 className="text-sm font-bold text-zinc-900 mb-2 flex items-center gap-2">
-            <FileText size={14} className="text-zinc-400" /> {L('portal.quotes')}
+          <h2 className="text-sm font-bold text-ink mb-2 flex items-center gap-2">
+            <FileText size={14} className="text-ink-2" /> {L('portal.quotes')}
           </h2>
           <Card>
             {quotes.length === 0 ? (
-              <p className="px-5 py-6 text-sm text-zinc-500 text-center">{L('portal.noQuotes')}</p>
+              <p className="px-5 py-6 text-sm text-ink-2 text-center">{L('portal.noQuotes')}</p>
             ) : (
-              <ul className="divide-y divide-zinc-100">
+              <ul className="divide-y divide-line">
                 {quotes.map((q) => (
                   <li key={q.id} className="px-5 py-3.5">
                     <div className="flex items-start justify-between gap-3">
-                      <p className="text-sm font-semibold text-zinc-900 flex-1 min-w-0">{q.title}</p>
-                      <span className="text-sm font-bold text-zinc-900 shrink-0">
+                      <p className="text-sm font-semibold text-ink flex-1 min-w-0">{q.title}</p>
+                      <span className="text-sm font-bold text-ink shrink-0">
                         {formatCents(q.totalCents, currency, moneyLocale)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between gap-3 mt-1.5">
-                      <p className="text-xs text-zinc-500">{q.number}</p>
+                      <p className="text-xs text-ink-2">{q.number}</p>
                       <StatusBadge status={q.status} />
                     </div>
                   </li>
@@ -187,28 +187,28 @@ export default async function CustomerPortalPage({
         </section>
 
         <section>
-          <h2 className="text-sm font-bold text-zinc-900 mb-2 flex items-center gap-2">
-            <ReceiptText size={14} className="text-zinc-400" /> {L('portal.invoices')}
+          <h2 className="text-sm font-bold text-ink mb-2 flex items-center gap-2">
+            <ReceiptText size={14} className="text-ink-2" /> {L('portal.invoices')}
           </h2>
           <Card>
             {balances.length === 0 ? (
-              <p className="px-5 py-6 text-sm text-zinc-500 text-center">{L('portal.noInvoices')}</p>
+              <p className="px-5 py-6 text-sm text-ink-2 text-center">{L('portal.noInvoices')}</p>
             ) : (
-              <ul className="divide-y divide-zinc-100">
+              <ul className="divide-y divide-line">
                 {balances.map((inv) => (
                   <li key={inv.id} className="flex items-center gap-3 px-5 py-3.5">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-zinc-900">{inv.number}</p>
-                      <p className="text-xs text-zinc-500">{formatDateShort(inv.date, dateLocale)}</p>
+                      <p className="text-sm font-semibold text-ink">{inv.number}</p>
+                      <p className="text-xs text-ink-2">{formatDateShort(inv.date, dateLocale)}</p>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="text-sm font-bold text-zinc-900">{formatCents(inv.totalCents, currency, moneyLocale)}</p>
+                      <p className="text-sm font-bold text-ink">{formatCents(inv.totalCents, currency, moneyLocale)}</p>
                       {inv.balance > BigInt(0) ? (
-                        <p className="text-[11px] font-semibold text-amber-700">
+                        <p className="text-[11px] font-semibold text-warn-text">
                           {L('portal.dueAmount').replace('{amount}', formatCents(inv.balance, currency, moneyLocale))}
                         </p>
                       ) : (
-                        <p className="text-[11px] font-semibold text-emerald-700">{L('portal.paid')}</p>
+                        <p className="text-[11px] font-semibold text-ok">{L('portal.paid')}</p>
                       )}
                     </div>
                   </li>
@@ -218,7 +218,7 @@ export default async function CustomerPortalPage({
           </Card>
         </section>
 
-        <p className="text-center text-[11px] text-zinc-400 pt-2">
+        <p className="text-center text-[11px] text-ink-2 pt-2">
           {L('portal.poweredBy').replace('{business}', customer.business.name)}
         </p>
       </main>

@@ -153,12 +153,12 @@ export default function PriceBookClient({
   return (
     <div className="space-y-6">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)]">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface p-6 rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)]">
         <div>
-          <h1 className="text-3xl font-bold text-zinc-900 tracking-tight">
+          <h1 className="text-3xl font-bold text-ink tracking-tight">
             {tr('t10misc.pricebook.title')}
           </h1>
-          <p className="text-zinc-500 mt-1">{tr('t10misc.pricebook.subtitle')}</p>
+          <p className="text-ink-2 mt-1">{tr('t10misc.pricebook.subtitle')}</p>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
@@ -174,7 +174,7 @@ export default function PriceBookClient({
 
           <button
             onClick={openAdd}
-            className="bg-ink hover:bg-graphite text-white px-5 min-h-[44px] rounded-xl font-semibold text-sm transition-colors inline-flex items-center gap-2 shadow-sm cursor-pointer"
+            className="bg-asphalt hover:bg-graphite text-white px-5 min-h-[44px] rounded-xl font-semibold text-sm transition-colors inline-flex items-center gap-2 shadow-sm cursor-pointer"
           >
             <Plus size={16} /> {tr('t10misc.pricebook.addService')}
           </button>
@@ -183,30 +183,30 @@ export default function PriceBookClient({
 
       {/* Main Container */}
       {error && (
-        <div className="bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-4 py-3 flex items-start gap-2">
+        <div className="bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-4 py-3 flex items-start gap-2">
           <span className="font-bold">{tr('t10misc.pricebook.errorPrefix')}</span>
           <span>{error}</span>
           <button
             type="button"
             onClick={() => setError(null)}
-            className="ml-auto text-rose-400 hover:text-rose-600 font-bold min-w-[44px] min-h-[44px] inline-flex items-center justify-center -mr-2 -my-2"
+            className="ml-auto text-rose-400 hover:text-danger font-bold min-w-[44px] min-h-[44px] inline-flex items-center justify-center -mr-2 -my-2"
             aria-label={tr('t10misc.pricebook.dismissError')}
           >
             ✕
           </button>
         </div>
       )}
-      <div className="bg-white rounded-2xl shadow-sm border border-zinc-200/60 p-6">
+      <div className="bg-surface rounded-2xl shadow-sm border border-line/60 p-6">
         {/* Search Bar */}
         <div className="relative max-w-md mb-6">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={16} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-2" size={16} />
           <input
             type="text"
             placeholder={tr('t10misc.pricebook.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             aria-label={tr('t10misc.pricebook.searchPlaceholder')}
-            className="w-full pl-9 pr-4 py-2.5 min-h-[44px] bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink"
+            className="w-full pl-9 pr-4 py-2.5 min-h-[44px] bg-surface-2 border border-line rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-asphalt"
           />
         </div>
 
@@ -215,18 +215,18 @@ export default function PriceBookClient({
           {filteredServices.map((service) => (
             <div
               key={service.id}
-              className="p-5 border border-zinc-200 rounded-2xl hover:border-smoke hover:shadow-md transition-all group relative bg-white"
+              className="p-5 border border-line rounded-2xl hover:border-smoke hover:shadow-md transition-all group relative bg-surface"
             >
               <div className="flex justify-between items-start mb-3">
-                <TradeIcon trade={tradeKeyForService(service)} size={24} className="text-zinc-700" />
+                <TradeIcon trade={tradeKeyForService(service)} size={24} className="text-ink" />
 
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-lg text-zinc-900">
+                  <span className="font-bold text-lg text-ink">
                     {formatMoney(service.price, currency)}
                   </span>
                   <button
                     onClick={() => openEdit(service)}
-                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 text-zinc-500 hover:text-zinc-800 min-w-[44px] min-h-[44px] inline-flex items-center justify-center hover:bg-zinc-100 rounded-lg transition-all"
+                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 text-ink-2 hover:text-ink min-w-[44px] min-h-[44px] inline-flex items-center justify-center hover:bg-surface-2 rounded-lg transition-all"
                     title={tr('t10misc.pricebook.editTitle')}
                     aria-label={`${tr('t10misc.pricebook.editService')}: ${service.name}`}
                   >
@@ -234,7 +234,7 @@ export default function PriceBookClient({
                   </button>
                   <button
                     onClick={() => setPendingDeleteId(service.id)}
-                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 text-rose-500 hover:text-rose-700 min-w-[44px] min-h-[44px] inline-flex items-center justify-center hover:bg-rose-50 rounded-lg transition-all"
+                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 text-rose-500 hover:text-danger min-w-[44px] min-h-[44px] inline-flex items-center justify-center hover:bg-danger-bg rounded-lg transition-all"
                     title={tr('t10misc.pricebook.removeTitle')}
                     aria-label={`${tr('t10misc.pricebook.removeTitle')}: ${service.name}`}
                   >
@@ -243,15 +243,15 @@ export default function PriceBookClient({
                 </div>
               </div>
 
-              <h3 className="font-bold text-base text-zinc-900 mb-1">{service.name}</h3>
+              <h3 className="font-bold text-base text-ink mb-1">{service.name}</h3>
               {service.description ? (
-                <p className="text-xs text-zinc-500 line-clamp-2 mb-2">{service.description}</p>
+                <p className="text-xs text-ink-2 line-clamp-2 mb-2">{service.description}</p>
               ) : (
-                <p className="text-xs text-zinc-500 mb-2">{tr('t10misc.pricebook.standardFlat')}</p>
+                <p className="text-xs text-ink-2 mb-2">{tr('t10misc.pricebook.standardFlat')}</p>
               )}
               <div className="flex items-center justify-between gap-2 mt-1">
                 {service.durationMin != null ? (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-zinc-600 bg-zinc-100 rounded-lg px-2 py-1">
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-ink-2 bg-surface-2 rounded-lg px-2 py-1">
                     <Clock size={11} /> {service.durationMin} min
                   </span>
                 ) : (
@@ -268,38 +268,38 @@ export default function PriceBookClient({
           ))}
 
           {filteredServices.length === 0 && (
-            <div className="col-span-full py-16 flex flex-col items-center justify-center text-zinc-500 border-2 border-dashed border-zinc-200 rounded-2xl text-center">
+            <div className="col-span-full py-16 flex flex-col items-center justify-center text-ink-2 border-2 border-dashed border-line rounded-2xl text-center">
               <Tag size={40} className="text-zinc-300 mb-3" />
               {initialServices.length === 0 ? (
                 <>
-                  <h3 className="text-base font-bold text-zinc-900 mb-1">
+                  <h3 className="text-base font-bold text-ink mb-1">
                     {tr('t10misc.pricebook.noServicesTitle')}
                   </h3>
-                  <p className="text-xs text-zinc-500 mb-4 max-w-xs">
+                  <p className="text-xs text-ink-2 mb-4 max-w-xs">
                     {tr('t10misc.pricebook.noServicesDesc')}
                   </p>
 
                   <button
                     onClick={handleSeed}
                     disabled={isPending}
-                    className="bg-ink text-white px-4 min-h-[44px] rounded-xl text-xs font-semibold hover:bg-graphite transition-colors inline-flex items-center gap-2 disabled:opacity-60"
+                    className="bg-asphalt text-white px-4 min-h-[44px] rounded-xl text-xs font-semibold hover:bg-graphite transition-colors inline-flex items-center gap-2 disabled:opacity-60"
                   >
                     <ListPlus size={14} /> {tr('t10misc.pricebook.seedButton')}
                   </button>
                 </>
               ) : (
                 <>
-                  <h3 className="text-base font-bold text-zinc-900 mb-1">
+                  <h3 className="text-base font-bold text-ink mb-1">
                     {tr('t10misc.pricebook.noMatchTitle')}
                   </h3>
-                  <p className="text-xs text-zinc-500 mb-4 max-w-xs">
+                  <p className="text-xs text-ink-2 mb-4 max-w-xs">
                     {tr('t10misc.pricebook.noMatchDesc')
                       .replace('{count}', String(initialServices.length))
                       .replace('{s}', initialServices.length === 1 ? '' : 's')}
                   </p>
                   <button
                     onClick={() => setSearchQuery('')}
-                    className="bg-zinc-900 text-white px-4 min-h-[44px] rounded-xl text-xs font-semibold hover:bg-zinc-700 transition-colors"
+                    className="bg-asphalt text-white px-4 min-h-[44px] rounded-xl text-xs font-semibold hover:bg-zinc-700 transition-colors"
                   >
                     {tr('t10misc.pricebook.clearSearch')}
                   </button>
@@ -316,11 +316,11 @@ export default function PriceBookClient({
         onClose={() => setIsModalOpen(false)}
         title={tr(editingId ? 't10misc.pricebook.modalEditTitle' : 't10misc.pricebook.modalTitle')}
       >
-        <p className="text-xs text-zinc-500 mb-6">{tr(editingId ? 't10misc.pricebook.modalEditDesc' : 't10misc.pricebook.modalDesc')}</p>
+        <p className="text-xs text-ink-2 mb-6">{tr(editingId ? 't10misc.pricebook.modalEditDesc' : 't10misc.pricebook.modalDesc')}</p>
 
         <form onSubmit={handleAddService} className="space-y-4">
           {error && (
-            <div className="bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+            <div className="bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
               {error}
             </div>
           )}
@@ -384,7 +384,7 @@ export default function PriceBookClient({
                 aria-checked={iconKey === ''}
                 title={tr('t10misc.pricebook.tradeIconAuto')}
                 onClick={() => setIconKey('')}
-                className={`min-h-[52px] rounded-xl border flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold transition-colors ${iconKey === '' ? 'border-ink bg-ink text-white' : 'border-zinc-200 text-zinc-500 hover:bg-zinc-50'}`}
+                className={`min-h-[52px] rounded-xl border flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold transition-colors ${iconKey === '' ? 'border-asphalt bg-asphalt text-white' : 'border-line text-ink-2 hover:bg-surface-2'}`}
               >
                 <span className="text-sm font-bold">A</span>
                 {tr('t10misc.pricebook.tradeIconAuto')}
@@ -397,7 +397,7 @@ export default function PriceBookClient({
                   aria-checked={iconKey === key}
                   title={tr(TRADE_LABEL_KEYS[key])}
                   onClick={() => setIconKey(key)}
-                  className={`min-h-[52px] rounded-xl border flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold transition-colors ${iconKey === key ? 'border-ink bg-ink text-white' : 'border-zinc-200 text-zinc-500 hover:bg-zinc-50'}`}
+                  className={`min-h-[52px] rounded-xl border flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold transition-colors ${iconKey === key ? 'border-asphalt bg-asphalt text-white' : 'border-line text-ink-2 hover:bg-surface-2'}`}
                 >
                   <TradeIcon trade={key} size={20} />
                   <span className="max-w-full truncate px-0.5">{tr(TRADE_LABEL_KEYS[key])}</span>

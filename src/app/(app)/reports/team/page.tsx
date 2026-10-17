@@ -113,7 +113,7 @@ export default async function TeamPerformancePage({
     <div className="space-y-6">
       <Link
         href="/reports"
-        className="inline-flex items-center gap-1.5 min-h-[44px] text-xs font-semibold text-zinc-500 hover:text-zinc-900"
+        className="inline-flex items-center gap-1.5 min-h-[44px] text-xs font-semibold text-ink-2 hover:text-ink"
       >
         <ArrowLeft size={14} /> {tr('t10misc.teamreport.backToReports')}
       </Link>
@@ -122,12 +122,12 @@ export default async function TeamPerformancePage({
         title={tr('t10misc.teamreport.title')}
         subtitle={tr('t10misc.teamreport.subtitle').replace('{label}', label)}
         actions={
-          <div className="flex rounded-xl border border-zinc-200 overflow-hidden text-xs font-semibold">
+          <div className="flex rounded-xl border border-line overflow-hidden text-xs font-semibold">
             <Link
               href="/reports/team?period=week"
               className={cn(
                 'px-4 min-h-[44px] inline-flex items-center transition-colors',
-                period === 'week' ? 'bg-ink text-white' : 'bg-white text-zinc-600 hover:bg-zinc-50'
+                period === 'week' ? 'bg-asphalt text-white' : 'bg-surface text-ink-2 hover:bg-surface-2'
               )}
             >
               {tr('t10misc.teamreport.week')}
@@ -136,7 +136,7 @@ export default async function TeamPerformancePage({
               href="/reports/team?period=month"
               className={cn(
                 'px-4 min-h-[44px] inline-flex items-center transition-colors',
-                period === 'month' ? 'bg-ink text-white' : 'bg-white text-zinc-600 hover:bg-zinc-50'
+                period === 'month' ? 'bg-asphalt text-white' : 'bg-surface text-ink-2 hover:bg-surface-2'
               )}
             >
               {tr('t10misc.teamreport.month')}
@@ -160,14 +160,14 @@ export default async function TeamPerformancePage({
           value={String(totalJobs)}
           sub={tr('t10misc.teamreport.statJobsSub')}
           icon={<Briefcase size={16} />}
-          accent="bg-emerald-100 text-emerald-700"
+          accent="bg-emerald-100 text-ok"
         />
         <StatCard
           label={tr('t10misc.teamreport.statRevenue')}
           value={formatMoney(totalRevenue, currency)}
           sub={tr('t10misc.teamreport.statRevenueSub')}
           icon={<DollarSign size={16} />}
-          accent="bg-amber-100 text-amber-700"
+          accent="bg-amber-100 text-warn-text"
         />
         <StatCard
           label={tr('t10misc.teamreport.statMostHours')}
@@ -190,45 +190,45 @@ export default async function TeamPerformancePage({
             {/* Mobile cards */}
             <div className="space-y-2.5 md:hidden p-4">
               {ranked.map((r, i) => (
-                <div key={r.id} className="rounded-xl border border-zinc-200 bg-white p-3.5">
+                <div key={r.id} className="rounded-xl border border-line bg-surface p-3.5">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-xl bg-smoke text-ink flex items-center justify-center font-bold text-xs shrink-0">
                       {(r.name || r.email).charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="font-bold text-zinc-900 truncate flex items-center gap-2">
+                      <p className="font-bold text-ink truncate flex items-center gap-2">
                         {r.name || r.email}
                         {i === 0 && r.minutes > 0 && (
                           <Trophy size={13} className="text-amber-500 shrink-0" />
                         )}
                       </p>
-                      <p className="text-[11px] text-zinc-400">
+                      <p className="text-[11px] text-ink-2">
                         {r.role === 'ADMIN' ? tr('t10misc.teamreport.admin') : tr('t10misc.teamreport.member')}
                       </p>
                     </div>
                   </div>
                   <dl className="mt-3 grid grid-cols-3 gap-2 text-center">
-                    <div className="rounded-lg bg-zinc-50 px-2 py-2">
-                      <dt className="text-[10px] font-bold text-zinc-400">
+                    <div className="rounded-lg bg-surface-2 px-2 py-2">
+                      <dt className="text-[10px] font-bold text-ink-2">
                         {tr('t10misc.teamreport.hoursCol')}
                       </dt>
-                      <dd className="text-sm font-bold text-zinc-900 tabular-nums mt-0.5">
+                      <dd className="text-sm font-bold text-ink tabular-nums mt-0.5">
                         {formatDuration(r.minutes)}
                       </dd>
                     </div>
-                    <div className="rounded-lg bg-zinc-50 px-2 py-2">
-                      <dt className="text-[10px] font-bold text-zinc-400">
+                    <div className="rounded-lg bg-surface-2 px-2 py-2">
+                      <dt className="text-[10px] font-bold text-ink-2">
                         {tr('t10misc.teamreport.jobsCol')}
                       </dt>
-                      <dd className="text-sm font-bold text-zinc-900 tabular-nums mt-0.5">
+                      <dd className="text-sm font-bold text-ink tabular-nums mt-0.5">
                         {r.jobsCompleted}
                       </dd>
                     </div>
-                    <div className="rounded-lg bg-zinc-50 px-2 py-2">
-                      <dt className="text-[10px] font-bold text-zinc-400">
+                    <div className="rounded-lg bg-surface-2 px-2 py-2">
+                      <dt className="text-[10px] font-bold text-ink-2">
                         {tr('t10misc.teamreport.revenueCol')}
                       </dt>
-                      <dd className="text-sm font-bold text-zinc-900 tabular-nums mt-0.5">
+                      <dd className="text-sm font-bold text-ink tabular-nums mt-0.5">
                         {formatMoney(r.revenue, currency)}
                       </dd>
                     </div>
@@ -240,29 +240,29 @@ export default async function TeamPerformancePage({
             <div className="overflow-x-auto hidden md:block">
               <table className="w-full text-sm min-w-[560px]">
                 <thead>
-                  <tr className="text-left text-[11px] font-bold text-zinc-400 border-b border-zinc-100">
+                  <tr className="text-left text-[11px] font-bold text-ink-2 border-b border-line">
                     <th className="px-5 py-3">{tr('t10misc.teamreport.memberCol')}</th>
                     <th className="px-5 py-3 text-right">{tr('t10misc.teamreport.hoursCol')}</th>
                     <th className="px-5 py-3 text-right">{tr('t10misc.teamreport.jobsCol')}</th>
                     <th className="px-5 py-3 text-right">{tr('t10misc.teamreport.revenueCol')}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-100">
+                <tbody className="divide-y divide-line">
                   {ranked.map((r, i) => (
-                    <tr key={r.id} className="hover:bg-zinc-50/60">
+                    <tr key={r.id} className="hover:bg-surface-2/60">
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
                           <div className="w-9 h-9 rounded-xl bg-smoke text-ink flex items-center justify-center font-bold text-xs shrink-0">
                             {(r.name || r.email).charAt(0).toUpperCase()}
                           </div>
                           <div className="min-w-0">
-                            <p className="font-bold text-zinc-900 truncate flex items-center gap-2">
+                            <p className="font-bold text-ink truncate flex items-center gap-2">
                               {r.name || r.email}
                               {i === 0 && r.minutes > 0 && (
                                 <Trophy size={13} className="text-amber-500 shrink-0" />
                               )}
                             </p>
-                            <p className="text-[11px] text-zinc-400">
+                            <p className="text-[11px] text-ink-2">
                               {r.role === 'ADMIN'
                                 ? tr('t10misc.teamreport.admin')
                                 : tr('t10misc.teamreport.member')}
@@ -270,13 +270,13 @@ export default async function TeamPerformancePage({
                           </div>
                         </div>
                       </td>
-                      <td className="px-5 py-3.5 text-right font-bold text-zinc-900 tabular-nums">
+                      <td className="px-5 py-3.5 text-right font-bold text-ink tabular-nums">
                         {formatDuration(r.minutes)}
                       </td>
-                      <td className="px-5 py-3.5 text-right font-semibold text-zinc-700 tabular-nums">
+                      <td className="px-5 py-3.5 text-right font-semibold text-ink tabular-nums">
                         {r.jobsCompleted}
                       </td>
-                      <td className="px-5 py-3.5 text-right font-bold text-zinc-900 tabular-nums">
+                      <td className="px-5 py-3.5 text-right font-bold text-ink tabular-nums">
                         {formatMoney(r.revenue, currency)}
                       </td>
                     </tr>
@@ -288,7 +288,7 @@ export default async function TeamPerformancePage({
         )}
       </Card>
 
-      <p className="text-xs text-zinc-400">{tr('t10misc.teamreport.footnote')}</p>
+      <p className="text-xs text-ink-2">{tr('t10misc.teamreport.footnote')}</p>
     </div>
   );
 }

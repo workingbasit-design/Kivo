@@ -55,9 +55,9 @@ const ENTITY_LABEL: Record<SyncItemResult['entityType'], string> = {
 };
 
 function StatusIcon({ status }: { status: SyncItemResult['status'] }) {
-  if (status === 'synced') return <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />;
-  if (status === 'failed') return <XCircle size={14} className="text-rose-600 shrink-0" />;
-  return <MinusCircle size={14} className="text-amber-600 shrink-0" />;
+  if (status === 'synced') return <CheckCircle2 size={14} className="text-ok shrink-0" />;
+  if (status === 'failed') return <XCircle size={14} className="text-danger shrink-0" />;
+  return <MinusCircle size={14} className="text-warn-text shrink-0" />;
 }
 
 /**
@@ -154,10 +154,10 @@ export default function QuickBooksCard({
 
   const bannerClass =
     banner?.kind === 'ok'
-      ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+      ? 'bg-ok-bg text-emerald-800 border-emerald-200'
       : banner?.kind === 'warn'
-        ? 'bg-amber-50 text-amber-800 border-amber-200'
-        : 'bg-rose-50 text-rose-800 border-rose-200';
+        ? 'bg-warn-bg text-amber-800 border-amber-200'
+        : 'bg-danger-bg text-rose-800 border-rose-200';
 
   const notable = result?.items.filter((i) => i.status !== 'synced') ?? [];
 
@@ -165,8 +165,8 @@ export default function QuickBooksCard({
     <Card>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="font-bold text-zinc-900">{t(locale, 'quickbooks.cardTitle')}</h3>
-          <p className="text-sm text-zinc-500 mt-1">{t(locale, 'quickbooks.cardDesc')}</p>
+          <h3 className="font-bold text-ink">{t(locale, 'quickbooks.cardTitle')}</h3>
+          <p className="text-sm text-ink-2 mt-1">{t(locale, 'quickbooks.cardDesc')}</p>
         </div>
         <Badge tone={connected ? 'success' : 'neutral'}>
           {connected ? t(locale, 'quickbooks.connected') : t(locale, 'quickbooks.notConnected')}
@@ -185,8 +185,8 @@ export default function QuickBooksCard({
 
       {/* Setup instructions when the Intuit app isn't configured yet. */}
       {banner?.kind === 'warn' && (
-        <div className="mt-4 rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-700 space-y-2">
-          <p className="font-bold text-zinc-900">{t(locale, 'quickbooks.setupTitle')}</p>
+        <div className="mt-4 rounded-xl border border-line bg-surface-2 p-4 text-sm text-ink space-y-2">
+          <p className="font-bold text-ink">{t(locale, 'quickbooks.setupTitle')}</p>
           <p>{t(locale, 'quickbooks.setupIntro')}</p>
           <ol className="list-decimal ml-5 space-y-1.5">
             <li>
@@ -202,7 +202,7 @@ export default function QuickBooksCard({
             </li>
             <li>
               {t(locale, 'quickbooks.setupStep2')}
-              <code className="block mt-1 px-2 py-1.5 rounded-lg bg-white border border-zinc-200 text-xs break-all select-all">
+              <code className="block mt-1 px-2 py-1.5 rounded-lg bg-surface border border-line text-xs break-all select-all">
                 {callbackUri}
               </code>
             </li>
@@ -234,7 +234,7 @@ export default function QuickBooksCard({
       </div>
 
       {connected && (
-        <p className="mt-3 text-xs text-zinc-500">
+        <p className="mt-3 text-xs text-ink-2">
           {t(locale, 'quickbooks.lastSync')}:{' '}
           {lastSyncAt
             ? new Date(lastSyncAt).toLocaleString(locale === 'fr' ? 'fr-CA' : 'en-CA')
@@ -244,24 +244,24 @@ export default function QuickBooksCard({
 
       {/* Per-run summary: every entity accounted for. */}
       {result && (
-        <div className="mt-4 rounded-xl border border-zinc-200 overflow-hidden">
-          <p className="px-4 py-2.5 bg-zinc-50 text-sm font-bold text-zinc-800 border-b border-zinc-200">
+        <div className="mt-4 rounded-xl border border-line overflow-hidden">
+          <p className="px-4 py-2.5 bg-surface-2 text-sm font-bold text-ink border-b border-line">
             {t(locale, 'quickbooks.summaryTitle')}
           </p>
-          <div className="divide-y divide-zinc-100">
+          <div className="divide-y divide-line">
             {(Object.keys(result.summary) as Array<keyof SyncResult['summary']>).map((k) => {
               const b = result.summary[k];
               return (
                 <div key={k} className="px-4 py-2.5 flex items-center justify-between text-sm">
-                  <span className="font-semibold text-zinc-700">{ENTITY_LABEL[k]}</span>
+                  <span className="font-semibold text-ink">{ENTITY_LABEL[k]}</span>
                   <span className="flex gap-3 text-xs">
-                    <span className="text-emerald-700 font-semibold">
+                    <span className="text-ok font-semibold">
                       {b.synced} {t(locale, 'quickbooks.synced').toLowerCase()}
                     </span>
-                    <span className="text-amber-700 font-semibold">
+                    <span className="text-warn-text font-semibold">
                       {b.skipped} {t(locale, 'quickbooks.skipped').toLowerCase()}
                     </span>
-                    <span className="text-rose-700 font-semibold">
+                    <span className="text-danger font-semibold">
                       {b.failed} {t(locale, 'quickbooks.failed').toLowerCase()}
                     </span>
                   </span>
@@ -270,21 +270,21 @@ export default function QuickBooksCard({
             })}
           </div>
           {result.items.length === 0 && (
-            <p className="px-4 py-3 text-sm text-zinc-500">{t(locale, 'quickbooks.noItems')}</p>
+            <p className="px-4 py-3 text-sm text-ink-2">{t(locale, 'quickbooks.noItems')}</p>
           )}
           {notable.length > 0 && (
-            <ul className="px-4 py-2 space-y-2 bg-amber-50/50 border-t border-zinc-200">
+            <ul className="px-4 py-2 space-y-2 bg-warn-bg/50 border-t border-line">
               {notable.slice(0, 20).map((i) => (
                 <li key={`${i.entityType}-${i.entityId}`} className="flex items-start gap-2 text-xs">
                   <StatusIcon status={i.status} />
                   <span>
-                    <span className="font-semibold text-zinc-800">{i.label}</span>
-                    <span className="text-zinc-500"> - {i.detail}</span>
+                    <span className="font-semibold text-ink">{i.label}</span>
+                    <span className="text-ink-2"> - {i.detail}</span>
                   </span>
                 </li>
               ))}
               {notable.length > 20 && (
-                <li className="text-xs text-zinc-500">+{notable.length - 20} more</li>
+                <li className="text-xs text-ink-2">+{notable.length - 20} more</li>
               )}
             </ul>
           )}

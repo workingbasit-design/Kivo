@@ -8,7 +8,7 @@ import { HONEYPOT_FIELD, FORM_STARTED_FIELD } from '@/lib/bot-check';
 import { useResolvedT } from '@/hooks/useResolvedLocale';
 
 const inputClass =
-  'w-full min-h-[44px] rounded-xl border border-zinc-200 bg-white px-3.5 py-2.5 text-sm text-zinc-800 placeholder:text-zinc-400 outline-none focus:border-ink';
+  'w-full min-h-[44px] rounded-xl border border-line bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-2 outline-none focus:border-asphalt';
 
 export default function QuoteRequestForm() {
   const { t } = useResolvedT();
@@ -24,25 +24,25 @@ export default function QuoteRequestForm() {
   // out of the render path.
   const [formStartedAt] = useState(() => String(Date.now()));
 
-  const labelClass = 'block text-xs font-bold text-zinc-700 mb-1';
+  const labelClass = 'block text-xs font-bold text-ink mb-1';
 
   // Matched: request landed in provider inboxes.
   if (state?.ok && !state.unmatched) {
     return (
-      <div className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-6 md:p-8 text-center">
+      <div className="bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-6 md:p-8 text-center">
         <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center mx-auto mb-4">
-          <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+          <CheckCircle2 className="w-6 h-6 text-ok" />
         </div>
-        <h2 className="text-lg font-bold text-zinc-900">{t('t10misc.directory.qrSentTitle')}</h2>
-        <p className="text-sm text-zinc-500 mt-1">{t('t10misc.directory.qrSentSubtitle')}</p>
+        <h2 className="text-lg font-bold text-ink">{t('t10misc.directory.qrSentTitle')}</h2>
+        <p className="text-sm text-ink-2 mt-1">{t('t10misc.directory.qrSentSubtitle')}</p>
         <ul className="mt-3 space-y-1.5">
           {(state.businessNames ?? []).map((n) => (
-            <li key={n} className="text-sm font-semibold text-zinc-800 bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-2">
+            <li key={n} className="text-sm font-semibold text-ink bg-surface-2 border border-line rounded-xl px-4 py-2">
               {n}
             </li>
           ))}
         </ul>
-        <p className="text-xs text-zinc-400 mt-4">{t('t10misc.directory.qrSentNote')}</p>
+        <p className="text-xs text-ink-2 mt-4">{t('t10misc.directory.qrSentNote')}</p>
         <Link
           href="/directory"
           className="inline-flex items-center justify-center min-h-[44px] mt-4 text-sm font-bold text-ink hover:underline px-3"
@@ -56,15 +56,15 @@ export default function QuoteRequestForm() {
   // Unmatched: request saved as an open lead draft - nothing was dropped.
   if (state?.ok && state.unmatched) {
     return (
-      <div className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-6 md:p-8 text-center">
+      <div className="bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-6 md:p-8 text-center">
         <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center mx-auto mb-4">
-          <Clock className="w-6 h-6 text-amber-600" />
+          <Clock className="w-6 h-6 text-warn-text" />
         </div>
-        <h2 className="text-lg font-bold text-zinc-900">{t('t10misc.directory.qrSavedTitle')}</h2>
-        <p className="text-sm text-zinc-600 mt-2 max-w-md mx-auto leading-relaxed">
+        <h2 className="text-lg font-bold text-ink">{t('t10misc.directory.qrSavedTitle')}</h2>
+        <p className="text-sm text-ink-2 mt-2 max-w-md mx-auto leading-relaxed">
           {t('t10misc.directory.qrSavedBody').replaceAll('{city}', state.city ?? '')}
         </p>
-        <div className="mt-4 bg-paper border border-smoke rounded-xl px-4 py-3 text-xs text-zinc-600">
+        <div className="mt-4 bg-paper border border-smoke rounded-xl px-4 py-3 text-xs text-ink-2">
           {t('t10misc.directory.qrSavedTip')}
         </div>
         <div className="mt-5 flex items-center justify-center gap-4">
@@ -73,7 +73,7 @@ export default function QuoteRequestForm() {
           </Link>
           <Link
             href="/directory/request"
-            className="inline-flex items-center min-h-[44px] text-sm font-bold text-zinc-600 hover:text-zinc-900 hover:underline px-3"
+            className="inline-flex items-center min-h-[44px] text-sm font-bold text-ink-2 hover:text-ink hover:underline px-3"
           >
             {t('t10misc.directory.qrAnother')}
           </Link>
@@ -86,7 +86,7 @@ export default function QuoteRequestForm() {
     <form
       key={state?.values ? 'retry' : 'fresh'}
       action={formAction}
-      className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-6 md:p-8 space-y-4"
+      className="bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-6 md:p-8 space-y-4"
     >
       {/* Honeypot: invisible to humans (off-screen + aria-hidden); bots that
           fill it are rejected server-side. */}
@@ -110,8 +110,8 @@ export default function QuoteRequestForm() {
           <MessageSquareQuote className="w-5 h-5 text-ink" />
         </div>
         <div>
-          <h1 className="text-lg font-bold text-zinc-900 tracking-tight">{t('t10misc.directory.qrTitle')}</h1>
-          <p className="text-xs text-zinc-500">{t('t10misc.directory.qrSubtitle')}</p>
+          <h1 className="text-lg font-bold text-ink tracking-tight">{t('t10misc.directory.qrTitle')}</h1>
+          <p className="text-xs text-ink-2">{t('t10misc.directory.qrSubtitle')}</p>
         </div>
       </div>
 
@@ -150,7 +150,7 @@ export default function QuoteRequestForm() {
         <div>
           <label htmlFor="qr-area" className={labelClass}>
             {t('t10misc.directory.qrArea')}{' '}
-            <span className="font-normal text-zinc-400">{t('t10misc.directory.qrOptional')}</span>
+            <span className="font-normal text-ink-2">{t('t10misc.directory.qrOptional')}</span>
           </label>
           <input
             id="qr-area"
@@ -166,7 +166,7 @@ export default function QuoteRequestForm() {
       <div>
         <label htmlFor="qr-details" className={labelClass}>
           {t('t10misc.directory.qrDetails')}{' '}
-          <span className="font-normal text-zinc-400">{t('t10misc.directory.qrOptional')}</span>
+          <span className="font-normal text-ink-2">{t('t10misc.directory.qrOptional')}</span>
         </label>
         <textarea
           id="qr-details"
@@ -210,12 +210,12 @@ export default function QuoteRequestForm() {
             placeholder={t('t10misc.directory.qrPhonePlaceholder')}
             className={inputClass}
           />
-          <p className="text-[11px] text-zinc-400 mt-1">{t('t10misc.directory.qrPhoneHint')}</p>
+          <p className="text-[11px] text-ink-2 mt-1">{t('t10misc.directory.qrPhoneHint')}</p>
         </div>
       </div>
 
       {state?.error && (
-        <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5" role="alert">
+        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5" role="alert">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{state.error}</span>
         </div>
@@ -224,11 +224,11 @@ export default function QuoteRequestForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="w-full min-h-[48px] inline-flex items-center justify-center gap-2 rounded-xl bg-ink hover:bg-graphite text-white text-sm font-bold px-5 py-3 transition-colors disabled:opacity-60"
+        className="w-full min-h-[48px] inline-flex items-center justify-center gap-2 rounded-xl bg-asphalt hover:bg-graphite text-white text-sm font-bold px-5 py-3 transition-colors disabled:opacity-60"
       >
         <Send size={15} /> {isPending ? t('t10misc.directory.qrSending') : t('t10misc.directory.qrSubmit')}
       </button>
-      <p className="text-[11px] text-zinc-400 text-center">{t('t10misc.directory.qrFootnote')}</p>
+      <p className="text-[11px] text-ink-2 text-center">{t('t10misc.directory.qrFootnote')}</p>
     </form>
   );
 }

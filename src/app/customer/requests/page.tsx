@@ -79,7 +79,7 @@ export default async function CustomerRequestsPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-bold text-[15px] text-zinc-900 truncate">
+                        <h3 className="font-bold text-[15px] text-ink truncate">
                           {req.business.name}
                         </h3>
                         <StatusBadge
@@ -87,13 +87,13 @@ export default async function CustomerRequestsPage() {
                           label={tr(`customer.requests.status.${req.status}`)}
                         />
                       </div>
-                      <p className="text-xs font-medium text-zinc-700 truncate mt-0.5">
+                      <p className="text-xs font-medium text-ink truncate mt-0.5">
                         {req.service}
                       </p>
                       {req.messages[0] && (
-                        <p className="text-xs text-zinc-500 truncate mt-1">{req.messages[0].body}</p>
+                        <p className="text-xs text-ink-2 truncate mt-1">{req.messages[0].body}</p>
                       )}
-                      <p className="text-[11px] text-zinc-400 mt-1 inline-flex items-center gap-1">
+                      <p className="text-[11px] text-ink-2 mt-1 inline-flex items-center gap-1">
                         <Clock className="w-3 h-3" />
                         {timeAgo(req.updatedAt)}
                       </p>

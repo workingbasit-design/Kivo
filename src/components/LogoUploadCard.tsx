@@ -54,14 +54,14 @@ export default function LogoUploadCard({
 
   return (
     <Card className="p-6 max-w-2xl">
-      <h2 className="text-base font-bold text-zinc-900">
+      <h2 className="text-base font-bold text-ink">
         {t(locale, 't10misc.settings.logoTitle')}
       </h2>
-      <p className="mt-1 text-sm text-zinc-500">
+      <p className="mt-1 text-sm text-ink-2">
         {t(locale, 't10misc.settings.logoHint')}
       </p>
       <div className="mt-4 flex items-center gap-4">
-        <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-50 flex items-center justify-center">
+        <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-line bg-surface-2 flex items-center justify-center">
           {logoUrl ? (
             <img src={logoUrl} alt="" className="h-full w-full object-contain" />
           ) : (
@@ -81,7 +81,7 @@ export default function LogoUploadCard({
             type="button"
             onClick={() => fileRef.current?.click()}
             disabled={busy}
-            className="inline-flex items-center gap-2 rounded-xl bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-xl bg-asphalt px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
           >
             {busy ? <Loader2 size={16} className="animate-spin" /> : <ImagePlus size={16} />}
             {logoUrl
@@ -93,7 +93,7 @@ export default function LogoUploadCard({
               type="button"
               onClick={onRemove}
               disabled={busy}
-              className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 px-4 py-2.5 text-sm font-semibold text-zinc-700 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl border border-line px-4 py-2.5 text-sm font-semibold text-ink disabled:opacity-50"
             >
               <Trash2 size={16} />
               {t(locale, 't10misc.settings.logoRemove')}
@@ -101,7 +101,7 @@ export default function LogoUploadCard({
           )}
         </div>
       </div>
-      <p className="mt-3 text-xs text-zinc-400">
+      <p className="mt-3 text-xs text-ink-2">
         {t(locale, 't10misc.settings.logoTypes')}
       </p>
     </Card>

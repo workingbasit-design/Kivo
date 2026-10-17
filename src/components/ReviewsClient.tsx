@@ -94,7 +94,7 @@ function AddReviewForm({
         </button>
       ) : (
         <Card className="p-5 mb-6">
-          <h3 className="font-bold text-zinc-900 mb-4">{t(locale, 't10money.reviewAddTitle')}</h3>
+          <h3 className="font-bold text-ink mb-4">{t(locale, 't10money.reviewAddTitle')}</h3>
           <form action={formAction} className="space-y-4">
             <Field label={t(locale, 't10money.reviewJobLabel')} hint={t(locale, 't10money.reviewJobHint')}>
               <select name="jobId" required defaultValue="" className={inputClass}>
@@ -134,7 +134,7 @@ function AddReviewForm({
             </Field>
 
             {state?.error && (
-              <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+              <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
                 <AlertCircle size={14} className="mt-0.5 shrink-0" />
                 <span>{state.error}</span>
               </div>
@@ -175,9 +175,9 @@ function ReviewRow({ review, locale }: { review: ReviewItem; locale: Locale }) {
   };
 
   return (
-    <div className="px-5 py-4 border-b border-zinc-100 last:border-0">
+    <div className="px-5 py-4 border-b border-line last:border-0">
       {error && (
-        <div className="bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2 mb-2">
+        <div className="bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2 mb-2">
           Couldn&apos;t delete: {error}
         </div>
       )}
@@ -186,25 +186,25 @@ function ReviewRow({ review, locale }: { review: ReviewItem; locale: Locale }) {
           <div className="flex flex-wrap items-center gap-2 mb-1">
             <Stars rating={review.rating} />
             {review.verified ? (
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-ok bg-ok-bg border border-emerald-200 rounded-full px-2 py-0.5">
                 <BadgeCheck size={11} />
                 {t(locale, 't10money.reviewVerifiedBadge')}
               </span>
             ) : (
-              <span className="text-[10px] font-bold text-zinc-400">
+              <span className="text-[10px] font-bold text-ink-2">
                 via {review.source}
               </span>
             )}
           </div>
-          {review.comment && <p className="text-sm text-zinc-800">{review.comment}</p>}
-          <p className="text-xs text-zinc-400 mt-1">
+          {review.comment && <p className="text-sm text-ink">{review.comment}</p>}
+          <p className="text-xs text-ink-2 mt-1">
             {review.reviewerName ?? review.customerName ?? t(locale, 't10money.reviewAnonymous')} · {formatDateShort(review.reviewedAt ?? review.createdAt)}
           </p>
         </div>
         <button
           onClick={() => setConfirming(true)}
           disabled={isPending}
-          className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center text-zinc-300 hover:text-rose-600 rounded-xl hover:bg-rose-50 transition-colors shrink-0 disabled:opacity-50"
+          className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center text-zinc-300 hover:text-danger rounded-xl hover:bg-danger-bg transition-colors shrink-0 disabled:opacity-50"
           title={t(locale, 't10money.reviewDeleteAria')}
           aria-label={t(locale, 't10money.reviewDeleteAria')}
         >
@@ -250,14 +250,14 @@ export default function ReviewsClient({
               ? t(locale, 't10money.reviewAcrossOne')
               : t(locale, 't10money.reviewAcrossMany').replace('{count}', String(total))}
           icon={<Star size={16} />}
-          accent="bg-amber-100 text-amber-600"
+          accent="bg-amber-100 text-warn-text"
         />
         <StatCard
           label={t(locale, 't10money.reviewTotalReviews')}
           value={String(total)}
           sub={t(locale, 't10money.reviewCollectHint')}
           icon={<Star size={16} />}
-          accent="bg-zinc-100 text-zinc-600"
+          accent="bg-surface-2 text-ink-2"
         />
       </div>
 

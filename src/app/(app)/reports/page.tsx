@@ -192,7 +192,7 @@ export default async function ReportsPage({
             action={
               <Link
                 href="/jobs/new"
-                className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs inline-flex items-center gap-2"
+                className="bg-asphalt hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs inline-flex items-center gap-2"
               >
                 {r.createFirstJob}
               </Link>
@@ -208,7 +208,7 @@ export default async function ReportsPage({
               value={formatMoney(stats.totalCollected, currency)}
               sub={r.paymentsReceived}
               icon={<TrendingUp size={16} />}
-              accent="bg-emerald-100 text-emerald-700"
+              accent="bg-emerald-100 text-ok"
             />
             <StatCard
               label={r.avgJobLabel}
@@ -222,14 +222,14 @@ export default async function ReportsPage({
               value={formatMoney(stats.outstanding, currency)}
               sub={`${stats.outstandingCount} ${stats.outstandingCount === 1 ? r.unpaidInvoice : r.unpaidInvoices}`}
               icon={<AlertCircle size={16} />}
-              accent="bg-amber-100 text-amber-700"
+              accent="bg-amber-100 text-warn-text"
             />
             <StatCard
               label={r.winRateLabel}
               value={stats.quoteWinRate === null ? "-" : `${stats.quoteWinRate}%`}
               sub={`${stats.quotesSent} ${stats.quotesSent === 1 ? r.quote : r.quotes} ${r.quoteTotalSuffix}`}
               icon={<Target size={16} />}
-              accent="bg-blue-100 text-blue-700"
+              accent="bg-blue-100 text-info"
             />
           </div>
 
@@ -237,30 +237,30 @@ export default async function ReportsPage({
             {/* Revenue by service */}
             <Card className="p-5">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
-                  <Wrench size={14} className="text-zinc-400" /> {r.revenueByService}
+                <h2 className="text-sm font-bold text-ink flex items-center gap-2">
+                  <Wrench size={14} className="text-ink-2" /> {r.revenueByService}
                 </h2>
-                <span className="text-[11px] text-zinc-400 font-medium">{r.revenueByServiceSub}</span>
+                <span className="text-[11px] text-ink-2 font-medium">{r.revenueByServiceSub}</span>
               </div>
               {stats.revenueByService.length === 0 ? (
-                <p className="text-sm text-zinc-500">{r.noServiceRevenue}</p>
+                <p className="text-sm text-ink-2">{r.noServiceRevenue}</p>
               ) : (
                 <div className="space-y-3">
                   {stats.revenueByService.map((s) => (
                     <div key={s.name}>
                       <div className="flex items-center justify-between mb-1">
-                        <p className="text-xs font-semibold text-zinc-600 truncate mr-2">{s.name}</p>
-                        <p className="text-xs font-bold text-zinc-900 shrink-0">
+                        <p className="text-xs font-semibold text-ink-2 truncate mr-2">{s.name}</p>
+                        <p className="text-xs font-bold text-ink shrink-0">
                           {formatMoney(s.revenue, currency, moneyLocale)}
                         </p>
                       </div>
-                      <div className="h-2.5 bg-zinc-100 rounded-full overflow-hidden">
+                      <div className="h-2.5 bg-surface-2 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-ink rounded-full transition-all"
+                          className="h-full bg-asphalt rounded-full transition-all"
                           style={{ width: `${Math.max(2, (s.revenue / maxServiceRevenue) * 100)}%` }}
                         />
                       </div>
-                      <p className="text-[11px] text-zinc-400 mt-1">
+                      <p className="text-[11px] text-ink-2 mt-1">
                         {s.jobs} {s.jobs === 1 ? r.otherLabelJob : r.otherLabelJobs}
                       </p>
                     </div>
@@ -272,29 +272,29 @@ export default async function ReportsPage({
             {/* Upcoming workload */}
             <Card className="p-5">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
-                  <CalendarClock size={14} className="text-zinc-400" /> {r.upcomingWorkload}
+                <h2 className="text-sm font-bold text-ink flex items-center gap-2">
+                  <CalendarClock size={14} className="text-ink-2" /> {r.upcomingWorkload}
                 </h2>
-                <span className="text-[11px] text-zinc-400 font-medium">{r.upcomingWorkloadSub}</span>
+                <span className="text-[11px] text-ink-2 font-medium">{r.upcomingWorkloadSub}</span>
               </div>
               {stats.upcomingWorkload.count === 0 ? (
-                <p className="text-sm text-zinc-500">{r.nothingScheduled}</p>
+                <p className="text-sm text-ink-2">{r.nothingScheduled}</p>
               ) : (
                 <div className="space-y-4">
                   <div className="flex items-end justify-between">
                     <div>
-                      <p className="text-3xl font-bold text-zinc-900">
+                      <p className="text-3xl font-bold text-ink">
                         {stats.upcomingWorkload.count}
                       </p>
-                      <p className="text-xs text-zinc-500 mt-0.5">
+                      <p className="text-xs text-ink-2 mt-0.5">
                         {stats.upcomingWorkload.count === 1 ? r.jobScheduled : r.jobsScheduled}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-xl font-bold text-zinc-900">
+                      <p className="text-xl font-bold text-ink">
                         {formatMoney(stats.upcomingWorkload.totalPrice, currency, moneyLocale)}
                       </p>
-                      <p className="text-xs text-zinc-500 mt-0.5">{r.estimatedValue}</p>
+                      <p className="text-xs text-ink-2 mt-0.5">{r.estimatedValue}</p>
                     </div>
                   </div>
                   <Link
@@ -315,8 +315,8 @@ export default async function ReportsPage({
               className="lg:col-span-2 ej-glass-card rounded-2xl p-5 flex items-center justify-between gap-4 hover:border-smoke transition-colors"
             >
               <div>
-                <h2 className="text-sm font-bold text-zinc-900">{r.teamPerf}</h2>
-                <p className="text-xs text-zinc-500 mt-0.5">
+                <h2 className="text-sm font-bold text-ink">{r.teamPerf}</h2>
+                <p className="text-xs text-ink-2 mt-0.5">
                   {r.teamPerfDesc}
                 </p>
               </div>
@@ -328,26 +328,26 @@ export default async function ReportsPage({
             {/* Revenue by month */}
             <Card className="p-5">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-sm font-bold text-zinc-900">{r.revenueByMonth}</h2>
-                <span className="text-[11px] text-zinc-400 font-medium">{r.paymentsReceived}</span>
+                <h2 className="text-sm font-bold text-ink">{r.revenueByMonth}</h2>
+                <span className="text-[11px] text-ink-2 font-medium">{r.paymentsReceived}</span>
               </div>
               <div className="space-y-3">
                 {stats.months.map((m) => (
                   <div key={m.key}>
                     <div className="flex items-center justify-between mb-1">
-                      <p className="text-xs font-semibold text-zinc-600 w-10">{m.label}</p>
-                      <p className="text-xs font-bold text-zinc-900">{formatMoney(m.revenue, currency)}</p>
+                      <p className="text-xs font-semibold text-ink-2 w-10">{m.label}</p>
+                      <p className="text-xs font-bold text-ink">{formatMoney(m.revenue, currency)}</p>
                     </div>
-                    <div className="h-2.5 bg-zinc-100 rounded-full overflow-hidden ml-0">
+                    <div className="h-2.5 bg-surface-2 rounded-full overflow-hidden ml-0">
                       <div
                         className={cn(
                           "h-full rounded-full transition-all",
-                          m.revenue > 0 ? "bg-ink" : "bg-zinc-200"
+                          m.revenue > 0 ? "bg-asphalt" : "bg-line"
                         )}
                         style={{ width: `${Math.max(2, (m.revenue / maxRevenue) * 100)}%` }}
                       />
                     </div>
-                    <p className="text-[11px] text-zinc-400 mt-1">
+                    <p className="text-[11px] text-ink-2 mt-1">
                       {m.jobs} {m.jobs === 1 ? r.otherLabelJob : r.otherLabelJobs}
                     </p>
                   </div>
@@ -358,7 +358,7 @@ export default async function ReportsPage({
             {/* Jobs by status */}
             <Card className="p-5">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-sm font-bold text-zinc-900">{r.jobsByStatus}</h2>
+                <h2 className="text-sm font-bold text-ink">{r.jobsByStatus}</h2>
                 <Link
                   href="/jobs"
                   className="text-xs font-semibold text-ink hover:underline inline-flex items-center gap-1"
@@ -367,7 +367,7 @@ export default async function ReportsPage({
                 </Link>
               </div>
               {totalJobs === 0 ? (
-                <p className="text-sm text-zinc-500">{r.noJobsYet}</p>
+                <p className="text-sm text-ink-2">{r.noJobsYet}</p>
               ) : (
                 <div className="space-y-3">
                   {orderedStatuses.map((g) => (
@@ -375,28 +375,28 @@ export default async function ReportsPage({
                       <div className="w-32 shrink-0">
                         <StatusBadge status={g.status} />
                       </div>
-                      <div className="flex-1 h-2.5 bg-zinc-100 rounded-full overflow-hidden">
+                      <div className="flex-1 h-2.5 bg-surface-2 rounded-full overflow-hidden">
                         <div
                           className="h-full bg-zinc-700 rounded-full"
                           style={{ width: `${Math.max(2, (g.count / totalJobs) * 100)}%` }}
                         />
                       </div>
-                      <p className="text-xs font-bold text-zinc-900 w-8 text-right">{g.count}</p>
+                      <p className="text-xs font-bold text-ink w-8 text-right">{g.count}</p>
                     </div>
                   ))}
-                  <p className="text-[11px] text-zinc-400 pt-1">
+                  <p className="text-[11px] text-ink-2 pt-1">
                     {totalJobs} {totalJobs === 1 ? r.otherLabelJob : r.otherLabelJobs} {r.jobsAllTime}
                   </p>
                 </div>
               )}
 
               {/* Top customers */}
-              <div className="mt-6 pt-5 border-t border-zinc-100">
-                <h2 className="text-sm font-bold text-zinc-900 mb-3 flex items-center gap-2">
+              <div className="mt-6 pt-5 border-t border-line">
+                <h2 className="text-sm font-bold text-ink mb-3 flex items-center gap-2">
                   <Trophy size={14} className="text-amber-500" /> {r.topCustomers}
                 </h2>
                 {stats.topCustomers.length === 0 ? (
-                  <p className="text-sm text-zinc-500">
+                  <p className="text-sm text-ink-2">
                     {r.completeJobsHint}
                   </p>
                 ) : (
@@ -405,25 +405,25 @@ export default async function ReportsPage({
                       <li key={c.id}>
                         <Link
                           href={`/customers/${c.id}`}
-                          className="flex items-center gap-3 bg-zinc-50 hover:bg-zinc-100 rounded-xl px-3 py-2.5 transition-colors"
+                          className="flex items-center gap-3 bg-surface-2 hover:bg-surface-2 rounded-xl px-3 py-2.5 transition-colors"
                         >
                           <span
                             className={cn(
                               "w-6 h-6 rounded-lg flex items-center justify-center text-[11px] font-bold shrink-0",
                               i === 0
-                                ? "bg-amber-100 text-amber-700"
-                                : "bg-zinc-200 text-zinc-600"
+                                ? "bg-amber-100 text-warn-text"
+                                : "bg-line text-ink-2"
                             )}
                           >
                             {i + 1}
                           </span>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-zinc-900 truncate">{c.name}</p>
-                            <p className="text-[11px] text-zinc-500">
+                            <p className="text-sm font-semibold text-ink truncate">{c.name}</p>
+                            <p className="text-[11px] text-ink-2">
                               {c.jobs} {c.jobs === 1 ? r.otherLabelJob : r.otherLabelJobs}
                             </p>
                           </div>
-                          <p className="text-sm font-bold text-zinc-900">{formatMoney(c.revenue, currency)}</p>
+                          <p className="text-sm font-bold text-ink">{formatMoney(c.revenue, currency)}</p>
                         </Link>
                       </li>
                     ))}
@@ -435,19 +435,19 @@ export default async function ReportsPage({
 
           {/* Outstanding summary */}
           {stats.outstandingCount > 0 && (
-            <Card className="p-5 border-amber-200 bg-amber-50/50">
+            <Card className="p-5 border-amber-200 bg-warn-bg/50">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-sm font-bold text-zinc-900">
+                  <h2 className="text-sm font-bold text-ink">
                     {r.waitingToCollect.replace('{amount}', formatMoney(stats.outstanding, currency))}
                   </h2>
-                  <p className="text-xs text-zinc-500 mt-1">
+                  <p className="text-xs text-ink-2 mt-1">
                     {r.acrossUnpaid.replace('{count}', String(stats.outstandingCount))}
                   </p>
                 </div>
                 <Link
                   href="/invoices"
-                  className="bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm shrink-0"
+                  className="bg-asphalt hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm shrink-0"
                 >
                   {r.reviewInvoices} <ChevronRight size={13} />
                 </Link>

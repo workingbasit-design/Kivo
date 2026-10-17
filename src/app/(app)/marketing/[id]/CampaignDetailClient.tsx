@@ -64,13 +64,13 @@ export default function CampaignDetailClient({
   return (
     <div className="space-y-6">
       {error && (
-        <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{error}</span>
         </div>
       )}
       {advanceState?.ok && (
-        <div className="flex items-start gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-ok-bg border border-emerald-200 text-ok text-xs font-medium rounded-xl px-3 py-2.5">
           <CheckCircle2 size={14} className="mt-0.5 shrink-0" />
           <span>
             {campaign.status === 'DRAFT' ? tr('t10misc.marketing.queuedNotice') : tr('t10misc.marketing.sentNotice')}
@@ -100,13 +100,13 @@ export default function CampaignDetailClient({
           <button
             type="button"
             onClick={() => setConfirmingDelete(true)}
-            className="ml-auto text-xs font-semibold text-rose-600 hover:text-rose-700 inline-flex items-center gap-1.5 min-h-[44px] px-2 -mr-2"
+            className="ml-auto text-xs font-semibold text-danger hover:text-danger inline-flex items-center gap-1.5 min-h-[44px] px-2 -mr-2"
           >
             <Trash2 size={13} /> {tr('t10misc.marketing.deleteCampaign')}
           </button>
         ) : (
-          <div className="ml-auto flex items-center gap-2 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2.5">
-            <span className="text-xs text-rose-700 font-medium">{tr('t10misc.marketing.deletePrompt')}</span>
+          <div className="ml-auto flex items-center gap-2 bg-danger-bg border border-rose-200 rounded-xl px-3 py-2.5">
+            <span className="text-xs text-danger font-medium">{tr('t10misc.marketing.deletePrompt')}</span>
             <button
               type="button"
               onClick={handleDelete}
@@ -118,7 +118,7 @@ export default function CampaignDetailClient({
             <button
               type="button"
               onClick={() => setConfirmingDelete(false)}
-              className="text-xs font-semibold text-zinc-600 hover:text-zinc-800 px-3 min-h-[44px] inline-flex items-center"
+              className="text-xs font-semibold text-ink-2 hover:text-ink px-3 min-h-[44px] inline-flex items-center"
             >
               {tr('t10misc.marketing.keepBtn')}
             </button>
@@ -126,7 +126,7 @@ export default function CampaignDetailClient({
         )}
       </div>
 
-      <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3">
+      <div className="bg-warn-bg border border-amber-200 rounded-2xl px-4 py-3">
         <p className="text-xs text-amber-800 font-medium">
           {tr('t10misc.marketing.manualNotice')
             .replace('{count}', String(recipients.length))
@@ -135,7 +135,7 @@ export default function CampaignDetailClient({
       </div>
 
       {recipients.length === 0 ? (
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-ink-2">
           {tr('t10misc.marketing.noRecipients')}
         </p>
       ) : (
@@ -152,15 +152,15 @@ export default function CampaignDetailClient({
               >
                 <div className="flex items-center justify-between gap-2 mb-2">
                   <div className="min-w-0">
-                    <p className="text-sm font-bold text-zinc-900 truncate">{r.name}</p>
-                    {r.phone && <p className="text-[11px] text-zinc-400">{r.phone}</p>}
+                    <p className="text-sm font-bold text-ink truncate">{r.name}</p>
+                    {r.phone && <p className="text-[11px] text-ink-2">{r.phone}</p>}
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <WhatsAppButton phone={r.phone} message={message} regionCode={regionCode} />
                     <CopyButton text={message} label={tr('t10misc.marketing.copyMessage')} />
                   </div>
                 </div>
-                <p className="text-xs text-zinc-600 whitespace-pre-wrap bg-zinc-50 rounded-xl p-3 border border-zinc-100">
+                <p className="text-xs text-ink-2 whitespace-pre-wrap bg-surface-2 rounded-xl p-3 border border-line">
                   {message}
                 </p>
               </div>

@@ -69,7 +69,7 @@ export function Switch({ label, hint, checked, className, ...rest }: SwitchProps
         className={cn(
           'relative h-7 w-12 shrink-0 appearance-none rounded-full bg-ej-border transition-colors duration-100',
           'checked:bg-ej-primary',
-          'before:absolute before:top-0.5 before:left-0.5 before:h-6 before:w-6 before:rounded-full before:bg-white before:transition-transform before:duration-100',
+          'before:absolute before:top-0.5 before:left-0.5 before:h-6 before:w-6 before:rounded-full before:bg-surface before:transition-transform before:duration-100',
           'checked:before:translate-x-5',
           'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ej-focus',
           'disabled:opacity-50 disabled:cursor-not-allowed'

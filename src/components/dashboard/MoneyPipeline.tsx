@@ -93,19 +93,19 @@ export default async function MoneyPipeline({ businessId }: { businessId: string
   return (
     <section
       aria-label={t(locale, "dashboard.moneyPipeline")}
-      className="rounded-[24px] border border-zinc-200/70 bg-white p-5 dark:border-white/10 dark:bg-coal"
+      className="rounded-[24px] border border-line/70 bg-surface p-5 dark:border-white/10 dark:bg-coal"
     >
       <h2 className="text-[17px] font-bold text-asphalt dark:text-white">
         {t(locale, "dashboard.moneyPipeline")}
       </h2>
-      <p className="mt-1 text-[15px] text-zinc-600 dark:text-zinc-400">
+      <p className="mt-1 text-[15px] text-ink-2 dark:text-zinc-400">
         <strong className="ej-figure font-bold text-asphalt tabular-nums dark:text-white">
           {formatMoney(pipeline.totalInProgress, null, moneyLocale)}
         </strong>{" "}
         {t(locale, "dashboard.inProgressNow")}
       </p>
       <ol className="relative mt-4 space-y-5">
-        <span aria-hidden className="absolute bottom-2 left-[5px] top-2 w-px bg-zinc-200 dark:bg-white/10" />
+        <span aria-hidden className="absolute bottom-2 left-[5px] top-2 w-px bg-line dark:bg-white/10" />
         {pipeline.stages.map((stage) => (
           <li key={stage.key} className="relative flex items-start gap-3 pl-0">
             <span
@@ -128,7 +128,7 @@ export default async function MoneyPipeline({ businessId }: { businessId: string
                   )}
                 </p>
               </div>
-              <p className="text-[13px] text-zinc-600 dark:text-zinc-400">
+              <p className="text-[13px] text-ink-2 dark:text-zinc-400">
                 <StageHint stage={stage} locale={locale} />
               </p>
               <FixButton stage={stage} locale={locale} />

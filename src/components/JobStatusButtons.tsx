@@ -117,7 +117,7 @@ export default function JobStatusButtons({
       {/* Badge - updates instantly with the buttons below. */}
       <div className="flex items-center gap-3 flex-wrap">
         <StatusBadge status={jobDisplayStatus(status, jobDate)} />
-        <span className="text-xs text-zinc-400">{createdLabel}</span>
+        <span className="text-xs text-ink-2">{createdLabel}</span>
       </div>
 
       <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2">
@@ -160,7 +160,7 @@ export default function JobStatusButtons({
               disabled={isPending}
               className={cn(
                 secondaryBtnClass,
-                'w-full sm:w-auto text-rose-600 border-rose-200 hover:bg-rose-50'
+                'w-full sm:w-auto text-danger border-rose-200 hover:bg-danger-bg'
               )}
             >
               <Ban size={14} />
@@ -172,7 +172,7 @@ export default function JobStatusButtons({
         <button
           onClick={() => setPendingAction('delete')}
           disabled={isPending}
-          className={cn(secondaryBtnClass, 'w-full sm:w-auto text-rose-600 border-rose-200 hover:bg-rose-50 sm:ml-auto')}
+          className={cn(secondaryBtnClass, 'w-full sm:w-auto text-danger border-rose-200 hover:bg-danger-bg sm:ml-auto')}
         >
           <Trash2 size={14} />
           {T('statusDelete')}
@@ -180,7 +180,7 @@ export default function JobStatusButtons({
       </div>
 
       {error && (
-        <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{error}</span>
         </div>
@@ -192,7 +192,7 @@ export default function JobStatusButtons({
         onClose={() => !isPending && setPendingAction(null)}
         title={pendingAction === 'cancel' ? jobsL('confirmCancelTitle') : jobsL('confirmDeleteTitle')}
       >
-        <p className="text-sm text-zinc-500 leading-relaxed">
+        <p className="text-sm text-ink-2 leading-relaxed">
           {pendingAction === 'cancel' ? jobsL('confirmCancelBody') : T('statusDeleteBody')}
         </p>
         <div className="mt-6 flex gap-2">

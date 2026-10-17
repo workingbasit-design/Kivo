@@ -83,19 +83,19 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-asphalt/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
       aria-label={L('title')}
     >
-      <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-zinc-200 overflow-hidden flex flex-col max-h-[90vh] ej-sheet-in">
+      <div className="bg-surface w-full max-w-lg rounded-3xl shadow-2xl border border-line overflow-hidden flex flex-col max-h-[90vh] ej-sheet-in">
 
         {/* Modal Header */}
-        <div className="p-6 bg-ink text-white flex justify-between items-center relative overflow-hidden shrink-0">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#ff7a59]/20 rounded-full blur-2xl pointer-events-none"></div>
+        <div className="p-6 bg-asphalt text-white flex justify-between items-center relative overflow-hidden shrink-0">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-warn/20 rounded-full blur-2xl pointer-events-none"></div>
 
           <div className="flex items-center gap-3 relative z-10">
-            <div className="w-10 h-10 rounded-2xl bg-[#ff7a59] flex items-center justify-center text-white shadow-lg">
+            <div className="w-10 h-10 rounded-2xl bg-warn flex items-center justify-center text-white shadow-lg">
               <Zap size={20} />
             </div>
             <div>
@@ -107,7 +107,7 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
           <button
             onClick={onClose}
             aria-label={t('t10misc.confirmDialog.close')}
-            className="min-w-[44px] min-h-[44px] rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors relative z-10"
+            className="min-w-[44px] min-h-[44px] rounded-full bg-surface/10 hover:bg-surface/20 text-white flex items-center justify-center transition-colors relative z-10"
           >
             <X size={16} />
           </button>
@@ -117,16 +117,16 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
         <div className="p-6 space-y-6 flex-1 overflow-y-auto">
           {isCompleted ? (
             <div className="py-8 text-center space-y-4">
-              <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center shadow-inner">
+              <div className="w-16 h-16 rounded-full bg-emerald-100 text-ok mx-auto flex items-center justify-center shadow-inner">
                 <CheckCircle2 size={36} />
               </div>
-              <h3 className="text-2xl font-bold text-zinc-900">{L('doneTitle')}</h3>
-              <p className="text-sm text-zinc-500 max-w-sm mx-auto">
+              <h3 className="text-2xl font-bold text-ink">{L('doneTitle')}</h3>
+              <p className="text-sm text-ink-2 max-w-sm mx-auto">
                 {L('doneDesc')}
               </p>
               <button
                 onClick={onClose}
-                className="w-full min-h-[52px] bg-ink hover:bg-graphite text-white font-bold py-3.5 rounded-2xl transition-all shadow-md shadow-ink/30 flex items-center justify-center gap-2 text-sm"
+                className="w-full min-h-[52px] bg-asphalt hover:bg-graphite text-white font-bold py-3.5 rounded-2xl transition-all shadow-md shadow-ink/30 flex items-center justify-center gap-2 text-sm"
               >
                 {L('backToDash')} <ArrowRight size={16} />
               </button>
@@ -134,15 +134,15 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
           ) : (
             <>
               {/* Item 1: WhatsApp Auto-Reply */}
-              <div className="bg-zinc-50 p-4 rounded-2xl border border-zinc-200/80 space-y-3">
+              <div className="bg-surface-2 p-4 rounded-2xl border border-line/80 space-y-3">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-100 text-ok flex items-center justify-center shrink-0">
                       <MessageSquare size={16} />
                     </div>
                     <div className="min-w-0">
-                      <h4 className="text-sm font-bold text-zinc-900">{L('waTitle')}</h4>
-                      <p className="text-[11px] text-zinc-500">{L('waDesc')}</p>
+                      <h4 className="text-sm font-bold text-ink">{L('waTitle')}</h4>
+                      <p className="text-[11px] text-ink-2">{L('waDesc')}</p>
                     </div>
                   </div>
 
@@ -154,15 +154,15 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
                       onChange={(e) => setWhatsappEnabled(e.target.checked)}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-zinc-200 peer-focus-visible:outline-2 peer-focus-visible:outline-ink rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-1/2 after:-translate-y-1/2 after:left-[9px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                    <div className="w-11 h-6 bg-line peer-focus-visible:outline-2 peer-focus-visible:outline-ink rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-1/2 after:-translate-y-1/2 after:left-[9px] after:bg-surface after:border-line-strong after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
                   </label>
                 </div>
 
                 {whatsappEnabled && (
-                  <div className="text-xs bg-white p-3 rounded-xl border border-zinc-200/60 text-zinc-600 space-y-2">
+                  <div className="text-xs bg-surface p-3 rounded-xl border border-line/60 text-ink-2 space-y-2">
                     <p>{L('waSample')}</p>
                     <div>
-                      <label className="block text-[10px] font-bold text-zinc-500 mb-1">
+                      <label className="block text-[10px] font-bold text-ink-2 mb-1">
                         {L('waNumber')}
                       </label>
                       <input
@@ -171,9 +171,9 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
                         onChange={(e) => setWhatsappNumber(e.target.value)}
                         placeholder="+1 416 555 0100"
                         maxLength={25}
-                        className="w-full min-h-[44px] text-xs text-zinc-900 bg-white border border-zinc-200 rounded-xl p-2.5 font-medium placeholder:text-zinc-400"
+                        className="w-full min-h-[44px] text-xs text-ink bg-surface border border-line rounded-xl p-2.5 font-medium placeholder:text-ink-2"
                       />
-                      <p className="text-[10px] text-zinc-400 mt-1">
+                      <p className="text-[10px] text-ink-2 mt-1">
                         {L('waHint')}
                       </p>
                     </div>
@@ -182,24 +182,24 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
               </div>
 
               {/* Item 2: Team Availability */}
-              <div className="bg-zinc-50 p-4 rounded-2xl border border-zinc-200/80 space-y-3">
+              <div className="bg-surface-2 p-4 rounded-2xl border border-line/80 space-y-3">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-xl bg-smoke text-ink flex items-center justify-center shrink-0">
                     <Clock size={16} />
                   </div>
                   <div className="min-w-0">
-                    <h4 className="text-sm font-bold text-zinc-900">{L('availTitle')}</h4>
-                    <p className="text-[11px] text-zinc-500">{L('availDesc')}</p>
+                    <h4 className="text-sm font-bold text-ink">{L('availTitle')}</h4>
+                    <p className="text-[11px] text-ink-2">{L('availDesc')}</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                   <div>
-                    <label className="block text-[10px] font-bold text-zinc-500 mb-1">{L('hoursLabel')}</label>
+                    <label className="block text-[10px] font-bold text-ink-2 mb-1">{L('hoursLabel')}</label>
                     <select
                       value={workingHours}
                       onChange={(e) => setWorkingHours(e.target.value)}
-                      className="w-full min-h-[44px] text-xs text-zinc-900 bg-white border border-zinc-200 rounded-xl p-2.5 font-medium placeholder:text-zinc-400"
+                      className="w-full min-h-[44px] text-xs text-ink bg-surface border border-line rounded-xl p-2.5 font-medium placeholder:text-ink-2"
                     >
                       <option value="08:00 AM - 06:00 PM">{L('hoursStandard')}</option>
                       <option value="09:00 AM - 07:00 PM">{L('hoursLate')}</option>
@@ -208,7 +208,7 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold text-zinc-500 mb-1">{L('dispatchLabel')}</label>
+                    <label className="block text-[10px] font-bold text-ink-2 mb-1">{L('dispatchLabel')}</label>
                     <button
                       type="button"
                       onClick={() => setAutoAssignTech(!autoAssignTech)}
@@ -216,7 +216,7 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
                       className={`w-full min-h-[44px] text-xs border rounded-xl p-2.5 font-semibold text-left transition-colors ${
                         autoAssignTech
                           ? 'bg-smoke border-smoke text-ink'
-                          : 'bg-white border-zinc-200 text-zinc-700'
+                          : 'bg-surface border-line text-ink'
                       }`}
                     >
                       {autoAssignTech ? `✓ ${L('dispatchAuto')}` : L('dispatchManual')}
@@ -228,14 +228,14 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
               {/* Action Buttons */}
               <div className="pt-2 space-y-2">
                 {saveError && (
-                  <p className="text-xs font-medium text-rose-600 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2.5">
+                  <p className="text-xs font-medium text-danger bg-danger-bg border border-rose-200 rounded-xl px-3 py-2.5">
                     {saveError}
                   </p>
                 )}
                 <button
                   onClick={handleSaveSetup}
                   disabled={isPending}
-                  className="w-full min-h-[52px] bg-ink hover:bg-graphite text-white font-bold py-3.5 rounded-2xl transition-all shadow-md shadow-ink/30 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer text-sm"
+                  className="w-full min-h-[52px] bg-asphalt hover:bg-graphite text-white font-bold py-3.5 rounded-2xl transition-all shadow-md shadow-ink/30 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer text-sm"
                 >
                   <ShieldCheck size={16} />
                   {isPending ? L('saving') : L('complete')}

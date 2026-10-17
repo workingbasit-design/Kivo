@@ -39,13 +39,13 @@ export default async function CustomerProfilePage() {
   return (
     <div className="space-y-5">
       <div className="ej-anim-fade-up">
-        <h1 className="text-xl font-bold tracking-tight text-zinc-900">{tr('customer.profile.title')}</h1>
+        <h1 className="text-xl font-bold tracking-tight text-ink">{tr('customer.profile.title')}</h1>
       </div>
 
-      <div className="ej-anim-fade-up bg-white rounded-3xl border border-zinc-200/80 shadow-sm overflow-hidden" style={{ animationDelay: '80ms' }}>
-        <div className="bg-zinc-900 px-5 pt-6 pb-8">
+      <div className="ej-anim-fade-up bg-surface rounded-3xl border border-line/80 shadow-sm overflow-hidden" style={{ animationDelay: '80ms' }}>
+        <div className="bg-asphalt px-5 pt-6 pb-8">
           <div className="flex items-center gap-4">
-            <div className="ej-anim-scale-in w-16 h-16 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center shadow-lg">
+            <div className="ej-anim-scale-in w-16 h-16 rounded-2xl bg-surface/10 border border-white/15 flex items-center justify-center shadow-lg">
               <span className="text-2xl font-bold text-white">{initial}</span>
             </div>
             <div className="min-w-0">
@@ -67,20 +67,20 @@ export default async function CustomerProfilePage() {
           </Field>
           <Field label={tr('customer.profile.email')}>
             <div className="relative">
-              <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" />
+              <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-2" />
               <input
                 name="email"
                 type="email"
                 defaultValue={customer.email}
                 disabled
-                className={`${inputClass} pl-10 bg-zinc-50 text-zinc-500`}
+                className={`${inputClass} pl-10 bg-surface-2 text-ink-2`}
               />
             </div>
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label={tr('customer.profile.phone')}>
               <div className="relative">
-                <Phone size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" />
+                <Phone size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-2" />
                 <input
                   name="phone"
                   type="tel"
@@ -93,7 +93,7 @@ export default async function CustomerProfilePage() {
             </Field>
             <Field label={tr('customer.profile.city')}>
               <div className="relative">
-                <MapPin size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" />
+                <MapPin size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-2" />
                 <input
                   name="city"
                   defaultValue={customer.city || ''}
@@ -116,7 +116,7 @@ export default async function CustomerProfilePage() {
       <form action={customerLogout}>
         <button
           type="submit"
-          className="ej-icon-hover w-full min-h-[52px] rounded-2xl bg-white border border-rose-200 text-rose-600 text-sm font-bold inline-flex items-center justify-center gap-2 hover:bg-rose-50 hover:border-rose-300 hover:shadow-md shadow-sm"
+          className="ej-icon-hover w-full min-h-[52px] rounded-2xl bg-surface border border-rose-200 text-danger text-sm font-bold inline-flex items-center justify-center gap-2 hover:bg-danger-bg hover:border-rose-300 hover:shadow-md shadow-sm"
         >
           <LogOut className="w-4 h-4" />
           {tr('customer.profile.logOut')}

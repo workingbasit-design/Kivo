@@ -31,7 +31,7 @@ export default async function EditCampaignPage({
     <div className="space-y-6">
       <Link
         href={`/marketing/${campaign.id}`}
-        className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-800"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-2 hover:text-ink"
       >
         <ArrowLeft size={14} /> {tr('t10misc.marketing.backToCampaign')}
       </Link>

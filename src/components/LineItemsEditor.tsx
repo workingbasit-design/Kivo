@@ -104,14 +104,14 @@ export default function LineItemsEditor({
         {rows.map((row, i) => (
           <div
             key={i}
-            className="rounded-2xl border border-zinc-200/70 bg-zinc-50/50 p-3.5 space-y-3"
+            className="rounded-2xl border border-line/70 bg-surface-2/50 p-3.5 space-y-3"
           >
             <Field label={`${L('t10money.lineItemLabel')} ${i + 1}`}>
               <input
                 value={row.desc}
                 onChange={(e) => setRow(i, { desc: e.target.value })}
                 placeholder={L('t10money.itemPlaceholder').replace('{n}', String(i + 1))}
-                className={`${inputClass} bg-white`}
+                className={`${inputClass} bg-surface`}
                 maxLength={200}
               />
             </Field>
@@ -122,7 +122,7 @@ export default function LineItemsEditor({
                   onChange={(e) => setRow(i, { qty: e.target.value })}
                   placeholder="1"
                   inputMode="decimal"
-                  className={`${inputClass} bg-white`}
+                  className={`${inputClass} bg-surface`}
                 />
               </Field>
               <Field label={`${L('t10money.rateLabel')} ${currencySymbol(currency)}`}>
@@ -131,14 +131,14 @@ export default function LineItemsEditor({
                   onChange={(e) => setRow(i, { rate: e.target.value })}
                   placeholder="0.00"
                   inputMode="decimal"
-                  className={`${inputClass} bg-white`}
+                  className={`${inputClass} bg-surface`}
                 />
               </Field>
             </div>
             <div className="flex items-center justify-between">
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-ink-2">
                 {L('t10money.itemAmountPreview')}:{' '}
-                <span className="font-bold text-zinc-900">
+                <span className="font-bold text-ink">
                   {formatMoney(
                     Math.round(Number(row.qty || 0) * Number(row.rate || 0) * 100) / 100,
                     currency
@@ -149,7 +149,7 @@ export default function LineItemsEditor({
                 type="button"
                 onClick={() => removeRow(i)}
                 disabled={rows.length <= 1}
-                className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-xl text-zinc-400 hover:text-rose-600 hover:bg-rose-50 transition-colors disabled:opacity-30"
+                className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-xl text-ink-2 hover:text-danger hover:bg-danger-bg transition-colors disabled:opacity-30"
                 aria-label={L('t10money.removeItemLabel')}
               >
                 <Trash2 size={16} />
@@ -162,13 +162,13 @@ export default function LineItemsEditor({
         <button type="button" onClick={() => setRows((p) => [...p, blankRow()])} className={secondaryBtnClass}>
           <Plus size={14} /> {L('t10money.addItemLabel')}
         </button>
-        <p className="text-sm text-zinc-600">
-          {L('t10money.subtotalLabel')}: <span className="font-bold text-zinc-900">{formatMoney(subtotal, currency)}</span>
+        <p className="text-sm text-ink-2">
+          {L('t10money.subtotalLabel')}: <span className="font-bold text-ink">{formatMoney(subtotal, currency)}</span>
         </p>
       </div>
 
       <div className="flex flex-wrap items-center gap-2 mt-3">
-        <label htmlFor="discountType" className="text-xs font-semibold text-zinc-500 shrink-0">
+        <label htmlFor="discountType" className="text-xs font-semibold text-ink-2 shrink-0">
           {L('t10money.discountLabel')}
         </label>
         <select
@@ -196,7 +196,7 @@ export default function LineItemsEditor({
           />
         )}
         {discount.amount > 0 && (
-          <span className="text-xs font-semibold text-emerald-700">
+          <span className="text-xs font-semibold text-ok">
             −{formatMoney(discount.amount, currency)}
           </span>
         )}

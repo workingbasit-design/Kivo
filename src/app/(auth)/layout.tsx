@@ -46,7 +46,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
         <div className="relative flex-1 flex items-center justify-center px-4 pb-16">
           <div className="w-full max-w-md">{children}</div>
         </div>
-        <p className="relative text-center text-xs text-zinc-400 pb-6">
+        <p className="relative text-center text-xs text-ink-2 pb-6">
           Every job. One place.
         </p>
       </div>

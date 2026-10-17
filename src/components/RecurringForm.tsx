@@ -221,7 +221,7 @@ export default function RecurringForm({
       </Field>
 
       {state.error && (
-        <div className="flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 text-xs font-medium rounded-xl px-4 py-3">
+        <div className="flex items-start gap-2 bg-danger-bg border border-red-200 text-danger text-xs font-medium rounded-xl px-4 py-3">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           {state.error}
         </div>

@@ -41,14 +41,14 @@ export default function RecurringRowActions({
         disabled={isPending}
         onClick={() => run(() => toggleRecurringActive(id))}
         title={active ? 'Pause plan' : 'Resume plan'}
-        className="p-2 rounded-lg text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 transition-colors disabled:opacity-50"
+        className="p-2 rounded-lg text-ink-2 hover:bg-surface-2 hover:text-ink transition-colors disabled:opacity-50"
       >
         {active ? <Pause size={15} /> : <Play size={15} />}
       </button>
       <Link
         href={`/recurring/${id}/edit`}
         title="Edit plan"
-        className="p-2 rounded-lg text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 transition-colors"
+        className="p-2 rounded-lg text-ink-2 hover:bg-surface-2 hover:text-ink transition-colors"
       >
         <Pencil size={15} />
       </Link>
@@ -58,11 +58,11 @@ export default function RecurringRowActions({
         onClick={() => setConfirming(true)}
         title="Delete plan"
         aria-label="Delete recurring plan"
-        className="p-2 rounded-lg text-zinc-500 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-50"
+        className="p-2 rounded-lg text-ink-2 hover:bg-danger-bg hover:text-danger transition-colors disabled:opacity-50"
       >
         <Trash2 size={15} />
       </button>
-      {error && <span className="text-[11px] text-red-600 font-medium ml-1">{error}</span>}
+      {error && <span className="text-[11px] text-danger font-medium ml-1">{error}</span>}
       <ConfirmDialog
         open={confirming}
         title="Delete this recurring plan?"

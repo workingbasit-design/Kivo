@@ -21,11 +21,11 @@ export default function LoginPage() {
 
   if (state?.totpRequired && state.challenge) {
     return (
-      <div className="bg-white rounded-3xl border border-zinc-200/70 shadow-xl shadow-zinc-200/50 p-6 sm:p-8">
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
+      <div className="bg-surface rounded-3xl border border-line/70 shadow-xl shadow-zinc-200/50 p-6 sm:p-8">
+        <h1 className="text-2xl font-bold tracking-tight text-ink">
           {t('t10misc.auth.totpTitle') ?? 'Check your authenticator app'}
         </h1>
-        <p className="text-sm text-zinc-500 mt-1 mb-6">
+        <p className="text-sm text-ink-2 mt-1 mb-6">
           {t('t10misc.auth.totpSubtitle') ?? 'Enter the 6-digit code from your authenticator app.'}
         </p>
         <form action={totpFormAction} className="space-y-4">
@@ -46,7 +46,7 @@ export default function LoginPage() {
           {(totpState as { error?: string } | null)?.error && (
             <div
               role="alert"
-              className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5"
+              className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5"
             >
               <AlertCircle size={14} className="mt-0.5 shrink-0" />
               <span>{(totpState as { error?: string }).error}</span>
@@ -64,9 +64,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="bg-white rounded-3xl border border-zinc-200/70 shadow-xl shadow-zinc-200/50 p-6 sm:p-8">
-      <h1 className="text-2xl font-bold tracking-tight text-zinc-900">{t('t10misc.auth.loginTitle')}</h1>
-      <p className="text-sm text-zinc-500 mt-1 mb-6">{t('t10misc.auth.loginSubtitle')}</p>
+    <div className="bg-surface rounded-3xl border border-line/70 shadow-xl shadow-zinc-200/50 p-6 sm:p-8">
+      <h1 className="text-2xl font-bold tracking-tight text-ink">{t('t10misc.auth.loginTitle')}</h1>
+      <p className="text-sm text-ink-2 mt-1 mb-6">{t('t10misc.auth.loginSubtitle')}</p>
 
       <GoogleAuthSection />
 
@@ -98,7 +98,7 @@ export default function LoginPage() {
         <div className="flex justify-end -mt-2">
           <Link
             href="/forgot-password"
-            className="text-xs font-semibold text-zinc-500 hover:text-ink hover:underline"
+            className="text-xs font-semibold text-ink-2 hover:text-ink hover:underline"
           >
             {t('t10misc.auth.forgotLink')}
           </Link>
@@ -107,7 +107,7 @@ export default function LoginPage() {
         {state?.error && (
           <div
             role="alert"
-            className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5"
+            className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5"
           >
             <AlertCircle size={14} className="mt-0.5 shrink-0" />
             <span>{state.error}</span>
@@ -120,15 +120,15 @@ export default function LoginPage() {
         </button>
       </form>
 
-      <p className="text-center text-xs text-zinc-500 mt-6">
+      <p className="text-center text-xs text-ink-2 mt-6">
         {t('t10misc.auth.newTo')}{' '}
         <Link href="/register" className="font-semibold text-ink hover:underline">
           {t('t10misc.auth.createWorkspace')}
         </Link>
       </p>
 
-      <div className="mt-4 pt-4 border-t border-zinc-100 text-center">
-        <p className="text-xs text-zinc-500">
+      <div className="mt-4 pt-4 border-t border-line text-center">
+        <p className="text-xs text-ink-2">
           {t('start.customerTitle') ?? 'Find a pro'}{' '}
           <Link href="/customer/login" className="font-semibold text-ink hover:underline">
             {t('start.customerCta') ?? 'Continue as customer'}

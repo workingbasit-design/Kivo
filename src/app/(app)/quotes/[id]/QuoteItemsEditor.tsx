@@ -65,7 +65,7 @@ export default function QuoteItemsEditor({
       ) : (
         <form action={formAction} className="space-y-4">
           <input type="hidden" name="id" value={quoteId} />
-          <h2 className="text-sm font-bold text-zinc-900">{t(locale, 'quoteItems.editItems')}</h2>
+          <h2 className="text-sm font-bold text-ink">{t(locale, 'quoteItems.editItems')}</h2>
           <LineItemsEditor
             locale={locale}
             initialItems={initial.items}
@@ -75,7 +75,7 @@ export default function QuoteItemsEditor({
             }}
           />
           {state?.error && (
-            <p className="text-xs font-semibold text-rose-600">{state.error}</p>
+            <p className="text-xs font-semibold text-danger">{state.error}</p>
           )}
           <div className="flex gap-2">
             <button type="submit" disabled={isPending} className={primaryBtnClass}>

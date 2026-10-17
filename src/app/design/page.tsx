@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { requireAuth } from '@/lib/auth';
-import { DesignShowcase } from '@/components/design/Showcase';
+import { getLocale } from '@/lib/i18n/server';
+import { Showcase } from '@/components/kit/Showcase';
 
 /**
  * Internal component library showcase.
@@ -21,7 +22,8 @@ export default async function DesignPage() {
     }
   }
 
-  return <DesignShowcase />;
+  const locale = await getLocale();
+  return <Showcase lang={locale === 'fr' ? 'fr' : 'en'} />;
 }
 
 export const metadata = {

@@ -88,7 +88,7 @@ export default async function DispatchPage({
             title={T('emptyTitle')}
             description={T('emptyDesc')}
             action={
-              <Link href="/jobs/new" className="inline-flex items-center gap-1.5 rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-white hover:bg-graphite min-h-[44px]">
+              <Link href="/jobs/new" className="inline-flex items-center gap-1.5 rounded-xl bg-asphalt px-4 py-2.5 text-sm font-semibold text-white hover:bg-graphite min-h-[44px]">
                 {T('newJob')}
               </Link>
             }

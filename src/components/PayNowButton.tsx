@@ -51,7 +51,7 @@ export default function PayNowButton({
       <button
         onClick={start}
         disabled={pending}
-        className="min-h-[52px] flex items-center justify-center gap-2 w-full bg-ink hover:bg-graphite disabled:opacity-60 text-white font-bold text-sm py-3 rounded-2xl transition-colors"
+        className="min-h-[52px] flex items-center justify-center gap-2 w-full bg-asphalt hover:bg-graphite disabled:opacity-60 text-white font-bold text-sm py-3 rounded-2xl transition-colors"
       >
         <CreditCard size={16} />
         {pending
@@ -59,11 +59,11 @@ export default function PayNowButton({
           : `${t(locale, 'payments.payNow')} · ${formatMoney(amount, 'CAD', locale)}`}
       </button>
       {testMode && (
-        <p className="text-[11px] text-amber-700 font-semibold text-center">
+        <p className="text-[11px] text-warn-text font-semibold text-center">
           {t(locale, 'payments.payTestNote')}
         </p>
       )}
-      {error && <p className="text-xs font-semibold text-rose-600 text-center">{error}</p>}
+      {error && <p className="text-xs font-semibold text-danger text-center">{error}</p>}
     </div>
   );
 }

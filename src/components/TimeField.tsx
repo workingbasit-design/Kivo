@@ -75,7 +75,7 @@ export function TimeField({
           </option>
         ))}
       </select>
-      <span aria-hidden className="text-zinc-400 font-bold">
+      <span aria-hidden className="text-ink-2 font-bold">
         :
       </span>
       <select

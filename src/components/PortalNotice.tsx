@@ -45,8 +45,8 @@ export default async function PortalNotice({
       <main className="max-w-lg mx-auto px-4 py-16">
         <Card className="p-8 text-center">
           {copy.icon}
-          <h1 className="text-lg font-bold text-zinc-900">{copy.title}</h1>
-          <p className="text-sm text-zinc-500 mt-2 leading-relaxed">{copy.body}</p>
+          <h1 className="text-lg font-bold text-ink">{copy.title}</h1>
+          <p className="text-sm text-ink-2 mt-2 leading-relaxed">{copy.body}</p>
         </Card>
       </main>
     </div>

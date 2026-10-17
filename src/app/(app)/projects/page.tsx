@@ -11,8 +11,8 @@ import Link from "next/link";
 const STATUS_TONE: Record<string, string> = {
   ACTIVE: "bg-emerald-100 text-emerald-800",
   ON_HOLD: "bg-amber-100 text-amber-800",
-  COMPLETED: "bg-zinc-200 text-zinc-700",
-  CANCELLED: "bg-zinc-100 text-zinc-500",
+  COMPLETED: "bg-line text-ink",
+  CANCELLED: "bg-surface-2 text-ink-2",
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -51,7 +51,7 @@ export default async function ProjectsPage() {
         actions={
           <Link
             href="/projects/new"
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-lime-500 text-zinc-900 text-sm font-bold hover:bg-lime-400 transition-colors min-h-[44px]"
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-lime-500 text-ink text-sm font-bold hover:bg-lime-400 transition-colors min-h-[44px]"
           >
             <Plus size={16} aria-hidden /> {t(locale, "projects.new")}
           </Link>
@@ -61,13 +61,13 @@ export default async function ProjectsPage() {
       {projects.length === 0 ? (
         <Card>
           <EmptyState
-            icon={<FolderKanban size={28} className="text-zinc-400" aria-hidden />}
+            icon={<FolderKanban size={28} className="text-ink-2" aria-hidden />}
             title={t(locale, "projects.noProjects")}
             description={t(locale, "projects.noProjectsDesc")}
             action={
               <Link
                 href="/projects/new"
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-lime-500 text-zinc-900 text-sm font-bold hover:bg-lime-400 transition-colors min-h-[44px]"
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-lime-500 text-ink text-sm font-bold hover:bg-lime-400 transition-colors min-h-[44px]"
               >
                 <Plus size={16} aria-hidden /> {t(locale, "projects.createFirst")}
               </Link>
@@ -83,7 +83,7 @@ export default async function ProjectsPage() {
               <Link key={p.id} href={`/projects/${p.id}`}>
                 <Card className="p-5 hover:shadow-lg transition-shadow h-full">
                   <div className="flex items-start justify-between gap-2 mb-2">
-                    <h3 className="font-bold text-zinc-900 leading-snug">{p.title}</h3>
+                    <h3 className="font-bold text-ink leading-snug">{p.title}</h3>
                     <span
                       className={`shrink-0 text-[11px] font-bold px-2 py-1 rounded-full ${STATUS_TONE[p.status] ?? STATUS_TONE.ACTIVE}`}
                     >
@@ -91,9 +91,9 @@ export default async function ProjectsPage() {
                     </span>
                   </div>
                   {p.customer && (
-                    <p className="text-xs text-zinc-500 mb-2">{p.customer.name}</p>
+                    <p className="text-xs text-ink-2 mb-2">{p.customer.name}</p>
                   )}
-                  <div className="flex items-center gap-4 text-xs text-zinc-500 mt-3">
+                  <div className="flex items-center gap-4 text-xs text-ink-2 mt-3">
                     <span>
                       {p.phases.length === 0
                         ? t(locale, "projects.noJobs")
@@ -108,14 +108,14 @@ export default async function ProjectsPage() {
                     {p.budgetCents != null && (
                       <>
                         <span>·</span>
-                        <span className="font-semibold text-zinc-700 tabular-nums">
+                        <span className="font-semibold text-ink tabular-nums">
                           {formatMoney(p.budgetCents / 100, "CAD", moneyLocale)}
                         </span>
                       </>
                     )}
                   </div>
                   {p.phases.length > 0 && (
-                    <div className="h-1.5 rounded-full bg-zinc-100 mt-3 overflow-hidden">
+                    <div className="h-1.5 rounded-full bg-surface-2 mt-3 overflow-hidden">
                       <div
                         className="h-full rounded-full bg-lime-500 transition-all"
                         style={{ width: `${Math.round((donePhases / p.phases.length) * 100)}%` }}
@@ -123,10 +123,10 @@ export default async function ProjectsPage() {
                     </div>
                   )}
                   <div className="flex items-center justify-between mt-3">
-                    <span className="text-xs font-semibold text-zinc-500 tabular-nums">
+                    <span className="text-xs font-semibold text-ink-2 tabular-nums">
                       {t(locale, "projects.spent")}: {formatMoney(jobValue, "CAD", moneyLocale)}
                     </span>
-                    <ArrowRight size={16} className="text-zinc-400" aria-hidden />
+                    <ArrowRight size={16} className="text-ink-2" aria-hidden />
                   </div>
                 </Card>
               </Link>

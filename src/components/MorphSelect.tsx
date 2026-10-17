@@ -43,7 +43,7 @@ export default function MorphSelect<T extends string>({
   return (
     <div ref={ref} className="relative inline-block">
       {label && (
-        <span className="text-xs font-semibold text-zinc-500 mb-1 block">{label}</span>
+        <span className="text-xs font-semibold text-ink-2 mb-1 block">{label}</span>
       )}
       <motion.button
         type="button"
@@ -51,7 +51,7 @@ export default function MorphSelect<T extends string>({
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="min-h-[44px] px-4 rounded-xl border border-zinc-200 bg-white text-sm font-semibold text-zinc-800 inline-flex items-center gap-2 shadow-sm"
+        className="min-h-[44px] px-4 rounded-xl border border-line bg-surface text-sm font-semibold text-ink inline-flex items-center gap-2 shadow-sm"
         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
       >
         {selected?.label ?? value}
@@ -67,7 +67,7 @@ export default function MorphSelect<T extends string>({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.97 }}
             transition={{ type: 'spring', stiffness: 500, damping: 32 }}
-            className="absolute z-50 mt-2 min-w-full w-max max-w-[280px] rounded-2xl border border-zinc-200 bg-white shadow-[0_16px_40px_rgba(22,22,22,0.15)] p-1.5 origin-top"
+            className="absolute z-50 mt-2 min-w-full w-max max-w-[280px] rounded-2xl border border-line bg-surface shadow-[0_16px_40px_rgba(22,22,22,0.15)] p-1.5 origin-top"
             role="listbox"
           >
             {options.map((opt) => (
@@ -83,7 +83,7 @@ export default function MorphSelect<T extends string>({
                 className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium flex items-center justify-between gap-2 min-h-[44px] transition-colors ${
                   opt.value === value
                     ? 'bg-lime/20 text-ink'
-                    : 'text-zinc-700 hover:bg-zinc-100'
+                    : 'text-ink hover:bg-surface-2'
                 }`}
               >
                 {opt.label}

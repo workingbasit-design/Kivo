@@ -109,8 +109,8 @@ export default function ApiKeysCard({
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-base font-bold text-zinc-900">{tr('integrations.apiKeysTitle')}</h2>
-        <p className="text-sm text-zinc-500 mt-1">{tr('integrations.apiKeysDesc')}</p>
+        <h2 className="text-base font-bold text-ink">{tr('integrations.apiKeysTitle')}</h2>
+        <p className="text-sm text-ink-2 mt-1">{tr('integrations.apiKeysDesc')}</p>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-2">
@@ -137,16 +137,16 @@ export default function ApiKeysCard({
       </div>
 
       {keys.length === 0 ? (
-        <p className="text-sm text-zinc-500">{tr('integrations.noKeys')}</p>
+        <p className="text-sm text-ink-2">{tr('integrations.noKeys')}</p>
       ) : (
-        <ul className="divide-y divide-zinc-100 rounded-2xl border border-zinc-200">
+        <ul className="divide-y divide-line rounded-2xl border border-line">
           {keys.map((k) => (
             <li key={k.id} className="flex items-center gap-3 px-4 py-3">
-              <KeyRound size={18} className="text-zinc-400 shrink-0" />
+              <KeyRound size={18} className="text-ink-2 shrink-0" />
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-zinc-900 truncate">{k.name}</p>
-                <p className="text-xs text-zinc-500 font-mono">{k.keyPrefix}…</p>
-                <p className="text-xs text-zinc-400">
+                <p className="text-sm font-semibold text-ink truncate">{k.name}</p>
+                <p className="text-xs text-ink-2 font-mono">{k.keyPrefix}…</p>
+                <p className="text-xs text-ink-2">
                   {tr('integrations.lastUsed')}:{' '}
                   {k.lastUsedAt
                     ? new Date(k.lastUsedAt).toLocaleDateString(locale === 'fr' ? 'fr-CA' : 'en-CA')
@@ -170,9 +170,9 @@ export default function ApiKeysCard({
 
       {/* One-time key reveal */}
       <Dialog open={created !== null} onClose={() => setCreated(null)} title={tr('integrations.keyCreatedTitle')} locale={locale}>
-        <p className="text-sm text-zinc-600 mb-3">{tr('integrations.keyCreatedDesc')}</p>
-        <div className="flex items-center gap-2 rounded-xl bg-zinc-100 px-3 py-2.5">
-          <code className="flex-1 text-xs font-mono text-zinc-900 break-all select-all">{created?.key}</code>
+        <p className="text-sm text-ink-2 mb-3">{tr('integrations.keyCreatedDesc')}</p>
+        <div className="flex items-center gap-2 rounded-xl bg-surface-2 px-3 py-2.5">
+          <code className="flex-1 text-xs font-mono text-ink break-all select-all">{created?.key}</code>
           <button type="button" onClick={copyKey} className={secondaryBtnClass + ' !px-3 !py-1.5 !min-h-0 text-xs shrink-0'}>
             {copied ? <Check size={14} /> : <Copy size={14} />}
           </button>
@@ -186,7 +186,7 @@ export default function ApiKeysCard({
 
       {/* Revoke confirmation */}
       <Dialog open={revokeId !== null} onClose={() => setRevokeId(null)} title={tr('integrations.revokeConfirm')} locale={locale}>
-        <p className="text-sm text-zinc-600">{keys.find((k) => k.id === revokeId)?.name}</p>
+        <p className="text-sm text-ink-2">{keys.find((k) => k.id === revokeId)?.name}</p>
         <div className="mt-5 flex gap-2 justify-end">
           <button type="button" onClick={() => setRevokeId(null)} className={secondaryBtnClass}>
             {t(locale, 'credentials.cancel')}

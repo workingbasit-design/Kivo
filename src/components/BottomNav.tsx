@@ -57,10 +57,10 @@ export default function BottomNav({
         aria-current={active ? 'page' : undefined}
         className={cn(
           'flex items-center gap-3 px-3 min-h-[48px] rounded-xl text-sm font-medium',
-          active ? 'bg-ej-ink text-ej-lime' : 'text-zinc-700 hover:bg-zinc-100'
+          active ? 'bg-ej-ink text-ej-lime' : 'text-ink hover:bg-surface-2'
         )}
       >
-        <NavIconView icon={item.icon} size={18} className={active ? 'text-ej-lime' : 'text-zinc-400'} filled={active} />
+        <NavIconView icon={item.icon} size={18} className={active ? 'text-ej-lime' : 'text-ink-2'} filled={active} />
         {t(locale, item.nameKey)}
       </Link>
     );
@@ -139,7 +139,7 @@ export default function BottomNav({
             if (items.length === 0) return null;
             return (
               <div key={section.labelKey}>
-                <p className="mb-1.5 text-xs font-semibold text-zinc-500">
+                <p className="mb-1.5 text-xs font-semibold text-ink-2">
                   {t(locale, section.labelKey)}
                 </p>
                 <div className="grid grid-cols-1 gap-1">{items.map(renderNavLink)}</div>
@@ -157,16 +157,16 @@ export default function BottomNav({
                   ? t(locale, 'nav.collapseAdvanced')
                   : t(locale, 'nav.expandAdvanced')
               }
-              className="flex w-full items-center justify-between px-3 min-h-[48px] rounded-xl text-sm font-medium text-zinc-700 hover:bg-zinc-100"
+              className="flex w-full items-center justify-between px-3 min-h-[48px] rounded-xl text-sm font-medium text-ink hover:bg-surface-2"
             >
               <span className="flex items-center gap-3">
-                <SlidersHorizontal size={18} className="text-zinc-400" aria-hidden />
+                <SlidersHorizontal size={18} className="text-ink-2" aria-hidden />
                 {t(locale, 'nav.advanced')}
               </span>
               <ChevronDown
                 size={18}
                 aria-hidden
-                className={cn('text-zinc-400 transition-transform', advancedOpen && 'rotate-180')}
+                className={cn('text-ink-2 transition-transform', advancedOpen && 'rotate-180')}
               />
             </button>
             {advancedOpen && (
@@ -175,8 +175,8 @@ export default function BottomNav({
               </div>
             )}
           </div>
-          <div className="pt-1 pb-3 border-b border-zinc-100">
-            <p className="mb-2 px-3 text-xs font-semibold text-zinc-500">
+          <div className="pt-1 pb-3 border-b border-line">
+            <p className="mb-2 px-3 text-xs font-semibold text-ink-2">
               {t(locale, 'settings.language')}
             </p>
             <div className="px-3">
@@ -192,7 +192,7 @@ export default function BottomNav({
           <button
             type="button"
             onClick={() => setMoreOpen(false)}
-            className="w-full min-h-[44px] text-sm font-semibold text-zinc-500 hover:text-zinc-800"
+            className="w-full min-h-[44px] text-sm font-semibold text-ink-2 hover:text-ink"
           >
             <X size={16} className="inline mr-1 -mt-0.5" />
             {t(locale, 'nav.close') ?? 'Close'}

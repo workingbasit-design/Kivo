@@ -160,21 +160,21 @@ export default async function SettingsPage() {
           <LogoUploadCard locale={locale} initialLogoUrl={business.logoUrl} />
         </div>
         <Card className="p-5 md:p-6">
-          <h2 className="text-sm font-bold text-zinc-900 mb-1 flex items-center gap-2">
+          <h2 className="text-sm font-bold text-ink mb-1 flex items-center gap-2">
             <Languages size={14} /> {t(locale, 'settings.language')}
           </h2>
-          <p className="text-xs text-zinc-500 mb-4">{t(locale, 'settings.languageHint')}</p>
+          <p className="text-xs text-ink-2 mb-4">{t(locale, 'settings.languageHint')}</p>
           <LanguageToggle current={locale} />
         </Card>
         <Card className="p-5 md:p-6">
-          <h2 className="text-sm font-bold text-zinc-900 mb-1 flex items-center gap-2">
+          <h2 className="text-sm font-bold text-ink mb-1 flex items-center gap-2">
             <Award size={14} /> {tr('credentials.cardTitle')}
           </h2>
-          <p className="text-xs text-zinc-500 mb-4">{tr('credentials.cardDesc')}</p>
+          <p className="text-xs text-ink-2 mb-4">{tr('credentials.cardDesc')}</p>
           <DesignationsManager locale={locale} initial={designations} />
-          <div className="mt-6 pt-5 border-t border-zinc-100">
-            <h3 className="text-sm font-bold text-zinc-900 mb-1">{tr('credentials.tradeTitle')}</h3>
-            <p className="text-xs text-zinc-500 mb-4">{tr('credentials.tradeDesc')}</p>
+          <div className="mt-6 pt-5 border-t border-line">
+            <h3 className="text-sm font-bold text-ink mb-1">{tr('credentials.tradeTitle')}</h3>
+            <p className="text-xs text-ink-2 mb-4">{tr('credentials.tradeDesc')}</p>
             <TradeProfileForm
               locale={locale}
               initial={{
@@ -199,8 +199,8 @@ export default async function SettingsPage() {
           <p className="text-sm text-ej-secondary -mt-2 mb-1">{groups[1].desc}</p>
         </div>
         <Card className="p-5 md:p-6">
-          <h2 className="text-sm font-bold text-zinc-900 mb-1">{tr('t10misc.settingsMain.paymentsTitle')}</h2>
-          <p className="text-xs text-zinc-500 mb-4">
+          <h2 className="text-sm font-bold text-ink mb-1">{tr('t10misc.settingsMain.paymentsTitle')}</h2>
+          <p className="text-xs text-ink-2 mb-4">
             {tr('t10misc.settingsMain.paymentsDesc')}
           </p>
           <Link href="/settings/payments" className={secondaryBtnClass}>
@@ -208,10 +208,10 @@ export default async function SettingsPage() {
           </Link>
         </Card>
         <Card className="p-5 md:p-6">
-          <h2 className="text-sm font-bold text-zinc-900 mb-1 flex items-center gap-2">
+          <h2 className="text-sm font-bold text-ink mb-1 flex items-center gap-2">
             <Download size={14} /> {tr('t10misc.settingsMain.exportTitle')}
           </h2>
-          <p className="text-xs text-zinc-500 mb-4">
+          <p className="text-xs text-ink-2 mb-4">
             {tr('t10misc.settingsMain.exportDesc')}
           </p>
           <div className="flex flex-wrap gap-2">
@@ -219,7 +219,7 @@ export default async function SettingsPage() {
               <a
                 key={t.value}
                 href={`/api/export?type=${t.value}`}
-                className="bg-white hover:bg-zinc-50 text-zinc-700 px-3.5 py-2 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 border border-zinc-200 shadow-sm"
+                className="bg-surface hover:bg-surface-2 text-ink px-3.5 py-2 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 border border-line shadow-sm"
               >
                 <Download size={13} /> {tr(`t10misc.settingsMain.${t.i18nKey}`)}
               </a>
@@ -240,8 +240,8 @@ export default async function SettingsPage() {
           <p className="text-sm text-ej-secondary -mt-2 mb-1">{groups[2].desc}</p>
         </div>
         <Card className="p-5 md:p-6">
-          <h2 className="text-sm font-bold text-zinc-900 mb-1">{tr('t10misc.settingsMain.messagingTitle')}</h2>
-          <p className="text-xs text-zinc-500 mb-4">
+          <h2 className="text-sm font-bold text-ink mb-1">{tr('t10misc.settingsMain.messagingTitle')}</h2>
+          <p className="text-xs text-ink-2 mb-4">
             {tr('t10misc.settingsMain.messagingDesc')}
           </p>
           <Link href="/settings/messaging" className={secondaryBtnClass}>
@@ -268,18 +268,18 @@ export default async function SettingsPage() {
           <p className="text-sm text-ej-secondary -mt-2 mb-1">{groups[3].desc}</p>
         </div>
         <Card className="p-5 md:p-6">
-          <h2 className="text-sm font-bold text-zinc-900 mb-1">{tr('t10misc.booking.pageTitle')}</h2>
-          <p className="text-xs text-zinc-500 mb-4">
+          <h2 className="text-sm font-bold text-ink mb-1">{tr('t10misc.booking.pageTitle')}</h2>
+          <p className="text-xs text-ink-2 mb-4">
             {tr('t10misc.booking.pageSubtitle')}
           </p>
           {bookingPage?.enabled && bookingPage.slug ? (
-            <div className="mb-4 p-3 bg-zinc-50 rounded-lg border border-zinc-200">
-              <p className="text-xs text-zinc-500 mb-1">{tr('t10misc.booking.publicUrlLabel')}</p>
+            <div className="mb-4 p-3 bg-surface-2 rounded-lg border border-line">
+              <p className="text-xs text-ink-2 mb-1">{tr('t10misc.booking.publicUrlLabel')}</p>
               <a
                 href={`/book/${bookingPage.slug}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm font-medium text-blue-600 hover:text-blue-800 break-all"
+                className="text-sm font-medium text-info hover:text-blue-800 break-all"
               >
                 {`/book/${bookingPage.slug}`}
               </a>
@@ -290,10 +290,10 @@ export default async function SettingsPage() {
           </Link>
         </Card>
         <Card className="p-5 md:p-6">
-          <h2 className="text-sm font-bold text-zinc-900 mb-1 flex items-center gap-2">
+          <h2 className="text-sm font-bold text-ink mb-1 flex items-center gap-2">
             <ListChecks size={14} /> {t(locale, 'jobops.templates.title')}
           </h2>
-          <p className="text-xs text-zinc-500 mb-4">{t(locale, 'jobops.templates.subtitle')}</p>
+          <p className="text-xs text-ink-2 mb-4">{t(locale, 'jobops.templates.subtitle')}</p>
           <Link href="/settings/checklists" className={secondaryBtnClass}>
             <ListChecks size={14} /> {t(locale, 'jobops.checklist.manageTemplates')}
           </Link>
@@ -312,10 +312,10 @@ export default async function SettingsPage() {
           <p className="text-sm text-ej-secondary -mt-2 mb-1">{groups[4].desc}</p>
         </div>
         <Card className="p-5 md:p-6">
-          <h2 className="text-sm font-bold text-zinc-900 mb-1 flex items-center gap-2">
+          <h2 className="text-sm font-bold text-ink mb-1 flex items-center gap-2">
             <Users size={14} /> {tr('t10misc.settingsMain.manageTeam')}
           </h2>
-          <p className="text-xs text-zinc-500 mb-4">{groups[4].desc}</p>
+          <p className="text-xs text-ink-2 mb-4">{groups[4].desc}</p>
           <Link href="/settings/team" className={secondaryBtnClass}>
             <Users size={14} /> {tr('t10misc.settingsMain.manageTeam')}
           </Link>
@@ -334,8 +334,8 @@ export default async function SettingsPage() {
           <p className="text-sm text-ej-secondary -mt-2 mb-1">{groups[5].desc}</p>
         </div>
         <Card className="p-5 md:p-6">
-          <h2 className="text-sm font-bold text-zinc-900 mb-1">{t(locale, 'googleAuth.profileTitle')}</h2>
-          <p className="text-xs text-zinc-500 mb-4">{t(locale, 'googleAuth.profileSubtitle')}</p>
+          <h2 className="text-sm font-bold text-ink mb-1">{t(locale, 'googleAuth.profileTitle')}</h2>
+          <p className="text-xs text-ink-2 mb-4">{t(locale, 'googleAuth.profileSubtitle')}</p>
           <ProfileForm
             locale={locale}
             initial={{
@@ -347,8 +347,8 @@ export default async function SettingsPage() {
           />
         </Card>
         <Card className="p-5 md:p-6">
-          <h2 className="text-sm font-bold text-zinc-900 mb-1">{tr('t10misc.settingsMain.accountsTitle')}</h2>
-          <p className="text-xs text-zinc-500 mb-4">
+          <h2 className="text-sm font-bold text-ink mb-1">{tr('t10misc.settingsMain.accountsTitle')}</h2>
+          <p className="text-xs text-ink-2 mb-4">
             {tr('t10misc.settingsMain.accountsDesc')}
           </p>
           <Link href="/reviews" className={secondaryBtnClass}>
@@ -356,10 +356,10 @@ export default async function SettingsPage() {
           </Link>
         </Card>
         <Card className="p-5 md:p-6">
-          <h2 className="text-sm font-bold text-zinc-900 mb-1 flex items-center gap-2">
+          <h2 className="text-sm font-bold text-ink mb-1 flex items-center gap-2">
             <ShieldCheck size={14} /> {tr('t10misc.settingsMain.securityTitle')}
           </h2>
-          <p className="text-xs text-zinc-500 mb-4">
+          <p className="text-xs text-ink-2 mb-4">
             {tr('t10misc.settingsMain.securityDesc')}
           </p>
           <Link href="/settings/security" className={secondaryBtnClass}>
@@ -368,8 +368,8 @@ export default async function SettingsPage() {
         </Card>
         {/* Part B: appearance (light/dark/system). */}
         <Card className="p-5 md:p-6">
-          <h2 className="text-sm font-bold text-zinc-900 mb-1">{tr('t10misc.settingsMain.appearanceTitle')}</h2>
-          <p className="text-xs text-zinc-500 mb-4">{tr('t10misc.settingsMain.appearanceDesc')}</p>
+          <h2 className="text-sm font-bold text-ink mb-1">{tr('t10misc.settingsMain.appearanceTitle')}</h2>
+          <p className="text-xs text-ink-2 mb-4">{tr('t10misc.settingsMain.appearanceDesc')}</p>
           <ThemePicker
             labels={{
               light: tr('t10misc.settingsMain.appearanceLight'),
@@ -379,8 +379,8 @@ export default async function SettingsPage() {
           />
         </Card>
         <Card className="p-5 md:p-6">
-          <h2 className="text-sm font-bold text-zinc-900 mb-1">{t(locale, 'integrations.title')}</h2>
-          <p className="text-xs text-zinc-500 mb-4">{t(locale, 'integrations.subtitle')}</p>
+          <h2 className="text-sm font-bold text-ink mb-1">{t(locale, 'integrations.title')}</h2>
+          <p className="text-xs text-ink-2 mb-4">{t(locale, 'integrations.subtitle')}</p>
           <Link href="/settings/integrations" className={secondaryBtnClass}>
             {t(locale, 'integrations.title')}
           </Link>
@@ -399,8 +399,8 @@ export default async function SettingsPage() {
           <p className="text-sm text-ej-secondary -mt-2 mb-1">{groups[6].desc}</p>
         </div>
         <Card className="p-5 md:p-6">
-          <h2 className="text-sm font-bold text-zinc-900 mb-1">{t(locale, 'support.inboxTitle')}</h2>
-          <p className="text-xs text-zinc-500 mb-4">{t(locale, 'support.inboxSub')}</p>
+          <h2 className="text-sm font-bold text-ink mb-1">{t(locale, 'support.inboxTitle')}</h2>
+          <p className="text-xs text-ink-2 mb-4">{t(locale, 'support.inboxSub')}</p>
           <Link href="/settings/support" className={secondaryBtnClass}>
             {t(locale, 'support.inboxTitle')}
           </Link>
@@ -430,8 +430,8 @@ export default async function SettingsPage() {
           SHOW_ADVANCED_SETTINGS_LINKS to true to restore it. */}
       {SHOW_ADVANCED_SETTINGS_LINKS && (
         <Card className="p-5 md:p-6">
-          <h2 className="text-sm font-bold text-zinc-900 mb-1">{t(locale, 'track8.automationsTitle')}</h2>
-          <p className="text-xs text-zinc-500 mb-4">{t(locale, 'track8.automationsSubtitle')}</p>
+          <h2 className="text-sm font-bold text-ink mb-1">{t(locale, 'track8.automationsTitle')}</h2>
+          <p className="text-xs text-ink-2 mb-4">{t(locale, 'track8.automationsSubtitle')}</p>
           <Link href="/settings/automations" className={secondaryBtnClass}>
             {t(locale, 'track8.automationsTitle')}
           </Link>

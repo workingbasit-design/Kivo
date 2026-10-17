@@ -107,7 +107,7 @@ export default function LiveTrackingClient({
     return (
       <div data-track-diag="token-expired">
         <main className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-          <div className="max-w-sm w-full bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center">
+          <div className="max-w-sm w-full bg-surface rounded-2xl shadow-sm border border-slate-200 p-8 text-center">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-2xl">
               ⏰
             </div>
@@ -151,18 +151,18 @@ export default function LiveTrackingClient({
       : null;
 
   return (
-    <main className="min-h-screen bg-zinc-50">
+    <main className="min-h-screen bg-surface-2">
       <div className="mx-auto max-w-xl px-4 py-6 sm:py-10 space-y-4">
         {/* Header */}
         <div className="text-center">
-          <p className="text-[11px] font-bold tracking-[0.2em] text-zinc-400">
+          <p className="text-[11px] font-bold tracking-[0.2em] text-ink-2">
             {businessName}
           </p>
           <div className="mt-2 flex items-center justify-center gap-2">
-            <h1 className="text-2xl font-extrabold text-zinc-900 tracking-tight">
+            <h1 className="text-2xl font-extrabold text-ink tracking-tight">
               {tr('gps.trackingTitle')}
             </h1>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-100 px-2.5 py-1 text-[11px] font-extrabold text-rose-700">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-100 px-2.5 py-1 text-[11px] font-extrabold text-danger">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-500 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-600" />
@@ -174,7 +174,7 @@ export default function LiveTrackingClient({
 
         {/* Status banner */}
         {arrived ? (
-          <Card className="p-4 bg-emerald-50 border-emerald-200">
+          <Card className="p-4 bg-ok-bg border-emerald-200">
             <p className="text-center font-bold text-emerald-800">
               ✅ {tr('gps.arrived')}
               {techName ? ` - ${techName}` : ''}
@@ -194,20 +194,20 @@ export default function LiveTrackingClient({
           <div className="grid grid-cols-2 gap-3">
             {distanceLabel && (
               <Card className="p-4 text-center">
-                <p className="text-[11px] font-bold text-zinc-400">
+                <p className="text-[11px] font-bold text-ink-2">
                   📍 {tr('gps.distance')}
                 </p>
-                <p className="mt-1 text-xl font-extrabold text-zinc-900">
+                <p className="mt-1 text-xl font-extrabold text-ink">
                   {distanceLabel}
                 </p>
               </Card>
             )}
             {etaLabel && (
               <Card className="p-4 text-center">
-                <p className="text-[11px] font-bold text-zinc-400">
+                <p className="text-[11px] font-bold text-ink-2">
                   ⏱ ETA
                 </p>
-                <p className="mt-1 text-xl font-extrabold text-zinc-900">
+                <p className="mt-1 text-xl font-extrabold text-ink">
                   {etaLabel}
                 </p>
               </Card>
@@ -233,7 +233,7 @@ export default function LiveTrackingClient({
                   },
                 ]}
               />
-              <div className="mt-3 flex items-center justify-center gap-2 text-xs text-zinc-500">
+              <div className="mt-3 flex items-center justify-center gap-2 text-xs text-ink-2">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600" />
@@ -246,7 +246,7 @@ export default function LiveTrackingClient({
               </div>
             </>
           ) : (
-            <p className="text-sm text-zinc-500 text-center py-10">
+            <p className="text-sm text-ink-2 text-center py-10">
               {tr('gps.noPings')}
             </p>
           )}
@@ -256,18 +256,18 @@ export default function LiveTrackingClient({
         <Card className="p-4 sm:p-5">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-[11px] font-bold text-zinc-400">
+              <p className="text-[11px] font-bold text-ink-2">
                 {tr('gps.viewJob')}
               </p>
-              <p className="font-bold text-zinc-900 truncate">{jobTitle}</p>
-              <p className="text-sm text-zinc-500 mt-0.5">
+              <p className="font-bold text-ink truncate">{jobTitle}</p>
+              <p className="text-sm text-ink-2 mt-0.5">
                 {tr('gps.customerName')}: {customerName}
               </p>
               {jobAddress && (
-                <p className="text-sm text-zinc-500 mt-0.5">📍 {jobAddress}</p>
+                <p className="text-sm text-ink-2 mt-0.5">📍 {jobAddress}</p>
               )}
               {techName && (
-                <p className="text-sm text-zinc-500 mt-0.5">
+                <p className="text-sm text-ink-2 mt-0.5">
                   {tr('gps.techLabel')}: {techName}
                 </p>
               )}
@@ -276,7 +276,7 @@ export default function LiveTrackingClient({
           </div>
         </Card>
 
-        <p className="text-[11px] text-zinc-400 text-center px-4">
+        <p className="text-[11px] text-ink-2 text-center px-4">
           {tr('gps.privacyNote')}
         </p>
       </div>

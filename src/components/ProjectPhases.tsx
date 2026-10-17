@@ -38,7 +38,7 @@ const NEXT_STATUS: Record<string, string> = {
 };
 
 const PHASE_TONE: Record<string, string> = {
-  TODO: 'bg-zinc-100 text-zinc-600',
+  TODO: 'bg-surface-2 text-ink-2',
   IN_PROGRESS: 'bg-blue-100 text-blue-800',
   DONE: 'bg-emerald-100 text-emerald-800',
 };
@@ -69,9 +69,9 @@ export function PhaseCard({
   };
 
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-4">
+    <div className="rounded-2xl border border-line bg-surface p-4">
       <div className="flex items-center justify-between gap-2 mb-3">
-        <h3 className="font-bold text-zinc-900">{phase.name}</h3>
+        <h3 className="font-bold text-ink">{phase.name}</h3>
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -90,7 +90,7 @@ export function PhaseCard({
             type="button"
             onClick={remove}
             disabled={pending}
-            className="p-2 rounded-lg text-zinc-400 hover:text-red-600 hover:bg-red-50 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            className="p-2 rounded-lg text-ink-2 hover:text-danger hover:bg-danger-bg min-w-[44px] min-h-[44px] flex items-center justify-center"
             aria-label={t(locale, 'projects.delete')}
           >
             <Trash2 size={16} aria-hidden />
@@ -99,21 +99,21 @@ export function PhaseCard({
       </div>
 
       {phase.jobs.length === 0 ? (
-        <p className="text-xs text-zinc-400 py-1">{t(locale, 'projects.noJobs')}</p>
+        <p className="text-xs text-ink-2 py-1">{t(locale, 'projects.noJobs')}</p>
       ) : (
-        <ul className="divide-y divide-zinc-100">
+        <ul className="divide-y divide-line">
           {phase.jobs.map((j) => (
             <li key={j.id} className="flex items-center gap-2 py-2">
               <Link
                 href={`/jobs/${j.id}`}
-                className="flex-1 min-w-0 text-sm font-medium text-zinc-800 hover:underline truncate"
+                className="flex-1 min-w-0 text-sm font-medium text-ink hover:underline truncate"
               >
                 {j.title}
-                <span className="block text-xs font-normal text-zinc-500 truncate">
+                <span className="block text-xs font-normal text-ink-2 truncate">
                   {j.customerName} · {j.date}
                 </span>
               </Link>
-              <span className="text-xs font-bold text-zinc-700 tabular-nums shrink-0">
+              <span className="text-xs font-bold text-ink tabular-nums shrink-0">
                 {formatMoney(j.price, 'CAD', moneyLocale)}
               </span>
               <button
@@ -124,7 +124,7 @@ export function PhaseCard({
                   })
                 }
                 disabled={pending}
-                className="p-1.5 rounded-lg text-zinc-400 hover:text-red-600 min-w-[36px] min-h-[36px] flex items-center justify-center"
+                className="p-1.5 rounded-lg text-ink-2 hover:text-danger min-w-[36px] min-h-[36px] flex items-center justify-center"
                 aria-label={t(locale, 'projects.detach')}
               >
                 <X size={14} aria-hidden />
@@ -181,7 +181,7 @@ export function AddPhaseForm({ locale, projectId }: { locale: Locale; projectId:
       <button type="submit" disabled={pending || !name.trim()} className={secondaryBtnClass}>
         {t(locale, 'projects.addPhase')}
       </button>
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-xs text-danger">{error}</p>}
     </form>
   );
 }

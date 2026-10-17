@@ -19,10 +19,10 @@ function ArticleLink({ article, locale }: { article: HelpArticle; locale: Locale
   return (
     <a
       href={`/help/${article.slug}`}
-      className="block rounded-2xl border border-zinc-200 bg-white p-4 hover:border-lime-500 hover:shadow-sm transition-shadow"
+      className="block rounded-2xl border border-line bg-surface p-4 hover:border-lime-500 hover:shadow-sm transition-shadow"
     >
-      <div className="font-semibold text-zinc-900">{loc.title}</div>
-      <div className="mt-1 text-xs text-zinc-500">
+      <div className="font-semibold text-ink">{loc.title}</div>
+      <div className="mt-1 text-xs text-ink-2">
         {categoryLabel(article.category, locale)}
       </div>
     </a>
@@ -62,12 +62,12 @@ export default async function HelpPage({
           type="search"
           defaultValue={query}
           placeholder={t(locale, 'support.searchPh')}
-          className="min-h-[44px] flex-1 rounded-xl border border-zinc-300 bg-white px-4 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-lime-500 focus:outline-none"
+          className="min-h-[44px] flex-1 rounded-xl border border-line-strong bg-surface px-4 text-sm text-ink placeholder:text-ink-2 focus:border-lime-500 focus:outline-none"
         />
         {activeCat ? <input type="hidden" name="cat" value={activeCat} /> : null}
         <button
           type="submit"
-          className="min-h-[44px] rounded-xl bg-zinc-900 px-5 text-sm font-semibold text-white hover:bg-zinc-700"
+          className="min-h-[44px] rounded-xl bg-asphalt px-5 text-sm font-semibold text-white hover:bg-zinc-700"
         >
           {t(locale, 'support.searchBtn')}
         </button>
@@ -78,8 +78,8 @@ export default async function HelpPage({
           href="/help"
           className={`rounded-full px-4 py-2 text-sm font-medium min-h-[44px] inline-flex items-center ${
             !activeCat
-              ? 'bg-zinc-900 text-white'
-              : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+              ? 'bg-asphalt text-white'
+              : 'bg-surface-2 text-ink hover:bg-line'
           }`}
         >
           {t(locale, 'support.allLabel')}
@@ -90,8 +90,8 @@ export default async function HelpPage({
             href={`/help?cat=${c.id}${query ? `&q=${encodeURIComponent(query)}` : ''}`}
             className={`rounded-full px-4 py-2 text-sm font-medium min-h-[44px] inline-flex items-center ${
               activeCat === c.id
-                ? 'bg-zinc-900 text-white'
-                : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200'
+                ? 'bg-asphalt text-white'
+                : 'bg-surface-2 text-ink hover:bg-line'
             }`}
           >
             {c[locale]}
@@ -102,8 +102,8 @@ export default async function HelpPage({
       <div className="mt-8">
         {results.length === 0 ? (
           <Card>
-            <p className="font-semibold text-zinc-900">{t(locale, 'support.noResults')}</p>
-            <p className="mt-1 text-sm text-zinc-600">{t(locale, 'support.noResultsHint')}</p>
+            <p className="font-semibold text-ink">{t(locale, 'support.noResults')}</p>
+            <p className="mt-1 text-sm text-ink-2">{t(locale, 'support.noResultsHint')}</p>
           </Card>
         ) : query || activeCat ? (
           <div className="grid gap-3 sm:grid-cols-2">
@@ -118,7 +118,7 @@ export default async function HelpPage({
               if (arts.length === 0) return null;
               return (
                 <section key={c.id} aria-label={c[locale]}>
-                  <h2 className="mb-3 text-base font-bold text-zinc-900">{c[locale]}</h2>
+                  <h2 className="mb-3 text-base font-bold text-ink">{c[locale]}</h2>
                   <div className="grid gap-3 sm:grid-cols-2">
                     {arts.map((a) => (
                       <ArticleLink key={a.slug} article={a} locale={locale} />
@@ -133,8 +133,8 @@ export default async function HelpPage({
 
       <div className="mt-12">
         <Card>
-          <h2 className="text-lg font-bold text-zinc-900">{t(locale, 'support.ticketTitle')}</h2>
-          <p className="mt-1 text-sm text-zinc-600">{t(locale, 'support.ticketDesc')}</p>
+          <h2 className="text-lg font-bold text-ink">{t(locale, 'support.ticketTitle')}</h2>
+          <p className="mt-1 text-sm text-ink-2">{t(locale, 'support.ticketDesc')}</p>
           <div className="mt-4">
             <SupportTicketForm locale={locale} />
           </div>

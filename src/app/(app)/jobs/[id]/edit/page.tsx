@@ -42,7 +42,7 @@ export default async function EditJobPage({
     <div className="space-y-6 max-w-2xl">
       <Link
         href={`/jobs/${job.id}`}
-        className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900 min-h-[44px] px-2 -ml-2"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-2 hover:text-ink min-h-[44px] px-2 -ml-2"
       >
         <ArrowLeft size={14} /> {T('jobBackToJob')}
       </Link>

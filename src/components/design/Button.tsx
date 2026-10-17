@@ -9,7 +9,7 @@ export type ButtonSize = 'md' | 'lg';
 
 const variantClasses: Record<ButtonVariant, string> = {
   // Black on light per DESIGN.md §3. One primary action per screen.
-  primary: 'bg-ej-primary text-ej-on-primary hover:bg-black/85 active:bg-black/90',
+  primary: 'bg-ej-primary text-ej-on-primary hover:bg-asphalt/85 active:bg-asphalt/90',
   secondary: 'bg-ej-surface text-ej-ink border border-ej-border hover:bg-ej-border/50 active:bg-ej-border',
   tertiary: 'bg-transparent text-ej-ink hover:bg-ej-surface active:bg-ej-border/50',
   destructive: 'bg-ej-danger text-white hover:bg-ej-danger/90 active:bg-ej-danger/95',

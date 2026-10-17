@@ -165,8 +165,8 @@ export default function PushSettingsCard({ locale = 'en' }: { locale?: Locale })
     <Card>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="font-bold text-zinc-900">{tr('cardTitle')}</h3>
-          <p className="mt-1 text-sm text-zinc-600">{tr('cardDesc')}</p>
+          <h3 className="font-bold text-ink">{tr('cardTitle')}</h3>
+          <p className="mt-1 text-sm text-ink-2">{tr('cardDesc')}</p>
         </div>
         {status === 'on' && <Badge tone="success">{tr('statusOn')}</Badge>}
         {status === 'off' && <Badge tone="neutral">{tr('statusOff')}</Badge>}
@@ -174,21 +174,21 @@ export default function PushSettingsCard({ locale = 'en' }: { locale?: Locale })
 
       <div className="mt-4">
         {status === 'loading' && (
-          <p className="text-sm text-zinc-500" role="status">
+          <p className="text-sm text-ink-2" role="status">
             …
           </p>
         )}
         {status === 'unsupported' && (
-          <p className="text-sm text-zinc-600">{tr('notSupported')}</p>
+          <p className="text-sm text-ink-2">{tr('notSupported')}</p>
         )}
         {status === 'unconfigured' && (
-          <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+          <p className="text-sm text-warn-text bg-warn-bg border border-amber-200 rounded-xl px-3 py-2">
             {tr('notConfigured')}
           </p>
         )}
         {status === 'denied' && (
-          <div className="text-sm text-zinc-600 space-y-1">
-            <p className="font-semibold text-zinc-800">{tr('denied')}</p>
+          <div className="text-sm text-ink-2 space-y-1">
+            <p className="font-semibold text-ink">{tr('denied')}</p>
             <p>{tr('deniedHelp')}</p>
           </div>
         )}
@@ -203,7 +203,7 @@ export default function PushSettingsCard({ locale = 'en' }: { locale?: Locale })
               <Bell size={16} />
               {busy ? tr('testing') : tr('enableBtn')}
             </button>
-            <p className="text-xs text-zinc-500">{tr('enableHelp')}</p>
+            <p className="text-xs text-ink-2">{tr('enableHelp')}</p>
           </div>
         )}
         {status === 'on' && (

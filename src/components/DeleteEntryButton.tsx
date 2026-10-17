@@ -27,12 +27,12 @@ export default function DeleteEntryButton({ entryId }: { entryId: string }) {
         disabled={isPending}
         aria-label="Delete entry"
         title="Delete entry"
-        className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-50 transition-colors disabled:opacity-50"
+        className="p-1.5 rounded-lg text-ink-2 hover:text-danger hover:bg-danger-bg transition-colors disabled:opacity-50"
       >
         <Trash2 size={14} />
       </button>
       {error && (
-        <span className="text-[11px] text-rose-600 font-medium" role="alert">
+        <span className="text-[11px] text-danger font-medium" role="alert">
           {error}
         </span>
       )}

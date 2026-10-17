@@ -97,12 +97,12 @@ export default function BookingForm({
 
   if (state.ok) {
     return (
-      <div className="bg-white rounded-2xl border border-smoke shadow-sm p-8 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-4">
+      <div className="bg-surface rounded-2xl border border-smoke shadow-sm p-8 text-center">
+        <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-ok flex items-center justify-center mx-auto mb-4">
           <CheckCircle2 size={28} />
         </div>
-        <h2 className="text-lg font-bold text-zinc-900 mb-1">{L('t10money.bookingFormReceived')}</h2>
-        <p className="text-sm text-zinc-500 max-w-sm mx-auto">
+        <h2 className="text-lg font-bold text-ink mb-1">{L('t10money.bookingFormReceived')}</h2>
+        <p className="text-sm text-ink-2 max-w-sm mx-auto">
           {L('t10money.bookingFormThanks')}
         </p>
         {businessPhone && (
@@ -121,7 +121,7 @@ export default function BookingForm({
   const availableCount = showSlots ? slotsResult.slots.filter((s) => s.available).length : 0;
 
   return (
-    <form action={formAction} className="bg-white rounded-2xl border border-smoke shadow-sm p-6 space-y-4">
+    <form action={formAction} className="bg-surface rounded-2xl border border-smoke shadow-sm p-6 space-y-4">
       <input type="hidden" name="slug" value={slug} />
       <input type="hidden" name="idempotencyKey" value={idempotencyKey} />
       <input type="hidden" name="time" value={selectedTime} />
@@ -195,22 +195,22 @@ export default function BookingForm({
           <p className="text-xs text-graphite py-2">-</p>
         )}
         {slotsResult?.error && (
-          <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+          <p className="text-xs text-warn-text bg-warn-bg border border-amber-200 rounded-xl px-3 py-2">
             {slotsResult.error}
           </p>
         )}
         {slotsResult?.closed && (
-          <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+          <p className="text-xs text-warn-text bg-warn-bg border border-amber-200 rounded-xl px-3 py-2">
             {strings.dayClosed}
           </p>
         )}
         {slotsResult?.hoursNotSet && (
-          <p className="text-xs text-zinc-500 bg-zinc-50 border border-smoke rounded-xl px-3 py-2">
+          <p className="text-xs text-ink-2 bg-surface-2 border border-smoke rounded-xl px-3 py-2">
             {strings.hoursNotSetNote}
           </p>
         )}
         {showSlots && availableCount === 0 && (
-          <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+          <p className="text-xs text-warn-text bg-warn-bg border border-amber-200 rounded-xl px-3 py-2">
             {strings.noSlotsLeft}
           </p>
         )}
@@ -229,10 +229,10 @@ export default function BookingForm({
                     onClick={() => setSelectedTime(slot.start)}
                     className={
                       selected
-                        ? 'min-h-[44px] px-2 py-2 rounded-xl text-xs font-bold bg-ink text-white shadow-sm'
+                        ? 'min-h-[44px] px-2 py-2 rounded-xl text-xs font-bold bg-asphalt text-white shadow-sm'
                         : slot.available
-                          ? 'min-h-[44px] px-2 py-2 rounded-xl text-xs font-semibold bg-zinc-50 border border-smoke text-zinc-700 hover:border-ink hover:text-ink'
-                          : 'min-h-[44px] px-2 py-2 rounded-xl text-xs font-medium bg-zinc-50 border border-smoke text-zinc-300 line-through cursor-not-allowed'
+                          ? 'min-h-[44px] px-2 py-2 rounded-xl text-xs font-semibold bg-surface-2 border border-smoke text-ink hover:border-asphalt hover:text-ink'
+                          : 'min-h-[44px] px-2 py-2 rounded-xl text-xs font-medium bg-surface-2 border border-smoke text-zinc-300 line-through cursor-not-allowed'
                     }
                   >
                     {slot.label}
@@ -252,7 +252,7 @@ export default function BookingForm({
       </Field>
 
       {state.error && (
-        <p className="text-sm font-medium text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-2.5">
+        <p className="text-sm font-medium text-danger bg-danger-bg border border-red-100 rounded-xl px-4 py-2.5">
           {state.error}
         </p>
       )}

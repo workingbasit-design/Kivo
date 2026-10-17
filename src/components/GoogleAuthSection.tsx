@@ -17,11 +17,11 @@ function SectionInner() {
       <GoogleAuthError />
       <GoogleSignInButton />
       <div className="flex items-center gap-3 my-5" aria-hidden="true">
-        <div className="flex-1 h-px bg-zinc-200" />
-        <span className="text-[11px] font-semibold text-zinc-400">
+        <div className="flex-1 h-px bg-line" />
+        <span className="text-[11px] font-semibold text-ink-2">
           {t('googleAuth.orDivider')}
         </span>
-        <div className="flex-1 h-px bg-zinc-200" />
+        <div className="flex-1 h-px bg-line" />
       </div>
     </div>
   );

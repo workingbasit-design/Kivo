@@ -66,7 +66,7 @@ function FieldMarker({
   const top = Math.min(100, Math.max(0, field.y <= 1 ? field.y * 100 : field.y));
   return (
     <span
-      className="pointer-events-none absolute z-10 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-full border border-ink/30 bg-ink/90 px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap text-white"
+      className="pointer-events-none absolute z-10 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-full border border-asphalt/30 bg-asphalt/90 px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap text-white"
       style={{ left: `${left}%`, top: `${top}%` }}
     >
       <PenLine size={10} />
@@ -109,7 +109,7 @@ export default async function SignPage({
 
   return (
     <div className="min-h-screen bg-paper font-sans">
-      <header className="bg-ink text-white">
+      <header className="bg-asphalt text-white">
         <div className="mx-auto max-w-lg px-4 py-8">
           <div className="mb-4">
             <Logo tone="onDark" size={28} />
@@ -126,21 +126,21 @@ export default async function SignPage({
         <Card className="relative overflow-hidden p-6">
           <div className="mb-4 flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="flex items-center gap-1.5 text-[11px] font-semibold text-zinc-400">
+              <p className="flex items-center gap-1.5 text-[11px] font-semibold text-ink-2">
                 <FileText size={12} /> {quote.number}
               </p>
-              <h2 className="mt-1 text-lg font-bold text-zinc-900">{quote.title}</h2>
+              <h2 className="mt-1 text-lg font-bold text-ink">{quote.title}</h2>
               {customerName && (
-                <p className="mt-1 text-sm text-zinc-500">{customerName}</p>
+                <p className="mt-1 text-sm text-ink-2">{customerName}</p>
               )}
             </div>
-            <p className="shrink-0 text-xl font-bold text-zinc-900">
+            <p className="shrink-0 text-xl font-bold text-ink">
               {formatMoney(quote.total, 'CAD', locale)}
             </p>
           </div>
 
-          <div className="rounded-lg bg-zinc-50 px-4 py-3">
-            <p className="text-xs font-semibold text-zinc-600">{business.name}</p>
+          <div className="rounded-lg bg-surface-2 px-4 py-3">
+            <p className="text-xs font-semibold text-ink-2">{business.name}</p>
           </div>
 
           {/* Placed signing fields overlaid on the document. */}
@@ -165,7 +165,7 @@ export default async function SignPage({
           }}
         />
 
-        <p className="pt-2 text-center text-[11px] text-zinc-400">
+        <p className="pt-2 text-center text-[11px] text-ink-2">
           {L('esign.poweredBy').replace('{business}', business.name)}
         </p>
       </main>

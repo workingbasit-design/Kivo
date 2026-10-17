@@ -48,7 +48,7 @@ export default function MorphChips<T extends string | number>({
                 ? 'text-ink'
                 : dark
                   ? 'text-white hover:text-white'
-                  : 'text-zinc-600 hover:text-zinc-900'
+                  : 'text-ink-2 hover:text-ink'
             }`}
           >
             {selected && (
@@ -61,7 +61,7 @@ export default function MorphChips<T extends string | number>({
             {!selected && (
               <span
                 className={`absolute inset-0 rounded-full border ${
-                  dark ? 'border-white/30 bg-white/10' : 'border-zinc-200 bg-white'
+                  dark ? 'border-white/30 bg-surface/10' : 'border-line bg-surface'
                 }`}
               />
             )}
@@ -82,7 +82,7 @@ export default function MorphChips<T extends string | number>({
         );
       })}
       {hidden.length > 0 && (
-        <span className={`text-xs font-semibold px-2 ${dark ? 'text-white/60' : 'text-zinc-500'}`}>
+        <span className={`text-xs font-semibold px-2 ${dark ? 'text-white/60' : 'text-ink-2'}`}>
           +{hidden.length} more{hiddenSelected ? ' (selected)' : ''}
         </span>
       )}

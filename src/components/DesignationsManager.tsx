@@ -137,20 +137,20 @@ export default function DesignationsManager({
   return (
     <div className="space-y-3">
       {items.length === 0 && !showForm && (
-        <p className="text-xs text-zinc-500">{tr('credentials.empty')}</p>
+        <p className="text-xs text-ink-2">{tr('credentials.empty')}</p>
       )}
       <ul className="space-y-2">
         {items.map((d) => (
           <li
             key={d.id}
-            className="flex items-start gap-3 rounded-xl border border-zinc-200 bg-white px-3.5 py-3"
+            className="flex items-start gap-3 rounded-xl border border-line bg-surface px-3.5 py-3"
           >
             <div className="p-1.5 rounded-lg bg-lime/20 text-ink shrink-0 mt-0.5">
               <Award size={15} />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-zinc-900 truncate">{d.title}</p>
-              <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-zinc-500">
+              <p className="text-sm font-semibold text-ink truncate">{d.title}</p>
+              <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-ink-2">
                 <Badge>{tr(`credentials.types.${d.type}`)}</Badge>
                 {d.issuer && <span>{d.issuer}</span>}
                 {d.number && <span>#{d.number}</span>}
@@ -165,7 +165,7 @@ export default function DesignationsManager({
               <button
                 type="button"
                 onClick={() => openEdit(d)}
-                className="p-1.5 rounded-lg text-zinc-500 hover:bg-zinc-100"
+                className="p-1.5 rounded-lg text-ink-2 hover:bg-surface-2"
                 aria-label={tr('credentials.editBtn')}
               >
                 <Pencil size={14} />
@@ -174,7 +174,7 @@ export default function DesignationsManager({
                 type="button"
                 onClick={() => askRemove(d.id)}
                 disabled={pending}
-                className="p-1.5 rounded-lg text-zinc-500 hover:bg-red-50 hover:text-red-600"
+                className="p-1.5 rounded-lg text-ink-2 hover:bg-danger-bg hover:text-danger"
                 aria-label={tr('credentials.deleteBtn')}
               >
                 <Trash2 size={14} />
@@ -189,13 +189,13 @@ export default function DesignationsManager({
           <Plus size={14} /> {tr('credentials.addBtn')}
         </button>
       ) : (
-        <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 space-y-3">
+        <div className="rounded-xl border border-line bg-surface-2 p-4 space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-bold text-zinc-900">{tr('credentials.addBtn')}</p>
+            <p className="text-sm font-bold text-ink">{tr('credentials.addBtn')}</p>
             <button
               type="button"
               onClick={() => setShowForm(false)}
-              className="p-1 rounded-lg text-zinc-500 hover:bg-zinc-200"
+              className="p-1 rounded-lg text-ink-2 hover:bg-line"
               aria-label={tr('credentials.cancel')}
             >
               <X size={15} />
@@ -262,7 +262,7 @@ export default function DesignationsManager({
         title={tr('credentials.deleteConfirm')}
         locale={locale}
       >
-        <p className="text-sm text-zinc-600">
+        <p className="text-sm text-ink-2">
           {items.find((x) => x.id === deleteId)?.title}
         </p>
         <div className="mt-5 flex gap-2 justify-end">

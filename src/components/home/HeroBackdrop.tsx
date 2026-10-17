@@ -41,7 +41,7 @@ export default function HeroBackdrop() {
         </div>
       ))}
       {/* faint vignette so text stays crisp */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_55%,rgba(250,250,247,0.7)_100%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_55%,color-mix(in_srgb,white_70%,transparent)_100%)]" />
     </div>
   );
 }

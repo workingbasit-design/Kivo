@@ -34,10 +34,10 @@ export default function NotificationSettingsForm({
 
   return (
     <Card className="p-5 md:p-6">
-      <h2 className="text-sm font-bold text-zinc-900 mb-1 flex items-center gap-2">
+      <h2 className="text-sm font-bold text-ink mb-1 flex items-center gap-2">
         <Bell size={14} /> {t(locale, 'notifications.settingsTitle')}
       </h2>
-      <p className="text-xs text-zinc-500 mb-4">{t(locale, 'notifications.settingsHint')}</p>
+      <p className="text-xs text-ink-2 mb-4">{t(locale, 'notifications.settingsHint')}</p>
       <form
         action={async (formData: FormData) => {
           await saveNotificationSettingsAction(formData);
@@ -49,20 +49,20 @@ export default function NotificationSettingsForm({
         {NOTIFICATION_TYPES.map((key) => (
           <label
             key={key}
-            className="flex items-start gap-3 rounded-xl px-3 py-3 min-h-[52px] cursor-pointer hover:bg-zinc-50 transition-colors"
+            className="flex items-start gap-3 rounded-xl px-3 py-3 min-h-[52px] cursor-pointer hover:bg-surface-2 transition-colors"
           >
             <input
               type="checkbox"
               name={`notify_${key}`}
               checked={values[key]}
               onChange={() => toggle(key)}
-              className="mt-1 h-5 w-5 shrink-0 rounded accent-[#161616]"
+              className="mt-1 h-5 w-5 shrink-0 rounded accent-ink"
             />
             <span>
-              <span className="block text-[14px] font-semibold text-zinc-900">
+              <span className="block text-[14px] font-semibold text-ink">
                 {t(locale, `notifications.type_${key}`)}
               </span>
-              <span className="block text-xs text-zinc-500">
+              <span className="block text-xs text-ink-2">
                 {t(locale, `notifications.desc_${key}`)}
               </span>
             </span>
@@ -73,7 +73,7 @@ export default function NotificationSettingsForm({
             {t(locale, 'notifications.saveSettings')}
           </button>
           {saved && (
-            <p role="status" className="text-xs font-medium text-emerald-700">
+            <p role="status" className="text-xs font-medium text-ok">
               {savedMessage}
             </p>
           )}

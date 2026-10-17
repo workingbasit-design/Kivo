@@ -84,15 +84,15 @@ export default function ReviewRequestCard({
 
       {status === 'done' ? (
         <div className="space-y-3">
-          <p className="text-xs text-zinc-500">{tr('linkReady')}</p>
-          <p className="text-xs bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 text-zinc-700 w-full break-all select-all">
+          <p className="text-xs text-ink-2">{tr('linkReady')}</p>
+          <p className="text-xs bg-surface-2 border border-line rounded-xl px-3 py-2.5 text-ink w-full break-all select-all">
             {link}
           </p>
           <div>
-            <p className="text-[11px] font-bold text-zinc-400 mb-1.5">
+            <p className="text-[11px] font-bold text-ink-2 mb-1.5">
               {t(locale, 'jobops.notify.preview')}
             </p>
-            <p className="text-sm text-zinc-700 bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 whitespace-pre-wrap">
+            <p className="text-sm text-ink bg-surface-2 border border-line rounded-xl px-3 py-2.5 whitespace-pre-wrap">
               {message}
             </p>
           </div>
@@ -100,7 +100,7 @@ export default function ReviewRequestCard({
             <button
               type="button"
               onClick={copyLink}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border bg-zinc-500/10 border-zinc-500/30 text-zinc-700 hover:bg-zinc-500/20 min-h-[36px]"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border bg-zinc-500/10 border-zinc-500/30 text-ink hover:bg-zinc-500/20 min-h-[36px]"
             >
               {copied ? <Check size={13} /> : <Link2 size={13} />}
               {copied ? tr('copied') : tr('copy')}
@@ -121,7 +121,7 @@ export default function ReviewRequestCard({
         </div>
       ) : (
         <div className="space-y-3">
-          <p className="text-xs text-zinc-500">{tr('desc')}</p>
+          <p className="text-xs text-ink-2">{tr('desc')}</p>
           <button
             type="button"
             onClick={run}
@@ -136,7 +136,7 @@ export default function ReviewRequestCard({
             {status === 'working' ? tr('creating') : tr('create')}
           </button>
           {status === 'error' && (
-            <p className="text-xs font-medium text-rose-700 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2.5">
+            <p className="text-xs font-medium text-danger bg-danger-bg border border-rose-200 rounded-xl px-3 py-2.5">
               {error}
             </p>
           )}

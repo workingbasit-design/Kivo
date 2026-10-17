@@ -23,10 +23,10 @@ import ProCard, { type ProCardData } from '@/components/ProCard';
 
 const CATEGORIES = [
   { key: 'Plumbing', icon: Wrench, bg: 'bg-sky-50', text: 'text-sky-700' },
-  { key: 'Electrical', icon: Zap, bg: 'bg-amber-50', text: 'text-amber-700' },
-  { key: 'Cleaning', icon: Sparkles, bg: 'bg-emerald-50', text: 'text-emerald-700' },
-  { key: 'HVAC', icon: Flame, bg: 'bg-rose-50', text: 'text-rose-700' },
-  { key: 'Landscaping', icon: TreePine, bg: 'bg-green-50', text: 'text-green-700' },
+  { key: 'Electrical', icon: Zap, bg: 'bg-warn-bg', text: 'text-warn-text' },
+  { key: 'Cleaning', icon: Sparkles, bg: 'bg-ok-bg', text: 'text-ok' },
+  { key: 'HVAC', icon: Flame, bg: 'bg-danger-bg', text: 'text-danger' },
+  { key: 'Landscaping', icon: TreePine, bg: 'bg-ok-bg', text: 'text-ok' },
   { key: 'Painting', icon: PaintRoller, bg: 'bg-violet-50', text: 'text-violet-700' },
   { key: 'Roofing', icon: Home, bg: 'bg-slate-100', text: 'text-slate-700' },
   { key: 'Pest Control', icon: Bug, bg: 'bg-lime-50', text: 'text-lime-800' },
@@ -90,10 +90,10 @@ export default function CustomerHomeClient({
               ? tr('customer.home.afternoon')
               : tr('customer.home.evening')}
         </p>
-        <h1 className="text-[26px] font-bold tracking-tight text-zinc-900 mt-1">
+        <h1 className="text-[26px] font-bold tracking-tight text-ink mt-1">
           {tr('customer.home.greeting').replace('{name}', customerName)}
         </h1>
-        <p className="text-zinc-500 text-sm mt-1">
+        <p className="text-ink-2 text-sm mt-1">
           {tr('customer.home.tagline')}
         </p>
       </div>
@@ -101,7 +101,7 @@ export default function CustomerHomeClient({
       {/* Get it done for me - concierge entry */}
       <Link
         href="/customer/concierge"
-        className="ej-anim-fade-up group flex items-center gap-4 rounded-3xl bg-zinc-900 p-5 shadow-sm transition-all hover:shadow-lg active:scale-[0.98]"
+        className="ej-anim-fade-up group flex items-center gap-4 rounded-3xl bg-asphalt p-5 shadow-sm transition-all hover:shadow-lg active:scale-[0.98]"
         style={{ animationDelay: '60ms' }}
       >
         <span className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center shrink-0 transition-transform group-active:scale-95">
@@ -111,35 +111,35 @@ export default function CustomerHomeClient({
           <span className="block text-[16px] font-bold text-white">
             {tr('customer.home.getItDone')}
           </span>
-          <span className="block text-[13px] text-zinc-400 mt-0.5">
+          <span className="block text-[13px] text-ink-2 mt-0.5">
             {tr('customer.home.getItDoneHint')}
           </span>
         </span>
-        <ArrowRight size={20} className="text-zinc-500 shrink-0 transition-transform group-hover:translate-x-0.5" />
+        <ArrowRight size={20} className="text-ink-2 shrink-0 transition-transform group-hover:translate-x-0.5" />
       </Link>
 
       <form onSubmit={doSearch} className="ej-anim-fade-up space-y-2" style={{ animationDelay: '80ms' }}>
         <label className="relative block group">
-          <Search size={17} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 transition-colors group-focus-within:text-indigo-500" />
+          <Search size={17} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-2 transition-colors group-focus-within:text-indigo-500" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder={tr('customer.home.whatPlaceholder')}
             maxLength={100}
             aria-label={tr('customer.home.whatPlaceholder')}
-            className="w-full min-h-[52px] rounded-2xl bg-white border border-zinc-200 pl-11 pr-4 text-[15px] text-zinc-900 placeholder:text-zinc-400 outline-none shadow-sm transition-all focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 hover:border-zinc-300"
+            className="w-full min-h-[52px] rounded-2xl bg-surface border border-line pl-11 pr-4 text-[15px] text-ink placeholder:text-ink-2 outline-none shadow-sm transition-all focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 hover:border-line-strong"
           />
         </label>
         <div className="flex gap-2">
           <label className="relative block flex-1 group">
-            <MapPin size={17} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 transition-colors group-focus-within:text-indigo-500" />
+            <MapPin size={17} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-2 transition-colors group-focus-within:text-indigo-500" />
             <input
               value={city}
               onChange={(e) => setCity(e.target.value)}
               placeholder={tr('customer.home.cityPlaceholder')}
               maxLength={100}
               aria-label={tr('customer.home.cityPlaceholder')}
-              className="w-full min-h-[52px] rounded-2xl bg-white border border-zinc-200 pl-11 pr-4 text-[15px] text-zinc-900 placeholder:text-zinc-400 outline-none shadow-sm transition-all focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 hover:border-zinc-300"
+              className="w-full min-h-[52px] rounded-2xl bg-surface border border-line pl-11 pr-4 text-[15px] text-ink placeholder:text-ink-2 outline-none shadow-sm transition-all focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 hover:border-line-strong"
             />
           </label>
           <button
@@ -153,19 +153,19 @@ export default function CustomerHomeClient({
 
       {!searching && (
         <div className="ej-anim-fade-up" style={{ animationDelay: '160ms' }}>
-          <h2 className="text-[15px] font-bold text-zinc-900 mb-3">{tr('customer.home.browseCategories')}</h2>
+          <h2 className="text-[15px] font-bold text-ink mb-3">{tr('customer.home.browseCategories')}</h2>
           <div className="grid grid-cols-4 gap-2.5">
             {CATEGORIES.map(({ key, icon: Icon, bg, text }, i) => (
               <button
                 key={key}
                 onClick={() => searchCategory(key)}
                 style={{ animationDelay: `${200 + i * 40}ms` }}
-                className="ej-anim-scale-in group flex flex-col items-center gap-1.5 py-3.5 px-1 rounded-2xl bg-white border border-zinc-200/80 shadow-sm transition-all duration-300 hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-100/50 hover:-translate-y-1 active:translate-y-0 active:scale-[0.96]"
+                className="ej-anim-scale-in group flex flex-col items-center gap-1.5 py-3.5 px-1 rounded-2xl bg-surface border border-line/80 shadow-sm transition-all duration-300 hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-100/50 hover:-translate-y-1 active:translate-y-0 active:scale-[0.96]"
               >
                 <span className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-active:scale-95`}>
                   <Icon className={`w-5 h-5 ${text}`} />
                 </span>
-                <span className="text-[11px] font-semibold text-zinc-700 leading-tight text-center">
+                <span className="text-[11px] font-semibold text-ink leading-tight text-center">
                   {tr(`customer.categories.${key}`)}
                 </span>
               </button>
@@ -176,14 +176,14 @@ export default function CustomerHomeClient({
 
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-[15px] font-bold text-zinc-900">
+          <h2 className="text-[15px] font-bold text-ink">
             {searching ? (
               <>
                 {tr('customer.home.prosFound')
                   .replace('{count}', String(results.length))
                   .replaceAll('{s}', results.length === 1 ? '' : locale === 'fr' ? 's' : 's')}
                 {initialQ && (
-                  <span className="text-zinc-500 font-medium">
+                  <span className="text-ink-2 font-medium">
                     {' '}{tr('customer.home.forQuery').replace('{q}', initialQ)}
                   </span>
                 )}
@@ -206,14 +206,14 @@ export default function CustomerHomeClient({
         </div>
 
         {results.length === 0 ? (
-          <div className="ej-anim-fade-up bg-white rounded-3xl border border-zinc-200/80 p-10 text-center shadow-sm">
+          <div className="ej-anim-fade-up bg-surface rounded-3xl border border-line/80 p-10 text-center shadow-sm">
             <div className="ej-anim-scale-in w-14 h-14 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center mx-auto mb-4">
               <SearchX className="w-7 h-7 text-indigo-400" />
             </div>
-            <p className="font-bold text-zinc-900">
+            <p className="font-bold text-ink">
               {searching ? tr('customer.home.noProsFound') : tr('customer.home.noProsYet')}
             </p>
-            <p className="text-sm text-zinc-500 mt-1 max-w-xs mx-auto">
+            <p className="text-sm text-ink-2 mt-1 max-w-xs mx-auto">
               {searching ? tr('customer.home.noProsFoundHint') : tr('customer.home.noProsYetHint')}
             </p>
           </div>

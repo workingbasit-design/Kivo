@@ -74,10 +74,10 @@ function WorkingHoursEditor({
         return (
           <div
             key={d.key}
-            className="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2.5"
+            className="rounded-xl border border-line bg-surface-2 px-3 py-2.5"
           >
             <div className="flex items-center justify-between gap-2">
-              <span className="text-xs font-semibold text-zinc-700">{label}</span>
+              <span className="text-xs font-semibold text-ink">{label}</span>
               <button
                 type="button"
                 onClick={() =>
@@ -100,7 +100,7 @@ function WorkingHoursEditor({
                   name={`wh_${d.key}_open`}
                   ariaLabel={`${label} - ${t('t10misc.settings.workingHoursSetHours')}`}
                 />
-                <span className="text-xs text-zinc-400" aria-hidden="true">-</span>
+                <span className="text-xs text-ink-2" aria-hidden="true">-</span>
                 <TimeField
                   value={state.close}
                   onChange={(v) => setDay(d.key, { open: state.open, close: v })}
@@ -110,12 +110,12 @@ function WorkingHoursEditor({
                 />
               </div>
             ) : (
-              <p className="text-xs text-zinc-400 italic mt-1.5">{t('t10misc.settings.closed')}</p>
+              <p className="text-xs text-ink-2 italic mt-1.5">{t('t10misc.settings.closed')}</p>
             )}
           </div>
         );
       })}
-      <p className="text-[11px] text-zinc-400 pt-1">{t('t10misc.settings.hoursHint')}</p>
+      <p className="text-[11px] text-ink-2 pt-1">{t('t10misc.settings.hoursHint')}</p>
     </div>
   );
 }
@@ -140,10 +140,10 @@ export default function SettingsForm({ business }: { business: BusinessFormData 
         </Field>
 
         {/* Tax settings - Canada only */}
-        <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 space-y-4">
+        <div className="rounded-xl border border-line bg-surface-2 p-4 space-y-4">
           <div className="flex items-center gap-2">
-            <Globe size={14} className="text-zinc-500" />
-            <p className="text-sm font-bold text-zinc-900">{t('t10misc.settings.taxTitle')}</p>
+            <Globe size={14} className="text-ink-2" />
+            <p className="text-sm font-bold text-ink">{t('t10misc.settings.taxTitle')}</p>
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4">
@@ -195,9 +195,9 @@ export default function SettingsForm({ business }: { business: BusinessFormData 
         </Field>
 
         {/* EveryJob directory (customer discovery) */}
-        <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 space-y-3">
-          <p className="text-sm font-bold text-zinc-900">{t('t10misc.settings.directoryTitle')}</p>
-          <p className="text-xs text-zinc-500 -mt-2">{t('t10misc.settings.directoryDesc')}</p>
+        <div className="rounded-xl border border-line bg-surface-2 p-4 space-y-3">
+          <p className="text-sm font-bold text-ink">{t('t10misc.settings.directoryTitle')}</p>
+          <p className="text-xs text-ink-2 -mt-2">{t('t10misc.settings.directoryDesc')}</p>
           <label className="flex items-start gap-2.5 cursor-pointer">
             <input
               type="checkbox"
@@ -205,9 +205,9 @@ export default function SettingsForm({ business }: { business: BusinessFormData 
               defaultChecked={business.directoryOptIn}
               className="mt-0.5 h-5 w-5 rounded accent-ink shrink-0"
             />
-            <span className="text-xs text-zinc-700">
+            <span className="text-xs text-ink">
               <span className="font-semibold">{t('t10misc.settings.directoryOptIn')}</span>
-              <span className="block text-zinc-500 mt-0.5">{t('t10misc.settings.directoryOptInHint')}</span>
+              <span className="block text-ink-2 mt-0.5">{t('t10misc.settings.directoryOptInHint')}</span>
             </span>
           </label>
           <label className="flex items-start gap-2.5 cursor-pointer">
@@ -217,9 +217,9 @@ export default function SettingsForm({ business }: { business: BusinessFormData 
               defaultChecked={business.directoryHideAddress}
               className="mt-0.5 h-5 w-5 rounded accent-ink shrink-0"
             />
-            <span className="text-xs text-zinc-700">
+            <span className="text-xs text-ink">
               <span className="font-semibold">{t('t10misc.settings.directoryHide')}</span>
-              <span className="block text-zinc-500 mt-0.5">{t('t10misc.settings.directoryHideHint')}</span>
+              <span className="block text-ink-2 mt-0.5">{t('t10misc.settings.directoryHideHint')}</span>
             </span>
           </label>
         </div>
@@ -247,7 +247,7 @@ export default function SettingsForm({ business }: { business: BusinessFormData 
         </Field>
 
         {state?.error && (
-          <div role="alert" className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+          <div role="alert" className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
             <AlertCircle size={14} className="mt-0.5 shrink-0" />
             <span>{state.error}</span>
           </div>

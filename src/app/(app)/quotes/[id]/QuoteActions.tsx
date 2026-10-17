@@ -125,7 +125,7 @@ export default function QuoteActions({
   return (
     <div className="space-y-3">
       {error && (
-        <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{error}</span>
         </div>
@@ -169,7 +169,7 @@ export default function QuoteActions({
           <button
             type="button"
             onClick={() => setConfirmingDelete(true)}
-            className="min-h-[44px] text-xs font-semibold text-rose-600 hover:text-rose-700 inline-flex items-center gap-1.5"
+            className="min-h-[44px] text-xs font-semibold text-danger hover:text-danger inline-flex items-center gap-1.5"
           >
             <Trash2 size={13} /> {t(locale, 't10money.quoteDelete')}
           </button>

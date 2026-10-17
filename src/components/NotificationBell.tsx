@@ -156,8 +156,8 @@ export default function NotificationBell({
         aria-haspopup="true"
         className={
           tone === 'dark'
-            ? 'ej-icon-hover relative rounded-xl p-2.5 text-white/85 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70'
-            : 'relative p-2.5 rounded-xl hover:bg-zinc-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ej-ink/70'
+            ? 'ej-icon-hover relative rounded-xl p-2.5 text-white/85 hover:bg-surface/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70'
+            : 'relative p-2.5 rounded-xl hover:bg-surface-2 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ej-ink/70'
         }
       >
         <Bell size={tone === 'dark' ? 19 : 20} />
@@ -169,7 +169,7 @@ export default function NotificationBell({
           ref={panelRef}
           role="dialog"
           aria-label={t(locale, 'notifications.title')}
-          className="absolute right-0 top-full z-[80] mt-2 w-[340px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-smoke bg-white shadow-[0_24px_64px_-16px_rgba(22,22,22,0.35)]"
+          className="absolute right-0 top-full z-[80] mt-2 w-[340px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-smoke bg-surface shadow-[0_24px_64px_-16px_rgba(22,22,22,0.35)]"
         >
           <div className="flex items-center justify-between gap-2 border-b border-smoke px-4 py-3">
             <p className="text-sm font-bold text-ink">{t(locale, 'notifications.title')}</p>
@@ -187,11 +187,11 @@ export default function NotificationBell({
 
           <div className="max-h-[380px] overflow-y-auto">
             {loading || items === null ? (
-              <p className="px-4 py-8 text-center text-sm text-zinc-400">
+              <p className="px-4 py-8 text-center text-sm text-ink-2">
                 {t(locale, 'search.searching')}
               </p>
             ) : items.length === 0 ? (
-              <p className="px-4 py-8 text-center text-sm text-zinc-500">
+              <p className="px-4 py-8 text-center text-sm text-ink-2">
                 {t(locale, 'notifBell.empty')}
               </p>
             ) : (
@@ -200,7 +200,7 @@ export default function NotificationBell({
                   key={item.id}
                   type="button"
                   onClick={() => void openItem(item)}
-                  className={`flex w-full items-start gap-3 border-b border-smoke/60 px-4 py-3 text-left transition-colors last:border-0 hover:bg-zinc-50 ${
+                  className={`flex w-full items-start gap-3 border-b border-smoke/60 px-4 py-3 text-left transition-colors last:border-0 hover:bg-surface-2 ${
                     item.read ? 'opacity-70' : ''
                   }`}
                 >
@@ -212,9 +212,9 @@ export default function NotificationBell({
                     <span className={`block text-[14px] ${item.read ? 'font-medium text-graphite' : 'font-semibold text-ink'}`}>
                       {item.title}
                     </span>
-                    <span className="block truncate text-xs text-zinc-500">{item.body}</span>
+                    <span className="block truncate text-xs text-ink-2">{item.body}</span>
                   </span>
-                  <span className="shrink-0 text-[11px] text-zinc-400">{timeAgo(item.createdAt, locale)}</span>
+                  <span className="shrink-0 text-[11px] text-ink-2">{timeAgo(item.createdAt, locale)}</span>
                 </button>
               ))
             )}
@@ -223,7 +223,7 @@ export default function NotificationBell({
           <Link
             href="/notifications"
             onClick={() => setOpen(false)}
-            className="block border-t border-smoke px-4 py-3 text-center text-[13px] font-semibold text-ink hover:bg-zinc-50 min-h-[44px]"
+            className="block border-t border-smoke px-4 py-3 text-center text-[13px] font-semibold text-ink hover:bg-surface-2 min-h-[44px]"
           >
             {t(locale, 'notifBell.viewAll')}
           </Link>

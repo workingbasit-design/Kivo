@@ -16,10 +16,10 @@ export default async function BookingNotFound() {
       <main className="max-w-lg mx-auto px-4 py-16">
         <Card className="p-8 text-center">
           <CalendarX2 size={36} className="mx-auto text-zinc-300 mb-3" />
-          <h1 className="text-lg font-bold text-zinc-900">
+          <h1 className="text-lg font-bold text-ink">
             {fr ? 'Page de réservation introuvable' : 'Booking page not found'}
           </h1>
-          <p className="text-sm text-zinc-500 mt-2 leading-relaxed">
+          <p className="text-sm text-ink-2 mt-2 leading-relaxed">
             {fr
               ? 'Ce lien de réservation n’existe pas ou n’est plus disponible. Vérifiez le lien ou contactez l’entreprise directement.'
               : 'This booking link doesn’t exist or is no longer available. Double-check the link or contact the business directly.'}

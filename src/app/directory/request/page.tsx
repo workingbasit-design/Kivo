@@ -21,7 +21,7 @@ export default async function QuoteRequestPage() {
   const tr = (path: string) => t(locale, path);
   return (
     <div className="min-h-screen bg-paper font-sans">
-      <header className="bg-ink text-white">
+      <header className="bg-asphalt text-white">
         <div className="max-w-2xl mx-auto px-4 py-8">
           <Link
             href="/directory"
@@ -38,7 +38,7 @@ export default async function QuoteRequestPage() {
       <main className="max-w-2xl mx-auto px-4 py-6">
         <Suspense
           fallback={
-            <div className="text-sm text-zinc-500 text-center py-10" aria-live="polite">
+            <div className="text-sm text-ink-2 text-center py-10" aria-live="polite">
               …
             </div>
           }

@@ -26,7 +26,7 @@ export interface ReminderUiStrings {
 }
 
 const sendBtnClass =
-  'inline-flex items-center gap-1.5 min-h-[44px] px-3 rounded-lg text-xs font-semibold transition-colors border bg-white border-smoke text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900';
+  'inline-flex items-center gap-1.5 min-h-[44px] px-3 rounded-lg text-xs font-semibold transition-colors border bg-surface border-smoke text-ink-2 hover:bg-surface-2 hover:text-ink';
 
 export default function ReminderRow({
   kind,
@@ -74,7 +74,7 @@ export default function ReminderRow({
   const mailHref = text ? mailtoDraftLink(email, emailSubject, text) : '';
 
   return (
-    <div className="bg-white rounded-2xl border border-smoke shadow-sm p-4">
+    <div className="bg-surface rounded-2xl border border-smoke shadow-sm p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">{children}</div>
         <button
@@ -94,16 +94,16 @@ export default function ReminderRow({
       {open && (
         <div className="mt-3">
           {error && (
-            <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+            <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
               <AlertCircle size={14} className="mt-0.5 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           {text && (
-            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+            <div className="bg-warn-bg border border-amber-200 rounded-2xl p-4">
               <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
-                <p className="text-[11px] font-bold text-amber-700">
+                <p className="text-[11px] font-bold text-warn-text">
                   {ui.draftReady}
                 </p>
                 <div className="flex items-center gap-2 shrink-0 flex-wrap">
@@ -128,8 +128,8 @@ export default function ReminderRow({
                   <CopyButton text={text} label={ui.copy} />
                 </div>
               </div>
-              <p className="text-sm text-zinc-700 whitespace-pre-wrap">{text}</p>
-              <p className="text-[11px] text-amber-700/70 mt-2">{ui.neverSendsNote}</p>
+              <p className="text-sm text-ink whitespace-pre-wrap">{text}</p>
+              <p className="text-[11px] text-warn-text/70 mt-2">{ui.neverSendsNote}</p>
             </div>
           )}
         </div>

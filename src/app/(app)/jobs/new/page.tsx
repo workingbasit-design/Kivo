@@ -80,7 +80,7 @@ export default async function NewJobPage({
     <div className="space-y-6 max-w-2xl">
       <Link
         href="/jobs"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-2 hover:text-ink"
       >
         <ArrowLeft size={14} /> {t(locale, 'jobs.backToJobs')}
       </Link>
@@ -93,7 +93,7 @@ export default async function NewJobPage({
       <Card className="p-6">
         {customers.length === 0 ? (
           <div className="space-y-5">
-            <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium rounded-xl px-4 py-3">
+            <div className="bg-warn-bg border border-amber-200 text-amber-800 text-xs font-medium rounded-xl px-4 py-3">
               You don&apos;t have any customers yet. Add the customer inline below -
               they&apos;ll be saved automatically.
             </div>
@@ -105,7 +105,7 @@ export default async function NewJobPage({
       </Card>
 
       {customers.length === 0 && (
-        <p className="text-xs text-zinc-400">
+        <p className="text-xs text-ink-2">
           Tip: you can also add customers properly from the{' '}
           <Link href="/customers" className="text-ink font-semibold hover:underline">
             Customers

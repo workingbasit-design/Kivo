@@ -58,7 +58,7 @@ export default async function ExpenseDetailPage({
     <div className="space-y-6 max-w-2xl">
       <Link
         href="/expenses"
-        className="inline-flex items-center gap-1 text-sm font-semibold text-zinc-500 hover:text-zinc-800"
+        className="inline-flex items-center gap-1 text-sm font-semibold text-ink-2 hover:text-ink"
       >
         <ChevronLeft size={16} /> {T('back')}
       </Link>
@@ -74,7 +74,7 @@ export default async function ExpenseDetailPage({
 
       {expense.job && (
         <Card className="p-4">
-          <p className="text-xs font-semibold text-zinc-500 mb-1">{T('linkedJob')}</p>
+          <p className="text-xs font-semibold text-ink-2 mb-1">{T('linkedJob')}</p>
           <Link
             href={`/jobs/${expense.job.id}`}
             className="text-sm font-bold text-ink hover:underline"

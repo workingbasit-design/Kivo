@@ -78,17 +78,17 @@ export default async function DirectoryProfilePage() {
       <Card>
         <div className="flex items-start gap-3">
           {verified ? (
-            <BadgeCheck size={20} className="text-emerald-600 shrink-0 mt-0.5" />
+            <BadgeCheck size={20} className="text-ok shrink-0 mt-0.5" />
           ) : pending ? (
-            <Clock3 size={20} className="text-amber-600 shrink-0 mt-0.5" />
+            <Clock3 size={20} className="text-warn-text shrink-0 mt-0.5" />
           ) : (
-            <EyeOff size={20} className="text-zinc-400 shrink-0 mt-0.5" />
+            <EyeOff size={20} className="text-ink-2 shrink-0 mt-0.5" />
           )}
           <div className="min-w-0 flex-1">
             {verified ? (
               <>
-                <p className="text-sm font-bold text-zinc-900">{tr('t10misc.profile.liveTitle')}</p>
-                <p className="text-xs text-zinc-500 mt-1">
+                <p className="text-sm font-bold text-ink">{tr('t10misc.profile.liveTitle')}</p>
+                <p className="text-xs text-ink-2 mt-1">
                   {tr('t10misc.profile.liveDesc').replace('{name}', business.name)}
                 </p>
                 {page && (
@@ -103,15 +103,15 @@ export default async function DirectoryProfilePage() {
               </>
             ) : pending ? (
               <>
-                <p className="text-sm font-bold text-zinc-900">{tr('t10misc.profile.pendingTitle')}</p>
-                <p className="text-xs text-zinc-500 mt-1">{tr('t10misc.profile.pendingDesc')}</p>
+                <p className="text-sm font-bold text-ink">{tr('t10misc.profile.pendingTitle')}</p>
+                <p className="text-xs text-ink-2 mt-1">{tr('t10misc.profile.pendingDesc')}</p>
               </>
             ) : (
               <>
-                <p className="text-sm font-bold text-zinc-900">
+                <p className="text-sm font-bold text-ink">
                   {rejected ? tr('t10misc.profile.rejectedTitle') : tr('t10misc.profile.notPublicTitle')}
                 </p>
-                <p className="text-xs text-zinc-500 mt-1">
+                <p className="text-xs text-ink-2 mt-1">
                   {rejected && claim?.note
                     ? `${tr('t10misc.profile.reason')}: ${claim.note}`
                     : tr('t10misc.profile.requestDesc')}
@@ -119,7 +119,7 @@ export default async function DirectoryProfilePage() {
                 <form action={requestDirectoryClaim} className="mt-3">
                   <button
                     type="submit"
-                    className="min-h-[44px] inline-flex items-center bg-ink hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-bold text-xs"
+                    className="min-h-[44px] inline-flex items-center bg-asphalt hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-bold text-xs"
                   >
                     {tr('t10misc.profile.requestButton')}
                   </button>

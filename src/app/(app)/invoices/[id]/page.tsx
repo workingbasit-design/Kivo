@@ -108,7 +108,7 @@ export default async function InvoiceDetailPage({
       <div className="flex items-center justify-between">
         <Link
           href="/invoices"
-          className="min-h-[44px] inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-800"
+          className="min-h-[44px] inline-flex items-center gap-1.5 text-xs font-semibold text-ink-2 hover:text-ink"
         >
           <ArrowLeft size={14} /> {L('invoices.backToInvoices')}
         </Link>
@@ -143,45 +143,45 @@ export default async function InvoiceDetailPage({
       />
 
       {overdue && (
-        <div className="bg-rose-50 border border-rose-200 rounded-2xl px-4 py-3 flex items-start gap-3 print:hidden">
+        <div className="bg-danger-bg border border-rose-200 rounded-2xl px-4 py-3 flex items-start gap-3 print:hidden">
           <span className="mt-0.5 text-rose-500 shrink-0" aria-hidden><AlertTriangle size={18} /></span>
           <div>
-            <p className="text-sm font-bold text-rose-700">
+            <p className="text-sm font-bold text-danger">
               {t(locale, 't10money.overdue')} - <MoneyText dollars={remaining} locale={locale} /> {L('invoices.balanceDue').toLowerCase()}
             </p>
-            <p className="text-xs text-rose-600 mt-0.5">{t(locale, 't10money.overdueNote')}</p>
+            <p className="text-xs text-danger mt-0.5">{t(locale, 't10money.overdueNote')}</p>
           </div>
         </div>
       )}
 
       {/* Printable invoice */}
-      <Card className="p-6 md:p-8 print:shadow-none print:border-zinc-300" >
-        <div className="flex flex-col md:flex-row justify-between gap-4 pb-6 border-b border-zinc-200">
+      <Card className="p-6 md:p-8 print:shadow-none print:border-line-strong" >
+        <div className="flex flex-col md:flex-row justify-between gap-4 pb-6 border-b border-line">
           <div>
-            <p className="text-lg font-bold text-zinc-900">{invoice.business.name}</p>
+            <p className="text-lg font-bold text-ink">{invoice.business.name}</p>
             {invoice.business.address && (
-              <p className="text-xs text-zinc-500 mt-1 max-w-xs">{invoice.business.address}</p>
+              <p className="text-xs text-ink-2 mt-1 max-w-xs">{invoice.business.address}</p>
             )}
             {invoice.business.phone && (
-              <p className="text-xs text-zinc-500">{invoice.business.phone}</p>
+              <p className="text-xs text-ink-2">{invoice.business.phone}</p>
             )}
             {invoice.business.taxId && (
-              <p className="text-xs text-zinc-500">{taxIdLabelForRegion(invoice.business.regionCode, locale)}: {invoice.business.taxId}</p>
+              <p className="text-xs text-ink-2">{taxIdLabelForRegion(invoice.business.regionCode, locale)}: {invoice.business.taxId}</p>
             )}
             {invoice.business.qstNumber && (
-              <p className="text-xs text-zinc-500">QST: {invoice.business.qstNumber}</p>
+              <p className="text-xs text-ink-2">QST: {invoice.business.qstNumber}</p>
             )}
           </div>
           <div className="md:text-right">
-            <p className="text-xs font-bold text-zinc-400">{L('invoices.billTo')}</p>
-            <p className="text-sm font-bold text-zinc-900 mt-1 flex items-center gap-1.5 md:justify-end">
-              <User size={14} className="text-zinc-400" /> {invoice.customer.name}
+            <p className="text-xs font-bold text-ink-2">{L('invoices.billTo')}</p>
+            <p className="text-sm font-bold text-ink mt-1 flex items-center gap-1.5 md:justify-end">
+              <User size={14} className="text-ink-2" /> {invoice.customer.name}
             </p>
             {invoice.customer.phone && (
-              <p className="text-xs text-zinc-500">{invoice.customer.phone}</p>
+              <p className="text-xs text-ink-2">{invoice.customer.phone}</p>
             )}
             {invoice.customer.address && (
-              <p className="text-xs text-zinc-500 max-w-xs md:ml-auto">{invoice.customer.address}</p>
+              <p className="text-xs text-ink-2 max-w-xs md:ml-auto">{invoice.customer.address}</p>
             )}
           </div>
         </div>
@@ -192,12 +192,12 @@ export default async function InvoiceDetailPage({
               {invoice.lineItems.map((item) => (
                 <li
                   key={item.id}
-                  className="rounded-xl border border-zinc-100 bg-zinc-50/40 px-3 py-2.5 print:bg-transparent"
+                  className="rounded-xl border border-line bg-surface-2/40 px-3 py-2.5 print:bg-transparent"
                 >
-                  <p className="text-sm font-semibold text-zinc-800">{item.description}</p>
-                  <p className="text-xs text-zinc-500 mt-1 tabular-nums">
+                  <p className="text-sm font-semibold text-ink">{item.description}</p>
+                  <p className="text-xs text-ink-2 mt-1 tabular-nums">
                     {item.qty} × <MoneyText dollars={centsToDollars(item.unitPriceCents)} locale={locale} />
-                    <span className="font-bold text-zinc-800">
+                    <span className="font-bold text-ink">
                       {' '}· <MoneyText dollars={round2(item.qty * centsToDollars(item.unitPriceCents))} locale={locale} />
                     </span>
                   </p>
@@ -208,41 +208,41 @@ export default async function InvoiceDetailPage({
         )}
 
         <dl className="mt-6 space-y-1.5 text-sm max-w-xs ml-auto tabular-nums">
-          <div className="flex justify-between text-zinc-600">
+          <div className="flex justify-between text-ink-2">
             <dt>{L('invoices.subtotal')}</dt>
             <dd className="font-semibold"><MoneyText dollars={centsToDollars(invoice.subtotalCents)} locale={locale} /></dd>
           </div>
           {taxLines.map((l) => (
-            <div key={l.name} className="flex justify-between text-zinc-600">
+            <div key={l.name} className="flex justify-between text-ink-2">
               <dt>
                 {l.name} {l.rate}%
               </dt>
               <dd className="font-semibold"><MoneyText dollars={l.amount} locale={locale} /></dd>
             </div>
           ))}
-          <div className="flex justify-between text-base border-t border-zinc-200 pt-2 mt-2">
-            <dt className="font-bold text-zinc-900">{L('invoices.total')}</dt>
-            <dd className="font-bold text-zinc-900"><MoneyText dollars={centsToDollars(invoice.totalCents)} locale={locale} /></dd>
+          <div className="flex justify-between text-base border-t border-line pt-2 mt-2">
+            <dt className="font-bold text-ink">{L('invoices.total')}</dt>
+            <dd className="font-bold text-ink"><MoneyText dollars={centsToDollars(invoice.totalCents)} locale={locale} /></dd>
           </div>
-          <div className="flex justify-between text-emerald-700">
+          <div className="flex justify-between text-ok">
             <dt>{L('invoices.paid')}</dt>
             <dd className="font-semibold"><MoneyText dollars={paid} locale={locale} /></dd>
           </div>
-          <div className="flex justify-between items-center text-base bg-ink text-white rounded-xl px-4 py-3 -mx-1 mt-2">
+          <div className="flex justify-between items-center text-base bg-asphalt text-white rounded-xl px-4 py-3 -mx-1 mt-2">
             <dt className="font-bold">{L('invoices.balanceDue')}</dt>
             <dd className="font-bold"><MoneyText dollars={remaining} locale={locale} /></dd>
           </div>
         </dl>
 
         {invoice.business.interacEmail && remaining > 0 && (
-          <div className="mt-6 bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3">
-            <p className="text-xs text-zinc-600">
-              {L('invoices.payViaInterac')} <span className="font-bold text-zinc-900">{invoice.business.interacEmail}</span>
+          <div className="mt-6 bg-surface-2 border border-line rounded-xl px-4 py-3">
+            <p className="text-xs text-ink-2">
+              {L('invoices.payViaInterac')} <span className="font-bold text-ink">{invoice.business.interacEmail}</span>
             </p>
-            <p className="text-xs text-zinc-600 mt-1">
-              {L('invoices.interacReference')}: <span className="font-bold text-zinc-900 font-mono">{invoice.number}</span>
+            <p className="text-xs text-ink-2 mt-1">
+              {L('invoices.interacReference')}: <span className="font-bold text-ink font-mono">{invoice.number}</span>
             </p>
-            <p className="text-[11px] text-zinc-400 mt-0.5">
+            <p className="text-[11px] text-ink-2 mt-0.5">
               {L('invoices.interacDisclaimer')}
             </p>
           </div>
@@ -250,8 +250,8 @@ export default async function InvoiceDetailPage({
 
         {userNotes && (
           <div className="mt-6">
-            <p className="text-[11px] font-bold text-zinc-400 mb-1">{L('invoices.notes')}</p>
-            <p className="text-sm text-zinc-600 whitespace-pre-wrap">{userNotes}</p>
+            <p className="text-[11px] font-bold text-ink-2 mb-1">{L('invoices.notes')}</p>
+            <p className="text-sm text-ink-2 whitespace-pre-wrap">{userNotes}</p>
           </div>
         )}
       </Card>
@@ -259,13 +259,13 @@ export default async function InvoiceDetailPage({
       {/* Payments */}
       {invoice.payments.length > 0 && (
         <Card className="p-6">
-          <h2 className="text-sm font-bold text-zinc-900 mb-3">{L('invoices.payments')}</h2>
-          <ul className="divide-y divide-zinc-100">
+          <h2 className="text-sm font-bold text-ink mb-3">{L('invoices.payments')}</h2>
+          <ul className="divide-y divide-line">
             {invoice.payments.map((p) => (
               <li key={p.id} className="flex items-center justify-between py-2.5 text-sm">
                 <div>
-                  <p className="font-semibold text-zinc-900 tabular-nums"><MoneyText dollars={centsToDollars(p.amountCents)} locale={locale} /></p>
-                  <p className="text-xs text-zinc-500">
+                  <p className="font-semibold text-ink tabular-nums"><MoneyText dollars={centsToDollars(p.amountCents)} locale={locale} /></p>
+                  <p className="text-xs text-ink-2">
                     {p.provider}
                     {p.transactionId ? ` · Ref ${p.transactionId}` : ''} ·{' '}
                     <DateTimeText date={p.createdAt} variant="short" timezone={invoice.business.timezone ?? 'America/Toronto'} locale={locale} />
@@ -320,7 +320,7 @@ export default async function InvoiceDetailPage({
 
       {remaining > 0 && (
         <Card className="p-6 print:hidden">
-          <h2 className="text-sm font-bold text-zinc-900 mb-3">Payment reminder</h2>
+          <h2 className="text-sm font-bold text-ink mb-3">Payment reminder</h2>
           <ReminderDraft
             invoiceId={invoice.id}
             phone={invoice.customer.phone}
@@ -329,7 +329,7 @@ export default async function InvoiceDetailPage({
         </Card>
       )}
 
-      <div className="flex items-center gap-2 text-zinc-400 print:hidden">
+      <div className="flex items-center gap-2 text-ink-2 print:hidden">
         <Printer size={14} />
         <p className="text-[11px]">
           {L('t10money.printHint')}

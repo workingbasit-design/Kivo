@@ -36,7 +36,7 @@ function VisitTimelineRow({ visit, locale }: { visit: VisitRow; locale: Locale }
         aria-hidden
         className={cn(
           "absolute left-[47px] top-2 h-3 w-3 rounded-full border-2",
-          visit.done ? "border-pine bg-pine" : "border-zinc-300 bg-white dark:border-zinc-600 dark:bg-coal"
+          visit.done ? "border-pine bg-pine" : "border-line-strong bg-surface dark:border-zinc-600 dark:bg-coal"
         )}
       />
       <div className="w-11 shrink-0 pt-0.5 text-right">
@@ -44,29 +44,29 @@ function VisitTimelineRow({ visit, locale }: { visit: VisitRow; locale: Locale }
           {main || "–"}
         </p>
         {suffix && (
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400">{suffix}</p>
+          <p className="text-[11px] text-ink-2 dark:text-zinc-400">{suffix}</p>
         )}
       </div>
       <Link
         href={`/jobs/${visit.id}`}
-        className="flex min-w-0 flex-1 items-start gap-2.5 rounded-xl py-1 pr-1 transition-colors hover:bg-zinc-50 dark:hover:bg-white/5"
+        className="flex min-w-0 flex-1 items-start gap-2.5 rounded-xl py-1 pr-1 transition-colors hover:bg-surface-2 dark:hover:bg-white/5"
       >
-        <span aria-hidden className="mt-0.5 shrink-0 text-zinc-700 dark:text-zinc-300">
+        <span aria-hidden className="mt-0.5 shrink-0 text-ink dark:text-zinc-300">
           <TradeIcon name={visit.tradeIcon} size={20} />
         </span>
         <span className="min-w-0 flex-1">
           <span className="block text-[15px] font-semibold leading-snug text-asphalt dark:text-white">
             {visit.title}
           </span>
-          <span className="block truncate text-[13px] text-zinc-600 dark:text-zinc-400">
+          <span className="block truncate text-[13px] text-ink-2 dark:text-zinc-400">
             {visit.customerName}
             {visit.area ? `, ${visit.area}` : ""}
           </span>
           {visit.assigneeName && (
-            <span className="mt-1 flex items-center gap-1.5 text-[13px] text-zinc-600 dark:text-zinc-400">
+            <span className="mt-1 flex items-center gap-1.5 text-[13px] text-ink-2 dark:text-zinc-400">
               <span
                 aria-hidden
-                className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-zinc-100 text-[10px] font-bold text-zinc-600 dark:bg-white/10 dark:text-zinc-300"
+                className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-surface-2 text-[10px] font-bold text-ink-2 dark:bg-white/10 dark:text-zinc-300"
               >
                 {visit.assigneeInitials}
               </span>
@@ -84,7 +84,7 @@ function VisitTimelineRow({ visit, locale }: { visit: VisitRow; locale: Locale }
               {t(locale, "dashboard.assign")}
             </span>
           ) : (
-            <span className="inline-flex items-center rounded-full border border-zinc-200 px-3 py-1.5 text-[13px] font-medium text-zinc-600 dark:border-white/15 dark:text-zinc-400">
+            <span className="inline-flex items-center rounded-full border border-line px-3 py-1.5 text-[13px] font-medium text-ink-2 dark:border-white/15 dark:text-zinc-400">
               {t(locale, "dashboard.scheduled")}
             </span>
           )}
@@ -140,7 +140,7 @@ export default async function TodaysVisits({
   return (
     <section
       aria-label={t(locale, "dashboard.todaysVisits")}
-      className="rounded-[24px] border border-zinc-200/70 bg-white p-5 dark:border-white/10 dark:bg-coal"
+      className="rounded-[24px] border border-line/70 bg-surface p-5 dark:border-white/10 dark:bg-coal"
     >
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-[17px] font-bold text-asphalt dark:text-white">
@@ -154,13 +154,13 @@ export default async function TodaysVisits({
         </Link>
       </div>
       {visits.length === 0 ? (
-        <p className="py-4 text-center text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="py-4 text-center text-sm text-ink-2 dark:text-zinc-400">
           {t(locale, "dashboard.noVisitsToday")}
         </p>
       ) : (
         <ul className="relative space-y-4">
           {/* the vertical timeline */}
-          <span aria-hidden className="absolute bottom-2 left-[52px] top-2 w-px bg-zinc-200 dark:bg-white/10" />
+          <span aria-hidden className="absolute bottom-2 left-[52px] top-2 w-px bg-line dark:bg-white/10" />
           {visits.map((v, i) => (
             <React.Fragment key={v.id}>
               {i === markerAt && <NowMarker label={nowLabel} nowLabel={t(locale, "dashboard.now")} />}

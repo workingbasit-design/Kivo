@@ -121,7 +121,7 @@ export default async function TimesheetsPage({
                 <select
                   name="member"
                   defaultValue={sp.member || ''}
-                  className="w-full min-h-[44px] px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-sm focus:outline-none focus:ring-2 focus:ring-ink/30 focus:border-ink text-zinc-900"
+                  className="w-full min-h-[44px] px-4 py-2.5 rounded-xl border border-line bg-surface-2 text-sm focus:outline-none focus:ring-2 focus:ring-ink/30 focus:border-asphalt text-ink"
                 >
                   <option value="">{T('tsEveryone')}</option>
                   {members.map((m) => (
@@ -139,7 +139,7 @@ export default async function TimesheetsPage({
                 type="date"
                 name="from"
                 defaultValue={toDateInputValue(fromDate)}
-                className="w-full min-h-[44px] px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-sm focus:outline-none focus:ring-2 focus:ring-ink/30 focus:border-ink text-zinc-900"
+                className="w-full min-h-[44px] px-4 py-2.5 rounded-xl border border-line bg-surface-2 text-sm focus:outline-none focus:ring-2 focus:ring-ink/30 focus:border-asphalt text-ink"
               />
             </Field>
           </div>
@@ -149,13 +149,13 @@ export default async function TimesheetsPage({
                 type="date"
                 name="to"
                 defaultValue={toDateInputValue(toDate)}
-                className="w-full min-h-[44px] px-4 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-sm focus:outline-none focus:ring-2 focus:ring-ink/30 focus:border-ink text-zinc-900"
+                className="w-full min-h-[44px] px-4 py-2.5 rounded-xl border border-line bg-surface-2 text-sm focus:outline-none focus:ring-2 focus:ring-ink/30 focus:border-asphalt text-ink"
               />
             </Field>
           </div>
           <button
             type="submit"
-            className="bg-ink hover:bg-graphite text-white min-h-[44px] px-5 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center justify-center gap-2 shadow-sm"
+            className="bg-asphalt hover:bg-graphite text-white min-h-[44px] px-5 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center justify-center gap-2 shadow-sm"
           >
             <Filter size={14} /> {T('tsApply')}
           </button>
@@ -165,19 +165,19 @@ export default async function TimesheetsPage({
       {/* Summary strip */}
       <div className="grid grid-cols-2 gap-4">
         <Card className="p-5 ej-row-in">
-          <p className="text-[11px] font-bold text-zinc-400 mb-1">
+          <p className="text-[11px] font-bold text-ink-2 mb-1">
             {T('tsTotalHours')}
           </p>
-          <p className="text-2xl font-bold text-zinc-900 tracking-tight tabular-nums">
+          <p className="text-2xl font-bold text-ink tracking-tight tabular-nums">
             {formatDuration(totalMinutes)}
           </p>
-          <p className="text-xs text-zinc-500 mt-1">{entriesLabel}</p>
+          <p className="text-xs text-ink-2 mt-1">{entriesLabel}</p>
         </Card>
         <Card className="p-5 ej-row-in">
-          <p className="text-[11px] font-bold text-zinc-400 mb-1">
+          <p className="text-[11px] font-bold text-ink-2 mb-1">
             {T('tsPeriod')}
           </p>
-          <p className="text-sm font-bold text-zinc-900 mt-2">
+          <p className="text-sm font-bold text-ink mt-2">
             {formatDateLabel(fromDate, dateLocale)} - {formatDateLabel(toDate, dateLocale)}
           </p>
         </Card>
@@ -192,7 +192,7 @@ export default async function TimesheetsPage({
             description={T('tsEmptyDesc')}
           />
         ) : (
-          <ul className="divide-y divide-zinc-100">
+          <ul className="divide-y divide-line">
             {entries.map((e, i) => {
               const mins = entryMinutes(e.clockIn, e.clockOut);
               const isActive = !e.clockOut;
@@ -209,16 +209,16 @@ export default async function TimesheetsPage({
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-bold text-zinc-900">
+                      <p className="text-sm font-bold text-ink">
                         {e.user.name || e.user.email}
                       </p>
                       {isActive && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md px-2 py-0.5">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-ok bg-ok-bg border border-emerald-200 rounded-md px-2 py-0.5">
                           <Timer size={10} /> {T('tsActive')}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-zinc-500 mt-0.5">
+                    <p className="text-xs text-ink-2 mt-0.5">
                       {formatDateLabel(e.clockIn, dateLocale)} · {formatClockTime(e.clockIn, locale)}
                       {e.clockOut ? ` - ${formatClockTime(e.clockOut, locale)}` : ` - ${T('tsNow')}`}
                       {e.job ? (
@@ -236,11 +236,11 @@ export default async function TimesheetsPage({
                       )}
                     </p>
                     {e.notes && (
-                      <p className="text-xs text-zinc-600 mt-1 italic">“{e.notes}”</p>
+                      <p className="text-xs text-ink-2 mt-1 italic">“{e.notes}”</p>
                     )}
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
-                    <span className="text-sm font-bold text-zinc-900 tabular-nums">
+                    <span className="text-sm font-bold text-ink tabular-nums">
                       {formatDuration(mins)}
                     </span>
                     {canDelete && <DeleteEntryButton entryId={e.id} />}

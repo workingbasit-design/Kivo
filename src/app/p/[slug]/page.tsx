@@ -208,7 +208,7 @@ export default async function PublicProfilePage({
         nonce={await getCspNonce()}
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <header className="bg-ink text-white">
+      <header className="bg-asphalt text-white">
         <div className="max-w-2xl mx-auto px-4 py-8">
           <Link href="/directory" className="min-h-[44px] inline-flex items-center text-xs text-white/60 hover:text-white">
             {L('t10money.profileBack')}
@@ -216,7 +216,7 @@ export default async function PublicProfilePage({
           <div className="flex items-start justify-between gap-3 mt-3">
             <div className="flex items-center gap-3">
               {b.logoUrl ? (
-                <img src={b.logoUrl} alt="" className="w-14 h-14 rounded-2xl object-contain bg-white border border-white/20 shrink-0" />
+                <img src={b.logoUrl} alt="" className="w-14 h-14 rounded-2xl object-contain bg-surface border border-white/20 shrink-0" />
               ) : null}
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{b.name}</h1>
@@ -261,7 +261,7 @@ export default async function PublicProfilePage({
                 href={wa}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="min-h-[44px] inline-flex items-center gap-1.5 rounded-xl bg-[#1faa55] hover:bg-[#1a9449] text-white text-sm font-bold px-5 py-2.5 transition-colors"
+                className="min-h-[44px] inline-flex items-center gap-1.5 rounded-xl bg-wa hover:bg-wa-dark text-white text-sm font-bold px-5 py-2.5 transition-colors"
               >
                 <MessageCircle size={15} /> {L('t10money.profileWhatsapp')}
               </a>
@@ -280,19 +280,19 @@ export default async function PublicProfilePage({
 
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-5">
         {aboutText && (
-          <section className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
-            <h2 className="text-sm font-bold text-zinc-900 mb-1.5">{L('t10money.profileAbout')}</h2>
-            <p className="text-sm text-zinc-600 leading-relaxed whitespace-pre-line">{aboutText}</p>
+          <section className="bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
+            <h2 className="text-sm font-bold text-ink mb-1.5">{L('t10money.profileAbout')}</h2>
+            <p className="text-sm text-ink-2 leading-relaxed whitespace-pre-line">{aboutText}</p>
           </section>
         )}
 
         {serviceAreas.length > 0 && (
-          <section className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
-            <h2 className="text-sm font-bold text-zinc-900 mb-3">{L('t10money.profileAreas')}</h2>
+          <section className="bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
+            <h2 className="text-sm font-bold text-ink mb-3">{L('t10money.profileAreas')}</h2>
             <div className="flex flex-wrap gap-1.5">
               {serviceAreas.map((a) => (
-                <span key={a} className="inline-flex items-center gap-1 text-xs font-medium text-zinc-700 bg-smoke rounded-full px-2.5 py-1">
-                  <MapPin size={11} className="text-zinc-400" /> {a}
+                <span key={a} className="inline-flex items-center gap-1 text-xs font-medium text-ink bg-smoke rounded-full px-2.5 py-1">
+                  <MapPin size={11} className="text-ink-2" /> {a}
                 </span>
               ))}
             </div>
@@ -302,16 +302,16 @@ export default async function PublicProfilePage({
         {/* E8: Trust signals — licences, insurance, certifications.
             Self-declared by the business; displayed exactly as entered. */}
         {designations.length > 0 && (
-          <section className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
-            <h2 className="text-sm font-bold text-zinc-900 mb-3">{L('t10money.profileTrust')}</h2>
+          <section className="bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
+            <h2 className="text-sm font-bold text-ink mb-3">{L('t10money.profileTrust')}</h2>
             <ul className="space-y-2.5">
               {designations.map((d) => (
                 <li key={d.title + d.type} className="flex items-start gap-2.5">
-                  <BadgeCheck size={18} className="text-emerald-700 shrink-0 mt-0.5" aria-hidden="true" />
+                  <BadgeCheck size={18} className="text-ok shrink-0 mt-0.5" aria-hidden="true" />
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-zinc-900">{d.title}</p>
+                    <p className="text-sm font-semibold text-ink">{d.title}</p>
                     {(d.issuer || d.number) && (
-                      <p className="text-xs text-zinc-500">
+                      <p className="text-xs text-ink-2">
                         {[d.issuer, d.number ? `#${d.number}` : null].filter(Boolean).join(' · ')}
                       </p>
                     )}
@@ -322,29 +322,29 @@ export default async function PublicProfilePage({
           </section>
         )}
 
-        <section className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
-          <h2 className="text-sm font-bold text-zinc-900 mb-3">{L('t10money.profileServices')}</h2>
+        <section className="bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
+          <h2 className="text-sm font-bold text-ink mb-3">{L('t10money.profileServices')}</h2>
           {services.length === 0 ? (
-            <p className="text-sm text-zinc-500">{L('t10money.profileServicesEmpty')}</p>
+            <p className="text-sm text-ink-2">{L('t10money.profileServicesEmpty')}</p>
           ) : (
-            <ul className="divide-y divide-zinc-100">
+            <ul className="divide-y divide-line">
               {services.map((s) => (
                 <li key={s.name} className="flex items-center justify-between py-2.5">
-                  <span className="text-sm text-zinc-700 font-medium">{s.name}</span>
-                  <span className="text-sm font-bold text-zinc-900">
+                  <span className="text-sm text-ink font-medium">{s.name}</span>
+                  <span className="text-sm font-bold text-ink">
                     {formatCents(s.priceCents, b.currency)}
                   </span>
                 </li>
               ))}
             </ul>
           )}
-          <p className="text-[11px] text-zinc-400 mt-3">{L('t10money.profilePricesNote')}</p>
+          <p className="text-[11px] text-ink-2 mt-3">{L('t10money.profilePricesNote')}</p>
         </section>
 
-        <section className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
+        <section className="bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-bold text-zinc-900">
-              {L('t10money.profileReviewsMany')} {count > 0 && <span className="text-zinc-400 font-medium">({count})</span>}
+            <h2 className="text-sm font-bold text-ink">
+              {L('t10money.profileReviewsMany')} {count > 0 && <span className="text-ink-2 font-medium">({count})</span>}
             </h2>
             <Link
               href={`/directory/request`}
@@ -354,11 +354,11 @@ export default async function PublicProfilePage({
             </Link>
           </div>
           {reviews.length === 0 ? (
-            <p className="text-sm text-zinc-500">{L('t10money.profileNoReviews')}</p>
+            <p className="text-sm text-ink-2">{L('t10money.profileNoReviews')}</p>
           ) : (
             <ul className="space-y-3">
               {reviews.map((r, i) => (
-                <li key={i} className="border-b border-zinc-100 pb-3 last:border-0 last:pb-0">
+                <li key={i} className="border-b border-line pb-3 last:border-0 last:pb-0">
                   <div className="flex items-center gap-1.5 mb-1">
                     <span className="flex items-center gap-1" aria-hidden="true">
                       {[1, 2, 3, 4, 5].map((n) => (
@@ -370,45 +370,45 @@ export default async function PublicProfilePage({
                       ))}
                     </span>
                     {r.source === 'Verified' && (
-                      <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-700">
+                      <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-ok">
                         <BadgeCheck size={11} />
                         {L('t10money.reviewVerifiedBadge')}
                       </span>
                     )}
                   </div>
-                  {r.comment && <p className="text-sm text-zinc-600">{r.comment}</p>}
+                  {r.comment && <p className="text-sm text-ink-2">{r.comment}</p>}
                 </li>
               ))}
             </ul>
           )}
         </section>
 
-        <section className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
-          <h2 className="text-sm font-bold text-zinc-900 mb-1 flex items-center gap-1.5">
+        <section className="bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
+          <h2 className="text-sm font-bold text-ink mb-1 flex items-center gap-1.5">
             <Flag size={13} /> {L('t10money.profileReportTitle')}
           </h2>
-          <p className="text-xs text-zinc-500 mb-3">
+          <p className="text-xs text-ink-2 mb-3">
             {L('t10money.profileReportDesc')}
           </p>
           <ReportBusinessForm slug={slug} />
         </section>
 
         {similarPros.length > 0 && (
-          <section className="bg-white rounded-[20px] border border-zinc-200/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
-            <h2 className="text-sm font-bold text-zinc-900 mb-3">{L('t10money.profileSimilar')}</h2>
+          <section className="bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
+            <h2 className="text-sm font-bold text-ink mb-3">{L('t10money.profileSimilar')}</h2>
             <ul className="space-y-2">
               {similarPros.map((p) => (
                 <li key={p.slug}>
                   <Link
                     href={`/p/${p.slug}`}
-                    className="min-h-[44px] flex items-center justify-between gap-2 rounded-xl border border-zinc-100 hover:border-ink px-3.5 py-2.5 transition-colors"
+                    className="min-h-[44px] flex items-center justify-between gap-2 rounded-xl border border-line hover:border-asphalt px-3.5 py-2.5 transition-colors"
                   >
                     <span>
-                      <span className="block text-sm font-semibold text-zinc-800">{p.name}</span>
-                      {p.service && <span className="block text-[11px] text-zinc-400">{p.service}</span>}
+                      <span className="block text-sm font-semibold text-ink">{p.name}</span>
+                      {p.service && <span className="block text-[11px] text-ink-2">{p.service}</span>}
                     </span>
                     {p.avg !== null && (
-                      <span className="inline-flex items-center gap-1 text-xs font-bold text-zinc-700 shrink-0">
+                      <span className="inline-flex items-center gap-1 text-xs font-bold text-ink shrink-0">
                         <Star size={12} className="fill-amber-400 text-amber-400" /> {p.avg}
                       </span>
                     )}
@@ -419,7 +419,7 @@ export default async function PublicProfilePage({
           </section>
         )}
 
-        <p className="text-center text-[11px] text-zinc-400 pb-4 flex items-center justify-center gap-1.5">
+        <p className="text-center text-[11px] text-ink-2 pb-4 flex items-center justify-center gap-1.5">
           <BadgeCheck size={11} /> {L('t10money.profileListedNote')}
         </p>
 

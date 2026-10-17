@@ -37,7 +37,7 @@ export default function DeletePartButton({
   return (
     <div className="flex flex-col items-end gap-2">
       {error && (
-        <p role="alert" className="text-xs font-medium text-rose-600">
+        <p role="alert" className="text-xs font-medium text-danger">
           {error}
         </p>
       )}
@@ -45,7 +45,7 @@ export default function DeletePartButton({
         type="button"
         onClick={() => setConfirming(true)}
         disabled={pending}
-        className="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-white px-4 py-2.5 text-sm font-semibold text-rose-600 hover:bg-rose-50 disabled:opacity-40 min-h-[44px]"
+        className="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-surface px-4 py-2.5 text-sm font-semibold text-danger hover:bg-danger-bg disabled:opacity-40 min-h-[44px]"
       >
         <Trash2 size={16} /> {pending ? '…' : T('delete')}
       </button>

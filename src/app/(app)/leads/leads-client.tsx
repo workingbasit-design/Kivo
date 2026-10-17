@@ -121,11 +121,11 @@ function ConvertButton({ lead, locale }: { lead: LeadItem; locale: Locale }) {
       <button
         type="submit"
         disabled={isPending}
-        className="min-h-[44px] inline-flex items-center gap-1 text-xs font-bold text-emerald-600 hover:text-emerald-700 disabled:opacity-50"
+        className="min-h-[44px] inline-flex items-center gap-1 text-xs font-bold text-ok hover:text-ok disabled:opacity-50"
       >
         <UserCheck size={12} /> {isPending ? t(locale, 't10money.leadConverting') : t(locale, 't10money.leadConvert')}
       </button>
-      {state?.error && <span className="text-[11px] text-rose-600 ml-1">{state.error}</span>}
+      {state?.error && <span className="text-[11px] text-danger ml-1">{state.error}</span>}
     </form>
   );
 }
@@ -142,7 +142,7 @@ function DeleteButton({ leadId, locale }: { leadId: string; locale: Locale }) {
         type="button"
         onClick={() => setConfirming(true)}
         aria-label={t(locale, 't10money.leadConfirmDelete')}
-        className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center text-xs font-semibold text-zinc-400 hover:text-rose-600"
+        className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center text-xs font-semibold text-ink-2 hover:text-danger"
       >
         <Trash2 size={14} />
       </button>
@@ -161,7 +161,7 @@ function DeleteButton({ leadId, locale }: { leadId: string; locale: Locale }) {
       <button
         type="button"
         onClick={() => setConfirming(false)}
-        className="min-h-[44px] px-3 inline-flex items-center text-xs font-semibold text-zinc-500"
+        className="min-h-[44px] px-3 inline-flex items-center text-xs font-semibold text-ink-2"
       >
         {t(locale, 't10money.leadCancel')}
       </button>
@@ -200,7 +200,7 @@ function DeclineButton({ lead, locale }: { lead: LeadItem; locale: Locale }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="min-h-[44px] inline-flex items-center gap-1 text-xs font-semibold text-zinc-400 hover:text-rose-600 disabled:opacity-50"
+        className="min-h-[44px] inline-flex items-center gap-1 text-xs font-semibold text-ink-2 hover:text-danger disabled:opacity-50"
       >
         <X size={12} /> {t(locale, 't10money.leadDecline')}
       </button>
@@ -269,7 +269,7 @@ function LeadCard({ lead, locale }: { lead: LeadItem; locale: Locale }) {
     <Card className="p-4">
       <div className="flex items-start justify-between gap-2 mb-1">
         <div className="min-w-0">
-          <p className="font-bold text-sm text-zinc-900 truncate">{lead.name}</p>
+          <p className="font-bold text-sm text-ink truncate">{lead.name}</p>
           <div className="mt-1.5">
             <StatusBadge status={statusLabel(lead.status, locale)} />
           </div>
@@ -279,22 +279,22 @@ function LeadCard({ lead, locale }: { lead: LeadItem; locale: Locale }) {
       {lead.phone && (
         <a
           href={`tel:${lead.phone.replace(/\s/g, '')}`}
-          className="min-h-[44px] inline-flex items-center text-xs text-zinc-600 gap-1.5 hover:text-ink font-semibold"
+          className="min-h-[44px] inline-flex items-center text-xs text-ink-2 gap-1.5 hover:text-ink font-semibold"
         >
           <Phone size={11} /> {lead.phone}
         </a>
       )}
-      {lead.details && <p className="text-xs text-zinc-500 mt-1 line-clamp-3">{lead.details}</p>}
+      {lead.details && <p className="text-xs text-ink-2 mt-1 line-clamp-3">{lead.details}</p>}
       {/* E5: show the captured decline reason on declined leads */}
       {lead.status === 'DECLINED' && lead.declineReason && (
-        <p className="text-xs text-zinc-500 mt-1">
+        <p className="text-xs text-ink-2 mt-1">
           {fill(t(locale, 't10money.leadDeclinedReason'), { reason: lead.declineReason })}
         </p>
       )}
-      <p className="text-[10px] text-zinc-400 font-semibold mt-2">
+      <p className="text-[10px] text-ink-2 font-semibold mt-2">
         {lead.source ?? 'No source'} · {formatDateShort(lead.createdAt)}
       </p>
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 border-t border-zinc-100 pt-1">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 border-t border-line pt-1">
         {next && <StatusButton lead={lead} target={next} locale={locale} />}
         {lead.status !== 'CONVERTED' && lead.status !== 'DECLINED' && (
           <ConvertButton lead={lead} locale={locale} />
@@ -326,12 +326,12 @@ export function AddLeadForm({ locale = 'en' }: { locale?: Locale }) {
   return (
     <form action={formAction} className="ej-glass-card rounded-[20px] p-5 space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="font-bold text-sm text-zinc-900">{t(locale, 't10money.leadNew')}</h3>
+        <h3 className="font-bold text-sm text-ink">{t(locale, 't10money.leadNew')}</h3>
         <button
           type="button"
           onClick={() => setOpen(false)}
           aria-label={t(locale, 't10money.leadClose')}
-          className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center text-zinc-400 hover:text-zinc-600"
+          className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center text-ink-2 hover:text-ink-2"
         >
           <X size={16} />
         </button>
@@ -365,7 +365,7 @@ export function AddLeadForm({ locale = 'en' }: { locale?: Locale }) {
       </Field>
 
       {state?.error && (
-        <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{state.error}</span>
         </div>
@@ -393,16 +393,16 @@ export function LeadsBoard({ leads, locale = 'en' }: { leads: LeadItem[]; locale
   return (
     <div className="grid md:grid-cols-3 gap-4 items-start">
       {LEAD_STATUSES.map((status) => (
-        <div key={status} className="bg-zinc-100/70 rounded-2xl p-3">
+        <div key={status} className="bg-surface-2/70 rounded-2xl p-3">
           <div className="flex items-center justify-between px-1 pb-2">
             <StatusBadge status={statusLabel(status, locale)} />
-            <span className="text-[11px] font-bold bg-white border border-zinc-200 rounded-full px-2 py-0.5 text-zinc-600">
+            <span className="text-[11px] font-bold bg-surface border border-line rounded-full px-2 py-0.5 text-ink-2">
               {grouped[status].length}
             </span>
           </div>
           <div className="space-y-2.5">
             {grouped[status].length === 0 ? (
-              <p className="text-xs text-zinc-400 text-center py-6">{t(locale, 't10money.leadNoLeads')}</p>
+              <p className="text-xs text-ink-2 text-center py-6">{t(locale, 't10money.leadNoLeads')}</p>
             ) : (
               grouped[status].map((lead) => <LeadCard key={lead.id} lead={lead} locale={locale} />)
             )}

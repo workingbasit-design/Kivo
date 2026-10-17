@@ -144,8 +144,8 @@ export default function QuotesClient({
             className={cn(
               'min-h-[44px] inline-flex items-center px-4 rounded-full text-xs font-semibold border transition-colors',
               activeFilter === f
-                ? 'bg-ink text-white border-ink'
-                : 'bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300'
+                ? 'bg-asphalt text-white border-asphalt'
+                : 'bg-surface text-ink-2 border-line hover:border-line-strong'
             )}
           >
             {filterLabels[f]}
@@ -167,11 +167,11 @@ export default function QuotesClient({
                   {t(locale, 't10money.followups.title')}{' '}
                   <span className="text-sm font-bold text-violet-700">({staleQuotes.length})</span>
                 </h2>
-                <p className="text-xs text-zinc-500">{t(locale, 't10money.followups.desc')}</p>
+                <p className="text-xs text-ink-2">{t(locale, 't10money.followups.desc')}</p>
               </div>
             </div>
           </div>
-          <ul className="divide-y divide-zinc-100">
+          <ul className="divide-y divide-line">
             {staleQuotes.map((q) => {
               const waitingDays = Math.max(1, daysWaiting(new Date(q.updatedAt)));
               const message = fillTemplate(t(locale, 't10money.followups.message'), {
@@ -185,13 +185,13 @@ export default function QuotesClient({
                 <li key={q.id} className="px-4 sm:px-5 py-4">
                   <div className="flex items-center justify-between gap-4">
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-zinc-900 truncate">
+                      <p className="text-sm font-semibold text-ink truncate">
                         <Link href={`/quotes/${q.id}`} className="hover:underline">
                           {q.number}
                         </Link>
-                        <span className="font-normal text-zinc-500"> · {q.customer.name}</span>
+                        <span className="font-normal text-ink-2"> · {q.customer.name}</span>
                       </p>
-                      <p className="text-xs text-zinc-500 mt-1 tabular-nums">
+                      <p className="text-xs text-ink-2 mt-1 tabular-nums">
                         <span className="font-semibold text-violet-700">
                           {t(locale, 't10money.followups.daysWaiting').replace(
                             '{days}',
@@ -207,8 +207,8 @@ export default function QuotesClient({
                     <summary className="inline-flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-sky-700 hover:underline min-h-[32px]">
                       {t(locale, 't10money.followups.sendFollowup')}
                     </summary>
-                    <div className="mt-2 rounded-xl bg-zinc-50 border border-zinc-200 p-3 space-y-3">
-                      <p className="text-xs text-zinc-700 whitespace-pre-wrap">{message}</p>
+                    <div className="mt-2 rounded-xl bg-surface-2 border border-line p-3 space-y-3">
+                      <p className="text-xs text-ink whitespace-pre-wrap">{message}</p>
                       {q.customer.phone ? (
                         <div className="flex flex-wrap gap-2">
                           <SmsButton
@@ -225,7 +225,7 @@ export default function QuotesClient({
                           />
                         </div>
                       ) : (
-                        <p className="text-xs text-zinc-500">
+                        <p className="text-xs text-ink-2">
                           {t(locale, 't10money.reminders.noPhone')}
                         </p>
                       )}
@@ -235,7 +235,7 @@ export default function QuotesClient({
               );
             })}
           </ul>
-          <div className="px-5 py-3 border-t border-zinc-100">
+          <div className="px-5 py-3 border-t border-line">
             <button type="button" onClick={() => switchFilter('SENT')} className={secondaryBtnClass}>
               {t(locale, 't10money.followups.viewAll')}
             </button>
@@ -258,7 +258,7 @@ export default function QuotesClient({
         </Card>
       ) : (
         <Card className="!p-0 overflow-hidden">
-          <ul className="divide-y divide-zinc-100">
+          <ul className="divide-y divide-line">
             {filtered.map((q, i) => (
               <li
                 key={q.id}
@@ -267,18 +267,18 @@ export default function QuotesClient({
               >
                 <Link
                   href={`/quotes/${q.id}`}
-                  className="flex items-center justify-between gap-4 px-4 sm:px-5 py-4 hover:bg-zinc-50 active:bg-zinc-100 transition-colors min-h-[76px]"
+                  className="flex items-center justify-between gap-4 px-4 sm:px-5 py-4 hover:bg-surface-2 active:bg-surface-2 transition-colors min-h-[76px]"
                 >
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-zinc-900 truncate">
+                    <p className="text-sm font-semibold text-ink truncate">
                       {q.number} · {q.title}
                     </p>
-                    <p className="text-xs text-zinc-500 mt-1">
+                    <p className="text-xs text-ink-2 mt-1">
                       {q.customer.name} · <DateTimeText date={q.createdAt} variant="short" timezone={business?.timezone ?? 'America/Toronto'} locale={locale} />
                     </p>
                   </div>
                   <div className="flex flex-col items-end gap-1.5 shrink-0">
-                    <span className="text-sm font-bold text-zinc-900 tabular-nums"><MoneyText dollars={q.total} locale={locale} /></span>
+                    <span className="text-sm font-bold text-ink tabular-nums"><MoneyText dollars={q.total} locale={locale} /></span>
                     <StatusBadge status={q.status} />
                   </div>
                 </Link>

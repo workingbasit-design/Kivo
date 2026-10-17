@@ -115,21 +115,21 @@ export default function Attachments({
 
   function typeIcon(mimeType: string) {
     if (mimeType === 'application/pdf') return <FileText size={28} className="text-rose-500" />;
-    if (mimeType === 'text/csv') return <FileSpreadsheet size={28} className="text-emerald-600" />;
-    return <Paperclip size={28} className="text-zinc-400" />;
+    if (mimeType === 'text/csv') return <FileSpreadsheet size={28} className="text-ok" />;
+    return <Paperclip size={28} className="text-ink-2" />;
   }
 
   return (
     <Card className="p-5 md:p-6">
-      <h2 className="text-sm font-bold text-zinc-900 mb-1 flex items-center gap-2">
+      <h2 className="text-sm font-bold text-ink mb-1 flex items-center gap-2">
         <Paperclip size={14} /> {t(locale, 'attachments.title')}
         {rows.length > 0 && (
-          <span className="text-[11px] font-semibold text-zinc-400">({rows.length})</span>
+          <span className="text-[11px] font-semibold text-ink-2">({rows.length})</span>
         )}
       </h2>
 
       {configured === false && (
-        <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
+        <div className="mt-3 rounded-xl border border-amber-200 bg-warn-bg p-4">
           <p className="text-sm font-bold text-amber-900 flex items-center gap-2">
             <AlertTriangle size={14} /> {t(locale, 'attachments.blobSetupTitle')}
           </p>
@@ -141,22 +141,22 @@ export default function Attachments({
 
       {configured === true && (
         <>
-          <p className="text-[11px] text-zinc-400 mt-1 mb-3">{t(locale, 'attachments.hint')}</p>
+          <p className="text-[11px] text-ink-2 mt-1 mb-3">{t(locale, 'attachments.hint')}</p>
 
           {error && (
-            <p className="text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2 mb-3">
+            <p className="text-xs font-semibold text-danger bg-danger-bg border border-rose-200 rounded-xl px-3 py-2 mb-3">
               {errMsg(error)}
             </p>
           )}
 
           {rows.length === 0 && !uploading ? (
-            <p className="text-xs text-zinc-400 py-2">{t(locale, 'attachments.noAttachments')}</p>
+            <p className="text-xs text-ink-2 py-2">{t(locale, 'attachments.noAttachments')}</p>
           ) : (
             <ul className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
               {rows.map((row) => (
                 <li
                   key={row.id}
-                  className="relative group rounded-xl border border-zinc-200 overflow-hidden bg-zinc-50"
+                  className="relative group rounded-xl border border-line overflow-hidden bg-surface-2"
                 >
                   {isImageMime(row.mimeType) ? (
                     <a
@@ -178,23 +178,23 @@ export default function Attachments({
                       target="_blank"
                       rel="noreferrer"
                       title={t(locale, 'attachments.openLabel')}
-                      className="flex h-28 items-center justify-center bg-zinc-100"
+                      className="flex h-28 items-center justify-center bg-surface-2"
                     >
                       {typeIcon(row.mimeType)}
                     </a>
                   )}
                   <div className="px-2 py-1.5">
-                    <p className="text-[11px] font-semibold text-zinc-700 truncate" title={row.fileName}>
+                    <p className="text-[11px] font-semibold text-ink truncate" title={row.fileName}>
                       {row.fileName}
                     </p>
-                    <p className="text-[10px] text-zinc-400">{formatFileSize(row.sizeBytes)}</p>
+                    <p className="text-[10px] text-ink-2">{formatFileSize(row.sizeBytes)}</p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setPendingDelete(row)}
                     disabled={deletingId === row.id}
                     aria-label={t(locale, 'attachments.deleteLabel')}
-                    className="absolute top-1.5 right-1.5 rounded-lg bg-white/90 border border-zinc-200 min-w-[36px] min-h-[36px] p-2 text-zinc-500 hover:text-rose-600 hover:border-rose-200 shadow-sm disabled:opacity-50 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/60"
+                    className="absolute top-1.5 right-1.5 rounded-lg bg-surface/90 border border-line min-w-[36px] min-h-[36px] p-2 text-ink-2 hover:text-danger hover:border-rose-200 shadow-sm disabled:opacity-50 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/60"
                   >
                     {deletingId === row.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
                   </button>
@@ -203,7 +203,7 @@ export default function Attachments({
             </ul>
           )}
 
-          <div className="flex items-center gap-2 pt-1 border-t border-zinc-100">
+          <div className="flex items-center gap-2 pt-1 border-t border-line">
             <input
               ref={inputRef}
               type="file"
@@ -228,7 +228,7 @@ export default function Attachments({
                 </>
               )}
             </button>
-            <span className="text-[11px] text-zinc-400">{t(locale, 'attachments.hint')}</span>
+            <span className="text-[11px] text-ink-2">{t(locale, 'attachments.hint')}</span>
           </div>
         </>
       )}
@@ -246,7 +246,7 @@ export default function Attachments({
         onClose={() => setPendingDelete(null)}
         title={t(locale, 'attachments.confirmDeleteTitle')}
       >
-        <p className="text-sm text-zinc-600 mb-6">
+        <p className="text-sm text-ink-2 mb-6">
           {t(locale, 'attachments.confirmDelete').replace('{name}', pendingDelete?.fileName ?? '')}
         </p>
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">

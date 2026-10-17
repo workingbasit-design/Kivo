@@ -69,7 +69,7 @@ export default async function InventoryPage({
         actions={
           <Link
             href="/inventory/new"
-            className="inline-flex items-center gap-1.5 rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-white hover:bg-graphite min-h-[44px]"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-asphalt px-4 py-2.5 text-sm font-semibold text-white hover:bg-graphite min-h-[44px]"
           >
             <Plus size={16} /> {T('add')}
           </Link>
@@ -78,7 +78,7 @@ export default async function InventoryPage({
 
       {parts.length > 0 && (
         <Card className="flex items-center justify-between">
-          <span className="text-sm text-zinc-600">{T('totalValue')}</span>
+          <span className="text-sm text-ink-2">{T('totalValue')}</span>
           <span className="text-lg font-bold tabular-nums">
             {formatMoney(totalValue, business?.currency)}
           </span>
@@ -95,7 +95,7 @@ export default async function InventoryPage({
               !query ? (
                 <Link
                   href="/inventory/new"
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-white hover:bg-graphite min-h-[44px]"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-asphalt px-4 py-2.5 text-sm font-semibold text-white hover:bg-graphite min-h-[44px]"
                 >
                   <Plus size={16} /> {T('add')}
                 </Link>

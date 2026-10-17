@@ -339,8 +339,8 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
     <Card className="p-5 md:p-6">
       <div className="flex items-start justify-between gap-3 mb-1">
         <div>
-          <h2 className="text-base font-bold text-zinc-900">{tr('gps.shareCardTitle')}</h2>
-          <p className="text-sm text-zinc-500 mt-1">{tr('gps.shareCardDesc')}</p>
+          <h2 className="text-base font-bold text-ink">{tr('gps.shareCardTitle')}</h2>
+          <p className="text-sm text-ink-2 mt-1">{tr('gps.shareCardDesc')}</p>
         </div>
         {/* Visible on-device indicator: impossible to miss while sharing. */}
         <span
@@ -350,7 +350,7 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
             'inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap ' +
             (sharing
               ? 'bg-emerald-100 text-emerald-800'
-              : 'bg-zinc-100 text-zinc-500')
+              : 'bg-surface-2 text-ink-2')
           }
         >
           <span className="relative flex h-2.5 w-2.5">
@@ -369,10 +369,10 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
       </div>
 
       {sharing && (
-        <div className="mt-3 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3">
+        <div className="mt-3 rounded-xl bg-ok-bg border border-emerald-200 px-4 py-3">
           <p className="text-sm font-semibold text-emerald-900">{tr('gps.sharingOn')}</p>
-          <p className="text-xs text-emerald-700 mt-0.5">{tr('gps.sharingOnDetail')}</p>
-          <p className="text-xs text-emerald-700 mt-1">
+          <p className="text-xs text-ok mt-0.5">{tr('gps.sharingOnDetail')}</p>
+          <p className="text-xs text-ok mt-1">
             {tr('gps.lastPing')}:{' '}
             {lastPingAt
               ? lastPingAt.toLocaleTimeString(locale === 'fr' ? 'fr-CA' : 'en-CA')
@@ -382,7 +382,7 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
       )}
 
       {jobs.length === 0 ? (
-        <p className="text-sm text-zinc-500 mt-4">{tr('gps.noActiveJobs')}</p>
+        <p className="text-sm text-ink-2 mt-4">{tr('gps.noActiveJobs')}</p>
       ) : (
         <div className="mt-4 space-y-4">
           <Field label={tr('gps.jobLabel')}>
@@ -419,9 +419,9 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
             </button>
           )}
 
-          <div className="rounded-xl bg-zinc-50 border border-zinc-200 px-4 py-3">
-            <p className="text-sm font-semibold text-zinc-800">{tr('gps.customerLinkTitle')}</p>
-            <p className="text-xs text-zinc-500 mt-0.5">{tr('gps.customerLinkDesc')}</p>
+          <div className="rounded-xl bg-surface-2 border border-line px-4 py-3">
+            <p className="text-sm font-semibold text-ink">{tr('gps.customerLinkTitle')}</p>
+            <p className="text-xs text-ink-2 mt-0.5">{tr('gps.customerLinkDesc')}</p>
             <div className="mt-2 flex flex-col sm:flex-row gap-2">
               <button
                 type="button"
@@ -459,9 +459,9 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
             </div>
             {linkUrl && (
               <>
-                <p className="mt-2 text-xs break-all text-zinc-600 select-all">{linkUrl}</p>
+                <p className="mt-2 text-xs break-all text-ink-2 select-all">{linkUrl}</p>
                 {linkExpiresAt && (
-                  <p className="mt-1 text-xs text-zinc-500">
+                  <p className="mt-1 text-xs text-ink-2">
                     {tr('gps.linkExpires')}:{' '}
                     {new Date(linkExpiresAt).toLocaleString(
                       locale === 'fr' ? 'fr-CA' : 'en-CA',
@@ -473,7 +473,7 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
             )}
           </div>
 
-          <p className="text-[11px] text-zinc-400">{tr('gps.privacyNote')}</p>
+          <p className="text-[11px] text-ink-2">{tr('gps.privacyNote')}</p>
         </div>
       )}
 
@@ -481,7 +481,7 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
         <p
           role="status"
           className={
-            'mt-3 text-sm ' + (noticeKind === 'error' ? 'text-rose-700' : 'text-zinc-600')
+            'mt-3 text-sm ' + (noticeKind === 'error' ? 'text-danger' : 'text-ink-2')
           }
         >
           {notice}

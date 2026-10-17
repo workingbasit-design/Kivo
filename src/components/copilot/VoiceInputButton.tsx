@@ -78,7 +78,7 @@ export default function VoiceInputButton({
       } ${
         listening
           ? 'bg-red-500 text-white shadow-lg shadow-red-500/30 scale-105'
-          : 'bg-ink/10 text-ink hover:bg-smoke'
+          : 'bg-asphalt/10 text-ink hover:bg-smoke'
       }`}
     >
       {listening ? <Square size={15} /> : <Mic size={17} />}
@@ -91,14 +91,14 @@ export default function VoiceInputButton({
         {micButton}
         {(listening || interim) && (
           <p
-            className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 whitespace-nowrap max-w-[200px] truncate text-[11px] text-zinc-500 italic bg-white border border-zinc-200 rounded-lg px-2 py-1 shadow-sm"
+            className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 whitespace-nowrap max-w-[200px] truncate text-[11px] text-ink-2 italic bg-surface border border-line rounded-lg px-2 py-1 shadow-sm"
             aria-live="polite"
           >
             {interim || transcript || t('t10misc.voice.listening')}
           </p>
         )}
         {state === 'denied' && (
-          <p className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 whitespace-nowrap text-[11px] text-rose-600 bg-rose-50 border border-rose-200 rounded-lg px-2 py-1 shadow-sm">
+          <p className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 whitespace-nowrap text-[11px] text-danger bg-danger-bg border border-rose-200 rounded-lg px-2 py-1 shadow-sm">
             {t('t10misc.voice.deniedShort')}
           </p>
         )}
@@ -109,12 +109,12 @@ export default function VoiceInputButton({
   return (
     <div className="flex flex-col items-end gap-1.5">
       {state === 'denied' && (
-        <p className="text-[11px] text-rose-600 bg-rose-50 border border-rose-200 rounded-lg px-2.5 py-1.5 max-w-[220px]">
+        <p className="text-[11px] text-danger bg-danger-bg border border-rose-200 rounded-lg px-2.5 py-1.5 max-w-[220px]">
           {t('t10misc.voice.denied')}
         </p>
       )}
       {state === 'error' && (
-        <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 max-w-[220px]">
+        <p className="text-[11px] text-warn-text bg-warn-bg border border-amber-200 rounded-lg px-2.5 py-1.5 max-w-[220px]">
           {t('t10misc.voice.error')}
         </p>
       )}
@@ -124,7 +124,7 @@ export default function VoiceInputButton({
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
           </span>
-          <p className="text-[11px] text-zinc-500 italic truncate" aria-live="polite">
+          <p className="text-[11px] text-ink-2 italic truncate" aria-live="polite">
             {interim || transcript || t('t10misc.voice.listening')}
           </p>
         </div>
@@ -133,7 +133,7 @@ export default function VoiceInputButton({
         <div
           role="group"
           aria-label={t('t10misc.voice.language')}
-          className="inline-flex rounded-full border border-zinc-200 bg-white p-0.5 text-[10px] font-bold"
+          className="inline-flex rounded-full border border-line bg-surface p-0.5 text-[10px] font-bold"
         >
           {LANGS.map((l) => (
             <button
@@ -142,7 +142,7 @@ export default function VoiceInputButton({
               onClick={() => setLang(l.code)}
               aria-pressed={lang === l.code}
               className={`rounded-full px-3 py-2 min-h-[44px] transition-colors ${
-                lang === l.code ? 'bg-ink text-white' : 'text-zinc-400 hover:text-zinc-700'
+                lang === l.code ? 'bg-asphalt text-white' : 'text-ink-2 hover:text-ink'
               }`}
             >
               {t(l.enKey)}

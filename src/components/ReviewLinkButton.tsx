@@ -58,7 +58,7 @@ export default function ReviewLinkButton({
         type="button"
         onClick={run}
         disabled={status === 'working'}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border bg-amber-500/10 border-amber-500/30 text-amber-700 hover:bg-amber-500/20 disabled:opacity-60 min-h-[36px]"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border bg-amber-500/10 border-amber-500/30 text-warn-text hover:bg-amber-500/20 disabled:opacity-60 min-h-[36px]"
       >
         {status === 'working' ? (
           <Loader2 size={13} className="animate-spin" />
@@ -70,14 +70,14 @@ export default function ReviewLinkButton({
         {status === 'copied' ? copiedLabel : idleLabel}
       </button>
       {status === 'error' && (
-        <p className="text-[11px] font-medium text-rose-600">{errorLabel}</p>
+        <p className="text-[11px] font-medium text-danger">{errorLabel}</p>
       )}
       {status === 'copied' && manualLink && (
         <input
           readOnly
           value={manualLink}
           onFocus={(e) => e.target.select()}
-          className="text-xs bg-zinc-50 border border-zinc-200 rounded-lg px-2.5 py-1.5 text-zinc-700 w-full"
+          className="text-xs bg-surface-2 border border-line rounded-lg px-2.5 py-1.5 text-ink w-full"
         />
       )}
     </div>

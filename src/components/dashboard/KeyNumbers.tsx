@@ -19,12 +19,12 @@ import { localeMoneyTag } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
 const TILE =
-  "rounded-[24px] border border-zinc-200/70 bg-white p-4 flex flex-col gap-1 min-h-[148px] transition-transform active:scale-[0.98] dark:border-white/10 dark:bg-coal";
+  "rounded-[24px] border border-line/70 bg-surface p-4 flex flex-col gap-1 min-h-[148px] transition-transform active:scale-[0.98] dark:border-white/10 dark:bg-coal";
 
 function TileHead({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <p className="flex items-center gap-1.5 text-[13px] font-medium text-zinc-600 dark:text-zinc-400">
-      <span aria-hidden className="text-zinc-500 dark:text-zinc-400">{icon}</span>
+    <p className="flex items-center gap-1.5 text-[13px] font-medium text-ink-2 dark:text-zinc-400">
+      <span aria-hidden className="text-ink-2 dark:text-zinc-400">{icon}</span>
       {label}
     </p>
   );
@@ -59,7 +59,7 @@ function QuoteBar({ count, expiringSoon }: { count: number; expiringSoon: number
   return (
     <div className="mt-auto flex h-2 w-full gap-1" aria-hidden>
       {Array.from({ length: n }).map((_, i) => (
-        <span key={i} className={cn("h-full flex-1 rounded-full", i < orange ? "bg-safety" : "bg-zinc-200 dark:bg-white/15")} />
+        <span key={i} className={cn("h-full flex-1 rounded-full", i < orange ? "bg-safety" : "bg-line dark:bg-white/15")} />
       ))}
     </div>
   );
@@ -100,7 +100,7 @@ export default async function KeyNumbers({
             })}
           </p>
         ) : (
-          <p className="text-[13px] text-zinc-500 dark:text-zinc-400">{t(locale, "dashboard.nothingOverdue")}</p>
+          <p className="text-[13px] text-ink-2 dark:text-zinc-400">{t(locale, "dashboard.nothingOverdue")}</p>
         )}
         <AgingBar aging={k.owed.aging} total={k.owed.total} />
       </Link>
@@ -111,7 +111,7 @@ export default async function KeyNumbers({
         <p className="ej-figure text-[30px] font-bold leading-none text-asphalt tabular-nums dark:text-white">
           {formatMoney(k.readyToInvoice.amount, null, moneyLocale)}
         </p>
-        <p className="text-[13px] text-zinc-600 dark:text-zinc-400">
+        <p className="text-[13px] text-ink-2 dark:text-zinc-400">
           {tp(locale, "dashboard.finishedJobs", k.readyToInvoice.jobs)}
         </p>
         {k.readyToInvoice.customerInitials.length > 0 && (
@@ -119,7 +119,7 @@ export default async function KeyNumbers({
             {k.readyToInvoice.customerInitials.map((init) => (
               <span
                 key={init}
-                className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-zinc-100 text-[11px] font-bold text-zinc-600 dark:bg-white/10 dark:text-zinc-300"
+                className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-surface-2 text-[11px] font-bold text-ink-2 dark:bg-white/10 dark:text-zinc-300"
               >
                 {init}
               </span>
@@ -134,7 +134,7 @@ export default async function KeyNumbers({
         <p className="ej-figure text-[30px] font-bold leading-none text-asphalt tabular-nums dark:text-white">
           {formatMoney(k.quotesWaiting.amount, null, moneyLocale)}
         </p>
-        <p className={cn("text-[13px] font-semibold", k.quotesWaiting.expiringSoon > 0 ? "text-safety-ink dark:text-safety" : "text-zinc-600 dark:text-zinc-400")}>
+        <p className={cn("text-[13px] font-semibold", k.quotesWaiting.expiringSoon > 0 ? "text-safety-ink dark:text-safety" : "text-ink-2 dark:text-zinc-400")}>
           {tp(locale, "dashboard.quotesWaitingDetail", k.quotesWaiting.count, {
             expiring: k.quotesWaiting.expiringSoon,
           })}
@@ -148,7 +148,7 @@ export default async function KeyNumbers({
         <p className="ej-figure text-[30px] font-bold leading-none text-asphalt tabular-nums dark:text-white">
           {k.newLeads.waiting}
         </p>
-        <p className="text-[13px] text-zinc-600 dark:text-zinc-400">
+        <p className="text-[13px] text-ink-2 dark:text-zinc-400">
           {k.newLeads.avgFirstReplyMin != null
             ? fillTemplate(t(locale, "dashboard.avgFirstReply"), {
                 duration: formatDuration(k.newLeads.avgFirstReplyMin, locale),

@@ -78,7 +78,7 @@ export default function QuoteForm({
           />
           <input type="hidden" name="customerId" value={customerId} required />
           {customers.length === 0 && (
-            <p className="text-[11px] text-zinc-400 mt-1">
+            <p className="text-[11px] text-ink-2 mt-1">
               No customers yet -{' '}
               <Link href="/customers/new" className="text-ink font-semibold hover:underline">
                 add one first
@@ -90,32 +90,32 @@ export default function QuoteForm({
       </Card>
 
       <Card className="p-6">
-        <h2 className="text-sm font-bold text-zinc-900 mb-3">Line items</h2>
+        <h2 className="text-sm font-bold text-ink mb-3">Line items</h2>
         <LineItemsEditor onSubtotal={setSubtotal} currency={taxConfig.currency} locale={locale} />
       </Card>
 
       <Card className="p-6">
         <dl className="space-y-1.5 text-sm">
-          <div className="flex justify-between text-zinc-600">
+          <div className="flex justify-between text-ink-2">
             <dt>{t(locale, 't10money.subtotalLabel')}</dt>
             <dd className="font-semibold">{formatMoney(subtotal, taxConfig.currency)}</dd>
           </div>
           {breakdown.map((b) => (
-            <div key={b.name} className="flex justify-between text-zinc-600">
+            <div key={b.name} className="flex justify-between text-ink-2">
               <dt>
                 {b.name} {b.rate}%
               </dt>
               <dd className="font-semibold">{formatMoney(b.amount, taxConfig.currency)}</dd>
             </div>
           ))}
-          <div className="flex justify-between items-center border-t border-zinc-100 pt-3 mt-1">
-            <dt className="text-zinc-600">{t(locale, 't10money.quoteTotalLabel')}</dt>
-            <dd className="text-2xl font-bold text-zinc-900">
+          <div className="flex justify-between items-center border-t border-line pt-3 mt-1">
+            <dt className="text-ink-2">{t(locale, 't10money.quoteTotalLabel')}</dt>
+            <dd className="text-2xl font-bold text-ink">
               {formatMoney(total, taxConfig.currency)}
             </dd>
           </div>
         </dl>
-        <p className="text-[11px] text-zinc-400 mt-3">
+        <p className="text-[11px] text-ink-2 mt-3">
           {taxConfig.label} included - set in Settings → Region & tax.
         </p>
       </Card>
@@ -123,7 +123,7 @@ export default function QuoteForm({
       <Card className="p-6">
         <Field label={t(locale, 't10money.depositRequestLabel')}>
           <div className="relative max-w-[200px]">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-zinc-400">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-ink-2">
               $
             </span>
             <input
@@ -135,14 +135,14 @@ export default function QuoteForm({
               className={`${inputClass} pl-7`}
             />
           </div>
-          <p className="text-[11px] text-zinc-400 mt-1.5">
+          <p className="text-[11px] text-ink-2 mt-1.5">
             {t(locale, 't10money.depositRequestHint')}
           </p>
         </Field>
       </Card>
 
       {state?.error && (
-        <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{state.error}</span>
         </div>

@@ -25,13 +25,13 @@ export default function CustomerLoginForm({ locale, next }: { locale: Locale; ne
       </header>
 
       <main className="flex-1 flex items-center justify-center px-4 pb-12">
-        <div className="ej-anim-fade-up w-full max-w-sm bg-white rounded-3xl border border-zinc-200/70 shadow-xl shadow-zinc-200/50 p-6 sm:p-8">
+        <div className="ej-anim-fade-up w-full max-w-sm bg-surface rounded-3xl border border-line/70 shadow-xl shadow-zinc-200/50 p-6 sm:p-8">
           <div className="flex items-center gap-2 text-indigo-600 mb-2">
             <Search className="w-5 h-5" />
             <span className="text-xs font-bold">{tr('customer.auth.forCustomers')}</span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900">{tr('customer.auth.loginTitle')}</h1>
-          <p className="text-sm text-zinc-500 mt-1 mb-6">
+          <h1 className="text-2xl font-bold tracking-tight text-ink">{tr('customer.auth.loginTitle')}</h1>
+          <p className="text-sm text-ink-2 mt-1 mb-6">
             {tr('customer.auth.loginHint')}
           </p>
 
@@ -64,7 +64,7 @@ export default function CustomerLoginForm({ locale, next }: { locale: Locale; ne
             {state?.error && (
               <div
                 role="alert"
-                className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5"
+                className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5"
               >
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                 {state.error}
@@ -77,14 +77,14 @@ export default function CustomerLoginForm({ locale, next }: { locale: Locale; ne
             </button>
           </form>
 
-          <p className="text-sm text-zinc-500 mt-6 text-center">
+          <p className="text-sm text-ink-2 mt-6 text-center">
             {tr('customer.auth.newHere')}{' '}
             <Link href="/customer/signup" className="font-semibold text-indigo-600 hover:underline">
               {tr('customer.auth.createFreeAccount')}
             </Link>
           </p>
 
-          <p className="text-xs text-zinc-500 mt-6 text-center">
+          <p className="text-xs text-ink-2 mt-6 text-center">
             {tr('customer.auth.areYouPro')}{' '}
             <Link href="/login" className="font-semibold text-indigo-600 hover:underline">
               {tr('customer.auth.businessLogin')}

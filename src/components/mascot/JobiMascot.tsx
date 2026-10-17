@@ -276,10 +276,10 @@ export default function JobiMascot() {
           width: 28,
           height: 28,
           borderRadius: '50%',
-          background: '#b9e838',
-          border: '2px solid #161616',
+          background: 'var(--hivis)',
+          border: '2px solid var(--asphalt)',
           cursor: 'pointer',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+          boxShadow: '0 2px 8px color-mix(in srgb, var(--asphalt) 20%, transparent)',
         }}
       />
     );
@@ -312,16 +312,16 @@ export default function JobiMascot() {
           width: 32,
           height: 32,
           borderRadius: '50%',
-          border: '1px solid rgba(0,0,0,0.12)',
-          background: '#fff',
-          color: '#555',
+          border: '1px solid color-mix(in srgb, var(--asphalt) 12%, transparent)',
+          background: 'var(--surface)',
+          color: 'var(--ink-2)',
           fontSize: 16,
           lineHeight: 1,
           cursor: 'pointer',
           zIndex: 2,
           display: 'grid',
           placeItems: 'center',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+          boxShadow: '0 2px 8px color-mix(in srgb, var(--asphalt) 15%, transparent)',
         }}
       >
         ×
@@ -334,14 +334,14 @@ export default function JobiMascot() {
             bottom: 'calc(100% + 8px)',
             left: 0,
             maxWidth: 'min(200px, 60vw)',
-            background: '#161616',
-            color: '#fff',
+            background: 'var(--asphalt)',
+            color: 'var(--surface)',
             fontSize: 12,
             lineHeight: 1.4,
             padding: '8px 12px',
             borderRadius: 14,
             borderBottomLeftRadius: 4,
-            boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
+            boxShadow: '0 8px 24px color-mix(in srgb, var(--asphalt) 25%, transparent)',
             zIndex: 3,
             animation: 'ej-bubble-pop 0.25s ease-out',
           }}

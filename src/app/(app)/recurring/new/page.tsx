@@ -33,7 +33,7 @@ export default async function NewRecurringPage() {
     <div className="space-y-6 max-w-2xl">
       <Link
         href="/recurring"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-2 hover:text-ink"
       >
         <ArrowLeft size={14} /> {t(locale, 'recurringPage.backLink')}
       </Link>
@@ -46,7 +46,7 @@ export default async function NewRecurringPage() {
       <Card className="p-6">
         {customers.length === 0 ? (
           <div className="space-y-5">
-            <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium rounded-xl px-4 py-3">
+            <div className="bg-warn-bg border border-amber-200 text-amber-800 text-xs font-medium rounded-xl px-4 py-3">
               You need a customer first.{' '}
               <Link href="/customers" className="font-bold underline">
                 Add one

@@ -39,7 +39,10 @@ function ensureHeadTags() {
   };
   link('manifest', '/manifest.webmanifest');
   link('apple-touch-icon', '/icons/apple-touch-icon.png');
-  meta('theme-color', '#161616');
+  // theme-color follows the topbar token so the browser chrome matches the app.
+  const topbar =
+    getComputedStyle(document.documentElement).getPropertyValue('--topbar').trim() || '#F2F3EF';
+  meta('theme-color', topbar);
   meta('mobile-web-app-capable', 'yes');
   meta('apple-mobile-web-app-capable', 'yes');
   meta('apple-mobile-web-app-status-bar-style', 'default');
@@ -112,7 +115,7 @@ export default function PwaRegister() {
     <div
       role="status"
       aria-live="polite"
-      className="fixed bottom-28 md:bottom-20 right-4 md:right-6 z-50 flex items-center gap-2 rounded-full bg-zinc-900/95 text-white pl-3 pr-4 py-2 text-xs font-semibold shadow-xl backdrop-blur"
+      className="fixed bottom-28 md:bottom-20 right-4 md:right-6 z-50 flex items-center gap-2 rounded-full bg-asphalt/95 text-white pl-3 pr-4 py-2 text-xs font-semibold shadow-xl backdrop-blur"
     >
       {showOffline && (
         <>

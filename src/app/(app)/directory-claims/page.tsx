@@ -75,7 +75,7 @@ export default async function DirectoryClaimsPage() {
           />
         </Card>
       ) : (
-        <Card className="divide-y divide-zinc-100 p-0 overflow-hidden">
+        <Card className="divide-y divide-line p-0 overflow-hidden">
           {claims.map((c) => (
             <ClaimRow
               key={c.id}

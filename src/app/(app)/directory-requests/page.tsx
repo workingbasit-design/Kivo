@@ -60,7 +60,7 @@ export default async function DirectoryRequestsPage() {
           />
         </Card>
       ) : (
-        <Card className="divide-y divide-zinc-100 p-0 overflow-hidden">
+        <Card className="divide-y divide-line p-0 overflow-hidden">
           {requests.map((r) => (
             <DemandRow
               key={r.id}

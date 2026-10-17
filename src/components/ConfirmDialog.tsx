@@ -81,24 +81,24 @@ export default function ConfirmDialog({
         onClick={() => !busy && close()}
         className="absolute inset-0 bg-zinc-950/50 backdrop-blur-[2px] cursor-default"
       />
-      <div className="relative w-full sm:max-w-sm bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-zinc-200 p-6 max-h-[90vh] overflow-y-auto ej-sheet-in">
+      <div className="relative w-full sm:max-w-sm bg-surface rounded-t-3xl sm:rounded-3xl shadow-2xl border border-line p-6 max-h-[90vh] overflow-y-auto ej-sheet-in">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="text-base font-bold text-zinc-900 tracking-tight">{title}</h3>
+          <h3 className="text-base font-bold text-ink tracking-tight">{title}</h3>
           <button
             onClick={close}
             disabled={busy}
-            className="text-zinc-400 hover:text-zinc-700 transition-colors min-w-[44px] min-h-[44px] -m-2 flex items-center justify-center rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/40"
+            className="text-ink-2 hover:text-ink transition-colors min-w-[44px] min-h-[44px] -m-2 flex items-center justify-center rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/40"
             aria-label={t(locale, 't10misc.confirmDialog.close')}
           >
             <X size={18} />
           </button>
         </div>
-        <p className="mt-2 text-sm text-zinc-500 leading-relaxed">{message}</p>
+        <p className="mt-2 text-sm text-ink-2 leading-relaxed">{message}</p>
         {children}
         {error && (
           <div
             role="alert"
-            className="mt-4 flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5"
+            className="mt-4 flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5"
           >
             <span>{error}</span>
           </div>

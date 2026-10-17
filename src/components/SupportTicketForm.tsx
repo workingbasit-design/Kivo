@@ -60,8 +60,8 @@ export default function SupportTicketForm({ locale }: { locale: Locale }) {
   if (status === 'success') {
     return (
       <div className="rounded-2xl bg-lime-50 p-5" role="status">
-        <p className="font-bold text-zinc-900">{t(locale, 'support.formSuccessTitle')}</p>
-        <p className="mt-1 text-sm text-zinc-700">{t(locale, 'support.formSuccessMsg')}</p>
+        <p className="font-bold text-ink">{t(locale, 'support.formSuccessTitle')}</p>
+        <p className="mt-1 text-sm text-ink">{t(locale, 'support.formSuccessMsg')}</p>
       </div>
     );
   }
@@ -131,17 +131,17 @@ export default function SupportTicketForm({ locale }: { locale: Locale }) {
         />
       </Field>
       {bad.length > 0 && status === 'idle' && (
-        <p className="text-sm text-rose-600" role="alert">
+        <p className="text-sm text-danger" role="alert">
           {t(locale, 'support.formInvalid')}
         </p>
       )}
       {status === 'error' && (
-        <p className="text-sm text-rose-600" role="alert">
+        <p className="text-sm text-danger" role="alert">
           {t(locale, 'support.formError')}
         </p>
       )}
       {status === 'limited' && (
-        <p className="text-sm text-rose-600" role="alert">
+        <p className="text-sm text-danger" role="alert">
           {t(locale, 'support.formRateLimited')}
         </p>
       )}

@@ -152,13 +152,13 @@ export function EditCustomerForm({
       </Field>
 
       {state?.error && (
-        <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{state.error}</span>
         </div>
       )}
       {state?.ok && (
-        <div className="flex items-start gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-ok-bg border border-emerald-200 text-ok text-xs font-medium rounded-xl px-3 py-2.5">
           <CheckCircle2 size={14} className="mt-0.5 shrink-0" />
           <span>{t(locale, 't10money.customerSaved')}</span>
         </div>
@@ -199,7 +199,7 @@ export function DeleteCustomerButton({
     <>
       <button
         onClick={() => setConfirming(true)}
-        className="text-rose-600 hover:text-rose-700 min-h-[44px] px-4 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 border border-rose-200 hover:bg-rose-50"
+        className="text-danger hover:text-danger min-h-[44px] px-4 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 border border-rose-200 hover:bg-danger-bg"
       >
         <Trash2 size={14} /> {t(locale, 't10money.custDelete')}
       </button>
@@ -251,14 +251,14 @@ export function ArchiveCustomerButton({
       <button
         type="submit"
         disabled={isPending}
-        className="min-h-[44px] px-4 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 border border-zinc-200 text-zinc-700 hover:bg-zinc-50 disabled:opacity-60"
+        className="min-h-[44px] px-4 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 border border-line text-ink hover:bg-surface-2 disabled:opacity-60"
       >
         {archived ? <ArchiveRestore size={14} /> : <Archive size={14} />}
         {isPending
           ? t(locale, archived ? 't10money.custRestoring' : 't10money.custArchiving')
           : t(locale, archived ? 't10money.custRestore' : 't10money.custArchive')}
       </button>
-      {state?.error && <span className="text-xs text-rose-600">{state.error}</span>}
+      {state?.error && <span className="text-xs text-danger">{state.error}</span>}
     </form>
   );
 }

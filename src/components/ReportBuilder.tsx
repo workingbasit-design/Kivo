@@ -145,17 +145,17 @@ export function ReportBuilder({
     <div className="space-y-6">
       {/* Builder */}
       <Card className="p-5">
-        <h2 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
+        <h2 className="text-sm font-bold text-ink flex items-center gap-2">
           <Sparkles size={15} className="text-lime-600" />
           {t(locale, 'reports.builderTitle')}
         </h2>
-        <p className="text-xs text-zinc-500 mt-1 mb-4">
+        <p className="text-xs text-ink-2 mt-1 mb-4">
           {t(locale, 'reports.builderSubtitle')}
         </p>
 
         <label
           htmlFor="report-prompt"
-          className="text-xs font-semibold text-zinc-600 block mb-1.5"
+          className="text-xs font-semibold text-ink-2 block mb-1.5"
         >
           {t(locale, 'reports.promptLabel')}
         </label>
@@ -170,7 +170,7 @@ export function ReportBuilder({
         />
 
         <div className="flex flex-wrap items-center gap-2 mt-3">
-          <span className="text-xs text-zinc-400 font-medium">
+          <span className="text-xs text-ink-2 font-medium">
             {t(locale, 'reports.examples')}
           </span>
           {EXAMPLES[locale].map((ex) => (
@@ -181,7 +181,7 @@ export function ReportBuilder({
                 setPrompt(ex);
                 run(ex);
               }}
-              className="text-xs font-medium text-zinc-600 bg-zinc-100 hover:bg-zinc-200 rounded-full px-3 py-2 min-h-[44px] transition-colors"
+              className="text-xs font-medium text-ink-2 bg-surface-2 hover:bg-line rounded-full px-3 py-2 min-h-[44px] transition-colors"
             >
               {ex}
             </button>
@@ -208,34 +208,34 @@ export function ReportBuilder({
         </button>
 
         {error && (
-          <p className="text-sm text-rose-600 font-medium mt-3" role="alert">
+          <p className="text-sm text-danger font-medium mt-3" role="alert">
             {error}
           </p>
         )}
 
         {built && (
-          <div className="mt-5 pt-5 border-t border-zinc-100">
-            <p className="text-xs text-zinc-500">
-              <span className="font-semibold text-zinc-700">
+          <div className="mt-5 pt-5 border-t border-line">
+            <p className="text-xs text-ink-2">
+              <span className="font-semibold text-ink">
                 {t(locale, 'reports.understoodAs')}
               </span>{' '}
               {describeConfig(built.config, locale)}
             </p>
             {built.defaulted && (
-              <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2 mt-2">
+              <p className="text-xs text-warn-text bg-warn-bg rounded-lg px-3 py-2 mt-2">
                 {t(locale, 'reports.vagueHint')}
               </p>
             )}
 
             {built.result.rows.length === 0 ? (
-              <p className="text-sm text-zinc-500 mt-4">
+              <p className="text-sm text-ink-2 mt-4">
                 {t(locale, 'reports.noRows')}
               </p>
             ) : (
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="text-left text-xs text-zinc-400 font-semibold border-b border-zinc-100">
+                    <tr className="text-left text-xs text-ink-2 font-semibold border-b border-line">
                       <th className="py-2 pr-3 font-semibold"> </th>
                       <th className="py-2 pr-3 font-semibold text-right">
                         {t(locale, 'reports.countLabel')}
@@ -253,25 +253,25 @@ export function ReportBuilder({
                         key={row.label}
                         className="border-b border-zinc-50 last:border-0"
                       >
-                        <td className="py-2.5 pr-3 font-medium text-zinc-800">
+                        <td className="py-2.5 pr-3 font-medium text-ink">
                           {row.label}
                         </td>
-                        <td className="py-2.5 pr-3 text-right text-zinc-500 tabular-nums">
+                        <td className="py-2.5 pr-3 text-right text-ink-2 tabular-nums">
                           {row.count ?? '-'}
                         </td>
-                        <td className="py-2.5 text-right font-bold text-zinc-900 tabular-nums">
+                        <td className="py-2.5 text-right font-bold text-ink tabular-nums">
                           {fmt(row.value)}
                         </td>
                       </tr>
                     ))}
-                    <tr className="bg-zinc-50">
-                      <td className="py-2.5 pr-3 font-bold text-zinc-900">
+                    <tr className="bg-surface-2">
+                      <td className="py-2.5 pr-3 font-bold text-ink">
                         {t(locale, 'reports.total')}
                       </td>
-                      <td className="py-2.5 pr-3 text-right text-zinc-600 tabular-nums font-semibold">
+                      <td className="py-2.5 pr-3 text-right text-ink-2 tabular-nums font-semibold">
                         {built.result.totalCount}
                       </td>
-                      <td className="py-2.5 text-right font-bold text-zinc-900 tabular-nums">
+                      <td className="py-2.5 text-right font-bold text-ink tabular-nums">
                         {fmt(built.result.total)}
                       </td>
                     </tr>
@@ -306,7 +306,7 @@ export function ReportBuilder({
               </button>
             </div>
             {saveMsg && (
-              <p className="text-sm text-emerald-700 font-medium mt-2" role="status">
+              <p className="text-sm text-ok font-medium mt-2" role="status">
                 {saveMsg}
               </p>
             )}
@@ -316,23 +316,23 @@ export function ReportBuilder({
 
       {/* Saved reports */}
       <Card className="p-5">
-        <h2 className="text-sm font-bold text-zinc-900 mb-1">
+        <h2 className="text-sm font-bold text-ink mb-1">
           {t(locale, 'reports.savedReports')}
         </h2>
         {savedReports.length === 0 ? (
-          <p className="text-sm text-zinc-500 mt-2">{t(locale, 'reports.noSaved')}</p>
+          <p className="text-sm text-ink-2 mt-2">{t(locale, 'reports.noSaved')}</p>
         ) : (
-          <ul className="divide-y divide-zinc-100">
+          <ul className="divide-y divide-line">
             {savedReports.map((s) => (
               <li
                 key={s.id}
                 className="flex items-center gap-3 py-3 min-h-[44px]"
               >
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-zinc-900 truncate">
+                  <p className="text-sm font-semibold text-ink truncate">
                     {s.name}
                   </p>
-                  <p className="text-xs text-zinc-400 truncate">{s.prompt}</p>
+                  <p className="text-xs text-ink-2 truncate">{s.prompt}</p>
                 </div>
                 <button
                   type="button"
@@ -352,7 +352,7 @@ export function ReportBuilder({
                   type="button"
                   onClick={() => remove(s.id)}
                   disabled={deletingId === s.id}
-                  className="text-zinc-400 hover:text-rose-600 hover:bg-rose-50 min-h-[44px] min-w-[44px] px-3 rounded-xl font-semibold text-sm transition-colors inline-flex items-center justify-center gap-2 disabled:opacity-60 shrink-0"
+                  className="text-ink-2 hover:text-danger hover:bg-danger-bg min-h-[44px] min-w-[44px] px-3 rounded-xl font-semibold text-sm transition-colors inline-flex items-center justify-center gap-2 disabled:opacity-60 shrink-0"
                   aria-label={`${t(locale, 'reports.delete')}: ${s.name}`}
                   title={t(locale, 'reports.delete')}
                 >

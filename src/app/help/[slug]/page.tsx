@@ -45,26 +45,26 @@ export default async function HelpArticlePage({
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
       <Link
         href="/help"
-        className="text-sm font-medium text-zinc-600 hover:text-zinc-900"
+        className="text-sm font-medium text-ink-2 hover:text-ink"
       >
         ← {t(locale, 'support.backToHelp')}
       </Link>
       <div className="mt-3 text-xs font-semibold text-lime-700">
         {categoryLabel(article.category, locale)}
       </div>
-      <h1 className="mt-1 text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl">
+      <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
         {loc.title}
       </h1>
       <Card className="mt-6">
         <div dangerouslySetInnerHTML={{ __html: renderHelpBody(loc.body) }} />
-        <p className="mt-6 border-t border-zinc-100 pt-4 text-xs text-zinc-400">
+        <p className="mt-6 border-t border-line pt-4 text-xs text-ink-2">
           {t(locale, 'support.updatedNote')}
         </p>
       </Card>
 
       {related.length > 0 && (
         <div className="mt-8">
-          <h2 className="mb-3 text-base font-bold text-zinc-900">
+          <h2 className="mb-3 text-base font-bold text-ink">
             {t(locale, 'support.relatedTitle')}
           </h2>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -74,10 +74,10 @@ export default async function HelpArticlePage({
                 <a
                   key={r.slug}
                   href={`/help/${r.slug}`}
-                  className="block rounded-2xl border border-zinc-200 bg-white p-4 hover:border-lime-500 hover:shadow-sm transition-shadow"
+                  className="block rounded-2xl border border-line bg-surface p-4 hover:border-lime-500 hover:shadow-sm transition-shadow"
                 >
-                  <div className="font-semibold text-zinc-900">{rl.title}</div>
-                  <div className="mt-1 text-xs text-zinc-500">
+                  <div className="font-semibold text-ink">{rl.title}</div>
+                  <div className="mt-1 text-xs text-ink-2">
                     {categoryLabel(r.category, locale)}
                   </div>
                 </a>

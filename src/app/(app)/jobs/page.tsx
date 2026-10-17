@@ -153,14 +153,14 @@ export default async function JobsPage({
         <label htmlFor="jobs-search" className="sr-only">
           {t(locale, 'common.search')}
         </label>
-        <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
+        <Search size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-2 pointer-events-none" />
         <input
           id="jobs-search"
           type="search"
           name="q"
           defaultValue={q ?? ''}
           placeholder={T('jobsSearchPlaceholder')}
-          className={cn(inputClass, '!pl-10 !bg-white')}
+          className={cn(inputClass, '!pl-10 !bg-surface')}
         />
       </form>
 
@@ -183,15 +183,15 @@ export default async function JobsPage({
                 className={cn(
                   'px-3 min-h-[44px] inline-flex items-center gap-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors border',
                   activeStatus === s
-                    ? 'bg-ink text-white border-ink'
-                    : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50'
+                    ? 'bg-asphalt text-white border-asphalt'
+                    : 'bg-surface text-ink-2 border-line hover:bg-surface-2'
                 )}
               >
                 {s === 'ALL' ? T('jobsTabAll') : formatStatusLabel(s, locale)}
                 <span
                   className={cn(
                     'inline-flex min-w-5 h-5 px-1 rounded-full text-[10px] font-bold items-center justify-center tabular-nums',
-                    activeStatus === s ? 'bg-white/25 text-white' : 'bg-zinc-100 text-zinc-600'
+                    activeStatus === s ? 'bg-surface/25 text-white' : 'bg-surface-2 text-ink-2'
                   )}
                 >
                   {chipCount}
@@ -246,33 +246,33 @@ export default async function JobsPage({
           />
         </Card>
       ) : (
-        <div className="bg-white rounded-xl border border-zinc-200 overflow-hidden divide-y divide-ej-smoke">
+        <div className="bg-surface rounded-xl border border-line overflow-hidden divide-y divide-ej-smoke">
           {sorted.map((job) => (
             <div
               key={job.id}
-              className="flex items-center justify-between gap-2 p-4 md:p-5 hover:bg-zinc-50 transition-colors"
+              className="flex items-center justify-between gap-2 p-4 md:p-5 hover:bg-surface-2 transition-colors"
             >
               <Link
                 href={`/jobs/${job.id}`}
                 className="min-w-0 flex-1"
               >
                 <div className="flex items-center gap-2 flex-wrap">
-                  <p className="font-semibold text-zinc-900 text-sm">{job.title}</p>
+                  <p className="font-semibold text-ink text-sm">{job.title}</p>
                   <StatusBadge
                     status={job.status}
                     isLate={isJobLate({ date: job.date, status: job.status }, new Date(), timezone)}
                     locale={locale}
                   />
                 </div>
-                <p className="text-xs text-zinc-500 mt-1 truncate">{job.customer.name}</p>
-                <p className="text-xs text-zinc-500 truncate">
+                <p className="text-xs text-ink-2 mt-1 truncate">{job.customer.name}</p>
+                <p className="text-xs text-ink-2 truncate">
                   {hasJobTime(job.time) ? `${formatJobTime(job.time, locale)}, ` : ''}
                   {formatDisplayDate(job.date, timezone, locale)}
                   {job.address ? `, ${job.address}` : ''}
                 </p>
               </Link>
               <div className="flex items-center gap-1 shrink-0">
-                <p className="font-bold text-zinc-900 text-sm whitespace-nowrap tabular-nums mr-1">
+                <p className="font-bold text-ink text-sm whitespace-nowrap tabular-nums mr-1">
                   <MoneyText dollars={centsToDollars(job.priceCents)} locale={locale} />
                 </p>
                 <JobRowMenu jobId={job.id} jobTitle={job.title} status={job.status} locale={locale} />

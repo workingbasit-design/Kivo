@@ -55,8 +55,8 @@ export default function CustomerConsentCard({
   return (
     <Card className="p-6 md:p-8 border-l-4 border-l-lime">
       <div className="flex items-center justify-between gap-3 mb-1">
-        <h2 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
-          <BellRing size={14} className="text-zinc-400" />
+        <h2 className="text-sm font-bold text-ink flex items-center gap-2">
+          <BellRing size={14} className="text-ink-2" />
           {t(locale, 'messaging.consentTitle')}
         </h2>
         <Badge tone={consent ? 'lime' : 'neutral'}>
@@ -65,12 +65,12 @@ export default function CustomerConsentCard({
             : t(locale, 'messaging.consentOptOut')}
         </Badge>
       </div>
-      <p className="text-xs text-zinc-500 mb-4">{t(locale, 'messaging.consentDesc')}</p>
+      <p className="text-xs text-ink-2 mb-4">{t(locale, 'messaging.consentDesc')}</p>
       <form action={formAction} className="space-y-3">
         <input type="hidden" name="customerId" value={customerId} />
         <label
           htmlFor="message-consent"
-          className="flex items-center gap-3 cursor-pointer rounded-xl border border-zinc-200 bg-zinc-50/60 px-4 py-3 min-h-[56px]"
+          className="flex items-center gap-3 cursor-pointer rounded-xl border border-line bg-surface-2/60 px-4 py-3 min-h-[56px]"
         >
           <input
             id="message-consent"
@@ -79,16 +79,16 @@ export default function CustomerConsentCard({
             defaultChecked={consent}
             className={checkboxClass}
           />
-          <span className="text-sm font-semibold text-zinc-800">
+          <span className="text-sm font-semibold text-ink">
             {t(locale, 'messaging.consentOptIn')}
           </span>
         </label>
-        <label className="flex flex-wrap items-center gap-2 text-xs text-zinc-600">
+        <label className="flex flex-wrap items-center gap-2 text-xs text-ink-2">
           <span>{t(locale, 'messaging.preferredLocale')}</span>
           <select
             name="preferredLocale"
             defaultValue={preferredLocale ?? ''}
-            className="rounded-lg border border-zinc-200 bg-white px-3 py-2.5 min-h-[44px] text-xs"
+            className="rounded-lg border border-line bg-surface px-3 py-2.5 min-h-[44px] text-xs"
           >
             <option value="">{t(locale, 'messaging.localeAuto')}</option>
             <option value="en">English</option>
@@ -96,11 +96,11 @@ export default function CustomerConsentCard({
           </select>
         </label>
         {consentAt && (
-          <p className="text-[11px] text-zinc-400">
+          <p className="text-[11px] text-ink-2">
             {new Date(consentAt).toLocaleString(locale === 'fr' ? 'fr-CA' : 'en-CA')}
           </p>
         )}
-        {state?.error && <p className="text-xs font-semibold text-rose-600">{state.error}</p>}
+        {state?.error && <p className="text-xs font-semibold text-danger">{state.error}</p>}
         <button type="submit" disabled={isPending} className={primaryBtnClass}>
           {isPending ? '…' : t(locale, 'messaging.saveSettings')}
         </button>

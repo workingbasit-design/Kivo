@@ -71,7 +71,7 @@ export default function LiveTrackingMap({ locale = 'en' }: { locale?: Locale }) 
   if (!loaded) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-200 border-t-zinc-900" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-line border-t-zinc-900" />
       </div>
     );
   }
@@ -80,18 +80,18 @@ export default function LiveTrackingMap({ locale = 'en' }: { locale?: Locale }) 
   if (jobs.length === 0) {
     return (
       <div className="py-8 text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-zinc-100 text-3xl">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-surface-2 text-3xl">
           🗺️
         </div>
-        <h3 className="text-lg font-bold text-zinc-900">
+        <h3 className="text-lg font-bold text-ink">
           {t(locale, 'gps.noJobsTitle') || 'No active jobs today'}
         </h3>
-        <p className="mx-auto mt-2 max-w-sm text-sm text-zinc-500">
+        <p className="mx-auto mt-2 max-w-sm text-sm text-ink-2">
           {t(locale, 'gps.noJobsDesc') || 'When you have scheduled jobs, they\'ll appear here. Your technician\'s live location shows on the map once they start sharing.'}
         </p>
         <Link
           href="/jobs/new"
-          className="mt-4 inline-flex items-center rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-zinc-700"
+          className="mt-4 inline-flex items-center rounded-lg bg-asphalt px-4 py-2.5 text-sm font-semibold text-white hover:bg-zinc-700"
         >
           + {t(locale, 'gps.scheduleJob') || 'Schedule a job'}
         </Link>
@@ -118,7 +118,7 @@ export default function LiveTrackingMap({ locale = 'en' }: { locale?: Locale }) 
         </div>
 
         <div>
-          <h3 className="text-sm font-bold text-zinc-900 mb-2">
+          <h3 className="text-sm font-bold text-ink mb-2">
             {t(locale, 'gps.todaysJobs') || "Today's jobs"} ({jobs.length})
           </h3>
           <div className="space-y-2">
@@ -126,18 +126,18 @@ export default function LiveTrackingMap({ locale = 'en' }: { locale?: Locale }) 
               <a
                 key={job.id}
                 href={`/jobs/${job.id}`}
-                className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3 hover:border-zinc-300 hover:shadow-sm transition-shadow"
+                className="flex items-center gap-3 rounded-xl border border-line bg-surface p-3 hover:border-line-strong hover:shadow-sm transition-shadow"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-lg">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-2 text-lg">
                   🔧
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-zinc-900">{job.title}</p>
-                  <p className="truncate text-xs text-zinc-500">
+                  <p className="truncate text-sm font-semibold text-ink">{job.title}</p>
+                  <p className="truncate text-xs text-ink-2">
                     {[job.customerName, job.technician].filter(Boolean).join(' · ')}
                   </p>
                 </div>
-                <span className="shrink-0 rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-semibold text-zinc-500">
+                <span className="shrink-0 rounded-full bg-surface-2 px-2.5 py-1 text-[11px] font-semibold text-ink-2">
                   {t(locale, 'gps.notSharing') || 'Not sharing'}
                 </span>
               </a>
@@ -156,13 +156,13 @@ export default function LiveTrackingMap({ locale = 'en' }: { locale?: Locale }) 
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
           <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-600" />
         </span>
-        <p className="text-sm font-semibold text-zinc-900">
+        <p className="text-sm font-semibold text-ink">
           {t(locale, 'gps.sharingNow').replace('{count}', String(sharing))}
         </p>
       </div>
       <DispatcherMap pins={pins} />
       <div>
-        <h3 className="text-sm font-bold text-zinc-900 mb-2">
+        <h3 className="text-sm font-bold text-ink mb-2">
           {t(locale, 'gps.sharingJobs') || 'Currently sharing'} ({sharing})
         </h3>
         <div className="space-y-2">
@@ -170,18 +170,18 @@ export default function LiveTrackingMap({ locale = 'en' }: { locale?: Locale }) 
             <a
               key={job.id}
               href={`/jobs/${job.id}`}
-              className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50/50 p-3 hover:shadow-sm transition-shadow"
+              className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-ok-bg/50 p-3 hover:shadow-sm transition-shadow"
             >
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-lg">
                 📍
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-zinc-900">{job.title}</p>
-                <p className="truncate text-xs text-zinc-500">
+                <p className="truncate text-sm font-semibold text-ink">{job.title}</p>
+                <p className="truncate text-xs text-ink-2">
                   {[job.customerName, job.technician].filter(Boolean).join(' · ')}
                 </p>
               </div>
-              <span className="shrink-0 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-bold text-emerald-700">
+              <span className="shrink-0 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-bold text-ok">
                 ● {t(locale, 'gps.live') || 'LIVE'}
               </span>
             </a>

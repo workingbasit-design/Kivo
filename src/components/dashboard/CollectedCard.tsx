@@ -96,7 +96,7 @@ export default function CollectedCard({
           <div
             role="radiogroup"
             aria-label={labels.collected}
-            className="ej-collected-toggle inline-flex rounded-full bg-white/10 p-1"
+            className="ej-collected-toggle inline-flex rounded-full bg-surface/10 p-1"
           >
             {(["week", "month"] as Mode[]).map((m) => (
               <button
@@ -107,7 +107,7 @@ export default function CollectedCard({
                 onClick={() => setMode(m)}
                 className={cn(
                   "min-h-[36px] px-4 rounded-full text-[13px] font-semibold transition-colors",
-                  mode === m ? "bg-white text-asphalt" : "text-zinc-300 hover:text-white"
+                  mode === m ? "bg-surface text-asphalt" : "text-zinc-300 hover:text-white"
                 )}
               >
                 {m === "week" ? labels.thisWeek : labels.thisMonth}
@@ -150,7 +150,7 @@ export default function CollectedCard({
                   )}
                   style={{ height: `${height}px` }}
                 />
-                <span className="text-[11px] font-semibold text-zinc-400">
+                <span className="text-[11px] font-semibold text-ink-2">
                   {mode === "week"
                     ? weekdayLabel(bar.weekday)
                     : period.barMonths[i]
@@ -164,13 +164,13 @@ export default function CollectedCard({
 
         <div className="mt-4 grid grid-cols-2 gap-3 border-t border-white/10 pt-4">
           <div>
-            <p className="text-[13px] text-zinc-400">{labels.invoiced}</p>
+            <p className="text-[13px] text-ink-2">{labels.invoiced}</p>
             <p className="ej-figure text-[26px] font-bold tabular-nums">
               {formatMoney(period.invoiced, null, locale)}
             </p>
           </div>
           <div>
-            <p className="text-[13px] text-zinc-400">{labels.jobsDone}</p>
+            <p className="text-[13px] text-ink-2">{labels.jobsDone}</p>
             <p className="ej-figure text-[26px] font-bold tabular-nums">
               {fill(labels.jobsDoneOfTemplate, { done: period.jobsDone, total: period.jobsTotal })}
             </p>
@@ -190,7 +190,7 @@ export default function CollectedCard({
           {numbersOpen && (
             <table className="mt-1 w-full text-left text-[13px]">
               <thead>
-                <tr className="border-b border-white/10 text-zinc-400">
+                <tr className="border-b border-white/10 text-ink-2">
                   <th scope="col" className="py-2 pr-2 font-medium">
                     {labels.periodLabel}
                   </th>

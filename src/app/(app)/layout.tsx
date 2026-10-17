@@ -100,7 +100,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     /* Part B: concrete page background (light) / night (dark). */
-    <div className="min-h-screen bg-concrete dark:bg-night flex">
+    <div className="min-h-screen bg-bg flex">
       <AppSidebar
         user={user}
         locale={locale}

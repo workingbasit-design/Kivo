@@ -162,13 +162,13 @@ export default function ExpenseForm({
 
         <Field label={T('receipt')}>
           {initial?.receiptUrl && !removeReceipt ? (
-            <div className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-zinc-50 p-3">
+            <div className="flex items-center gap-3 rounded-xl border border-line bg-surface-2 p-3">
               {/* B12: receipts are private blobs - served through the
                   tenant-scoped route, never via a public Blob URL. */}
               <img
                 src={`/api/expenses/receipt/${initial.id}`}
                 alt={T('receipt')}
-                className="h-16 w-16 rounded-lg object-cover border border-zinc-200"
+                className="h-16 w-16 rounded-lg object-cover border border-line"
               />
               <div className="flex-1 min-w-0">
                 <a
@@ -179,25 +179,25 @@ export default function ExpenseForm({
                 >
                   {T('receiptView')}
                 </a>
-                <p className="text-xs text-zinc-500">{T('receiptHint')}</p>
+                <p className="text-xs text-ink-2">{T('receiptHint')}</p>
               </div>
               <button
                 type="button"
                 onClick={() => setRemoveReceipt(true)}
-                className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-xl text-zinc-500 hover:bg-zinc-200"
+                className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-xl text-ink-2 hover:bg-line"
                 aria-label={T('receiptRemove')}
               >
                 <X size={18} />
               </button>
             </div>
           ) : (
-            <label className="flex items-center gap-3 rounded-xl border-2 border-dashed border-zinc-200 bg-zinc-50 p-4 cursor-pointer hover:border-zinc-300 transition-colors">
-              <Receipt size={20} className="text-zinc-400 shrink-0" />
+            <label className="flex items-center gap-3 rounded-xl border-2 border-dashed border-line bg-surface-2 p-4 cursor-pointer hover:border-line-strong transition-colors">
+              <Receipt size={20} className="text-ink-2 shrink-0" />
               <div className="flex-1 min-w-0">
-                <span className="text-sm font-semibold text-zinc-700">
+                <span className="text-sm font-semibold text-ink">
                   {receiptName ?? T('receipt')}
                 </span>
-                <p className="text-xs text-zinc-500">{T('receiptHint')}</p>
+                <p className="text-xs text-ink-2">{T('receiptHint')}</p>
               </div>
               <input
                 ref={fileRef}

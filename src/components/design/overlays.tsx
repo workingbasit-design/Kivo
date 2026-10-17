@@ -35,7 +35,7 @@ export function Dialog({ open, onClose, title, children, className }: DialogProp
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-asphalt/50"
       role="presentation"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
@@ -150,7 +150,7 @@ export function BottomSheet({ open, onClose, title, children }: BottomSheetProps
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-asphalt/50"
       role="presentation"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();

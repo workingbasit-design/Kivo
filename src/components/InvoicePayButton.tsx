@@ -43,14 +43,14 @@ export default function InvoicePayButton({
     return (
       <Card className="p-5">
         <div className="flex items-start gap-3">
-          <span className="mt-0.5 w-9 h-9 rounded-xl bg-zinc-100 flex items-center justify-center shrink-0">
-            <PlugZap size={16} className="text-zinc-500" />
+          <span className="mt-0.5 w-9 h-9 rounded-xl bg-surface-2 flex items-center justify-center shrink-0">
+            <PlugZap size={16} className="text-ink-2" />
           </span>
           <div className="min-w-0">
-            <p className="text-sm font-bold text-zinc-900">
+            <p className="text-sm font-bold text-ink">
               {t(locale, 'invoicePay.notConnectedTitle')}
             </p>
-            <p className="text-xs text-zinc-500 mt-1">
+            <p className="text-xs text-ink-2 mt-1">
               {t(locale, 'invoicePay.notConnectedDesc')}
             </p>
             <a href={paymentsHref} className={`${secondaryBtnClass} mt-3`}>
@@ -91,25 +91,25 @@ export default function InvoicePayButton({
   if (url) {
     return (
       <Card className="p-5">
-        <p className="text-sm font-bold text-zinc-900 flex items-center gap-2">
-          <Link2 size={15} className="text-emerald-600" />
+        <p className="text-sm font-bold text-ink flex items-center gap-2">
+          <Link2 size={15} className="text-ok" />
           {t(locale, 'invoicePay.linkReady')}
         </p>
-        <p className="text-xs text-zinc-500 mt-1 mb-3">
+        <p className="text-xs text-ink-2 mt-1 mb-3">
           {t(locale, 'invoicePay.linkHint')}
         </p>
         <div className="flex items-center gap-2">
-          <code className="flex-1 min-w-0 text-xs bg-zinc-50 border border-zinc-200 rounded-xl px-3 py-2.5 truncate text-zinc-700 font-mono">
+          <code className="flex-1 min-w-0 text-xs bg-surface-2 border border-line rounded-xl px-3 py-2.5 truncate text-ink font-mono">
             {url}
           </code>
           <CopyButton text={url} label={t(locale, 'invoicePay.copyLink')} />
         </div>
         {testMode && (
-          <p className="text-[11px] text-amber-700 font-semibold mt-2">
+          <p className="text-[11px] text-warn-text font-semibold mt-2">
             {t(locale, 'invoicePay.testNote')}
           </p>
         )}
-        <p className="text-[11px] text-zinc-400 mt-2">
+        <p className="text-[11px] text-ink-2 mt-2">
           {t(locale, 'invoicePay.feeNote')}
         </p>
         <button
@@ -128,7 +128,7 @@ export default function InvoicePayButton({
 
   return (
     <Card className="p-5">
-      <p className="text-xs text-zinc-500 mb-3">{t(locale, 'invoicePay.collectDesc')}</p>
+      <p className="text-xs text-ink-2 mb-3">{t(locale, 'invoicePay.collectDesc')}</p>
       <button
         type="button"
         onClick={create}
@@ -140,11 +140,11 @@ export default function InvoicePayButton({
           ? t(locale, 'invoicePay.creating')
           : `${t(locale, 'invoicePay.collectPayment')} · ${formatMoney(balance, currency, locale)}`}
       </button>
-      <p className="text-[11px] text-zinc-400 mt-2 text-center">
+      <p className="text-[11px] text-ink-2 mt-2 text-center">
         {t(locale, 'invoicePay.feeNote')}
       </p>
       {error && (
-        <p className="text-xs font-semibold text-rose-600 text-center mt-2">{error}</p>
+        <p className="text-xs font-semibold text-danger text-center mt-2">{error}</p>
       )}
     </Card>
   );

@@ -35,7 +35,7 @@ export function DigestSettingsForm({
   return (
     <div className="space-y-4">
       <label className="flex items-center justify-between gap-3 min-h-[44px] cursor-pointer">
-        <span className="text-sm font-semibold text-zinc-900">
+        <span className="text-sm font-semibold text-ink">
           {t(locale, 'digest.enabled')}
         </span>
         <input
@@ -49,7 +49,7 @@ export function DigestSettingsForm({
 
       <div className="grid grid-cols-2 gap-3">
         <label className="block">
-          <span className="text-xs font-semibold text-zinc-600 block mb-1">
+          <span className="text-xs font-semibold text-ink-2 block mb-1">
             {t(locale, 'digest.sendTime')}
           </span>
           <TimeField
@@ -61,11 +61,11 @@ export function DigestSettingsForm({
           />
         </label>
         <fieldset>
-          <legend className="text-xs font-semibold text-zinc-600 block mb-1">
+          <legend className="text-xs font-semibold text-ink-2 block mb-1">
             {t(locale, 'digest.channels')}
           </legend>
           <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm text-zinc-800 min-h-[44px]">
+            <label className="flex items-center gap-2 text-sm text-ink min-h-[44px]">
               <input
                 type="checkbox"
                 checked={inApp}
@@ -75,7 +75,7 @@ export function DigestSettingsForm({
               />
               {t(locale, 'digest.channelInApp')}
             </label>
-            <label className="flex items-center gap-2 text-sm text-zinc-800 min-h-[44px]">
+            <label className="flex items-center gap-2 text-sm text-ink min-h-[44px]">
               <input
                 type="checkbox"
                 checked={push}
@@ -90,7 +90,7 @@ export function DigestSettingsForm({
       </div>
 
       {msg && (
-        <p className="text-sm text-emerald-700 font-medium" role="status">
+        <p className="text-sm text-ok font-medium" role="status">
           {msg}
         </p>
       )}

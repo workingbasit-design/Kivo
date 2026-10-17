@@ -119,7 +119,7 @@ function ExpenseRow({
         <p className="text-[11px] text-graphite">
           {t(locale, catKey)} · {expense.spentAt}
         </p>
-        {error && <p className="text-[11px] text-rose-600 mt-1 font-medium">{error}</p>}
+        {error && <p className="text-[11px] text-danger mt-1 font-medium">{error}</p>}
       </div>
       <span className="text-sm font-bold text-ink tabular-nums shrink-0">
         {formatMoney(expense.amount, currency)}
@@ -130,7 +130,7 @@ function ExpenseRow({
         disabled={isPending}
         title={t(locale, 'jobops.expenses.delete')}
         aria-label={t(locale, 'jobops.expenses.delete')}
-        className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-zinc-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors shrink-0 disabled:opacity-60"
+        className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-zinc-300 hover:text-danger hover:bg-danger-bg rounded-lg transition-colors shrink-0 disabled:opacity-60"
       >
         <Trash2 size={15} />
       </button>
@@ -226,7 +226,7 @@ function AddExpenseForm({ jobId, locale }: { jobId: string; locale: Locale }) {
         </div>
       </div>
       {state?.error && (
-        <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{state.error}</span>
         </div>

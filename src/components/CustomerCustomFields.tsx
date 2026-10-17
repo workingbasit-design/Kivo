@@ -105,10 +105,10 @@ export default function CustomerCustomFields({
 
   return (
     <Card>
-      <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between">
+      <div className="px-6 py-4 border-b border-line flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Tag size={16} className="text-zinc-400" />
-          <h3 className="font-bold text-sm text-zinc-900">{L('customfields.title')}</h3>
+          <Tag size={16} className="text-ink-2" />
+          <h3 className="font-bold text-sm text-ink">{L('customfields.title')}</h3>
         </div>
         {!adding && (
           <button
@@ -126,10 +126,10 @@ export default function CustomerCustomFields({
       </div>
 
       <div className="px-6 py-4">
-        <p className="text-xs text-zinc-500 mb-4">{L('customfields.hint')}</p>
+        <p className="text-xs text-ink-2 mb-4">{L('customfields.hint')}</p>
 
         {error && (
-          <p className="text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2.5 mb-4">
+          <p className="text-xs font-semibold text-danger bg-danger-bg border border-rose-200 rounded-xl px-3 py-2.5 mb-4">
             {error}
           </p>
         )}
@@ -163,7 +163,7 @@ export default function CustomerCustomFields({
         )}
 
         {defs.length === 0 && !adding ? (
-          <p className="text-sm text-zinc-500 text-center py-6">{L('customfields.empty')}</p>
+          <p className="text-sm text-ink-2 text-center py-6">{L('customfields.empty')}</p>
         ) : (
           <ul className="space-y-3">
             {defs.map((def) => (
@@ -214,7 +214,7 @@ export default function CustomerCustomFields({
                       type="button"
                       disabled={busy}
                       onClick={() => startTransition(() => saveValue(def.id))}
-                      className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-emerald-600 hover:bg-emerald-50 disabled:opacity-50"
+                      className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-ok hover:bg-ok-bg disabled:opacity-50"
                       title={L('customfields.save')}
                       aria-label={L('customfields.save')}
                     >
@@ -227,7 +227,7 @@ export default function CustomerCustomFields({
                         setRenameValue(def.name);
                         setError(null);
                       }}
-                      className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100"
+                      className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-ink-2 hover:text-ink hover:bg-surface-2"
                       aria-label={L('customfields.rename')}
                     >
                       <Pencil size={14} />
@@ -235,7 +235,7 @@ export default function CustomerCustomFields({
                     <button
                       type="button"
                       onClick={() => setConfirmingDeleteId(def.id)}
-                      className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-zinc-400 hover:text-rose-600 hover:bg-rose-50"
+                      className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-ink-2 hover:text-danger hover:bg-danger-bg"
                       aria-label={L('customfields.delete')}
                     >
                       <Trash2 size={14} />

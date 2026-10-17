@@ -58,7 +58,7 @@ export function BrandKitForm({
   return (
     <div className="space-y-5">
       <div>
-        <label htmlFor="brand-tagline" className="block text-sm font-semibold text-zinc-900 mb-1.5">
+        <label htmlFor="brand-tagline" className="block text-sm font-semibold text-ink mb-1.5">
           {tr('brand.tagline')}
         </label>
         <input
@@ -73,7 +73,7 @@ export function BrandKitForm({
       </div>
 
       <fieldset>
-        <legend className="text-sm font-semibold text-zinc-900 mb-2">
+        <legend className="text-sm font-semibold text-ink mb-2">
           {tr('brand.primary')}
         </legend>
         <div className="flex flex-wrap gap-2 mb-2">
@@ -95,26 +95,26 @@ export function BrandKitForm({
         </div>
         <div className="grid grid-cols-2 gap-3">
           <label className="block">
-            <span className="text-xs font-semibold text-zinc-600 block mb-1">
+            <span className="text-xs font-semibold text-ink-2 block mb-1">
               {tr('brand.custom')} - {tr('brand.primary')}
             </span>
             <input
               type="color"
               value={primary}
               onChange={(e) => setPrimary(e.target.value)}
-              className="w-full h-11 min-h-[44px] rounded-xl border border-zinc-200 cursor-pointer bg-white px-1"
+              className="w-full h-11 min-h-[44px] rounded-xl border border-line cursor-pointer bg-surface px-1"
               aria-label={tr('brand.primary')}
             />
           </label>
           <label className="block">
-            <span className="text-xs font-semibold text-zinc-600 block mb-1">
+            <span className="text-xs font-semibold text-ink-2 block mb-1">
               {tr('brand.custom')} - {tr('brand.accent')}
             </span>
             <input
               type="color"
               value={accent}
               onChange={(e) => setAccent(e.target.value)}
-              className="w-full h-11 min-h-[44px] rounded-xl border border-zinc-200 cursor-pointer bg-white px-1"
+              className="w-full h-11 min-h-[44px] rounded-xl border border-line cursor-pointer bg-surface px-1"
               aria-label={tr('brand.accent')}
             />
           </label>
@@ -122,10 +122,10 @@ export function BrandKitForm({
       </fieldset>
 
       <div>
-        <label htmlFor="brand-service" className="block text-sm font-semibold text-zinc-900 mb-1">
+        <label htmlFor="brand-service" className="block text-sm font-semibold text-ink mb-1">
           {tr('brand.services')}
         </label>
-        <p className="text-xs text-zinc-500 mb-2">{tr('brand.servicesDesc')}</p>
+        <p className="text-xs text-ink-2 mb-2">{tr('brand.servicesDesc')}</p>
         <div className="flex gap-2">
           <input
             id="brand-service"
@@ -141,7 +141,7 @@ export function BrandKitForm({
             type="button"
             onClick={addService}
             disabled={!draft.trim() || services.length >= 10}
-            className="shrink-0 min-w-[44px] min-h-[44px] px-4 rounded-xl bg-zinc-900 text-white text-sm font-semibold disabled:opacity-40 inline-flex items-center gap-1.5"
+            className="shrink-0 min-w-[44px] min-h-[44px] px-4 rounded-xl bg-asphalt text-white text-sm font-semibold disabled:opacity-40 inline-flex items-center gap-1.5"
           >
             <Plus size={16} aria-hidden /> {tr('brand.add')}
           </button>
@@ -159,7 +159,7 @@ export function BrandKitForm({
                   type="button"
                   onClick={() => removeService(s)}
                   aria-label={`${tr('brand.remove')}: ${s}`}
-                  className="w-7 h-7 min-w-[28px] min-h-[28px] rounded-full bg-black/20 hover:bg-black/40 inline-flex items-center justify-center"
+                  className="w-7 h-7 min-w-[28px] min-h-[28px] rounded-full bg-asphalt/20 hover:bg-asphalt/40 inline-flex items-center justify-center"
                 >
                   <X size={14} aria-hidden />
                 </button>
@@ -170,7 +170,7 @@ export function BrandKitForm({
       </div>
 
       {msg && (
-        <p className="text-sm text-emerald-700 font-medium" role="status">
+        <p className="text-sm text-ok font-medium" role="status">
           {msg}
         </p>
       )}

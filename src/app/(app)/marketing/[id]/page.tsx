@@ -42,7 +42,7 @@ export default async function CampaignDetailPage({
     <div className="space-y-6 max-w-3xl">
       <Link
         href="/marketing"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-800"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-2 hover:text-ink"
       >
         <ArrowLeft size={14} /> {tr('t10misc.marketing.backToMarketing')}
       </Link>
@@ -54,10 +54,10 @@ export default async function CampaignDetailPage({
       />
 
       <Card className="p-6">
-        <p className="text-[11px] font-bold text-zinc-400 mb-1">{tr('t10misc.marketing.templateLabel')}</p>
-        <p className="text-sm font-bold text-zinc-900">{campaign.subject}</p>
-        <p className="text-sm text-zinc-600 mt-1.5 whitespace-pre-wrap">{campaign.body}</p>
-        <p className="text-[11px] text-zinc-400 mt-3">
+        <p className="text-[11px] font-bold text-ink-2 mb-1">{tr('t10misc.marketing.templateLabel')}</p>
+        <p className="text-sm font-bold text-ink">{campaign.subject}</p>
+        <p className="text-sm text-ink-2 mt-1.5 whitespace-pre-wrap">{campaign.body}</p>
+        <p className="text-[11px] text-ink-2 mt-3">
           {tr('t10misc.marketing.templateNote').replace('{businessName}', campaign.business.name)}
         </p>
       </Card>

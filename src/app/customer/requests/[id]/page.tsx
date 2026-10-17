@@ -43,10 +43,10 @@ export default async function CustomerRequestDetailPage({
             <Avatar name={req.business.name} logoUrl={req.business.logoUrl} />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
-                <h1 className="font-bold text-[15px] text-zinc-900 truncate">{req.business.name}</h1>
+                <h1 className="font-bold text-[15px] text-ink truncate">{req.business.name}</h1>
                 <BadgeCheck className="w-4 h-4 text-indigo-600 fill-indigo-100 shrink-0" />
               </div>
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-ink-2">
                 {req.service} · {tr(`customer.requests.status.${req.status}`)}
               </p>
             </div>
@@ -65,11 +65,11 @@ export default async function CustomerRequestDetailPage({
                     'max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm shadow-sm transition-transform duration-200 hover:scale-[1.01]',
                     mine
                       ? 'bg-indigo-600 text-white rounded-br-md shadow-indigo-600/20'
-                      : 'bg-zinc-100 text-zinc-800 rounded-bl-md'
+                      : 'bg-surface-2 text-ink rounded-bl-md'
                   )}
                 >
                   <p className="whitespace-pre-wrap">{msg.body}</p>
-                  <p className={cn('text-[10px] mt-1', mine ? 'text-indigo-200' : 'text-zinc-400')}>
+                  <p className={cn('text-[10px] mt-1', mine ? 'text-indigo-200' : 'text-ink-2')}>
                     {new Date(msg.createdAt).toLocaleString(locale === 'fr' ? 'fr-CA' : 'en-CA', { dateStyle: 'medium', timeStyle: 'short' })}
                   </p>
                 </div>
@@ -87,7 +87,7 @@ export default async function CustomerRequestDetailPage({
           maxLength={2000}
           placeholder={tr('customer.quote.writeMessage')}
           aria-label={tr('customer.quote.sendMessage')}
-          className="flex-1 min-h-[48px] rounded-2xl bg-white border border-zinc-200 px-4 text-[15px] outline-none transition-all focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 hover:border-zinc-300 shadow-sm"
+          className="flex-1 min-h-[48px] rounded-2xl bg-surface border border-line px-4 text-[15px] outline-none transition-all focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 hover:border-line-strong shadow-sm"
         />
         <button
           type="submit"

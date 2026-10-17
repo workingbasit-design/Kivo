@@ -34,7 +34,9 @@ function setupCanvas(canvas: HTMLCanvasElement): CanvasRenderingContext2D | null
   ctx.lineWidth = 2.5;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
-  ctx.strokeStyle = '#161616';
+  // Signature ink follows the theme token (canvas cannot use Tailwind classes).
+  const ink = getComputedStyle(document.documentElement).getPropertyValue('--ink').trim();
+  if (ink) ctx.strokeStyle = ink;
   return ctx;
 }
 
@@ -129,12 +131,12 @@ export default function SignClient({
     return (
       <Card className="p-8 text-center">
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100">
-          <svg viewBox="0 0 24 24" className="h-7 w-7 text-emerald-700" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+          <svg viewBox="0 0 24 24" className="h-7 w-7 text-ok" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
             <path d="M20 6 9 17l-5-5" />
           </svg>
         </div>
-        <h2 className="text-lg font-bold text-zinc-900">{s.signedTitle}</h2>
-        <p className="mt-2 text-xs leading-relaxed text-zinc-500">{s.legalLine}</p>
+        <h2 className="text-lg font-bold text-ink">{s.signedTitle}</h2>
+        <p className="mt-2 text-xs leading-relaxed text-ink-2">{s.legalLine}</p>
       </Card>
     );
   }
@@ -144,12 +146,12 @@ export default function SignClient({
   return (
     <Card className="p-5">
       {/* Draw / type mode toggle - labels reuse existing i18n keys in both languages. */}
-      <div className="mb-4 grid grid-cols-2 gap-1 rounded-lg bg-zinc-100 p-1">
+      <div className="mb-4 grid grid-cols-2 gap-1 rounded-lg bg-surface-2 p-1">
         <button
           type="button"
           onClick={() => setMode('draw')}
           className={`min-h-[44px] rounded-md px-3 py-2 text-sm font-semibold transition ${
-            mode === 'draw' ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500'
+            mode === 'draw' ? 'bg-surface text-ink shadow-sm' : 'text-ink-2'
           }`}
         >
           {s.signDrawHint}
@@ -158,7 +160,7 @@ export default function SignClient({
           type="button"
           onClick={() => setMode('type')}
           className={`min-h-[44px] rounded-md px-3 py-2 text-sm font-semibold transition ${
-            mode === 'type' ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-500'
+            mode === 'type' ? 'bg-surface text-ink shadow-sm' : 'text-ink-2'
           }`}
         >
           {s.signName}
@@ -169,7 +171,7 @@ export default function SignClient({
         <div>
           <canvas
             ref={canvasRef}
-            className="h-40 w-full touch-none rounded-lg border-2 border-dashed border-zinc-300 bg-white"
+            className="h-40 w-full touch-none rounded-lg border-2 border-dashed border-line-strong bg-surface"
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={endStroke}
@@ -180,15 +182,15 @@ export default function SignClient({
           <button
             type="button"
             onClick={clear}
-            className="mt-2 min-h-[44px] inline-flex items-center text-xs font-semibold text-zinc-500 underline underline-offset-2"
+            className="mt-2 min-h-[44px] inline-flex items-center text-xs font-semibold text-ink-2 underline underline-offset-2"
           >
             {s.signClear}
           </button>
         </div>
       ) : (
-        <div className="rounded-lg border-2 border-dashed border-zinc-300 bg-white px-4 py-6">
+        <div className="rounded-lg border-2 border-dashed border-line-strong bg-surface px-4 py-6">
           <p
-            className="truncate text-center text-3xl text-zinc-900"
+            className="truncate text-center text-3xl text-ink"
             style={{ fontFamily: '"Brush Script MT", "Segoe Script", cursive' }}
           >
             {name.trim() || '…'}
@@ -197,24 +199,24 @@ export default function SignClient({
       )}
 
       <label className="mt-4 block">
-        <span className="mb-1 block text-xs font-semibold text-zinc-700">{s.signName}</span>
+        <span className="mb-1 block text-xs font-semibold text-ink">{s.signName}</span>
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           maxLength={100}
           placeholder={signerNameHint ?? undefined}
-          className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-900 outline-none focus:border-ink focus:ring-1 focus:ring-ink"
+          className="w-full rounded-lg border border-line-strong bg-surface px-3 py-2.5 text-sm text-ink outline-none focus:border-asphalt focus:ring-1 focus:ring-ink"
         />
       </label>
 
       {status === 'error' && (
-        <div className="mt-4 rounded-lg bg-red-50 px-4 py-3">
-          <p className="text-sm font-semibold text-red-700">{s.errorGeneric}</p>
+        <div className="mt-4 rounded-lg bg-danger-bg px-4 py-3">
+          <p className="text-sm font-semibold text-danger">{s.errorGeneric}</p>
           <button
             type="button"
             onClick={() => setStatus('idle')}
-            className="mt-1 min-h-[44px] inline-flex items-center text-xs font-semibold text-red-600 underline underline-offset-2"
+            className="mt-1 min-h-[44px] inline-flex items-center text-xs font-semibold text-danger underline underline-offset-2"
           >
             {s.retry}
           </button>
@@ -225,12 +227,12 @@ export default function SignClient({
         type="button"
         onClick={sign}
         disabled={!nameOk || status === 'sending'}
-        className="mt-4 min-h-[52px] w-full rounded-lg bg-ink px-4 py-3 text-sm font-bold text-white transition disabled:opacity-40"
+        className="mt-4 min-h-[52px] w-full rounded-lg bg-asphalt px-4 py-3 text-sm font-bold text-white transition disabled:opacity-40"
       >
         {status === 'sending' ? s.signing : s.signButton}
       </button>
 
-      <p className="mt-4 text-center text-[11px] leading-relaxed text-zinc-400">{s.legalLine}</p>
+      <p className="mt-4 text-center text-[11px] leading-relaxed text-ink-2">{s.legalLine}</p>
     </Card>
   );
 }

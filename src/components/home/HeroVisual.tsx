@@ -36,11 +36,11 @@ function Chip({
         <span
           className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[13px] font-medium shadow-[0_10px_30px_-12px_rgba(0,0,0,0.25)] backdrop-blur ${
             accent
-              ? 'border-amber-200 bg-amber-50/90 text-amber-900'
-              : 'border-zinc-200 bg-white/90 text-zinc-700'
+              ? 'border-amber-200 bg-warn-bg/90 text-amber-900'
+              : 'border-line bg-surface/90 text-ink'
           }`}
         >
-          <Icon size={15} strokeWidth={1.8} className={accent ? 'text-amber-600' : 'text-ink'} />
+          <Icon size={15} strokeWidth={1.8} className={accent ? 'text-warn-text' : 'text-ink'} />
           {label}
         </span>
       </div>
@@ -65,7 +65,7 @@ export default function HeroVisual({ strings }: { strings: HeroVisualStrings }) 
       aria-label={strings.visualLabel}
       className="relative mx-auto w-full max-w-5xl aspect-[1200/430] select-none"
       style={{
-        backgroundImage: 'radial-gradient(circle, #e7e5e4 1px, transparent 1px)',
+        backgroundImage: 'radial-gradient(circle, var(--line) 1px, transparent 1px)',
         backgroundSize: '28px 28px',
         maskImage: 'radial-gradient(ellipse 90% 90% at 50% 50%, black 55%, transparent 100%)',
         WebkitMaskImage:
@@ -139,7 +139,7 @@ export default function HeroVisual({ strings }: { strings: HeroVisualStrings }) 
         style={{ '--ej-delay': '1100ms' } as CSSProperties}
       >
         <div className={styles.float} style={{ '--float-delay': '-2.2s' } as CSSProperties}>
-          <span className="inline-flex items-center gap-3 rounded-2xl border border-smoke bg-white/95 py-3 pl-3 pr-5 shadow-[0_20px_50px_-16px_rgba(22,22,22,0.4)] backdrop-blur">
+          <span className="inline-flex items-center gap-3 rounded-2xl border border-smoke bg-surface/95 py-3 pl-3 pr-5 shadow-[0_20px_50px_-16px_rgba(22,22,22,0.4)] backdrop-blur">
             <EveryJobLogo size={36} />
             <span className="text-left leading-tight">
               <span className="block text-[16px] font-semibold tracking-tight text-ink">

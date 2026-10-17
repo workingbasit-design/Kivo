@@ -155,7 +155,7 @@ export default async function LandingPage() {
               </Link>
               <Link
                 href="/register"
-                className="bg-ink text-white px-5 py-2.5 rounded-full text-[15px] font-medium hover:bg-graphite transition active:scale-95 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.4)]"
+                className="bg-asphalt text-white px-5 py-2.5 rounded-full text-[15px] font-medium hover:bg-graphite transition active:scale-95 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.4)]"
               >
                 {h('nav.signUp')}
               </Link>
@@ -170,7 +170,7 @@ export default async function LandingPage() {
           <HeroBackdrop />
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-12 md:pt-28 md:pb-16 text-center">
             <p
-              className="ej-hero-anim inline-flex items-center gap-2 text-[13px] font-medium text-graphite border border-smoke bg-white/70 backdrop-blur rounded-full px-4 py-1.5 mb-8"
+              className="ej-hero-anim inline-flex items-center gap-2 text-[13px] font-medium text-graphite border border-smoke bg-surface/70 backdrop-blur rounded-full px-4 py-1.5 mb-8"
               style={heroDelay(0)}
             >
               <span className="w-1.5 h-1.5 rounded-full bg-lime" aria-hidden />
@@ -200,7 +200,7 @@ export default async function LandingPage() {
             >
               <Link
                 href="/register"
-                className="group inline-flex items-center justify-center gap-2 bg-ink text-white px-8 py-3.5 rounded-full text-[17px] font-medium hover:bg-graphite transition active:scale-95 shadow-[0_16px_40px_-12px_rgba(22,22,22,0.5)]"
+                className="group inline-flex items-center justify-center gap-2 bg-asphalt text-white px-8 py-3.5 rounded-full text-[17px] font-medium hover:bg-graphite transition active:scale-95 shadow-[0_16px_40px_-12px_rgba(22,22,22,0.5)]"
               >
                 {h('hero.ctaStart')}
                 <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
@@ -212,7 +212,7 @@ export default async function LandingPage() {
                 {h('hero.ctaSee')}
               </Link>
             </div>
-            <p className="ej-hero-anim text-[13px] text-zinc-400" style={heroDelay(420)}>
+            <p className="ej-hero-anim text-[13px] text-ink-2" style={heroDelay(420)}>
               {h('hero.reassure')}
             </p>
           </div>
@@ -244,7 +244,7 @@ export default async function LandingPage() {
               <h2 className="text-4xl md:text-[56px] leading-[1.05] font-bold tracking-[-0.025em] mb-4">
                 {h('features.title1')}
                 <br />
-                <span className="text-zinc-400">{h('features.title2')}</span>
+                <span className="text-ink-2">{h('features.title2')}</span>
               </h2>
               <p className="text-lg md:text-[19px] text-graphite">{h('features.subtitle')}</p>
             </Reveal>
@@ -253,12 +253,12 @@ export default async function LandingPage() {
                 {FEATURE_GRID.map((f) => (
                   <div
                     key={f.key}
-                    className="group bg-white p-6 md:p-7 flex flex-col items-center text-center gap-3 hover:bg-smoke transition-colors"
+                    className="group bg-surface p-6 md:p-7 flex flex-col items-center text-center gap-3 hover:bg-smoke transition-colors"
                   >
                     <f.icon
                       size={26}
                       strokeWidth={1.5}
-                      className="text-zinc-800 transition-all duration-300 group-hover:text-ink group-hover:scale-110"
+                      className="text-ink transition-all duration-300 group-hover:text-ink group-hover:scale-110"
                     />
                     <span className="text-[13px] font-medium text-graphite group-hover:text-ink transition-colors">
                       {h(`features.${f.key}`)}
@@ -357,7 +357,7 @@ export default async function LandingPage() {
               <h2 className="text-4xl md:text-[56px] leading-[1.05] font-bold tracking-[-0.025em]">
                 {h('stats.title1')}
                 <br />
-                <span className="text-zinc-400">{h('stats.title2')}</span>
+                <span className="text-ink-2">{h('stats.title2')}</span>
               </h2>
             </Reveal>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-10 md:gap-8">
@@ -376,7 +376,7 @@ export default async function LandingPage() {
             <Reveal className="text-center mt-14">
               <Link
                 href="/register"
-                className="group inline-flex items-center justify-center gap-2 bg-ink text-white px-8 py-3.5 rounded-full text-[17px] font-medium hover:bg-graphite transition active:scale-95 shadow-[0_12px_32px_-12px_rgba(0,0,0,0.45)]"
+                className="group inline-flex items-center justify-center gap-2 bg-asphalt text-white px-8 py-3.5 rounded-full text-[17px] font-medium hover:bg-graphite transition active:scale-95 shadow-[0_12px_32px_-12px_rgba(0,0,0,0.45)]"
               >
                 {h('stats.cta')}
                 <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
@@ -392,7 +392,7 @@ export default async function LandingPage() {
               <h2 className="text-4xl md:text-[52px] leading-[1.05] font-bold tracking-[-0.025em] mb-4">
                 {h('steps.title1')}
                 <br />
-                <span className="text-zinc-400">{h('steps.title2')}</span>
+                <span className="text-ink-2">{h('steps.title2')}</span>
               </h2>
               <p className="text-lg text-graphite">{h('steps.subtitle')}</p>
             </Reveal>
@@ -401,12 +401,12 @@ export default async function LandingPage() {
                 <Reveal
                   key={s.n}
                   delay={i * 110}
-                  className="relative bg-white rounded-[24px] border border-smoke p-8 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_24px_56px_-20px_rgba(0,0,0,0.18)] hover:border-zinc-300"
+                  className="relative bg-surface rounded-[24px] border border-smoke p-8 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_24px_56px_-20px_rgba(0,0,0,0.18)] hover:border-line-strong"
                 >
                   <span className="absolute top-6 right-7 text-[64px] leading-none font-bold text-zinc-100 select-none">
                     {s.n}
                   </span>
-                  <div className="w-12 h-12 rounded-2xl bg-ink text-white flex items-center justify-center mb-5">
+                  <div className="w-12 h-12 rounded-2xl bg-asphalt text-white flex items-center justify-center mb-5">
                     <s.icon size={22} strokeWidth={1.6} />
                   </div>
                   <h3 className="text-[19px] font-semibold tracking-tight text-ink mb-2">
@@ -429,13 +429,13 @@ export default async function LandingPage() {
               <h2 className="text-4xl md:text-[52px] leading-[1.05] font-bold tracking-[-0.025em] mb-4">
                 {h('canada.title1')}
                 <br />
-                <span className="text-zinc-400">{h('canada.title2')}</span>
+                <span className="text-ink-2">{h('canada.title2')}</span>
               </h2>
               <p className="text-lg text-graphite">{h('canada.subtitle')}</p>
             </Reveal>
             <div className="max-w-4xl mx-auto">
               <Reveal delay={120}>
-                <div className="bg-white rounded-[24px] border border-smoke p-8 transition-shadow duration-300 hover:shadow-[0_16px_48px_-16px_rgba(0,0,0,0.12)]">
+                <div className="bg-surface rounded-[24px] border border-smoke p-8 transition-shadow duration-300 hover:shadow-[0_16px_48px_-16px_rgba(0,0,0,0.12)]">
                   <div className="flex items-center gap-3 mb-5">
                     <div className="w-11 h-11 rounded-2xl bg-smoke text-ink flex items-center justify-center">
                       <MapPin size={22} strokeWidth={1.6} />
@@ -448,7 +448,7 @@ export default async function LandingPage() {
                     {CANADA_POINTS.map((p) => (
                       <li key={p} className="flex items-start gap-3 text-[15px] text-graphite">
                         <span className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
-                          <Check size={12} className="text-emerald-700" />
+                          <Check size={12} className="text-ok" />
                         </span>
                         {p}
                       </li>
@@ -458,7 +458,7 @@ export default async function LandingPage() {
               </Reveal>
             </div>
             <Reveal delay={200}>
-              <p className="text-center text-[14px] text-zinc-400 mt-10 flex items-center justify-center gap-2">
+              <p className="text-center text-[14px] text-ink-2 mt-10 flex items-center justify-center gap-2">
                 <Languages size={15} /> {h('canada.footnote')}
               </p>
             </Reveal>
@@ -483,7 +483,7 @@ export default async function LandingPage() {
                   <div className="flex flex-col sm:flex-row gap-3">
                     <Link
                       href="/directory"
-                      className="group inline-flex items-center justify-center gap-2 bg-ink text-white px-6 py-3 rounded-full text-[15px] font-medium hover:bg-graphite transition active:scale-95"
+                      className="group inline-flex items-center justify-center gap-2 bg-asphalt text-white px-6 py-3 rounded-full text-[15px] font-medium hover:bg-graphite transition active:scale-95"
                     >
                       {h('directory.ctaExplore')}
                       <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
@@ -496,20 +496,20 @@ export default async function LandingPage() {
                     </Link>
                   </div>
                 </div>
-                <div className="bg-white rounded-[24px] border border-smoke p-6">
-                  <p className="text-[12px] font-semibold tracking-[0.14em] text-zinc-400 mb-4">
+                <div className="bg-surface rounded-[24px] border border-smoke p-6">
+                  <p className="text-[12px] font-semibold tracking-[0.14em] text-ink-2 mb-4">
                     {h('directory.cardTitle')}
                   </p>
                   <div className="space-y-3 text-[14px]">
                     <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-paper border border-smoke">
-                      <Search size={18} className="text-zinc-700 shrink-0" />
+                      <Search size={18} className="text-ink shrink-0" />
                       <p className="text-graphite">
                         {h('directory.card1Pre')}
                         <span className="font-semibold text-ink">{h('directory.card1Bold')}</span>
                       </p>
                     </div>
                     <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-paper border border-smoke">
-                      <Users size={18} className="text-zinc-700 shrink-0" />
+                      <Users size={18} className="text-ink shrink-0" />
                       <p className="text-graphite">
                         {h('directory.card2Pre')}
                         <span className="font-semibold text-ink">{h('directory.card2Bold')}</span>
@@ -545,12 +545,12 @@ export default async function LandingPage() {
             <div className="space-y-3">
               {FAQS.map((f, i) => (
                 <Reveal key={i} delay={i * 40}>
-                  <details className="group rounded-2xl border border-smoke bg-white/70 px-6 py-1 open:shadow-[0_12px_32px_-16px_rgba(22,22,22,0.25)] transition-shadow">
+                  <details className="group rounded-2xl border border-smoke bg-surface/70 px-6 py-1 open:shadow-[0_12px_32px_-16px_rgba(22,22,22,0.25)] transition-shadow">
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-[17px] font-semibold tracking-[-0.01em] [&::-webkit-details-marker]:hidden">
                       {f.q}
                       <span
                         aria-hidden
-                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink text-[18px] font-light text-lime transition-transform duration-300 group-open:rotate-45"
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-asphalt text-[18px] font-light text-lime transition-transform duration-300 group-open:rotate-45"
                       >
                         +
                       </span>
@@ -584,12 +584,12 @@ export default async function LandingPage() {
               </h2>
               <Link
                 href="/register"
-                className="group inline-flex items-center justify-center gap-2 bg-ink text-white px-9 py-4 rounded-full text-[17px] font-medium hover:bg-graphite transition active:scale-95 shadow-[0_16px_40px_-12px_rgba(22,22,22,0.5)]"
+                className="group inline-flex items-center justify-center gap-2 bg-asphalt text-white px-9 py-4 rounded-full text-[17px] font-medium hover:bg-graphite transition active:scale-95 shadow-[0_16px_40px_-12px_rgba(22,22,22,0.5)]"
               >
                 {h('finalCta.cta')}
                 <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
               </Link>
-              <p className="text-[13px] text-zinc-400 mt-5">{h('finalCta.note')}</p>
+              <p className="text-[13px] text-ink-2 mt-5">{h('finalCta.note')}</p>
             </Reveal>
           </div>
         </section>
@@ -627,7 +627,7 @@ export default async function LandingPage() {
             <p className="text-[14px] text-graphite">
               &copy; {new Date().getFullYear()} {h('footer.rightsSuffix')}
             </p>
-            <p className="text-[13px] text-zinc-400 mt-1">{h('footer.madeFor')}</p>
+            <p className="text-[13px] text-ink-2 mt-1">{h('footer.madeFor')}</p>
           </div>
         </div>
       </footer>

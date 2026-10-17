@@ -71,12 +71,12 @@ export function ProjectHeaderForm({
     return (
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="text-xl font-bold text-zinc-900 leading-tight">{project.title}</h1>
+          <h1 className="text-xl font-bold text-ink leading-tight">{project.title}</h1>
           {project.customerName && (
-            <p className="text-sm text-zinc-500 mt-0.5">{project.customerName}</p>
+            <p className="text-sm text-ink-2 mt-0.5">{project.customerName}</p>
           )}
           {project.description && (
-            <p className="text-sm text-zinc-600 mt-2 whitespace-pre-wrap">{project.description}</p>
+            <p className="text-sm text-ink-2 mt-2 whitespace-pre-wrap">{project.description}</p>
           )}
         </div>
         <button
@@ -93,13 +93,13 @@ export function ProjectHeaderForm({
   return (
     <div className="space-y-3">
       <div>
-        <label className="text-xs font-semibold text-zinc-600 block mb-1">
+        <label className="text-xs font-semibold text-ink-2 block mb-1">
           {t(locale, 'projects.titleLabel')}
         </label>
         <input value={title} onChange={(e) => setTitle(e.target.value)} className={inputClass} />
       </div>
       <div>
-        <label className="text-xs font-semibold text-zinc-600 block mb-1">
+        <label className="text-xs font-semibold text-ink-2 block mb-1">
           {t(locale, 'projects.descriptionLabel')}
         </label>
         <textarea
@@ -111,7 +111,7 @@ export function ProjectHeaderForm({
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-xs font-semibold text-zinc-600 block mb-1">
+          <label className="text-xs font-semibold text-ink-2 block mb-1">
             {t(locale, 'projects.status')}
           </label>
           <select value={status} onChange={(e) => setStatus(e.target.value)} className={selectClass}>
@@ -123,7 +123,7 @@ export function ProjectHeaderForm({
           </select>
         </div>
         <div>
-          <label className="text-xs font-semibold text-zinc-600 block mb-1">
+          <label className="text-xs font-semibold text-ink-2 block mb-1">
             {t(locale, 'projects.budgetLabel')}
           </label>
           <input
@@ -136,7 +136,7 @@ export function ProjectHeaderForm({
         </div>
       </div>
       {msg && (
-        <p className="text-sm text-emerald-700 font-medium" role="status">
+        <p className="text-sm text-ok font-medium" role="status">
           {msg}
         </p>
       )}
@@ -147,7 +147,7 @@ export function ProjectHeaderForm({
         <button
           type="button"
           onClick={() => setEditing(false)}
-          className="px-4 py-2.5 rounded-xl text-sm font-semibold text-zinc-600 hover:bg-zinc-100 min-h-[44px]"
+          className="px-4 py-2.5 rounded-xl text-sm font-semibold text-ink-2 hover:bg-surface-2 min-h-[44px]"
         >
           {t(locale, 'projects.cancel')}
         </button>

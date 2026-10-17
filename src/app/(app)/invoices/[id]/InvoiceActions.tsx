@@ -110,17 +110,17 @@ export default function InvoiceActions({
   return (
     <div className="space-y-4">
       {error && (
-        <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       {remaining > 0 && (
-        <form action={payAction} className="bg-zinc-50 border border-zinc-200/70 rounded-2xl p-4 space-y-3">
-          <h3 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
+        <form action={payAction} className="bg-surface-2 border border-line/70 rounded-2xl p-4 space-y-3">
+          <h3 className="text-sm font-bold text-ink flex items-center gap-2">
             <Wallet size={14} /> {t(locale, 't10money.invRecordPayment')}
-            <span className="text-xs font-semibold text-amber-700">
+            <span className="text-xs font-semibold text-warn-text">
               ({formatMoney(remaining, currency)} {t(locale, 't10money.invDue')})
             </span>
           </h3>
@@ -158,9 +158,9 @@ export default function InvoiceActions({
           <button type="submit" disabled={payPending} className={primaryBtnClass}>
             {payPending ? t(locale, 't10money.invRecording') : t(locale, 't10money.invRecordPayment')}
           </button>
-          <p className="text-[11px] text-zinc-500 leading-relaxed">
+          <p className="text-[11px] text-ink-2 leading-relaxed">
             {t(locale, 't10money.recordFullMarksPaid')}.{' '}
-            <span className="text-zinc-400">{t(locale, 't10money.invBookkeepingNote')}</span>
+            <span className="text-ink-2">{t(locale, 't10money.invBookkeepingNote')}</span>
           </p>
         </form>
       )}
@@ -197,7 +197,7 @@ export default function InvoiceActions({
                 <button
                   type="button"
                   onClick={() => setConfirmingDelete(true)}
-                  className="min-h-[44px] text-xs font-semibold text-rose-600 hover:text-rose-700 inline-flex items-center gap-1.5"
+                  className="min-h-[44px] text-xs font-semibold text-danger hover:text-danger inline-flex items-center gap-1.5"
                 >
                   <Trash2 size={13} /> {t(locale, 't10money.invDelete')}
                 </button>
@@ -227,8 +227,8 @@ export default function InvoiceActions({
           level (not in the .map() below): a useActionState button inside a
           list 500'd with React #441 on production. */}
       {payments.some((p) => p.status !== 'VOID') && (
-        <div className="border-t border-zinc-100 pt-3">
-          <p className="text-[11px] font-bold text-zinc-500 mb-2">
+        <div className="border-t border-line pt-3">
+          <p className="text-[11px] font-bold text-ink-2 mb-2">
             {t(locale, 't10money.invVoidPaymentSection')}
           </p>
           <ul className="space-y-2">
@@ -239,7 +239,7 @@ export default function InvoiceActions({
                   key={p.id}
                   className="flex items-center justify-between text-sm"
                 >
-                  <span className="font-semibold tabular-nums text-zinc-900">
+                  <span className="font-semibold tabular-nums text-ink">
                     {formatMoney(centsToDollars(p.amountCents), currency)}
                   </span>
                   <button
@@ -250,7 +250,7 @@ export default function InvoiceActions({
                       setVoidPaymentError(null);
                       setConfirmingVoidPayment(true);
                     }}
-                    className="text-[11px] font-semibold text-rose-600 hover:text-rose-700 underline underline-offset-2"
+                    className="text-[11px] font-semibold text-danger hover:text-danger underline underline-offset-2"
                   >
                     {t(locale, 't10money.invVoidPayment')}
                   </button>
@@ -294,7 +294,7 @@ export default function InvoiceActions({
         <div className="mt-4">
           <label
             htmlFor="void-payment-reason"
-            className="block text-xs font-bold text-zinc-700 mb-1.5"
+            className="block text-xs font-bold text-ink mb-1.5"
           >
             {t(locale, 't10money.invVoidReason')}
           </label>
@@ -309,7 +309,7 @@ export default function InvoiceActions({
             className={inputClass}
           />
           {!isValidVoidReason(voidPaymentReason) && voidPaymentReason.length > 0 && (
-            <p className="mt-1.5 text-[11px] text-amber-700">
+            <p className="mt-1.5 text-[11px] text-warn-text">
               {t(locale, 't10money.invVoidReasonShort')}
             </p>
           )}
@@ -346,7 +346,7 @@ function VoidInvoiceButton({ id, locale = 'en' }: { id: string; locale?: Locale 
           setReason('');
           setConfirming(true);
         }}
-        className="min-h-[44px] text-xs font-semibold text-rose-600 hover:text-rose-700 inline-flex items-center gap-1.5"
+        className="min-h-[44px] text-xs font-semibold text-danger hover:text-danger inline-flex items-center gap-1.5"
       >
         <Trash2 size={13} /> {t(locale, 't10money.invVoid')}
       </button>
@@ -370,7 +370,7 @@ function VoidInvoiceButton({ id, locale = 'en' }: { id: string; locale?: Locale 
         <div className="mt-4">
           <label
             htmlFor="void-reason"
-            className="block text-xs font-bold text-zinc-700 mb-1.5"
+            className="block text-xs font-bold text-ink mb-1.5"
           >
             {t(locale, 't10money.invVoidReason')}
           </label>
@@ -384,7 +384,7 @@ function VoidInvoiceButton({ id, locale = 'en' }: { id: string; locale?: Locale 
             className={inputClass}
           />
           {!reasonOk && reason.length > 0 && (
-            <p className="mt-1.5 text-[11px] text-amber-700">
+            <p className="mt-1.5 text-[11px] text-warn-text">
               {t(locale, 't10money.invVoidReasonShort')}
             </p>
           )}

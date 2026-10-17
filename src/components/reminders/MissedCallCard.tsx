@@ -62,12 +62,12 @@ export default function MissedCallCard({
   const smsHref = text && selected ? smsDraftLink(selected.phone, text) : '';
 
   return (
-    <div className="bg-white rounded-2xl border border-smoke shadow-sm p-4 sm:p-5">
+    <div className="bg-surface rounded-2xl border border-smoke shadow-sm p-4 sm:p-5">
       <div className="flex items-center gap-2 mb-1">
-        <span className="w-8 h-8 rounded-xl bg-ink text-lime flex items-center justify-center shrink-0">
+        <span className="w-8 h-8 rounded-xl bg-asphalt text-lime flex items-center justify-center shrink-0">
           <PhoneMissed size={16} />
         </span>
-        <h2 className="text-sm font-bold text-zinc-900">{title}</h2>
+        <h2 className="text-sm font-bold text-ink">{title}</h2>
       </div>
       <p className="text-xs text-graphite mb-4">{note}</p>
 
@@ -104,14 +104,14 @@ export default function MissedCallCard({
       </div>
 
       {error && (
-        <div className="mt-3 flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="mt-3 flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       {text && selected && (
-        <div className="mt-3 bg-ink rounded-2xl p-4">
+        <div className="mt-3 bg-asphalt rounded-2xl p-4">
           <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
             <p className="text-[11px] font-bold text-lime">
               {ui.draftReady} - {selected.name}
@@ -126,7 +126,7 @@ export default function MissedCallCard({
               {smsHref && (
                 <a
                   href={smsHref}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border bg-white border-smoke text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border bg-surface border-smoke text-ink-2 hover:bg-surface-2 hover:text-ink"
                 >
                   <Smartphone size={13} />
                   {ui.sms}

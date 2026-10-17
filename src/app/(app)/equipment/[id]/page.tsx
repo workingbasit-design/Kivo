@@ -32,13 +32,13 @@ export default async function EquipmentDetailPage({
       <div className="flex items-center justify-between">
         <Link
           href="/equipment"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-600 hover:text-zinc-900 min-h-[44px]"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-2 hover:text-ink min-h-[44px]"
         >
           <ArrowLeft size={16} /> {T('back')}
         </Link>
         <Link
           href={`/equipment/${eq.id}/edit`}
-          className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50 min-h-[44px]"
+          className="inline-flex items-center gap-1.5 rounded-xl border border-line px-4 py-2 text-sm font-semibold text-ink hover:bg-surface-2 min-h-[44px]"
         >
           <Pencil size={14} /> {T('edit')}
         </Link>

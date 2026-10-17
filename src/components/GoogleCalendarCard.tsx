@@ -46,26 +46,26 @@ export default function GoogleCalendarCard({
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-base font-bold text-zinc-900">{tr('integrations.calendarTitle')}</h2>
-        <p className="text-sm text-zinc-500 mt-1">{tr('integrations.calendarDesc')}</p>
+        <h2 className="text-base font-bold text-ink">{tr('integrations.calendarTitle')}</h2>
+        <p className="text-sm text-ink-2 mt-1">{tr('integrations.calendarDesc')}</p>
       </div>
 
-      <div className="flex items-center gap-3 rounded-2xl border border-zinc-200 px-4 py-3">
-        <CalendarDays size={20} className="text-zinc-400 shrink-0" />
+      <div className="flex items-center gap-3 rounded-2xl border border-line px-4 py-3">
+        <CalendarDays size={20} className="text-ink-2 shrink-0" />
         <div className="min-w-0 flex-1">
           {state.connected && !state.needsScope ? (
             <>
-              <p className="text-sm font-semibold text-zinc-900">{tr('integrations.calendarConnected')}</p>
+              <p className="text-sm font-semibold text-ink">{tr('integrations.calendarConnected')}</p>
               {state.lastSyncAt && (
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-ink-2">
                   {tr('integrations.lastUsed')}: {new Date(state.lastSyncAt).toLocaleString(locale === 'fr' ? 'fr-CA' : 'en-CA', { dateStyle: 'short', timeStyle: 'short' })}
                 </p>
               )}
             </>
           ) : state.needsScope ? (
-            <p className="text-sm text-amber-700">{tr('integrations.calendarNeedsScope')}</p>
+            <p className="text-sm text-warn-text">{tr('integrations.calendarNeedsScope')}</p>
           ) : (
-            <p className="text-sm text-zinc-500">{tr('integrations.calendarNotConnected')}</p>
+            <p className="text-sm text-ink-2">{tr('integrations.calendarNotConnected')}</p>
           )}
         </div>
         {state.connected && !state.needsScope && <Badge tone="success">Google</Badge>}

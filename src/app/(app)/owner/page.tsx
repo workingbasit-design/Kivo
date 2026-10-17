@@ -19,19 +19,19 @@ function HealthRing({ score, locale }: { score: number; locale: Locale }) {
   return (
     <div className="relative w-24 h-24 shrink-0">
       <svg viewBox="0 0 36 36" className="w-24 h-24 -rotate-90">
-        <circle cx="18" cy="18" r="15.5" fill="none" stroke="#e4e4e7" strokeWidth="4" />
+        <circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--line)" strokeWidth="4" />
         <circle
           cx="18"
           cy="18"
           r="15.5"
           fill="none"
-          stroke={score >= 70 ? "#16a34a" : score >= 40 ? "#d97706" : "#dc2626"}
+          stroke={score >= 70 ? "var(--ok)" : score >= 40 ? "var(--warn)" : "var(--danger)"}
           strokeWidth="4"
           strokeLinecap="round"
           strokeDasharray={`${score}, 100`}
         />
       </svg>
-      <span className="absolute inset-0 flex items-center justify-center text-2xl font-bold text-zinc-900">
+      <span className="absolute inset-0 flex items-center justify-center text-2xl font-bold text-ink">
         {score}
       </span>
     </div>
@@ -107,7 +107,7 @@ export default async function OwnerPage() {
 
       {/* 1. How is my business doing? */}
       <section>
-        <h2 className="text-xs font-bold text-zinc-500 mb-2 px-1">
+        <h2 className="text-xs font-bold text-ink-2 mb-2 px-1">
           {t(locale, "owner.questions.howDoing")}
         </h2>
         <Card className="p-5">
@@ -115,20 +115,20 @@ export default async function OwnerPage() {
             <div className="flex items-center gap-5">
               <HealthRing score={health.total} locale={locale} />
               <div className="flex-1 space-y-2 min-w-0">
-                <p className="text-sm font-bold text-zinc-900">
+                <p className="text-sm font-bold text-ink">
                   {t(locale, "owner.healthTitle")} · {health.total}{" "}
                   {t(locale, "owner.healthOutOf")}
                 </p>
                 {health.subs.map((s) => (
                   <div key={s.key} className="flex items-baseline justify-between gap-3">
-                    <p className="text-xs text-zinc-600 truncate">
+                    <p className="text-xs text-ink-2 truncate">
                       {t(locale, s.titleKey)}
-                      <span className="text-zinc-400">
+                      <span className="text-ink-2">
                         {" "}
                         · {fillTemplate(t(locale, s.explainKey), s.explainParams)}
                       </span>
                     </p>
-                    <p className="text-xs font-bold text-zinc-900 shrink-0 tabular-nums">
+                    <p className="text-xs font-bold text-ink shrink-0 tabular-nums">
                       {s.score != null ? s.score : "-"}
                     </p>
                   </div>
@@ -148,7 +148,7 @@ export default async function OwnerPage() {
       {/* 2. What needs my attention? */}
       <section>
         <div className="flex items-center justify-between mb-2 px-1">
-          <h2 className="text-xs font-bold text-zinc-500">
+          <h2 className="text-xs font-bold text-ink-2">
             {t(locale, "owner.questions.whatAttention")}
           </h2>
           <Link
@@ -159,7 +159,7 @@ export default async function OwnerPage() {
           </Link>
         </div>
         {attention.length > 0 ? (
-          <Card className="px-2 py-2 divide-y divide-zinc-100">
+          <Card className="px-2 py-2 divide-y divide-line">
             {attention.map((item) => (
               <AttentionRow
                 key={item.id}
@@ -183,17 +183,17 @@ export default async function OwnerPage() {
 
       {/* 3. Are we making money? - cash picture */}
       <section>
-        <h2 className="text-xs font-bold text-zinc-500 mb-2 px-1">
+        <h2 className="text-xs font-bold text-ink-2 mb-2 px-1">
           {t(locale, "owner.questions.makingMoney")}
         </h2>
         <div className="grid grid-cols-3 gap-3">
           {[
-            { label: t(locale, "owner.cashOutstanding"), value: stats ? money(stats.outstanding) : "-", tone: "text-amber-700" },
-            { label: t(locale, "owner.cashOverdue"), value: leaks.length ? money(leaks.find((l) => l.id === "overdue")?.amount ?? 0) : "-", tone: "text-red-700" },
-            { label: t(locale, "owner.cashBooked"), value: stats ? money(stats.bookedToday) : "-", tone: "text-zinc-900" },
+            { label: t(locale, "owner.cashOutstanding"), value: stats ? money(stats.outstanding) : "-", tone: "text-warn-text" },
+            { label: t(locale, "owner.cashOverdue"), value: leaks.length ? money(leaks.find((l) => l.id === "overdue")?.amount ?? 0) : "-", tone: "text-danger" },
+            { label: t(locale, "owner.cashBooked"), value: stats ? money(stats.bookedToday) : "-", tone: "text-ink" },
           ].map((c) => (
             <Card key={c.label} className="p-4">
-              <p className="text-[11px] font-semibold text-zinc-500">{c.label}</p>
+              <p className="text-[11px] font-semibold text-ink-2">{c.label}</p>
               <p className={`text-lg font-bold tabular-nums mt-1 ${c.tone}`}>{c.value}</p>
             </Card>
           ))}
@@ -202,16 +202,16 @@ export default async function OwnerPage() {
 
       {/* 4. Where are we losing money? */}
       <section>
-        <h2 className="text-xs font-bold text-zinc-500 mb-2 px-1">
+        <h2 className="text-xs font-bold text-ink-2 mb-2 px-1">
           {t(locale, "owner.questions.losingMoney")}
         </h2>
         {leaks.length > 0 ? (
           <Card className="p-5">
             <div className="flex items-center gap-3 mb-4">
-              <Droplets size={18} className="text-red-600" />
+              <Droplets size={18} className="text-danger" />
               <p className="text-sm">
-                <span className="font-bold text-zinc-900 tabular-nums">{money(leakTotal)}</span>{" "}
-                <span className="text-zinc-500">{t(locale, "leaks.totalAtRisk")}</span>
+                <span className="font-bold text-ink tabular-nums">{money(leakTotal)}</span>{" "}
+                <span className="text-ink-2">{t(locale, "leaks.totalAtRisk")}</span>
               </p>
             </div>
             <ul className="space-y-3">
@@ -219,26 +219,26 @@ export default async function OwnerPage() {
                 <li key={leak.id}>
                   <Link href={leak.href} className="flex items-center justify-between gap-3 group">
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-zinc-900 group-hover:underline underline-offset-2">
+                      <p className="text-sm font-semibold text-ink group-hover:underline underline-offset-2">
                         {t(locale, leak.titleKey)}
                         {!leak.measured && (
-                          <span className="ml-2 text-[10px] font-bold text-zinc-400">
+                          <span className="ml-2 text-[10px] font-bold text-ink-2">
                             {t(locale, "scenarios.estimateLabel")}
                           </span>
                         )}
                       </p>
-                      <p className="text-xs text-zinc-500">
+                      <p className="text-xs text-ink-2">
                         {fillTemplate(t(locale, leak.detailKey), leak.detailParams)}
                       </p>
                     </div>
-                    <p className="text-sm font-bold text-zinc-900 tabular-nums shrink-0">
+                    <p className="text-sm font-bold text-ink tabular-nums shrink-0">
                       {money(leak.amount)}
                     </p>
                   </Link>
                 </li>
               ))}
             </ul>
-            <p className="text-[11px] text-zinc-400 mt-4">
+            <p className="text-[11px] text-ink-2 mt-4">
               {t(locale, "leaks.measuredNote")} {t(locale, "leaks.estimateNote")}
             </p>
           </Card>
@@ -255,25 +255,25 @@ export default async function OwnerPage() {
 
       {/* 5. What should I do tomorrow? */}
       <section>
-        <h2 className="text-xs font-bold text-zinc-500 mb-2 px-1">
+        <h2 className="text-xs font-bold text-ink-2 mb-2 px-1">
           {t(locale, "owner.questions.tomorrow")}
         </h2>
         {tomorrowJobs.length > 0 ? (
-          <Card className="px-2 py-2 divide-y divide-zinc-100">
+          <Card className="px-2 py-2 divide-y divide-line">
             {tomorrowJobs.map((j) => (
               <Link
                 key={j.id}
                 href={`/jobs/${j.id}`}
-                className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-50 min-h-[56px]"
+                className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-surface-2 min-h-[56px]"
               >
-                <p className="text-xs font-bold text-zinc-900 tabular-nums w-14 shrink-0">
+                <p className="text-xs font-bold text-ink tabular-nums w-14 shrink-0">
                   {j.time || "-"}
                 </p>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-zinc-900 truncate">{j.title}</p>
-                  <p className="text-xs text-zinc-500 truncate">{j.customer.name}</p>
+                  <p className="text-sm font-semibold text-ink truncate">{j.title}</p>
+                  <p className="text-xs text-ink-2 truncate">{j.customer.name}</p>
                 </div>
-                <ArrowRight size={14} className="text-zinc-400 shrink-0" />
+                <ArrowRight size={14} className="text-ink-2 shrink-0" />
               </Link>
             ))}
           </Card>

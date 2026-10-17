@@ -85,25 +85,25 @@ export default function QuoteDepositCard({
 
   return (
     <Card className="p-6">
-      <h2 className="text-sm font-bold text-zinc-900 mb-1 flex items-center gap-2">
-        <HandCoins size={14} className="text-zinc-400" />
+      <h2 className="text-sm font-bold text-ink mb-1 flex items-center gap-2">
+        <HandCoins size={14} className="text-ink-2" />
         {t(locale, 'payments.depositTitle')}
       </h2>
-      <p className="text-xs text-zinc-500 mb-4">{t(locale, 'payments.depositOwnerHint')}</p>
+      <p className="text-xs text-ink-2 mb-4">{t(locale, 'payments.depositOwnerHint')}</p>
 
       {target > 0 && (
-        <div className="mb-4 rounded-xl bg-zinc-50 border border-zinc-200/70 px-3 py-2.5 text-xs">
+        <div className="mb-4 rounded-xl bg-surface-2 border border-line/70 px-3 py-2.5 text-xs">
           <ProgressBar value={collected} max={target} className="mb-2.5" />
-          <div className="flex justify-between font-semibold text-zinc-700">
+          <div className="flex justify-between font-semibold text-ink">
             <span>{t(locale, 'payments.depositRequired')}</span>
             <span>{formatMoney(target, 'CAD', locale)}</span>
           </div>
-          <div className="flex justify-between text-zinc-500 mt-1">
+          <div className="flex justify-between text-ink-2 mt-1">
             <span>{t(locale, 'payments.depositCollected')}</span>
             <span>{formatMoney(collected, 'CAD', locale)}</span>
           </div>
           {remaining > 0 && (
-            <div className="flex justify-between font-bold text-amber-700 mt-1">
+            <div className="flex justify-between font-bold text-warn-text mt-1">
               <span>{t(locale, 'payments.depositRemaining')}</span>
               <span>{formatMoney(remaining, 'CAD', locale)}</span>
             </div>
@@ -128,24 +128,24 @@ export default function QuoteDepositCard({
           {t(locale, 'messaging.saveSettings')}
         </button>
       </form>
-      {amtState.error && <p className="text-xs font-semibold text-rose-600 mb-3">{amtState.error}</p>}
+      {amtState.error && <p className="text-xs font-semibold text-danger mb-3">{amtState.error}</p>}
 
       {deposits.length > 0 && (
         <ul className="space-y-1.5 text-xs mb-4">
           {deposits.map((d) => (
-            <li key={d.id} className="flex flex-wrap items-center gap-x-2 rounded-lg bg-zinc-50 px-2.5 py-1.5">
-              <span className="font-bold text-zinc-800">{formatMoney(d.amount, 'CAD', locale)}</span>
-              <span className="text-zinc-500">{d.provider}</span>
-              <span className={`font-semibold ${d.status === 'FAILED' ? 'text-rose-600' : 'text-emerald-700'}`}>
+            <li key={d.id} className="flex flex-wrap items-center gap-x-2 rounded-lg bg-surface-2 px-2.5 py-1.5">
+              <span className="font-bold text-ink">{formatMoney(d.amount, 'CAD', locale)}</span>
+              <span className="text-ink-2">{d.provider}</span>
+              <span className={`font-semibold ${d.status === 'FAILED' ? 'text-danger' : 'text-ok'}`}>
                 {d.status}
               </span>
-              {d.note && <span className="text-zinc-400">· {d.note}</span>}
+              {d.note && <span className="text-ink-2">· {d.note}</span>}
               {d.receiptUrl && (
                 <a href={d.receiptUrl} target="_blank" rel="noreferrer" className="text-indigo-600 hover:underline font-semibold">
                   {t(locale, 'payments.receiptLink')}
                 </a>
               )}
-              <span className="ml-auto text-zinc-400">
+              <span className="ml-auto text-ink-2">
                 {new Date(d.createdAt).toLocaleDateString(locale === 'fr' ? 'fr-CA' : 'en-CA')}
               </span>
             </li>
@@ -158,7 +158,7 @@ export default function QuoteDepositCard({
           <Plus size={13} /> {t(locale, 'payments.recordManualDeposit')}
         </button>
       ) : (
-        <form action={recAction} className="space-y-3 rounded-xl border border-zinc-200/70 bg-zinc-50/60 p-3">
+        <form action={recAction} className="space-y-3 rounded-xl border border-line/70 bg-surface-2/60 p-3">
           <input type="hidden" name="quoteId" value={quoteId} />
           <div className="grid grid-cols-2 gap-3">
             <Field label={t(locale, 'payments.colAmount')}>
@@ -178,7 +178,7 @@ export default function QuoteDepositCard({
           <Field label={t(locale, 'payments.noteOptional')}>
             <input name="note" className={inputClass} maxLength={120} />
           </Field>
-          {recState.error && <p className="text-xs font-semibold text-rose-600">{recState.error}</p>}
+          {recState.error && <p className="text-xs font-semibold text-danger">{recState.error}</p>}
           <div className="flex gap-2">
             <button type="submit" disabled={recPending} className={primaryBtnClass}>
               {t(locale, 'payments.recordDepositButton')}

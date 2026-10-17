@@ -124,8 +124,8 @@ export default function SignPrepareClient({
             className={cn(
               'inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold border transition-colors',
               activeType === d.type
-                ? 'bg-zinc-900 text-white border-zinc-900'
-                : 'bg-white text-zinc-700 border-zinc-200 hover:border-zinc-400'
+                ? 'bg-asphalt text-white border-zinc-900'
+                : 'bg-surface text-ink border-line hover:border-zinc-400'
             )}
           >
             {d.icon} {s[d.labelKey]}
@@ -166,7 +166,7 @@ export default function SignPrepareClient({
                 type="button"
                 onClick={() => removeField(i)}
                 title={s.remove}
-                className="text-indigo-400 hover:text-rose-600 font-bold px-1"
+                className="text-indigo-400 hover:text-danger font-bold px-1"
               >
                 ×
               </button>
@@ -178,7 +178,7 @@ export default function SignPrepareClient({
       {/* Optional signer contact - the link is shared manually by the owner,
           so this is just a note stored on the request record. */}
       <div>
-        <label className="block text-xs font-bold text-zinc-700 mb-1.5">
+        <label className="block text-xs font-bold text-ink mb-1.5">
           {s.phone}
         </label>
         <input
@@ -187,11 +187,11 @@ export default function SignPrepareClient({
           maxLength={100}
           onChange={(e) => setContact(e.target.value)}
           placeholder={customerPhone ?? ''}
-          className="w-full max-w-sm px-3.5 py-2.5 rounded-xl border border-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900/10 focus:border-zinc-400"
+          className="w-full max-w-sm px-3.5 py-2.5 rounded-xl border border-line text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900/10 focus:border-zinc-400"
         />
       </div>
 
-      {error && <p className="text-xs font-semibold text-rose-600">{error}</p>}
+      {error && <p className="text-xs font-semibold text-danger">{error}</p>}
 
       <button
         type="button"
@@ -203,7 +203,7 @@ export default function SignPrepareClient({
         {sending ? '…' : s.sendLink}
       </button>
 
-      <p className="text-[11px] text-zinc-400">{s.legalLine}</p>
+      <p className="text-[11px] text-ink-2">{s.legalLine}</p>
     </div>
   );
 }
@@ -244,11 +244,11 @@ function SignShareSheet({
   }
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-6 space-y-4">
-      <h3 className="text-sm font-bold text-zinc-900">{s.shareTitle}</h3>
+    <div className="rounded-xl border border-line bg-surface p-6 space-y-4">
+      <h3 className="text-sm font-bold text-ink">{s.shareTitle}</h3>
 
       <div className="flex gap-2">
-        <p className="flex-1 min-w-0 px-3.5 py-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-xs font-mono text-zinc-700 break-all select-all">
+        <p className="flex-1 min-w-0 px-3.5 py-2.5 rounded-xl border border-line bg-surface-2 text-xs font-mono text-ink break-all select-all">
           {link}
         </p>
         <button type="button" onClick={copy} className={secondaryBtnClass}>
@@ -265,8 +265,8 @@ function SignShareSheet({
         />
       </div>
 
-      <p className="text-[11px] text-zinc-400">{s.shareHint}</p>
-      <p className="text-[11px] text-zinc-400">{s.legalLine}</p>
+      <p className="text-[11px] text-ink-2">{s.shareHint}</p>
+      <p className="text-[11px] text-ink-2">{s.legalLine}</p>
     </div>
   );
 }

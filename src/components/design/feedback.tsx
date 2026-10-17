@@ -41,7 +41,7 @@ export function Banner({ tone, title, message, action, onDismiss, className }: B
           type="button"
           onClick={onDismiss}
           aria-label="Dismiss"
-          className="shrink-0 min-h-[32px] min-w-[32px] inline-flex items-center justify-center rounded hover:bg-black/5 focus-visible:outline-2 focus-visible:outline-ej-focus"
+          className="shrink-0 min-h-[32px] min-w-[32px] inline-flex items-center justify-center rounded hover:bg-asphalt/5 focus-visible:outline-2 focus-visible:outline-ej-focus"
         >
           <X size={16} aria-hidden="true" />
         </button>
@@ -83,7 +83,7 @@ export function Toast({ message, actionLabel, onAction, onDismiss }: ToastProps)
           type="button"
           onClick={onDismiss}
           aria-label="Dismiss notification"
-          className="shrink-0 min-h-[32px] min-w-[32px] inline-flex items-center justify-center rounded hover:bg-white/10"
+          className="shrink-0 min-h-[32px] min-w-[32px] inline-flex items-center justify-center rounded hover:bg-surface/10"
         >
           <X size={16} aria-hidden="true" />
         </button>

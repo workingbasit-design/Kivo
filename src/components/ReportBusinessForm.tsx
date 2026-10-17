@@ -14,7 +14,7 @@ const REASONS = [
 ];
 
 const fieldClass =
-  'w-full min-h-[44px] rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-800 placeholder:text-zinc-400 outline-none focus:border-ink';
+  'w-full min-h-[44px] rounded-xl border border-line bg-surface px-3 py-2.5 text-sm text-ink placeholder:text-ink-2 outline-none focus:border-asphalt';
 
 export default function ReportBusinessForm({ slug }: { slug: string }) {
   const { t } = useResolvedT();
@@ -27,7 +27,7 @@ export default function ReportBusinessForm({ slug }: { slug: string }) {
     return (
       <div
         role="status"
-        className="flex items-start gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium rounded-xl px-3 py-2.5"
+        className="flex items-start gap-2 bg-ok-bg border border-emerald-200 text-ok text-xs font-medium rounded-xl px-3 py-2.5"
       >
         <CheckCircle2 size={14} className="mt-0.5 shrink-0" />
         <span>{t('t10misc.directory.reportThanks')}</span>
@@ -39,7 +39,7 @@ export default function ReportBusinessForm({ slug }: { slug: string }) {
     <form action={formAction} className="space-y-2.5">
       <input type="hidden" name="slug" value={slug} />
       <div>
-        <label htmlFor="report-reason" className="block text-xs font-bold text-zinc-700 mb-1">
+        <label htmlFor="report-reason" className="block text-xs font-bold text-ink mb-1">
           {t('t10misc.directory.reportReason')}
         </label>
         <select
@@ -85,7 +85,7 @@ export default function ReportBusinessForm({ slug }: { slug: string }) {
       {state?.error && (
         <div
           role="alert"
-          className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5"
+          className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5"
         >
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{state.error}</span>
@@ -94,7 +94,7 @@ export default function ReportBusinessForm({ slug }: { slug: string }) {
       <button
         type="submit"
         disabled={isPending}
-        className="inline-flex items-center gap-1.5 min-h-[44px] rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-700 text-xs font-bold px-4 py-2.5 transition-colors disabled:opacity-60"
+        className="inline-flex items-center gap-1.5 min-h-[44px] rounded-xl border border-line bg-surface hover:bg-surface-2 text-ink text-xs font-bold px-4 py-2.5 transition-colors disabled:opacity-60"
       >
         <Flag size={12} /> {isPending ? t('t10misc.directory.reportSending') : t('t10misc.directory.reportSubmit')}
       </button>

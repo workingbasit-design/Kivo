@@ -58,22 +58,22 @@ export default function WeatherStrip({
             <div
               key={d.dateISO}
               title={w ? `${d.label}: ${weatherLabel(w.code)}, ${w.lowC}-${w.highC}°C, ${w.precipProb}% rain` : d.label}
-              className="flex flex-col items-center rounded-xl bg-white/70 border border-white px-1 py-2"
+              className="flex flex-col items-center rounded-xl bg-surface/70 border border-white px-1 py-2"
             >
-              <span className="text-[10px] font-bold text-zinc-500">{d.label}</span>
+              <span className="text-[10px] font-bold text-ink-2">{d.label}</span>
               <Icon
                 size={18}
                 className={cn('my-1', w === null ? 'text-zinc-300' : rainy ? 'text-sky-500' : 'text-amber-500')}
               />
               {w ? (
                 <>
-                  <span className="text-xs font-bold text-zinc-900">
-                    {w.highC}°<span className="text-zinc-400 font-semibold">/{w.lowC}°</span>
+                  <span className="text-xs font-bold text-ink">
+                    {w.highC}°<span className="text-ink-2 font-semibold">/{w.lowC}°</span>
                   </span>
                   <span
                     className={cn(
                       'mt-0.5 inline-flex items-center gap-0.5 text-[10px] font-bold',
-                      rainy ? 'text-sky-600' : 'text-zinc-400'
+                      rainy ? 'text-sky-600' : 'text-ink-2'
                     )}
                   >
                     <Umbrella size={10} />

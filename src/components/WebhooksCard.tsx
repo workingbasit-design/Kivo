@@ -164,8 +164,8 @@ export default function WebhooksCard({
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-base font-bold text-zinc-900">{tr('integrations.webhooksTitle')}</h2>
-        <p className="text-sm text-zinc-500 mt-1">{tr('integrations.webhooksDesc')}</p>
+        <h2 className="text-base font-bold text-ink">{tr('integrations.webhooksTitle')}</h2>
+        <p className="text-sm text-ink-2 mt-1">{tr('integrations.webhooksDesc')}</p>
       </div>
 
       <div className="space-y-2">
@@ -177,7 +177,7 @@ export default function WebhooksCard({
           className={inputClass}
         />
         <div>
-          <p className="text-xs font-semibold text-zinc-600 mb-1.5">{tr('integrations.eventsLabel')}</p>
+          <p className="text-xs font-semibold text-ink-2 mb-1.5">{tr('integrations.eventsLabel')}</p>
           <div className="flex flex-wrap gap-1.5">
             {WEBHOOK_EVENTS.map((e) => (
               <button
@@ -187,8 +187,8 @@ export default function WebhooksCard({
                 aria-pressed={events.includes(e)}
                 className={`px-2.5 py-1.5 rounded-lg text-xs font-mono font-semibold border transition-colors ${
                   events.includes(e)
-                    ? 'bg-zinc-900 text-white border-zinc-900'
-                    : 'bg-white text-zinc-500 border-zinc-200'
+                    ? 'bg-asphalt text-white border-zinc-900'
+                    : 'bg-surface text-ink-2 border-line'
                 }`}
               >
                 {e}
@@ -208,21 +208,21 @@ export default function WebhooksCard({
       </div>
 
       {data.endpoints.length === 0 ? (
-        <p className="text-sm text-zinc-500">{tr('integrations.noEndpoints')}</p>
+        <p className="text-sm text-ink-2">{tr('integrations.noEndpoints')}</p>
       ) : (
-        <ul className="divide-y divide-zinc-100 rounded-2xl border border-zinc-200">
+        <ul className="divide-y divide-line rounded-2xl border border-line">
           {data.endpoints.map((ep) => (
             <li key={ep.id} className="px-4 py-3">
               <div className="flex items-center gap-3">
-                <Webhook size={18} className="text-zinc-400 shrink-0" />
+                <Webhook size={18} className="text-ink-2 shrink-0" />
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-zinc-900 truncate font-mono">{ep.url}</p>
-                  <p className="text-xs text-zinc-500 font-mono truncate">
+                  <p className="text-sm font-semibold text-ink truncate font-mono">{ep.url}</p>
+                  <p className="text-xs text-ink-2 font-mono truncate">
                     {subscribedEvents(ep.events).join(', ')}
                   </p>
                 </div>
                 {!ep.active && (
-                  <Badge className="!bg-zinc-200 !text-zinc-600">{tr('integrations.pause')}</Badge>
+                  <Badge className="!bg-line !text-ink-2">{tr('integrations.pause')}</Badge>
                 )}
                 <button
                   type="button"
@@ -236,7 +236,7 @@ export default function WebhooksCard({
                   type="button"
                   onClick={() => setRemoveId(ep.id)}
                   aria-label={tr('integrations.endpointRemoved')}
-                  className="p-2 rounded-xl text-zinc-400 hover:text-rose-600 hover:bg-rose-50 min-w-[44px] min-h-[44px] flex items-center justify-center"
+                  className="p-2 rounded-xl text-ink-2 hover:text-danger hover:bg-danger-bg min-w-[44px] min-h-[44px] flex items-center justify-center"
                 >
                   <Trash2 size={16} />
                 </button>
@@ -247,19 +247,19 @@ export default function WebhooksCard({
       )}
 
       <div>
-        <h3 className="text-sm font-bold text-zinc-900 mb-2">{tr('integrations.deliveriesTitle')}</h3>
+        <h3 className="text-sm font-bold text-ink mb-2">{tr('integrations.deliveriesTitle')}</h3>
         {data.deliveries.length === 0 ? (
-          <p className="text-sm text-zinc-500">{tr('integrations.noDeliveries')}</p>
+          <p className="text-sm text-ink-2">{tr('integrations.noDeliveries')}</p>
         ) : (
-          <ul className="divide-y divide-zinc-100 rounded-2xl border border-zinc-200 max-h-72 overflow-y-auto">
+          <ul className="divide-y divide-line rounded-2xl border border-line max-h-72 overflow-y-auto">
             {data.deliveries.map((d) => (
               <li key={d.id} className="flex items-center gap-2 px-4 py-2.5">
-                <code className="text-xs font-mono text-zinc-700">{d.event}</code>
+                <code className="text-xs font-mono text-ink">{d.event}</code>
                 {statusBadge(d.status, tr)}
-                <span className="text-xs text-zinc-400">
+                <span className="text-xs text-ink-2">
                   {d.attempts} {tr('integrations.attempts')}
                 </span>
-                <span className="text-xs text-zinc-400 ml-auto shrink-0">
+                <span className="text-xs text-ink-2 ml-auto shrink-0">
                   {new Date(d.createdAt).toLocaleString(locale === 'fr' ? 'fr-CA' : 'en-CA', {
                     dateStyle: 'short',
                     timeStyle: 'short',
@@ -271,9 +271,9 @@ export default function WebhooksCard({
         )}
       </div>
 
-      <div className="rounded-2xl bg-zinc-50 border border-zinc-200 p-4">
-        <h3 className="text-sm font-bold text-zinc-900 mb-2">{tr('integrations.zapierTitle')}</h3>
-        <ol className="list-decimal list-inside space-y-1.5 text-sm text-zinc-600">
+      <div className="rounded-2xl bg-surface-2 border border-line p-4">
+        <h3 className="text-sm font-bold text-ink mb-2">{tr('integrations.zapierTitle')}</h3>
+        <ol className="list-decimal list-inside space-y-1.5 text-sm text-ink-2">
           {[1, 2, 3, 4].map((n) => (
             <li key={n}>{tr(`integrations.zapierStep${n}`)}</li>
           ))}
@@ -282,9 +282,9 @@ export default function WebhooksCard({
 
       {/* One-time secret reveal */}
       <Dialog open={secret !== null} onClose={() => setSecret(null)} title={tr('integrations.secretTitle')} locale={locale}>
-        <p className="text-sm text-zinc-600 mb-3">{tr('integrations.secretDesc')}</p>
-        <div className="flex items-center gap-2 rounded-xl bg-zinc-100 px-3 py-2.5">
-          <code className="flex-1 text-xs font-mono text-zinc-900 break-all select-all">{secret}</code>
+        <p className="text-sm text-ink-2 mb-3">{tr('integrations.secretDesc')}</p>
+        <div className="flex items-center gap-2 rounded-xl bg-surface-2 px-3 py-2.5">
+          <code className="flex-1 text-xs font-mono text-ink break-all select-all">{secret}</code>
           <button type="button" onClick={copySecret} className={secondaryBtnClass + ' !px-3 !py-1.5 !min-h-0 text-xs shrink-0'}>
             {copied ? <Check size={14} /> : <Copy size={14} />}
           </button>
@@ -298,7 +298,7 @@ export default function WebhooksCard({
 
       {/* Remove confirmation */}
       <Dialog open={removeId !== null} onClose={() => setRemoveId(null)} title={tr('integrations.removeConfirm')} locale={locale}>
-        <p className="text-sm text-zinc-600 font-mono break-all">
+        <p className="text-sm text-ink-2 font-mono break-all">
           {data.endpoints.find((e) => e.id === removeId)?.url}
         </p>
         <div className="mt-5 flex gap-2 justify-end">

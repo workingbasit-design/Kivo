@@ -49,7 +49,7 @@ export default async function EquipmentPage({
         actions={
           <Link
             href="/equipment/new"
-            className="inline-flex items-center gap-1.5 rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-white hover:bg-graphite min-h-[44px]"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-asphalt px-4 py-2.5 text-sm font-semibold text-white hover:bg-graphite min-h-[44px]"
           >
             <Plus size={16} /> {T('add')}
           </Link>
@@ -68,7 +68,7 @@ export default async function EquipmentPage({
               !query ? (
                 <Link
                   href="/equipment/new"
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-white hover:bg-graphite min-h-[44px]"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-asphalt px-4 py-2.5 text-sm font-semibold text-white hover:bg-graphite min-h-[44px]"
                 >
                   <Plus size={16} /> {T('add')}
                 </Link>
@@ -79,16 +79,16 @@ export default async function EquipmentPage({
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {equipment.map((eq) => (
-            <Card key={eq.id} className="hover:border-zinc-300 transition-colors h-full">
+            <Card key={eq.id} className="hover:border-line-strong transition-colors h-full">
               <Link href={`/equipment/${eq.id}`} className="block">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-sm text-zinc-900 truncate">{eq.name}</p>
-                    <p className="text-xs text-zinc-500 truncate mt-0.5">
+                    <p className="font-semibold text-sm text-ink truncate">{eq.name}</p>
+                    <p className="text-xs text-ink-2 truncate mt-0.5">
                       {[eq.brand, eq.model].filter(Boolean).join(' · ') || T('noDetails')}
                     </p>
                     {eq.serial && (
-                      <p className="text-xs text-zinc-400 font-mono mt-1 truncate">
+                      <p className="text-xs text-ink-2 font-mono mt-1 truncate">
                         {T('serial')}: {eq.serial}
                       </p>
                     )}
@@ -96,7 +96,7 @@ export default async function EquipmentPage({
                   <ChevronRight size={16} className="text-zinc-300 shrink-0 mt-1" />
                 </div>
               </Link>
-              <div className="mt-3 pt-3 border-t border-zinc-100">
+              <div className="mt-3 pt-3 border-t border-line">
                 <Link
                   href={`/customers/${eq.customer.id}`}
                   className="text-xs font-medium text-lime-700 hover:text-lime-800 truncate block"

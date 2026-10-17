@@ -53,9 +53,9 @@ export default function EquipmentDetailClient({
   return (
     <div className="space-y-4">
       <Card>
-        <dl className="divide-y divide-zinc-100">
+        <dl className="divide-y divide-line">
           <div className="py-3 flex items-center justify-between gap-4">
-            <dt className="text-sm text-zinc-500">{T('customer')}</dt>
+            <dt className="text-sm text-ink-2">{T('customer')}</dt>
             <dd>
               <Link
                 href={`/customers/${equipment.customerId}`}
@@ -69,16 +69,16 @@ export default function EquipmentDetailClient({
             ([label, value]) =>
               value && (
                 <div key={label} className="py-3 flex items-center justify-between gap-4">
-                  <dt className="text-sm text-zinc-500">{label}</dt>
-                  <dd className="text-sm font-medium text-zinc-900 text-right">{value}</dd>
+                  <dt className="text-sm text-ink-2">{label}</dt>
+                  <dd className="text-sm font-medium text-ink text-right">{value}</dd>
                 </div>
               )
           )}
         </dl>
         {equipment.notes && (
-          <div className="mt-2 pt-3 border-t border-zinc-100">
-            <p className="text-sm text-zinc-500 mb-1">{T('notes')}</p>
-            <p className="text-sm text-zinc-900 whitespace-pre-wrap">{equipment.notes}</p>
+          <div className="mt-2 pt-3 border-t border-line">
+            <p className="text-sm text-ink-2 mb-1">{T('notes')}</p>
+            <p className="text-sm text-ink whitespace-pre-wrap">{equipment.notes}</p>
           </div>
         )}
       </Card>
@@ -87,7 +87,7 @@ export default function EquipmentDetailClient({
         type="button"
         onClick={() => setConfirming(true)}
         disabled={deleting}
-        className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50 min-h-[44px]"
+        className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 px-4 py-2.5 text-sm font-semibold text-danger hover:bg-danger-bg disabled:opacity-50 min-h-[44px]"
       >
         <Trash2 size={14} /> {deleting ? '…' : T('delete')}
       </button>

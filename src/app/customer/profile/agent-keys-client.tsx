@@ -79,11 +79,11 @@ export default function AgentKeysSection({ keys, s, locale }: { keys: KeyRow[]; 
       <div className="ej-anim-fade-up rounded-3xl border border-indigo-200 bg-indigo-50/60 p-5">
         <div className="flex items-center gap-2">
           <KeyRound className="h-5 w-5 text-indigo-600" />
-          <h2 className="font-bold text-zinc-900">{s.createdTitle}</h2>
+          <h2 className="font-bold text-ink">{s.createdTitle}</h2>
         </div>
-        <p className="mt-1 text-sm text-zinc-600">{s.createdBody}</p>
-        <div className="mt-3 flex items-center gap-2 rounded-2xl border border-indigo-200 bg-white p-3">
-          <code className="flex-1 break-all font-mono text-xs text-zinc-800">{genState.key}</code>
+        <p className="mt-1 text-sm text-ink-2">{s.createdBody}</p>
+        <div className="mt-3 flex items-center gap-2 rounded-2xl border border-indigo-200 bg-surface p-3">
+          <code className="flex-1 break-all font-mono text-xs text-ink">{genState.key}</code>
           <button
             type="button"
             onClick={copy}
@@ -96,7 +96,7 @@ export default function AgentKeysSection({ keys, s, locale }: { keys: KeyRow[]; 
         <button
           type="button"
           onClick={() => router.refresh()}
-          className="mt-3 w-full rounded-2xl bg-white px-4 py-2.5 text-sm font-semibold text-zinc-700 shadow-sm transition-shadow hover:shadow-md"
+          className="mt-3 w-full rounded-2xl bg-surface px-4 py-2.5 text-sm font-semibold text-ink shadow-sm transition-shadow hover:shadow-md"
         >
           {s.done}
         </button>
@@ -105,14 +105,14 @@ export default function AgentKeysSection({ keys, s, locale }: { keys: KeyRow[]; 
   }
 
   return (
-    <div className="ej-anim-fade-up rounded-3xl border border-zinc-200/80 bg-white p-5 shadow-sm" style={{ animationDelay: '160ms' }}>
+    <div className="ej-anim-fade-up rounded-3xl border border-line/80 bg-surface p-5 shadow-sm" style={{ animationDelay: '160ms' }}>
       <div className="flex items-center gap-2">
         <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-600/25">
           <Bot className="h-4.5 w-4.5" />
         </span>
-        <h2 className="font-bold text-zinc-900">{s.title}</h2>
+        <h2 className="font-bold text-ink">{s.title}</h2>
       </div>
-      <p className="mt-2 text-sm leading-relaxed text-zinc-600">{s.body}</p>
+      <p className="mt-2 text-sm leading-relaxed text-ink-2">{s.body}</p>
 
       <form action={genAction} className="mt-4 flex gap-2">
         <input
@@ -120,30 +120,30 @@ export default function AgentKeysSection({ keys, s, locale }: { keys: KeyRow[]; 
           maxLength={60}
           placeholder={s.labelPlaceholder}
           aria-label={s.labelPlaceholder}
-          className="min-w-0 flex-1 rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm text-zinc-900 outline-none transition-shadow focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/15"
+          className="min-w-0 flex-1 rounded-xl border border-line bg-surface px-4 py-2.5 text-sm text-ink outline-none transition-shadow focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/15"
         />
         <CreateButton label={s.create} pendingLabel={s.creating} />
       </form>
       {genState?.error === 'key-limit' && (
-        <p className="mt-2 text-sm text-amber-700">{s.limitReached}</p>
+        <p className="mt-2 text-sm text-warn-text">{s.limitReached}</p>
       )}
 
       <div className="mt-4 space-y-2">
-        {keys.length === 0 && <p className="text-sm text-zinc-500">{s.empty}</p>}
+        {keys.length === 0 && <p className="text-sm text-ink-2">{s.empty}</p>}
         {keys.map((k) => (
           <div
             key={k.id}
-            className="flex items-center gap-3 rounded-2xl border border-zinc-100 bg-zinc-50/60 px-4 py-3"
+            className="flex items-center gap-3 rounded-2xl border border-line bg-surface-2/60 px-4 py-3"
           >
-            <KeyRound className="h-4 w-4 shrink-0 text-zinc-400" />
+            <KeyRound className="h-4 w-4 shrink-0 text-ink-2" />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-zinc-800">{k.label}</p>
-              <p className="truncate font-mono text-xs text-zinc-400">
+              <p className="truncate text-sm font-semibold text-ink">{k.label}</p>
+              <p className="truncate font-mono text-xs text-ink-2">
                 {k.keyPrefix}… ·{' '}
                 {k.revokedAt ? (
-                  <span className="font-sans font-medium text-zinc-400">{s.revoked}</span>
+                  <span className="font-sans font-medium text-ink-2">{s.revoked}</span>
                 ) : (
-                  <span className="font-sans font-medium text-green-700">{s.active}</span>
+                  <span className="font-sans font-medium text-ok">{s.active}</span>
                 )}{' '}
                 · {k.lastUsedAt ? s.lastUsed.replace('{when}', fmtDate(k.lastUsedAt)) : s.neverUsed}
               </p>
@@ -161,7 +161,7 @@ export default function AgentKeysSection({ keys, s, locale }: { keys: KeyRow[]; 
                   <button
                     type="button"
                     onClick={() => setConfirmRevoke(null)}
-                    className="rounded-xl bg-zinc-200 px-3 py-1.5 text-xs font-semibold text-zinc-700"
+                    className="rounded-xl bg-line px-3 py-1.5 text-xs font-semibold text-ink"
                   >
                     ✕
                   </button>
@@ -171,7 +171,7 @@ export default function AgentKeysSection({ keys, s, locale }: { keys: KeyRow[]; 
                   type="button"
                   onClick={() => setConfirmRevoke(k.id)}
                   title={s.revokeConfirm}
-                  className="shrink-0 rounded-xl px-3 py-1.5 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50"
+                  className="shrink-0 rounded-xl px-3 py-1.5 text-xs font-semibold text-danger transition-colors hover:bg-danger-bg"
                 >
                   {s.revoke}
                 </button>
@@ -180,7 +180,7 @@ export default function AgentKeysSection({ keys, s, locale }: { keys: KeyRow[]; 
         ))}
       </div>
 
-      <p className="mt-3 flex items-start gap-1.5 text-xs leading-relaxed text-zinc-500">
+      <p className="mt-3 flex items-start gap-1.5 text-xs leading-relaxed text-ink-2">
         <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-indigo-500" />
         {s.revokeConfirm}
       </p>

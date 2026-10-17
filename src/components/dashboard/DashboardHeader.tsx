@@ -42,7 +42,7 @@ export default async function DashboardHeader({
       <h1 className="font-condensed text-[32px] leading-tight font-bold text-asphalt dark:text-white">
         <DateTimeText date={new Date()} variant="dateline" timezone={timezone ?? undefined} locale={locale} />
       </h1>
-      <p className="mt-1 text-[15px] text-zinc-600 dark:text-zinc-400">{sentence}</p>
+      <p className="mt-1 text-[15px] text-ink-2 dark:text-zinc-400">{sentence}</p>
     </header>
   );
 }

@@ -61,7 +61,7 @@ export default function ClockWidget({
   if (activeSession) {
     const elapsed = now - new Date(activeSession.clockInISO).getTime();
     return (
-      <div className="bg-ink text-white rounded-2xl p-5 shadow-sm">
+      <div className="bg-asphalt text-white rounded-2xl p-5 shadow-sm">
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0">
             <p className="text-[11px] font-bold text-white/50 mb-1 flex items-center gap-1.5">
@@ -92,7 +92,7 @@ export default function ClockWidget({
             disabled={isPending}
             className={cn(
               secondaryBtnClass,
-              '!bg-ink !border-ink !text-white hover:!bg-graphite !py-3 !px-5 !text-sm shrink-0'
+              '!bg-asphalt !border-asphalt !text-white hover:!bg-graphite !py-3 !px-5 !text-sm shrink-0'
             )}
           >
             <Square size={14} />
@@ -116,8 +116,8 @@ export default function ClockWidget({
           <Timer size={16} />
         </div>
         <div>
-          <h2 className="text-sm font-bold text-zinc-900">{t('t10work.clockTitle')}</h2>
-          <p className="text-xs text-zinc-500">{t('t10work.clockSubtitle')}</p>
+          <h2 className="text-sm font-bold text-ink">{t('t10work.clockTitle')}</h2>
+          <p className="text-xs text-ink-2">{t('t10work.clockSubtitle')}</p>
         </div>
       </div>
       <div className="flex flex-col sm:flex-row gap-2">
@@ -140,7 +140,7 @@ export default function ClockWidget({
         </button>
       </div>
       {error && (
-        <div className="mt-3 flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="mt-3 flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{error}</span>
         </div>

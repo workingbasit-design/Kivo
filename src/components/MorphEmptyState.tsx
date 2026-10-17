@@ -42,7 +42,7 @@ export default function MorphEmptyState({
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             className="absolute inset-0 rounded-3xl bg-gradient-to-br from-zinc-100 to-zinc-200 flex items-center justify-center"
           >
-            <Icon size={32} className="text-zinc-400" />
+            <Icon size={32} className="text-ink-2" />
           </motion.div>
         </AnimatePresence>
       </div>
@@ -54,8 +54,8 @@ export default function MorphEmptyState({
           exit={{ opacity: 0, y: -8 }}
           transition={{ duration: 0.2 }}
         >
-          <h3 className="text-base font-bold text-zinc-900 mb-1">{title}</h3>
-          {description && <p className="text-sm text-zinc-500 max-w-[280px]">{description}</p>}
+          <h3 className="text-base font-bold text-ink mb-1">{title}</h3>
+          {description && <p className="text-sm text-ink-2 max-w-[280px]">{description}</p>}
         </motion.div>
       </AnimatePresence>
       {action && <div className="mt-4">{action}</div>}

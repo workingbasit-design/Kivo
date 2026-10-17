@@ -64,7 +64,7 @@ export default async function SignPreparePage({
     <div className="space-y-6 max-w-3xl">
       <Link
         href={`/quotes/${quote.id}`}
-        className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-800"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-2 hover:text-ink"
       >
         <ArrowLeft size={14} /> {L('common.back')}
       </Link>
@@ -96,15 +96,15 @@ export default async function SignPreparePage({
         }}
       >
         {/* The quote as a signable document. Tap it to place the selected field. */}
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 md:p-8">
-          <div className="border-b border-zinc-100 pb-5 mb-5">
-            <p className="text-[11px] font-bold text-zinc-400">
+        <div className="rounded-xl border border-line bg-surface p-6 md:p-8">
+          <div className="border-b border-line pb-5 mb-5">
+            <p className="text-[11px] font-bold text-ink-2">
               {quote.business.name}
             </p>
-            <h2 className="text-xl font-bold text-zinc-900 mt-1">
+            <h2 className="text-xl font-bold text-ink mt-1">
               {quote.number} · {quote.title}
             </h2>
-            <p className="text-xs text-zinc-500 mt-1">
+            <p className="text-xs text-ink-2 mt-1">
               {locale === 'fr'
                 ? `Préparé le ${formatDateShort(quote.createdAt)} pour ${quote.customer.name}`
                 : `Prepared ${formatDateShort(quote.createdAt)} for ${quote.customer.name}`}
@@ -112,14 +112,14 @@ export default async function SignPreparePage({
           </div>
 
           <dl className="space-y-1.5 text-sm">
-            <div className="flex justify-between text-zinc-600">
+            <div className="flex justify-between text-ink-2">
               <dt>Subtotal</dt>
               <dd className="font-semibold">
                 {formatMoney(subtotal, 'CAD')}
               </dd>
             </div>
             {taxLines.map((l) => (
-              <div key={l.name} className="flex justify-between text-zinc-600">
+              <div key={l.name} className="flex justify-between text-ink-2">
                 <dt>
                   {l.name} {l.rate}%
                 </dt>
@@ -127,8 +127,8 @@ export default async function SignPreparePage({
               </div>
             ))}
             <div className="flex justify-between text-base pt-1">
-              <dt className="font-bold text-zinc-900">Total</dt>
-              <dd className="font-bold text-zinc-900">
+              <dt className="font-bold text-ink">Total</dt>
+              <dd className="font-bold text-ink">
                 {formatMoney(totalDollars, 'CAD')}
               </dd>
             </div>

@@ -24,7 +24,7 @@ export default async function ChecklistTemplatesPage() {
     <div className="space-y-6 max-w-3xl">
       <Link
         href="/settings"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-500 hover:text-zinc-900"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-2 hover:text-ink"
       >
         <ArrowLeft size={14} /> {t(locale, 'jobops.templates.backToSettings')}
       </Link>

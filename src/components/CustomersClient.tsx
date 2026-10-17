@@ -117,7 +117,7 @@ export default function CustomersClient({
 
   const chipClass = (active: boolean) =>
     `min-h-[44px] inline-flex items-center text-xs font-bold rounded-full px-4 transition-colors ${
-      active ? 'bg-ink text-white' : 'bg-white text-zinc-600 border border-zinc-200 hover:border-zinc-300'
+      active ? 'bg-asphalt text-white' : 'bg-surface text-ink-2 border border-line hover:border-line-strong'
     }`;
 
   return (
@@ -125,7 +125,7 @@ export default function CustomersClient({
       <div className="relative max-w-md">
         <Search
           size={16}
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none"
+          className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-2 pointer-events-none"
         />
         <input
           type="search"
@@ -133,7 +133,7 @@ export default function CustomersClient({
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t(locale, 'customers.searchPlaceholder')}
           aria-label={t(locale, 'customers.searchPlaceholder')}
-          className={`${inputClass} !pl-11 !rounded-full !bg-white shadow-sm`}
+          className={`${inputClass} !pl-11 !rounded-full !bg-surface shadow-sm`}
         />
       </div>
 
@@ -190,7 +190,7 @@ export default function CustomersClient({
         </Card>
       ) : (
         <>
-          <p className="text-xs font-semibold text-zinc-500">
+          <p className="text-xs font-semibold text-ink-2">
             {countLabel}
             {activeTag ? ` ${fill(L('custListTagged'), { tag: activeTag })}` : ''}
             {query.trim() ? ` ${fill(L('custListMatching'), { q: query.trim() })}` : ''}
@@ -208,7 +208,7 @@ export default function CustomersClient({
             )}
           </p>
           <Card className="!p-0 overflow-hidden">
-            <ul className="divide-y divide-zinc-100">
+            <ul className="divide-y divide-line">
               {filtered.map((c, i) => (
                 <li
                   key={c.id}
@@ -217,17 +217,17 @@ export default function CustomersClient({
                 >
                   <Link
                     href={`/customers/${c.id}`}
-                    className="flex items-center gap-3.5 px-4 sm:px-5 py-3.5 hover:bg-zinc-50 active:bg-zinc-100 transition-colors min-h-[72px]"
+                    className="flex items-center gap-3.5 px-4 sm:px-5 py-3.5 hover:bg-surface-2 active:bg-surface-2 transition-colors min-h-[72px]"
                   >
                     <Avatar name={c.name} />
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm text-zinc-900 truncate">{c.name}</p>
+                      <p className="font-semibold text-sm text-ink truncate">{c.name}</p>
                       {c.phone ? (
-                        <p className="text-xs text-zinc-500 truncate flex items-center gap-1 mt-0.5">
+                        <p className="text-xs text-ink-2 truncate flex items-center gap-1 mt-0.5">
                           <Phone size={11} aria-hidden /> {c.phone}
                         </p>
                       ) : (
-                        <p className="text-xs text-zinc-400 mt-0.5">{L('custListNoPhone')}</p>
+                        <p className="text-xs text-ink-2 mt-0.5">{L('custListNoPhone')}</p>
                       )}
                       {(c.tags ?? []).length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1.5">
@@ -240,10 +240,10 @@ export default function CustomersClient({
                       )}
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="font-bold text-sm text-zinc-900 tabular-nums">
+                      <p className="font-bold text-sm text-ink tabular-nums">
                         <MoneyText dollars={c.revenue} locale={locale} />
                       </p>
-                      <p className="text-[11px] text-zinc-500">
+                      <p className="text-[11px] text-ink-2">
                         {fill(L(c.jobCount === 1 ? 'custListJobOne' : 'custListJobMany'), {
                           count: c.jobCount,
                         })}

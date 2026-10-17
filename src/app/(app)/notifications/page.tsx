@@ -19,12 +19,12 @@ import {
 export const metadata = { title: 'Notifications | EveryJob' };
 
 const TYPE_ICON_BG: Record<string, string> = {
-  job_tomorrow: 'bg-blue-100 text-blue-700',
-  job_soon: 'bg-amber-100 text-amber-700',
-  invoice_overdue: 'bg-red-100 text-red-700',
+  job_tomorrow: 'bg-blue-100 text-info',
+  job_soon: 'bg-amber-100 text-warn-text',
+  invoice_overdue: 'bg-red-100 text-danger',
   quote_expiring: 'bg-purple-100 text-purple-700',
   booking_new: 'bg-lime-100 text-lime-800',
-  payment_recorded: 'bg-emerald-100 text-emerald-700',
+  payment_recorded: 'bg-emerald-100 text-ok',
 };
 
 function timeAgo(createdAt: Date, locale: Locale): string {
@@ -50,14 +50,14 @@ function NotificationRow({
     <div
       className={`flex items-start gap-3 rounded-2xl border p-4 transition-colors ${
         unread
-          ? 'border-ink/20 bg-white shadow-[0_8px_24px_-16px_rgba(22,22,22,0.4)]'
-          : 'border-smoke bg-white/60'
+          ? 'border-asphalt/20 bg-surface shadow-[0_8px_24px_-16px_rgba(22,22,22,0.4)]'
+          : 'border-smoke bg-surface/60'
       }`}
     >
       <span
         aria-hidden
         className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
-          TYPE_ICON_BG[n.type] ?? 'bg-zinc-100 text-zinc-600'
+          TYPE_ICON_BG[n.type] ?? 'bg-surface-2 text-ink-2'
         }`}
       >
         <Bell size={16} />
@@ -70,7 +70,7 @@ function NotificationRow({
               <span className="ml-2 inline-block h-2 w-2 rounded-full bg-lime align-middle" aria-label={t(locale, 'notifications.unread')} />
             )}
           </p>
-          <span className="shrink-0 text-xs text-zinc-400">{timeAgo(n.createdAt, locale)}</span>
+          <span className="shrink-0 text-xs text-ink-2">{timeAgo(n.createdAt, locale)}</span>
         </div>
         <p className="mt-0.5 text-sm text-graphite">{body}</p>
         <div className="mt-2 flex items-center gap-2 flex-wrap">
