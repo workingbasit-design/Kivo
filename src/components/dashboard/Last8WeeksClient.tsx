@@ -32,14 +32,14 @@ export default function Last8WeeksClient({
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        className="inline-flex min-h-[44px] items-center px-1 text-[14px] font-semibold text-asphalt underline underline-offset-2 dark:text-zinc-300"
+        className="inline-flex min-h-[44px] items-center px-1 text-[14px] font-semibold text-asphalt underline underline-offset-2 dark:text-ink-2"
       >
         {open ? hideLabel : showLabel}
       </button>
       {open && (
         <table className="mt-2 w-full text-left text-[13px]">
           <thead>
-            <tr className="border-b border-line text-ink-2 dark:border-white/10 dark:text-zinc-400">
+            <tr className="border-b border-line text-ink-2 dark:border-hero-ink/10 dark:text-ink-2">
               <th scope="col" className="py-2 pr-2 font-medium">{weekLabel}</th>
               <th scope="col" className="py-2 pr-2 text-right font-medium">{collectedLabel}</th>
               <th scope="col" className="py-2 text-right font-medium">{invoicedLabel}</th>
@@ -47,14 +47,14 @@ export default function Last8WeeksClient({
           </thead>
           <tbody>
             {weeks.map((w) => (
-              <tr key={w.key} className="border-b border-line last:border-0 dark:border-white/5">
-                <th scope="row" className="py-2 pr-2 font-medium text-asphalt dark:text-white">
+              <tr key={w.key} className="border-b border-line last:border-0 dark:border-hero-ink/5">
+                <th scope="row" className="py-2 pr-2 font-medium text-asphalt dark:text-hero-ink">
                   {w.key}
                 </th>
-                <td className="py-2 pr-2 text-right tabular-nums text-asphalt dark:text-zinc-200">
+                <td className="py-2 pr-2 text-right tabular-nums text-asphalt dark:text-ink-2">
                   {formatMoney(w.collected, null, locale)}
                 </td>
-                <td className="py-2 text-right tabular-nums text-asphalt dark:text-zinc-200">
+                <td className="py-2 text-right tabular-nums text-asphalt dark:text-ink-2">
                   {formatMoney(w.invoiced, null, locale)}
                 </td>
               </tr>

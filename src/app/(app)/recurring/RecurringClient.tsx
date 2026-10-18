@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import Link from 'next/link';
 import { Plus, Repeat, Clock, MapPin } from '@/components/icons';
-import { PageHeader, Card, EmptyState, Badge, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
+
 import { formatDateShort, formatJobTime, cn } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import { t, type Locale } from '@/lib/i18n';
 import RecurringRowActions from './RecurringRowActions';
 import GenerateDueJobsButton from './GenerateDueJobsButton';
+import { PageHeader, EmptyState, Button, Chip, Card } from '@/components/kit';
 
 const FILTERS = ['ALL', 'active', 'paused'] as const;
 type Filter = (typeof FILTERS)[number];
@@ -75,20 +75,18 @@ export default function RecurringClient({
     <div className="space-y-5">
       <PageHeader
         title={T('recurTitle')}
-        subtitle={
+        summary={
           dueCount > 0
             ? `${plansLabel} · ${T('recurDueNow').replace('{count}', String(dueCount))}`
             : plansLabel
         }
-        actions={
-          <>
-            <GenerateDueJobsButton />
-            <Link href="/recurring/new" className={primaryBtnClass}>
-              <Plus size={16} /> {T('recurNewPlan')}
-            </Link>
-          </>
-        }
+        actionLabel={T('recurNewPlan')}
+        actionHref="/recurring/new"
+        actionIcon={Plus}
       />
+      <div className="flex flex-wrap gap-2">
+        <GenerateDueJobsButton />
+      </div>
 
       {/* Filter tabs */}
       <div role="tablist" aria-label={T('recurTitle')} className="flex items-center gap-1.5">
@@ -102,7 +100,7 @@ export default function RecurringClient({
             className={cn(
               'px-4 min-h-[44px] inline-flex items-center rounded-lg text-xs font-semibold whitespace-nowrap transition-colors border',
               activeFilter === f
-                ? 'bg-asphalt text-white border-asphalt'
+                ? 'bg-asphalt text-hero-ink border-asphalt'
                 : 'bg-surface text-ink-2 border-line hover:bg-surface-2'
             )}
           >
@@ -114,7 +112,7 @@ export default function RecurringClient({
       {filtered.length === 0 ? (
         <Card>
           <EmptyState
-            icon={<Repeat size={24} />}
+            icon={Repeat}
             title={
               activeFilter === 'ALL'
                 ? T('recurEmptyAll')
@@ -122,23 +120,23 @@ export default function RecurringClient({
                   ? T('recurEmptyActive')
                   : T('recurEmptyPaused')
             }
-            description={
+            text={
               activeFilter === 'ALL'
                 ? T('recurEmptyDescAll')
                 : T('recurEmptyDescFiltered')
             }
-            action={
-              activeFilter === 'ALL' ? (
-                <Link href="/recurring/new" className={primaryBtnClass}>
-                  <Plus size={16} /> {T('recurCreateFirst')}
-                </Link>
-              ) : (
-                <button type="button" onClick={() => switchFilter('ALL')} className={secondaryBtnClass}>
-                  {T('recurShowAll')}
-                </button>
-              )
-            }
           />
+          <div className="flex justify-center pb-10 -mt-6">
+            {activeFilter === 'ALL' ? (
+              <Button href="/recurring/new" variant="primary">
+                <Plus size={16} /> {T('recurCreateFirst')}
+              </Button>
+            ) : (
+              <Button variant="secondary" onClick={() => switchFilter('ALL')}>
+                {T('recurShowAll')}
+              </Button>
+            )}
+          </div>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -146,15 +144,14 @@ export default function RecurringClient({
             <Card
               key={plan.id}
               className={cn('p-5 ej-row-in', !plan.active && 'opacity-70')}
-              style={{ '--row-delay': `${Math.min(i, 8) * 45}ms` } as React.CSSProperties}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-bold text-ink text-sm">{plan.title}</h3>
-                    <Badge tone={plan.active ? 'success' : 'neutral'}>
+                    <Chip tone={plan.active ? 'ok' : 'neutral'}>
                       {plan.active ? T('recurActive') : T('recurPaused')}
-                    </Badge>
+                    </Chip>
                   </div>
                   <p className="text-xs text-ink-2 mt-1">
                     {plan.customer.name} · {freqLabel(plan.frequency)}

@@ -205,7 +205,7 @@ export default function CommandPalette({ locale = "en" }: { locale?: Locale }) {
             type="button"
             onClick={close}
             aria-label={locale === "fr" ? "Fermer la recherche" : "Close search"}
-            className="ej-liquid ej-spring shrink-0 rounded-xl p-2 text-ink-2 bg-surface/60 backdrop-blur-md saturate-150 ring-1 ring-inset ring-zinc-900/10 hover:text-ink focus-visible:outline-2 focus-visible:outline-lime"
+            className="ej-liquid ej-spring shrink-0 rounded-xl p-2 text-ink-2 bg-surface/60 backdrop-blur-md saturate-150 ring-1 ring-inset ring-ink/10 hover:text-ink focus-visible:outline-2 focus-visible:outline-hivis"
           >
             <X size={16} />
           </button>
@@ -231,7 +231,7 @@ export default function CommandPalette({ locale = "en" }: { locale?: Locale }) {
                 )}
               >
                 {e.smart ? (
-                  <Sparkles size={16} className="text-lime-600 shrink-0" />
+                  <Sparkles size={16} className="text-ink shrink-0" />
                 ) : e.action ? (
                   <Plus size={16} className="text-ink-2 shrink-0" />
                 ) : (

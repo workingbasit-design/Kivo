@@ -3,7 +3,7 @@
 import React, { useActionState, useState } from 'react';
 import { AlertCircle, CalendarClock, Link2, RefreshCw, ShieldOff } from '@/components/icons';
 import CopyButton from '@/components/CopyButton';
-import { inputClass, secondaryBtnClass } from '@/components/ui';
+import { Button, DateField } from '@/components/kit';
 import type { ActionResult } from '@/app/actions/invoices';
 
 type ShareState = {
@@ -108,13 +108,13 @@ export default function ShareTokenManager({
       </p>
 
       {error && (
-        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-line text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{error}</span>
         </div>
       )}
       {okMsg && (
-        <div className="bg-ok-bg border border-emerald-200 text-ok text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="bg-ok-bg border border-line text-ok text-xs font-medium rounded-xl px-3 py-2.5">
           {okMsg}
         </div>
       )}
@@ -131,22 +131,18 @@ export default function ShareTokenManager({
           <form action={expiryFormAction} className="flex flex-wrap items-end gap-2">
             <input type="hidden" name="tokenId" value={tokenId ?? ''} />
             <div className="flex-1 min-w-[160px]">
-              <label className="block text-[11px] font-semibold text-ink-2 mb-1">
-                Link expires (optional)
-              </label>
-              <input
-                type="date"
+              <DateField
+                label="Link expires (optional)"
                 name="expiresAt"
                 value={expiresAt}
                 onChange={(e) => setExpiresAt(e.target.value)}
                 min={new Date().toISOString().slice(0, 10)}
-                className={inputClass}
               />
             </div>
-            <button type="submit" disabled={expiryPending} className={secondaryBtnClass}>
+            <Button type="submit" variant="secondary" disabled={expiryPending} className="mb-[18px]">
               <CalendarClock size={13} />
               {expiryPending ? 'Saving…' : expiresAt ? 'Set expiry' : 'Clear expiry'}
-            </button>
+            </Button>
           </form>
           {expiresAt && (
             <p className="text-[11px] text-ink-2">
@@ -156,31 +152,33 @@ export default function ShareTokenManager({
 
           <div className="flex flex-wrap gap-2 pt-1">
             {confirming !== 'regen' ? (
-              <button
+              <Button
                 type="button"
+                variant="secondary"
                 onClick={() => setConfirming('regen')}
-                className={secondaryBtnClass}
               >
                 <RefreshCw size={13} /> Regenerate link
-              </button>
+              </Button>
             ) : (
-              <form action={regenFormAction} className="flex items-center gap-2 bg-warn-bg border border-amber-200 rounded-xl px-3 py-2">
+              <form action={regenFormAction} className="flex items-center gap-2 bg-warn-bg border border-warn-line rounded-xl px-3 py-2">
                 <input type="hidden" name={field} value={docId} />
-                <span className="text-xs text-amber-800 font-medium">Old link stops working. Continue?</span>
-                <button
+                <span className="text-xs text-warn-text font-medium">Old link stops working. Continue?</span>
+                <Button
                   type="submit"
+                  variant="danger"
+                  sm
                   disabled={regenPending}
-                  className="text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 disabled:opacity-60 px-3 py-1.5 rounded-lg transition-colors"
                 >
                   {regenPending ? 'Working…' : 'Yes, regenerate'}
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  variant="ghost"
+                  sm
                   onClick={() => setConfirming(null)}
-                  className="text-xs font-semibold text-ink-2 hover:text-ink px-2 py-1.5"
                 >
                   Keep
-                </button>
+                </Button>
               </form>
             )}
 
@@ -193,23 +191,25 @@ export default function ShareTokenManager({
                 <ShieldOff size={13} /> Revoke link
               </button>
             ) : (
-              <form action={revokeFormAction} className="flex items-center gap-2 bg-danger-bg border border-rose-200 rounded-xl px-3 py-2">
+              <form action={revokeFormAction} className="flex items-center gap-2 bg-danger-bg border border-line rounded-xl px-3 py-2">
                 <input type="hidden" name={field} value={docId} />
                 <span className="text-xs text-danger font-medium">Revoke this link?</span>
-                <button
+                <Button
                   type="submit"
+                  variant="danger"
+                  sm
                   disabled={revokePending}
-                  className="text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-60 px-3 py-1.5 rounded-lg transition-colors"
                 >
                   {revokePending ? 'Revoking…' : 'Yes, revoke'}
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  variant="ghost"
+                  sm
                   onClick={() => setConfirming(null)}
-                  className="text-xs font-semibold text-ink-2 hover:text-ink px-2 py-1.5"
                 >
                   Keep
-                </button>
+                </Button>
               </form>
             )}
           </div>
@@ -217,10 +217,10 @@ export default function ShareTokenManager({
       ) : (
         <form action={regenFormAction}>
           <input type="hidden" name={field} value={docId} />
-          <button type="submit" disabled={regenPending} className={secondaryBtnClass}>
+          <Button type="submit" variant="secondary" disabled={regenPending}>
             <Link2 size={13} />
             {regenPending ? 'Creating…' : 'Create share link'}
-          </button>
+          </Button>
         </form>
       )}
     </div>

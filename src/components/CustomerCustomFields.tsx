@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { Tag, Plus, Pencil, Trash2, Loader2, Check } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
-import { Card, Field, inputClass, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
+import { Button, Card, Input } from '@/components/kit';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import {
   listFieldDefs,
@@ -111,17 +111,17 @@ export default function CustomerCustomFields({
           <h3 className="font-bold text-sm text-ink">{L('customfields.title')}</h3>
         </div>
         {!adding && (
-          <button
-            type="button"
-            onClick={() => {
-              setAdding(true);
-              setNewName('');
-              setError(null);
-            }}
-            className={secondaryBtnClass}
-          >
-            <Plus size={13} /> {L('customfields.addField')}
-          </button>
+            <Button
+              variant="secondary"
+              type="button"
+              onClick={() => {
+                setAdding(true);
+                setNewName('');
+                setError(null);
+              }}
+            >
+              <Plus size={13} /> {L('customfields.addField')}
+            </Button>
         )}
       </div>
 
@@ -129,7 +129,7 @@ export default function CustomerCustomFields({
         <p className="text-xs text-ink-2 mb-4">{L('customfields.hint')}</p>
 
         {error && (
-          <p className="text-xs font-semibold text-danger bg-danger-bg border border-rose-200 rounded-xl px-3 py-2.5 mb-4">
+          <p className="text-xs font-semibold text-danger bg-danger-bg border border-danger/30 rounded-xl px-3 py-2.5 mb-4">
             {error}
           </p>
         )}
@@ -141,24 +141,25 @@ export default function CustomerCustomFields({
               onChange={(e) => setNewName(e.target.value)}
               maxLength={40}
               placeholder={L('customfields.fieldNamePlaceholder')}
-              className={`${inputClass} flex-1 min-w-[160px]`}
+              className="input flex-1 min-w-[160px]"
               aria-label={L('customfields.fieldName')}
             />
-            <button
+            <Button
+              variant="primary"
               type="button"
               disabled={busy}
               onClick={() => startTransition(addDef)}
-              className={primaryBtnClass}
+              className="disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {L('customfields.addField')}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="secondary"
               type="button"
               onClick={() => setAdding(false)}
-              className={secondaryBtnClass}
             >
               {L('customfields.cancel')}
-            </button>
+            </Button>
           </div>
         )}
 
@@ -175,37 +176,36 @@ export default function CustomerCustomFields({
                         value={renameValue}
                         onChange={(e) => setRenameValue(e.target.value)}
                         maxLength={40}
-                        className={inputClass}
+                        className="input"
                         aria-label={L('customfields.fieldName')}
                       />
-                      <button
+                      <Button
+                        variant="secondary"
                         type="button"
                         disabled={busy}
                         onClick={() => startTransition(() => renameDef(def.id))}
-                        className={secondaryBtnClass}
+                        className="disabled:opacity-60 disabled:cursor-not-allowed"
                       >
                         {L('customfields.rename')}
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="secondary"
                         type="button"
                         onClick={() => setRenamingId(null)}
-                        className={secondaryBtnClass}
                       >
                         {L('customfields.cancel')}
-                      </button>
+                      </Button>
                     </div>
                   ) : (
-                    <Field label={def.name}>
-                      <input
-                        value={values[def.id] ?? ''}
-                        onChange={(e) =>
-                          setValues((prev) => ({ ...prev, [def.id]: e.target.value }))
-                        }
-                        maxLength={500}
-                        placeholder={L('customfields.valuePlaceholder')}
-                        className={inputClass}
-                      />
-                    </Field>
+                    <Input
+                      label={def.name}
+                      value={values[def.id] ?? ''}
+                      onChange={(e) =>
+                        setValues((prev) => ({ ...prev, [def.id]: e.target.value }))
+                      }
+                      maxLength={500}
+                      placeholder={L('customfields.valuePlaceholder')}
+                    />
                   )}
                 </div>
                 {renamingId !== def.id && (

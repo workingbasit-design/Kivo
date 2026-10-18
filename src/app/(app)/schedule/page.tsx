@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { CalendarDays, AlertTriangle } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { PageHeader, Card, primaryBtnClass } from '@/components/ui';
-import { Banner } from '@/components/design/feedback';
+import { Card, Banner } from '@/components/kit';
+
 import ScheduleClient from '@/components/ScheduleClient';
 import WeekStrip, { type WeekStripDay } from '@/components/schedule/WeekStrip';
 import WeatherStrip, { type StripDay } from '@/components/WeatherStrip';
@@ -16,6 +16,7 @@ import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { getJobCounts, getOverdueJobs, getScheduleWeekJobs } from '@/lib/job-queries';
 import { centsToDollars } from '@/lib/money';
+import { PageHeader} from '@/components/kit';
 
 /** Monday of the week containing `d` (local time). */
 function mondayOf(d: Date): Date {
@@ -161,12 +162,10 @@ export default async function SchedulePage({
     <div className="space-y-6">
       <PageHeader
         title={t(locale, 'schedule.title')}
-        subtitle={weekLabel}
-        actions={
-          <Link href="/jobs/new" className={primaryBtnClass}>
-            <CalendarDays size={16} /> {T('schedNewJobBtn')}
-          </Link>
-        }
+        summary={weekLabel}
+        actionLabel={T('schedNewJobBtn')}
+        actionHref="/jobs/new"
+        actionIcon={CalendarDays}
       />
 
       {stripDays.length > 0 && (
@@ -179,9 +178,9 @@ export default async function SchedulePage({
       {overdueJobs.length > 0 && (
         <section aria-label={T('schedOverdueTitle')}>
           <Banner
-            tone="warning"
+            tone="warn"
             title={`${T('schedOverdueTitle')} (${overdueJobs.length})`}
-            message={T('schedOverdueDesc')}
+            text={T('schedOverdueDesc')}
           />
           <ul className="mt-3 bg-ej-bg border border-ej-border rounded-xl overflow-hidden divide-y divide-ej-border">
             {overdueJobs.map((j) => (

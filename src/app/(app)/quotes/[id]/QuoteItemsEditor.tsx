@@ -4,9 +4,10 @@ import { useActionState, useEffect, useRef, useState } from 'react';
 import { Pencil } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
-import { Card, secondaryBtnClass, primaryBtnClass } from '@/components/ui';
+import { Card, Button } from '@/components/kit';
 import LineItemsEditor from '@/components/LineItemsEditor';
 import { updateQuoteItems, type ActionResult } from '@/app/actions/quotes';
+import { } from '@/components/kit';
 
 /**
  * Fires a toast exactly once per server-action result. Minimal inline
@@ -59,9 +60,9 @@ export default function QuoteItemsEditor({
   return (
     <Card className="p-6">
       {!open ? (
-        <button type="button" onClick={() => setOpen(true)} className={secondaryBtnClass}>
+        <Button type="button" onClick={() => setOpen(true)} variant="secondary">
           <Pencil size={13} /> {t(locale, 'quoteItems.editItems')}
-        </button>
+        </Button>
       ) : (
         <form action={formAction} className="space-y-4">
           <input type="hidden" name="id" value={quoteId} />
@@ -78,16 +79,16 @@ export default function QuoteItemsEditor({
             <p className="text-xs font-semibold text-danger">{state.error}</p>
           )}
           <div className="flex gap-2">
-            <button type="submit" disabled={isPending} className={primaryBtnClass}>
+            <Button type="submit" disabled={isPending} variant="primary">
               {isPending ? t(locale, 'quoteItems.saving') : t(locale, 'quoteItems.saveItems')}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={() => setOpen(false)}
-              className={secondaryBtnClass}
+              variant="secondary"
             >
               {t(locale, 'quoteItems.cancel')}
-            </button>
+            </Button>
           </div>
         </form>
       )}

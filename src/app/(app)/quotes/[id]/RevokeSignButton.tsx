@@ -66,7 +66,7 @@ export default function RevokeSignButton({
 
       {confirming && (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-zinc-950/50 p-4"
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-ink/50 p-4"
           role="dialog"
           aria-modal="true"
           aria-label={revokeText}
@@ -90,7 +90,7 @@ export default function RevokeSignButton({
             </div>
             <p className="mt-2 text-xs text-ink-2 leading-relaxed">{confirmText}</p>
             {error && (
-              <p className="mt-3 text-xs font-semibold text-danger bg-danger-bg border border-rose-200 rounded-lg px-2.5 py-2">
+              <p className="mt-3 text-xs font-semibold text-danger bg-danger-bg border border-line rounded-lg px-2.5 py-2">
                 {error}
               </p>
             )}
@@ -107,7 +107,7 @@ export default function RevokeSignButton({
                 type="button"
                 onClick={doRevoke}
                 disabled={busy}
-                className="flex-1 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white text-xs font-bold min-h-[44px] py-2.5 rounded-xl transition-colors"
+                className="flex-1 bg-danger hover:bg-danger disabled:opacity-50 text-hero-ink text-xs font-bold min-h-[44px] py-2.5 rounded-xl transition-colors"
               >
                 {busy ? '…' : revokeText}
               </button>

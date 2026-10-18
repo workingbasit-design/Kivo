@@ -3,7 +3,7 @@
 import React, { useActionState, useEffect, useRef, useState } from 'react';
 import { AlertCircle, Save } from '@/components/icons';
 import { toast } from 'sonner';
-import { Field, inputClass, primaryBtnClass } from '@/components/ui';
+import { Button, Input, Select, Textarea } from '@/components/kit';
 import { toISODateLocal } from '@/lib/utils';
 import { currencySymbol, formatMoney } from '@/lib/money';
 import { RECURRING_FREQUENCIES } from '@/lib/validations';
@@ -97,140 +97,112 @@ export default function RecurringForm({
     <form action={formAction} className="space-y-5">
       {initial?.id && <input type="hidden" name="id" value={initial.id} />}
 
-      <Field label={T('recurFormTitleLabel')}>
-        <input
-          name="title"
-          required
-          autoFocus
-          defaultValue={initial?.title ?? ''}
-          placeholder={T('recurFormTitlePlaceholder')}
-          maxLength={200}
-          className={inputClass}
-        />
-      </Field>
+      <Input
+        label={T('recurFormTitleLabel')}
+        name="title"
+        required
+        autoFocus
+        defaultValue={initial?.title ?? ''}
+        placeholder={T('recurFormTitlePlaceholder')}
+        maxLength={200}
+      />
 
-      <Field label={jobsL('customer')}>
-        <select
-          name="customerId"
-          required
-          defaultValue={initial?.customerId ?? customers[0]?.id ?? ''}
-          className={inputClass}
-        >
-          {customers.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
-      </Field>
+      <Select
+        label={jobsL('customer')}
+        name="customerId"
+        required
+        defaultValue={initial?.customerId ?? customers[0]?.id ?? ''}
+        options={customers.map((c) => ({ value: c.id, label: c.name }))}
+      />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Field label={T('recurFormFrequency')} hint={T('recurFormFrequencyHint')}>
-          <select
-            name="frequency"
-            required
-            defaultValue={initial?.frequency ?? 'MONTHLY'}
-            className={inputClass}
-          >
-            {RECURRING_FREQUENCIES.map((f) => (
-              <option key={f} value={f}>
-                {freqLabel(f)}
-              </option>
-            ))}
-          </select>
-        </Field>
+        <Select
+          label={T('recurFormFrequency')}
+          hint={T('recurFormFrequencyHint')}
+          name="frequency"
+          required
+          defaultValue={initial?.frequency ?? 'MONTHLY'}
+          options={RECURRING_FREQUENCIES.map((f) => ({ value: f, label: freqLabel(f) }))}
+        />
 
-        <Field
+        <Input
           label={initial?.id ? T('recurFormNextRun') : T('recurFormFirstRun')}
           hint={T('recurFormRunHint')}
-        >
-          <input
-            type="date"
-            name="startDate"
-            required
-            defaultValue={initial?.startDate ?? todayISO}
-            className={inputClass}
-          />
-        </Field>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Field label={T('recurFormService')} hint={T('recurFormServiceHint')}>
-          <select
-            onChange={(e) => handleServicePick(e.target.value)}
-            defaultValue=""
-            className={inputClass}
-          >
-            <option value="">{T('recurFormServicePick')}</option>
-            {services.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name} - {formatMoney(s.price, currency)}
-              </option>
-            ))}
-          </select>
-        </Field>
-
-        <Field label={T('recurFormPrice').replace('{symbol}', currencySymbol(currency))}>
-          <input
-            type="text"
-            inputMode="decimal"
-            pattern="[0-9]*\.?[0-9]*"
-            name="price"
-            required
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            placeholder={T('recurFormPricePlaceholder')}
-            className={inputClass}
-          />
-        </Field>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Field label={jobsL('time')}>
-          <input
-            type="text"
-            name="time"
-            defaultValue={initial?.time ?? ''}
-            placeholder="10:00 AM"
-            maxLength={30}
-            className={inputClass}
-          />
-        </Field>
-
-        <Field label={jobsL('address')}>
-          <input
-            type="text"
-            name="address"
-            defaultValue={initial?.address ?? ''}
-            placeholder={T('recurFormAddressPlaceholder')}
-            maxLength={500}
-            className={inputClass}
-          />
-        </Field>
-      </div>
-
-      <Field label={`${jobsL('notes')} (${T('formOptional')})`}>
-        <textarea
-          name="notes"
-          defaultValue={initial?.notes ?? ''}
-          rows={3}
-          maxLength={2000}
-          placeholder={T('recurFormNotesPlaceholder')}
-          className={inputClass}
+          type="date"
+          name="startDate"
+          required
+          defaultValue={initial?.startDate ?? todayISO}
         />
-      </Field>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Select
+          label={T('recurFormService')}
+          hint={T('recurFormServiceHint')}
+          onChange={(e) => handleServicePick(e.target.value)}
+          defaultValue=""
+          options={[
+            { value: '', label: T('recurFormServicePick') },
+            ...services.map((s) => ({
+              value: s.id,
+              label: `${s.name} - ${formatMoney(s.price, currency)}`,
+            })),
+          ]}
+        />
+
+        <Input
+          label={T('recurFormPrice').replace('{symbol}', currencySymbol(currency))}
+          type="text"
+          inputMode="decimal"
+          pattern="[0-9]*\.?[0-9]*"
+          name="price"
+          required
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          placeholder={T('recurFormPricePlaceholder')}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Input
+          label={jobsL('time')}
+          type="text"
+          name="time"
+          defaultValue={initial?.time ?? ''}
+          placeholder="10:00 AM"
+          maxLength={30}
+        />
+
+        <Input
+          label={jobsL('address')}
+          type="text"
+          name="address"
+          defaultValue={initial?.address ?? ''}
+          placeholder={T('recurFormAddressPlaceholder')}
+          maxLength={500}
+        />
+      </div>
+
+      <Textarea
+        label={`${jobsL('notes')} (${T('formOptional')})`}
+        name="notes"
+        defaultValue={initial?.notes ?? ''}
+        rows={3}
+        maxLength={2000}
+        placeholder={T('recurFormNotesPlaceholder')}
+      />
 
       {state.error && (
-        <div className="flex items-start gap-2 bg-danger-bg border border-red-200 text-danger text-xs font-medium rounded-xl px-4 py-3">
+        <div className="flex items-start gap-2 bg-danger-bg border border-line text-danger text-xs font-medium rounded-xl px-4 py-3">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           {state.error}
         </div>
       )}
 
-      <button type="submit" disabled={isPending} className={primaryBtnClass}>
+      <Button type="submit" variant="primary" disabled={isPending}>
         <Save size={14} />
         {isPending ? t(locale, 'common.saving') : submitLabel}
-      </button>
+      </Button>
     </form>
   );
 }

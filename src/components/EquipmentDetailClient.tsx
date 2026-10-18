@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Trash2 } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
-import { Card, Field } from '@/components/ui';
+import { Button, Card } from '@/components/kit';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { deleteEquipment } from '@/app/actions/equipment';
 
@@ -59,7 +59,7 @@ export default function EquipmentDetailClient({
             <dd>
               <Link
                 href={`/customers/${equipment.customerId}`}
-                className="text-sm font-semibold text-lime-700 hover:text-lime-800"
+                className="text-sm font-semibold text-info hover:opacity-80"
               >
                 {equipment.customerName}
               </Link>
@@ -83,14 +83,15 @@ export default function EquipmentDetailClient({
         )}
       </Card>
 
-      <button
+      <Button
+        variant="danger"
         type="button"
         onClick={() => setConfirming(true)}
         disabled={deleting}
-        className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 px-4 py-2.5 text-sm font-semibold text-danger hover:bg-danger-bg disabled:opacity-50 min-h-[44px]"
+        className="disabled:opacity-60 disabled:cursor-not-allowed"
       >
         <Trash2 size={14} /> {deleting ? '…' : T('delete')}
-      </button>
+      </Button>
       <ConfirmDialog
         open={confirming}
         title={T('deleteConfirmTitle')}

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import {
   ArrowLeft,
   ArrowRight,
@@ -22,6 +21,7 @@ import {
   type ConciergePro,
 } from '@/app/actions/concierge';
 import { buildConciergeMessage } from '@/lib/concierge';
+import { Button, Card, Textarea } from '@/components/kit';
 
 type Step = 'describe' | 'match' | 'preview' | 'done';
 
@@ -144,13 +144,6 @@ export default function ConciergeClient({
     setError(null);
   }
 
-  const inputCls =
-    'w-full min-h-[52px] rounded-2xl bg-surface border border-line px-4 text-[15px] text-ink placeholder:text-ink-2 outline-none shadow-sm transition-all focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100';
-  const btnPrimary =
-    'min-h-[52px] px-6 rounded-2xl bg-indigo-600 text-white text-[15px] font-bold shadow-sm shadow-indigo-600/20 transition-all hover:bg-indigo-700 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2';
-  const btnGhost =
-    'min-h-[52px] px-5 rounded-2xl bg-surface border border-line text-[15px] font-semibold text-ink transition-all hover:border-line-strong active:scale-[0.97] flex items-center justify-center gap-2';
-
   return (
     <div className="ej-anim-fade-up">
       {/* Header + step indicator */}
@@ -166,7 +159,7 @@ export default function ConciergeClient({
         )}
         <div>
           <h1 className="text-[22px] font-bold text-ink tracking-tight flex items-center gap-2">
-            <Sparkles size={20} className="text-indigo-600" />
+            <Sparkles size={20} className="text-ink" />
             {tr('customer.concierge.title')}
           </h1>
           <p className="text-[13px] text-ink-2 mt-0.5">
@@ -190,7 +183,7 @@ export default function ConciergeClient({
             <div
               key={i}
               className={`h-1.5 flex-1 rounded-full transition-colors ${
-                i <= stepIndex ? 'bg-indigo-600' : 'bg-line'
+                i <= stepIndex ? 'bg-ink' : 'bg-line'
               }`}
             />
           ))}
@@ -198,7 +191,10 @@ export default function ConciergeClient({
       )}
 
       {error && (
-        <div className="mb-4 rounded-2xl bg-danger-bg border border-rose-200 px-4 py-3 text-[14px] text-rose-800">
+        <div
+          role="alert"
+          className="mb-4 rounded-2xl bg-danger-bg border border-line px-4 py-3 text-[14px] font-medium text-danger"
+        >
           {error}
         </div>
       )}
@@ -206,36 +202,30 @@ export default function ConciergeClient({
       {/* STEP 1 - describe */}
       {step === 'describe' && (
         <div className="space-y-4">
-          <div>
-            <label htmlFor="cj-desc" className="block text-[14px] font-semibold text-ink mb-1.5">
-              {tr('customer.concierge.describeLabel')}
-            </label>
-            <textarea
-              id="cj-desc"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder={tr('customer.concierge.describePlaceholder')}
-              rows={4}
-              maxLength={1000}
-              className={`${inputCls} py-3.5 resize-none`}
-            />
-            <p className="text-[12px] text-ink-2 mt-1.5">{tr('customer.concierge.describeHint')}</p>
-          </div>
+          <Textarea
+            label={tr('customer.concierge.describeLabel')}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder={tr('customer.concierge.describePlaceholder')}
+            rows={4}
+            maxLength={1000}
+            hint={tr('customer.concierge.describeHint')}
+          />
           <div className="grid grid-cols-1 gap-3">
             <label className="relative block">
-              <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-2" />
+              <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-2 z-10" />
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={tr('customer.concierge.nameLabel')}
                 maxLength={100}
                 aria-label={tr('customer.concierge.nameLabel')}
-                className={`${inputCls} pl-11`}
+                className="input !pl-11"
               />
             </label>
             <div className="grid grid-cols-2 gap-3">
               <label className="relative block">
-                <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-2" />
+                <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-2 z-10" />
                 <input
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
@@ -243,26 +233,26 @@ export default function ConciergeClient({
                   maxLength={25}
                   inputMode="tel"
                   aria-label={tr('customer.concierge.phoneLabel')}
-                  className={`${inputCls} pl-11`}
+                  className="input !pl-11"
                 />
               </label>
               <label className="relative block">
-                <MapPin size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-2" />
+                <MapPin size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-2 z-10" />
                 <input
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   placeholder={tr('customer.concierge.cityLabel')}
                   maxLength={100}
                   aria-label={tr('customer.concierge.cityLabel')}
-                  className={`${inputCls} pl-11`}
+                  className="input !pl-11"
                 />
               </label>
             </div>
           </div>
-          <button onClick={doFindPros} disabled={busy} className={`${btnPrimary} w-full`}>
+          <Button onClick={doFindPros} disabled={busy} block>
             {busy ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
             {busy ? tr('customer.concierge.findingPros') : tr('customer.concierge.findPros')}
-          </button>
+          </Button>
         </div>
       )}
 
@@ -270,7 +260,7 @@ export default function ConciergeClient({
       {step === 'match' && (
         <div>
           {pros.length === 0 ? (
-            <div className="rounded-3xl bg-surface border border-line/80 shadow-sm p-8 text-center">
+            <Card className="p-8 text-center">
               <span className="mx-auto w-14 h-14 rounded-2xl bg-surface-2 flex items-center justify-center mb-4">
                 <SearchX size={26} className="text-ink-2" />
               </span>
@@ -282,10 +272,10 @@ export default function ConciergeClient({
                   .replace('{service}', serviceLabel)
                   .replace('{city}', city.trim())}
               </p>
-              <button onClick={() => setStep('describe')} className={btnGhost}>
+              <Button variant="secondary" onClick={() => setStep('describe')}>
                 {tr('customer.concierge.tryAgain')}
-              </button>
-            </div>
+              </Button>
+            </Card>
           ) : (
             <>
               <h2 className="text-[16px] font-bold text-ink mb-1">
@@ -300,18 +290,18 @@ export default function ConciergeClient({
                       key={p.id}
                       onClick={() => togglePro(p.id)}
                       aria-pressed={checked}
-                      className={`w-full text-left rounded-2xl border p-4 flex items-center gap-3.5 transition-all active:scale-[0.98] ${
+                      className={`w-full text-left rounded-2xl border p-4 flex items-center gap-3.5 transition-all active:scale-[0.98] min-h-[44px] ${
                         checked
-                          ? 'bg-indigo-50/60 border-indigo-300 shadow-sm'
+                          ? 'border-ink bg-surface shadow-[inset_0_0_0_1px_var(--ink)]'
                           : 'bg-surface border-line'
                       }`}
                     >
                       <span
                         className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center shrink-0 transition-colors ${
-                          checked ? 'bg-indigo-600 border-indigo-600' : 'border-line-strong bg-surface'
+                          checked ? 'bg-ink border-ink' : 'border-line-strong bg-surface'
                         }`}
                       >
-                        {checked && <Check size={14} className="text-white" strokeWidth={3} />}
+                        {checked && <Check size={14} className="text-surface" strokeWidth={3} />}
                       </span>
                       <span className="flex-1 min-w-0">
                         <span className="block text-[15px] font-bold text-ink truncate">
@@ -327,14 +317,14 @@ export default function ConciergeClient({
                   );
                 })}
               </div>
-              <button
+              <Button
                 onClick={() => setStep('preview')}
                 disabled={selected.size === 0}
-                className={`${btnPrimary} w-full`}
+                block
               >
                 {tr('customer.concierge.continue')}
                 <ArrowRight size={18} />
-              </button>
+              </Button>
             </>
           )}
         </div>
@@ -350,7 +340,7 @@ export default function ConciergeClient({
             <p className="text-[13px] text-ink-2">{tr('customer.concierge.previewHint')}</p>
           </div>
 
-          <div className="rounded-2xl bg-surface border border-line/80 shadow-sm p-4">
+          <Card className="p-4">
             <h3 className="text-[13px] font-bold text-ink-2 mb-2.5">
               {tr('customer.concierge.sendingTo')} ({selected.size})
             </h3>
@@ -364,18 +354,18 @@ export default function ConciergeClient({
                   </li>
                 ))}
             </ul>
-          </div>
+          </Card>
 
-          <div className="rounded-2xl bg-surface border border-line/80 shadow-sm p-4">
+          <Card className="p-4">
             <h3 className="text-[13px] font-bold text-ink-2 mb-2.5">
               {tr('customer.concierge.exactMessage')}
             </h3>
             <p className="text-[14px] text-ink whitespace-pre-wrap leading-relaxed">
               {previewMessage}
             </p>
-          </div>
+          </Card>
 
-          <div className="rounded-2xl bg-surface-2 border border-line/80 p-4">
+          <Card className="p-4 bg-surface-2">
             <h3 className="text-[13px] font-bold text-ink-2 mb-2.5">
               {tr('customer.concierge.detailsShared')}
             </h3>
@@ -393,18 +383,18 @@ export default function ConciergeClient({
                 <dd className="font-semibold text-ink">{city.trim()}</dd>
               </div>
             </dl>
-          </div>
+          </Card>
 
-          <button onClick={doSend} disabled={busy} className={`${btnPrimary} w-full`}>
+          <Button onClick={doSend} disabled={busy} block>
             {busy ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
             {busy ? tr('customer.concierge.sending') : tr('customer.concierge.sendRequests')}
-          </button>
+          </Button>
         </div>
       )}
 
       {/* STEP 4 - done */}
       {step === 'done' && (
-        <div className="rounded-3xl bg-surface border border-line/80 shadow-sm p-8 text-center">
+        <Card className="p-8 text-center">
           <span className="mx-auto w-14 h-14 rounded-2xl bg-ok-bg flex items-center justify-center mb-4">
             <CheckCircle2 size={28} className="text-ok" />
           </span>
@@ -418,14 +408,14 @@ export default function ConciergeClient({
             </p>
           )}
           <div className="space-y-2.5">
-            <Link href="/customer/requests" className={`${btnPrimary} w-full`}>
+            <Button href="/customer/requests" block>
               {tr('customer.concierge.viewRequests')}
-            </Link>
-            <button onClick={restart} className={`${btnGhost} w-full`}>
+            </Button>
+            <Button variant="secondary" onClick={restart} block>
               {tr('customer.concierge.startOver')}
-            </button>
+            </Button>
           </div>
-        </div>
+        </Card>
       )}
     </div>
   );

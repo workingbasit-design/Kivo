@@ -36,7 +36,7 @@ function Chip({
         <span
           className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[13px] font-medium shadow-[0_10px_30px_-12px_rgba(0,0,0,0.25)] backdrop-blur ${
             accent
-              ? 'border-amber-200 bg-warn-bg/90 text-amber-900'
+              ? 'border-warn-line bg-warn-bg/90 text-warn-text'
               : 'border-line bg-surface/90 text-ink'
           }`}
         >

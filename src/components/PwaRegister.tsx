@@ -115,29 +115,29 @@ export default function PwaRegister() {
     <div
       role="status"
       aria-live="polite"
-      className="fixed bottom-28 md:bottom-20 right-4 md:right-6 z-50 flex items-center gap-2 rounded-full bg-asphalt/95 text-white pl-3 pr-4 py-2 text-xs font-semibold shadow-xl backdrop-blur"
+      className="fixed bottom-28 md:bottom-20 right-4 md:right-6 z-50 flex items-center gap-2 rounded-full bg-asphalt/95 text-hero-ink pl-3 pr-4 py-2 text-xs font-semibold shadow-xl backdrop-blur"
     >
       {showOffline && (
         <>
-          <CloudOff size={14} className="text-amber-400" />
+          <CloudOff size={14} className="text-warn-text" />
           <span>Offline - work will sync later</span>
         </>
       )}
       {showSyncing && (
         <>
-          <RefreshCw size={14} className="animate-spin text-sky-400" />
+          <RefreshCw size={14} className="animate-spin text-info" />
           <span>Syncing {outbox.pending}…</span>
         </>
       )}
       {!showOffline && !showSyncing && showPending && (
         <>
-          <CloudOff size={14} className="text-amber-400" />
+          <CloudOff size={14} className="text-warn-text" />
           <span>{outbox.pending} waiting to sync</span>
         </>
       )}
       {showDone && (
         <>
-          <CheckCircle2 size={14} className="text-emerald-400" />
+          <CheckCircle2 size={14} className="text-ok" />
           <span>All synced</span>
         </>
       )}

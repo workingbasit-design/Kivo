@@ -7,7 +7,7 @@ import {
   submitTokenReview,
   type ReviewRequestResult,
 } from '@/app/actions/review-requests';
-import { Field, inputClass, primaryBtnClass } from '@/components/ui';
+import { Button, Textarea } from '@/components/kit';
 import { cn } from '@/lib/utils';
 
 /**
@@ -37,7 +37,7 @@ export default function TokenReviewForm({
   if (state?.ok) {
     return (
       <div className="bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-8 text-center">
-        <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-ok flex items-center justify-center mx-auto mb-4">
+        <div className="w-12 h-12 rounded-2xl bg-ok-bg text-ok flex items-center justify-center mx-auto mb-4">
           <CheckCircle2 size={24} />
         </div>
         <h2 className="text-lg font-bold text-ink mb-1">
@@ -70,7 +70,7 @@ export default function TokenReviewForm({
       </div>
 
       {state?.error && (
-        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-line text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />{' '}
           <span>{state.error}</span>
         </div>
@@ -108,8 +108,8 @@ export default function TokenReviewForm({
                 className={cn(
                   'transition-colors',
                   n <= shown
-                    ? 'fill-amber-400 text-amber-400'
-                    : 'fill-zinc-100 text-zinc-300'
+                    ? 'fill-star text-star'
+                    : 'fill-surface-2 text-ink-2'
                 )}
               />
             </button>
@@ -122,23 +122,22 @@ export default function TokenReviewForm({
         )}
       </div>
 
-      <Field label={L('t10money.reviewCommentLabel')}>
-        <textarea
-          name="comment"
-          maxLength={2000}
-          rows={4}
-          placeholder={L('t10money.reviewCommentPlaceholder')}
-          className={inputClass}
-        />
-      </Field>
+      <Textarea
+        label={L('t10money.reviewCommentLabel')}
+        name="comment"
+        maxLength={2000}
+        rows={4}
+        placeholder={L('t10money.reviewCommentPlaceholder')}
+      />
 
-      <button
+      <Button
         type="submit"
+        variant="primary"
+        block
         disabled={pending || rating === 0}
-        className={cn(primaryBtnClass, 'min-h-[52px] w-full text-base')}
       >
         {pending ? L('t10money.reviewSubmitting') : L('t10money.reviewSubmit')}
-      </button>
+      </Button>
     </form>
   );
 }

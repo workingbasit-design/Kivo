@@ -1,11 +1,13 @@
 import { ShieldCheck, Inbox } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
-import { PageHeader, Card, EmptyState } from '@/components/ui';
+import { Card } from '@/components/kit';
 import { isDirectoryAdminEmail } from '@/lib/directory';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import ClaimRow from './claim-row';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
+import { PageTitle } from '../_components/PageTitle';
+import { EmptyState } from '@/components/kit';
 
 export const metadata = { title: 'Directory claims | EveryJob' };
 export const dynamic = 'force-dynamic';
@@ -23,12 +25,12 @@ export default async function DirectoryClaimsPage() {
   if (!isDirectoryAdminEmail(user.email)) {
     return (
       <div className="space-y-6">
-        <PageHeader title={tr('t10misc.claims.title')} subtitle={tr('t10misc.claims.subtitle')} />
+        <PageTitle title={tr('t10misc.claims.title')} summary={tr('t10misc.claims.subtitle')} />
         <Card>
           <EmptyState
-            icon={<Inbox size={24} />}
+            icon={Inbox}
             title={tr('t10misc.claims.notAuthorizedTitle')}
-            description={tr('t10misc.claims.notAuthorizedDesc')}
+            text={tr('t10misc.claims.notAuthorizedDesc')}
           />
         </Card>
       </div>
@@ -65,13 +67,13 @@ export default async function DirectoryClaimsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={tr('t10misc.claims.title')} subtitle={subtitle} />
+      <PageTitle title={tr('t10misc.claims.title')} summary={subtitle} />
       {claims.length === 0 ? (
         <Card>
           <EmptyState
-            icon={<ShieldCheck size={24} />}
+            icon={ShieldCheck}
             title={tr('t10misc.claims.noClaimsTitle')}
-            description={tr('t10misc.claims.noClaimsDesc')}
+            text={tr('t10misc.claims.noClaimsDesc')}
           />
         </Card>
       ) : (

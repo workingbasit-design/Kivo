@@ -1,16 +1,15 @@
-import Link from 'next/link';
-import { Plus, FileText, Clock, Hourglass } from '@/components/icons';
+import { Plus, FileText, Clock, Hourglass, Wallet } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { prisma } from '@/lib/prisma';
-import { PageHeader, Card, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
-import { ListRow, SectionHeader } from '@/components/design/lists';
-import { EmptyState } from '@/components/design/feedback';
-import MoneyText from '@/components/MoneyText';
+import { Card, EmptyState, Button, ListRow } from '@/components/kit';
+
+
 import { formatMoney, centsToDollars } from '@/lib/money';
 import { daysOverdue, remainingBalance, OVERDUE_AFTER_DAYS, DAY_MS } from '@/lib/revenue';
 import { formatDisplayDate } from '@/lib/attention';
+import { kitButtonClass , PageHeader} from '@/components/kit';
 
 /**
  * "Now" for overdue-threshold math. A plain module helper (not a component),
@@ -122,42 +121,38 @@ export default async function MoneyPage() {
     <div className="space-y-6">
       <PageHeader
         title={L('t10money.money.title')}
-        subtitle={L('t10money.money.subtitle')}
-        actions={
-          <Link href="/invoices/new" className={primaryBtnClass}>
-            <Plus className="h-4 w-4" aria-hidden />
-            {L('t10money.money.newInvoice')}
-          </Link>
-        }
+        summary={L('t10money.money.subtitle')}
+        actionLabel={L('t10money.money.newInvoice')}
+        actionHref="/invoices/new"
+        actionIcon={Plus}
       />
 
       {allCaughtUp ? (
         <Card>
           <EmptyState
+            icon={Wallet}
             title={L('t10money.money.emptyTitle')}
-            description={L('t10money.money.emptyDesc')}
-            action={
-              <Link href="/invoices/new" className={primaryBtnClass}>
-                <Plus className="h-4 w-4" aria-hidden />
-                {L('t10money.money.newInvoice')}
-              </Link>
-            }
+            text={L('t10money.money.emptyDesc')}
           />
+          <div className="flex justify-center pb-10 -mt-6">
+            <Button href="/invoices/new" variant="primary">
+              <Plus className="h-4 w-4" aria-hidden />
+              {L('t10money.money.newInvoice')}
+            </Button>
+          </div>
         </Card>
       ) : (
         <>
           {/* 1. Ready to invoice — completed jobs with no invoice yet. */}
           <section aria-labelledby="ready-to-invoice">
-            <SectionHeader
-              title={`${L('t10money.money.unbilledTitle')} (${unbilledJobs.length})`}
-              action={
-                unbilledJobs.length > 0 ? (
-                  <span className="text-base font-bold tabular-nums text-ej-ink">
-                    <MoneyText dollars={readyTotal} locale={locale} />
-                  </span>
-                ) : undefined
-              }
-            />
+<div className="mb-3 flex items-center justify-between">
+              <h3 className="text-base font-bold text-ink">`${L('t10money.money.unbilledTitle')} (${unbilledJobs.length})`</h3>
+              {unbilledJobs.length > 0 ? (
+                <span className="num text-[20px] font-bold tabular-nums text-ink">
+                  {formatMoney(readyTotal, 'CAD', locale)}
+                </span>
+              ) : null}
+            </div>
             {unbilledJobs.length === 0 ? (
               <p className="text-sm text-ej-muted px-1">
                 {L('t10money.money.noUnbilled')}
@@ -170,18 +165,17 @@ export default async function MoneyPage() {
                       key={j.id}
                       title={j.title}
                       subtitle={`${j.customer.name} · ${L('t10money.money.completedOn')} ${formatDisplayDate(new Date(j.date), business?.timezone, locale)}`}
-                      trailing={
-                        j.noCharge ? (
-                          <span className="text-sm text-ej-muted">{L('t10money.money.noCharge')}</span>
-                        ) : (
-                          <MoneyText
-                            dollars={j.priceCents != null ? centsToDollars(j.priceCents) : null}
-                            locale={locale}
-                          />
-                        )
+                      amount={
+                        j.noCharge
+                          ? '$0'
+                          : formatMoney(
+                              j.priceCents != null ? centsToDollars(j.priceCents) : 0,
+                              'CAD',
+                              locale
+                            )
                       }
+                      amountCaption={j.noCharge ? L('t10money.money.noCharge') : undefined}
                       href={`/jobs/${j.id}`}
-                      menuLabel={L('t10money.money.jobActions').replace('{title}', j.title)}
                     />
                   ))}
                 </ul>
@@ -194,16 +188,14 @@ export default async function MoneyPage() {
 
           {/* 2. Awaiting payment — unpaid invoices, oldest first. */}
           <section aria-labelledby="awaiting-payment">
-            <SectionHeader
-              title={`${L('t10money.money.invoicesCardTitle')} (${unpaidInvoices.length})`}
-              action={
-                unpaidInvoices.length > 0 ? (
-                  <span className="text-base font-bold tabular-nums text-ej-ink">
-                    <MoneyText dollars={awaitingTotal} locale={locale} />
-                  </span>
-                ) : undefined
-              }
-            />
+<div className="mb-3 flex items-center justify-between">
+              <h3 className="text-base font-bold text-ink">`${L('t10money.money.invoicesCardTitle')} (${unpaidInvoices.length})`</h3>
+              {unpaidInvoices.length > 0 ? (
+                <span className="num text-[20px] font-bold tabular-nums text-ink">
+                  {formatMoney(awaitingTotal, 'CAD', locale)}
+                </span>
+              ) : null}
+            </div>
             {unpaidInvoices.length === 0 ? (
               <p className="text-sm text-ej-muted px-1">
                 {L('t10money.money.noInvoicesYet')}
@@ -229,9 +221,8 @@ export default async function MoneyPage() {
                             ? `${inv.customer.name} · ${L('t10money.reminders.daysOverdue').replace('{days}', String(overdueDays))}`
                             : `${inv.customer.name} · ${L('t10money.money.balanceDue')}: ${formatMoney(remaining, business?.currency)}`
                         }
-                        trailing={<MoneyText dollars={remaining} locale={locale} />}
+                        amount={formatMoney(remaining, 'CAD', locale)}
                         href={`/invoices/${inv.id}`}
-                        menuLabel={L('t10money.money.invoiceActions').replace('{number}', inv.number)}
                       />
                     );
                   })}
@@ -242,16 +233,14 @@ export default async function MoneyPage() {
 
           {/* 3. Awaiting a decision — sent quotes waiting on the customer. */}
           <section aria-labelledby="awaiting-decision">
-            <SectionHeader
-              title={`${L('t10money.money.quotesCardTitle')} (${openQuotes.length})`}
-              action={
-                openQuotes.length > 0 ? (
-                  <span className="text-base font-bold tabular-nums text-ej-ink">
-                    <MoneyText dollars={decisionTotal} locale={locale} />
-                  </span>
-                ) : undefined
-              }
-            />
+<div className="mb-3 flex items-center justify-between">
+              <h3 className="text-base font-bold text-ink">`${L('t10money.money.quotesCardTitle')} (${openQuotes.length})`</h3>
+              {openQuotes.length > 0 ? (
+                <span className="num text-[20px] font-bold tabular-nums text-ink">
+                  {formatMoney(decisionTotal, 'CAD', locale)}
+                </span>
+              ) : null}
+            </div>
             {openQuotes.length === 0 ? (
               <p className="text-sm text-ej-muted px-1">
                 {L('t10money.money.noQuotesYet')}
@@ -269,11 +258,8 @@ export default async function MoneyPage() {
                         key={q.id}
                         title={q.number}
                         subtitle={`${q.customer.name} · ${L('t10money.followups.daysWaiting').replace('{days}', String(daysWaiting))}`}
-                        trailing={
-                          <MoneyText dollars={centsToDollars(q.totalCents)} locale={locale} />
-                        }
+                        amount={formatMoney(centsToDollars(q.totalCents), 'CAD', locale)}
                         href={`/quotes/${q.id}`}
-                        menuLabel={L('t10money.money.quoteActions').replace('{number}', q.number)}
                       />
                     );
                   })}
@@ -282,13 +268,13 @@ export default async function MoneyPage() {
             )}
             {openQuotes.length > 0 && (
               <div className="mt-3 flex flex-wrap gap-2 px-1">
-                <Link href="/quotes" className={secondaryBtnClass}>
+                <Button href="/quotes" variant="secondary">
                   {L('t10money.money.viewQuotes')}
-                </Link>
-                <Link href="/quotes/new" className={secondaryBtnClass}>
+                </Button>
+                <Button href="/quotes/new" variant="secondary">
                   <Plus className="h-4 w-4" aria-hidden />
                   {L('t10money.money.newQuote')}
-                </Link>
+                </Button>
               </div>
             )}
           </section>

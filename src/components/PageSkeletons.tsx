@@ -1,4 +1,4 @@
-import { Skeleton } from '@/components/ui';
+import { Skeleton } from '@/components/kit';
 
 /**
  * Route-level loading skeletons (used by loading.tsx files): the app never

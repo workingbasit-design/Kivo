@@ -12,7 +12,7 @@ import {
   AlertTriangle,
 } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
-import { Card, Dialog, Skeleton, secondaryBtnClass, dangerBtnClass } from '@/components/ui';
+import { Button, Card, BottomSheet, Skeleton } from '@/components/kit';
 import {
   blobConfigured,
   listAttachments,
@@ -114,7 +114,7 @@ export default function Attachments({
   }
 
   function typeIcon(mimeType: string) {
-    if (mimeType === 'application/pdf') return <FileText size={28} className="text-rose-500" />;
+    if (mimeType === 'application/pdf') return <FileText size={28} className="text-danger" />;
     if (mimeType === 'text/csv') return <FileSpreadsheet size={28} className="text-ok" />;
     return <Paperclip size={28} className="text-ink-2" />;
   }
@@ -129,11 +129,11 @@ export default function Attachments({
       </h2>
 
       {configured === false && (
-        <div className="mt-3 rounded-xl border border-amber-200 bg-warn-bg p-4">
-          <p className="text-sm font-bold text-amber-900 flex items-center gap-2">
+        <div className="mt-3 rounded-xl border border-warn-line bg-warn-bg p-4">
+          <p className="text-sm font-bold text-warn-text flex items-center gap-2">
             <AlertTriangle size={14} /> {t(locale, 'attachments.blobSetupTitle')}
           </p>
-          <p className="mt-2 text-xs text-amber-800 leading-relaxed">
+          <p className="mt-2 text-xs text-warn-text leading-relaxed">
             {t(locale, 'attachments.blobSetupBody')}
           </p>
         </div>
@@ -144,7 +144,7 @@ export default function Attachments({
           <p className="text-[11px] text-ink-2 mt-1 mb-3">{t(locale, 'attachments.hint')}</p>
 
           {error && (
-            <p className="text-xs font-semibold text-danger bg-danger-bg border border-rose-200 rounded-xl px-3 py-2 mb-3">
+            <p className="text-xs font-semibold text-danger bg-danger-bg border border-danger/30 rounded-xl px-3 py-2 mb-3">
               {errMsg(error)}
             </p>
           )}
@@ -194,7 +194,7 @@ export default function Attachments({
                     onClick={() => setPendingDelete(row)}
                     disabled={deletingId === row.id}
                     aria-label={t(locale, 'attachments.deleteLabel')}
-                    className="absolute top-1.5 right-1.5 rounded-lg bg-surface/90 border border-line min-w-[36px] min-h-[36px] p-2 text-ink-2 hover:text-danger hover:border-rose-200 shadow-sm disabled:opacity-50 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/60"
+                    className="absolute top-1.5 right-1.5 rounded-lg bg-surface/90 border border-line min-w-[36px] min-h-[36px] p-2 text-ink-2 hover:text-danger hover:border-danger/30 shadow-sm disabled:opacity-50 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger/60"
                   >
                     {deletingId === row.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
                   </button>
@@ -212,11 +212,12 @@ export default function Attachments({
               className="hidden"
               aria-label={t(locale, 'attachments.chooseFile')}
             />
-            <button
+            <Button
+              variant="secondary"
               type="button"
               onClick={() => inputRef.current?.click()}
               disabled={uploading}
-              className={secondaryBtnClass + ' disabled:opacity-50'}
+              className="disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {uploading ? (
                 <>
@@ -227,7 +228,7 @@ export default function Attachments({
                   <Upload size={16} /> {t(locale, 'attachments.uploadButton')}
                 </>
               )}
-            </button>
+            </Button>
             <span className="text-[11px] text-ink-2">{t(locale, 'attachments.hint')}</span>
           </div>
         </>
@@ -241,23 +242,25 @@ export default function Attachments({
         </div>
       )}
 
-      <Dialog
+      <BottomSheet
         open={pendingDelete !== null}
         onClose={() => setPendingDelete(null)}
         title={t(locale, 'attachments.confirmDeleteTitle')}
+        footer={
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+            <Button variant="secondary" type="button" onClick={() => setPendingDelete(null)}>
+              {t(locale, 'attachments.cancel')}
+            </Button>
+            <Button variant="danger" type="button" onClick={confirmDelete}>
+              <Trash2 size={16} /> {t(locale, 'attachments.delete')}
+            </Button>
+          </div>
+        }
       >
         <p className="text-sm text-ink-2 mb-6">
           {t(locale, 'attachments.confirmDelete').replace('{name}', pendingDelete?.fileName ?? '')}
         </p>
-        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
-          <button type="button" onClick={() => setPendingDelete(null)} className={secondaryBtnClass}>
-            {t(locale, 'attachments.cancel')}
-          </button>
-          <button type="button" onClick={confirmDelete} className={dangerBtnClass}>
-            <Trash2 size={16} /> {t(locale, 'attachments.delete')}
-          </button>
-        </div>
-      </Dialog>
+      </BottomSheet>
     </Card>
   );
 }

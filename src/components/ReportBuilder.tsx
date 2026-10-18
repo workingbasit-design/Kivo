@@ -6,13 +6,11 @@ import { Sparkles, Play, Trash2, Loader2, Save } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
 import {
+  Button,
   Card,
-  textareaClass,
-  inputClass,
-  primaryBtnClass,
-  secondaryBtnClass,
-  ghostBtnClass,
-} from '@/components/ui';
+  Input,
+  Textarea,
+} from '@/components/kit';
 import { saveReport, deleteReport } from '@/app/actions/reports';
 import type { ReportConfig, ReportResult } from '@/lib/reports';
 
@@ -146,25 +144,18 @@ export function ReportBuilder({
       {/* Builder */}
       <Card className="p-5">
         <h2 className="text-sm font-bold text-ink flex items-center gap-2">
-          <Sparkles size={15} className="text-lime-600" />
+          <Sparkles size={15} className="text-ink" />
           {t(locale, 'reports.builderTitle')}
         </h2>
         <p className="text-xs text-ink-2 mt-1 mb-4">
           {t(locale, 'reports.builderSubtitle')}
         </p>
 
-        <label
-          htmlFor="report-prompt"
-          className="text-xs font-semibold text-ink-2 block mb-1.5"
-        >
-          {t(locale, 'reports.promptLabel')}
-        </label>
-        <textarea
-          id="report-prompt"
+        <Textarea
+          label={t(locale, 'reports.promptLabel')}
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           placeholder={t(locale, 'reports.promptPlaceholder')}
-          className={textareaClass}
           rows={2}
           maxLength={500}
         />
@@ -188,11 +179,13 @@ export function ReportBuilder({
           ))}
         </div>
 
-        <button
+        <Button
           type="button"
+          variant="primary"
+          block
           onClick={submit}
           disabled={running || !prompt.trim()}
-          className={`${primaryBtnClass} w-full mt-4`}
+          className="mt-4"
         >
           {running ? (
             <>
@@ -205,7 +198,7 @@ export function ReportBuilder({
               {t(locale, 'reports.build')}
             </>
           )}
-        </button>
+        </Button>
 
         {error && (
           <p className="text-sm text-danger font-medium mt-3" role="alert">
@@ -251,7 +244,7 @@ export function ReportBuilder({
                     {built.result.rows.map((row) => (
                       <tr
                         key={row.label}
-                        className="border-b border-zinc-50 last:border-0"
+                        className="border-b border-line last:border-0"
                       >
                         <td className="py-2.5 pr-3 font-medium text-ink">
                           {row.label}
@@ -281,21 +274,23 @@ export function ReportBuilder({
             )}
 
             {/* Save this report */}
-            <div className="mt-4 flex flex-col sm:flex-row gap-2">
-              <input
-                type="text"
-                value={saveName}
-                onChange={(e) => setSaveName(e.target.value)}
-                placeholder={t(locale, 'reports.reportName')}
-                aria-label={t(locale, 'reports.reportName')}
-                className={inputClass}
-                maxLength={80}
-              />
-              <button
+            <div className="mt-4 flex flex-col sm:flex-row gap-2 items-start">
+              <div className="w-full min-w-0">
+                <Input
+                  label={<span className="sr-only">{t(locale, 'reports.reportName')}</span>}
+                  type="text"
+                  value={saveName}
+                  onChange={(e) => setSaveName(e.target.value)}
+                  placeholder={t(locale, 'reports.reportName')}
+                  maxLength={80}
+                />
+              </div>
+              <Button
                 type="button"
+                variant="secondary"
                 onClick={save}
                 disabled={saving}
-                className={`${secondaryBtnClass} shrink-0`}
+                className="shrink-0"
               >
                 {saving ? (
                   <Loader2 size={15} className="animate-spin" />
@@ -303,7 +298,7 @@ export function ReportBuilder({
                   <Save size={15} />
                 )}
                 {t(locale, 'reports.saveReport')}
-              </button>
+              </Button>
             </div>
             {saveMsg && (
               <p className="text-sm text-ok font-medium mt-2" role="status">
@@ -334,20 +329,21 @@ export function ReportBuilder({
                   </p>
                   <p className="text-xs text-ink-2 truncate">{s.prompt}</p>
                 </div>
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
                   onClick={() => {
                     setPrompt(s.prompt);
                     run(s.prompt);
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  className={`${ghostBtnClass} shrink-0`}
+                  className="shrink-0"
                   aria-label={`${t(locale, 'reports.rerun')}: ${s.name}`}
                   title={t(locale, 'reports.rerun')}
                 >
                   <Play size={15} />
                   <span className="hidden sm:inline">{t(locale, 'reports.rerun')}</span>
-                </button>
+                </Button>
                 <button
                   type="button"
                   onClick={() => remove(s.id)}

@@ -3,10 +3,11 @@ import { ArrowLeft } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { centsToDollars } from '@/lib/money';
-import { PageHeader } from '@/components/ui';
+
 import { ChecklistTemplatesClient } from '@/components/ChecklistTemplatesClient';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
+import { PageTitle } from '../../_components/PageTitle';
 
 export const metadata = { title: 'Checklist templates | EveryJob' };
 
@@ -28,9 +29,9 @@ export default async function ChecklistTemplatesPage() {
       >
         <ArrowLeft size={14} /> {t(locale, 'jobops.templates.backToSettings')}
       </Link>
-      <PageHeader
+      <PageTitle
         title={t(locale, 'jobops.templates.title')}
-        subtitle={t(locale, 'jobops.templates.subtitle')}
+        summary={t(locale, 'jobops.templates.subtitle')}
       />
       <ChecklistTemplatesClient
         locale={locale}

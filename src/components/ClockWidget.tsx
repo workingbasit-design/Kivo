@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useTransition } from 'react';
 import { Play, Square, AlertCircle, Timer } from '@/components/icons';
 import { clockIn, clockOut } from '@/app/actions/timesheets';
-import { primaryBtnClass, secondaryBtnClass, inputClass } from '@/components/ui';
+import { Button, Card } from '@/components/kit';
 import { useResolvedT } from '@/hooks/useResolvedLocale';
 import { cn } from '@/lib/utils';
 
@@ -61,17 +61,17 @@ export default function ClockWidget({
   if (activeSession) {
     const elapsed = now - new Date(activeSession.clockInISO).getTime();
     return (
-      <div className="bg-asphalt text-white rounded-2xl p-5 shadow-sm">
+      <div className="bg-asphalt text-hero-ink rounded-2xl p-5 shadow-sm">
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0">
-            <p className="text-[11px] font-bold text-white/50 mb-1 flex items-center gap-1.5">
+            <p className="text-[11px] font-bold text-hero-ink-2 mb-1 flex items-center gap-1.5">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-ok opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-ok" />
               </span>
               {t('t10work.clockedIn')}
               {activeSession.jobTitle && (
-                <span className="normal-case tracking-normal font-semibold text-white/80 truncate">
+                <span className="normal-case tracking-normal font-semibold text-hero-ink-2 truncate">
                   · {activeSession.jobTitle}
                 </span>
               )}
@@ -79,7 +79,7 @@ export default function ClockWidget({
             <p className="text-3xl font-bold tabular-nums tracking-tight">
               {formatElapsed(elapsed)}
             </p>
-            <p className="text-xs text-white/50 mt-1">
+            <p className="text-xs text-hero-ink-2 mt-1">
               {t('t10work.clockSince')}{' '}
               {new Date(activeSession.clockInISO).toLocaleTimeString(
                 locale === 'fr' ? 'fr-CA' : 'en-CA',
@@ -91,8 +91,10 @@ export default function ClockWidget({
             onClick={runClockOut}
             disabled={isPending}
             className={cn(
-              secondaryBtnClass,
-              '!bg-asphalt !border-asphalt !text-white hover:!bg-graphite !py-3 !px-5 !text-sm shrink-0'
+              'inline-flex items-center justify-center gap-2 min-h-[44px] px-[14px] rounded-[12px] font-bold text-[15px]',
+              'bg-asphalt text-hero-ink shadow-[inset_0_0_0_1.5px_var(--hero-line)] hover:bg-graphite shrink-0',
+              'disabled:opacity-60 disabled:cursor-not-allowed',
+              'focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2'
             )}
           >
             <Square size={14} />
@@ -100,7 +102,7 @@ export default function ClockWidget({
           </button>
         </div>
         {error && (
-          <div className="mt-3 flex items-start gap-2 bg-rose-500/15 border border-rose-400/30 text-rose-200 text-xs font-medium rounded-xl px-3 py-2.5">
+          <div className="mt-3 flex items-start gap-2 bg-danger-bg border border-danger/30 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
             <AlertCircle size={14} className="mt-0.5 shrink-0" />
             <span>{error}</span>
           </div>
@@ -110,9 +112,9 @@ export default function ClockWidget({
   }
 
   return (
-    <div className="ej-glass-card rounded-[20px] p-5">
+    <Card className="p-5">
       <div className="flex items-center gap-2 mb-3">
-        <div className="w-8 h-8 rounded-xl bg-smoke text-ink flex items-center justify-center">
+        <div className="w-8 h-8 rounded-xl bg-surface-2 text-ink flex items-center justify-center">
           <Timer size={16} />
         </div>
         <div>
@@ -121,30 +123,37 @@ export default function ClockWidget({
         </div>
       </div>
       <div className="flex flex-col sm:flex-row gap-2">
-        <select
-          value={jobId}
-          onChange={(e) => setJobId(e.target.value)}
-          className={cn(inputClass, 'sm:max-w-xs')}
-          aria-label={t('t10work.clockJobAria')}
+        <span className="select sm:max-w-xs w-full">
+          <select
+            value={jobId}
+            onChange={(e) => setJobId(e.target.value)}
+            className="input"
+            aria-label={t('t10work.clockJobAria')}
+          >
+            <option value="">{t('t10work.clockNoJob')}</option>
+            {jobs.map((j) => (
+              <option key={j.id} value={j.id}>
+                {j.title}
+              </option>
+            ))}
+          </select>
+        </span>
+        <Button
+          variant="primary"
+          onClick={runClockIn}
+          disabled={isPending}
+          className="!py-2.5 disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          <option value="">{t('t10work.clockNoJob')}</option>
-          {jobs.map((j) => (
-            <option key={j.id} value={j.id}>
-              {j.title}
-            </option>
-          ))}
-        </select>
-        <button onClick={runClockIn} disabled={isPending} className={cn(primaryBtnClass, '!py-2.5')}>
           <Play size={14} />
           {isPending ? t('t10work.clockingIn') : t('t10work.clockIn')}
-        </button>
+        </Button>
       </div>
       {error && (
-        <div className="mt-3 flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="mt-3 flex items-start gap-2 bg-danger-bg border border-danger/30 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{error}</span>
         </div>
       )}
-    </div>
+    </Card>
   );
 }

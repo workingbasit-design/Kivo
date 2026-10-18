@@ -1,5 +1,5 @@
 import React from "react";
-import { Card } from "@/components/ui";
+import { Card } from '@/components/kit';
 
 export default function Loading() {
   return (

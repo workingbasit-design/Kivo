@@ -2,10 +2,11 @@ import Link from 'next/link';
 import { ArrowLeft } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { PageHeader } from '@/components/ui';
+
 import CampaignForm from '@/components/CampaignForm';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
+import { PageTitle } from '../../_components/PageTitle';
 
 export const metadata = { title: 'New campaign | EveryJob' };
 
@@ -26,9 +27,9 @@ export default async function NewCampaignPage() {
       >
         <ArrowLeft size={14} /> {tr('t10misc.marketing.backToMarketing')}
       </Link>
-      <PageHeader
+      <PageTitle
         title={tr('t10misc.marketing.newPageTitle')}
-        subtitle={tr('t10misc.marketing.newPageSubtitle')}
+        summary={tr('t10misc.marketing.newPageSubtitle')}
       />
       <CampaignForm businessName={business?.name ?? 'your business'} locale={locale} />
     </div>

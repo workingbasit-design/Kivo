@@ -5,7 +5,7 @@ import { useActionState, useState } from 'react';
 import { BadgeCheck, AlertCircle, CheckCircle2 } from '@/components/icons';
 import { register } from '@/app/actions/auth';
 import { useT } from '@/components/LanguageToggle';
-import { Field, inputClass, primaryBtnClass } from '@/components/ui';
+import { Button, Card, Chip, Input } from '@/components/kit';
 import GoogleAuthSection from '@/components/GoogleAuthSection';
 import { HONEYPOT_FIELD, FORM_STARTED_FIELD } from '@/lib/bot-check';
 
@@ -16,9 +16,11 @@ export default function RegisterPage() {
   const [formStartedAt] = useState(() => String(Date.now()));
 
   return (
-    <div className="bg-surface rounded-3xl border border-line/70 shadow-xl shadow-zinc-200/50 p-6 sm:p-8">
-      <div className="inline-flex items-center gap-1.5 bg-ok-bg border border-emerald-200 text-ok text-[11px] font-bold px-2.5 py-1 rounded-full mb-4">
-        <BadgeCheck size={12} /> {t('t10misc.auth.freePlanBadge')}
+    <Card className="p-6 sm:p-8">
+      <div className="mb-4">
+        <Chip tone="ok" icon={BadgeCheck}>
+          {t('t10misc.auth.freePlanBadge')}
+        </Chip>
       </div>
       <h1 className="text-2xl font-bold tracking-tight text-ink">{t('t10misc.auth.registerTitle')}</h1>
       <p className="text-sm text-ink-2 mt-1 mb-6">{t('t10misc.auth.registerSubtitle')}</p>
@@ -43,68 +45,57 @@ export default function RegisterPage() {
           />
         </div>
         <input type="hidden" name={FORM_STARTED_FIELD} value={formStartedAt} />
-        <Field label={t('t10misc.auth.yourName')}>
-          <input
-            id="name"
-            name="name"
-            type="text"
-            required
-            autoComplete="name"
-            placeholder={t('t10misc.auth.yourNamePlaceholder')}
-            className={inputClass}
-          />
-        </Field>
+        <Input
+          label={t('t10misc.auth.yourName')}
+          name="name"
+          type="text"
+          required
+          autoComplete="name"
+          placeholder={t('t10misc.auth.yourNamePlaceholder')}
+        />
 
-        <Field label={t('t10misc.auth.businessName')}>
-          <input
-            id="businessName"
-            name="businessName"
-            type="text"
-            required
-            autoComplete="organization"
-            placeholder={t('t10misc.auth.businessNamePlaceholder')}
-            className={inputClass}
-          />
-        </Field>
+        <Input
+          label={t('t10misc.auth.businessName')}
+          name="businessName"
+          type="text"
+          required
+          autoComplete="organization"
+          placeholder={t('t10misc.auth.businessNamePlaceholder')}
+        />
 
-        <Field label={t('t10misc.auth.emailLabel')}>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            required
-            autoComplete="email"
-            placeholder={t('t10misc.auth.emailPlaceholder')}
-            className={inputClass}
-          />
-        </Field>
+        <Input
+          label={t('t10misc.auth.emailLabel')}
+          name="email"
+          type="email"
+          required
+          autoComplete="email"
+          placeholder={t('t10misc.auth.emailPlaceholder')}
+        />
 
-        <Field label={t('t10misc.auth.passwordLabel')} hint={t('t10misc.auth.passwordHint')}>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            required
-            autoComplete="new-password"
-            placeholder={t('t10misc.auth.passwordPlaceholder')}
-            className={inputClass}
-          />
-        </Field>
+        <Input
+          label={t('t10misc.auth.passwordLabel')}
+          hint={t('t10misc.auth.passwordHint')}
+          name="password"
+          type="password"
+          required
+          autoComplete="new-password"
+          placeholder={t('t10misc.auth.passwordPlaceholder')}
+        />
 
         {state?.error && (
           <div
             role="alert"
-            className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5"
+            className="flex items-start gap-2 bg-danger-bg border border-line text-danger text-xs font-medium rounded-xl px-3 py-2.5"
           >
             <AlertCircle size={14} className="mt-0.5 shrink-0" />
             <span>{state.error}</span>
           </div>
         )}
 
-        <button type="submit" disabled={isPending} className={`${primaryBtnClass} w-full`}>
+        <Button type="submit" disabled={isPending} block>
           <CheckCircle2 size={16} />
           {isPending ? t('t10misc.auth.creating') : t('t10misc.auth.registerButton')}
-        </button>
+        </Button>
       </form>
 
       <p className="text-center text-xs text-ink-2 mt-5">
@@ -125,6 +116,6 @@ export default function RegisterPage() {
           {t('t10misc.auth.loginLink')}
         </Link>
       </p>
-    </div>
+    </Card>
   );
 }

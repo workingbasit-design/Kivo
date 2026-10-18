@@ -4,12 +4,15 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
-import { PageHeader, Card, EmptyState, StatusBadge } from '@/components/ui';
+import { Card } from '@/components/kit';
 import { formatMoney, centsToDollars } from '@/lib/money';
 import { formatWhenLabel } from '@/lib/reminders';
 import { todayInTimezone } from '@/lib/utils';
 import ReminderRow, { type ReminderUiStrings } from '@/components/reminders/ReminderRow';
 import MissedCallCard from '@/components/reminders/MissedCallCard';
+import { PageTitle } from '../_components/PageTitle';
+import { StatusPill } from '../_components/status-ui';
+import { EmptyState } from '@/components/kit';
 
 /**
  * Reminder queue: one-tap draft queue for upcoming jobs + invoice
@@ -102,9 +105,9 @@ export default async function RemindersPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageTitle
         title={t(locale, 'reminders.title')}
-        subtitle={t(locale, 'reminders.subtitle')}
+        summary={t(locale, 'reminders.subtitle')}
       />
 
       {/* Upcoming jobs */}
@@ -121,9 +124,9 @@ export default async function RemindersPage() {
 
           {jobs.length === 0 ? (
             <EmptyState
-              icon={<BellRing size={24} />}
+              icon={BellRing}
               title={t(locale, 'reminders.upcomingJobs')}
-              description={t(locale, 'reminders.upcomingJobsEmpty')}
+              text={t(locale, 'reminders.upcomingJobsEmpty')}
             />
           ) : (
             <div className="space-y-3">
@@ -156,7 +159,7 @@ export default async function RemindersPage() {
       <section aria-label={t(locale, 'reminders.invoiceFollowups')}>
         <Card className="p-4 sm:p-5">
           <div className="flex items-center gap-2 mb-4">
-            <span className="w-8 h-8 rounded-xl bg-amber-100 text-warn-text flex items-center justify-center shrink-0">
+            <span className="w-8 h-8 rounded-xl bg-warn-bg text-warn-text flex items-center justify-center shrink-0">
               <FileText size={16} />
             </span>
             <h2 className="text-sm font-bold text-ink">
@@ -166,9 +169,9 @@ export default async function RemindersPage() {
 
           {invoices.length === 0 ? (
             <EmptyState
-              icon={<FileText size={24} />}
+              icon={FileText}
               title={t(locale, 'reminders.invoiceFollowups')}
-              description={t(locale, 'reminders.invoiceFollowupsEmpty')}
+              text={t(locale, 'reminders.invoiceFollowupsEmpty')}
             />
           ) : (
             <div className="space-y-3">
@@ -187,7 +190,7 @@ export default async function RemindersPage() {
                     <p className="text-sm font-bold text-ink truncate">
                       {inv.customer.name}
                     </p>
-                    <StatusBadge status={inv.status} />
+                    <StatusPill status={inv.status} locale={locale} />
                   </div>
                   <p className="text-xs text-graphite">
                     {inv.number} · {formatMoney(inv.remaining, currency, locale)}

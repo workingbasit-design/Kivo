@@ -4,13 +4,14 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { PageHeader, Card } from '@/components/ui';
+import { Card } from '@/components/kit';
 import RecurringForm from '@/components/RecurringForm';
 import { updateRecurring } from '@/app/actions/recurring';
 import { toISODateLocal } from '@/lib/utils';
 import { centsToDollars } from '@/lib/money';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
+import { PageTitle } from '../../../_components/PageTitle';
 
 export default async function EditRecurringPage({
   params,
@@ -48,7 +49,7 @@ export default async function EditRecurringPage({
         <ArrowLeft size={14} /> {t(locale, 'recurringPage.backLink')}
       </Link>
 
-      <PageHeader title={t(locale, 'recurringPage.editTitle')} subtitle={plan.title} />
+      <PageTitle title={t(locale, 'recurringPage.editTitle')} summary={plan.title} />
 
       <Card className="p-6">
         <RecurringForm

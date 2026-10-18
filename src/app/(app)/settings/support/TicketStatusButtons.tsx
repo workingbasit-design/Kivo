@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { t } from '@/lib/i18n';
 import type { Locale } from '@/lib/i18n';
-import { secondaryBtnClass } from '@/components/ui';
+
+import { Button } from '@/components/kit';
 
 const NEXT: Record<string, { status: string; key: string }[]> = {
   open: [
@@ -48,15 +49,15 @@ export default function TicketStatusButtons({
   return (
     <div className="flex flex-wrap gap-2">
       {(NEXT[status] ?? []).map((a) => (
-        <button
+        <Button
           key={a.status}
           type="button"
           disabled={busy}
           onClick={() => setStatus(a.status)}
-          className={secondaryBtnClass}
+          variant="secondary"
         >
           {t(locale, `support.${a.key}`)}
-        </button>
+        </Button>
       ))}
     </div>
   );

@@ -61,8 +61,6 @@ const fragment = {
       listTitle: 'Invoices',
       listSubtitle: 'Every payment, accounted for.',
       newInvoice: 'New invoice',
-      newInvoiceSubtitle:
-        'Tax is computed on the server. What you see is what gets billed. Default: {taxLabel}.',
       statOutstanding: 'Outstanding',
       statYetToCollect: 'yet to be collected',
       statCollected: 'Collected',
@@ -130,8 +128,6 @@ const fragment = {
       listTitle: 'Factures',
       listSubtitle: 'Chaque paiement, comptabilisé.',
       newInvoice: 'Nouvelle facture',
-      newInvoiceSubtitle:
-        'La taxe est calculée sur le serveur. Ce que vous voyez est ce qui sera facturé. Par défaut : {taxLabel}.',
       statOutstanding: 'Impayé',
       statYetToCollect: 'à encaisser',
       statCollected: 'Encaissé',

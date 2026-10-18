@@ -22,8 +22,10 @@ import { getGrowthData } from "@/lib/growth";
 import { formatMoney } from "@/lib/money";
 import { getLocale } from "@/lib/i18n/server";
 import { t } from "@/lib/i18n";
-import { PageHeader, Card, EmptyState } from "@/components/ui";
+import { Card, Button } from '@/components/kit';
 import { cn } from "@/lib/utils";
+import { PageTitle } from '../_components/PageTitle';
+import { EmptyState } from '@/components/kit';
 
 const fr = {
   title: "Perspectives",
@@ -203,7 +205,7 @@ export default async function InsightsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={r.title} subtitle={r.subtitle} />
+      <PageTitle title={r.title} summary={r.subtitle} />
       <p className="text-xs text-ink-2 inline-flex items-center gap-1.5 -mt-3">
         <Database size={13} className="text-ink-2" />
         {r.basis}: {ins.basisJobs} {r.jobsWord} · {ins.basisPayments} {r.paymentsWord} ·{" "}
@@ -213,18 +215,15 @@ export default async function InsightsPage() {
       {!hasData ? (
         <Card>
           <EmptyState
-            icon={<Sparkles size={22} />}
+            icon={Sparkles}
             title={r.noDataTitle}
-            description={r.noDataDesc}
-            action={
-              <Link
-                href="/jobs/new"
-                className="bg-asphalt hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs inline-flex items-center gap-2"
-              >
-                {r.createJob}
-              </Link>
-            }
+            text={r.noDataDesc}
           />
+<div className="flex justify-center pb-10 -mt-6">
+            <Button href="/jobs/new" variant="primary">
+              {r.createJob}
+            </Button>
+          </div>
         </Card>
       ) : (
         <>
@@ -326,7 +325,7 @@ export default async function InsightsPage() {
                       </div>
                       <div className="h-2.5 bg-surface-2 rounded-full overflow-hidden">
                         <div
-                          className={cn("h-full rounded-full transition-all", s.margin >= 0 ? "bg-asphalt" : "bg-red-400")}
+                          className={cn("h-full rounded-full transition-all", s.margin >= 0 ? "bg-asphalt" : "bg-danger")}
                           style={{ width: `${Math.max(2, (Math.abs(s.margin) / maxMargin) * 100)}%` }}
                         />
                       </div>
@@ -462,7 +461,7 @@ export default async function InsightsPage() {
                 <h3 className="text-sm font-bold text-ink">{t(locale, "growth.roadmapTitle")}</h3>
                 <p className="text-[11px] text-ink-2 font-medium mt-0.5 mb-3">{t(locale, "growth.roadmapSub")}</p>
                 {!growth.trade && (
-                  <p className="text-xs text-warn-text bg-warn-bg border border-amber-200 rounded-xl px-3 py-2.5 mb-3">
+                  <p className="text-xs text-warn-text bg-warn-bg border border-warn-line rounded-xl px-3 py-2.5 mb-3">
                     {t(locale, "growth.setTradeCta")}
                   </p>
                 )}
@@ -520,7 +519,7 @@ export default async function InsightsPage() {
           {takeaways.length > 0 && (
             <Card className="p-5 border-lime/50 bg-lime/5">
               <h2 className="text-sm font-bold text-ink flex items-center gap-2 mb-3">
-                <Lightbulb size={14} className="text-amber-500" /> {r.smartTakeaways}
+                <Lightbulb size={14} className="text-warn-text" /> {r.smartTakeaways}
               </h2>
               <ul className="space-y-2">
                 {takeaways.map((tk, i) => (
@@ -543,10 +542,10 @@ export default async function InsightsPage() {
 
           {/* Quote follow-ups */}
           {ins.staleQuotes.length > 0 && (
-            <Card className="p-5 border-amber-200 bg-warn-bg/50">
+            <Card className="p-5 border-warn-line bg-warn-bg/50">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-bold text-ink flex items-center gap-2">
-                  <MailWarning size={14} className="text-amber-500" /> {r.followups}
+                  <MailWarning size={14} className="text-warn-text" /> {r.followups}
                 </h2>
                 <span className="text-[11px] text-ink-2 font-medium">{r.followupsSub}</span>
               </div>
@@ -554,7 +553,7 @@ export default async function InsightsPage() {
                 {ins.staleQuotes.slice(0, 6).map((q) => (
                   <li
                     key={q.id}
-                    className="flex items-center gap-3 bg-surface rounded-xl border border-amber-100 px-3 py-2.5"
+                    className="flex items-center gap-3 bg-surface rounded-xl border border-warn-line px-3 py-2.5"
                   >
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-ink truncate">

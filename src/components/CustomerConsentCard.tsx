@@ -4,7 +4,7 @@ import { useActionState, useEffect, useRef } from 'react';
 import { BellRing } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
-import { Badge, Card, checkboxClass, primaryBtnClass } from '@/components/ui';
+import { Button, Card, Select, StatusBadge } from '@/components/kit';
 import { setCustomerConsentAction } from '@/app/actions/messaging';
 
 /**
@@ -53,17 +53,17 @@ export default function CustomerConsentCard({
   });
 
   return (
-    <Card className="p-6 md:p-8 border-l-4 border-l-lime">
+    <Card className="p-6 md:p-8 border-l-4 border-l-hivis">
       <div className="flex items-center justify-between gap-3 mb-1">
         <h2 className="text-sm font-bold text-ink flex items-center gap-2">
           <BellRing size={14} className="text-ink-2" />
           {t(locale, 'messaging.consentTitle')}
         </h2>
-        <Badge tone={consent ? 'lime' : 'neutral'}>
+        <StatusBadge tone={consent ? 'done' : 'neutral'}>
           {consent
             ? t(locale, 'messaging.consentOptIn')
             : t(locale, 'messaging.consentOptOut')}
-        </Badge>
+        </StatusBadge>
       </div>
       <p className="text-xs text-ink-2 mb-4">{t(locale, 'messaging.consentDesc')}</p>
       <form action={formAction} className="space-y-3">
@@ -77,33 +77,36 @@ export default function CustomerConsentCard({
             type="checkbox"
             name="consent"
             defaultChecked={consent}
-            className={checkboxClass}
+            className="w-5 h-5 rounded-md border-line-strong accent-ink focus-visible:ring-2 focus-visible:ring-ink/40 focus-visible:ring-offset-2"
           />
           <span className="text-sm font-semibold text-ink">
             {t(locale, 'messaging.consentOptIn')}
           </span>
         </label>
-        <label className="flex flex-wrap items-center gap-2 text-xs text-ink-2">
-          <span>{t(locale, 'messaging.preferredLocale')}</span>
-          <select
-            name="preferredLocale"
-            defaultValue={preferredLocale ?? ''}
-            className="rounded-lg border border-line bg-surface px-3 py-2.5 min-h-[44px] text-xs"
-          >
-            <option value="">{t(locale, 'messaging.localeAuto')}</option>
-            <option value="en">English</option>
-            <option value="fr">Français</option>
-          </select>
-        </label>
+        <Select
+          label={t(locale, 'messaging.preferredLocale')}
+          name="preferredLocale"
+          defaultValue={preferredLocale ?? ''}
+          options={[
+            { value: '', label: t(locale, 'messaging.localeAuto') },
+            { value: 'en', label: 'English' },
+            { value: 'fr', label: 'Français' },
+          ]}
+        />
         {consentAt && (
           <p className="text-[11px] text-ink-2">
             {new Date(consentAt).toLocaleString(locale === 'fr' ? 'fr-CA' : 'en-CA')}
           </p>
         )}
         {state?.error && <p className="text-xs font-semibold text-danger">{state.error}</p>}
-        <button type="submit" disabled={isPending} className={primaryBtnClass}>
+        <Button
+          variant="primary"
+          type="submit"
+          disabled={isPending}
+          className="disabled:opacity-60 disabled:cursor-not-allowed"
+        >
           {isPending ? '…' : t(locale, 'messaging.saveSettings')}
-        </button>
+        </Button>
       </form>
     </Card>
   );

@@ -5,8 +5,9 @@ import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
-import { PageHeader, Card } from '@/components/ui';
+import { Card } from '@/components/kit';
 import { CrewForm } from '@/components/CrewForm';
+import { PageTitle } from '../../_components/PageTitle';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,7 +38,7 @@ export default async function CrewDetailPage({
         <ArrowLeft size={14} aria-hidden /> {L('title')}
       </Link>
 
-      <PageHeader title={L('editCrew')} subtitle={crew.name} />
+      <PageTitle title={L('editCrew')} summary={crew.name} />
 
       <Card className="p-5 md:p-6">
         <CrewForm

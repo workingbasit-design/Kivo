@@ -66,20 +66,20 @@ export default async function MyDayPage() {
       <h1 className="text-2xl font-bold mb-6">{t.title}</h1>
       
       {jobs.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
+        <div className="text-center py-12 text-ink-2">
           <p>{t.noJobs}</p>
         </div>
       ) : (
         <div className="space-y-4">
           {jobs.map((job) => (
-            <div key={job.id} className="ej-glass-card p-4">
+            <div key={job.id} className="bg-surface border border-line shadow-kit-card p-4">
               <div className="flex justify-between items-start mb-2">
                 <div>
                   <div className="font-semibold">{formatJobTime(job.time, locale === 'fr' ? 'fr' : 'en')}</div>
-                  <div className="text-sm text-gray-600">{job.title}</div>
+                  <div className="text-sm text-ink-2">{job.title}</div>
                 </div>
                 <span className={`px-2 py-1 rounded text-xs ${
-                  job.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
+                  job.status === 'IN_PROGRESS' ? 'bg-info-bg text-info' : 'bg-surface-2 text-ink'
                 }`}>
                   {job.status}
                 </span>
@@ -87,9 +87,9 @@ export default async function MyDayPage() {
               
               <div className="text-sm mb-3">
                 <div className="font-medium">{job.customer.name}</div>
-                <div className="text-gray-600">{job.customer.address}</div>
+                <div className="text-ink-2">{job.customer.address}</div>
                 {job.customer.phone && (
-                  <div className="text-gray-600">{job.customer.phone}</div>
+                  <div className="text-ink-2">{job.customer.phone}</div>
                 )}
               </div>
 
@@ -105,7 +105,7 @@ export default async function MyDayPage() {
                     href={`https://maps.google.com/?q=${encodeURIComponent(job.customer.address)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3 py-2 bg-blue-600 text-white rounded text-sm"
+                    className="px-3 py-2 bg-info text-hero-ink rounded text-sm"
                   >
                     {t.maps}
                   </a>
@@ -113,14 +113,14 @@ export default async function MyDayPage() {
                 {job.customer.phone && (
                   <a
                     href={`tel:${job.customer.phone}`}
-                    className="px-3 py-2 bg-green-600 text-white rounded text-sm"
+                    className="px-3 py-2 bg-ok text-hero-ink rounded text-sm"
                   >
                     {t.call}
                   </a>
                 )}
                 <Link
                   href={`/jobs/${job.id}`}
-                  className="px-3 py-2 bg-gray-200 rounded text-sm"
+                  className="px-3 py-2 bg-surface-2 text-ink border border-line rounded text-sm"
                 >
                   {t.complete}
                 </Link>

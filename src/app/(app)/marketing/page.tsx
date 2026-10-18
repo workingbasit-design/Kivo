@@ -2,11 +2,12 @@ import Link from 'next/link';
 import { Megaphone, Plus, Star } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { PageHeader, Card, StatusBadge, EmptyState } from '@/components/ui';
+import { PageHeader, Button, Card, EmptyState } from '@/components/kit';
 import { type Audience } from '@/lib/marketing';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
 import { formatDateShort } from '@/lib/utils';
+import { StatusPill } from '../_components/status-ui';
 
 export const metadata = { title: 'Marketing | EveryJob' };
 
@@ -30,40 +31,29 @@ export default async function MarketingPage() {
     <div className="space-y-6">
       <PageHeader
         title={tr('t10misc.marketing.title')}
-        subtitle={tr('t10misc.marketing.subtitle')}
-        actions={
-          <>
-            <Link
-              href="/marketing/reviews"
-              className="bg-surface hover:bg-surface-2 text-ink px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 border border-line shadow-sm"
-            >
-              <Star size={14} /> {tr('t10misc.marketing.reviewRequests')}
-            </Link>
-            <Link
-              href="/marketing/new"
-              className="bg-asphalt hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
-            >
-              <Plus size={14} /> {tr('t10misc.marketing.newCampaign')}
-            </Link>
-          </>
-        }
+        summary={tr('t10misc.marketing.subtitle')}
+        actionLabel={tr('t10misc.marketing.newCampaign')}
+        actionHref="/marketing/new"
+        actionIcon={Plus}
       />
+      <div className="flex flex-wrap gap-2">
+        <Button variant="secondary" sm href="/marketing/reviews">
+          <Star size={14} /> {tr('t10misc.marketing.reviewRequests')}
+        </Button>
+      </div>
 
       {campaigns.length === 0 ? (
         <Card>
           <EmptyState
-            icon={<Megaphone size={24} />}
+            icon={Megaphone}
             title={tr('t10misc.marketing.noCampaignsTitle')}
-            description={tr('t10misc.marketing.noCampaignsDesc')}
-            action={
-              <Link
-                href="/marketing/new"
-                className="bg-asphalt hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm"
-              >
-                <Plus size={14} /> {tr('t10misc.marketing.firstCampaign')}
-              </Link>
-            }
+            text={tr('t10misc.marketing.noCampaignsDesc')}
           />
+          <div className="flex justify-center pb-10 -mt-6">
+            <Button href="/marketing/new" variant="primary" sm>
+              <Plus size={14} /> {tr('t10misc.marketing.firstCampaign')}
+            </Button>
+          </div>
         </Card>
       ) : (
         <div className="grid gap-3">
@@ -79,7 +69,7 @@ export default async function MarketingPage() {
                       {formatDateShort(c.createdAt)}
                     </p>
                   </div>
-                  <StatusBadge status={c.status} />
+                  <StatusPill status={c.status} />
                 </div>
               </Card>
             </Link>

@@ -3,7 +3,7 @@
 import { useActionState } from 'react';
 import { useRouter } from 'next/navigation';
 import { t, type Locale } from '@/lib/i18n';
-import { Field, inputClass } from '@/components/ui';
+import { Button, Input, Textarea } from '@/components/kit';
 import { createPart, updatePart, type ActionResult } from '@/app/actions/inventory';
 
 const initialState: ActionResult = { ok: false };
@@ -43,79 +43,79 @@ export default function PartForm({
 
   return (
     <form action={formAction} className="space-y-4">
-      <Field label={T('name')}>
-        <input
-          name="name"
-          required
-          maxLength={100}
-          defaultValue={existing?.name ?? ''}
-          placeholder={T('namePlaceholder')}
-          className={inputClass}
-        />
-      </Field>
+      <Input
+        label={T('name')}
+        name="name"
+        required
+        maxLength={100}
+        defaultValue={existing?.name ?? ''}
+        placeholder={T('namePlaceholder')}
+      />
 
       <div className="grid grid-cols-2 gap-4">
-        <Field label={T('sku')}>
-          <input name="sku" maxLength={50} defaultValue={existing?.sku ?? ''} className={inputClass} />
-        </Field>
-        <Field label={T('unit')}>
-          <input
-            name="unit"
-            maxLength={20}
-            defaultValue={existing?.unit ?? ''}
-            placeholder={T('unitPlaceholder')}
-            className={inputClass}
-          />
-        </Field>
+        <Input
+          label={T('sku')}
+          name="sku"
+          maxLength={50}
+          defaultValue={existing?.sku ?? ''}
+        />
+        <Input
+          label={T('unit')}
+          name="unit"
+          maxLength={20}
+          defaultValue={existing?.unit ?? ''}
+          placeholder={T('unitPlaceholder')}
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <Field label={T('quantity')}>
-          <input
-            name="quantity"
-            type="number"
-            min={0}
-            step="any"
-            defaultValue={existing?.quantity ?? 0}
-            className={inputClass}
-          />
-        </Field>
-        <Field label={T('reorderPoint')} hint={T('reorderPointHint')}>
-          <input
-            name="reorderPoint"
-            type="number"
-            min={0}
-            step="any"
-            defaultValue={existing?.reorderPoint ?? ''}
-            className={inputClass}
-          />
-        </Field>
+        <Input
+          label={T('quantity')}
+          name="quantity"
+          type="number"
+          min={0}
+          step="any"
+          defaultValue={existing?.quantity ?? 0}
+        />
+        <Input
+          label={T('reorderPoint')}
+          hint={T('reorderPointHint')}
+          name="reorderPoint"
+          type="number"
+          min={0}
+          step="any"
+          defaultValue={existing?.reorderPoint ?? ''}
+        />
       </div>
 
-      <Field label={T('unitCost')}>
-        <input
-          name="unitCost"
-          type="text"
-          inputMode="decimal"
-          pattern="[0-9]*\.?[0-9]*"
-          defaultValue={existing?.unitCost ?? ''}
-          className={inputClass}
-        />
-      </Field>
+      <Input
+        label={T('unitCost')}
+        name="unitCost"
+        type="text"
+        inputMode="decimal"
+        pattern="[0-9]*\.?[0-9]*"
+        defaultValue={existing?.unitCost ?? ''}
+      />
 
-      <Field label={T('notes')}>
-        <textarea name="notes" rows={3} maxLength={2000} defaultValue={existing?.notes ?? ''} className={inputClass} />
-      </Field>
+      <Textarea
+        label={T('notes')}
+        name="notes"
+        rows={3}
+        maxLength={2000}
+        defaultValue={existing?.notes ?? ''}
+      />
 
       {state.error && <p className="text-sm font-medium text-danger">{state.error}</p>}
 
-      <button
+      <Button
+        variant="primary"
         type="submit"
+        block
         disabled={pending}
-        className="w-full inline-flex items-center justify-center rounded-xl bg-asphalt px-4 py-3 text-sm font-semibold text-white hover:bg-graphite disabled:opacity-50 min-h-[48px]"
+        className="disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {pending ? '…' : mode === 'create' ? T('save') : T('update')}
-      </button>
+      </Button>
     </form>
   );
 }

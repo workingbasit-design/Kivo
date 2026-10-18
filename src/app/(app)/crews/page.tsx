@@ -4,8 +4,10 @@ import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
-import { PageHeader, Card, EmptyState } from '@/components/ui';
+import { Card } from '@/components/kit';
 import { CrewCreateForm } from '@/components/CrewForm';
+import { PageTitle } from '../_components/PageTitle';
+import { EmptyState } from '@/components/kit';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,14 +27,14 @@ export default async function CrewsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={L('title')} subtitle={L('subtitle')} />
+      <PageTitle title={L('title')} summary={L('subtitle')} />
 
       {crews.length === 0 ? (
         <Card>
           <EmptyState
-            icon={<Users size={28} className="text-lime-600" aria-hidden />}
+            icon={Users}
             title={L('noCrews')}
-            description={L('noCrewsDesc')}
+            text={L('noCrewsDesc')}
           />
         </Card>
       ) : (
@@ -43,7 +45,7 @@ export default async function CrewsPage() {
               href={`/crews/${crew.id}`}
               className="block min-h-[44px]"
             >
-              <Card className="p-4 hover:border-lime-300 transition-colors h-full">
+              <Card className="p-4 hover:border-hivis transition-colors h-full">
                 <div className="flex items-center gap-3">
                   <span
                     className="w-4 h-4 rounded-full shrink-0"

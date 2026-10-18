@@ -1,257 +1,27 @@
 @import "tailwindcss";
 
+/* FIX-NOW Session 2: the design kit is the single global source of style.
+   Every colour token, every component class (.btn, .panel, .row, .chip,
+   .banner, .sheet, ...) and the dark-mode token swap live in
+   docs/design/everyjob-kit.css — this file must not redefine them. */
+@import "../../docs/design/everyjob-kit.css";
+@import "./tokens.css";
+
 /* Part B (dashboard rebuild): class-based dark mode. `dark:` variants apply
    under `.dark` anywhere in the tree (the theme script in app/layout.tsx
    toggles it on <html>). */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* ---------- EveryJob Vector design tokens ---------- */
-@theme {
-  --color-ink: #161616; /* primary text, dark surfaces */
-  --color-lime: #c8f04a; /* signature accent - lime on charcoal/dark only */
-  --color-paper: #fafaf7; /* page background */
-  --color-smoke: #e8e8e3; /* borders, dividers */
-  --color-graphite: #55554e; /* secondary text */
-
-  /* DESIGN.md (Part C) - deliberate tokens. Use these on work screens:
-     bg-ej-paper, text-ej-ink, text-ej-muted, border-ej-smoke, bg-ej-lime,
-     text-ej-alert. Lime is a fill behind dark text, never text on white. */
-  --color-ej-ink: #14181a;
-  --color-ej-paper: #ffffff;
-  --color-ej-smoke: #f2f4f3;
-  --color-ej-muted: #5a6366;
-  --color-ej-lime: #c8f542;
-  --color-ej-alert: #c0392b;
-  /* 2026-10-01 accessibility: zinc-400 (#a1a1aa) is ~2.3:1 on paper -
-     unreadable for secondary text. Remapped to the zinc-500 value (#71717a,
-     ~4.8:1, passes WCAG 2.1 AA) so all 300+ muted-text usages stay legible. */
-  --color-zinc-400: #71717a;
-
-  /* ---------- Part B design tokens (docs/DESIGN.md) ----------
-     Full semantic palette. All text pairs measured >= 4.5:1 (2026-10-17).
-     Use bg-ej-*, text-ej-*, border-ej-* utilities.
-     Dark mode (Part B) is explicit: components opt in with `dark:` variants
-     (see @custom-variant above). Semantic tokens stay single-valued so
-     unmigrated screens never flip into an unreadable state. */
-  --color-ej-ink: #14181a;
-  --color-ej-muted: #5a6366;
-  --color-ej-secondary: #55554e;
-  --color-ej-disabled: #71717a;
-  --color-ej-bg: #ffffff;
-  --color-ej-surface: #fafaf7;
-  --color-ej-raised: #ffffff;
-  --color-ej-paper: #ffffff;
-  --color-ej-smoke: #f2f4f3;
-  --color-ej-border: #e8e8e3;
-  --color-ej-primary: #161616;
-  --color-ej-on-primary: #ffffff;
-  --color-ej-accent: #c8f04a;
-  --color-ej-focus: #161616;
-  --color-ej-success: #047857;
-  --color-ej-success-bg: #ecfdf5;
-  --color-ej-warning: #b45309;
-  --color-ej-warning-bg: #fffbeb;
-  --color-ej-danger: #c0392b;
-  --color-ej-danger-bg: #fef2f2;
-  --color-ej-info: #1d4ed8;
-  --color-ej-info-bg: #eff6ff;
-  /* Radius by hierarchy */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-pill: 999px;
-  /* Motion */
-  --motion-fast: 100ms;
-  --motion-base: 200ms;
-  --motion-slow: 250ms;
-  /* Type: system stack (migrate from Geist in Part C) */
-  --font-ej-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-
-  /* Brand colours (third-party). Not part of the mockup palette; used only
-     for the WhatsApp brand surfaces. */
-  --color-wa: #25d366;
-  --color-wa-dark: #1fb857;
-  --color-wa-deep: #128c4a;
-
-  /* ---------- Part B (dashboard rebuild): hi-vis visual direction ----------
-     Lime (#D4F24C) appears in four places only: the main action, the active
-     tab, the money bars, and the "now" marker. Everything else stays neutral
-     so lime always means "look here". Lime is never text on white. */
-  --color-asphalt: #1d2024; /* text, the Collected panel, tab bar */
-  --color-concrete: #f2f3ef; /* page background (light) */
-  --color-hivis: #d4f24c; /* hi-vis lime: main action, active tab, money bars, now marker */
-  --color-reflective: #c7ccd1; /* the stripe motif */
-  --color-safety: #e8590c; /* needs attention */
-  --color-safety-ink: #b54708; /* safety-orange text on light surfaces */
-  --color-signal: #c8322b; /* late, overdue */
-  --color-pine: #1c7c45; /* done */
-  --color-steel: #8b939b; /* charts on white (3:1+), secondary marks */
-  /* Dark-mode surfaces, sampled from the Part B mockup. */
-  --color-night: #131518; /* page background (dark) */
-  --color-coal: #1c1f23; /* cards, tab bar (dark) */
-  --color-soot: #22262b; /* Collected panel (dark) */
-  /* Type: Barlow for interface text, Barlow Condensed for numbers and big
-     figures (self-hosted woff2, OFL - see docs/LICENSES.md). */
-  --font-sans: var(--font-barlow), -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-condensed: var(--font-barlow-condensed), var(--font-barlow),
-    -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-}
-
-:root {
-  color-scheme: light;
-  /* DESIGN.md: paper white background, ink text. */
-  --background: #ffffff;
-  --foreground: #14181a;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-mono: var(--font-geist-mono);
-}
-
-/* ---------- Part 1 (all-modules redesign): the kit ----------
-   Semantic colour tokens copied EXACTLY from the mockup
-   (docs/design/app-mockup.html): the light `:root` block and the dark
-   blocks. Each token has a light value on :root and a dark value under
-   .dark, so every component built on these utilities is dark-mode correct
-   by construction — no per-component `dark:` variants needed. This is the
-   fix for the "half in dark mode" bug: hard-coded light colours are gone,
-   one token set is used everywhere.
-   Utilities read naturally: bg-surface, text-ink, border-line, bg-hivis,
-   text-warn-text, bg-danger-bg, text-ok, bg-info-bg, bg-hero, text-hero-ink,
-   bg-nav, text-nav-ink, bg-toast-bg, text-toast-ink, bg-chart-a, text-star,
-   bg-biz, ring-focus, bg-topbar, ...
-   NOTE: --color-ink overrides the earlier single-valued #161616 with the
-   mockup's dual-valued ink (#1D2024 / #EEF0F2). The light values are
-   visually identical; in dark mode text-ink now stays readable. */
-:root {
-  --bg: #F2F3EF;
-  --surface: #FFFFFF;
-  --surface-2: #F6F7F4;
-  --line: #E2E4DF;
-  --line-strong: #C9CDC6;
-  --ink: #1D2024;
-  --ink-2: #5B6168;
-  --hivis-ink: #1D2024;
-  --hivis-soft: #E9FA9F;
-  --warn: #E8590C;
-  --warn-text: #B54708;
-  --warn-bg: #FFF1E6;
-  --warn-line: #F6C9A8;
-  --danger: #C8322B;
-  --danger-bg: #FDECEB;
-  --ok: #1C7C45;
-  --ok-bg: #E7F5EC;
-  --info: #1D4ED8;
-  --info-bg: #E8EFFE;
-  --star: #C77700;
-  --biz: #0E5E6F;
-  --hero: #1D2024;
-  --hero-2: #2A2E33;
-  --hero-ink: #F4F5F2;
-  --hero-ink-2: #A9AFB6;
-  --hero-line: #3A3F45;
-  --nav: #1D2024;
-  --nav-ink: #A9AFB6;
-  --nav-active: #F4F5F2;
-  --chart-a: #1D2024;
-  --chart-b: #8B939B;
-  --toast-bg: #1D2024;
-  --toast-ink: #F4F5F2;
-  --focus: #2563EB;
-  --topbar: #F2F3EF;
-  /* Brand gradient (Instagram-style CTA). Raw colours live here, in the tokens file. */
-  --gradient-instagram: linear-gradient(45deg, #833AB4, #FD1D1D, #FCB045);
-}
-
-.dark {
-  --bg: #131518;
-  --surface: #1C1F23;
-  --surface-2: #23272C;
-  --line: #2E3338;
-  --line-strong: #454B52;
-  --ink: #EEF0F2;
-  --ink-2: #A7AEB5;
-  --warn-text: #FF9A5C;
-  --warn-bg: #2E2117;
-  --warn-line: #5A3A22;
-  --danger: #F06A5F;
-  --danger-bg: #331B1A;
-  --ok: #5FD28C;
-  --ok-bg: #16291E;
-  --info: #8AB4FF;
-  --info-bg: #1A2433;
-  --star: #FBBF24;
-  --biz: #2C8C9E;
-  --hero: #22262B;
-  --hero-2: #2C3136;
-  --hero-line: #3F454C;
-  --nav: #0E1012;
-  --chart-a: #EEF0F2;
-  --chart-b: #6E767E;
-  --toast-bg: #EEF0F2;
-  --toast-ink: #1D2024;
-  --focus: #7AA2FF;
-  --topbar: #131518;
-}
-
-@theme inline {
-  --color-bg: var(--bg);
-  --color-surface: var(--surface);
-  --color-surface-2: var(--surface-2);
-  --color-line: var(--line);
-  --color-line-strong: var(--line-strong);
-  --color-ink: var(--ink);
-  --color-ink-2: var(--ink-2);
-  --color-hivis-ink: var(--hivis-ink);
-  --color-hivis-soft: var(--hivis-soft);
-  --color-warn: var(--warn);
-  --color-warn-text: var(--warn-text);
-  --color-warn-bg: var(--warn-bg);
-  --color-warn-line: var(--warn-line);
-  --color-danger: var(--danger);
-  --color-danger-bg: var(--danger-bg);
-  --color-ok: var(--ok);
-  --color-ok-bg: var(--ok-bg);
-  --color-info: var(--info);
-  --color-info-bg: var(--info-bg);
-  --color-star: var(--star);
-  --color-biz: var(--biz);
-  --color-hero: var(--hero);
-  --color-hero-2: var(--hero-2);
-  --color-hero-ink: var(--hero-ink);
-  --color-hero-ink-2: var(--hero-ink-2);
-  --color-hero-line: var(--hero-line);
-  --color-nav: var(--nav);
-  --color-nav-ink: var(--nav-ink);
-  --color-nav-active: var(--nav-active);
-  --color-chart-a: var(--chart-a);
-  --color-chart-b: var(--chart-b);
-  --color-toast-bg: var(--toast-bg);
-  --color-toast-ink: var(--toast-ink);
-  --color-focus: var(--focus);
-  --color-topbar: var(--topbar);
-  /* Elevation tokens (the tokens file is the one place raw colours live). */
-  --shadow-kit-card: 0 1px 2px rgba(0, 0, 0, 0.06);
-  --shadow-kit-pop: 0 8px 24px rgba(0, 0, 0, 0.14);
-  --shadow-kit-sheet: 0 -12px 40px rgba(0, 0, 0, 0.25);
-  --shadow-kit-toast: 0 10px 30px rgba(0, 0, 0, 0.25);
-}
-
-/* Numbers: Barlow Condensed with tabular + lining figures, like the mockup's .num. */
-.num {
-  font-family: var(--font-barlow-condensed), var(--font-barlow), -apple-system,
-    BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-variant-numeric: tabular-nums lining-nums;
-}
+/* FIX-NOW Session 2: .num lives in the kit CSS (single source) — the
+   duplicate definition here is removed so display numerals render
+   light with open tracking, iOS Weather-app style. */
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-barlow), -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui,
+    "Segoe UI", sans-serif;
+  line-height: 1.5;
   /* Animated decorative blobs/chips sit at negative offsets; clip any
      horizontal overshoot at the page level so no x-scrollbar appears.
      `clip` (not `hidden`) avoids creating a scroll container, so
@@ -277,7 +47,7 @@ body {
      carry their own rings; this is the fallback for links and custom
      interactive elements). */
   :where(a, [role='button'], [role='tab'], [role='radio'], summary):focus-visible {
-    outline: 2px solid #14181a;
+    outline: 2px solid var(--focus);
     outline-offset: 2px;
     border-radius: 6px;
   }
@@ -293,8 +63,8 @@ body {
   }
 
   ::selection {
-    background: #c8f04a;
-    color: #161616;
+    background: var(--hivis);
+    color: var(--hivis-ink);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -308,7 +78,7 @@ body {
   /* Visible keyboard focus for landing-page links/buttons (scoped so it never
      doubles up with the app's own Tailwind focus rings). */
   .landing-focus :is(a, button):focus-visible {
-    outline: 2px solid #161616;
+    outline: 2px solid var(--ink);
     outline-offset: 3px;
   }
 
@@ -570,7 +340,7 @@ body {
         rgba(82, 92, 102, 0.13),
         rgba(82, 92, 102, 0) 62%
       ),
-      #fafaf7;
+      var(--bg);
   }
   /* Liquid Glass on dark contexts - the same material adapting to charcoal
      surfaces (tab bar, top bar). Nearly-opaque ink with a deep blur + saturate
@@ -794,10 +564,10 @@ body {
   .ej-skeleton {
     background-image: linear-gradient(
       100deg,
-      #ececea 30%,
-      #f6f6f3 46%,
-      #f6f6f3 54%,
-      #ececea 70%
+      var(--line) 30%,
+      var(--surface-2) 46%,
+      var(--surface-2) 54%,
+      var(--line) 70%
     );
     background-size: 200% 100%;
     animation: ej-skeleton-shimmer 1.6s linear infinite;
@@ -838,7 +608,7 @@ body {
     .ej-skeleton {
       animation: none;
       background-image: none;
-      background-color: #ececea;
+      background-color: var(--line);
     }
   }
 
@@ -969,15 +739,14 @@ section[id] h2, section[id] h3, [id] > h2:first-child {
    Industry-standard refinements: tighter display typography, layered soft
    shadows, hairline top-highlights, and restrained motion. */
 
-/* Display typography: tight tracking + optical sizing for headings.
-   This is the single biggest "expensive" signal. */
+/* Display typography (FIX-NOW Session 2): the user direction is iOS
+   Weather-app feel — open, airy tracking replaces the old tight
+   negative tracking. Kit headings carry their own weights/spacing;
+   this base rule only keeps headings balanced and never tight. */
 @layer base {
   h1, h2, h3 {
-    letter-spacing: -0.025em;
+    letter-spacing: 0.005em;
     text-wrap: balance;
-  }
-  h1 {
-    letter-spacing: -0.035em;
   }
 }
 

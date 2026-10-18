@@ -11,7 +11,7 @@ import {
 } from '@/app/actions/marketing';
 import { renderTemplate, type Audience } from '@/lib/marketing';
 import { t, type Locale } from '@/lib/i18n';
-import { Field, inputClass, primaryBtnClass, secondaryBtnClass, Card } from '@/components/ui';
+import { Button, Card, Input, Select, Textarea } from '@/components/kit';
 
 const AUDIENCE_KEYS: { value: Audience; labelKey: string; hintKey: string }[] = [
   { value: 'ALL_CUSTOMERS', labelKey: 't10misc.marketing.audienceAll', hintKey: 't10misc.marketing.hintAll' },
@@ -71,54 +71,48 @@ export default function CampaignForm({
     <form action={formAction} className="space-y-6 max-w-3xl">
       {initial && <input type="hidden" name="id" value={initial.id} />}
       {state?.error && (
-        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-danger/30 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{state.error}</span>
         </div>
       )}
 
       <Card className="p-6 space-y-4">
-        <Field label={t(locale, 't10misc.marketing.campaignName')}>
-          <input
-            name="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            maxLength={120}
-            placeholder={t(locale, 't10misc.marketing.campaignNamePlaceholder')}
-            className={inputClass}
-          />
-        </Field>
+        <Input
+          label={t(locale, 't10misc.marketing.campaignName')}
+          name="name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+          maxLength={120}
+          placeholder={t(locale, 't10misc.marketing.campaignNamePlaceholder')}
+        />
 
         <div>
-          <Field label={t(locale, 't10misc.marketing.audience')}>
-            <select
-              name="audience"
-              value={audience}
-              onChange={(e) => setAudience(e.target.value as Audience)}
-              className={inputClass}
-            >
-              {AUDIENCE_KEYS.map((a) => (
-                <option key={a.value} value={a.value}>
-                  {t(locale, a.labelKey)}
-                </option>
-              ))}
-            </select>
-          </Field>
+          <Select
+            label={t(locale, 't10misc.marketing.audience')}
+            name="audience"
+            value={audience}
+            onChange={(e) => setAudience(e.target.value as Audience)}
+            options={AUDIENCE_KEYS.map((a) => ({
+              value: a.value,
+              label: t(locale, a.labelKey),
+            }))}
+          />
           <div className="flex items-center justify-between mt-1.5">
             <p className="text-[11px] text-ink-2">{audienceHint ? t(locale, audienceHint) : ''}</p>
             <button
               type="button"
               onClick={handlePreview}
               disabled={previewLoading}
-              className="inline-flex items-center gap-1.5 min-h-[44px] text-xs font-semibold text-ink hover:text-graphite disabled:opacity-60"
+              className="inline-flex items-center gap-1.5 min-h-[44px] text-xs font-semibold text-ink hover:text-ink-2 disabled:opacity-60"
             >
               <Users size={13} />
               {previewLoading ? t(locale, 't10misc.marketing.checking') : t(locale, 't10misc.marketing.previewAudience')}
             </button>
           </div>
           {preview && (
-            <div className="mt-2 bg-smoke border border-smoke rounded-xl px-3 py-2.5">
+            <div className="mt-2 bg-surface-2 border border-line rounded-xl px-3 py-2.5">
               <p className="text-xs font-bold text-ink">{recipientLine}</p>
               {preview.sample.length > 0 && (
                 <p className="text-[11px] text-ink mt-0.5">
@@ -135,33 +129,27 @@ export default function CampaignForm({
           )}
         </div>
 
-        <Field label={t(locale, 't10misc.marketing.subject')}>
-          <input
-            name="subject"
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            required
-            maxLength={160}
-            placeholder={t(locale, 't10misc.marketing.subjectPlaceholder')}
-            className={inputClass}
-          />
-        </Field>
+        <Input
+          label={t(locale, 't10misc.marketing.subject')}
+          name="subject"
+          value={subject}
+          onChange={(e) => setSubject(e.target.value)}
+          required
+          maxLength={160}
+          placeholder={t(locale, 't10misc.marketing.subjectPlaceholder')}
+        />
 
-        <Field
+        <Textarea
           label={t(locale, 't10misc.marketing.message')}
           hint={t(locale, 't10misc.marketing.messageHint')}
-        >
-          <textarea
-            name="body"
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            required
-            maxLength={4000}
-            rows={6}
-            placeholder={t(locale, 't10misc.marketing.messagePlaceholder')}
-            className={inputClass}
-          />
-        </Field>
+          name="body"
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          required
+          maxLength={4000}
+          rows={6}
+          placeholder={t(locale, 't10misc.marketing.messagePlaceholder')}
+        />
       </Card>
 
       <Card className="p-6">
@@ -178,16 +166,21 @@ export default function CampaignForm({
       </Card>
 
       <div className="flex items-center gap-2">
-        <button type="submit" disabled={pending} className={primaryBtnClass}>
+        <Button
+          variant="primary"
+          type="submit"
+          disabled={pending}
+          className="disabled:opacity-60 disabled:cursor-not-allowed"
+        >
           {pending ? t(locale, 't10misc.marketing.savingBtn') : initial ? t(locale, 't10misc.marketing.saveChanges') : t(locale, 't10misc.marketing.saveDraft')}
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="secondary"
           type="button"
           onClick={() => router.back()}
-          className={secondaryBtnClass}
         >
           {t(locale, 't10misc.marketing.cancel')}
-        </button>
+        </Button>
       </div>
 
       <p className="text-[11px] text-ink-2">

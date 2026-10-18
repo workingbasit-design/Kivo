@@ -10,7 +10,11 @@
 import { useState, useTransition } from "react";
 import { ArrowUp, ArrowDown, SlidersHorizontal, Check } from "@/components/icons";
 import { saveDashboardLayout } from "@/app/actions/dashboard-layout";
-import type { SectionPref } from "@/lib/dashboard-layout";
+import {
+  moveSectionPref,
+  toggleSectionPref,
+  type SectionPref,
+} from "@/lib/dashboard-layout-client";
 import { cn } from "@/lib/utils";
 
 export default function CustomizePanel({
@@ -38,30 +42,46 @@ export default function CustomizePanel({
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
+  // FIX-NOW S2: keep the editor in sync with server truth whenever the
+  // page revalidates (e.g. after a save). Without this, a client-side
+  // navigation back to /dashboard could show the stale mount-time order
+  // even though the new order persisted. Adjusted during render (not in
+  // an effect) — the React-endorsed pattern for prop-driven state sync.
+  const [lastInitial, setLastInitial] = useState(initial);
+  if (lastInitial !== initial) {
+    setLastInitial(initial);
+    setSections(initial);
+  }
+
   const persist = (next: SectionPref[]) => {
     setSections(next);
     setError(null);
     startTransition(async () => {
-      const res = await saveDashboardLayout(next);
-      if (res.ok) {
-        setSavedFlash(true);
-        window.setTimeout(() => setSavedFlash(false), 1500);
-      } else {
+      try {
+        const res = await saveDashboardLayout(next);
+        if (res.ok) {
+          setSavedFlash(true);
+          window.setTimeout(() => setSavedFlash(false), 1500);
+        } else {
+          setError(labels.saveFailed);
+        }
+      } catch {
+        // The server action threw instead of returning { ok: false } —
+        // surface it instead of leaving the arrows looking dead.
         setError(labels.saveFailed);
       }
     });
   };
 
   const move = (i: number, dir: -1 | 1) => {
-    const j = i + dir;
-    if (j < 0 || j >= sections.length) return;
-    const next = [...sections];
-    [next[i], next[j]] = [next[j], next[i]];
+    const next = moveSectionPref(sections, i, dir);
+    if (next === sections) return; // already at the end — nothing to save
     persist(next);
   };
 
   const toggle = (i: number) => {
-    const next = sections.map((s, k) => (k === i ? { ...s, visible: !s.visible } : s));
+    const next = toggleSectionPref(sections, i);
+    if (next === sections) return;
     persist(next);
   };
 
@@ -70,7 +90,7 @@ export default function CustomizePanel({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-[20px] border-2 border-dashed border-line-strong text-[15px] font-semibold text-asphalt transition-colors hover:border-zinc-400 dark:border-white/20 dark:text-white"
+        className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-[20px] border-2 border-dashed border-line-strong text-[15px] font-semibold text-asphalt transition-colors hover:border-line-strong dark:border-hero-ink/20 dark:text-hero-ink"
       >
         <SlidersHorizontal size={18} aria-hidden /> {labels.customize}
       </button>
@@ -80,14 +100,14 @@ export default function CustomizePanel({
   return (
     <section
       aria-label={labels.title}
-      className="rounded-[24px] border border-line/70 bg-surface p-5 dark:border-white/10 dark:bg-coal"
+      className="rounded-[24px] border border-line/70 bg-surface p-5 dark:border-hero-ink/10 dark:bg-coal"
     >
       <div className="flex items-center justify-between">
-        <h2 className="text-[17px] font-bold text-asphalt dark:text-white">{labels.title}</h2>
+        <h2 className="text-[17px] font-bold text-asphalt dark:text-hero-ink">{labels.title}</h2>
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="inline-flex min-h-[44px] items-center px-3 text-[14px] font-semibold text-asphalt dark:text-zinc-300"
+          className="inline-flex min-h-[44px] items-center px-3 text-[14px] font-semibold text-asphalt dark:text-ink-2"
         >
           {labels.done}
         </button>
@@ -108,7 +128,7 @@ export default function CustomizePanel({
               onClick={() => toggle(i)}
               className={cn(
                 "relative h-7 w-12 shrink-0 rounded-full transition-colors",
-                s.visible ? "bg-pine" : "bg-zinc-300 dark:bg-white/20"
+                s.visible ? "bg-pine" : "bg-line dark:bg-surface/20"
               )}
             >
               <span
@@ -122,7 +142,7 @@ export default function CustomizePanel({
             <span
               className={cn(
                 "flex-1 text-[15px]",
-                s.visible ? "text-asphalt dark:text-white" : "text-ink-2 dark:text-zinc-500"
+                s.visible ? "text-asphalt dark:text-hero-ink" : "text-ink-2 dark:text-ink-2"
               )}
             >
               {labels.sectionNames[s.key]}
@@ -132,7 +152,7 @@ export default function CustomizePanel({
               aria-label={`${labels.moveUp}: ${labels.sectionNames[s.key]}`}
               disabled={i === 0 || pending}
               onClick={() => move(i, -1)}
-              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-ink-2 disabled:opacity-30 dark:text-zinc-400"
+              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-ink-2 disabled:opacity-30 dark:text-ink-2"
             >
               <ArrowUp size={18} aria-hidden />
             </button>
@@ -141,7 +161,7 @@ export default function CustomizePanel({
               aria-label={`${labels.moveDown}: ${labels.sectionNames[s.key]}`}
               disabled={i === sections.length - 1 || pending}
               onClick={() => move(i, 1)}
-              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-ink-2 disabled:opacity-30 dark:text-zinc-400"
+              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-ink-2 disabled:opacity-30 dark:text-ink-2"
             >
               <ArrowDown size={18} aria-hidden />
             </button>
@@ -152,7 +172,7 @@ export default function CustomizePanel({
         <button
           type="button"
           onClick={() => persist(initial)}
-          className="inline-flex min-h-[44px] items-center px-2 text-[13px] font-semibold text-ink-2 underline underline-offset-2 dark:text-zinc-400"
+          className="inline-flex min-h-[44px] items-center px-2 text-[13px] font-semibold text-ink-2 underline underline-offset-2 dark:text-ink-2"
         >
           {labels.reset}
         </button>

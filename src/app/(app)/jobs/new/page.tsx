@@ -3,12 +3,13 @@ import Link from 'next/link';
 import { ArrowLeft } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { PageHeader, Card } from '@/components/ui';
+import { Card } from '@/components/kit';
 import JobForm, { type JobFormInitial } from '@/components/JobForm';
 import { createJobWithOfflineFallback } from '@/lib/offline/job-action';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { centsToDollars } from '@/lib/money';
+import { PageTitle } from '../../_components/PageTitle';
 
 // Always render fresh: the customer list must include customers created
 // moments ago (client-side navigation can otherwise reuse a cached render).
@@ -85,15 +86,15 @@ export default async function NewJobPage({
         <ArrowLeft size={14} /> {t(locale, 'jobs.backToJobs')}
       </Link>
 
-      <PageHeader
+      <PageTitle
         title={t(locale, 'jobs.newJob')}
-        subtitle={t(locale, 'jobs.newJobSubtitle')}
+        summary={t(locale, 'jobs.newJobSubtitle')}
       />
 
       <Card className="p-6">
         {customers.length === 0 ? (
           <div className="space-y-5">
-            <div className="bg-warn-bg border border-amber-200 text-amber-800 text-xs font-medium rounded-xl px-4 py-3">
+            <div className="bg-warn-bg border border-warn-line text-warn-text text-xs font-medium rounded-xl px-4 py-3">
               You don&apos;t have any customers yet. Add the customer inline below -
               they&apos;ll be saved automatically.
             </div>

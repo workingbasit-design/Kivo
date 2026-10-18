@@ -10,7 +10,7 @@ import { quoteSchema, QUOTE_STATUSES } from '@/lib/validations';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { dollarsToCents, centsToDollars, formatCents } from '@/lib/money';
 import { nextDocumentNumber } from '@/lib/numbering';
-import { getTaxConfig } from '@/lib/tax';
+import { getTaxConfig, splitStoredTax, type TaxConfig, type TaxLine } from '@/lib/tax';
 import { QUOTE_TRANSITIONS } from '@/lib/quote-status';
 import { computeQuoteTotals, type DiscountType } from '@/lib/quote-totals';
 import { parseDepositAmount } from '@/lib/quote-deposit';
@@ -27,6 +27,43 @@ import { quoteEmail } from '@/lib/messaging/email-templates';
 import { appBaseUrl } from '@/lib/app-url';
 
 export type ActionResult = { error?: string; ok?: boolean; id?: string };
+
+/** Tax types the quote builder's single tax Select can submit. */
+const QUOTE_TAX_TYPES = [
+  'GST',
+  'HST',
+  'PST',
+  'QST',
+  'GST+QST',
+  'GST+PST',
+] as const;
+
+/**
+ * Resolve the tax lines for a quote from the builder's single tax Select.
+ * A valid submitted taxType + taxRate wins (rebuilt through splitStoredTax
+ * so multi-tax provinces break down exactly like the form preview); anything
+ * missing or invalid falls back to the business's region settings. The server
+ * recomputes all money through calcTax either way - client math is never
+ * trusted for the stored total.
+ */
+function quoteTaxesFromForm(formData: FormData, taxConfig: TaxConfig): TaxLine[] {
+  const taxTypeRaw = String(formData.get('taxType') ?? '').toUpperCase();
+  const taxRateRaw = formData.get('taxRate');
+  const taxRate =
+    taxRateRaw === null || String(taxRateRaw).trim() === ''
+      ? null
+      : Number(taxRateRaw);
+  if (
+    (QUOTE_TAX_TYPES as readonly string[]).includes(taxTypeRaw) &&
+    taxRate !== null &&
+    Number.isFinite(taxRate) &&
+    taxRate >= 0 &&
+    taxRate <= 100
+  ) {
+    return splitStoredTax(taxTypeRaw, taxRate);
+  }
+  return taxConfig.taxes;
+}
 
 const lineItemSchema = z.object({
   desc: z.string().trim().min(1, 'Item description is required').max(200),
@@ -142,7 +179,7 @@ export async function createQuote(
   const totals = computeQuoteTotals(
     items.map((i) => ({ qty: i.qty, unitPrice: i.rate })),
     discount,
-    taxConfig.taxes
+    quoteTaxesFromForm(formData, taxConfig)
   );
   const total = totals.total;
 
@@ -246,7 +283,7 @@ export async function updateQuoteItems(
   const totals = computeQuoteTotals(
     items.map((i) => ({ qty: i.qty, unitPrice: i.rate })),
     discount,
-    taxConfig.taxes
+    quoteTaxesFromForm(formData, taxConfig)
   );
 
   await prisma.$transaction([

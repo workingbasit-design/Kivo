@@ -4,12 +4,13 @@ import { AlertCircle, Plus } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { logPiiAccess } from '@/lib/pii-audit';
-import { PageHeader, Card, primaryBtnClass } from '@/components/ui';
+import { Card, Button } from '@/components/kit';
 import CustomersClient from '@/components/CustomersClient';
 import type { CustomerRow } from '@/components/CustomersClient';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { centsToDollars } from '@/lib/money';
+import { PageHeader} from '@/components/kit';
 
 /**
  * Customers list - defensive by design (production incident 2026-09-23:
@@ -85,12 +86,10 @@ export default async function CustomersPage() {
     <div className="space-y-6">
       <PageHeader
         title={custL('title')}
-        subtitle={countLabel}
-        actions={
-          <Link href="/customers/new" className={primaryBtnClass}>
-            <Plus size={14} /> {custL('addCustomer')}
-          </Link>
-        }
+        summary={countLabel}
+        actionLabel={custL('addCustomer')}
+        actionHref="/customers/new"
+        actionIcon={Plus}
       />
 
       {loadError ? (
@@ -103,9 +102,9 @@ export default async function CustomersPage() {
           </h2>
           <p className="text-sm text-ink-2 mb-5">{loadError}</p>
           <div className="flex items-center justify-center gap-3">
-            <Link href="/customers" className={primaryBtnClass}>
+            <Button href="/customers" variant="primary">
               {custL('tryAgain')}
-            </Link>
+            </Button>
             <Link href="/customers/new" className="text-sm font-medium text-ink hover:underline">
               {custL('addACustomer')}
             </Link>

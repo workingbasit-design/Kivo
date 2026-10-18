@@ -19,12 +19,12 @@ export default function HeroBackdrop() {
     },
     {
       wrapper: 'left-[-10rem] top-[16rem]',
-      blob: 'h-[22rem] w-[22rem] bg-amber-200/[0.45]',
+      blob: 'h-[22rem] w-[22rem] bg-warn/[0.45]',
       style: { animationDuration: '21s, 15s', animationDelay: '-8s, -4s' },
     },
     {
       wrapper: 'right-[-9rem] top-[22rem]',
-      blob: 'h-[20rem] w-[20rem] bg-sky-200/[0.5]',
+      blob: 'h-[20rem] w-[20rem] bg-info-bg/[0.5]',
       style: { animationDuration: '24s, 17s', animationDelay: '-13s, -9s' },
     },
     {

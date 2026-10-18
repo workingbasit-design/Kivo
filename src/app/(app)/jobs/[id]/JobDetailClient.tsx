@@ -8,17 +8,7 @@ import {
   DetailScreen,
   type DetailSection,
 } from '@/components/patterns';
-import {
-  Avatar,
-  BottomSheet,
-  Card,
-  LineItems,
-  MarginBar,
-  ProgressSteps,
-  StatusBadge,
-  type ProgressStep,
-  type StatusBadgeProps,
-} from '@/components/kit';
+import { Avatar, BottomSheet, Card, LineItems, MarginBar, ProgressSteps, StatusBadge, type ProgressStep, type StatusBadgeProps } from '@/components/kit';
 import type { IconComponent } from '@/components/icons';
 import TradeIcon from '@/components/TradeIcon';
 import {
@@ -31,14 +21,13 @@ import {
   Phone,
   User,
 } from '@/components/icons';
-import { Timeline } from '@/components/design/lists';
 import { JobChecklist } from '@/components/JobChecklist';
 import { JobExpenses } from '@/components/JobExpenses';
 import JobTimeEntryForm from '@/components/JobTimeEntryForm';
 import { JobNoteForm, JobNoteItem } from '@/components/JobNoteForm';
 import Attachments from '@/components/Attachments';
 import ReviewLinkButton from '@/components/ReviewLinkButton';
-import { Dialog, secondaryBtnClass, dangerBtnClass } from '@/components/ui';
+
 import { updateJobStatus, deleteJob } from '@/app/actions/jobs';
 import { assignJobTechnician } from '@/app/actions/dispatch';
 import { previousPipelineStatus, jobStatusLabel } from '@/lib/job-status';
@@ -47,6 +36,7 @@ import { localeMoneyTag, statusLabel, cn } from '@/lib/utils';
 import { t, type Locale } from '@/lib/i18n';
 import { tp } from '@/lib/i18n/plural';
 import type { TradeKey } from '@/lib/trade-icons';
+import { Timeline } from '../../_components/Timeline';
 
 export interface JobDetailVm {
   id: string;
@@ -750,44 +740,28 @@ export default function JobDetailClient({ vm }: { vm: JobDetailVm }) {
       >
         {moreActions}
       </BottomSheet>
-      <Dialog
+      <BottomSheet
         open={confirm !== null}
         onClose={() => setConfirm(null)}
         title={
           confirm === 'cancel' ? jobsL('confirmCancelTitle') : jobsL('confirmDeleteTitle')
         }
-        locale={locale}
+        doneLabel={confirm === 'cancel' ? jobsL('yesCancel') : jobsL('yesDelete')}
+        cancelLabel={jobsL('keepIt')}
+        onDone={() => {
+          if (confirm === 'cancel') {
+            setConfirm(null);
+            runStatus('CANCELLED');
+          } else {
+            setConfirm(null);
+            runDelete();
+          }
+        }}
       >
-        <p className="text-sm text-ink-2 leading-relaxed">
+        <p className="text-[15px] text-ink-2">
           {confirm === 'cancel' ? jobsL('confirmCancelBody') : jobsL('confirmDeleteBody')}
         </p>
-        <div className="mt-6 flex gap-2">
-          <button
-            type="button"
-            onClick={() => setConfirm(null)}
-            disabled={isPending}
-            className={cn(secondaryBtnClass, 'flex-1')}
-          >
-            {jobsL('keepIt')}
-          </button>
-          <button
-            type="button"
-            disabled={isPending}
-            onClick={() => {
-              if (confirm === 'cancel') {
-                setConfirm(null);
-                runStatus('CANCELLED');
-              } else {
-                setConfirm(null);
-                runDelete();
-              }
-            }}
-            className={cn(dangerBtnClass, 'flex-1')}
-          >
-            {confirm === 'cancel' ? jobsL('yesCancel') : jobsL('yesDelete')}
-          </button>
-        </div>
-      </Dialog>
+      </BottomSheet>
     </div>
   );
 }

@@ -4,15 +4,8 @@ import { prisma } from '@/lib/prisma';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { Inbox, ChevronRight, Clock } from '@/components/icons';
-import {
-  Avatar,
-  Card,
-  EmptyState,
-  PageHeader,
-  PrimaryCTA,
-  Stagger,
-  StatusBadge,
-} from '@/components/customer/ui';
+import { Button, Card, Chip, EmptyState, StatusBadge } from '@/components/kit';
+import type { StatusBadgeTone } from '@/components/kit';
 
 function timeAgo(date: Date): string {
   const mins = Math.floor((Date.now() - date.getTime()) / 60000);
@@ -24,6 +17,14 @@ function timeAgo(date: Date): string {
   if (days < 7) return `${days}d ago`;
   return date.toLocaleDateString();
 }
+
+const STATUS_TONES: Record<string, StatusBadgeTone> = {
+  sent: 'info',
+  replied: 'info',
+  accepted: 'done',
+  declined: 'late',
+  completed: 'neutral',
+};
 
 export default async function CustomerRequestsPage() {
   const session = await requireCustomerAuth();
@@ -43,49 +44,62 @@ export default async function CustomerRequestsPage() {
 
   return (
     <div className="space-y-4">
-      <PageHeader
-        title={tr('customer.requests.title')}
-        action={
-          activeCount > 0 ? (
-            <span className="text-xs font-bold text-indigo-700 bg-indigo-100 rounded-full px-2.5 py-1">
-              {tr('customer.requests.active').replace('{count}', String(activeCount)).replace('{s}', activeCount === 1 ? '' : 's')}
-            </span>
-          ) : undefined
-        }
-      />
+      <div className="ej-anim-fade-up flex items-start justify-between gap-3">
+        <h1 className="text-xl font-bold tracking-tight text-ink">{tr('customer.requests.title')}</h1>
+        {activeCount > 0 && (
+          <Chip tone="neutral">
+            {tr('customer.requests.active').replace('{count}', String(activeCount)).replace('{s}', activeCount === 1 ? '' : 's')}
+          </Chip>
+        )}
+      </div>
 
       {requests.length === 0 ? (
-        <EmptyState
-          icon={Inbox}
-          title={tr('customer.requests.emptyTitle')}
-          hint={tr('customer.requests.emptyHint')}
-          delay={80}
-          action={
-            <PrimaryCTA href="/customer">{tr('customer.requests.findPro')}</PrimaryCTA>
-          }
-        />
+        <>
+          <EmptyState
+            icon={Inbox}
+            title={tr('customer.requests.emptyTitle')}
+            text={tr('customer.requests.emptyHint')}
+          />
+          <div className="text-center -mt-4 pb-2">
+            <Button href="/customer" sm>
+              {tr('customer.requests.findPro')}
+            </Button>
+          </div>
+        </>
       ) : (
         <div className="space-y-3">
           {requests.map((req, i) => (
-            <Stagger key={req.id} index={i}>
+            <div
+              key={req.id}
+              className="ej-anim-fade-up"
+              style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}
+            >
               <Link
                 href={`/customer/requests/${req.id}`}
                 className="group block"
               >
-                <Card hover className="p-4">
+                <Card className="p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-line-strong">
                   <div className="flex items-center gap-3">
-                    <div className="transition-transform duration-300 group-hover:scale-105">
-                      <Avatar name={req.business.name} logoUrl={req.business.logoUrl} />
-                    </div>
+                    <span
+                      aria-hidden="true"
+                      className="grid w-[42px] h-[42px] place-items-center rounded-full bg-surface-2 ring-1 ring-inset ring-line font-bold text-ink text-[15px] flex-none overflow-hidden transition-transform duration-300 group-hover:scale-105"
+                    >
+                      {req.business.logoUrl ? (
+                        <img src={req.business.logoUrl} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        req.business.name.charAt(0).toUpperCase()
+                      )}
+                    </span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <h3 className="font-bold text-[15px] text-ink truncate">
                           {req.business.name}
                         </h3>
                         <StatusBadge
-                          status={req.status}
-                          label={tr(`customer.requests.status.${req.status}`)}
-                        />
+                          tone={STATUS_TONES[req.status] ?? 'neutral'}
+                        >
+                          {tr(`customer.requests.status.${req.status}`)}
+                        </StatusBadge>
                       </div>
                       <p className="text-xs font-medium text-ink truncate mt-0.5">
                         {req.service}
@@ -98,11 +112,11 @@ export default async function CustomerRequestsPage() {
                         {timeAgo(req.updatedAt)}
                       </p>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-zinc-300 shrink-0 transition-all duration-300 group-hover:text-indigo-500 group-hover:translate-x-0.5" />
+                    <ChevronRight className="w-5 h-5 text-ink-2 shrink-0 transition-all duration-300 group-hover:text-ink group-hover:translate-x-0.5" />
                   </div>
                 </Card>
               </Link>
-            </Stagger>
+            </div>
           ))}
         </div>
       )}

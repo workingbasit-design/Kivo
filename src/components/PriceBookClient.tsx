@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { createService, updateService, deleteService, seedDefaultServices } from '@/app/actions/services';
 import { currencySymbol, formatMoney } from '@/lib/money';
 import { t, type Locale } from '@/lib/i18n';
-import { Dialog, Field, inputClass, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
+import { BottomSheet, Button, Input, Textarea } from '@/components/kit';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import TradeIcon from '@/components/TradeIcon';
 import { TRADE_KEYS, tradeKeyForService, type TradeKey } from '@/lib/trade-icons';
@@ -163,33 +163,32 @@ export default function PriceBookClient({
 
         <div className="flex items-center gap-2 flex-wrap">
           {initialServices.length === 0 && (
-            <button
+            <Button
+              variant="secondary"
+              sm
               onClick={handleSeed}
               disabled={isPending}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 min-h-[44px] rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm disabled:opacity-60"
+              className="disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <ListPlus size={14} /> {tr('t10misc.pricebook.addStandard')}
-            </button>
+            </Button>
           )}
 
-          <button
-            onClick={openAdd}
-            className="bg-asphalt hover:bg-graphite text-white px-5 min-h-[44px] rounded-xl font-semibold text-sm transition-colors inline-flex items-center gap-2 shadow-sm cursor-pointer"
-          >
+          <Button variant="primary" sm onClick={openAdd}>
             <Plus size={16} /> {tr('t10misc.pricebook.addService')}
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Main Container */}
       {error && (
-        <div className="bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-4 py-3 flex items-start gap-2">
+        <div className="bg-danger-bg border border-danger/25 text-danger text-xs font-medium rounded-xl px-4 py-3 flex items-start gap-2">
           <span className="font-bold">{tr('t10misc.pricebook.errorPrefix')}</span>
           <span>{error}</span>
           <button
             type="button"
             onClick={() => setError(null)}
-            className="ml-auto text-rose-400 hover:text-danger font-bold min-w-[44px] min-h-[44px] inline-flex items-center justify-center -mr-2 -my-2"
+            className="ml-auto text-danger/60 hover:text-danger font-bold min-w-[44px] min-h-[44px] inline-flex items-center justify-center -mr-2 -my-2"
             aria-label={tr('t10misc.pricebook.dismissError')}
           >
             ✕
@@ -234,7 +233,7 @@ export default function PriceBookClient({
                   </button>
                   <button
                     onClick={() => setPendingDeleteId(service.id)}
-                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 text-rose-500 hover:text-danger min-w-[44px] min-h-[44px] inline-flex items-center justify-center hover:bg-danger-bg rounded-lg transition-all"
+                    className="opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100 text-danger/70 hover:text-danger min-w-[44px] min-h-[44px] inline-flex items-center justify-center hover:bg-danger-bg rounded-lg transition-all"
                     title={tr('t10misc.pricebook.removeTitle')}
                     aria-label={`${tr('t10misc.pricebook.removeTitle')}: ${service.name}`}
                   >
@@ -269,7 +268,7 @@ export default function PriceBookClient({
 
           {filteredServices.length === 0 && (
             <div className="col-span-full py-16 flex flex-col items-center justify-center text-ink-2 border-2 border-dashed border-line rounded-2xl text-center">
-              <Tag size={40} className="text-zinc-300 mb-3" />
+              <Tag size={40} className="text-line-strong mb-3" />
               {initialServices.length === 0 ? (
                 <>
                   <h3 className="text-base font-bold text-ink mb-1">
@@ -279,13 +278,15 @@ export default function PriceBookClient({
                     {tr('t10misc.pricebook.noServicesDesc')}
                   </p>
 
-                  <button
+                  <Button
+                    variant="primary"
+                    sm
                     onClick={handleSeed}
                     disabled={isPending}
-                    className="bg-asphalt text-white px-4 min-h-[44px] rounded-xl text-xs font-semibold hover:bg-graphite transition-colors inline-flex items-center gap-2 disabled:opacity-60"
+                    className="disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     <ListPlus size={14} /> {tr('t10misc.pricebook.seedButton')}
-                  </button>
+                  </Button>
                 </>
               ) : (
                 <>
@@ -297,12 +298,9 @@ export default function PriceBookClient({
                       .replace('{count}', String(initialServices.length))
                       .replace('{s}', initialServices.length === 1 ? '' : 's')}
                   </p>
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className="bg-asphalt text-white px-4 min-h-[44px] rounded-xl text-xs font-semibold hover:bg-zinc-700 transition-colors"
-                  >
+                  <Button variant="primary" sm onClick={() => setSearchQuery('')}>
                     {tr('t10misc.pricebook.clearSearch')}
-                  </button>
+                  </Button>
                 </>
               )}
             </div>
@@ -310,8 +308,8 @@ export default function PriceBookClient({
         </div>
       </div>
 
-      {/* Add/Edit Service Dialog */}
-      <Dialog
+      {/* Add/Edit Service sheet */}
+      <BottomSheet
         open={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title={tr(editingId ? 't10misc.pricebook.modalEditTitle' : 't10misc.pricebook.modalTitle')}
@@ -320,71 +318,66 @@ export default function PriceBookClient({
 
         <form onSubmit={handleAddService} className="space-y-4">
           {error && (
-            <div className="bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
+            <div className="bg-danger-bg border border-danger/25 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
               {error}
             </div>
           )}
-          <Field label={tr('t10misc.pricebook.serviceName')}>
-            <input
-              type="text"
-              required
-              placeholder={tr('t10misc.pricebook.serviceNamePlaceholder')}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className={inputClass}
-            />
-          </Field>
+          <Input
+            label={tr('t10misc.pricebook.serviceName')}
+            type="text"
+            required
+            placeholder={tr('t10misc.pricebook.serviceNamePlaceholder')}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
 
           <div className="grid grid-cols-2 gap-4">
-            <Field
+            <Input
               label={tr('t10misc.pricebook.flatRate').replace('{symbol}', currencySymbol(currency))}
-            >
-              <input
-                type="text"
-                inputMode="decimal"
-                pattern="[0-9]*\.?[0-9]*"
-                required
-                placeholder={tr('t10misc.pricebook.flatRatePlaceholder')}
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                className={inputClass}
-              />
-            </Field>
-            <Field label={tr('t10misc.pricebook.duration')} hint={tr('t10misc.pricebook.durationHint')}>
-              <input
-                type="number"
-                placeholder={tr('t10misc.pricebook.durationHint')}
-                min={5}
-                max={1440}
-                step="1"
-                value={durationMin}
-                onChange={(e) => setDurationMin(e.target.value)}
-                className={inputClass}
-              />
-            </Field>
+              type="text"
+              inputMode="decimal"
+              pattern="[0-9]*\.?[0-9]*"
+              required
+              placeholder={tr('t10misc.pricebook.flatRatePlaceholder')}
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+            />
+            <Input
+              label={tr('t10misc.pricebook.duration')}
+              hint={tr('t10misc.pricebook.durationHint')}
+              type="number"
+              placeholder={tr('t10misc.pricebook.durationHint')}
+              min={5}
+              max={1440}
+              step="1"
+              value={durationMin}
+              onChange={(e) => setDurationMin(e.target.value)}
+            />
           </div>
 
-          <Field label={tr('t10misc.pricebook.description')} hint={tr('t10misc.pricebook.descriptionHint')}>
-            <textarea
-              placeholder={tr('t10misc.pricebook.descriptionHint')}
-              rows={2}
-              maxLength={500}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className={inputClass}
-            />
-          </Field>
+          <Textarea
+            label={tr('t10misc.pricebook.description')}
+            hint={tr('t10misc.pricebook.descriptionHint')}
+            placeholder={tr('t10misc.pricebook.descriptionHint')}
+            rows={2}
+            maxLength={500}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
 
           {/* Part B: trade icon picker. Auto (blank) detects from the name. */}
-          <Field label={tr('t10misc.pricebook.tradeIconLabel')} hint={tr('t10misc.pricebook.tradeIconHint')}>
-            <div className="grid grid-cols-6 gap-2" role="radiogroup" aria-label={tr('t10misc.pricebook.tradeIconLabel')}>
+          <div>
+            <span className="block text-xs font-semibold text-ink mb-1.5" id="trade-icon-label">
+              {tr('t10misc.pricebook.tradeIconLabel')}
+            </span>
+            <div className="grid grid-cols-6 gap-2" role="radiogroup" aria-labelledby="trade-icon-label">
               <button
                 type="button"
                 role="radio"
                 aria-checked={iconKey === ''}
                 title={tr('t10misc.pricebook.tradeIconAuto')}
                 onClick={() => setIconKey('')}
-                className={`min-h-[52px] rounded-xl border flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold transition-colors ${iconKey === '' ? 'border-asphalt bg-asphalt text-white' : 'border-line text-ink-2 hover:bg-surface-2'}`}
+                className={`min-h-[52px] rounded-xl border flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold transition-colors ${iconKey === '' ? 'border-asphalt bg-asphalt text-hero-ink' : 'border-line text-ink-2 hover:bg-surface-2'}`}
               >
                 <span className="text-sm font-bold">A</span>
                 {tr('t10misc.pricebook.tradeIconAuto')}
@@ -397,33 +390,36 @@ export default function PriceBookClient({
                   aria-checked={iconKey === key}
                   title={tr(TRADE_LABEL_KEYS[key])}
                   onClick={() => setIconKey(key)}
-                  className={`min-h-[52px] rounded-xl border flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold transition-colors ${iconKey === key ? 'border-asphalt bg-asphalt text-white' : 'border-line text-ink-2 hover:bg-surface-2'}`}
+                  className={`min-h-[52px] rounded-xl border flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold transition-colors ${iconKey === key ? 'border-asphalt bg-asphalt text-hero-ink' : 'border-line text-ink-2 hover:bg-surface-2'}`}
                 >
                   <TradeIcon trade={key} size={20} />
                   <span className="max-w-full truncate px-0.5">{tr(TRADE_LABEL_KEYS[key])}</span>
                 </button>
               ))}
             </div>
-          </Field>
+            <p className="text-xs text-ink-2 mt-1">{tr('t10misc.pricebook.tradeIconHint')}</p>
+          </div>
 
           <div className="pt-2 flex flex-col sm:flex-row gap-2">
-            <button
+            <Button
+              variant="primary"
               type="submit"
               disabled={isPending}
-              className={`${primaryBtnClass} flex-1 justify-center`}
+              className="flex-1 justify-center disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isPending ? tr('t10misc.pricebook.saving') : tr(editingId ? 't10misc.pricebook.saveChanges' : 't10misc.pricebook.save')}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="secondary"
               type="button"
               onClick={() => setIsModalOpen(false)}
-              className={secondaryBtnClass}
+              className="disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {tr('t10misc.pricebook.keep')}
-            </button>
+            </Button>
           </div>
         </form>
-      </Dialog>
+      </BottomSheet>
 
       <ConfirmDialog
         open={pendingDeleteId !== null}

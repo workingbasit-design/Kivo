@@ -37,7 +37,7 @@ export default function SmsButton({
       href={href}
       className={
         className ??
-        'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border bg-sky-500/10 border-sky-500/30 text-sky-700 hover:bg-sky-500/20'
+        'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border bg-info/10 border-line/30 text-info hover:bg-info/20'
       }
       title="Opens your SMS app with this message prefilled"
     >

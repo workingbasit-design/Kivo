@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react';
 import { t, type Locale } from '@/lib/i18n';
 import { saveDigestSettings } from '@/app/actions/digest';
-import { primaryBtnClass } from '@/components/ui';
+import { Button } from '@/components/kit';
 import { TimeField } from '@/components/TimeField';
 
 export function DigestSettingsForm({
@@ -42,7 +42,7 @@ export function DigestSettingsForm({
           type="checkbox"
           checked={enabled}
           onChange={(e) => setEnabled(e.target.checked)}
-          className="w-6 h-6 accent-lime-600"
+          className="w-6 h-6 rounded-md border-line-strong accent-ink"
           aria-label={t(locale, 'digest.enabled')}
         />
       </label>
@@ -71,7 +71,7 @@ export function DigestSettingsForm({
                 checked={inApp}
                 onChange={(e) => setInApp(e.target.checked)}
                 disabled={!enabled}
-                className="w-5 h-5 accent-lime-600"
+                className="w-5 h-5 rounded-md border-line-strong accent-ink"
               />
               {t(locale, 'digest.channelInApp')}
             </label>
@@ -81,7 +81,7 @@ export function DigestSettingsForm({
                 checked={push}
                 onChange={(e) => setPush(e.target.checked)}
                 disabled={!enabled}
-                className="w-5 h-5 accent-lime-600"
+                className="w-5 h-5 rounded-md border-line-strong accent-ink"
               />
               {t(locale, 'digest.channelPush')}
             </label>
@@ -95,14 +95,15 @@ export function DigestSettingsForm({
         </p>
       )}
 
-      <button
+      <Button
+        variant="primary"
         type="button"
         onClick={save}
         disabled={pending}
-        className={primaryBtnClass}
+        className="disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {pending ? '…' : t(locale, 'digest.save')}
-      </button>
+      </Button>
     </div>
   );
 }

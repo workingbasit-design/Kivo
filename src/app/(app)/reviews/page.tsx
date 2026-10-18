@@ -2,12 +2,13 @@ import { requireAuth } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { prisma } from '@/lib/prisma';
-import { PageHeader } from '@/components/ui';
+
 import ReviewsClient from '@/components/ReviewsClient';
 import GoogleReviewsPanel from '@/components/GoogleReviewsPanel';
 import { getGoogleStatus } from '@/app/actions/google-reviews';
 import { listEligibleReviewJobs } from '@/lib/review-eligibility';
 import { classifyLegacySource } from '@/lib/review-guards';
+import { PageTitle } from '../_components/PageTitle';
 
 export const metadata = { title: 'Reviews | EveryJob' };
 
@@ -50,9 +51,9 @@ export default async function ReviewsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageTitle
         title={t(locale, 'reviewsPage.title')}
-        subtitle={t(locale, 'reviewsPage.subtitle')}
+        summary={t(locale, 'reviewsPage.subtitle')}
       />
       <GoogleReviewsPanel status={googleStatus} locale={locale} />
       <ReviewsClient

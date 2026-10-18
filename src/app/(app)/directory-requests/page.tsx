@@ -1,11 +1,13 @@
 import { Inbox } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { PageHeader, Card, EmptyState } from '@/components/ui';
+import { Card } from '@/components/kit';
 import { isDirectoryAdminEmail } from '@/lib/directory';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import DemandRow from './demand-row';
+import { PageTitle } from '../_components/PageTitle';
+import { EmptyState } from '@/components/kit';
 
 export const metadata = { title: 'Directory demand | EveryJob' };
 
@@ -23,12 +25,12 @@ export default async function DirectoryRequestsPage() {
   if (!isDirectoryAdminEmail(user.email)) {
     return (
       <div className="space-y-6">
-        <PageHeader title={tr('t10misc.demand.title')} subtitle={tr('t10misc.demand.subtitle')} />
+        <PageTitle title={tr('t10misc.demand.title')} summary={tr('t10misc.demand.subtitle')} />
         <Card>
           <EmptyState
-            icon={<Inbox size={24} />}
+            icon={Inbox}
             title={tr('t10misc.claims.notAuthorizedTitle')}
-            description={tr('t10misc.claims.notAuthorizedDesc')}
+            text={tr('t10misc.claims.notAuthorizedDesc')}
           />
         </Card>
       </div>
@@ -50,13 +52,13 @@ export default async function DirectoryRequestsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={tr('t10misc.demand.title')} subtitle={subtitle} />
+      <PageTitle title={tr('t10misc.demand.title')} summary={subtitle} />
       {requests.length === 0 ? (
         <Card>
           <EmptyState
-            icon={<Inbox size={24} />}
+            icon={Inbox}
             title={tr('t10misc.demand.noRequestsTitle')}
-            description={tr('t10misc.demand.noRequestsDesc')}
+            text={tr('t10misc.demand.noRequestsDesc')}
           />
         </Card>
       ) : (

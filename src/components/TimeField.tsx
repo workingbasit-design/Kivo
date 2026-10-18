@@ -1,6 +1,6 @@
 'use client';
 
-import { inputClass } from '@/components/ui';
+import { Select } from '@/components/kit';
 import type { Locale } from '@/lib/i18n';
 
 /**
@@ -61,37 +61,41 @@ export function TimeField({
   return (
     <span className="flex items-center gap-2">
       {name ? <input type="hidden" name={name} value={value} /> : null}
-      <select
+      <Select
+        label={
+          <span className="sr-only">{ariaLabel ?? (locale === 'fr' ? 'Heure' : 'Hour')}</span>
+        }
         value={hour}
         onChange={(e) => setHour(e.target.value === '' ? '' : Number(e.target.value))}
         disabled={disabled}
-        aria-label={ariaLabel ?? (locale === 'fr' ? 'Heure' : 'Hour')}
-        className={inputClass}
-      >
-        <option value="">—</option>
-        {Array.from({ length: 24 }, (_, h) => (
-          <option key={h} value={h}>
-            {hourLabel(h)}
-          </option>
-        ))}
-      </select>
+        className="flex-1"
+        options={[
+          { value: '', label: '—' },
+          ...Array.from({ length: 24 }, (_, h) => ({
+            value: String(h),
+            label: hourLabel(h),
+          })),
+        ]}
+      />
       <span aria-hidden className="text-ink-2 font-bold">
         :
       </span>
-      <select
+      <Select
+        label={
+          <span className="sr-only">{ariaLabel ?? (locale === 'fr' ? 'Minute' : 'Minute')}</span>
+        }
         value={minute}
         onChange={(e) => setMinute(e.target.value === '' ? '' : Number(e.target.value))}
         disabled={disabled}
-        aria-label={ariaLabel ?? (locale === 'fr' ? 'Minute' : 'Minute')}
-        className={inputClass}
-      >
-        <option value="">—</option>
-        {Array.from({ length: 60 }, (_, m) => (
-          <option key={m} value={m}>
-            {String(m).padStart(2, '0')}
-          </option>
-        ))}
-      </select>
+        className="flex-1"
+        options={[
+          { value: '', label: '—' },
+          ...Array.from({ length: 60 }, (_, m) => ({
+            value: String(m),
+            label: String(m).padStart(2, '0'),
+          })),
+        ]}
+      />
     </span>
   );
 }

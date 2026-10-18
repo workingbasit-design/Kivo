@@ -53,20 +53,20 @@ export default function AvailabilityPicker({
               disabled={!hasSlots}
               onClick={() => pickDay(day.date)}
               className={`relative min-w-[64px] min-h-[72px] rounded-2xl flex flex-col items-center justify-center gap-0.5 shrink-0 transition-colors ${
-                selected ? 'text-ink' : hasSlots ? 'text-ink hover:bg-surface-2' : 'text-zinc-300'
+                selected ? 'text-ink' : hasSlots ? 'text-ink hover:bg-surface-2' : 'text-ink-2'
               }`}
               aria-pressed={selected}
             >
               {selected && (
                 <motion.span
                   layoutId="avail-day"
-                  className="absolute inset-0 rounded-2xl bg-lime shadow-[0_4px_12px_rgba(200,240,74,0.4)]"
+                  className="absolute inset-0 rounded-2xl bg-lime shadow-[0_4px_12px] shadow-hivis/40"
                   transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                 />
               )}
               <span className="relative text-[11px] font-semibold">{day.label}</span>
               <span className="relative text-lg font-bold tabular-nums">{day.dayNum}</span>
-              <span className={`relative w-1.5 h-1.5 rounded-full ${hasSlots ? 'bg-emerald-500' : 'bg-line'}`} />
+              <span className={`relative w-1.5 h-1.5 rounded-full ${hasSlots ? 'bg-ok' : 'bg-line'}`} />
             </button>
           );
         })}
@@ -107,7 +107,7 @@ export default function AvailabilityPicker({
                       {selected && (
                         <motion.span
                           layoutId="avail-slot"
-                          className="absolute inset-0 rounded-xl bg-lime shadow-[0_2px_8px_rgba(200,240,74,0.4)]"
+                          className="absolute inset-0 rounded-xl bg-lime shadow-[0_2px_8px] shadow-hivis/40"
                           transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                         />
                       )}

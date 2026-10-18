@@ -3,9 +3,9 @@
 import { useState, useTransition } from 'react';
 import { t, type Locale } from '@/lib/i18n';
 import { createProject } from '@/app/actions/projects';
-import { Input, Textarea, Select, DateField, MoneyInput } from '@/components/design/fields';
-import { Button, IconButton } from '@/components/design/Button';
-import { ArrowUp, ArrowDown, X, Plus } from '@/components/icons';
+import { Input, Textarea, Select, Button } from '@/components/kit';
+import { DateField } from '@/components/kit';
+import { ArrowUp, ArrowDown, X, Plus, Loader2 } from '@/components/icons';
 import { useRouter } from 'next/navigation';
 
 /** Phase templates by trade. Kept as component constants because t() is string-only. */
@@ -120,26 +120,46 @@ export function NewProjectForm({
             {t(locale, 'projects.newCustomer')}
           </a>
         </div>
-        <MoneyInput
-          label={t(locale, 'projects.budgetLabel')}
-          value={budget}
-          onChange={(e) => setBudget(e.target.value)}
-          placeholder="0.00"
-        />
+        {/* Budget — the kit has no MoneyInput, so the $ prefix is composed
+            here on the kit `.field`/`.input` classes (same behaviour). */}
+        <label className="field" data-kit="input">
+          <span>{t(locale, 'projects.budgetLabel')}</span>
+          <span className="relative block">
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[16px] text-ink-2"
+            >
+              $
+            </span>
+            <input
+              type="text"
+              inputMode="decimal"
+              autoComplete="off"
+              value={budget}
+              onChange={(e) => setBudget(e.target.value)}
+              placeholder="0.00"
+              className="input pl-9 tabular-nums"
+            />
+          </span>
+        </label>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <DateField
-          label={t(locale, 'projects.startLabel')}
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-        />
-        <DateField
-          label={t(locale, 'projects.endLabel')}
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-          min={startDate || undefined}
-        />
+        <div className="min-w-0">
+          <DateField
+            label={t(locale, 'projects.startLabel')}
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+        </div>
+        <div className="min-w-0">
+          <DateField
+            label={t(locale, 'projects.endLabel')}
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            min={startDate || undefined}
+          />
+        </div>
       </div>
 
       <fieldset>
@@ -156,7 +176,7 @@ export function NewProjectForm({
             <Button
               key={id}
               variant="secondary"
-              size="md"
+              sm
               onClick={() => setPhases([...PHASE_TEMPLATES[id][locale]])}
             >
               {t(locale, TEMPLATE_LABEL_KEYS[id])}
@@ -178,32 +198,37 @@ export function NewProjectForm({
                   }}
                 />
               </div>
-              <IconButton
-                label={t(locale, 'projects.phaseMoveUp')}
+              <Button
+                variant="ghost"
+                sm
+                aria-label={t(locale, 'projects.phaseMoveUp')}
                 onClick={() => movePhase(i, -1)}
                 disabled={i === 0}
               >
                 <ArrowUp size={18} aria-hidden />
-              </IconButton>
-              <IconButton
-                label={t(locale, 'projects.phaseMoveDown')}
+              </Button>
+              <Button
+                variant="ghost"
+                sm
+                aria-label={t(locale, 'projects.phaseMoveDown')}
                 onClick={() => movePhase(i, 1)}
                 disabled={i === phases.length - 1}
               >
                 <ArrowDown size={18} aria-hidden />
-              </IconButton>
-              <IconButton
-                label={t(locale, 'projects.phaseRemove')}
+              </Button>
+              <Button
+                variant="ghost"
+                sm
+                aria-label={t(locale, 'projects.phaseRemove')}
                 onClick={() => removePhase(i)}
               >
                 <X size={18} aria-hidden />
-              </IconButton>
+              </Button>
             </div>
           ))}
         </div>
         <Button
-          variant="tertiary"
-          size="md"
+          variant="ghost"
           onClick={() => setPhases([...phases, ''])}
           className="mt-2"
         >
@@ -218,7 +243,15 @@ export function NewProjectForm({
         </p>
       )}
 
-      <Button type="submit" variant="primary" loading={pending}>
+      <Button
+        type="submit"
+        variant="primary"
+        disabled={pending}
+        aria-busy={pending}
+      >
+        {pending && (
+          <Loader2 size={16} className="animate-spin" aria-hidden="true" />
+        )}
         {t(locale, 'projects.create')}
       </Button>
     </form>

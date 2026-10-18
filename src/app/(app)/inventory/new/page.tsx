@@ -1,10 +1,11 @@
 import React from 'react';
 import Link from 'next/link';
-import { PageHeader, Card } from '@/components/ui';
+import { Card } from '@/components/kit';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { ArrowLeft } from '@/components/icons';
 import PartForm from '@/components/PartForm';
+import { PageTitle } from '../../_components/PageTitle';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,7 +21,7 @@ export default async function NewPartPage() {
       >
         <ArrowLeft size={16} /> {T('back')}
       </Link>
-      <PageHeader title={T('add')} />
+      <PageTitle title={T('add')} />
       <Card>
         <PartForm locale={locale} mode="create" />
       </Card>

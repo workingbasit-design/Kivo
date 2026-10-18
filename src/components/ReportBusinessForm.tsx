@@ -27,7 +27,7 @@ export default function ReportBusinessForm({ slug }: { slug: string }) {
     return (
       <div
         role="status"
-        className="flex items-start gap-2 bg-ok-bg border border-emerald-200 text-ok text-xs font-medium rounded-xl px-3 py-2.5"
+        className="flex items-start gap-2 bg-ok-bg border border-line text-ok text-xs font-medium rounded-xl px-3 py-2.5"
       >
         <CheckCircle2 size={14} className="mt-0.5 shrink-0" />
         <span>{t('t10misc.directory.reportThanks')}</span>
@@ -85,7 +85,7 @@ export default function ReportBusinessForm({ slug }: { slug: string }) {
       {state?.error && (
         <div
           role="alert"
-          className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5"
+          className="flex items-start gap-2 bg-danger-bg border border-line text-danger text-xs font-medium rounded-xl px-3 py-2.5"
         >
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{state.error}</span>

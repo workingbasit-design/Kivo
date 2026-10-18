@@ -3,13 +3,14 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { PageHeader, Card } from '@/components/ui';
+import { Card } from '@/components/kit';
 import { getTaxConfig, totalTaxRate } from '@/lib/tax';
 import { formatMoney, centsToDollars } from '@/lib/money';
 import { formatDateShort } from '@/lib/utils';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import SignPrepareClient from './SignPrepareClient';
+import { PageTitle } from '../../../_components/PageTitle';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -69,9 +70,9 @@ export default async function SignPreparePage({
         <ArrowLeft size={14} /> {L('common.back')}
       </Link>
 
-      <PageHeader
+      <PageTitle
         title={L('esign.prepareTitle')}
-        subtitle={L('esign.prepareHint')}
+        summary={L('esign.prepareHint')}
       />
 
       <SignPrepareClient

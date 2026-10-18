@@ -5,14 +5,10 @@ import { KeyRound, Plus, Copy, Check } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import {
-  Badge,
-  Dialog,
-  dangerBtnClass,
-  inputClass,
-  primaryBtnClass,
-  secondaryBtnClass,
-  selectClass,
-} from '@/components/ui';
+  BottomSheet,
+  Button,
+  StatusBadge,
+} from '@/components/kit';
 
 export type ApiKeyRow = {
   id: string;
@@ -119,21 +115,29 @@ export default function ApiKeysCard({
           onChange={(e) => setName(e.target.value)}
           placeholder={tr('integrations.keyNamePh')}
           maxLength={60}
-          className={inputClass}
+          className="input"
+          aria-label={tr('integrations.keyNamePh')}
         />
-        <select value={scope} onChange={(e) => setScope(e.target.value as 'read' | 'write')} className={selectClass}>
-          <option value="read">{tr('integrations.scopeRead')}</option>
-          <option value="write">{tr('integrations.scopeWrite')}</option>
-        </select>
-        <button
+        <span className="select sm:w-auto w-full">
+          <select
+            value={scope}
+            onChange={(e) => setScope(e.target.value as 'read' | 'write')}
+            className="input"
+          >
+            <option value="read">{tr('integrations.scopeRead')}</option>
+            <option value="write">{tr('integrations.scopeWrite')}</option>
+          </select>
+        </span>
+        <Button
+          variant="primary"
           type="button"
           onClick={create}
           disabled={pending || !name.trim()}
-          className={primaryBtnClass}
+          className="disabled:opacity-60 disabled:cursor-not-allowed"
         >
           <Plus size={16} />
           {tr('integrations.createKey')}
-        </button>
+        </Button>
       </div>
 
       {keys.length === 0 ? (
@@ -153,15 +157,16 @@ export default function ApiKeysCard({
                     : tr('integrations.neverUsed')}
                 </p>
               </div>
-              <Badge>{scopeLabel(k.scopes, tr)}</Badge>
+              <StatusBadge tone="neutral">{scopeLabel(k.scopes, tr)}</StatusBadge>
               {!k.revokedAt && (
-                <button
+                <Button
+                  variant="danger"
                   type="button"
                   onClick={() => setRevokeId(k.id)}
-                  className={dangerBtnClass + ' !px-3 !py-1.5 !min-h-0 text-xs'}
+                  className="!px-3 !py-1.5 !min-h-0 text-xs"
                 >
                   {tr('integrations.revoke')}
-                </button>
+                </Button>
               )}
             </li>
           ))}
@@ -169,33 +174,56 @@ export default function ApiKeysCard({
       )}
 
       {/* One-time key reveal */}
-      <Dialog open={created !== null} onClose={() => setCreated(null)} title={tr('integrations.keyCreatedTitle')} locale={locale}>
+      <BottomSheet
+        open={created !== null}
+        onClose={() => setCreated(null)}
+        title={tr('integrations.keyCreatedTitle')}
+        footer={
+          <div className="mt-4 flex justify-end">
+            <Button variant="primary" type="button" onClick={() => setCreated(null)}>
+              {tr('integrations.copied')}
+            </Button>
+          </div>
+        }
+      >
         <p className="text-sm text-ink-2 mb-3">{tr('integrations.keyCreatedDesc')}</p>
         <div className="flex items-center gap-2 rounded-xl bg-surface-2 px-3 py-2.5">
           <code className="flex-1 text-xs font-mono text-ink break-all select-all">{created?.key}</code>
-          <button type="button" onClick={copyKey} className={secondaryBtnClass + ' !px-3 !py-1.5 !min-h-0 text-xs shrink-0'}>
+          <Button
+            variant="secondary"
+            type="button"
+            onClick={copyKey}
+            className="!px-3 !py-1.5 !min-h-0 text-xs shrink-0"
+          >
             {copied ? <Check size={14} /> : <Copy size={14} />}
-          </button>
+          </Button>
         </div>
-        <div className="mt-4 flex justify-end">
-          <button type="button" onClick={() => setCreated(null)} className={primaryBtnClass}>
-            {tr('integrations.copied')}
-          </button>
-        </div>
-      </Dialog>
+      </BottomSheet>
 
       {/* Revoke confirmation */}
-      <Dialog open={revokeId !== null} onClose={() => setRevokeId(null)} title={tr('integrations.revokeConfirm')} locale={locale}>
+      <BottomSheet
+        open={revokeId !== null}
+        onClose={() => setRevokeId(null)}
+        title={tr('integrations.revokeConfirm')}
+        footer={
+          <div className="mt-5 flex gap-2 justify-end">
+            <Button variant="secondary" type="button" onClick={() => setRevokeId(null)}>
+              {t(locale, 'credentials.cancel')}
+            </Button>
+            <Button
+              variant="danger"
+              type="button"
+              onClick={confirmRevoke}
+              disabled={pending}
+              className="disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {tr('integrations.revoke')}
+            </Button>
+          </div>
+        }
+      >
         <p className="text-sm text-ink-2">{keys.find((k) => k.id === revokeId)?.name}</p>
-        <div className="mt-5 flex gap-2 justify-end">
-          <button type="button" onClick={() => setRevokeId(null)} className={secondaryBtnClass}>
-            {t(locale, 'credentials.cancel')}
-          </button>
-          <button type="button" onClick={confirmRevoke} disabled={pending} className={dangerBtnClass}>
-            {tr('integrations.revoke')}
-          </button>
-        </div>
-      </Dialog>
+      </BottomSheet>
     </div>
   );
 }

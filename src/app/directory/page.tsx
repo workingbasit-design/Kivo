@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { MapPin, Search, Star, BadgeCheck, MessageSquareQuote, User } from '@/components/icons';
+import { Card, Chip } from '@/components/kit';
 import Logo from '@/components/Logo';
 import { prisma } from '@/lib/prisma';
 import { getLocale } from '@/lib/i18n/server';
@@ -119,16 +120,16 @@ export default async function DirectoryPage({
         nonce={await getCspNonce()}
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <header className="bg-asphalt text-white">
+      <header className="bg-asphalt text-hero-ink">
         <div className="max-w-4xl mx-auto px-4 py-10">
           <div className="ej-anim-fade-up flex items-center gap-3 mb-4">
             <Logo tone="onDark" size={30} />
-            <span className="text-sm font-semibold text-white/60">{tr('t10misc.directory.title')}</span>
+            <span className="text-sm font-semibold text-hero-ink/60">{tr('t10misc.directory.title')}</span>
             <div className="ml-auto">
               {customerSession ? (
                 <Link
                   href="/customer"
-                  className="inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-full bg-surface/10 border border-white/20 text-sm font-semibold whitespace-nowrap shrink-0 transition-all hover:bg-surface/20 hover:-translate-y-px active:translate-y-0 active:scale-[0.97]"
+                  className="inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-full bg-surface/10 border border-hero-ink/20 text-sm font-semibold whitespace-nowrap shrink-0 transition-all hover:bg-surface/20 hover:-translate-y-px active:translate-y-0 active:scale-[0.97]"
                 >
                   <User size={14} />
                   My account
@@ -148,7 +149,7 @@ export default async function DirectoryPage({
           <h1 className="ej-anim-fade-up text-3xl md:text-4xl font-bold tracking-tight" style={{ animationDelay: '80ms' }}>
             {tr('t10misc.directory.title')}
           </h1>
-          <p className="ej-anim-fade-up text-white/60 mt-2 text-[15px] max-w-xl" style={{ animationDelay: '140ms' }}>{tr('t10misc.directory.subtitle')}</p>
+          <p className="ej-anim-fade-up text-hero-ink/60 mt-2 text-[15px] max-w-xl" style={{ animationDelay: '140ms' }}>{tr('t10misc.directory.subtitle')}</p>
 
           <form action="/directory" method="get" className="ej-anim-fade-up mt-6 grid sm:grid-cols-[1fr_1fr_auto] gap-2" style={{ animationDelay: '200ms' }}>
             <label className="relative block group">
@@ -160,7 +161,7 @@ export default async function DirectoryPage({
                 placeholder={tr('t10misc.directory.whatPlaceholder')}
                 maxLength={100}
                 aria-label={tr('t10misc.directory.whatPlaceholder')}
-                className="w-full min-h-[52px] rounded-2xl bg-surface border-2 border-transparent pl-11 pr-4 text-[15px] text-ink placeholder:text-ink-2 outline-none shadow-lg transition-all focus:border-lime hover:border-white/40"
+                className="w-full min-h-[52px] rounded-2xl bg-surface border-2 border-transparent pl-11 pr-4 text-[15px] text-ink placeholder:text-ink-2 outline-none shadow-lg transition-all focus:border-lime hover:border-line-strong"
               />
             </label>
             <label className="relative block group">
@@ -172,7 +173,7 @@ export default async function DirectoryPage({
                 placeholder={tr('t10misc.directory.cityPlaceholder')}
                 maxLength={100}
                 aria-label={tr('t10misc.directory.cityPlaceholder')}
-                className="w-full min-h-[52px] rounded-2xl bg-surface border-2 border-transparent pl-11 pr-4 text-[15px] text-ink placeholder:text-ink-2 outline-none shadow-lg transition-all focus:border-lime hover:border-white/40"
+                className="w-full min-h-[52px] rounded-2xl bg-surface border-2 border-transparent pl-11 pr-4 text-[15px] text-ink placeholder:text-ink-2 outline-none shadow-lg transition-all focus:border-lime hover:border-line-strong"
               />
             </label>
             <button
@@ -191,7 +192,7 @@ export default async function DirectoryPage({
             />
             <Link
               href="/directory/request"
-              className="sm:ml-auto inline-flex items-center gap-1.5 min-h-[44px] text-white font-semibold py-2 px-3 rounded-full bg-surface/10 border border-white/20 whitespace-nowrap shrink-0 transition-all hover:bg-surface/20 hover:-translate-y-px active:translate-y-0 active:scale-[0.97]"
+              className="sm:ml-auto inline-flex items-center gap-1.5 min-h-[44px] text-hero-ink font-semibold py-2 px-3 rounded-full bg-surface/10 border border-hero-ink/20 whitespace-nowrap shrink-0 transition-all hover:bg-surface/20 hover:-translate-y-px active:translate-y-0 active:scale-[0.97]"
             >
               <MessageSquareQuote size={14} /> {tr('t10misc.directory.requestQuotes')}
             </Link>
@@ -213,7 +214,7 @@ export default async function DirectoryPage({
         )}
 
         {results.length === 0 ? (
-          <div className="bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-10 text-center">
+          <Card className="p-10 text-center">
             <div className="w-12 h-12 rounded-2xl bg-smoke flex items-center justify-center mx-auto mb-4">
               <Search className="w-6 h-6 text-ink" />
             </div>
@@ -224,64 +225,66 @@ export default async function DirectoryPage({
             {!searching && (
               <Link
                 href="/register"
-                className="inline-flex items-center justify-center mt-4 rounded-xl min-h-[44px] bg-asphalt hover:bg-graphite text-white text-sm font-bold px-6 py-2.5 transition-colors"
+                className="inline-flex items-center justify-center mt-4 rounded-xl min-h-[44px] bg-asphalt hover:bg-graphite text-hero-ink text-sm font-bold px-6 py-2.5 transition-colors"
               >
                 {tr('t10misc.directory.listBusiness')}
               </Link>
             )}
-          </div>
+          </Card>
         ) : (
           <ul className="grid sm:grid-cols-2 gap-4">
             {results.map((b) => (
               <li key={b.slug} className="ej-anim-fade-up" style={{ animationDelay: `${Math.min(results.indexOf(b), 8) * 50}ms` }}>
                 <Link
                   href={`/p/${b.slug}`}
-                  className="group block bg-surface rounded-3xl border border-line/80 shadow-[0_2px_12px_rgba(0,0,0,0.04)] p-5 transition-all duration-300 hover:shadow-[0_12px_32px_rgba(0,0,0,0.10)] hover:border-smoke hover:-translate-y-1 active:translate-y-0 active:scale-[0.99]"
+                  className="group block"
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-12 h-12 rounded-2xl bg-asphalt flex items-center justify-center shrink-0 overflow-hidden transition-transform duration-300 group-hover:scale-105">
-                        {b.logoUrl ? (
-                          <img src={b.logoUrl} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="text-lg font-bold text-lime">{b.name.charAt(0).toUpperCase()}</span>
-                        )}
+                  <Card className="p-5 transition-all duration-300 hover:shadow-[0_12px_32px_rgba(0,0,0,0.10)] hover:border-line-strong hover:-translate-y-1 active:translate-y-0 active:scale-[0.99]">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-12 h-12 rounded-2xl bg-asphalt flex items-center justify-center shrink-0 overflow-hidden transition-transform duration-300 group-hover:scale-105">
+                          {b.logoUrl ? (
+                            <img src={b.logoUrl} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-lg font-bold text-lime">{b.name.charAt(0).toUpperCase()}</span>
+                          )}
+                        </div>
+                        <h2 className="font-bold text-ink leading-snug">{b.name}</h2>
                       </div>
-                      <h2 className="font-bold text-ink leading-snug">{b.name}</h2>
+                      {b.verified && (
+                        <Chip tone="ok" icon={BadgeCheck} className="shrink-0">
+                          {tr('t10misc.directory.verified')}
+                        </Chip>
+                      )}
                     </div>
-                    {b.verified && (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-ok bg-ok-bg border border-emerald-200 rounded-full px-2.5 py-1 shrink-0">
-                        <BadgeCheck size={12} /> {tr('t10misc.directory.verified')}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3 mt-2.5 text-xs text-ink-2">
-                    {b.avg !== null ? (
-                      <span className="inline-flex items-center gap-1 font-bold text-ink bg-warn-bg border border-amber-200/70 rounded-full px-2.5 py-1">
-                        <Star size={12} className="fill-amber-400 text-amber-400" />
-                        {b.avg} <span className="font-medium text-ink-2">({b.count})</span>
-                      </span>
-                    ) : (
-                      <span className="text-[11px] font-medium text-ink-2 bg-surface-2 rounded-full px-2.5 py-1">{tr('t10misc.directory.noReviews')}</span>
-                    )}
-                    {b.locality && (
-                      <span className="inline-flex items-center gap-1">
-                        <MapPin size={12} /> {b.hideAddress ? b.locality : b.address}
-                      </span>
-                    )}
-                  </div>
-                  {b.services.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mt-3">
-                      {b.services.slice(0, 4).map((s) => (
-                        <span
-                          key={s}
-                          className="text-[11px] font-medium bg-indigo-50 text-indigo-700 rounded-full px-2.5 py-1"
-                        >
-                          {s}
+                    <div className="flex items-center gap-3 mt-2.5 text-xs text-ink-2">
+                      {b.avg !== null ? (
+                        <span className="inline-flex items-center gap-1 font-bold text-ink bg-warn-bg rounded-full px-2.5 py-1">
+                          <Star size={12} className="fill-star text-star" />
+                          {b.avg} <span className="font-medium text-ink-2">({b.count})</span>
                         </span>
-                      ))}
+                      ) : (
+                        <span className="text-[11px] font-medium text-ink-2 bg-surface-2 rounded-full px-2.5 py-1">{tr('t10misc.directory.noReviews')}</span>
+                      )}
+                      {b.locality && (
+                        <span className="inline-flex items-center gap-1">
+                          <MapPin size={12} /> {b.hideAddress ? b.locality : b.address}
+                        </span>
+                      )}
                     </div>
-                  )}
+                    {b.services.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-3">
+                        {b.services.slice(0, 4).map((s) => (
+                          <span
+                            key={s}
+                            className="text-[11px] font-medium bg-surface-2 text-ink-2 rounded-full px-2.5 py-1"
+                          >
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </Card>
                 </Link>
               </li>
             ))}

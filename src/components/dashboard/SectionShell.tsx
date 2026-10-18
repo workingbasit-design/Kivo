@@ -52,8 +52,8 @@ class SectionErrorBoundary extends React.Component<
   render() {
     if (this.state.failed) {
       return (
-        <div className="rounded-[20px] border border-line/70 bg-surface p-5 text-center dark:bg-coal dark:border-white/10">
-          <p className="text-sm text-ink-2 dark:text-zinc-400">{this.props.errorMessage}</p>
+        <div className="rounded-[20px] border border-line/70 bg-surface p-5 text-center dark:bg-coal dark:border-hero-ink/10">
+          <p className="text-sm text-ink-2 dark:text-ink-2">{this.props.errorMessage}</p>
           <button
             type="button"
             onClick={this.props.onRetry}

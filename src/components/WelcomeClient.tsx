@@ -43,7 +43,7 @@ export default function WelcomeClient({
         </div>
 
         {state?.error && (
-          <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
+          <div className="flex items-start gap-2 bg-danger-bg border border-line text-danger text-xs font-medium rounded-xl px-3 py-2.5">
             <AlertCircle size={14} className="mt-0.5 shrink-0" />
             <span>{state.error}</span>
           </div>
@@ -52,7 +52,7 @@ export default function WelcomeClient({
         <button
           type="submit"
           disabled={isPending}
-          className="w-full bg-asphalt hover:bg-graphite disabled:opacity-60 text-white font-semibold text-sm py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+          className="w-full bg-asphalt hover:bg-graphite disabled:opacity-60 text-hero-ink font-semibold text-sm py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
         >
           <Phone size={16} />
           {isPending ? '…' : t(locale, 'googleAuth.saveAndContinue')}

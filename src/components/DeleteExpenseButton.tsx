@@ -39,7 +39,7 @@ export default function DeleteExpenseButton({
       <button
         type="button"
         onClick={() => setConfirming(true)}
-        className="min-h-[44px] px-4 rounded-xl text-sm font-semibold text-danger border border-red-200 bg-surface hover:bg-danger-bg inline-flex items-center gap-2 transition-colors"
+        className="min-h-[44px] px-4 rounded-xl text-sm font-semibold text-danger border border-line bg-surface hover:bg-danger-bg inline-flex items-center gap-2 transition-colors"
       >
         <Trash2 size={16} /> {T('delete')}
       </button>

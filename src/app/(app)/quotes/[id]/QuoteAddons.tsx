@@ -130,7 +130,7 @@ export default function QuoteAddons({
       </div>
 
       {error && (
-        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-line text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{error}</span>
         </div>
@@ -180,7 +180,7 @@ export default function QuoteAddons({
                     <button
                       type="submit"
                       disabled={updatePending}
-                      className="min-h-[44px] inline-flex items-center gap-1 text-xs font-bold text-ok hover:text-emerald-800 px-2"
+                      className="min-h-[44px] inline-flex items-center gap-1 text-xs font-bold text-ok hover:text-ok px-2"
                     >
                       <Check size={13} /> {s.save}
                     </button>
@@ -198,7 +198,7 @@ export default function QuoteAddons({
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="text-sm font-semibold text-ink truncate">{a.title}</span>
                     {a.selected && (
-                      <span className="shrink-0 text-[10px] font-bold text-ok bg-ok-bg border border-emerald-200 rounded-full px-2 py-0.5">
+                      <span className="shrink-0 text-[10px] font-bold text-ok bg-ok-bg border border-line rounded-full px-2 py-0.5">
                         ✓
                       </span>
                     )}
@@ -228,7 +228,7 @@ export default function QuoteAddons({
                               <button
                                 type="submit"
                                 disabled={deletePending}
-                                className="min-h-[44px] font-bold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-60 px-3 rounded-lg"
+                                className="min-h-[44px] font-bold text-hero-ink bg-danger hover:bg-danger disabled:opacity-60 px-3 rounded-lg"
                               >
                                 {s.delete}
                               </button>
@@ -308,7 +308,7 @@ export default function QuoteAddons({
                 <button
                   type="submit"
                   disabled={createPending}
-                  className="min-h-[44px] inline-flex items-center gap-1.5 bg-asphalt hover:bg-asphalt/90 disabled:opacity-60 text-white px-4 rounded-xl font-semibold text-xs transition-colors"
+                  className="min-h-[44px] inline-flex items-center gap-1.5 bg-asphalt hover:bg-asphalt/90 disabled:opacity-60 text-hero-ink px-4 rounded-xl font-semibold text-xs transition-colors"
                 >
                   <Plus size={13} /> {createPending ? '…' : s.add}
                 </button>

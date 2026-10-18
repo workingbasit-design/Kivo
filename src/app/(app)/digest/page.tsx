@@ -5,7 +5,7 @@ import { getLocale } from "@/lib/i18n/server";
 import { t } from "@/lib/i18n";
 import { localeMoneyTag, hasJobTime, formatJobTime } from "@/lib/utils";
 import { formatMoney } from "@/lib/money";
-import { PageHeader, Card, StatCard, EmptyState } from "@/components/ui";
+import { Card } from '@/components/kit';
 import { AttentionRow } from "@/components/AttentionBriefing";
 import { DigestSettingsForm } from "@/components/DigestSettingsForm";
 import {
@@ -18,6 +18,8 @@ import {
   User,
 } from '@/components/icons';
 import Link from "next/link";
+import { PageTitle } from '../_components/PageTitle';
+import { EmptyState, SummaryCard } from '@/components/kit';
 
 function greetingKey(dayPart: string) {
   return dayPart === 'morning'
@@ -51,12 +53,12 @@ export default async function DigestPage() {
   if (!data) {
     return (
       <div className="space-y-6">
-        <PageHeader title={t(locale, "digest.title")} />
+        <PageTitle title={t(locale, "digest.title")} />
         <Card>
           <EmptyState
-            icon={<Sunrise size={28} className="text-amber-500" aria-hidden />}
+            icon={Sunrise}
             title={t(locale, "digest.title")}
-            description={t(locale, "digest.subtitle")}
+            text={t(locale, "digest.subtitle")}
           />
         </Card>
       </div>
@@ -157,9 +159,8 @@ export default async function DigestPage() {
         {data.actions.length === 0 ? (
           <Card>
             <EmptyState
-              icon={<CheckCircle2 size={28} className="text-emerald-500" aria-hidden />}
+              icon={CheckCircle2}
               title={t(locale, 'digest.allClear')}
-              description=""
             />
           </Card>
         ) : (
@@ -176,7 +177,7 @@ export default async function DigestPage() {
             <div className="px-4 py-2">
               <Link
                 href="/attention"
-                className="text-sm font-semibold text-lime-700 hover:underline"
+                className="text-sm font-semibold text-ink hover:underline"
               >
                 {t(locale, 'digest.viewAll')}
               </Link>
@@ -190,23 +191,23 @@ export default async function DigestPage() {
         <h2 className="text-xs font-bold text-ink-2 mb-2 px-1 flex items-center gap-1.5">
           <Wallet size={14} aria-hidden /> {t(locale, 'digest.moneyTitle')}
         </h2>
-        <div className="grid grid-cols-2 gap-3">
-          <StatCard
-            label={t(locale, 'digest.overdue')}
-            value={formatMoney(data.money.overdueTotal, business?.currency, moneyLocale)}
-            sub={t(locale, 'digest.overdueCount').replace('{count}', String(data.money.overdueCount))}
-            icon={<Wallet size={18} aria-hidden />}
-            index={0}
-          />
-          <StatCard
-            label={t(locale, 'digest.outstanding')}
-            value={formatMoney(data.money.outstandingTotal, business?.currency, moneyLocale)}
-            sub={t(locale, 'digest.paidWeek')
-              .replace('{amount}', formatMoney(data.money.paidThisWeek, business?.currency, moneyLocale))}
-            icon={<TrendingUp size={18} aria-hidden />}
-            index={1}
-          />
-        </div>
+        <SummaryCard
+          stats={[
+            {
+              label: t(locale, 'digest.overdue'),
+              value: formatMoney(data.money.overdueTotal, business?.currency, moneyLocale),
+              sub: t(locale, 'digest.overdueCount').replace('{count}', String(data.money.overdueCount)),
+            },
+            {
+              label: t(locale, 'digest.outstanding'),
+              value: formatMoney(data.money.outstandingTotal, business?.currency, moneyLocale),
+              sub: t(locale, 'digest.paidWeek').replace(
+                '{amount}',
+                formatMoney(data.money.paidThisWeek, business?.currency, moneyLocale)
+              ),
+            },
+          ]}
+        />
       </section>
 
       {/* Week ahead */}
@@ -228,7 +229,7 @@ export default async function DigestPage() {
           </div>
           <Link
             href="/schedule"
-            className="text-sm font-semibold text-lime-700 hover:underline shrink-0"
+            className="text-sm font-semibold text-ink hover:underline shrink-0"
           >
             {t(locale, 'digest.viewAll')}
           </Link>

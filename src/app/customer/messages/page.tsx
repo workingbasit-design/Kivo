@@ -4,13 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { MessageCircle, ChevronRight } from '@/components/icons';
-import {
-  Avatar,
-  Card,
-  EmptyState,
-  PageHeader,
-  Stagger,
-} from '@/components/customer/ui';
+import { Card, EmptyState } from '@/components/kit';
 
 /**
  * Messages inbox - one thread per quote request with replies.
@@ -35,23 +29,20 @@ export default async function CustomerMessagesPage() {
 
   return (
     <div className="space-y-4">
-      <PageHeader
-        title={tr('customer.messages.title')}
-        action={
-          unreadCount > 0 ? (
-            <span className="ej-anim-scale-in text-xs font-bold text-white bg-rose-500 rounded-full px-2.5 py-1 shadow-sm shadow-rose-500/30">
-              {tr('customer.messages.newMessages').replace('{count}', String(unreadCount)).replace('{x}', unreadCount === 1 ? '' : 'x')}
-            </span>
-          ) : undefined
-        }
-      />
+      <div className="ej-anim-fade-up flex items-start justify-between gap-3">
+        <h1 className="text-xl font-bold tracking-tight text-ink">{tr('customer.messages.title')}</h1>
+        {unreadCount > 0 && (
+          <span className="ej-anim-scale-in text-xs font-bold text-hero-ink bg-danger rounded-full px-2.5 py-1 shadow-sm">
+            {tr('customer.messages.newMessages').replace('{count}', String(unreadCount)).replace('{x}', unreadCount === 1 ? '' : 'x')}
+          </span>
+        )}
+      </div>
 
       {threads.length === 0 ? (
         <EmptyState
           icon={MessageCircle}
           title={tr('customer.messages.emptyTitle')}
-          hint={tr('customer.messages.emptyHint')}
-          delay={80}
+          text={tr('customer.messages.emptyHint')}
         />
       ) : (
         <div className="space-y-3">
@@ -59,14 +50,27 @@ export default async function CustomerMessagesPage() {
             const lastMsg = t.messages[0];
             const isUnread = lastMsg?.senderType === 'business';
             return (
-              <Stagger key={t.id} index={i}>
+              <div
+                key={t.id}
+                className="ej-anim-fade-up"
+                style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}
+              >
                 <Link href={`/customer/requests/${t.id}`} className="group block">
-                  <Card hover className="p-4">
+                  <Card className="p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-line-strong">
                     <div className="flex items-center gap-3">
                       <div className="relative shrink-0 transition-transform duration-300 group-hover:scale-105">
-                        <Avatar name={t.business.name} logoUrl={t.business.logoUrl} />
+                        <span
+                          aria-hidden="true"
+                          className="grid w-[42px] h-[42px] place-items-center rounded-full bg-surface-2 ring-1 ring-inset ring-line font-bold text-ink text-[15px] overflow-hidden"
+                        >
+                          {t.business.logoUrl ? (
+                            <img src={t.business.logoUrl} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            t.business.name.charAt(0).toUpperCase()
+                          )}
+                        </span>
                         {isUnread && (
-                          <span className="ej-anim-scale-in absolute -top-1 -right-1 w-4 h-4 bg-rose-500 border-2 border-white rounded-full shadow-sm" />
+                          <span className="ej-anim-scale-in absolute -top-1 -right-1 w-4 h-4 bg-danger border-2 border-surface rounded-full" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -84,11 +88,11 @@ export default async function CustomerMessagesPage() {
                           )}
                         </p>
                       </div>
-                      <ChevronRight className="w-5 h-5 text-zinc-300 shrink-0 transition-all duration-300 group-hover:text-indigo-500 group-hover:translate-x-0.5" />
+                      <ChevronRight className="w-5 h-5 text-ink-2 shrink-0 transition-all duration-300 group-hover:text-ink group-hover:translate-x-0.5" />
                     </div>
                   </Card>
                 </Link>
-              </Stagger>
+              </div>
             );
           })}
         </div>

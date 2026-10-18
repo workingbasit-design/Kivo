@@ -35,3 +35,6 @@ Thumbs.db
 # local Vercel CLI link state — never commit
 /.vercel/
 .qa-shots/
+.schedule-stash/
+test-results/
+tests/.auth/

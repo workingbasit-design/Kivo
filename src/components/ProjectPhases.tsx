@@ -10,7 +10,7 @@ import {
   attachJobToProject,
   detachJobFromProject,
 } from '@/app/actions/projects';
-import { inputClass, secondaryBtnClass, ghostBtnClass } from '@/components/ui';
+import { Button, Input, Select } from '@/components/kit';
 import { Plus, Trash2, X, Check } from '@/components/icons';
 import Link from 'next/link';
 
@@ -39,8 +39,8 @@ const NEXT_STATUS: Record<string, string> = {
 
 const PHASE_TONE: Record<string, string> = {
   TODO: 'bg-surface-2 text-ink-2',
-  IN_PROGRESS: 'bg-blue-100 text-blue-800',
-  DONE: 'bg-emerald-100 text-emerald-800',
+  IN_PROGRESS: 'bg-info-bg text-info',
+  DONE: 'bg-ok-bg text-ok',
 };
 
 export function PhaseCard({
@@ -145,7 +145,7 @@ export function PhaseCard({
         <button
           type="button"
           onClick={() => setAttaching(true)}
-          className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-lime-700 hover:underline min-h-[36px]"
+          className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-ink hover:underline min-h-[36px]"
         >
           <Plus size={14} aria-hidden /> {t(locale, 'projects.attachJob')}
         </button>
@@ -170,17 +170,18 @@ export function AddPhaseForm({ locale, projectId }: { locale: Locale; projectId:
   };
 
   return (
-    <form onSubmit={submit} className="flex gap-2">
-      <input
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder={t(locale, 'projects.phasePlaceholder')}
-        className={inputClass}
-        aria-label={t(locale, 'projects.addPhase')}
-      />
-      <button type="submit" disabled={pending || !name.trim()} className={secondaryBtnClass}>
+    <form onSubmit={submit} className="flex gap-2 items-start">
+      <div className="flex-1 min-w-0">
+        <Input
+          label={<span className="sr-only">{t(locale, 'projects.addPhase')}</span>}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder={t(locale, 'projects.phasePlaceholder')}
+        />
+      </div>
+      <Button type="submit" variant="secondary" disabled={pending || !name.trim()}>
         {t(locale, 'projects.addPhase')}
-      </button>
+      </Button>
       {error && <p className="text-xs text-danger">{error}</p>}
     </form>
   );
@@ -218,37 +219,35 @@ function AttachJobForm({
   };
 
   return (
-    <div className="mt-2 flex gap-2 items-center">
-      <select
-        value={selected}
-        onChange={(e) => setSelected(e.target.value)}
-        className={inputClass}
-        aria-label={t(locale, 'projects.attachJob')}
-      >
-        <option value="">{t(locale, 'projects.attachJobHint')}</option>
-        {(jobs ?? []).map((j) => (
-          <option key={j.id} value={j.id}>
-            {j.title}
-          </option>
-        ))}
-      </select>
-      <button
+    <div className="mt-2 flex gap-2 items-start">
+      <div className="flex-1 min-w-0">
+        <Select
+          label={<span className="sr-only">{t(locale, 'projects.attachJob')}</span>}
+          value={selected}
+          onChange={(e) => setSelected(e.target.value)}
+          options={[
+            { value: '', label: t(locale, 'projects.attachJobHint') },
+            ...(jobs ?? []).map((j) => ({ value: j.id, label: j.title })),
+          ]}
+        />
+      </div>
+      <Button
         type="button"
+        variant="ghost"
         onClick={submit}
         disabled={pending || !selected}
-        className={ghostBtnClass}
         aria-label={t(locale, 'projects.attachJob')}
       >
         <Check size={16} aria-hidden />
-      </button>
-      <button
+      </Button>
+      <Button
         type="button"
+        variant="ghost"
         onClick={onDone}
-        className={ghostBtnClass}
         aria-label={t(locale, 'projects.detach')}
       >
         <X size={16} aria-hidden />
-      </button>
+      </Button>
     </div>
   );
 }

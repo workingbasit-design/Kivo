@@ -5,7 +5,7 @@ import { AlertCircle, MessageCircle, Mail, Smartphone } from '@/components/icons
 import { draftJobReminder, draftInvoiceFollowup, type DraftResult } from '@/app/actions/reminders';
 import CopyButton from '@/components/CopyButton';
 import WhatsAppButton from '@/components/WhatsAppButton';
-import { secondaryBtnClass } from '@/components/ui';
+import { Button } from '@/components/kit';
 import { smsDraftLink, mailtoDraftLink } from '@/lib/reminders';
 
 /**
@@ -77,31 +77,32 @@ export default function ReminderRow({
     <div className="bg-surface rounded-2xl border border-smoke shadow-sm p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">{children}</div>
-        <button
+        <Button
           type="button"
+          variant="secondary"
           onClick={() => {
             setOpen((v) => !v);
             if (!open && !text && !loading) void handleDraft();
           }}
-          className={`${secondaryBtnClass} shrink-0`}
+          className="shrink-0"
           aria-expanded={open}
         >
           <MessageCircle size={13} />
           {loading ? ui.preparing : text ? ui.redraft : ui.prepareReminder}
-        </button>
+        </Button>
       </div>
 
       {open && (
         <div className="mt-3">
           {error && (
-            <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
+            <div className="flex items-start gap-2 bg-danger-bg border border-line text-danger text-xs font-medium rounded-xl px-3 py-2.5">
               <AlertCircle size={14} className="mt-0.5 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           {text && (
-            <div className="bg-warn-bg border border-amber-200 rounded-2xl p-4">
+            <div className="bg-warn-bg border border-warn-line rounded-2xl p-4">
               <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
                 <p className="text-[11px] font-bold text-warn-text">
                   {ui.draftReady}

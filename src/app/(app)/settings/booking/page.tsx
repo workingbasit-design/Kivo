@@ -1,11 +1,12 @@
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { PageHeader, Card } from '@/components/ui';
+import { Card } from '@/components/kit';
 import { formatWorkingHoursSummary } from '@/lib/working-hours';
 import BookingSettingsForm from '@/components/BookingSettingsForm';
 import { slugify } from '@/lib/slug';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
+import { PageTitle } from '../../_components/PageTitle';
 
 export const metadata = { title: 'Online booking | EveryJob' };
 
@@ -31,9 +32,9 @@ export default async function BookingSettingsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageTitle
         title={tr('t10misc.booking.pageTitle')}
-        subtitle={tr('t10misc.booking.pageSubtitle')}
+        summary={tr('t10misc.booking.pageSubtitle')}
       />
       <BookingSettingsForm
         initial={

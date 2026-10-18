@@ -3,9 +3,10 @@ import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
-import { PageHeader, Card } from '@/components/ui';
+import { Card } from '@/components/kit';
 import { BrandKitForm } from '@/components/BrandKitForm';
 import CopyButton from '@/components/CopyButton';
+import { PageTitle } from '../../_components/PageTitle';
 import {
   buildSocialTemplates,
   parseBrandColors,
@@ -41,7 +42,7 @@ function BrandHeaderPreview({
           />
         ) : (
           <span
-            className="w-14 h-14 rounded-xl flex items-center justify-center text-white font-bold text-xl"
+            className="w-14 h-14 rounded-xl flex items-center justify-center text-hero-ink font-bold text-xl"
             style={{ backgroundColor: primary }}
             aria-hidden
           >
@@ -61,7 +62,7 @@ function BrandHeaderPreview({
         </div>
       </div>
       <div
-        className="px-5 py-3 text-white text-sm font-semibold"
+        className="px-5 py-3 text-hero-ink text-sm font-semibold"
         style={{ backgroundColor: primary }}
       >
         QUOTE-001 · $450.00
@@ -90,7 +91,7 @@ export default async function BrandPage() {
   if (!business) {
     return (
       <div className="space-y-6">
-        <PageHeader title={tr('brand.title')} subtitle={tr('brand.subtitle')} />
+        <PageTitle title={tr('brand.title')} summary={tr('brand.subtitle')} />
       </div>
     );
   }
@@ -111,9 +112,9 @@ export default async function BrandPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageTitle
         title={tr('brand.title')}
-        subtitle={tr('brand.subtitle')}
+        summary={tr('brand.subtitle')}
       />
 
       <section>

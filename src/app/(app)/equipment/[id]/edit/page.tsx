@@ -3,11 +3,12 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { PageHeader, Card } from '@/components/ui';
+import { Card } from '@/components/kit';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { ArrowLeft } from '@/components/icons';
 import EquipmentForm from '@/components/EquipmentForm';
+import { PageTitle } from '../../../_components/PageTitle';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,7 +35,7 @@ export default async function EditEquipmentPage({
       >
         <ArrowLeft size={16} /> {T('back')}
       </Link>
-      <PageHeader title={T('edit')} subtitle={eq.name} />
+      <PageTitle title={T('edit')} summary={eq.name} />
       <Card>
         <EquipmentForm
           customers={[]}

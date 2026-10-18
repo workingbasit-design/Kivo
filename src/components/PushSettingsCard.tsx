@@ -17,7 +17,7 @@ import { useEffect, useState } from 'react';
 import { Bell, BellOff, Send } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
-import { Badge, Card, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
+import { Button, Card, StatusBadge } from '@/components/kit';
 
 type Status = 'loading' | 'unsupported' | 'unconfigured' | 'denied' | 'off' | 'on';
 
@@ -168,8 +168,8 @@ export default function PushSettingsCard({ locale = 'en' }: { locale?: Locale })
           <h3 className="font-bold text-ink">{tr('cardTitle')}</h3>
           <p className="mt-1 text-sm text-ink-2">{tr('cardDesc')}</p>
         </div>
-        {status === 'on' && <Badge tone="success">{tr('statusOn')}</Badge>}
-        {status === 'off' && <Badge tone="neutral">{tr('statusOff')}</Badge>}
+        {status === 'on' && <StatusBadge tone="done">{tr('statusOn')}</StatusBadge>}
+        {status === 'off' && <StatusBadge tone="neutral">{tr('statusOff')}</StatusBadge>}
       </div>
 
       <div className="mt-4">
@@ -182,7 +182,7 @@ export default function PushSettingsCard({ locale = 'en' }: { locale?: Locale })
           <p className="text-sm text-ink-2">{tr('notSupported')}</p>
         )}
         {status === 'unconfigured' && (
-          <p className="text-sm text-warn-text bg-warn-bg border border-amber-200 rounded-xl px-3 py-2">
+          <p className="text-sm text-warn-text bg-warn-bg border border-warn-line rounded-xl px-3 py-2">
             {tr('notConfigured')}
           </p>
         )}
@@ -194,38 +194,38 @@ export default function PushSettingsCard({ locale = 'en' }: { locale?: Locale })
         )}
         {status === 'off' && (
           <div className="space-y-3">
-            <button
+            <Button
               type="button"
+              variant="primary"
               onClick={enable}
               disabled={busy}
-              className={primaryBtnClass}
             >
               <Bell size={16} />
               {busy ? tr('testing') : tr('enableBtn')}
-            </button>
+            </Button>
             <p className="text-xs text-ink-2">{tr('enableHelp')}</p>
           </div>
         )}
         {status === 'on' && (
           <div className="flex flex-wrap gap-2">
-            <button
+            <Button
               type="button"
+              variant="primary"
               onClick={sendTest}
               disabled={testing}
-              className={primaryBtnClass}
             >
               <Send size={16} />
               {testing ? tr('testing') : tr('testBtn')}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="secondary"
               onClick={disable}
               disabled={busy}
-              className={secondaryBtnClass}
             >
               <BellOff size={16} />
               {tr('disableBtn')}
-            </button>
+            </Button>
           </div>
         )}
       </div>

@@ -53,5 +53,5 @@ test('jobDisplayStatus: returns LATE label only when overdue', () => {
 
 test('statusClasses: LATE gets an urgent red badge', () => {
   const cls = statusClasses('LATE');
-  assert.ok(cls.includes('red'), `expected red classes, got: ${cls}`);
+  assert.ok(cls.includes('danger'), `expected danger classes, got: ${cls}`);
 });

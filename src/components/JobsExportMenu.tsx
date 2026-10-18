@@ -4,8 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { EllipsisVertical, Download } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { useExportDownloads, type ExportColumn, type ExportRow } from '@/components/ExportButtons';
-import { cn } from '@/lib/utils';
-import { glassClass } from '@/components/ui';
+import { Button } from '@/components/kit';
 
 /**
  * Mobile overflow menu for the Jobs list (Part B4).
@@ -60,20 +59,17 @@ export default function JobsExportMenu({
 
   return (
     <div ref={ref} className="relative md:hidden">
-      <button
-        type="button"
+      <Button
+        variant="ghost"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-haspopup="menu"
         aria-label={t(locale, 'common.more')}
         title={t(locale, 'common.more')}
-        className={cn(
-          'min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-ink transition-all hover:scale-105 active:scale-95',
-          glassClass('zinc')
-        )}
+        className="rounded-full p-0 min-h-[44px] min-w-[44px]"
       >
         <EllipsisVertical size={18} />
-      </button>
+      </Button>
       {open && (
         <div
           role="menu"

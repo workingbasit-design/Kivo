@@ -2,18 +2,17 @@
 
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Users, Plus, Search, Phone, Upload } from '@/components/icons';
+import { useRouter } from 'next/navigation';
+import { Users, Search, Phone, Upload } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import MoneyText from '@/components/MoneyText';
 import {
   Avatar,
-  Badge,
+  Button,
   Card,
   EmptyState,
-  inputClass,
-  primaryBtnClass,
-  secondaryBtnClass,
-} from '@/components/ui';
+  StatusBadge,
+} from '@/components/kit';
 import ExportButtons, { type ExportColumn, type ExportRow } from '@/components/ExportButtons';
 
 /** Replace `{name}` tokens in a template string (minimal inline fill helper). */
@@ -52,6 +51,7 @@ export default function CustomersClient({
 }) {
   const [query, setQuery] = useState('');
   const [activeTag, setActiveTag] = useState<string | null>(null);
+  const router = useRouter();
   const L = (path: string) => t(locale, `t10money.${path}`);
 
   // Distinct tags across this business's customers (tenant-safe: only this
@@ -117,7 +117,7 @@ export default function CustomersClient({
 
   const chipClass = (active: boolean) =>
     `min-h-[44px] inline-flex items-center text-xs font-bold rounded-full px-4 transition-colors ${
-      active ? 'bg-asphalt text-white' : 'bg-surface text-ink-2 border border-line hover:border-line-strong'
+      active ? 'bg-asphalt text-hero-ink' : 'bg-surface text-ink-2 border border-line hover:border-line-strong'
     }`;
 
   return (
@@ -133,7 +133,7 @@ export default function CustomersClient({
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t(locale, 'customers.searchPlaceholder')}
           aria-label={t(locale, 'customers.searchPlaceholder')}
-          className={`${inputClass} !pl-11 !rounded-full !bg-surface shadow-sm`}
+          className="input !pl-11 !rounded-full !bg-surface shadow-sm"
         />
       </div>
 
@@ -146,9 +146,9 @@ export default function CustomersClient({
           currency={currency}
           locale={locale}
         />
-        <Link href="/imports?type=customers" className={secondaryBtnClass}>
+        <Button href="/imports?type=customers" variant="secondary">
           <Upload size={14} /> {t(locale, 'exports.importBtn')}
-        </Link>
+        </Button>
       </div>
 
       {/* Tag filter chips */}
@@ -174,18 +174,15 @@ export default function CustomersClient({
       {filtered.length === 0 ? (
         <Card>
           <EmptyState
-            icon={<Users size={24} />}
+            icon={Users}
             title={hasFilter ? t(locale, 'customers.noResults') : L('custListNoCustomersYet')}
-            description={
+            text={
               hasFilter
                 ? `${countLabel}${activeTag ? ` ${fill(L('custListTagged'), { tag: activeTag })}` : ''}${query.trim() ? ` ${fill(L('custListMatching'), { q: query.trim() })}` : ''}.`
                 : L('custListNoCustomersDesc')
             }
-            action={
-              <Link href="/customers/new" className={primaryBtnClass}>
-                <Plus size={14} /> {L('custListAddCustomer')}
-              </Link>
-            }
+            actionLabel={L('custListAddCustomer')}
+            onAction={() => router.push('/customers/new')}
           />
         </Card>
       ) : (
@@ -219,7 +216,14 @@ export default function CustomersClient({
                     href={`/customers/${c.id}`}
                     className="flex items-center gap-3.5 px-4 sm:px-5 py-3.5 hover:bg-surface-2 active:bg-surface-2 transition-colors min-h-[72px]"
                   >
-                    <Avatar name={c.name} />
+                    <Avatar
+                      initials={c.name
+                        .split(' ')
+                        .map((w) => w[0])
+                        .slice(0, 2)
+                        .join('')
+                        .toUpperCase()}
+                    />
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm text-ink truncate">{c.name}</p>
                       {c.phone ? (
@@ -232,9 +236,9 @@ export default function CustomersClient({
                       {(c.tags ?? []).length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1.5">
                           {(c.tags ?? []).map((tag) => (
-                            <Badge key={tag} tone="neutral">
+                            <StatusBadge key={tag} tone="neutral">
                               {tag}
-                            </Badge>
+                            </StatusBadge>
                           ))}
                         </div>
                       )}

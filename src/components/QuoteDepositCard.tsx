@@ -4,7 +4,7 @@ import { useActionState, useEffect, useRef, useState } from 'react';
 import { HandCoins, Plus } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
-import { Card, Field, inputClass, primaryBtnClass, secondaryBtnClass, ProgressBar } from '@/components/ui';
+import { Button, Card, Input, Select } from '@/components/kit';
 import { formatMoney } from '@/lib/money';
 import { setQuoteDepositAction, recordManualQuoteDepositAction, type ActionResult } from '@/app/actions/stripe';
 
@@ -93,7 +93,20 @@ export default function QuoteDepositCard({
 
       {target > 0 && (
         <div className="mb-4 rounded-xl bg-surface-2 border border-line/70 px-3 py-2.5 text-xs">
-          <ProgressBar value={collected} max={target} className="mb-2.5" />
+          {/* Deposit-collection progress (kit has no generic bar; token
+              track + fill keep the old ProgressBar's look). */}
+          <div
+            role="progressbar"
+            aria-valuenow={Math.round(Math.max(0, Math.min(100, (collected / target) * 100)))}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            className="mb-2.5 h-2 rounded-full bg-surface-2 overflow-hidden"
+          >
+            <div
+              className="h-full rounded-full bg-asphalt transition-all duration-500"
+              style={{ width: `${Math.max(0, Math.min(100, (collected / target) * 100))}%` }}
+            />
+          </div>
           <div className="flex justify-between font-semibold text-ink">
             <span>{t(locale, 'payments.depositRequired')}</span>
             <span>{formatMoney(target, 'CAD', locale)}</span>
@@ -113,20 +126,19 @@ export default function QuoteDepositCard({
 
       <form action={amtAction} className="flex flex-wrap items-end gap-2 mb-4">
         <input type="hidden" name="quoteId" value={quoteId} />
-        <Field label={t(locale, 'payments.depositRequired')}>
-          <input
-            name="depositAmount"
-            type="text"
-            inputMode="decimal"
-            pattern="[0-9]*\.?[0-9]*"
-            defaultValue={target > 0 ? target.toFixed(2) : ''}
-            placeholder="0.00"
-            className={`${inputClass} w-36`}
-          />
-        </Field>
-        <button type="submit" disabled={amtPending} className={secondaryBtnClass}>
+        <Input
+          label={t(locale, 'payments.depositRequired')}
+          name="depositAmount"
+          type="text"
+          inputMode="decimal"
+          pattern="[0-9]*\.?[0-9]*"
+          defaultValue={target > 0 ? target.toFixed(2) : ''}
+          placeholder="0.00"
+          className="w-36"
+        />
+        <Button type="submit" variant="secondary" disabled={amtPending} className="mb-[18px]">
           {t(locale, 'messaging.saveSettings')}
-        </button>
+        </Button>
       </form>
       {amtState.error && <p className="text-xs font-semibold text-danger mb-3">{amtState.error}</p>}
 
@@ -141,7 +153,7 @@ export default function QuoteDepositCard({
               </span>
               {d.note && <span className="text-ink-2">· {d.note}</span>}
               {d.receiptUrl && (
-                <a href={d.receiptUrl} target="_blank" rel="noreferrer" className="text-indigo-600 hover:underline font-semibold">
+                <a href={d.receiptUrl} target="_blank" rel="noreferrer" className="text-info hover:underline font-semibold">
                   {t(locale, 'payments.receiptLink')}
                 </a>
               )}
@@ -154,38 +166,47 @@ export default function QuoteDepositCard({
       )}
 
       {!showRecord ? (
-        <button onClick={() => setShowRecord(true)} className={secondaryBtnClass}>
+        <Button type="button" variant="secondary" onClick={() => setShowRecord(true)}>
           <Plus size={13} /> {t(locale, 'payments.recordManualDeposit')}
-        </button>
+        </Button>
       ) : (
         <form action={recAction} className="space-y-3 rounded-xl border border-line/70 bg-surface-2/60 p-3">
           <input type="hidden" name="quoteId" value={quoteId} />
           <div className="grid grid-cols-2 gap-3">
-            <Field label={t(locale, 'payments.colAmount')}>
-              <input name="amount" type="text" inputMode="decimal" pattern="[0-9]*\.?[0-9]*" required className={inputClass} />
-            </Field>
-            <Field label={t(locale, 'payments.colMethod')}>
-              <select name="provider" required className={inputClass} defaultValue="">
-                <option value="" disabled>
-                  {t(locale, 'payments.chooseMethod')}
-                </option>
-                <option value="INTERAC">{t(locale, 'payments.methodInterac')}</option>
-                <option value="CASH">{t(locale, 'payments.methodCash')}</option>
-                <option value="CHEQUE">{t(locale, 'payments.methodCheque')}</option>
-              </select>
-            </Field>
+            <Input
+              label={t(locale, 'payments.colAmount')}
+              name="amount"
+              type="text"
+              inputMode="decimal"
+              pattern="[0-9]*\.?[0-9]*"
+              required
+            />
+            <Select
+              label={t(locale, 'payments.colMethod')}
+              name="provider"
+              required
+              defaultValue=""
+              options={[
+                { value: '', label: t(locale, 'payments.chooseMethod'), disabled: true },
+                { value: 'INTERAC', label: t(locale, 'payments.methodInterac') },
+                { value: 'CASH', label: t(locale, 'payments.methodCash') },
+                { value: 'CHEQUE', label: t(locale, 'payments.methodCheque') },
+              ]}
+            />
           </div>
-          <Field label={t(locale, 'payments.noteOptional')}>
-            <input name="note" className={inputClass} maxLength={120} />
-          </Field>
+          <Input
+            label={t(locale, 'payments.noteOptional')}
+            name="note"
+            maxLength={120}
+          />
           {recState.error && <p className="text-xs font-semibold text-danger">{recState.error}</p>}
           <div className="flex gap-2">
-            <button type="submit" disabled={recPending} className={primaryBtnClass}>
+            <Button type="submit" variant="primary" disabled={recPending}>
               {t(locale, 'payments.recordDepositButton')}
-            </button>
-            <button type="button" onClick={() => setShowRecord(false)} className={secondaryBtnClass}>
+            </Button>
+            <Button type="button" variant="secondary" onClick={() => setShowRecord(false)}>
               {t(locale, 'payments.cancel')}
-            </button>
+            </Button>
           </div>
         </form>
       )}

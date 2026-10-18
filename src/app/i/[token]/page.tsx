@@ -5,7 +5,8 @@ import { rateLimit } from '@/lib/rate-limit';
 import { isLegacyCuid, resolveShareToken } from '@/lib/share';
 import { waLink } from '@/lib/whatsapp';
 import { displayNotes } from '@/lib/invoice-notes';
-import { Card, StatusBadge } from '@/components/ui';
+import { Card } from '@/components/kit';
+import { StatusPill } from '@/app/(app)/_components/status-ui';
 import { formatCents, centsToDollars, dollarsToCents } from '@/lib/money';
 import { taxIdLabelForRegion } from '@/lib/tax';
 import CopyButton from '@/components/CopyButton';
@@ -131,7 +132,7 @@ export default async function InvoicePortalPage({
             />
           ) : (
             <div className="w-11 h-11 rounded-xl bg-asphalt flex items-center justify-center mx-auto mb-3">
-              <ReceiptText className="w-6 h-6 text-white" />
+              <ReceiptText className="w-6 h-6 text-hero-ink" />
             </div>
           )}
           <h1 className="text-xl font-bold text-ink tracking-tight">{invoice.business.name}</h1>
@@ -146,7 +147,7 @@ export default async function InvoicePortalPage({
                 {t(locale, 't10money.invPortalDated')} {invoice.date.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })}
               </p>
             </div>
-            <StatusBadge status={invoice.status} />
+            <StatusPill status={invoice.status} locale={locale} />
           </div>
 
           {invoice.lineItems.length > 0 && (
@@ -191,7 +192,7 @@ export default async function InvoicePortalPage({
                   <dt className="text-ink-2">{t(locale, 't10money.invPortalPaid')}</dt>
                   <dd className="font-semibold text-ok">{formatCents(paid, invoice.business.currency)}</dd>
                 </div>
-                <div className="flex justify-between items-center bg-asphalt text-white rounded-xl px-4 py-3 -mx-1">
+                <div className="flex justify-between items-center bg-asphalt text-hero-ink rounded-xl px-4 py-3 -mx-1">
                   <dt className="font-bold">{t(locale, 't10money.invPortalBalance')}</dt>
                   <dd className="font-bold">{formatCents(balance, invoice.business.currency)}</dd>
                 </div>
@@ -205,7 +206,7 @@ export default async function InvoicePortalPage({
         </Card>
 
         {paidParam === '1' && balance <= BigInt(0) && (
-          <div className="rounded-2xl border border-emerald-200 bg-ok-bg px-4 py-3 text-sm font-semibold text-emerald-800 text-center">
+          <div className="rounded-2xl border border-line bg-ok-bg px-4 py-3 text-sm font-semibold text-ok text-center">
             {t(locale, 'payments.paidThanks')}
           </div>
         )}
@@ -244,7 +245,7 @@ export default async function InvoicePortalPage({
             href={whatsappHref}
             target="_blank"
             rel="noreferrer"
-            className="min-h-[44px] flex items-center justify-center gap-2 w-full bg-wa hover:bg-wa-dark text-white font-bold text-sm py-3 rounded-2xl transition-colors"
+            className="min-h-[44px] flex items-center justify-center gap-2 w-full bg-wa hover:bg-wa-dark text-hero-ink font-bold text-sm py-3 rounded-2xl transition-colors"
           >
             <MessageCircle size={16} /> {t(locale, 't10money.invPortalWhatsapp')}
           </a>

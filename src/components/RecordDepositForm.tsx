@@ -3,7 +3,7 @@
 import { useActionState, useState } from 'react';
 import { HandCoins, Plus } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
-import { Card, Field, inputClass, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
+import { Button, Card, Input, Select } from '@/components/kit';
 import { formatMoney } from '@/lib/money';
 import { recordQuoteDeposit, type ActionResult } from '@/app/actions/quotes';
 
@@ -42,40 +42,38 @@ export default function RecordDepositForm({
       <p className="text-xs text-ink-2 mb-4">{t(locale, 'quoteItems.deposit.hint')}</p>
 
       {!open ? (
-        <button type="button" onClick={() => setOpen(true)} className={secondaryBtnClass}>
+        <Button type="button" variant="secondary" onClick={() => setOpen(true)}>
           <Plus size={13} /> {t(locale, 'quoteItems.deposit.record')}
-        </button>
+        </Button>
       ) : (
         <form action={formAction} className="space-y-3">
           <input type="hidden" name="quoteId" value={quoteId} />
           <div className="grid grid-cols-2 gap-3">
-            <Field label={t(locale, 'quoteItems.deposit.amount')}>
-              <input
-                name="amount"
-                type="text"
-                inputMode="decimal"
-                pattern="[0-9]*\.?[0-9]*"
-                required
-                placeholder="0.00"
-                className={inputClass}
-              />
-            </Field>
-            <Field label={t(locale, 'quoteItems.deposit.provider')}>
-              <select name="provider" required className={inputClass} defaultValue="">
-                <option value="" disabled>
-                  {t(locale, 'quoteItems.deposit.provider')}
-                </option>
-                {providers.map((p) => (
-                  <option key={p.value} value={p.value}>
-                    {p.label}
-                  </option>
-                ))}
-              </select>
-            </Field>
+            <Input
+              label={t(locale, 'quoteItems.deposit.amount')}
+              name="amount"
+              type="text"
+              inputMode="decimal"
+              pattern="[0-9]*\.?[0-9]*"
+              required
+              placeholder="0.00"
+            />
+            <Select
+              label={t(locale, 'quoteItems.deposit.provider')}
+              name="provider"
+              required
+              defaultValue=""
+              options={[
+                { value: '', label: t(locale, 'quoteItems.deposit.provider'), disabled: true },
+                ...providers.map((p) => ({ value: p.value, label: p.label })),
+              ]}
+            />
           </div>
-          <Field label={t(locale, 'quoteItems.deposit.note')}>
-            <input name="note" maxLength={500} className={inputClass} />
-          </Field>
+          <Input
+            label={t(locale, 'quoteItems.deposit.note')}
+            name="note"
+            maxLength={500}
+          />
           <p className="text-[11px] text-ink-2">
             {t(locale, 'quoteItems.deposit.amount')} ≤ {formatMoney(maxAmount, 'CAD', locale)}
           </p>
@@ -88,16 +86,16 @@ export default function RecordDepositForm({
             </p>
           )}
           <div className="flex gap-2">
-            <button type="submit" disabled={isPending} className={primaryBtnClass}>
+            <Button type="submit" variant="primary" disabled={isPending}>
               {isPending ? t(locale, 'quoteItems.saving') : t(locale, 'quoteItems.deposit.record')}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="secondary"
               onClick={() => setOpen(false)}
-              className={secondaryBtnClass}
             >
               {t(locale, 'quoteItems.deposit.cancel')}
-            </button>
+            </Button>
           </div>
         </form>
       )}

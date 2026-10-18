@@ -3,7 +3,7 @@
 import React from 'react';
 import { ArrowLeft, Star } from '@/components/icons';
 import ReviewLinkButton from '@/components/ReviewLinkButton';
-import { Card } from '@/components/ui';
+import { Card } from '@/components/kit';
 import { t, type Locale } from '@/lib/i18n';
 
 /** Jobs that passed the review-moat eligibility check, rendered by the page. */
@@ -40,7 +40,7 @@ export default function ReviewRequestsClient({
         <p className="text-sm text-ink-2 mt-1">{tr('reviewsSubtitle')}</p>
       </div>
 
-      <div className="flex items-start gap-2 bg-warn-bg border border-amber-200 text-amber-800 text-xs font-medium rounded-xl px-3 py-2.5">
+      <div className="flex items-start gap-2 bg-warn-bg border border-warn-line text-warn-text text-xs font-medium rounded-xl px-3 py-2.5">
         <Star size={14} className="mt-0.5 shrink-0" />
         <span>{tr('reviewHowItWorks')}</span>
       </div>

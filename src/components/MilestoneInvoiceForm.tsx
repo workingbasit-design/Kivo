@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { AlertTriangle, CheckCircle2 } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
-import { Field, inputClass, primaryBtnClass } from '@/components/ui';
+import { Button, Input, Textarea } from '@/components/kit';
 import { createMilestoneInvoice } from '@/app/actions/batch-invoicing';
 
 /**
@@ -59,13 +59,13 @@ export default function MilestoneInvoiceForm({
   return (
     <div className="mt-4 pt-4 border-t border-line">
       {error && (
-        <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-danger-bg px-4 py-3 text-sm text-red-800 mb-4">
+        <div className="flex items-start gap-2.5 rounded-xl border border-danger/25 bg-danger-bg px-4 py-3 text-sm text-danger mb-4">
           <AlertTriangle size={16} className="shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
       )}
       {invoiceId && (
-        <div className="flex items-start gap-2.5 rounded-xl border border-emerald-200 bg-ok-bg px-4 py-3 text-sm text-emerald-800 mb-4">
+        <div className="flex items-start gap-2.5 rounded-xl border border-ok/25 bg-ok-bg px-4 py-3 text-sm text-ok mb-4">
           <CheckCircle2 size={16} className="shrink-0 mt-0.5" />
           <span>
             {t(locale, 'billing.milestoneCreated')}{' '}
@@ -79,40 +79,34 @@ export default function MilestoneInvoiceForm({
         </div>
       )}
       <form onSubmit={onSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Field label={t(locale, 'billing.labelLabel')}>
-          <input
-            className={inputClass}
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            placeholder={t(locale, 'billing.labelPlaceholder')}
-            maxLength={80}
-          />
-        </Field>
-        <Field label={t(locale, 'billing.amountLabel')}>
-          <input
-            className={inputClass}
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder={t(locale, 'billing.amountPlaceholder')}
-            inputMode="decimal"
-          />
-        </Field>
+        <Input
+          label={t(locale, 'billing.labelLabel')}
+          value={label}
+          onChange={(e) => setLabel(e.target.value)}
+          placeholder={t(locale, 'billing.labelPlaceholder')}
+          maxLength={80}
+        />
+        <Input
+          label={t(locale, 'billing.amountLabel')}
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder={t(locale, 'billing.amountPlaceholder')}
+          inputMode="decimal"
+        />
         <div className="sm:col-span-2">
-          <Field label={t(locale, 'billing.descriptionLabel')}>
-            <textarea
-              className={inputClass}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder={t(locale, 'billing.descriptionPlaceholder')}
-              rows={2}
-              maxLength={2000}
-            />
-          </Field>
+          <Textarea
+            label={t(locale, 'billing.descriptionLabel')}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder={t(locale, 'billing.descriptionPlaceholder')}
+            rows={2}
+            maxLength={2000}
+          />
         </div>
         <div className="sm:col-span-2">
-          <button type="submit" className={primaryBtnClass} disabled={busy}>
+          <Button variant="primary" type="submit" disabled={busy} className="disabled:opacity-60 disabled:cursor-not-allowed">
             {busy ? t(locale, 'billing.creating') : t(locale, 'billing.createMilestone')}
-          </button>
+          </Button>
         </div>
       </form>
     </div>

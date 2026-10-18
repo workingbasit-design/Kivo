@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Plus, Trash2 } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
-import { Field, inputClass, secondaryBtnClass } from '@/components/ui';
+import { Button as KitButton, Input } from '@/components/kit';
 import { currencySymbol, formatMoney } from '@/lib/money';
 
 export interface LineItemRow {
@@ -106,34 +106,28 @@ export default function LineItemsEditor({
             key={i}
             className="rounded-2xl border border-line/70 bg-surface-2/50 p-3.5 space-y-3"
           >
-            <Field label={`${L('t10money.lineItemLabel')} ${i + 1}`}>
-              <input
-                value={row.desc}
-                onChange={(e) => setRow(i, { desc: e.target.value })}
-                placeholder={L('t10money.itemPlaceholder').replace('{n}', String(i + 1))}
-                className={`${inputClass} bg-surface`}
-                maxLength={200}
-              />
-            </Field>
+            <Input
+              label={`${L('t10money.lineItemLabel')} ${i + 1}`}
+              value={row.desc}
+              onChange={(e) => setRow(i, { desc: e.target.value })}
+              placeholder={L('t10money.itemPlaceholder').replace('{n}', String(i + 1))}
+              maxLength={200}
+            />
             <div className="grid grid-cols-2 gap-3">
-              <Field label={L('t10money.qtyLabel')}>
-                <input
-                  value={row.qty}
-                  onChange={(e) => setRow(i, { qty: e.target.value })}
-                  placeholder="1"
-                  inputMode="decimal"
-                  className={`${inputClass} bg-surface`}
-                />
-              </Field>
-              <Field label={`${L('t10money.rateLabel')} ${currencySymbol(currency)}`}>
-                <input
-                  value={row.rate}
-                  onChange={(e) => setRow(i, { rate: e.target.value })}
-                  placeholder="0.00"
-                  inputMode="decimal"
-                  className={`${inputClass} bg-surface`}
-                />
-              </Field>
+              <Input
+                label={L('t10money.qtyLabel')}
+                value={row.qty}
+                onChange={(e) => setRow(i, { qty: e.target.value })}
+                placeholder="1"
+                inputMode="decimal"
+              />
+              <Input
+                label={`${L('t10money.rateLabel')} ${currencySymbol(currency)}`}
+                value={row.rate}
+                onChange={(e) => setRow(i, { rate: e.target.value })}
+                placeholder="0.00"
+                inputMode="decimal"
+              />
             </div>
             <div className="flex items-center justify-between">
               <p className="text-xs text-ink-2">
@@ -159,9 +153,9 @@ export default function LineItemsEditor({
         ))}
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2 mt-3">
-        <button type="button" onClick={() => setRows((p) => [...p, blankRow()])} className={secondaryBtnClass}>
+        <KitButton type="button" variant="secondary" sm onClick={() => setRows((p) => [...p, blankRow()])}>
           <Plus size={14} /> {L('t10money.addItemLabel')}
-        </button>
+        </KitButton>
         <p className="text-sm text-ink-2">
           {L('t10money.subtotalLabel')}: <span className="font-bold text-ink">{formatMoney(subtotal, currency)}</span>
         </p>
@@ -179,7 +173,7 @@ export default function LineItemsEditor({
             setDiscountType(v);
             if (!v) setDiscountValue('');
           }}
-          className={`${inputClass} w-auto`}
+          className="input w-auto"
         >
           <option value="">{L('t10money.discountNone')}</option>
           <option value="PERCENT">{L('t10money.discountPercent')}</option>
@@ -192,7 +186,7 @@ export default function LineItemsEditor({
             placeholder={discountType === 'PERCENT' ? '10' : '25'}
             inputMode="decimal"
             aria-label={L('t10money.discountValueLabel')}
-            className={`${inputClass} w-28`}
+            className="input w-28"
           />
         )}
         {discount.amount > 0 && (

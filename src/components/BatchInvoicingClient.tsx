@@ -1,11 +1,10 @@
 'use client';
 
 import { useState, useTransition, type CSSProperties } from 'react';
-import Link from 'next/link';
 import { FileText, AlertTriangle, CheckCircle2, Receipt } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
-import { Card, EmptyState, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
+import { Button, Card, EmptyState } from '@/components/kit';
 import { confirmBatchInvoices } from '@/app/actions/batch-invoicing';
 import type { BatchPreviewRow } from '@/lib/billing';
 import { formatMoney } from '@/lib/money';
@@ -84,16 +83,16 @@ export default function BatchInvoicingClient({
               {fill(t(locale, 'billing.batchCreated'), created)}
             </p>
             <div className="flex gap-2 mt-4">
-              <Link href="/invoices" className={primaryBtnClass}>
+              <Button href="/invoices" variant="primary">
                 {t(locale, 'billing.viewInvoices')}
-              </Link>
-              <button
+              </Button>
+              <Button
+                variant="secondary"
                 type="button"
-                className={secondaryBtnClass}
                 onClick={() => setCreated(null)}
               >
                 {t(locale, 'billing.batchTitle')}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -104,7 +103,7 @@ export default function BatchInvoicingClient({
   return (
     <div className="space-y-4">
       {error && (
-        <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-danger-bg px-4 py-3 text-sm text-red-800">
+        <div className="flex items-start gap-2.5 rounded-xl border border-danger/30 bg-danger-bg px-4 py-3 text-sm text-danger">
           <AlertTriangle size={16} className="shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
@@ -113,9 +112,9 @@ export default function BatchInvoicingClient({
       {rows.length === 0 ? (
         <Card>
           <EmptyState
-            icon={<Receipt size={24} />}
+            icon={Receipt}
             title={t(locale, 'billing.emptyTitle')}
-            description={t(locale, 'billing.emptyDesc')}
+            text={t(locale, 'billing.emptyDesc')}
           />
         </Card>
       ) : (
@@ -127,7 +126,7 @@ export default function BatchInvoicingClient({
                   type="checkbox"
                   checked={rows.length > 0 && rows.every((r) => checked[r.jobId])}
                   onChange={toggleAll}
-                  className="h-5 w-5 rounded border-line-strong accent-zinc-900"
+                  className="h-5 w-5 rounded-md border-line-strong accent-ink"
                   aria-label={t(locale, 'billing.selectAll')}
                 />
               </label>
@@ -147,7 +146,7 @@ export default function BatchInvoicingClient({
                       type="checkbox"
                       checked={!!checked[r.jobId]}
                       onChange={() => toggle(r.jobId)}
-                      className="h-5 w-5 rounded border-line-strong accent-zinc-900"
+                      className="h-5 w-5 rounded-md border-line-strong accent-ink"
                       aria-label={r.title}
                     />
                   </label>
@@ -173,7 +172,7 @@ export default function BatchInvoicingClient({
           </Card>
 
           {confirming ? (
-            <Card className="p-6 border-amber-200 bg-warn-bg/50">
+            <Card className="p-6 border-warn-line bg-warn-bg/50">
               <div className="flex items-start gap-3">
                 <AlertTriangle size={20} className="text-warn-text shrink-0 mt-0.5" />
                 <div>
@@ -186,11 +185,12 @@ export default function BatchInvoicingClient({
                       .replace('{total}', formatMoney(grandTotal, 'CAD'))}
                   </p>
                   <div className="flex flex-wrap gap-2 mt-4">
-                    <button
+                    <Button
+                      variant="primary"
                       type="button"
-                      className={primaryBtnClass}
                       disabled={busy}
                       onClick={onConfirm}
+                      className="disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                       {busy
                         ? t(locale, 'billing.creating')
@@ -198,15 +198,16 @@ export default function BatchInvoicingClient({
                             '{count}',
                             String(selected.length)
                           )}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="secondary"
                       type="button"
-                      className={secondaryBtnClass}
                       disabled={busy}
                       onClick={() => setConfirming(false)}
+                      className="disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                       {t(locale, 't10money.batchKeep')}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -219,14 +220,15 @@ export default function BatchInvoicingClient({
                   {formatMoney(grandTotal, 'CAD')}
                 </span>
               </p>
-              <button
+              <Button
+                variant="primary"
                 type="button"
-                className={primaryBtnClass}
                 disabled={busy || selected.length === 0}
                 onClick={() => setConfirming(true)}
+                className="disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {fill(t(locale, 'billing.createInvoices'), selected.length)}
-              </button>
+              </Button>
             </div>
           )}
         </>

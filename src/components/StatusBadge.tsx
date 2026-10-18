@@ -40,7 +40,7 @@ export default function StatusBadge({
         {resolveLabel(status, locale)}
       </span>
       {isLate && (
-        <span className="inline-flex items-center rounded-full border border-red-300 bg-red-100 px-2 py-0.5 text-xs font-semibold whitespace-nowrap text-red-800">
+        <span className="inline-flex items-center rounded-full border border-line bg-danger-bg px-2 py-0.5 text-xs font-semibold whitespace-nowrap text-danger">
           {locale === 'fr' ? 'En retard' : 'Late'}
         </span>
       )}

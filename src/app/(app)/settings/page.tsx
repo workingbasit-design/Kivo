@@ -1,9 +1,7 @@
-import Link from 'next/link';
 import { Award, Download, Languages, ListChecks, ShieldCheck, Users } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { PageHeader, Card, secondaryBtnClass } from '@/components/ui';
-import { SectionHeader } from '@/components/design/lists';
+import { Card, Button } from '@/components/kit';
 import SettingsForm from '@/components/SettingsForm';
 import LogoUploadCard from '@/components/LogoUploadCard';
 import ProfileForm from '@/components/ProfileForm';
@@ -19,6 +17,8 @@ import { EXPORT_TYPES } from '@/lib/export';
 import SettingsSearch from '@/components/SettingsSearch';
 import DemoSwitchCard from '@/components/DemoSwitchCard';
 import ThemePicker from '@/components/ThemePicker';
+import { } from '@/components/kit';
+import { PageTitle } from '../_components/PageTitle';
 
 export const metadata = { title: 'Settings | EveryJob' };
 
@@ -110,9 +110,9 @@ export default async function SettingsPage() {
 
   return (
     <div data-settings-root className="space-y-6">
-      <PageHeader
+      <PageTitle
         title={tr('t10misc.settingsMain.title')}
-        subtitle={tr('t10misc.settingsMain.subtitle')}
+        summary={tr('t10misc.settingsMain.subtitle')}
       />
 
       <SettingsSearch locale={locale} />
@@ -137,7 +137,7 @@ export default async function SettingsPage() {
         className="scroll-mt-24 space-y-4"
       >
         <div>
-          <SectionHeader title={groups[0].title} />
+          <h3 className="text-base font-bold text-ink">{groups[0].title}</h3>
           <p className="text-sm text-ej-secondary -mt-2 mb-1">{groups[0].desc}</p>
         </div>
         <SettingsForm
@@ -195,7 +195,7 @@ export default async function SettingsPage() {
         className="scroll-mt-24 space-y-4"
       >
         <div>
-          <SectionHeader title={groups[1].title} />
+          <h3 className="text-base font-bold text-ink">{groups[1].title}</h3>
           <p className="text-sm text-ej-secondary -mt-2 mb-1">{groups[1].desc}</p>
         </div>
         <Card className="p-5 md:p-6">
@@ -203,9 +203,9 @@ export default async function SettingsPage() {
           <p className="text-xs text-ink-2 mb-4">
             {tr('t10misc.settingsMain.paymentsDesc')}
           </p>
-          <Link href="/settings/payments" className={secondaryBtnClass}>
+          <Button href="/settings/payments" variant="secondary">
             {tr('t10misc.settingsMain.managePayments')}
-          </Link>
+          </Button>
         </Card>
         <Card className="p-5 md:p-6">
           <h2 className="text-sm font-bold text-ink mb-1 flex items-center gap-2">
@@ -236,7 +236,7 @@ export default async function SettingsPage() {
         className="scroll-mt-24 space-y-4"
       >
         <div>
-          <SectionHeader title={groups[2].title} />
+          <h3 className="text-base font-bold text-ink">{groups[2].title}</h3>
           <p className="text-sm text-ej-secondary -mt-2 mb-1">{groups[2].desc}</p>
         </div>
         <Card className="p-5 md:p-6">
@@ -244,9 +244,9 @@ export default async function SettingsPage() {
           <p className="text-xs text-ink-2 mb-4">
             {tr('t10misc.settingsMain.messagingDesc')}
           </p>
-          <Link href="/settings/messaging" className={secondaryBtnClass}>
+          <Button href="/settings/messaging" variant="secondary">
             {tr('t10misc.settingsMain.manageMessaging')}
-          </Link>
+          </Button>
         </Card>
         <NotificationSettingsForm
           initial={parseSettings(business.notificationSettings)}
@@ -264,7 +264,7 @@ export default async function SettingsPage() {
         className="scroll-mt-24 space-y-4"
       >
         <div>
-          <SectionHeader title={groups[3].title} />
+          <h3 className="text-base font-bold text-ink">{groups[3].title}</h3>
           <p className="text-sm text-ej-secondary -mt-2 mb-1">{groups[3].desc}</p>
         </div>
         <Card className="p-5 md:p-6">
@@ -279,24 +279,24 @@ export default async function SettingsPage() {
                 href={`/book/${bookingPage.slug}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm font-medium text-info hover:text-blue-800 break-all"
+                className="text-sm font-medium text-info hover:text-info break-all"
               >
                 {`/book/${bookingPage.slug}`}
               </a>
             </div>
           ) : null}
-          <Link href="/settings/booking" className={secondaryBtnClass}>
+          <Button href="/settings/booking" variant="secondary">
             {tr('t10misc.booking.pageTitle')}
-          </Link>
+          </Button>
         </Card>
         <Card className="p-5 md:p-6">
           <h2 className="text-sm font-bold text-ink mb-1 flex items-center gap-2">
             <ListChecks size={14} /> {t(locale, 'jobops.templates.title')}
           </h2>
           <p className="text-xs text-ink-2 mb-4">{t(locale, 'jobops.templates.subtitle')}</p>
-          <Link href="/settings/checklists" className={secondaryBtnClass}>
+          <Button href="/settings/checklists" variant="secondary">
             <ListChecks size={14} /> {t(locale, 'jobops.checklist.manageTemplates')}
-          </Link>
+          </Button>
         </Card>
       </section>
 
@@ -308,7 +308,7 @@ export default async function SettingsPage() {
         className="scroll-mt-24 space-y-4"
       >
         <div>
-          <SectionHeader title={groups[4].title} />
+          <h3 className="text-base font-bold text-ink">{groups[4].title}</h3>
           <p className="text-sm text-ej-secondary -mt-2 mb-1">{groups[4].desc}</p>
         </div>
         <Card className="p-5 md:p-6">
@@ -316,9 +316,9 @@ export default async function SettingsPage() {
             <Users size={14} /> {tr('t10misc.settingsMain.manageTeam')}
           </h2>
           <p className="text-xs text-ink-2 mb-4">{groups[4].desc}</p>
-          <Link href="/settings/team" className={secondaryBtnClass}>
+          <Button href="/settings/team" variant="secondary">
             <Users size={14} /> {tr('t10misc.settingsMain.manageTeam')}
-          </Link>
+          </Button>
         </Card>
       </section>
 
@@ -330,7 +330,7 @@ export default async function SettingsPage() {
         className="scroll-mt-24 space-y-4"
       >
         <div>
-          <SectionHeader title={groups[5].title} />
+          <h3 className="text-base font-bold text-ink">{groups[5].title}</h3>
           <p className="text-sm text-ej-secondary -mt-2 mb-1">{groups[5].desc}</p>
         </div>
         <Card className="p-5 md:p-6">
@@ -351,9 +351,9 @@ export default async function SettingsPage() {
           <p className="text-xs text-ink-2 mb-4">
             {tr('t10misc.settingsMain.accountsDesc')}
           </p>
-          <Link href="/reviews" className={secondaryBtnClass}>
+          <Button href="/reviews" variant="secondary">
             {tr('t10misc.settingsMain.manageGoogle')}
-          </Link>
+          </Button>
         </Card>
         <Card className="p-5 md:p-6">
           <h2 className="text-sm font-bold text-ink mb-1 flex items-center gap-2">
@@ -362,9 +362,9 @@ export default async function SettingsPage() {
           <p className="text-xs text-ink-2 mb-4">
             {tr('t10misc.settingsMain.securityDesc')}
           </p>
-          <Link href="/settings/security" className={secondaryBtnClass}>
+          <Button href="/settings/security" variant="secondary">
             {tr('t10misc.settingsMain.manageSecurity')}
-          </Link>
+          </Button>
         </Card>
         {/* Part B: appearance (light/dark/system). */}
         <Card className="p-5 md:p-6">
@@ -381,9 +381,9 @@ export default async function SettingsPage() {
         <Card className="p-5 md:p-6">
           <h2 className="text-sm font-bold text-ink mb-1">{t(locale, 'integrations.title')}</h2>
           <p className="text-xs text-ink-2 mb-4">{t(locale, 'integrations.subtitle')}</p>
-          <Link href="/settings/integrations" className={secondaryBtnClass}>
+          <Button href="/settings/integrations" variant="secondary">
             {t(locale, 'integrations.title')}
-          </Link>
+          </Button>
         </Card>
       </section>
 
@@ -395,15 +395,15 @@ export default async function SettingsPage() {
         className="scroll-mt-24 space-y-4"
       >
         <div>
-          <SectionHeader title={groups[6].title} />
+          <h3 className="text-base font-bold text-ink">{groups[6].title}</h3>
           <p className="text-sm text-ej-secondary -mt-2 mb-1">{groups[6].desc}</p>
         </div>
         <Card className="p-5 md:p-6">
           <h2 className="text-sm font-bold text-ink mb-1">{t(locale, 'support.inboxTitle')}</h2>
           <p className="text-xs text-ink-2 mb-4">{t(locale, 'support.inboxSub')}</p>
-          <Link href="/settings/support" className={secondaryBtnClass}>
+          <Button href="/settings/support" variant="secondary">
             {t(locale, 'support.inboxTitle')}
-          </Link>
+          </Button>
         </Card>
       </section>
 
@@ -432,9 +432,9 @@ export default async function SettingsPage() {
         <Card className="p-5 md:p-6">
           <h2 className="text-sm font-bold text-ink mb-1">{t(locale, 'track8.automationsTitle')}</h2>
           <p className="text-xs text-ink-2 mb-4">{t(locale, 'track8.automationsSubtitle')}</p>
-          <Link href="/settings/automations" className={secondaryBtnClass}>
+          <Button href="/settings/automations" variant="secondary">
             {t(locale, 'track8.automationsTitle')}
-          </Link>
+          </Button>
         </Card>
       )}
     </div>

@@ -102,7 +102,7 @@ export default function AccountingExportClient({ locale }: { locale: string }) {
         type="button"
         onClick={handleExport}
         disabled={exporting}
-        className="w-full bg-asphalt text-white rounded-xl px-4 py-3 font-semibold text-sm inline-flex items-center justify-center gap-2 disabled:opacity-60"
+        className="w-full bg-asphalt text-hero-ink rounded-xl px-4 py-3 font-semibold text-sm inline-flex items-center justify-center gap-2 disabled:opacity-60"
       >
         <Download size={16} />
         {exporting ? (fr ? 'Export…' : 'Exporting…') : (fr ? 'Exporter CSV' : 'Export CSV')}

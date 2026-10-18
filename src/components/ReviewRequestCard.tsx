@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Check, Link2, Loader2, Star } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
-import { Card } from '@/components/ui';
+import { Button, Card } from '@/components/kit';
 import { createReviewRequest } from '@/app/actions/review-requests';
 import SmsButton from '@/components/SmsButton';
 import WhatsAppButton from '@/components/WhatsAppButton';
@@ -97,14 +97,15 @@ export default function ReviewRequestCard({
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              sm
               onClick={copyLink}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border bg-zinc-500/10 border-zinc-500/30 text-ink hover:bg-zinc-500/20 min-h-[36px]"
             >
               {copied ? <Check size={13} /> : <Link2 size={13} />}
               {copied ? tr('copied') : tr('copy')}
-            </button>
+            </Button>
             <SmsButton
               phone={phone}
               message={message}
@@ -122,11 +123,12 @@ export default function ReviewRequestCard({
       ) : (
         <div className="space-y-3">
           <p className="text-xs text-ink-2">{tr('desc')}</p>
-          <button
+          <Button
             type="button"
+            variant="primary"
+            sm
             onClick={run}
             disabled={status === 'working'}
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-colors bg-amber-500 text-white hover:bg-amber-600 disabled:opacity-60 min-h-[44px]"
           >
             {status === 'working' ? (
               <Loader2 size={13} className="animate-spin" />
@@ -134,9 +136,9 @@ export default function ReviewRequestCard({
               <Star size={13} />
             )}
             {status === 'working' ? tr('creating') : tr('create')}
-          </button>
+          </Button>
           {status === 'error' && (
-            <p className="text-xs font-medium text-danger bg-danger-bg border border-rose-200 rounded-xl px-3 py-2.5">
+            <p className="text-xs font-medium text-danger bg-danger-bg border border-line rounded-xl px-3 py-2.5">
               {error}
             </p>
           )}

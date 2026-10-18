@@ -12,8 +12,10 @@ import { getLocale } from "@/lib/i18n/server";
 import { t, type Locale } from "@/lib/i18n";
 import { fillTemplate } from "@/lib/revenue";
 import { localeMoneyTag, formatDateLabel, localeDateTag } from "@/lib/utils";
-import { PageHeader, Card, EmptyState } from "@/components/ui";
+import { Card } from '@/components/kit';
 import { AttentionRow } from "@/components/AttentionBriefing";
+import { PageTitle } from '../_components/PageTitle';
+import { EmptyState } from '@/components/kit';
 
 function HealthRing({ score, locale }: { score: number; locale: Locale }) {
   return (
@@ -100,9 +102,9 @@ export default async function OwnerPage() {
 
   return (
     <div className="space-y-6 max-w-3xl">
-      <PageHeader
+      <PageTitle
         title={t(locale, "owner.title")}
-        subtitle={t(locale, "owner.subtitle")}
+        summary={t(locale, "owner.subtitle")}
       />
 
       {/* 1. How is my business doing? */}
@@ -137,9 +139,9 @@ export default async function OwnerPage() {
             </div>
           ) : (
             <EmptyState
-              icon={<Gauge size={22} />}
+              icon={Gauge}
               title={t(locale, "health.noData")}
-              description={t(locale, "attention.emptyDesc")}
+              text={t(locale, "attention.emptyDesc")}
             />
           )}
         </Card>
@@ -173,9 +175,9 @@ export default async function OwnerPage() {
         ) : (
           <Card>
             <EmptyState
-              icon={<ArrowRight size={22} />}
+              icon={ArrowRight}
               title={t(locale, "attention.emptyTitle")}
-              description={t(locale, "attention.emptyDesc")}
+              text={t(locale, "attention.emptyDesc")}
             />
           </Card>
         )}
@@ -245,9 +247,8 @@ export default async function OwnerPage() {
         ) : (
           <Card>
             <EmptyState
-              icon={<Droplets size={22} />}
+              icon={Droplets}
               title={t(locale, "owner.leaksEmpty")}
-              description=""
             />
           </Card>
         )}
@@ -280,9 +281,9 @@ export default async function OwnerPage() {
         ) : (
           <Card>
             <EmptyState
-              icon={<ArrowRight size={22} />}
+              icon={ArrowRight}
               title={t(locale, "owner.tomorrowEmpty")}
-              description={formatDateLabel(tomorrowStart, dateLocale)}
+              text={formatDateLabel(tomorrowStart, dateLocale)}
             />
           </Card>
         )}

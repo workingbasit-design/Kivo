@@ -9,7 +9,7 @@ import {
 } from '@/lib/esign';
 import { rateLimit } from '@/lib/rate-limit';
 import { formatMoney } from '@/lib/money';
-import { Card } from '@/components/ui';
+import { Card } from '@/components/kit';
 import PortalNotice from '@/components/PortalNotice';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
@@ -66,7 +66,7 @@ function FieldMarker({
   const top = Math.min(100, Math.max(0, field.y <= 1 ? field.y * 100 : field.y));
   return (
     <span
-      className="pointer-events-none absolute z-10 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-full border border-asphalt/30 bg-asphalt/90 px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap text-white"
+      className="pointer-events-none absolute z-10 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-full border border-asphalt/30 bg-asphalt/90 px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap text-hero-ink"
       style={{ left: `${left}%`, top: `${top}%` }}
     >
       <PenLine size={10} />
@@ -109,12 +109,12 @@ export default async function SignPage({
 
   return (
     <div className="min-h-screen bg-paper font-sans">
-      <header className="bg-asphalt text-white">
+      <header className="bg-asphalt text-hero-ink">
         <div className="mx-auto max-w-lg px-4 py-8">
           <div className="mb-4">
             <Logo tone="onDark" size={28} />
           </div>
-          <p className="mb-1 text-[11px] font-semibold text-white/60">
+          <p className="mb-1 text-[11px] font-semibold text-hero-ink/60">
             {business.name}
           </p>
           <h1 className="text-2xl font-bold tracking-tight">{L('esign.signTitle')}</h1>

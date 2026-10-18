@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { fetchF9Data, type F9Data } from '@/lib/reports-f9-data';
 import { formatCents } from '@/lib/money';
 import { cn } from '@/lib/utils';
-import { Card } from '@/components/ui';
+import { Card } from '@/components/kit';
 import { F9ExportButton, type F9ReportKey } from './f9-export-button';
 import { AGING_BUCKETS, type AgingBucket } from '@/lib/reports-f9';
 
@@ -198,7 +198,7 @@ export async function F9Reports({
                           title={`${r.invoiced}: ${money(m.invoicedCents)}`}
                         />
                         <div
-                          className="w-3 rounded-t bg-emerald-500"
+                          className="w-3 rounded-t bg-ok"
                           style={{ height: `${Math.max(2, (m.collectedCents / maxRev) * 100)}%` }}
                           title={`${r.collected}: ${money(m.collectedCents)}`}
                         />
@@ -217,7 +217,7 @@ export async function F9Reports({
                     <span className="w-2.5 h-2.5 rounded-sm bg-asphalt" /> {r.invoiced}
                   </span>
                   <span className="inline-flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500" /> {r.collected}
+                    <span className="w-2.5 h-2.5 rounded-sm bg-ok" /> {r.collected}
                   </span>
                 </div>
               </div>
@@ -348,7 +348,7 @@ export async function F9Reports({
                 {data.tax.rows
                   .filter((row) => row.totalCents > 0)
                   .map((row) => (
-                    <tr key={row.key} className="border-b border-zinc-50">
+                    <tr key={row.key} className="border-b border-line">
                       <td className="py-2 pr-2">
                         <Link href="/invoices" className="font-semibold text-ink hover:underline">
                           {row.label}

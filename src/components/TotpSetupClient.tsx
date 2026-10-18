@@ -9,7 +9,7 @@
 import { useState } from 'react';
 import { ShieldCheck, ShieldAlert, Copy, Check } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
-import { Field, inputClass, primaryBtnClass } from '@/components/ui';
+import { Button, Input } from '@/components/kit';
 import { beginTotpSetup, confirmTotpSetup, disableTotp } from '@/app/actions/totp';
 
 export default function TotpSetupClient({
@@ -83,7 +83,7 @@ export default function TotpSetupClient({
   };
 
   return (
-    <div className="ej-glass-card rounded-2xl p-5 space-y-4">
+    <div className="bg-surface border border-line shadow-kit-card rounded-2xl p-5 space-y-4">
       <div className="flex items-center gap-3">
         {enabled ? (
           <ShieldCheck size={22} className="text-ok" />
@@ -97,21 +97,21 @@ export default function TotpSetupClient({
       </div>
 
       {requiredNotice && !enabled && (
-        <div role="alert" className="rounded-xl bg-warn-bg border border-amber-200 text-amber-800 text-sm px-4 py-3">
+        <div role="alert" className="rounded-xl bg-warn-bg border border-warn-line text-warn-text text-sm px-4 py-3">
           {t(locale, 'security.totpRequiredNotice')}
         </div>
       )}
 
       {error && (
-        <div role="alert" className="rounded-xl bg-danger-bg border border-rose-200 text-danger text-sm px-4 py-3">
+        <div role="alert" className="rounded-xl bg-danger-bg border border-line text-danger text-sm px-4 py-3">
           {error}
         </div>
       )}
 
       {!enabled && !secret && (
-        <button onClick={start} disabled={busy} className={primaryBtnClass}>
+        <Button type="button" variant="primary" onClick={start} disabled={busy}>
           {busy ? t(locale, 'security.working') : t(locale, 'security.enableTotp')}
-        </button>
+        </Button>
       )}
 
       {!enabled && secret && !backupCodes && (
@@ -121,13 +121,15 @@ export default function TotpSetupClient({
             <code className="flex-1 rounded-lg bg-surface-2 px-3 py-2 text-sm font-mono tracking-wider break-all">
               {secret}
             </code>
-            <button
+            <Button
+              type="button"
+              variant="ghost"
+              sm
               onClick={copySecret}
-              className="rounded-lg border border-line p-2 text-ink-2 hover:bg-surface-2"
               aria-label={t(locale, 'security.copySecret')}
             >
               {copied ? <Check size={16} /> : <Copy size={16} />}
-            </button>
+            </Button>
           </div>
           {otpauthUrl && (
             <p className="text-xs text-ink-2 break-all">
@@ -135,20 +137,18 @@ export default function TotpSetupClient({
               <span className="font-mono">{otpauthUrl}</span>
             </p>
           )}
-          <Field label={t(locale, 'security.totpCodeLabel')}>
-            <input
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              placeholder="123456"
-              maxLength={9}
-              className={inputClass}
-            />
-          </Field>
-          <button onClick={confirm} disabled={busy || code.trim().length < 6} className={primaryBtnClass}>
+          <Input
+            label={t(locale, 'security.totpCodeLabel')}
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            placeholder="123456"
+            maxLength={9}
+          />
+          <Button type="button" variant="primary" onClick={confirm} disabled={busy || code.trim().length < 6}>
             {busy ? t(locale, 'security.working') : t(locale, 'security.confirmTotp')}
-          </button>
+          </Button>
         </div>
       )}
 
@@ -169,22 +169,22 @@ export default function TotpSetupClient({
       {enabled && !backupCodes && (
         <div className="space-y-4">
           <p className="text-sm text-ok font-medium">{t(locale, 'security.totpOn')}</p>
-          <Field label={t(locale, 'security.confirmPasswordLabel')}>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-              className={inputClass}
-            />
-          </Field>
-          <button
+          <Input
+            label={t(locale, 'security.confirmPasswordLabel')}
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+          />
+          <Button
+            type="button"
+            variant="danger"
+            sm
             onClick={disable}
             disabled={busy || !password}
-            className="rounded-xl border border-rose-200 bg-danger-bg px-4 py-2.5 text-sm font-semibold text-danger hover:bg-rose-100 disabled:opacity-50"
           >
             {busy ? t(locale, 'security.working') : t(locale, 'security.disableTotp')}
-          </button>
+          </Button>
         </div>
       )}
     </div>

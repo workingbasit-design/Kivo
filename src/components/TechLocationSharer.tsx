@@ -5,13 +5,11 @@ import { t, type Locale } from '@/lib/i18n';
 import { useLocale } from './LanguageToggle';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import {
+  Button,
   Card,
-  Field,
-  dangerBtnClass,
-  primaryBtnClass,
-  secondaryBtnClass,
-  selectClass,
-} from '@/components/ui';
+  Select,
+  kitButtonClass,
+} from '@/components/kit';
 
 /**
  * Technician live-location sharing card.
@@ -349,18 +347,18 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
           className={
             'inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap ' +
             (sharing
-              ? 'bg-emerald-100 text-emerald-800'
+              ? 'bg-ok-bg text-ok'
               : 'bg-surface-2 text-ink-2')
           }
         >
           <span className="relative flex h-2.5 w-2.5">
             {sharing && (
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-ok opacity-75" />
             )}
             <span
               className={
                 'relative inline-flex rounded-full h-2.5 w-2.5 ' +
-                (sharing ? 'bg-emerald-600' : 'bg-zinc-400')
+                (sharing ? 'bg-ok' : 'bg-line')
               }
             />
           </span>
@@ -369,8 +367,8 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
       </div>
 
       {sharing && (
-        <div className="mt-3 rounded-xl bg-ok-bg border border-emerald-200 px-4 py-3">
-          <p className="text-sm font-semibold text-emerald-900">{tr('gps.sharingOn')}</p>
+        <div className="mt-3 rounded-xl bg-ok-bg border border-line px-4 py-3">
+          <p className="text-sm font-semibold text-ok">{tr('gps.sharingOn')}</p>
           <p className="text-xs text-ok mt-0.5">{tr('gps.sharingOnDetail')}</p>
           <p className="text-xs text-ok mt-1">
             {tr('gps.lastPing')}:{' '}
@@ -385,75 +383,73 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
         <p className="text-sm text-ink-2 mt-4">{tr('gps.noActiveJobs')}</p>
       ) : (
         <div className="mt-4 space-y-4">
-          <Field label={tr('gps.jobLabel')}>
-            <select
-              value={jobId}
-              onChange={(e) => setJobId(e.target.value)}
-              disabled={sharing || starting}
-              className={selectClass}
-            >
-              {jobs.map((j) => (
-                <option key={j.id} value={j.id}>
-                  {j.title} - {j.customerName}
-                </option>
-              ))}
-            </select>
-          </Field>
+          <Select
+            label={tr('gps.jobLabel')}
+            value={jobId}
+            onChange={(e) => setJobId(e.target.value)}
+            disabled={sharing || starting}
+            options={jobs.map((j) => ({
+              value: j.id,
+              label: `${j.title} - ${j.customerName}`,
+            }))}
+          />
 
           {!sharing ? (
-            <button
+            <Button
               type="button"
+              variant="primary"
+              block
               onClick={startSharing}
               disabled={starting || !jobId}
-              className={primaryBtnClass + ' w-full !py-3.5 !text-base'}
             >
               {starting ? tr('gps.waitingForFix') : tr('gps.startSharing')}
-            </button>
+            </Button>
           ) : (
-            <button
+            <Button
               type="button"
+              variant="danger"
+              block
               onClick={() => stopSharing(tr('gps.stopped'))}
-              className={dangerBtnClass + ' w-full !py-3.5 !text-base'}
             >
               {tr('gps.stopSharing')}
-            </button>
+            </Button>
           )}
 
           <div className="rounded-xl bg-surface-2 border border-line px-4 py-3">
             <p className="text-sm font-semibold text-ink">{tr('gps.customerLinkTitle')}</p>
             <p className="text-xs text-ink-2 mt-0.5">{tr('gps.customerLinkDesc')}</p>
             <div className="mt-2 flex flex-col sm:flex-row gap-2">
-              <button
+              <Button
                 type="button"
+                variant="secondary"
                 onClick={createLink}
                 disabled={linkBusy || !jobId}
-                className={secondaryBtnClass}
               >
                 {linkUrl ? tr('gps.refreshLink') : tr('gps.createLink')}
-              </button>
+              </Button>
               {linkUrl && (
                 <>
-                  <button type="button" onClick={copyLink} className={secondaryBtnClass}>
+                  <Button type="button" variant="secondary" onClick={copyLink}>
                     {tr('gps.copyLink')}
-                  </button>
+                  </Button>
                   <a
                     href={`https://wa.me/?text=${encodeURIComponent(
                       `${tr('gps.whatsappMessage')}: ${linkUrl}`
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={secondaryBtnClass + ' text-center'}
+                    className={kitButtonClass('secondary') + ' text-center'}
                   >
                     {tr('gps.shareWhatsApp')}
                   </a>
-                  <button
+                  <Button
                     type="button"
+                    variant="danger"
                     onClick={() => setConfirmingRevoke(true)}
                     disabled={linkBusy}
-                    className={dangerBtnClass}
                   >
                     {tr('gps.revokeLink')}
-                  </button>
+                  </Button>
                 </>
               )}
             </div>

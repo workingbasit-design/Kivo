@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react';
 import { Plus, X, Trash2 } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
-import { Field, inputClass, primaryBtnClass } from '@/components/ui';
+import { Button, Input } from '@/components/kit';
 import { updateCrew, deleteCrew, addMember, removeMember, createCrew } from '@/app/actions/crews';
 
 const CREW_COLORS = ['#a3e635', '#38bdf8', '#fbbf24', '#f472b6', '#a78bfa', '#34d399'];
@@ -45,16 +45,14 @@ export function CrewForm({
 
   return (
     <div className="space-y-5">
-      <Field label={L('name')}>
-        <input
-          name="crew-name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder={L('namePlaceholder')}
-          maxLength={60}
-          className={inputClass}
-        />
-      </Field>
+      <Input
+        label={L('name')}
+        name="crew-name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder={L('namePlaceholder')}
+        maxLength={60}
+      />
 
       <div>
         <span className="block text-sm font-semibold text-ink mb-2">{L('color')}</span>
@@ -68,7 +66,7 @@ export function CrewForm({
               aria-label={c}
               onClick={() => setColor(c)}
               className={`w-11 h-11 min-w-[44px] min-h-[44px] rounded-full border-2 transition-transform ${
-                color === c ? 'border-zinc-900 scale-110' : 'border-transparent'
+                color === c ? 'border-ink scale-110' : 'border-transparent'
               }`}
               style={{ backgroundColor: c }}
             />
@@ -76,14 +74,15 @@ export function CrewForm({
         </div>
       </div>
 
-      <button
+      <Button
+        variant="primary"
         type="button"
         disabled={pending}
         onClick={() => run(() => updateCrew(initial.id, name, color), L('updated'))}
-        className={`${primaryBtnClass} w-full min-h-[44px] disabled:opacity-50`}
+        className="w-full min-h-[44px] disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {L('save')}
-      </button>
+      </Button>
 
       <div>
         <span className="block text-sm font-semibold text-ink mb-2">
@@ -116,7 +115,8 @@ export function CrewForm({
             onChange={(e) => setNewMember(e.target.value)}
             placeholder={L('memberPlaceholder')}
             maxLength={80}
-            className={`${inputClass} flex-1`}
+            className="input flex-1"
+            aria-label={L('memberPlaceholder')}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault();
@@ -136,7 +136,7 @@ export function CrewForm({
                 return r;
               }), L('memberAdded'))
             }
-            className="shrink-0 min-w-[44px] min-h-[44px] px-4 rounded-xl bg-asphalt text-white text-sm font-semibold disabled:opacity-50 flex items-center gap-1.5"
+            className="shrink-0 min-w-[44px] min-h-[44px] px-4 rounded-xl bg-asphalt text-hero-ink text-sm font-semibold disabled:opacity-50 flex items-center gap-1.5"
           >
             <Plus size={16} aria-hidden /> {L('addMember')}
           </button>
@@ -144,24 +144,25 @@ export function CrewForm({
       </div>
 
       {confirmingDelete ? (
-        <div className="rounded-xl border border-rose-200 bg-danger-bg p-4 space-y-3">
-          <p className="text-sm text-rose-800">{L('deleteConfirm')}</p>
+        <div className="rounded-xl border border-danger/30 bg-danger-bg p-4 space-y-3">
+          <p className="text-sm text-danger">{L('deleteConfirm')}</p>
           <div className="flex gap-2">
-            <button
+            <Button
+              variant="danger"
               type="button"
               disabled={pending}
               onClick={() => run(() => deleteCrew(initial.id), L('deleted'))}
-              className="min-h-[44px] px-4 rounded-xl bg-rose-600 text-white text-sm font-semibold disabled:opacity-50"
+              className="disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {L('delete')}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="secondary"
               type="button"
               onClick={() => setConfirmingDelete(false)}
-              className="min-h-[44px] px-4 rounded-xl border border-line-strong text-sm font-semibold text-ink"
             >
               {L('cancel')}
-            </button>
+            </Button>
           </div>
         </div>
       ) : (
@@ -206,15 +207,13 @@ export function CrewCreateForm({ locale }: { locale: Locale }) {
 
   return (
     <div className="space-y-4">
-      <Field label={L('name')}>
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder={L('namePlaceholder')}
-          maxLength={60}
-          className={inputClass}
-        />
-      </Field>
+      <Input
+        label={L('name')}
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder={L('namePlaceholder')}
+        maxLength={60}
+      />
       <div>
         <span className="block text-sm font-semibold text-ink mb-2">{L('color')}</span>
         <div className="flex gap-2" role="radiogroup" aria-label={L('color')}>
@@ -227,21 +226,22 @@ export function CrewCreateForm({ locale }: { locale: Locale }) {
               aria-label={c}
               onClick={() => setColor(c)}
               className={`w-11 h-11 min-w-[44px] min-h-[44px] rounded-full border-2 transition-transform ${
-                color === c ? 'border-zinc-900 scale-110' : 'border-transparent'
+                color === c ? 'border-ink scale-110' : 'border-transparent'
               }`}
               style={{ backgroundColor: c }}
             />
           ))}
         </div>
       </div>
-      <button
+      <Button
+        variant="primary"
         type="button"
         disabled={pending || name.trim().length < 2}
         onClick={create}
-        className={`${primaryBtnClass} w-full min-h-[44px] disabled:opacity-50`}
+        className="w-full min-h-[44px] disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {L('create')}
-      </button>
+      </Button>
       {msg && (
         <p className="text-sm font-medium text-ink" role="status">
           {msg}

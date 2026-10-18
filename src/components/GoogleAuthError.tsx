@@ -23,7 +23,7 @@ export default function GoogleAuthError() {
   if (!code) return null;
   const key = CODE_TO_KEY[code] ?? 'googleAuth.signInFailed';
   return (
-    <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5 mb-4">
+    <div className="flex items-start gap-2 bg-danger-bg border border-line text-danger text-xs font-medium rounded-xl px-3 py-2.5 mb-4">
       <AlertCircle size={14} className="mt-0.5 shrink-0" />
       <span>{t(key)}</span>
     </div>

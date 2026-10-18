@@ -23,18 +23,18 @@ export default async function CustomerLayout({ children }: { children: React.Rea
             <span className="transition-transform duration-300 group-hover:scale-105 group-active:scale-95">
               <Logo size={26} />
             </span>
-            <span className="text-xs font-bold text-indigo-600 hidden sm:inline">
+            <span className="text-xs font-bold text-ink hidden sm:inline">
               {tr('customer.auth.forCustomers')}
             </span>
           </Link>
           {session && (
             <div className="flex items-center gap-4">
               <nav className="hidden md:flex items-center gap-4 text-sm font-medium text-ink-2">
-                <Link href="/customer" className="hover:text-indigo-600 transition-colors">{tr('customer.nav.search')}</Link>
-                <Link href="/customer/requests" className="hover:text-indigo-600 transition-colors">{tr('customer.nav.requests')}</Link>
-                <Link href="/customer/saved" className="hover:text-indigo-600 transition-colors">{tr('customer.nav.saved')}</Link>
-                <Link href="/customer/messages" className="hover:text-indigo-600 transition-colors">{tr('customer.nav.messages')}</Link>
-                <Link href="/customer/profile" className="hover:text-indigo-600 transition-colors">{tr('customer.nav.profile')}</Link>
+                <Link href="/customer" className="hover:text-ink transition-colors">{tr('customer.nav.search')}</Link>
+                <Link href="/customer/requests" className="hover:text-ink transition-colors">{tr('customer.nav.requests')}</Link>
+                <Link href="/customer/saved" className="hover:text-ink transition-colors">{tr('customer.nav.saved')}</Link>
+                <Link href="/customer/messages" className="hover:text-ink transition-colors">{tr('customer.nav.messages')}</Link>
+                <Link href="/customer/profile" className="hover:text-ink transition-colors">{tr('customer.nav.profile')}</Link>
               </nav>
               <span className="text-sm text-ink-2 truncate max-w-[160px]">
                 Hi, {session.customer.name?.split(' ')[0] || 'there'}

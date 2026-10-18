@@ -1888,6 +1888,22 @@
     },
     {
       "type": "action",
+      "file": "dashboard-layout.ts",
+      "function": "saveDashboardLayout",
+      "auth": "session",
+      "hint": "",
+      "expected": {
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerA": "allow",
+        "adminA": "allow",
+        "dispatcherA": "allow",
+        "technicianA": "allow",
+        "ownerB": "deny"
+      }
+    },
+    {
+      "type": "action",
       "file": "demo.ts",
       "function": "leaveDemoBusiness",
       "auth": "session",

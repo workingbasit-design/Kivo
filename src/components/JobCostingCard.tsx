@@ -3,7 +3,7 @@
 import React, { useActionState, useEffect, useRef, useState } from 'react';
 import { Timer, AlertCircle } from '@/components/icons';
 import { saveHourlyRate, type JobOpsActionResult } from '@/app/actions/jobops';
-import { Card } from '@/components/ui';
+import { Card } from '@/components/kit';
 import { jInputClass, jPrimaryBtnClass, jSecondaryBtnClass } from '@/components/jobops-classes';
 import { formatMoney } from '@/lib/money';
 import { formatDuration } from '@/lib/timesheets';
@@ -75,17 +75,17 @@ export function JobCostingCard({
       ? summarizeJobCost({ price, laborMinutes, hourlyRate: validCustomRate, expenses })
       : summary;
 
-  // Profit-bar color: green at healthy margins, amber when thin, red when
-  // losing money.
+  // Profit-bar color: ok at healthy margins, warn when thin, danger when
+  // losing money (kit tokens).
   const margin = liveSummary.marginPct;
   const barColor =
     margin === null
-      ? 'bg-zinc-300'
+      ? 'bg-line'
       : margin >= 30
-        ? 'bg-emerald-500'
+        ? 'bg-ok'
         : margin >= 10
-          ? 'bg-amber-400'
-          : 'bg-rose-500';
+          ? 'bg-warn'
+          : 'bg-danger';
   const barWidth =
     margin === null ? 0 : Math.max(0, Math.min(100, margin));
 
@@ -159,7 +159,7 @@ export function JobCostingCard({
                 type="checkbox"
                 checked={useCustomRate}
                 onChange={(e) => setUseCustomRate(e.target.checked)}
-                className="w-4 h-4 accent-lime-600"
+                className="w-4 h-4 rounded-md border-line-strong accent-ink"
               />
               {t(locale, 'jobops.costing.useCustomRate')}
             </label>
@@ -358,7 +358,7 @@ function RateForm({
         </button>
       </div>
       {state?.error && (
-        <div className="mt-2 flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="mt-2 flex items-start gap-2 bg-danger-bg border border-danger/25 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{state.error}</span>
         </div>

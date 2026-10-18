@@ -3,7 +3,7 @@
  * Token utilities only — no hard-coded colours.
  */
 
-export type KitButtonVariant = 'primary' | 'secondary' | 'ghost';
+export type KitButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 
 const BASE =
   'inline-flex items-center justify-center gap-2 min-h-[52px] px-[18px] rounded-[14px] ' +
@@ -16,6 +16,7 @@ const VARIANTS: Record<KitButtonVariant, string> = {
   secondary:
     'bg-surface text-ink shadow-[inset_0_0_0_1.5px_var(--line-strong)]',
   ghost: 'bg-transparent text-ink-2',
+  danger: 'bg-danger-bg text-danger',
 };
 
 /** Class list for a kit button; pass `sm` for the 44px variant, `block` for full width. */

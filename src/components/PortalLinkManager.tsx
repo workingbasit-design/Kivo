@@ -5,7 +5,7 @@ import { AlertCircle, Link2, MessageCircle, RefreshCw, ShieldOff } from '@/compo
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import CopyButton from '@/components/CopyButton';
-import { secondaryBtnClass } from '@/components/ui';
+import { Button } from '@/components/kit';
 import {
   createPortalLink,
   revokePortalLink,
@@ -136,7 +136,7 @@ export default function PortalLinkManager({
       </p>
 
       {error && (
-        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-danger/25 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{error}</span>
         </div>
@@ -161,32 +161,36 @@ export default function PortalLinkManager({
               <MessageCircle size={13} /> {t(locale, 't10money.portalMgrWaShare')}
             </a>
             {confirming !== 'revoke' ? (
-              <button
-                type="button"
+              <Button
+                variant="ghost"
+                sm
                 onClick={() => setConfirming('revoke')}
-                className="min-h-[44px] text-xs font-semibold text-danger hover:text-danger inline-flex items-center gap-1.5 px-2"
+                className="text-danger"
               >
                 <ShieldOff size={13} /> {t(locale, 't10money.portalMgrRevoke')}
-              </button>
+              </Button>
             ) : (
-              <form action={revokeFormAction} className="flex flex-wrap items-center gap-2 bg-danger-bg border border-rose-200 rounded-xl px-3 py-2">
+              <form action={revokeFormAction} className="flex flex-wrap items-center gap-2 bg-danger-bg border border-danger/25 rounded-xl px-3 py-2">
                 <input type="hidden" name="tokenId" value={tokenId ?? ''} />
                 <input type="hidden" name="customerId" value={customerId} />
                 <span className="text-xs text-danger font-medium">{t(locale, 't10money.portalMgrRevokeConfirm')}</span>
-                <button
+                <Button
+                  variant="danger"
+                  sm
                   type="submit"
                   disabled={revokePending}
-                  className="min-h-[44px] text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-60 px-4 rounded-lg transition-colors"
+                  className="disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {revokePending ? t(locale, 't10money.portalMgrRevoking') : t(locale, 't10money.portalMgrYesRevoke')}
-                </button>
-                <button
-                  type="button"
+                </Button>
+                <Button
+                  variant="ghost"
+                  sm
                   onClick={() => setConfirming(null)}
-                  className="min-h-[44px] text-xs font-semibold text-ink-2 hover:text-ink px-3"
+                  className="hover:text-ink"
                 >
                   {t(locale, 't10money.portalMgrKeep')}
-                </button>
+                </Button>
               </form>
             )}
           </div>
@@ -197,37 +201,45 @@ export default function PortalLinkManager({
           {tokenId && confirming !== 'regen' ? (
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-xs text-ink-2">{t(locale, 't10money.portalMgrActive')}</p>
-              <button
-                type="button"
+              <Button
+                variant="secondary"
+                sm
                 onClick={() => setConfirming('regen')}
-                className={secondaryBtnClass}
               >
                 <RefreshCw size={13} /> {t(locale, 't10money.portalMgrRegenerate')}
-              </button>
+              </Button>
             </div>
           ) : confirming === 'regen' ? (
-            <div className="flex flex-wrap items-center gap-2 bg-warn-bg border border-amber-200 rounded-xl px-3 py-2">
-              <span className="text-xs text-amber-800 font-medium">{t(locale, 't10money.portalMgrRegenConfirm')}</span>
-              <button
+            <div className="flex flex-wrap items-center gap-2 bg-warn-bg border border-warn-line rounded-xl px-3 py-2">
+              <span className="text-xs text-warn-text font-medium">{t(locale, 't10money.portalMgrRegenConfirm')}</span>
+              <Button
+                variant="secondary"
+                sm
                 type="submit"
                 disabled={regenPending}
-                className="min-h-[44px] text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 disabled:opacity-60 px-4 rounded-lg transition-colors"
+                className="disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {regenPending ? t(locale, 't10money.portalMgrWorking') : t(locale, 't10money.portalMgrYesRegen')}
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                variant="ghost"
+                sm
                 onClick={() => setConfirming(null)}
-                className="min-h-[44px] text-xs font-semibold text-ink-2 hover:text-ink px-3"
+                className="hover:text-ink"
               >
                 {t(locale, 't10money.portalMgrKeep')}
-              </button>
+              </Button>
             </div>
           ) : (
-            <button type="submit" disabled={regenPending} className={secondaryBtnClass}>
+            <Button
+              variant="secondary"
+              type="submit"
+              disabled={regenPending}
+              className="disabled:opacity-60 disabled:cursor-not-allowed"
+            >
               <Link2 size={13} />
               {regenPending ? t(locale, 't10money.portalMgrCreating') : t(locale, 't10money.portalMgrCreate')}
-            </button>
+            </Button>
           )}
         </form>
       )}

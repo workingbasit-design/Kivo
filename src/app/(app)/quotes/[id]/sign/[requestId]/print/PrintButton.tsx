@@ -1,17 +1,18 @@
 'use client';
 
 import { Printer } from '@/components/icons';
-import { secondaryBtnClass } from '@/components/ui';
+
+import { Button } from '@/components/kit';
 
 /** Print button for the signed-document view. Hidden in the printed output. */
 export default function PrintButton({ label }: { label: string }) {
   return (
-    <button
+    <Button
       type="button"
       onClick={() => window.print()}
-      className={secondaryBtnClass + ' print:hidden'}
+      variant="secondary" className=" print:hidden"
     >
       <Printer size={14} /> {label}
-    </button>
+    </Button>
   );
 }

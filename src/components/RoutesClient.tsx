@@ -7,8 +7,9 @@ import {
   MapPinOff, Info, Navigation,
 } from '@/components/icons';
 import { toast } from 'sonner';
-import { Card, StatusBadge, primaryBtnClass, secondaryBtnClass, inputClass } from '@/components/ui';
-import { hasJobTime, formatJobTime, cn, jobDisplayStatus } from '@/lib/utils';
+import { Button, Card, DateField, kitButtonClass } from '@/components/kit';
+import { StatusPill } from '@/app/(app)/_components/status-ui';
+import { hasJobTime, formatJobTime, jobDisplayStatus } from '@/lib/utils';
 import type { RouteStop } from '@/lib/routes';
 import { googleMapsRouteUrl } from '@/lib/routes';
 import { optimizeDayRoute } from '@/app/actions/routes';
@@ -152,42 +153,39 @@ export default function RoutesClient({
       {/* Date picker + actions */}
       <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
         <form method="GET" action="/routes" className="flex items-center gap-2">
-          <label htmlFor="route-date" className="sr-only">
-            {T('routesRouteDate')}
-          </label>
-          <input
-            id="route-date"
-            type="date"
+          <DateField
+            label={<span className="sr-only">{T('routesRouteDate')}</span>}
             name="date"
             defaultValue={dateStr}
             onChange={(e) => e.target.form?.requestSubmit()}
-            className={cn(inputClass, '!w-auto')}
             aria-label={T('routesRouteDate')}
+            className="w-auto"
           />
         </form>
 
         <div className="flex flex-wrap items-center gap-2">
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={optimize}
             disabled={optimizing}
-            className={secondaryBtnClass + ' disabled:opacity-50'}
+            className="disabled:opacity-50"
           >
             {optimizing ? <Loader2 size={14} className="animate-spin" /> : <RouteIcon size={14} />}
             {optimizing ? T('routesOptimizing') : T('routesOptimize')}
-          </button>
-          <button type="button" onClick={resetOrder} className={secondaryBtnClass}>
+          </Button>
+          <Button type="button" variant="secondary" onClick={resetOrder}>
             <RotateCcw size={14} /> {T('routesReset')}
-          </button>
-          <button type="button" onClick={startRoute} className={primaryBtnClass}>
+          </Button>
+          <Button type="button" variant="primary" onClick={startRoute}>
             <Play size={14} /> {T('routesStart')}
-          </button>
+          </Button>
           {fullRouteUrl && (
             <a
               href={fullRouteUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className={secondaryBtnClass}
+              className={kitButtonClass('secondary')}
             >
               <Navigation size={14} /> {fullRouteLabel}
             </a>
@@ -196,14 +194,14 @@ export default function RoutesClient({
       </div>
 
       {optError && (
-        <p className="flex items-center gap-1.5 text-xs font-semibold text-danger bg-danger-bg border border-red-200 rounded-xl px-4 py-2.5">
+        <p className="flex items-center gap-1.5 text-xs font-semibold text-danger bg-danger-bg border border-line rounded-xl px-4 py-2.5">
           <AlertCircle size={14} /> {optError}
         </p>
       )}
 
       {optimized && totals && (
-        <div className="text-xs text-ink-2 bg-ok-bg border border-emerald-200 rounded-xl px-4 py-2.5 space-y-1">
-          <p className="font-bold text-emerald-800">
+        <div className="text-xs text-ink-2 bg-ok-bg border border-line rounded-xl px-4 py-2.5 space-y-1">
+          <p className="font-bold text-ok">
             {T('routesOptimizedTitle')}
             {totals.totalKm != null && <> · {T('routesKmTotal').replace('{km}', String(totals.totalKm))}</>}
             {totals.totalMinutes != null && <> · {T('routesMinTotal').replace('{min}', String(totals.totalMinutes))}</>}
@@ -239,7 +237,7 @@ export default function RoutesClient({
       )}
 
       {completeError && (
-        <p className="flex items-center gap-1.5 text-xs font-semibold text-danger bg-danger-bg border border-red-200 rounded-xl px-4 py-2.5">
+        <p className="flex items-center gap-1.5 text-xs font-semibold text-danger bg-danger-bg border border-line rounded-xl px-4 py-2.5">
           <AlertCircle size={14} /> {completeError}
         </p>
       )}
@@ -249,18 +247,19 @@ export default function RoutesClient({
         <Card className="p-6 md:p-8">
           {remaining.length === 0 ? (
             <div className="text-center py-8">
-              <CheckCircle2 size={40} className="mx-auto text-emerald-500 mb-3" />
+              <CheckCircle2 size={40} className="mx-auto text-ok mb-3" />
               <h3 className="font-bold text-ink">{T('routesComplete')}</h3>
               <p className="text-sm text-ink-2 mt-1">
                 {T('routesAllDone').replace('{count}', String(stops.length))}
               </p>
-              <button
+              <Button
                 type="button"
+                variant="secondary"
                 onClick={() => setRouteMode(false)}
-                className={secondaryBtnClass + ' mt-5'}
+                className="mt-5"
               >
                 <X size={14} /> {T('routesExit')}
-              </button>
+              </Button>
             </div>
           ) : (
             (() => {
@@ -316,31 +315,34 @@ export default function RoutesClient({
                   </div>
 
                   <div className="flex flex-col sm:flex-row gap-2 pt-2">
-                    <button
+                    <Button
                       type="button"
+                      variant="secondary"
                       disabled={idx === 0}
                       onClick={() => setCurrentIdx(idx - 1)}
-                      className={secondaryBtnClass + ' disabled:opacity-40'}
+                      className="disabled:opacity-40"
                     >
                       <ChevronLeft size={14} /> {common('back')}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
+                      variant="secondary"
                       disabled={completing || idx >= remaining.length - 1}
                       onClick={() => setCurrentIdx(idx + 1)}
-                      className={secondaryBtnClass + ' disabled:opacity-40'}
+                      className="disabled:opacity-40"
                     >
                       {T('routesSkip')} <ChevronRight size={14} />
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
+                      variant="primary"
                       disabled={completing}
                       onClick={() => markComplete(stop.id)}
-                      className={primaryBtnClass + ' sm:flex-1'}
+                      className="sm:flex-1"
                     >
                       <CheckCircle2 size={14} />
                       {completing ? common('saving') : T('routesMarkComplete')}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               );
@@ -351,12 +353,16 @@ export default function RoutesClient({
         /* Stop list */
         <div className="space-y-2.5">
           {stops.map((stop, i) => (
-            <Card
+            // kit Card takes no `style` prop; the --row-delay var inherits
+            // into the Card's ej-row-in animation from this wrapper.
+            <div
               key={stop.id}
-              className="p-4 flex items-center gap-3 ej-row-in"
               style={{ '--row-delay': `${Math.min(i, 10) * 40}ms` } as React.CSSProperties}
             >
-              <div className="w-8 h-8 rounded-xl bg-asphalt text-white flex items-center justify-center text-sm font-bold shrink-0 tabular-nums">
+            <Card
+              className="p-4 flex items-center gap-3 ej-row-in"
+            >
+              <div className="w-8 h-8 rounded-xl bg-asphalt text-hero-ink flex items-center justify-center text-sm font-bold shrink-0 tabular-nums">
                 {i + 1}
               </div>
               <div className="flex-1 min-w-0">
@@ -369,7 +375,7 @@ export default function RoutesClient({
                 {i > 0 && legLine(stop)}
               </div>
               <div className="hidden sm:block">
-                <StatusBadge status={jobDisplayStatus(stop.status, dateStr)} />
+                <StatusPill status={jobDisplayStatus(stop.status, dateStr)} locale={locale} />
               </div>
               <div className="flex items-center gap-0.5 shrink-0">
                 <button
@@ -392,6 +398,7 @@ export default function RoutesClient({
                 </button>
               </div>
             </Card>
+            </div>
           ))}
         </div>
       )}

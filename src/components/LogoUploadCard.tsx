@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react';
 import { ImagePlus, Loader2, Trash2 } from '@/components/icons';
 import { toast } from 'sonner';
-import { Card } from '@/components/ui';
+import { Button, Card } from '@/components/kit';
 import { t, type Locale } from '@/lib/i18n';
 import { uploadBusinessLogo, removeBusinessLogo } from '@/app/actions/settings';
 
@@ -65,7 +65,7 @@ export default function LogoUploadCard({
           {logoUrl ? (
             <img src={logoUrl} alt="" className="h-full w-full object-contain" />
           ) : (
-            <ImagePlus size={28} className="text-zinc-300" />
+            <ImagePlus size={28} className="text-line-strong" />
           )}
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -77,27 +77,29 @@ export default function LogoUploadCard({
             onChange={onPick}
             disabled={busy}
           />
-          <button
-            type="button"
+          <Button
+            variant="primary"
+            sm
             onClick={() => fileRef.current?.click()}
             disabled={busy}
-            className="inline-flex items-center gap-2 rounded-xl bg-asphalt px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+            className="disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {busy ? <Loader2 size={16} className="animate-spin" /> : <ImagePlus size={16} />}
             {logoUrl
               ? t(locale, 't10misc.settings.logoReplace')
               : t(locale, 't10misc.settings.logoUpload')}
-          </button>
+          </Button>
           {logoUrl && (
-            <button
-              type="button"
+            <Button
+              variant="secondary"
+              sm
               onClick={onRemove}
               disabled={busy}
-              className="inline-flex items-center gap-2 rounded-xl border border-line px-4 py-2.5 text-sm font-semibold text-ink disabled:opacity-50"
+              className="disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Trash2 size={16} />
               {t(locale, 't10misc.settings.logoRemove')}
-            </button>
+            </Button>
           )}
         </div>
       </div>

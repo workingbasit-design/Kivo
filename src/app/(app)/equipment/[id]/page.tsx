@@ -3,11 +3,12 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { PageHeader, Card } from '@/components/ui';
+import { Card } from '@/components/kit';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { ArrowLeft, Pencil } from '@/components/icons';
 import EquipmentDetailClient from '@/components/EquipmentDetailClient';
+import { PageTitle } from '../../_components/PageTitle';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,7 +44,7 @@ export default async function EquipmentDetailPage({
           <Pencil size={14} /> {T('edit')}
         </Link>
       </div>
-      <PageHeader title={eq.name} subtitle={eq.customer.name} />
+      <PageTitle title={eq.name} summary={eq.customer.name} />
       <EquipmentDetailClient
         equipment={{
           id: eq.id,

@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { Plus, X } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { saveBrandKit } from '@/app/actions/brand';
-import { inputClass, primaryBtnClass } from '@/components/ui';
+import { Button, Input } from '@/components/kit';
 
 const PRESETS = [
   { name: 'Lime', primary: '#3f6212', accent: '#a3e635' },
@@ -57,20 +57,14 @@ export function BrandKitForm({
 
   return (
     <div className="space-y-5">
-      <div>
-        <label htmlFor="brand-tagline" className="block text-sm font-semibold text-ink mb-1.5">
-          {tr('brand.tagline')}
-        </label>
-        <input
-          id="brand-tagline"
-          type="text"
-          value={tagline}
-          onChange={(e) => setTagline(e.target.value)}
-          placeholder={tr('brand.taglinePlaceholder')}
-          maxLength={140}
-          className={inputClass}
-        />
-      </div>
+      <Input
+        label={tr('brand.tagline')}
+        type="text"
+        value={tagline}
+        onChange={(e) => setTagline(e.target.value)}
+        placeholder={tr('brand.taglinePlaceholder')}
+        maxLength={140}
+      />
 
       <fieldset>
         <legend className="text-sm font-semibold text-ink mb-2">
@@ -86,7 +80,7 @@ export function BrandKitForm({
               aria-pressed={primary === p.primary && accent === p.accent}
               className={`w-11 h-11 min-w-[44px] min-h-[44px] rounded-xl border-2 transition-transform ${
                 primary === p.primary && accent === p.accent
-                  ? 'border-zinc-900 scale-105'
+                  ? 'border-ink scale-105'
                   : 'border-transparent hover:scale-105'
               }`}
               style={{ background: `linear-gradient(135deg, ${p.primary} 50%, ${p.accent} 50%)` }}
@@ -121,27 +115,25 @@ export function BrandKitForm({
         </div>
       </fieldset>
 
-      <div>
-        <label htmlFor="brand-service" className="block text-sm font-semibold text-ink mb-1">
-          {tr('brand.services')}
-        </label>
+      <div className="field">
+        <span>{tr('brand.services')}</span>
         <p className="text-xs text-ink-2 mb-2">{tr('brand.servicesDesc')}</p>
         <div className="flex gap-2">
           <input
-            id="brand-service"
             type="text"
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addService(); } }}
             placeholder={tr('brand.servicePlaceholder')}
             maxLength={60}
-            className={inputClass}
+            className="input"
+            aria-label={tr('brand.services')}
           />
           <button
             type="button"
             onClick={addService}
             disabled={!draft.trim() || services.length >= 10}
-            className="shrink-0 min-w-[44px] min-h-[44px] px-4 rounded-xl bg-asphalt text-white text-sm font-semibold disabled:opacity-40 inline-flex items-center gap-1.5"
+            className="shrink-0 min-w-[44px] min-h-[44px] px-4 rounded-xl bg-asphalt text-hero-ink text-sm font-semibold disabled:opacity-40 inline-flex items-center gap-1.5"
           >
             <Plus size={16} aria-hidden /> {tr('brand.add')}
           </button>
@@ -151,7 +143,7 @@ export function BrandKitForm({
             {services.map((s) => (
               <span
                 key={s}
-                className="inline-flex items-center gap-1.5 pl-3 pr-1.5 py-1.5 rounded-full text-sm font-medium text-white"
+                className="inline-flex items-center gap-1.5 pl-3 pr-1.5 py-1.5 rounded-full text-sm font-medium text-hero-ink"
                 style={{ backgroundColor: primary }}
               >
                 {s}
@@ -175,14 +167,15 @@ export function BrandKitForm({
         </p>
       )}
 
-      <button
+      <Button
+        variant="primary"
         type="button"
         onClick={save}
         disabled={pending}
-        className={`${primaryBtnClass} min-h-[44px]`}
+        className="min-h-[44px] disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {pending ? '…' : tr('brand.save')}
-      </button>
+      </Button>
     </div>
   );
 }

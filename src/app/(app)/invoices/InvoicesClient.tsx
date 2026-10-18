@@ -3,8 +3,8 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Plus, FileText, Wallet, Receipt } from '@/components/icons';
-import { PageHeader, Card, StatusBadge, EmptyState, StatCard, Badge, primaryBtnClass } from '@/components/ui';
-import { statusLabel } from '@/lib/utils';
+
+import { statusLabel, localeMoneyTag } from '@/lib/utils';
 import { formatDateShort, cn } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import MoneyText from '@/components/MoneyText';
@@ -12,6 +12,8 @@ import DateTimeText from '@/components/DateTimeText';
 import { t, type Locale } from '@/lib/i18n';
 import { INVOICE_STATUSES } from '@/lib/validations';
 import ExportButtons, { type ExportColumn, type ExportRow } from '@/components/ExportButtons';
+import { PageHeader, Button, EmptyState, Chip, Card, SummaryCard } from '@/components/kit';
+import { StatusPill } from '../_components/status-ui';
 
 const FILTERS = ['ALL', ...INVOICE_STATUSES] as const;
 type Filter = (typeof FILTERS)[number];
@@ -89,45 +91,38 @@ export default function InvoicesClient({
     <div className="space-y-6">
       <PageHeader
         title={t(locale, 'billing.listTitle')}
-        subtitle={t(locale, 'billing.listSubtitle')}
-        actions={
-          <div className="flex items-center gap-2 flex-wrap">
-            <ExportButtons
-              columns={exportColumns}
-              rows={exportRows}
-              fileBase={exportFileBase}
-              currency={currency}
-              locale={locale}
-            />
-            <Link
-              href="/invoices/batch"
-              className="bg-surface hover:bg-surface-2 text-ink px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 border border-line shadow-sm min-h-[44px]"
-            >
-              <Receipt size={14} /> {t(locale, 'billing.batchTitle')}
-            </Link>
-            <Link href="/invoices/new" className={primaryBtnClass}>
-              <Plus size={14} /> {t(locale, 'billing.newInvoice')}
-            </Link>
-          </div>
-        }
+        summary={t(locale, 'billing.listSubtitle')}
+        actionLabel={t(locale, 'billing.newInvoice')}
+        actionHref="/invoices/new"
+        actionIcon={Plus}
       />
-
-      <div className="grid grid-cols-2 gap-4">
-        <StatCard
-          label={t(locale, 'billing.statOutstanding')}
-          value={<MoneyText dollars={Math.round(outstanding * 100) / 100} locale={locale} />}
-          sub={t(locale, 'billing.statYetToCollect')}
-          icon={<Wallet size={16} />}
-          accent="bg-amber-100 text-warn-text"
+      <div className="flex items-center gap-2 flex-wrap">
+        <ExportButtons
+          columns={exportColumns}
+          rows={exportRows}
+          fileBase={exportFileBase}
+          currency={currency}
+          locale={locale}
         />
-        <StatCard
-          label={t(locale, 'billing.statCollected')}
-          value={<MoneyText dollars={Math.round(collected * 100) / 100} locale={locale} />}
-          sub={t(locale, 'billing.statPaymentsRecorded')}
-          icon={<FileText size={16} />}
-          accent="bg-emerald-100 text-ok"
-        />
+        <Button variant="secondary" sm href="/invoices/batch">
+          <Receipt size={14} /> {t(locale, 'billing.batchTitle')}
+        </Button>
       </div>
+
+      <SummaryCard
+        stats={[
+          {
+            label: t(locale, 'billing.statOutstanding'),
+            value: formatMoney(Math.round(outstanding * 100) / 100, currency, localeMoneyTag(locale)),
+            sub: t(locale, 'billing.statYetToCollect'),
+          },
+          {
+            label: t(locale, 'billing.statCollected'),
+            value: formatMoney(Math.round(collected * 100) / 100, currency, localeMoneyTag(locale)),
+            sub: t(locale, 'billing.statPaymentsRecorded'),
+          },
+        ]}
+      />
 
       <div className="flex gap-2 flex-wrap" role="tablist" aria-label={t(locale, 'billing.filterLabel')}>
         {FILTERS.map((f) => (
@@ -140,7 +135,7 @@ export default function InvoicesClient({
             className={cn(
               'min-h-[44px] inline-flex items-center px-4 rounded-full text-xs font-semibold border transition-colors',
               activeFilter === f
-                ? 'bg-asphalt text-white border-asphalt'
+                ? 'bg-asphalt text-hero-ink border-asphalt'
                 : 'bg-surface text-ink-2 border-line hover:border-line-strong'
             )}
           >
@@ -152,15 +147,15 @@ export default function InvoicesClient({
       {filtered.length === 0 ? (
         <Card className="mb-28 md:mb-0">
           <EmptyState
-            icon={<FileText size={24} />}
+            icon={FileText}
             title={t(locale, 'billing.listEmptyTitle')}
-            description={t(locale, 'billing.listEmptyDesc')}
-            action={
-              <Link href="/invoices/new" className={primaryBtnClass}>
-                <Plus size={14} /> {t(locale, 'billing.newInvoice')}
-              </Link>
-            }
+            text={t(locale, 'billing.listEmptyDesc')}
           />
+<div className="flex justify-center pb-10 -mt-6">
+            <Button href="/invoices/new" variant="primary">
+              <Plus size={14} /> {t(locale, 'billing.newInvoice')}
+            </Button>
+          </div>
         </Card>
       ) : (
         <Card className="!p-0 overflow-hidden">
@@ -198,9 +193,9 @@ export default function InvoicesClient({
                       <span className="text-sm font-bold text-ink tabular-nums"><MoneyText dollars={inv.total} locale={locale} /></span>
                       <span className="flex items-center gap-1.5">
                         {overdue && (
-                          <Badge tone="danger">{t(locale, 't10money.overdue')}</Badge>
+                          <Chip tone="warn">{t(locale, 't10money.overdue')}</Chip>
                         )}
-                        <StatusBadge status={inv.status} locale={locale} />
+                        <StatusPill status={inv.status} locale={locale} />
                       </span>
                     </div>
                   </Link>

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { requireCustomerAuth } from '@/lib/customer-auth';
 import { prisma } from '@/lib/prisma';
@@ -6,7 +7,7 @@ import { t } from '@/lib/i18n';
 import { ArrowLeft, BadgeCheck, Send } from '@/components/icons';
 import { sendCustomerMessage } from '@/app/actions/customer-requests';
 import { cn } from '@/lib/utils';
-import { Avatar, BackLink, Card } from '@/components/customer/ui';
+import { Card } from '@/components/kit';
 
 export default async function CustomerRequestDetailPage({
   params,
@@ -31,20 +32,32 @@ export default async function CustomerRequestDetailPage({
   return (
     <div className="space-y-4">
       <div className="ej-anim-fade-up">
-        <BackLink href="/customer/requests">
+        <Link
+          href="/customer/requests"
+          className="group inline-flex items-center gap-1 text-sm font-semibold text-ink-2 hover:text-ink min-h-[44px] transition-colors"
+        >
           <ArrowLeft className="w-4 h-4 transition-transform duration-300 group-hover:-translate-x-0.5" />
           {tr('customer.quote.myRequests')}
-        </BackLink>
+        </Link>
       </div>
 
       <div className="ej-anim-fade-up" style={{ animationDelay: '60ms' }}>
         <Card className="p-4">
           <div className="flex items-center gap-3">
-            <Avatar name={req.business.name} logoUrl={req.business.logoUrl} />
+            <span
+              aria-hidden="true"
+              className="grid w-[42px] h-[42px] place-items-center rounded-full bg-surface-2 ring-1 ring-inset ring-line font-bold text-ink text-[15px] flex-none overflow-hidden"
+            >
+              {req.business.logoUrl ? (
+                <img src={req.business.logoUrl} alt="" className="w-full h-full object-cover" />
+              ) : (
+                req.business.name.charAt(0).toUpperCase()
+              )}
+            </span>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
                 <h1 className="font-bold text-[15px] text-ink truncate">{req.business.name}</h1>
-                <BadgeCheck className="w-4 h-4 text-indigo-600 fill-indigo-100 shrink-0" />
+                <BadgeCheck className="w-4 h-4 text-info shrink-0" />
               </div>
               <p className="text-xs text-ink-2">
                 {req.service} · {tr(`customer.requests.status.${req.status}`)}
@@ -62,14 +75,14 @@ export default async function CustomerRequestDetailPage({
               <div key={msg.id} className={cn('flex', mine ? 'justify-end' : 'justify-start')}>
                 <div
                   className={cn(
-                    'max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm shadow-sm transition-transform duration-200 hover:scale-[1.01]',
+                    'max-w-[85%] rounded-[18px] px-[14px] py-[11px] text-[16px] leading-[1.45]',
                     mine
-                      ? 'bg-indigo-600 text-white rounded-br-md shadow-indigo-600/20'
-                      : 'bg-surface-2 text-ink rounded-bl-md'
+                      ? 'bg-ink text-surface rounded-br-[6px]'
+                      : 'bg-surface-2 text-ink rounded-bl-[6px] border border-line'
                   )}
                 >
                   <p className="whitespace-pre-wrap">{msg.body}</p>
-                  <p className={cn('text-[10px] mt-1', mine ? 'text-indigo-200' : 'text-ink-2')}>
+                  <p className={cn('text-[10px] mt-1', mine ? 'text-surface/70' : 'text-ink-2')}>
                     {new Date(msg.createdAt).toLocaleString(locale === 'fr' ? 'fr-CA' : 'en-CA', { dateStyle: 'medium', timeStyle: 'short' })}
                   </p>
                 </div>
@@ -87,12 +100,12 @@ export default async function CustomerRequestDetailPage({
           maxLength={2000}
           placeholder={tr('customer.quote.writeMessage')}
           aria-label={tr('customer.quote.sendMessage')}
-          className="flex-1 min-h-[48px] rounded-2xl bg-surface border border-line px-4 text-[15px] outline-none transition-all focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 hover:border-line-strong shadow-sm"
+          className="input flex-1"
         />
         <button
           type="submit"
           aria-label={tr('customer.quote.sendMessage')}
-          className="ej-icon-hover w-12 h-12 rounded-2xl bg-indigo-600 text-white inline-flex items-center justify-center shrink-0 shadow-sm shadow-indigo-600/20 hover:bg-indigo-700 hover:shadow-md"
+          className="w-[52px] h-[52px] rounded-full bg-hivis text-hivis-ink inline-flex items-center justify-center shrink-0 active:scale-95 transition-transform"
         >
           <Send className="w-5 h-5" />
         </button>

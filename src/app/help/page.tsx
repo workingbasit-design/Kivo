@@ -10,7 +10,7 @@ import {
   type HelpArticle,
 } from '@/lib/help-articles';
 import SupportTicketForm from '@/components/SupportTicketForm';
-import { Card, PageHeader } from '@/components/ui';
+import { Card } from '@/components/kit';
 
 export const metadata = { title: 'Help center | EveryJob' };
 
@@ -19,7 +19,7 @@ function ArticleLink({ article, locale }: { article: HelpArticle; locale: Locale
   return (
     <a
       href={`/help/${article.slug}`}
-      className="block rounded-2xl border border-line bg-surface p-4 hover:border-lime-500 hover:shadow-sm transition-shadow"
+      className="block rounded-2xl border border-line bg-surface p-4 hover:border-hivis hover:shadow-sm transition-shadow"
     >
       <div className="font-semibold text-ink">{loc.title}</div>
       <div className="mt-1 text-xs text-ink-2">
@@ -47,10 +47,12 @@ export default async function HelpPage({
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-      <PageHeader
-        title={t(locale, 'support.helpTitle')}
-        subtitle={t(locale, 'support.helpSub')}
-      />
+      <header data-kit="page-header" className="px-0 pb-[14px] pt-1.5">
+        <h1 className="m-0 text-[28px] font-bold leading-[1.1] tracking-tight text-ink">
+          {t(locale, 'support.helpTitle')}
+        </h1>
+        <p className="mb-0 mt-[5px] text-[16px] text-ink-2">{t(locale, 'support.helpSub')}</p>
+      </header>
 
       <form method="GET" action="/help" className="mt-6 flex gap-2" role="search">
         <label htmlFor="help-search" className="sr-only">
@@ -62,12 +64,12 @@ export default async function HelpPage({
           type="search"
           defaultValue={query}
           placeholder={t(locale, 'support.searchPh')}
-          className="min-h-[44px] flex-1 rounded-xl border border-line-strong bg-surface px-4 text-sm text-ink placeholder:text-ink-2 focus:border-lime-500 focus:outline-none"
+          className="min-h-[44px] flex-1 rounded-xl border border-line-strong bg-surface px-4 text-sm text-ink placeholder:text-ink-2 focus:border-hivis focus:outline-none"
         />
         {activeCat ? <input type="hidden" name="cat" value={activeCat} /> : null}
         <button
           type="submit"
-          className="min-h-[44px] rounded-xl bg-asphalt px-5 text-sm font-semibold text-white hover:bg-zinc-700"
+          className="min-h-[44px] rounded-xl bg-asphalt px-5 text-sm font-semibold text-hero-ink hover:bg-asphalt"
         >
           {t(locale, 'support.searchBtn')}
         </button>
@@ -78,7 +80,7 @@ export default async function HelpPage({
           href="/help"
           className={`rounded-full px-4 py-2 text-sm font-medium min-h-[44px] inline-flex items-center ${
             !activeCat
-              ? 'bg-asphalt text-white'
+              ? 'bg-asphalt text-hero-ink'
               : 'bg-surface-2 text-ink hover:bg-line'
           }`}
         >
@@ -90,7 +92,7 @@ export default async function HelpPage({
             href={`/help?cat=${c.id}${query ? `&q=${encodeURIComponent(query)}` : ''}`}
             className={`rounded-full px-4 py-2 text-sm font-medium min-h-[44px] inline-flex items-center ${
               activeCat === c.id
-                ? 'bg-asphalt text-white'
+                ? 'bg-asphalt text-hero-ink'
                 : 'bg-surface-2 text-ink hover:bg-line'
             }`}
           >

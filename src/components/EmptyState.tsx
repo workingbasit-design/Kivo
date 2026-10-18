@@ -9,8 +9,7 @@
  * this one takes a single labelled link so every empty state in the app
  * has exactly one obvious next step.
  */
-import Link from 'next/link';
-import { primaryBtnClass } from '@/components/ui';
+import { Button } from '@/components/kit';
 
 export default function EmptyState({
   title,
@@ -32,9 +31,9 @@ export default function EmptyState({
       <h3 className="text-base font-bold text-ink mb-1">{title}</h3>
       <p className="text-sm text-ink-2 max-w-sm mb-6">{description}</p>
       {actionLabel && actionHref && (
-        <Link href={actionHref} className={primaryBtnClass}>
+        <Button href={actionHref} variant="primary">
           {actionLabel}
-        </Link>
+        </Button>
       )}
     </div>
   );

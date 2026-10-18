@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft, Printer, User, AlertTriangle } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { PageHeader, Card, StatusBadge, Badge } from '@/components/ui';
+import { Card } from '@/components/kit';
 import { localeMoneyTag } from '@/lib/utils';
 import { formatMoney, centsToDollars } from '@/lib/money';
 import MoneyText from '@/components/MoneyText';
@@ -25,6 +25,9 @@ import PrintButton from './PrintButton';
 import ReminderDraft from '@/components/ReminderDraft';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import SmsButton from '@/components/SmsButton';
+import { Chip } from '@/components/kit';
+import { StatusPill } from '../../_components/status-ui';
+import { PageTitle } from '../../_components/PageTitle';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -131,20 +134,18 @@ export default async function InvoiceDetailPage({
         </div>
       </div>
 
-      <PageHeader
+      <PageTitle
         title={`${L('invoices.invoice')} ${invoice.number}`}
-        subtitle={<>{L('invoices.dated')} <DateTimeText date={invoice.date} variant="short" timezone={invoice.business.timezone ?? 'America/Toronto'} locale={locale} />{invoice.dueAt && <> · {L('invoices.due')} <DateTimeText date={invoice.dueAt} variant="short" timezone={invoice.business.timezone ?? 'America/Toronto'} locale={locale} /></>}</>}
-        actions={
-          <span className="flex items-center gap-1.5">
-            {overdue && <Badge tone="danger">{t(locale, 't10money.overdue')}</Badge>}
-            <StatusBadge status={invoice.status} locale={locale} />
-          </span>
-        }
+        summary={<>{L('invoices.dated')} <DateTimeText date={invoice.date} variant="short" timezone={invoice.business.timezone ?? 'America/Toronto'} locale={locale} />{invoice.dueAt && <> · {L('invoices.due')} <DateTimeText date={invoice.dueAt} variant="short" timezone={invoice.business.timezone ?? 'America/Toronto'} locale={locale} /></>}</>}
       />
+      <div className="flex flex-wrap items-center gap-1.5">
+        {overdue && <Chip tone="warn">{t(locale, 't10money.overdue')}</Chip>}
+        <StatusPill status={invoice.status} locale={locale} />
+      </div>
 
       {overdue && (
-        <div className="bg-danger-bg border border-rose-200 rounded-2xl px-4 py-3 flex items-start gap-3 print:hidden">
-          <span className="mt-0.5 text-rose-500 shrink-0" aria-hidden><AlertTriangle size={18} /></span>
+        <div className="bg-danger-bg border border-line rounded-2xl px-4 py-3 flex items-start gap-3 print:hidden">
+          <span className="mt-0.5 text-danger shrink-0" aria-hidden><AlertTriangle size={18} /></span>
           <div>
             <p className="text-sm font-bold text-danger">
               {t(locale, 't10money.overdue')} - <MoneyText dollars={remaining} locale={locale} /> {L('invoices.balanceDue').toLowerCase()}
@@ -228,7 +229,7 @@ export default async function InvoiceDetailPage({
             <dt>{L('invoices.paid')}</dt>
             <dd className="font-semibold"><MoneyText dollars={paid} locale={locale} /></dd>
           </div>
-          <div className="flex justify-between items-center text-base bg-asphalt text-white rounded-xl px-4 py-3 -mx-1 mt-2">
+          <div className="flex justify-between items-center text-base bg-asphalt text-hero-ink rounded-xl px-4 py-3 -mx-1 mt-2">
             <dt className="font-bold">{L('invoices.balanceDue')}</dt>
             <dd className="font-bold"><MoneyText dollars={remaining} locale={locale} /></dd>
           </div>
@@ -272,7 +273,7 @@ export default async function InvoiceDetailPage({
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <StatusBadge status={p.status} locale={locale} />
+                  <StatusPill status={p.status} locale={locale} />
                 </div>
               </li>
             ))}

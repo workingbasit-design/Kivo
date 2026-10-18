@@ -12,7 +12,8 @@ import { renderTemplate } from '@/lib/marketing';
 import { t, type Locale } from '@/lib/i18n';
 import CopyButton from '@/components/CopyButton';
 import WhatsAppButton from '@/components/WhatsAppButton';
-import { primaryBtnClass, secondaryBtnClass } from '@/components/ui';
+
+import { Button } from '@/components/kit';
 
 export default function CampaignDetailClient({
   campaign,
@@ -64,13 +65,13 @@ export default function CampaignDetailClient({
   return (
     <div className="space-y-6">
       {error && (
-        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-line text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{error}</span>
         </div>
       )}
       {advanceState?.ok && (
-        <div className="flex items-start gap-2 bg-ok-bg border border-emerald-200 text-ok text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-ok-bg border border-line text-ok text-xs font-medium rounded-xl px-3 py-2.5">
           <CheckCircle2 size={14} className="mt-0.5 shrink-0" />
           <span>
             {campaign.status === 'DRAFT' ? tr('t10misc.marketing.queuedNotice') : tr('t10misc.marketing.sentNotice')}
@@ -81,20 +82,20 @@ export default function CampaignDetailClient({
       <div className="flex flex-wrap items-center gap-2">
         {nextLabel && (
           <form action={advanceAction}>
-            <button type="submit" disabled={advancePending} className={primaryBtnClass}>
+            <Button type="submit" disabled={advancePending} variant="primary">
               <Send size={13} />
               {advancePending ? tr('t10misc.marketing.savingBtn') : nextLabel}
-            </button>
+            </Button>
           </form>
         )}
         {campaign.status === 'DRAFT' && (
-          <button
+          <Button
             type="button"
             onClick={() => router.push(`/marketing/${campaign.id}/edit`)}
-            className={secondaryBtnClass}
+            variant="secondary"
           >
             <Pencil size={13} /> {tr('t10misc.marketing.editBtn')}
-          </button>
+          </Button>
         )}
         {!confirmingDelete ? (
           <button
@@ -105,13 +106,13 @@ export default function CampaignDetailClient({
             <Trash2 size={13} /> {tr('t10misc.marketing.deleteCampaign')}
           </button>
         ) : (
-          <div className="ml-auto flex items-center gap-2 bg-danger-bg border border-rose-200 rounded-xl px-3 py-2.5">
+          <div className="ml-auto flex items-center gap-2 bg-danger-bg border border-line rounded-xl px-3 py-2.5">
             <span className="text-xs text-danger font-medium">{tr('t10misc.marketing.deletePrompt')}</span>
             <button
               type="button"
               onClick={handleDelete}
               disabled={deletePending}
-              className="text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-60 px-3 min-h-[44px] inline-flex items-center rounded-lg transition-colors"
+              className="text-xs font-bold text-hero-ink bg-danger hover:bg-danger disabled:opacity-60 px-3 min-h-[44px] inline-flex items-center rounded-lg transition-colors"
             >
               {deletePending ? tr('t10misc.marketing.deletingBtn') : tr('t10misc.marketing.yesDelete')}
             </button>
@@ -126,8 +127,8 @@ export default function CampaignDetailClient({
         )}
       </div>
 
-      <div className="bg-warn-bg border border-amber-200 rounded-2xl px-4 py-3">
-        <p className="text-xs text-amber-800 font-medium">
+      <div className="bg-warn-bg border border-warn-line rounded-2xl px-4 py-3">
+        <p className="text-xs text-warn-text font-medium">
           {tr('t10misc.marketing.manualNotice')
             .replace('{count}', String(recipients.length))
             .replace('{s}', recipients.length === 1 ? '' : 's')}
@@ -148,7 +149,7 @@ export default function CampaignDetailClient({
             return (
               <div
                 key={r.id}
-                className="ej-glass-card rounded-[20px] p-4"
+                className="bg-surface border border-line shadow-kit-card rounded-[20px] p-4"
               >
                 <div className="flex items-center justify-between gap-2 mb-2">
                   <div className="min-w-0">

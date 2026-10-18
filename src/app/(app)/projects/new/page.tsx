@@ -2,10 +2,11 @@ import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getLocale } from "@/lib/i18n/server";
 import { t } from "@/lib/i18n";
-import { PageHeader, Card } from "@/components/ui";
+import { Card } from '@/components/kit';
 import { NewProjectForm } from "@/components/NewProjectForm";
 import { ArrowLeft } from '@/components/icons';
 import Link from "next/link";
+import { PageTitle } from '../../_components/PageTitle';
 
 export default async function NewProjectPage() {
   const { businessId } = await requireAuth();
@@ -26,7 +27,7 @@ export default async function NewProjectPage() {
       >
         <ArrowLeft size={16} aria-hidden /> {t(locale, "projects.back")}
       </Link>
-      <PageHeader title={t(locale, "projects.new")} />
+      <PageTitle title={t(locale, "projects.new")} />
       <Card className="p-5">
         <NewProjectForm locale={locale} customers={customers} />
       </Card>

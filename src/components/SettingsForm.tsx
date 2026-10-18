@@ -4,7 +4,7 @@ import React, { useActionState, useEffect, useState } from 'react';
 import { AlertCircle, Globe, Save } from '@/components/icons';
 import { toast } from 'sonner';
 import { updateBusinessSettings, type SettingsResult } from '@/app/actions/settings';
-import { Card, Field, inputClass, primaryBtnClass } from '@/components/ui';
+import { Button, Card, Input, Select, Textarea } from '@/components/kit';
 import { CA_PROVINCES } from '@/lib/tax';
 import { WEEK_DAYS, parseWorkingHours, type DayKey } from '@/lib/working-hours';
 import { useResolvedT } from '@/hooks/useResolvedLocale';
@@ -135,9 +135,14 @@ export default function SettingsForm({ business }: { business: BusinessFormData 
   return (
     <Card className="p-6 max-w-2xl">
       <form action={formAction} className="space-y-4">
-        <Field label={t('t10misc.auth.businessName')}>
-          <input name="name" type="text" required defaultValue={business.name} maxLength={200} className={inputClass} />
-        </Field>
+        <Input
+          label={t('t10misc.auth.businessName')}
+          name="name"
+          type="text"
+          required
+          defaultValue={business.name}
+          maxLength={200}
+        />
 
         {/* Tax settings - Canada only */}
         <div className="rounded-xl border border-line bg-surface-2 p-4 space-y-4">
@@ -147,52 +152,65 @@ export default function SettingsForm({ business }: { business: BusinessFormData 
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4">
-            <Field label={t('t10misc.settings.provinceLabel')} hint={t('t10misc.settings.provinceHint')}>
-              <select name="taxRegion" defaultValue={business.taxRegion || 'ON'} className={inputClass}>
-                {CA_PROVINCES.map((p) => (
-                  <option key={p.code} value={p.code}>
-                    {p.name} ({p.code})
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label={t('t10misc.settings.gstLabel')} hint={t('t10misc.settings.gstHint')}>
-              <input
-                name="taxId"
-                type="text"
-                defaultValue={business.taxId}
-                maxLength={15}
-                placeholder="123456789RT0001"
-                className={inputClass}
-              />
-            </Field>
+            <Select
+              label={t('t10misc.settings.provinceLabel')}
+              hint={t('t10misc.settings.provinceHint')}
+              name="taxRegion"
+              defaultValue={business.taxRegion || 'ON'}
+              options={CA_PROVINCES.map((p) => ({
+                value: p.code,
+                label: `${p.name} (${p.code})`,
+              }))}
+            />
+            <Input
+              label={t('t10misc.settings.gstLabel')}
+              hint={t('t10misc.settings.gstHint')}
+              name="taxId"
+              type="text"
+              defaultValue={business.taxId}
+              maxLength={15}
+              placeholder="123456789RT0001"
+            />
           </div>
         </div>
 
         <div className="grid sm:grid-cols-2 gap-4">
-          <Field label={t('t10misc.settings.phoneLabel')}>
-            <input name="phone" type="tel" autoComplete="tel" defaultValue={business.phone} maxLength={25} placeholder="+1 416 555 0100" className={inputClass} />
-          </Field>
-          <Field label={t('t10misc.settings.whatsappLabel')} hint={t('t10misc.settings.whatsappHint')}>
-            <input
-              name="whatsappNumber"
-              type="tel"
-              autoComplete="tel"
-              defaultValue={business.whatsappNumber}
-              maxLength={25}
-              placeholder="+1 416 555 0100"
-              className={inputClass}
-            />
-          </Field>
+          <Input
+            label={t('t10misc.settings.phoneLabel')}
+            name="phone"
+            type="tel"
+            autoComplete="tel"
+            defaultValue={business.phone}
+            maxLength={25}
+            placeholder="+1 416 555 0100"
+          />
+          <Input
+            label={t('t10misc.settings.whatsappLabel')}
+            hint={t('t10misc.settings.whatsappHint')}
+            name="whatsappNumber"
+            type="tel"
+            autoComplete="tel"
+            defaultValue={business.whatsappNumber}
+            maxLength={25}
+            placeholder="+1 416 555 0100"
+          />
         </div>
 
-        <Field label={t('t10misc.settings.hoursLabel')}>
+        {/* kit .field wrapper gives the custom editor the same label rhythm */}
+        <div className="field">
+          <span>{t('t10misc.settings.hoursLabel')}</span>
           <WorkingHoursEditor initial={business.workingHours} t={t} locale={locale} />
-        </Field>
+        </div>
 
-        <Field label={t('t10misc.settings.addressLabel')} hint={t('t10misc.settings.addressHint')}>
-          <textarea name="address" rows={2} defaultValue={business.address} maxLength={500} placeholder={t('t10misc.settings.addressPlaceholder')} className={inputClass} />
-        </Field>
+        <Textarea
+          label={t('t10misc.settings.addressLabel')}
+          hint={t('t10misc.settings.addressHint')}
+          name="address"
+          rows={2}
+          defaultValue={business.address}
+          maxLength={500}
+          placeholder={t('t10misc.settings.addressPlaceholder')}
+        />
 
         {/* EveryJob directory (customer discovery) */}
         <div className="rounded-xl border border-line bg-surface-2 p-4 space-y-3">
@@ -224,39 +242,36 @@ export default function SettingsForm({ business }: { business: BusinessFormData 
           </label>
         </div>
 
-        <Field label={t('t10misc.settings.interacLabel')} hint={t('t10misc.settings.interacHint')}>
-          <input
-            name="interacEmail"
-            type="email"
-            defaultValue={business.interacEmail}
-            maxLength={255}
-            placeholder="payments@yourbusiness.ca"
-            className={inputClass}
-            autoComplete="email"
-          />
-        </Field>
+        <Input
+          label={t('t10misc.settings.interacLabel')}
+          hint={t('t10misc.settings.interacHint')}
+          name="interacEmail"
+          type="email"
+          defaultValue={business.interacEmail}
+          maxLength={255}
+          placeholder="payments@yourbusiness.ca"
+          autoComplete="email"
+        />
 
-        <Field label={t('t10misc.settings.timezoneLabel')} hint={t('t10misc.settings.timezoneHint')}>
-          <select name="timezone" defaultValue={business.timezone || 'America/Toronto'} className={inputClass}>
-            {TIMEZONES.map((tz) => (
-              <option key={tz.value} value={tz.value}>
-                {tz.label}
-              </option>
-            ))}
-          </select>
-        </Field>
+        <Select
+          label={t('t10misc.settings.timezoneLabel')}
+          hint={t('t10misc.settings.timezoneHint')}
+          name="timezone"
+          defaultValue={business.timezone || 'America/Toronto'}
+          options={TIMEZONES.map((tz) => ({ value: tz.value, label: tz.label }))}
+        />
 
         {state?.error && (
-          <div role="alert" className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
+          <div role="alert" className="flex items-start gap-2 bg-danger-bg border border-line text-danger text-xs font-medium rounded-xl px-3 py-2.5">
             <AlertCircle size={14} className="mt-0.5 shrink-0" />
             <span>{state.error}</span>
           </div>
         )}
 
-        <button type="submit" disabled={isPending} className={`${primaryBtnClass} w-full sm:w-auto`}>
+        <Button type="submit" variant="primary" disabled={isPending} className="w-full sm:w-auto">
           <Save size={14} />
           {isPending ? t('t10misc.settings.saving') : t('t10misc.settings.save')}
-        </button>
+        </Button>
       </form>
     </Card>
   );

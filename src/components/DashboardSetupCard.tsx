@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { CheckCircle2, ArrowRight, ShieldCheck } from '@/components/icons';
 import FinishSetupModal from './FinishSetupModal';
 import { t, type Locale } from '@/lib/i18n';
-import { primaryBtnClass } from '@/components/ui';
+import { Button } from '@/components/kit';
 
 /** Locale for unmounted-but-shared client components: the `kivo-locale`
  *  cookie is the single source of truth (LanguageToggle writes it). */
@@ -34,8 +34,8 @@ export default function DashboardSetupCard({ initialCompleted = false }: { initi
     <>
       <div className={`rounded-3xl p-6 border shadow-sm relative overflow-hidden transition-all ${
         isCompleted
-          ? 'bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-200'
-          : 'bg-paper border-smoke'
+          ? 'bg-ok-bg border-ok/30'
+          : 'bg-surface border-line'
       }`}>
         <div className="flex justify-between items-start gap-3 mb-4">
           <div>
@@ -49,7 +49,7 @@ export default function DashboardSetupCard({ initialCompleted = false }: { initi
             </h2>
           </div>
           {isCompleted && (
-            <span className="bg-emerald-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm shrink-0">
+            <span className="bg-ok text-hero-ink text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm shrink-0">
               {T('setupActive')}
             </span>
           )}
@@ -61,7 +61,7 @@ export default function DashboardSetupCard({ initialCompleted = false }: { initi
               <span
                 aria-hidden
                 className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
-                  s.done ? (isCompleted ? 'bg-emerald-600 text-white' : 'bg-asphalt text-lime') : 'border-2 border-line-strong'
+                  s.done ? (isCompleted ? 'bg-ok text-hero-ink' : 'bg-asphalt text-hivis') : 'border-2 border-line-strong'
                 }`}
               >
                 {s.done && <CheckCircle2 size={12} />}
@@ -74,17 +74,19 @@ export default function DashboardSetupCard({ initialCompleted = false }: { initi
         </ul>
 
         {isCompleted ? (
-          <div className="bg-surface/80 p-3.5 rounded-xl border border-emerald-200 text-xs font-semibold text-emerald-800 flex items-center gap-2">
+          <div className="bg-surface/80 p-3.5 rounded-xl border border-ok/30 text-xs font-semibold text-ok flex items-center gap-2">
             <ShieldCheck size={16} className="text-ok shrink-0" />
             <span>{T('setupOperational')}</span>
           </div>
         ) : (
-          <button
+          <Button
+            variant="primary"
+            type="button"
             onClick={() => setIsModalOpen(true)}
-            className={`${primaryBtnClass} w-full !text-sm relative z-10`}
+            className="w-full !text-sm relative z-10"
           >
             {T('setupFinish')} <ArrowRight size={14} />
-          </button>
+          </Button>
         )}
       </div>
 

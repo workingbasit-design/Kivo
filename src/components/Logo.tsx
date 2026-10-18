@@ -30,7 +30,7 @@ export default function Logo({
         aria-label="EveryJob"
         className={cn(
           'font-extrabold leading-none tracking-[-0.03em]',
-          onDark ? 'text-white' : 'text-ink',
+          onDark ? 'text-hero-ink' : 'text-ink',
           wordmarkClassName
         )}
         style={{ fontSize: size * 0.72 }}

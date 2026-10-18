@@ -5,10 +5,12 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
-import { PageHeader, Card, StatCard, EmptyState } from '@/components/ui';
+import { Card } from '@/components/kit';
 import { entryMinutes, formatDuration } from '@/lib/timesheets';
 import { cn } from '@/lib/utils';
 import { formatMoney, centsToDollars } from '@/lib/money';
+import { PageTitle } from '../../_components/PageTitle';
+import { EmptyState, SummaryCard } from '@/components/kit';
 
 type MemberRow = { id: string; name: string | null; email: string; role: string };
 
@@ -118,72 +120,59 @@ export default async function TeamPerformancePage({
         <ArrowLeft size={14} /> {tr('t10misc.teamreport.backToReports')}
       </Link>
 
-      <PageHeader
+      <PageTitle
         title={tr('t10misc.teamreport.title')}
-        subtitle={tr('t10misc.teamreport.subtitle').replace('{label}', label)}
-        actions={
-          <div className="flex rounded-xl border border-line overflow-hidden text-xs font-semibold">
-            <Link
-              href="/reports/team?period=week"
-              className={cn(
-                'px-4 min-h-[44px] inline-flex items-center transition-colors',
-                period === 'week' ? 'bg-asphalt text-white' : 'bg-surface text-ink-2 hover:bg-surface-2'
-              )}
-            >
-              {tr('t10misc.teamreport.week')}
-            </Link>
-            <Link
-              href="/reports/team?period=month"
-              className={cn(
-                'px-4 min-h-[44px] inline-flex items-center transition-colors',
-                period === 'month' ? 'bg-asphalt text-white' : 'bg-surface text-ink-2 hover:bg-surface-2'
-              )}
-            >
-              {tr('t10misc.teamreport.month')}
-            </Link>
-          </div>
-        }
+        summary={tr('t10misc.teamreport.subtitle').replace('{label}', label)}
       />
-
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          label={tr('t10misc.teamreport.statHours').replace('{label}', label.toLowerCase())}
-          value={formatDuration(totalMinutes)}
-          sub={tr('t10misc.teamreport.memberCount')
-            .replace('{count}', String(members.length))
-            .replace('{s}', members.length === 1 ? '' : 's')}
-          icon={<Clock3 size={16} />}
-          accent="bg-smoke text-ink"
-        />
-        <StatCard
-          label={tr('t10misc.teamreport.statJobs')}
-          value={String(totalJobs)}
-          sub={tr('t10misc.teamreport.statJobsSub')}
-          icon={<Briefcase size={16} />}
-          accent="bg-emerald-100 text-ok"
-        />
-        <StatCard
-          label={tr('t10misc.teamreport.statRevenue')}
-          value={formatMoney(totalRevenue, currency)}
-          sub={tr('t10misc.teamreport.statRevenueSub')}
-          icon={<DollarSign size={16} />}
-          accent="bg-amber-100 text-warn-text"
-        />
-        <StatCard
-          label={tr('t10misc.teamreport.statMostHours')}
-          value={top && top.minutes > 0 ? top.name || top.email : '-'}
-          sub={top && top.minutes > 0 ? formatDuration(top.minutes) : tr('t10misc.teamreport.noHoursLogged')}
-          icon={<Trophy size={16} />}
-          accent="bg-sky-100 text-sky-700"
-        />
+      <div
+        role="group"
+        aria-label={tr('t10misc.teamreport.title')}
+        className="grid auto-cols-[minmax(0,1fr)] grid-flow-col rounded-[14px] bg-surface-2 p-1 shadow-[inset_0_0_0_1px_var(--line)]"
+      >
+        {(['week', 'month'] as const).map((p) => (
+          <Link
+            key={p}
+            href={`/reports/team?period=${p}`}
+            aria-current={period === p ? 'true' : undefined}
+            className={cn(
+              'inline-flex min-h-[44px] min-w-0 items-center justify-center rounded-[11px] px-2 text-[15px] font-semibold',
+              period === p ? 'bg-hivis text-hivis-ink shadow-kit-card' : 'text-ink-2'
+            )}
+          >
+            {tr(`t10misc.teamreport.${p}`)}
+          </Link>
+        ))}
       </div>
+
+      <SummaryCard
+        stats={[
+          {
+            label: tr('t10misc.teamreport.statHours').replace('{label}', label.toLowerCase()),
+            value: formatDuration(totalMinutes),
+            sub: tr('t10misc.teamreport.memberCount')
+              .replace('{count}', String(members.length))
+              .replace('{s}', members.length === 1 ? '' : 's'),
+          },
+          { label: tr('t10misc.teamreport.statJobs'), value: String(totalJobs), sub: tr('t10misc.teamreport.statJobsSub') },
+          {
+            label: tr('t10misc.teamreport.statRevenue'),
+            value: formatMoney(totalRevenue, currency),
+            sub: tr('t10misc.teamreport.statRevenueSub'),
+          },
+          {
+            label: tr('t10misc.teamreport.statMostHours'),
+            value: top && top.minutes > 0 ? top.name || top.email : '-',
+            sub: top && top.minutes > 0 ? formatDuration(top.minutes) : tr('t10misc.teamreport.noHoursLogged'),
+          },
+        ]}
+      />
 
       <Card>
         {rows.length === 0 ? (
           <EmptyState
-            icon={<Users size={22} />}
+            icon={Users}
             title={tr('t10misc.teamreport.noMembersTitle')}
-            description={tr('t10misc.teamreport.noMembersDesc')}
+            text={tr('t10misc.teamreport.noMembersDesc')}
           />
         ) : (
           <>
@@ -199,7 +188,7 @@ export default async function TeamPerformancePage({
                       <p className="font-bold text-ink truncate flex items-center gap-2">
                         {r.name || r.email}
                         {i === 0 && r.minutes > 0 && (
-                          <Trophy size={13} className="text-amber-500 shrink-0" />
+                          <Trophy size={13} className="text-warn-text shrink-0" />
                         )}
                       </p>
                       <p className="text-[11px] text-ink-2">
@@ -259,7 +248,7 @@ export default async function TeamPerformancePage({
                             <p className="font-bold text-ink truncate flex items-center gap-2">
                               {r.name || r.email}
                               {i === 0 && r.minutes > 0 && (
-                                <Trophy size={13} className="text-amber-500 shrink-0" />
+                                <Trophy size={13} className="text-warn-text shrink-0" />
                               )}
                             </p>
                             <p className="text-[11px] text-ink-2">

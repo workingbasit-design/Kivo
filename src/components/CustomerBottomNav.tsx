@@ -41,15 +41,15 @@ export default function CustomerBottomNav({ locale }: { locale: Locale }) {
               className={cn(
                 'ej-icon-hover group relative flex flex-col items-center gap-1 py-2.5 min-h-[62px] justify-center',
                 'text-[11px] font-semibold transition-colors',
-                active ? 'text-indigo-600' : 'text-ink-2 hover:text-ink'
+                active ? 'text-info' : 'text-ink-2 hover:text-ink'
               )}
             >
               {active && (
-                <span className="ej-anim-scale-in absolute top-0 left-1/2 -translate-x-1/2 w-8 h-1 rounded-b-full bg-indigo-600" />
+                <span className="ej-anim-scale-in absolute top-0 left-1/2 -translate-x-1/2 w-8 h-1 rounded-b-full bg-hivis" />
               )}
               <span className={cn(
                 'flex items-center justify-center w-11 h-7 rounded-full transition-all duration-300',
-                active ? 'bg-indigo-100 scale-105' : 'group-hover:bg-surface-2'
+                active ? 'bg-hivis-soft scale-105' : 'group-hover:bg-surface-2'
               )}>
                 <Icon className="w-5 h-5" strokeWidth={active ? 2.5 : 2} />
               </span>

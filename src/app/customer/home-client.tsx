@@ -20,16 +20,17 @@ import {
 import { toggleSavePro } from '@/app/actions/customer-pros';
 import { t, type Locale } from '@/lib/i18n';
 import ProCard, { type ProCardData } from '@/components/ProCard';
+import { Button } from '@/components/kit';
 
 const CATEGORIES = [
-  { key: 'Plumbing', icon: Wrench, bg: 'bg-sky-50', text: 'text-sky-700' },
+  { key: 'Plumbing', icon: Wrench, bg: 'bg-info-bg', text: 'text-info' },
   { key: 'Electrical', icon: Zap, bg: 'bg-warn-bg', text: 'text-warn-text' },
   { key: 'Cleaning', icon: Sparkles, bg: 'bg-ok-bg', text: 'text-ok' },
   { key: 'HVAC', icon: Flame, bg: 'bg-danger-bg', text: 'text-danger' },
   { key: 'Landscaping', icon: TreePine, bg: 'bg-ok-bg', text: 'text-ok' },
-  { key: 'Painting', icon: PaintRoller, bg: 'bg-violet-50', text: 'text-violet-700' },
-  { key: 'Roofing', icon: Home, bg: 'bg-slate-100', text: 'text-slate-700' },
-  { key: 'Pest Control', icon: Bug, bg: 'bg-lime-50', text: 'text-lime-800' },
+  { key: 'Painting', icon: PaintRoller, bg: 'bg-surface-2', text: 'text-ink-2' },
+  { key: 'Roofing', icon: Home, bg: 'bg-surface-2', text: 'text-ink-2' },
+  { key: 'Pest Control', icon: Bug, bg: 'bg-ok-bg', text: 'text-ok' },
 ] as const;
 
 export default function CustomerHomeClient({
@@ -81,9 +82,9 @@ export default function CustomerHomeClient({
 
   return (
     <div className="space-y-6">
-      {/* Hero - clean EveryJob theme with staggered entrance */}
+      {/* Hero */}
       <div className="ej-anim-fade-up">
-        <p className="text-indigo-600 text-xs font-boldst">
+        <p className="text-ink-2 text-xs font-bold">
           {new Date().getHours() < 12
             ? tr('customer.home.morning')
             : new Date().getHours() < 18
@@ -104,11 +105,11 @@ export default function CustomerHomeClient({
         className="ej-anim-fade-up group flex items-center gap-4 rounded-3xl bg-asphalt p-5 shadow-sm transition-all hover:shadow-lg active:scale-[0.98]"
         style={{ animationDelay: '60ms' }}
       >
-        <span className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center shrink-0 transition-transform group-active:scale-95">
-          <Sparkles size={22} className="text-white" />
+        <span className="w-12 h-12 rounded-2xl bg-hivis flex items-center justify-center shrink-0 transition-transform group-active:scale-95">
+          <Sparkles size={22} className="text-hivis-ink" />
         </span>
         <span className="flex-1 min-w-0">
-          <span className="block text-[16px] font-bold text-white">
+          <span className="block text-[16px] font-bold text-hero-ink">
             {tr('customer.home.getItDone')}
           </span>
           <span className="block text-[13px] text-ink-2 mt-0.5">
@@ -120,34 +121,31 @@ export default function CustomerHomeClient({
 
       <form onSubmit={doSearch} className="ej-anim-fade-up space-y-2" style={{ animationDelay: '80ms' }}>
         <label className="relative block group">
-          <Search size={17} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-2 transition-colors group-focus-within:text-indigo-500" />
+          <Search size={17} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-2 transition-colors group-focus-within:text-ink z-10" />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder={tr('customer.home.whatPlaceholder')}
             maxLength={100}
             aria-label={tr('customer.home.whatPlaceholder')}
-            className="w-full min-h-[52px] rounded-2xl bg-surface border border-line pl-11 pr-4 text-[15px] text-ink placeholder:text-ink-2 outline-none shadow-sm transition-all focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 hover:border-line-strong"
+            className="input !pl-11"
           />
         </label>
         <div className="flex gap-2">
           <label className="relative block flex-1 group">
-            <MapPin size={17} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-2 transition-colors group-focus-within:text-indigo-500" />
+            <MapPin size={17} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-2 transition-colors group-focus-within:text-ink z-10" />
             <input
               value={city}
               onChange={(e) => setCity(e.target.value)}
               placeholder={tr('customer.home.cityPlaceholder')}
               maxLength={100}
               aria-label={tr('customer.home.cityPlaceholder')}
-              className="w-full min-h-[52px] rounded-2xl bg-surface border border-line pl-11 pr-4 text-[15px] text-ink placeholder:text-ink-2 outline-none shadow-sm transition-all focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 hover:border-line-strong"
+              className="input !pl-11"
             />
           </label>
-          <button
-            type="submit"
-            className="min-h-[52px] px-6 rounded-2xl bg-indigo-600 text-white text-[15px] font-bold shadow-sm shadow-indigo-600/20 transition-all hover:bg-indigo-700 hover:shadow-md hover:shadow-indigo-600/25 hover:-translate-y-px active:translate-y-0 active:scale-[0.97]"
-          >
+          <Button type="submit">
             {tr('customer.home.search')}
-          </button>
+          </Button>
         </div>
       </form>
 
@@ -160,7 +158,7 @@ export default function CustomerHomeClient({
                 key={key}
                 onClick={() => searchCategory(key)}
                 style={{ animationDelay: `${200 + i * 40}ms` }}
-                className="ej-anim-scale-in group flex flex-col items-center gap-1.5 py-3.5 px-1 rounded-2xl bg-surface border border-line/80 shadow-sm transition-all duration-300 hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-100/50 hover:-translate-y-1 active:translate-y-0 active:scale-[0.96]"
+                className="ej-anim-scale-in group flex flex-col items-center gap-1.5 py-3.5 px-1 rounded-2xl bg-surface border border-line/80 shadow-sm transition-all duration-300 hover:border-line-strong hover:shadow-md hover:-translate-y-1 active:translate-y-0 active:scale-[0.96] min-h-[44px]"
               >
                 <span className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-active:scale-95`}>
                   <Icon className={`w-5 h-5 ${text}`} />
@@ -198,7 +196,7 @@ export default function CustomerHomeClient({
                 setQ('');
                 router.push('/customer');
               }}
-              className="text-xs font-semibold text-indigo-600 hover:underline"
+              className="text-xs font-semibold text-ink underline underline-offset-2 min-h-[44px]"
             >
               {tr('customer.home.clear')}
             </button>
@@ -207,8 +205,8 @@ export default function CustomerHomeClient({
 
         {results.length === 0 ? (
           <div className="ej-anim-fade-up bg-surface rounded-3xl border border-line/80 p-10 text-center shadow-sm">
-            <div className="ej-anim-scale-in w-14 h-14 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center mx-auto mb-4">
-              <SearchX className="w-7 h-7 text-indigo-400" />
+            <div className="ej-anim-scale-in w-14 h-14 rounded-2xl bg-info-bg flex items-center justify-center mx-auto mb-4">
+              <SearchX className="w-7 h-7 text-info" />
             </div>
             <p className="font-bold text-ink">
               {searching ? tr('customer.home.noProsFound') : tr('customer.home.noProsYet')}

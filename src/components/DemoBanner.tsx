@@ -12,15 +12,15 @@ export default function DemoBanner({ locale }: { locale: Locale }) {
   return (
     <div
       role="status"
-      className="flex items-center justify-center gap-3 bg-amber-300 px-4 py-1.5 text-center"
+      className="flex items-center justify-center gap-3 bg-warn px-4 py-1.5 text-center"
     >
-      <span className="text-xs font-bold uppercase tracking-wide text-amber-950">
+      <span className="text-xs font-bold uppercase tracking-wide text-warn-text">
         {t(locale, 'demo.banner')}
       </span>
       <form action={leaveDemoBusiness}>
         <button
           type="submit"
-          className="text-xs font-semibold text-amber-950 underline underline-offset-2"
+          className="text-xs font-semibold text-warn-text underline underline-offset-2"
         >
           {t(locale, 'demo.backToBusiness')}
         </button>

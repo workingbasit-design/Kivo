@@ -7,7 +7,7 @@ export default function TryAgainButton() {
   return (
     <button
       onClick={() => window.location.reload()}
-      className="mt-6 inline-flex items-center gap-2 rounded-xl bg-asphalt hover:bg-graphite text-white text-sm font-bold px-6 py-3 transition-colors"
+      className="mt-6 inline-flex items-center gap-2 rounded-xl bg-asphalt hover:bg-graphite text-hero-ink text-sm font-bold px-6 py-3 transition-colors"
     >
       <RefreshCw size={15} /> Try again
     </button>

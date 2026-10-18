@@ -3,14 +3,14 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft, User } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { PageHeader, Card, StatusBadge } from '@/components/ui';
+import { Card } from '@/components/kit';
 import { localeMoneyTag } from '@/lib/utils';
 import { formatMoney, centsToDollars } from '@/lib/money';
 import MoneyText from '@/components/MoneyText';
 import DateTimeText from '@/components/DateTimeText';
 import { getTaxConfig, totalTaxRate } from '@/lib/tax';
 import { getLocale } from '@/lib/i18n/server';
-import { t } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 import RevokeSignButton from './RevokeSignButton';
 import {
   getQuoteShareState,
@@ -26,6 +26,8 @@ import SmsButton from '@/components/SmsButton';
 import QuoteDepositCard from '@/components/QuoteDepositCard';
 import QuoteItemsEditor from './QuoteItemsEditor';
 import RecordDepositForm from '@/components/RecordDepositForm';
+import { StatusPill } from '../../_components/status-ui';
+import { PageTitle } from '../../_components/PageTitle';
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -107,11 +109,13 @@ export default async function QuoteDetailPage({
         <ArrowLeft size={14} /> Back to quotes
       </Link>
 
-      <PageHeader
+      <PageTitle
         title={`${quote.number} · ${quote.title}`}
-        subtitle={<>Created <DateTimeText date={quote.createdAt} variant="short" timezone={quote.business.timezone ?? 'America/Toronto'} locale={locale} /></>}
-        actions={<StatusBadge status={quote.status} />}
+        summary={<>Created <DateTimeText date={quote.createdAt} variant="short" timezone={quote.business.timezone ?? 'America/Toronto'} locale={locale} /></>}
       />
+      <div className="flex flex-wrap gap-2">
+        <StatusPill status={quote.status} locale={locale} />
+      </div>
 
       <Card className="p-6 space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
@@ -186,7 +190,7 @@ export default async function QuoteDetailPage({
               <dd className="font-semibold"><MoneyText dollars={l.amount} locale={locale} /></dd>
             </div>
           ))}
-          <div className="flex justify-between items-center text-base bg-asphalt text-white rounded-xl px-4 py-3 -mx-1 mt-2">
+          <div className="flex justify-between items-center text-base bg-asphalt text-hero-ink rounded-xl px-4 py-3 -mx-1 mt-2">
             <dt className="font-bold">{L('t10money.totalLabel')}</dt>
             <dd className="font-bold"><MoneyText dollars={centsToDollars(quote.totalCents)} locale={locale} /></dd>
           </div>
@@ -196,7 +200,7 @@ export default async function QuoteDetailPage({
           <QuoteActions id={quote.id} status={quote.status} locale={locale} />
           <Link
             href={`/quotes/${quote.id}/sign`}
-            className="min-h-[44px] inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-700"
+            className="min-h-[44px] inline-flex items-center gap-1.5 text-xs font-bold text-info hover:text-info"
           >
             {L('esign.sendForSignature')}
           </Link>
@@ -300,7 +304,7 @@ async function SignatureRequestsCard({
 }: {
   quoteId: string;
   L: (path: string) => string;
-  locale: string;
+  locale: Locale;
 }) {
   const { businessId } = await requireAuth();
 
@@ -345,7 +349,7 @@ async function SignatureRequestsCard({
           <div key={req.id} className="border-t border-line pt-4 space-y-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <StatusBadge status={STATUS_LABELS[req.status] ?? req.status} />
+                <StatusPill status={req.status} locale={locale} />
                 <span className="text-xs text-ink-2">
                   <DateTimeText date={req.createdAt} variant="short" locale={locale === 'fr' ? 'fr' : 'en'} />
                 </span>
@@ -364,7 +368,7 @@ async function SignatureRequestsCard({
                 {req.status === 'signed' && (
                   <Link
                     href={`/quotes/${quoteId}/sign/${req.id}/print`}
-                    className="text-xs font-bold text-indigo-600 hover:text-indigo-700"
+                    className="text-xs font-bold text-info hover:text-info"
                   >
                     {L('esign.downloadSigned')}
                   </Link>

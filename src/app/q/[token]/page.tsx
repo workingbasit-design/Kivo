@@ -4,7 +4,8 @@ import { prisma } from '@/lib/prisma';
 import { rateLimit } from '@/lib/rate-limit';
 import { isLegacyCuid, resolveShareToken } from '@/lib/share';
 import { waLink } from '@/lib/whatsapp';
-import { Card, StatusBadge } from '@/components/ui';
+import { Card } from '@/components/kit';
+import { StatusPill } from '@/app/(app)/_components/status-ui';
 import { formatCents, centsToDollars } from '@/lib/money';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
@@ -144,7 +145,7 @@ export default async function QuotePortalPage({
             />
           ) : (
             <div className="w-11 h-11 rounded-xl bg-asphalt flex items-center justify-center mx-auto mb-3">
-              <FileText className="w-6 h-6 text-white" />
+              <FileText className="w-6 h-6 text-hero-ink" />
             </div>
           )}
           <h1 className="text-xl font-bold text-ink tracking-tight">{quote.business.name}</h1>
@@ -152,7 +153,7 @@ export default async function QuotePortalPage({
         </div>
 
         {paid === '1' && (
-          <div className="rounded-2xl border border-emerald-200 bg-ok-bg px-4 py-3 text-sm font-semibold text-emerald-800 text-center">
+          <div className="rounded-2xl border border-line bg-ok-bg px-4 py-3 text-sm font-semibold text-ok text-center">
             {L('payments.depositPaidThanks')}
           </div>
         )}
@@ -166,7 +167,7 @@ export default async function QuotePortalPage({
                 {L('quotes.portal.issued')} {quote.createdAt.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })}
               </p>
             </div>
-            <StatusBadge status={quote.status} />
+            <StatusPill status={quote.status} locale={locale} />
           </div>
 
           <div className="border-t border-line pt-4 space-y-2">
@@ -285,7 +286,7 @@ export default async function QuotePortalPage({
             href={whatsappHref}
             target="_blank"
             rel="noreferrer"
-            className="min-h-[44px] flex items-center justify-center gap-2 w-full bg-wa hover:bg-wa-dark text-white font-bold text-sm py-3 rounded-2xl transition-colors"
+            className="min-h-[44px] flex items-center justify-center gap-2 w-full bg-wa hover:bg-wa-dark text-hero-ink font-bold text-sm py-3 rounded-2xl transition-colors"
           >
             <MessageCircle size={16} /> {L('quotes.portal.whatsappCta')}
           </a>

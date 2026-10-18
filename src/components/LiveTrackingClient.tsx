@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { t, type Locale } from '@/lib/i18n';
-import { Card, StatusBadge } from '@/components/ui';
+import { Card } from '@/components/kit';
+import { StatusPill } from '@/app/(app)/_components/status-ui';
 import DispatcherMap from '@/components/DispatcherMap';
 import { jobDisplayStatus } from '@/lib/utils';
 import { formatDistance, formatEta } from '@/lib/eta';
@@ -106,18 +107,18 @@ export default function LiveTrackingClient({
     // cannot render inside a client component.
     return (
       <div data-track-diag="token-expired">
-        <main className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-          <div className="max-w-sm w-full bg-surface rounded-2xl shadow-sm border border-slate-200 p-8 text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-2xl">
+        <main className="min-h-screen bg-surface-2 flex items-center justify-center p-6">
+          <div className="max-w-sm w-full bg-surface rounded-2xl shadow-sm border border-line p-8 text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-warn-bg text-2xl">
               ⏰
             </div>
-            <h1 className="text-lg font-semibold text-slate-900">
+            <h1 className="text-lg font-semibold text-ink">
               {tr('tracking.expiredTitle')}
             </h1>
-            <p className="mt-2 text-sm text-slate-600">
+            <p className="mt-2 text-sm text-ink-2">
               {tr('tracking.expiredBody')}
             </p>
-            <p className="mt-4 text-xs text-slate-400">{businessName}</p>
+            <p className="mt-4 text-xs text-ink-2">{businessName}</p>
           </div>
         </main>
       </div>
@@ -162,10 +163,10 @@ export default function LiveTrackingClient({
             <h1 className="text-2xl font-extrabold text-ink tracking-tight">
               {tr('gps.trackingTitle')}
             </h1>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-100 px-2.5 py-1 text-[11px] font-extrabold text-danger">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-danger-bg px-2.5 py-1 text-[11px] font-extrabold text-danger">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-500 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-600" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-danger opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-danger" />
               </span>
               {tr('gps.liveNow')}
             </span>
@@ -174,15 +175,15 @@ export default function LiveTrackingClient({
 
         {/* Status banner */}
         {arrived ? (
-          <Card className="p-4 bg-ok-bg border-emerald-200">
-            <p className="text-center font-bold text-emerald-800">
+          <Card className="p-4 bg-ok-bg border-ok/25">
+            <p className="text-center font-bold text-ok">
               ✅ {tr('gps.arrived')}
               {techName ? ` - ${techName}` : ''}
             </p>
           </Card>
         ) : (
-          <Card className="p-4 bg-sky-50 border-sky-200">
-            <p className="text-center font-bold text-sky-900">
+          <Card className="p-4 bg-info-bg border-info/25">
+            <p className="text-center font-bold text-info">
               🚗 {tr('gps.onTheWay')}
               {techName ? ` - ${techName}` : ''}
             </p>
@@ -235,8 +236,8 @@ export default function LiveTrackingClient({
               />
               <div className="mt-3 flex items-center justify-center gap-2 text-xs text-ink-2">
                 <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600" />
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-ok opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-ok" />
                 </span>
                 {updatedLabel
                   ? `${tr('gps.lastUpdated')}: ${updatedLabel}`
@@ -272,7 +273,7 @@ export default function LiveTrackingClient({
                 </p>
               )}
             </div>
-            <StatusBadge status={displayStatus} />
+            <StatusPill status={displayStatus} locale={locale} />
           </div>
         </Card>
 

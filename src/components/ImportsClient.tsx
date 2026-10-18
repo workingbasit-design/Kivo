@@ -4,7 +4,7 @@ import { useRef, useState, useTransition, type ElementType } from 'react';
 import { CalendarDays, Upload, CheckCircle2, AlertTriangle, Download } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
-import { Card, inputClass, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
+import { Button, Card, kitButtonClass } from '@/components/kit';
 import {
   fetchCalendarDrafts,
   confirmCalendarImport,
@@ -41,7 +41,7 @@ function fmtWhen(iso: string, locale: Locale): string {
 function SectionTitle({ icon: Icon, title, desc }: { icon: ElementType; title: string; desc: string }) {
   return (
     <div className="flex items-start gap-3">
-      <div className="p-2 rounded-xl bg-lime/20 text-ink">
+      <div className="p-2 rounded-xl bg-hivis-soft text-ink">
         <Icon size={20} />
       </div>
       <div>
@@ -240,16 +240,16 @@ export default function ImportsClient({
         <SectionTitle icon={CalendarDays} title={t(locale, 'imports.calendarTitle')} desc={t(locale, 'imports.calendarDesc')} />
 
         {!googleStatus.connected ? (
-          <div className="rounded-xl border border-amber-200 bg-warn-bg p-4">
-            <p className="font-semibold text-amber-900">{t(locale, 'imports.notConnected')}</p>
-            <p className="text-sm text-amber-800 mt-1">{t(locale, 'imports.notConnectedDesc')}</p>
+          <div className="rounded-xl border border-warn-line bg-warn-bg p-4">
+            <p className="font-semibold text-warn-text">{t(locale, 'imports.notConnected')}</p>
+            <p className="text-sm text-warn-text mt-1">{t(locale, 'imports.notConnectedDesc')}</p>
             <div className="mt-3 flex flex-wrap gap-2">
-              <a href="/api/google/connect" className={primaryBtnClass}>
+              <Button variant="primary" href="/api/google/connect">
                 {t(locale, 'imports.connectGoogle')}
-              </a>
-              <a href="/reviews#google" className={secondaryBtnClass}>
+              </Button>
+              <Button variant="secondary" href="/reviews#google">
                 {t(locale, 'nav.reviews')}
-              </a>
+              </Button>
             </div>
           </div>
         ) : (
@@ -257,19 +257,19 @@ export default function ImportsClient({
             <div className="flex flex-wrap items-end gap-3">
               <label className="text-sm">
                 <span className="block text-ink-2 mb-1 font-medium">{t(locale, 'imports.from')}</span>
-                <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className={inputClass} />
+                <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="input" />
               </label>
               <label className="text-sm">
                 <span className="block text-ink-2 mb-1 font-medium">{t(locale, 'imports.to')}</span>
-                <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className={inputClass} />
+                <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="input" />
               </label>
-              <button onClick={loadEvents} disabled={calBusy} className={primaryBtnClass}>
+              <Button variant="primary" onClick={loadEvents} disabled={calBusy} className="disabled:opacity-60 disabled:cursor-not-allowed">
                 {calBusy ? t(locale, 'imports.loading') : t(locale, 'imports.loadEvents')}
-              </button>
+              </Button>
             </div>
 
             {calErr && (
-              <div className="rounded-xl border border-rose-200 bg-danger-bg p-4 text-sm text-rose-800 flex gap-2">
+              <div className="rounded-xl border border-danger/25 bg-danger-bg p-4 text-sm text-danger flex gap-2">
                 <AlertTriangle size={18} className="shrink-0 mt-0.5" />
                 <div>
                   <p>{calErr}</p>
@@ -280,7 +280,7 @@ export default function ImportsClient({
               </div>
             )}
             {calMsg && (
-              <div className="rounded-xl border border-emerald-200 bg-ok-bg p-4 text-sm text-emerald-800 flex gap-2">
+              <div className="rounded-xl border border-ok/25 bg-ok-bg p-4 text-sm text-ok flex gap-2">
                 <CheckCircle2 size={18} className="shrink-0 mt-0.5" />
                 <p>{calMsg}</p>
               </div>
@@ -310,7 +310,7 @@ export default function ImportsClient({
                     <select
                       value={pickedCustomer[d.googleEventId] ?? ''}
                       onChange={(e) => setPickedCustomer((s) => ({ ...s, [d.googleEventId]: e.target.value }))}
-                      className={`${inputClass} md:w-56`}
+                      className="input md:w-56"
                       aria-label={t(locale, 'imports.customer')}
                     >
                       <option value="">{t(locale, 'imports.selectCustomer')}</option>
@@ -323,10 +323,10 @@ export default function ImportsClient({
                   </div>
                 ))}
                 <div className="flex items-center gap-3">
-                  <button onClick={importSelected} disabled={calBusy || selectableCount === 0} className={primaryBtnClass}>
+                  <Button variant="primary" onClick={importSelected} disabled={calBusy || selectableCount === 0} className="disabled:opacity-60 disabled:cursor-not-allowed">
                     {t(locale, 'imports.importSelected')}
                     {selectableCount > 0 ? ` (${selectableCount})` : ''}
-                  </button>
+                  </Button>
                   {selectableCount < drafts.filter((d) => checked[d.googleEventId]).length && (
                     <span className="text-xs text-warn-text">{t(locale, 'imports.eventNeedsCustomer')}</span>
                   )}
@@ -352,14 +352,14 @@ export default function ImportsClient({
                 setCsvErrors([]);
                 setCsvMsg(null);
               }}
-              className={inputClass}
+              className="input"
             >
               <option value="customers">{t(locale, 'imports.typeCustomers')}</option>
               <option value="services">{t(locale, 'imports.typeServices')}</option>
               <option value="jobs">{t(locale, 'imports.typeJobs')}</option>
             </select>
           </label>
-          <a href={`/api/imports/template?type=${csvType}`} className={secondaryBtnClass} download>
+          <a href={`/api/imports/template?type=${csvType}`} download className={kitButtonClass('secondary')}>
             <span className="inline-flex items-center gap-2">
               <Download size={16} /> {t(locale, 'imports.downloadTemplate')}
             </span>
@@ -380,11 +380,11 @@ export default function ImportsClient({
         {csvBusy && <p className="text-sm text-ink-2">{t(locale, 'imports.validating')}</p>}
 
         {csvErrors.length > 0 && (
-          <div className="rounded-xl border border-rose-200 bg-danger-bg p-4">
-            <p className="font-semibold text-rose-900 text-sm">
+          <div className="rounded-xl border border-danger/25 bg-danger-bg p-4">
+            <p className="font-semibold text-danger text-sm">
               {t(locale, 'imports.rowsWithErrors').replace('{count}', String(csvErrors.length))}
             </p>
-            <ul className="mt-2 space-y-1 text-sm text-rose-800 max-h-48 overflow-y-auto">
+            <ul className="mt-2 space-y-1 text-sm text-danger max-h-48 overflow-y-auto">
               {csvErrors.slice(0, 50).map((e, i) => (
                 <li key={i}>
                   <span className="font-semibold">{t(locale, 'imports.rowLabel')} {e.row}:</span> {e.message}
@@ -396,7 +396,7 @@ export default function ImportsClient({
 
         {csvValid.length > 0 && (
           <div className="space-y-3">
-            <p className="font-semibold text-emerald-900 text-sm">
+            <p className="font-semibold text-ok text-sm">
               {t(locale, 'imports.validRows').replace('{count}', String(csvValid.length))}
             </p>
             {/* Desktop table */}
@@ -448,14 +448,15 @@ export default function ImportsClient({
                 {t(locale, 't10misc.imports.moreRows').replace('{count}', String(csvValid.length - 20))}
               </p>
             )}
-            <button
+            <Button
+              variant="primary"
               onClick={importCsv}
               disabled={csvBusy || csvValid.length === 0}
-              className={primaryBtnClass}
+              className="disabled:opacity-60 disabled:cursor-not-allowed"
               title={csvErrors.length > 0 ? t(locale, 'imports.hasErrorsSkipped') : undefined}
             >
               {t(locale, 'imports.importRecords').replace('{count}', String(csvValid.length))}
-            </button>
+            </Button>
             {csvErrors.length > 0 && (
               <p className="text-xs text-warn-text mt-2">
                 {t(locale, 'imports.errorsWillBeSkipped').replace('{count}', String(csvErrors.length))}
@@ -465,7 +466,7 @@ export default function ImportsClient({
         )}
 
         {csvMsg && (
-          <div className="rounded-xl border border-emerald-200 bg-ok-bg p-4 text-sm text-emerald-800 flex gap-2">
+          <div className="rounded-xl border border-ok/25 bg-ok-bg p-4 text-sm text-ok flex gap-2">
             <CheckCircle2 size={18} className="shrink-0 mt-0.5" />
             <p>{csvMsg}</p>
           </div>

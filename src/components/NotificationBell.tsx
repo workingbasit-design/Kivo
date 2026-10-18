@@ -156,7 +156,7 @@ export default function NotificationBell({
         aria-haspopup="true"
         className={
           tone === 'dark'
-            ? 'ej-icon-hover relative rounded-xl p-2.5 text-white/85 hover:bg-surface/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/70'
+            ? 'ej-icon-hover relative rounded-xl p-2.5 text-hero-ink/85 hover:bg-surface/10 hover:text-hero-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-ink/70'
             : 'relative p-2.5 rounded-xl hover:bg-surface-2 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ej-ink/70'
         }
       >
@@ -206,7 +206,7 @@ export default function NotificationBell({
                 >
                   <span
                     aria-hidden
-                    className={`mt-1 h-2 w-2 shrink-0 rounded-full ${item.read ? 'bg-zinc-300' : 'bg-lime'}`}
+                    className={`mt-1 h-2 w-2 shrink-0 rounded-full ${item.read ? 'bg-line' : 'bg-lime'}`}
                   />
                   <span className="min-w-0 flex-1">
                     <span className={`block text-[14px] ${item.read ? 'font-medium text-graphite' : 'font-semibold text-ink'}`}>

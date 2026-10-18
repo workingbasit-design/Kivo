@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { AlertCircle, CheckCircle2, Zap } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
-import { Card, secondaryBtnClass } from '@/components/ui';
+import { Button, Card } from '@/components/kit';
 import {
   setWorkflowRuleEnabled,
   updateWorkflowRuleConfig,
@@ -66,7 +66,7 @@ function RuleSwitch({
       <span
         aria-hidden="true"
         className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
-          enabled ? 'bg-emerald-500' : 'bg-zinc-300'
+          enabled ? 'bg-ok' : 'bg-line'
         }`}
       >
         <span
@@ -155,8 +155,8 @@ export default function AutomationsClient({
           role={notice.ok ? 'status' : 'alert'}
           className={`flex items-start gap-2 text-xs font-medium rounded-xl px-3 py-2.5 border ${
             notice.ok
-              ? 'bg-ok-bg border-emerald-200 text-ok'
-              : 'bg-danger-bg border-rose-200 text-danger'
+              ? 'bg-ok-bg border-ok/30 text-ok'
+              : 'bg-danger-bg border-danger/30 text-danger'
           }`}
         >
           {notice.ok ? <CheckCircle2 size={14} className="mt-0.5 shrink-0" /> : <AlertCircle size={14} className="mt-0.5 shrink-0" />}
@@ -171,7 +171,7 @@ export default function AutomationsClient({
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <h2 className="text-sm font-bold text-ink flex items-center gap-2">
-                  <Zap size={14} className="text-amber-500 shrink-0" />
+                  <Zap size={14} className="text-warn-text shrink-0" />
                   {t(locale, `track8.trigger_${rule.trigger}`)}
                 </h2>
                 <p className="text-xs text-ink-2 mt-1 leading-relaxed">
@@ -236,19 +236,20 @@ export default function AutomationsClient({
                           [rule.id]: { ...d, reviewDraft: e.target.checked },
                         }))
                       }
-                      className="w-5 h-5 rounded accent-ink shrink-0"
+                      className="w-5 h-5 rounded-md border-line-strong accent-ink shrink-0"
                     />
                     {t(locale, 'track8.reviewDraft')}
                   </label>
                 )}
-                <button
+                <Button
+                  variant="secondary"
                   type="button"
                   disabled={pending}
                   onClick={() => save(rule)}
-                  className={`${secondaryBtnClass} sm:w-auto w-full`}
+                  className="sm:w-auto w-full disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {t(locale, 'track8.save')}
-                </button>
+                </Button>
               </div>
             )}
           </Card>
@@ -267,7 +268,7 @@ export default function AutomationsClient({
             type="button"
             disabled={pending}
             onClick={runNow}
-            className="min-h-[44px] w-full sm:w-auto inline-flex items-center justify-center bg-asphalt hover:bg-graphite disabled:opacity-60 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors"
+            className="min-h-[44px] w-full sm:w-auto inline-flex items-center justify-center bg-asphalt hover:bg-graphite disabled:opacity-60 text-hero-ink font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors"
           >
             {pending ? '…' : t(locale, 'track8.runNow')}
           </button>

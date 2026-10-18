@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { MapPin, Plus, Pencil, Trash2, Star, Loader2 } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
-import { Card, Field, inputClass, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
+import { Button, Card, Input, Textarea } from '@/components/kit';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import {
   listProperties,
@@ -122,13 +122,13 @@ export default function CustomerProperties({
           <h3 className="font-bold text-sm text-ink">{L('properties.title')}</h3>
         </div>
         {!showForm && (
-          <button
+          <Button
+            variant="secondary"
             type="button"
             onClick={() => startTransition(openAdd)}
-            className={secondaryBtnClass}
           >
             <Plus size={13} /> {L('properties.add')}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -136,7 +136,7 @@ export default function CustomerProperties({
         <p className="text-xs text-ink-2 mb-4">{L('properties.hint')}</p>
 
         {error && (
-          <p className="text-xs font-semibold text-danger bg-danger-bg border border-rose-200 rounded-xl px-3 py-2.5 mb-4">
+          <p className="text-xs font-semibold text-danger bg-danger-bg border border-danger/30 rounded-xl px-3 py-2.5 mb-4">
             {error}
           </p>
         )}
@@ -144,46 +144,45 @@ export default function CustomerProperties({
         {showForm && (
           <div className="space-y-3 rounded-xl border border-line/70 bg-surface-2/60 p-4 mb-4">
             <div className="grid sm:grid-cols-2 gap-3">
-              <Field label={L('properties.label')}>
-                <input
-                  value={label}
-                  onChange={(e) => setLabel(e.target.value)}
-                  maxLength={60}
-                  placeholder={L('properties.labelPlaceholder')}
-                  className={inputClass}
-                />
-              </Field>
-              <Field label={L('properties.address')}>
-                <input
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  maxLength={500}
-                  className={inputClass}
-                />
-              </Field>
-            </div>
-            <Field label={L('properties.notes')}>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                maxLength={2000}
-                rows={2}
-                className={inputClass}
+              <Input
+                label={L('properties.label')}
+                value={label}
+                onChange={(e) => setLabel(e.target.value)}
+                maxLength={60}
+                placeholder={L('properties.labelPlaceholder')}
               />
-            </Field>
+              <Input
+                label={L('properties.address')}
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                maxLength={500}
+              />
+            </div>
+            <Textarea
+              label={L('properties.notes')}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              maxLength={2000}
+              rows={2}
+            />
             <div className="flex gap-2">
-              <button
+              <Button
+                variant="primary"
                 type="button"
                 disabled={busy}
                 onClick={() => startTransition(save)}
-                className={primaryBtnClass}
+                className="disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {busy ? <Loader2 size={13} className="animate-spin" /> : null}
                 {busy ? L('properties.saving') : L('properties.save')}
-              </button>
-              <button type="button" onClick={closeForm} className={secondaryBtnClass}>
+              </Button>
+              <Button
+                variant="secondary"
+                type="button"
+                onClick={closeForm}
+              >
                 {L('properties.cancel')}
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -198,7 +197,7 @@ export default function CustomerProperties({
                   <p className="text-sm font-semibold text-ink flex items-center gap-2 flex-wrap">
                     {p.label}
                     {p.isPrimary && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-amber-100 text-amber-800 rounded-full px-2 py-0.5">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-warn-bg text-warn-text rounded-full px-2 py-0.5">
                         <Star size={10} /> {L('properties.primary')}
                       </span>
                     )}

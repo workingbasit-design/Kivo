@@ -5,13 +5,11 @@ import { Webhook, Plus, Pause, Play, Trash2, Copy, Check } from '@/components/ic
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import {
-  Badge,
-  Dialog,
-  dangerBtnClass,
-  inputClass,
-  primaryBtnClass,
-  secondaryBtnClass,
-} from '@/components/ui';
+  BottomSheet,
+  Button,
+  Input,
+  StatusBadge,
+} from '@/components/kit';
 
 /**
  * Local copy of the server-side event catalog. Client components must not
@@ -60,9 +58,9 @@ function subscribedEvents(raw: string): string[] {
 }
 
 function statusBadge(status: string, tr: (p: string) => string) {
-  if (status === 'delivered') return <Badge tone="success">{tr('integrations.statusDelivered')}</Badge>;
-  if (status === 'failed') return <Badge tone="danger">{tr('integrations.statusFailed')}</Badge>;
-  return <Badge tone="warning">{tr('integrations.statusPending')}</Badge>;
+  if (status === 'delivered') return <StatusBadge tone="done">{tr('integrations.statusDelivered')}</StatusBadge>;
+  if (status === 'failed') return <StatusBadge tone="late">{tr('integrations.statusFailed')}</StatusBadge>;
+  return <StatusBadge tone="warn">{tr('integrations.statusPending')}</StatusBadge>;
 }
 
 export default function WebhooksCard({
@@ -169,12 +167,12 @@ export default function WebhooksCard({
       </div>
 
       <div className="space-y-2">
-        <input
+        <Input
+          label={<span className="sr-only">{tr('integrations.endpointUrlPh')}</span>}
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder={tr('integrations.endpointUrlPh')}
           inputMode="url"
-          className={inputClass}
         />
         <div>
           <p className="text-xs font-semibold text-ink-2 mb-1.5">{tr('integrations.eventsLabel')}</p>
@@ -187,7 +185,7 @@ export default function WebhooksCard({
                 aria-pressed={events.includes(e)}
                 className={`px-2.5 py-1.5 rounded-lg text-xs font-mono font-semibold border transition-colors ${
                   events.includes(e)
-                    ? 'bg-asphalt text-white border-zinc-900'
+                    ? 'bg-asphalt text-hero-ink border-line-strong'
                     : 'bg-surface text-ink-2 border-line'
                 }`}
               >
@@ -196,15 +194,15 @@ export default function WebhooksCard({
             ))}
           </div>
         </div>
-        <button
+        <Button
           type="button"
+          variant="primary"
           onClick={add}
           disabled={pending || !url.trim() || events.length === 0}
-          className={primaryBtnClass}
         >
           <Plus size={16} />
           {tr('integrations.addEndpoint')}
-        </button>
+        </Button>
       </div>
 
       {data.endpoints.length === 0 ? (
@@ -222,16 +220,18 @@ export default function WebhooksCard({
                   </p>
                 </div>
                 {!ep.active && (
-                  <Badge className="!bg-line !text-ink-2">{tr('integrations.pause')}</Badge>
+                  <StatusBadge tone="neutral">{tr('integrations.pause')}</StatusBadge>
                 )}
-                <button
+                <Button
                   type="button"
+                  variant="secondary"
+                  sm
                   onClick={() => toggleActive(ep.id, !ep.active)}
-                  className={secondaryBtnClass + ' !px-3 !py-1.5 !min-h-0 text-xs shrink-0'}
+                  className="shrink-0"
                 >
                   {ep.active ? <Pause size={14} /> : <Play size={14} />}
                   {ep.active ? tr('integrations.pause') : tr('integrations.resume')}
-                </button>
+                </Button>
                 <button
                   type="button"
                   onClick={() => setRemoveId(ep.id)}
@@ -281,35 +281,47 @@ export default function WebhooksCard({
       </div>
 
       {/* One-time secret reveal */}
-      <Dialog open={secret !== null} onClose={() => setSecret(null)} title={tr('integrations.secretTitle')} locale={locale}>
+      <BottomSheet
+        open={secret !== null}
+        onClose={() => setSecret(null)}
+        title={tr('integrations.secretTitle')}
+        footer={
+          <div className="mt-4 flex justify-end">
+            <Button type="button" variant="primary" onClick={() => setSecret(null)}>
+              {tr('integrations.copied')}
+            </Button>
+          </div>
+        }
+      >
         <p className="text-sm text-ink-2 mb-3">{tr('integrations.secretDesc')}</p>
         <div className="flex items-center gap-2 rounded-xl bg-surface-2 px-3 py-2.5">
           <code className="flex-1 text-xs font-mono text-ink break-all select-all">{secret}</code>
-          <button type="button" onClick={copySecret} className={secondaryBtnClass + ' !px-3 !py-1.5 !min-h-0 text-xs shrink-0'}>
+          <Button type="button" variant="secondary" sm onClick={copySecret} className="shrink-0">
             {copied ? <Check size={14} /> : <Copy size={14} />}
-          </button>
+          </Button>
         </div>
-        <div className="mt-4 flex justify-end">
-          <button type="button" onClick={() => setSecret(null)} className={primaryBtnClass}>
-            {tr('integrations.copied')}
-          </button>
-        </div>
-      </Dialog>
+      </BottomSheet>
 
       {/* Remove confirmation */}
-      <Dialog open={removeId !== null} onClose={() => setRemoveId(null)} title={tr('integrations.removeConfirm')} locale={locale}>
+      <BottomSheet
+        open={removeId !== null}
+        onClose={() => setRemoveId(null)}
+        title={tr('integrations.removeConfirm')}
+        footer={
+          <div className="mt-5 flex gap-2 justify-end">
+            <Button type="button" variant="secondary" onClick={() => setRemoveId(null)}>
+              {t(locale, 'credentials.cancel')}
+            </Button>
+            <Button type="button" variant="danger" onClick={confirmRemove} disabled={pending}>
+              {tr('integrations.endpointRemoved')}
+            </Button>
+          </div>
+        }
+      >
         <p className="text-sm text-ink-2 font-mono break-all">
           {data.endpoints.find((e) => e.id === removeId)?.url}
         </p>
-        <div className="mt-5 flex gap-2 justify-end">
-          <button type="button" onClick={() => setRemoveId(null)} className={secondaryBtnClass}>
-            {t(locale, 'credentials.cancel')}
-          </button>
-          <button type="button" onClick={confirmRemove} disabled={pending} className={dangerBtnClass}>
-            {tr('integrations.endpointRemoved')}
-          </button>
-        </div>
-      </Dialog>
+      </BottomSheet>
     </div>
   );
 }

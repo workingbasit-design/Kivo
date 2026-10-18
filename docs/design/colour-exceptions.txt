@@ -1,0 +1,39 @@
+# colour-exceptions.txt
+# Matches of the Session 1 colour grep that are NOT colours.
+# The Session 2 "colour count: 0" target excludes these, plus the token
+# definitions themselves (CSS custom-property lines in src/app/globals.css).
+#
+# In-page anchor links (href="#..."), not colours:
+#ejl (4) — src landing anchors
+#job (2), #jobs, #invoices, #schedule, #today, #settings, #main, #features,
+#faq, #copilot, #google — in-page anchors / section ids
+#
+# Other non-colour uses:
+#1042 — src/components/kit/Showcase.tsx:528 — sample text 'Invoice #1042'
+#add — src/components/kit/Showcase.tsx:1313 — actionHref="#add" anchor
+#418 — React issue number in comments (hydration crash refs):
+  src/components/AppSidebar.tsx:50, src/components/BottomNav.tsx:47,
+  src/components/PwaRegister.tsx:63, src/components/VoiceModeClient.tsx:56,
+  src/components/mascot/JobiMascot.tsx:84, src/hooks/useSpeechSupport.ts:13,
+  src/hooks/useStoredFlag.ts:11
+#441 — React issue number in comments (useActionState 500 refs):
+  src/app/(app)/invoices/[id]/InvoiceActions.tsx:69,87,221,272,
+  src/app/actions/invoices.ts:387
+#F2F3EF — src/components/PwaRegister.tsx:44 — theme-color fallback literal
+  (documented in scripts/check-design-tokens.mjs EXCEPTIONS)
+#
+# Decorative effects (not theme colours — same convention as the kit CSS
+# itself, which uses rgba() in its shadow definitions; excluded from the
+# "no hard-coded colours" rule):
+# - shadow-[...rgba(0,0,0,...)] / rgba(22,22,22,...) elevation shadows
+#   (src/app/page.tsx, src/components/AppSidebar.tsx, HeroVisual.tsx, etc.)
+# - .ej-liquid / .ej-glass-dark-solid shine gradients, .ej-skeleton shimmer
+#   (src/app/globals.css) — neutral white/black effect layers
+# - .ej-thinking-orb gradients (src/app/globals.css) — voice-mode animation
+# - SVG illustration artwork: src/components/home/HeroVisual.tsx (#161616 ink
+#   strokes, #fff fills), src/components/EveryJobLogo.tsx (brand logo)
+# - User-data colours (never migrated): BrandKitForm.tsx PRESETS,
+#   CREW_COLORS, style={{backgroundColor}} data chips
+# - Third-party brand: GoogleSignInButton.tsx, GoogleReviewsPanel.tsx
+#   (Google "G" colours), --color-wa* WhatsApp tokens in src/app/tokens.css
+# - HTML email: src/lib/messaging/email-templates.ts (no CSS available)

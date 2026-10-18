@@ -8,7 +8,7 @@ import {
   deleteExpense,
   type JobOpsActionResult,
 } from '@/app/actions/jobops';
-import { Card } from '@/components/ui';
+import { Card } from '@/components/kit';
 import { jInputClass, jPrimaryBtnClass } from '@/components/jobops-classes';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { formatMoney } from '@/lib/money';
@@ -130,7 +130,7 @@ function ExpenseRow({
         disabled={isPending}
         title={t(locale, 'jobops.expenses.delete')}
         aria-label={t(locale, 'jobops.expenses.delete')}
-        className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-zinc-300 hover:text-danger hover:bg-danger-bg rounded-lg transition-colors shrink-0 disabled:opacity-60"
+        className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-line-strong hover:text-danger hover:bg-danger-bg rounded-lg transition-colors shrink-0 disabled:opacity-60"
       >
         <Trash2 size={15} />
       </button>
@@ -226,7 +226,7 @@ function AddExpenseForm({ jobId, locale }: { jobId: string; locale: Locale }) {
         </div>
       </div>
       {state?.error && (
-        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-danger/25 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{state.error}</span>
         </div>

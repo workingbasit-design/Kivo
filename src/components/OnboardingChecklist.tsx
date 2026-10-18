@@ -1,7 +1,7 @@
 'use client';
 
 import { t, type Locale } from '@/lib/i18n';
-import { Card, ProgressBar } from '@/components/ui';
+import { Card } from '@/components/kit';
 import { useStoredFlag } from '@/hooks/useStoredFlag';
 
 export type OnboardingStepId =
@@ -35,6 +35,40 @@ function stepKey(
   field: 'title' | 'desc' | 'cta'
 ): Parameters<typeof t>[1] {
   return `support.steps.${id}.${field}` as Parameters<typeof t>[1];
+}
+
+/** Percent progress bar (kit tokens). The kit's MarginBar is profit-specific
+ *  and ProgressSteps is a step rail — neither fits a plain percentage bar. */
+function OnboardingProgress({
+  value,
+  max,
+  label,
+}: {
+  value: number;
+  max: number;
+  label: string;
+}) {
+  const pct = Math.max(0, Math.min(100, (value / max) * 100));
+  return (
+    <div>
+      <div className="flex justify-between text-[11px] font-semibold text-ink-2 mb-1.5">
+        <span>{label}</span>
+        <span>{Math.round(pct)}%</span>
+      </div>
+      <div
+        role="progressbar"
+        aria-valuenow={Math.round(pct)}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        className="h-2 rounded-full bg-surface-2 overflow-hidden"
+      >
+        <div
+          className="h-full rounded-full bg-asphalt transition-all duration-500"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
+  );
 }
 
 /**
@@ -84,7 +118,7 @@ export default function OnboardingChecklist({
       <button
         type="button"
         onClick={show}
-        className="inline-flex items-center gap-1.5 rounded-xl border border-dashed border-line-strong bg-surface-2 px-4 py-2.5 text-sm font-medium text-ink-2 hover:text-ink hover:border-zinc-400 hover:bg-surface-2 min-h-[44px] transition-colors"
+        className="inline-flex items-center gap-1.5 rounded-xl border border-dashed border-line-strong bg-surface-2 px-4 py-2.5 text-sm font-medium text-ink-2 hover:text-ink hover:border-line-strong hover:bg-surface-2 min-h-[44px] transition-colors"
       >
         {t(locale, 'support.onboardingShow')}
       </button>
@@ -123,7 +157,7 @@ export default function OnboardingChecklist({
       </div>
 
       <div className="mt-3">
-        <ProgressBar
+        <OnboardingProgress
           value={done}
           max={total}
           label={`${done} ${t(locale, 'support.onboardingProgressOf')} ${total} ${t(locale, 'support.onboardingProgressDone')}`}
@@ -137,13 +171,13 @@ export default function OnboardingChecklist({
               <li
                 key={s.id}
                 className={`flex items-center gap-3 rounded-xl border p-3 ${
-                  isDone ? 'border-lime-200 bg-lime-50/60' : 'border-line bg-surface'
+                  isDone ? 'border-hivis/30 bg-hivis-soft/60' : 'border-line bg-surface'
                 }`}
               >
                 <span
                   aria-hidden
                   className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
-                    isDone ? 'bg-lime-500 text-white' : 'bg-surface-2 text-ink-2'
+                    isDone ? 'bg-hivis text-hivis-ink' : 'bg-surface-2 text-ink-2'
                   }`}
                 >
                   {isDone ? '✓' : '·'}
@@ -161,7 +195,7 @@ export default function OnboardingChecklist({
                 {!isDone && (
                   <a
                     href={s.href}
-                    className="shrink-0 rounded-lg bg-asphalt px-3 py-2 text-xs font-semibold text-white hover:bg-zinc-700 min-h-[36px] inline-flex items-center"
+                    className="shrink-0 rounded-lg bg-asphalt px-3 py-2 text-xs font-semibold text-hero-ink hover:bg-hero-2 min-h-[36px] inline-flex items-center"
                   >
                     {t(locale, stepKey(s.id, 'cta'))}
                   </a>

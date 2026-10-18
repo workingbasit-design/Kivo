@@ -37,6 +37,7 @@ export default function CollectedCard({
   data,
   locale,
   labels,
+  defaultMode = "week",
 }: {
   data: CollectedData;
   locale: "en" | "fr";
@@ -57,9 +58,11 @@ export default function CollectedCard({
     hideNumbers: string;
     periodLabel: string;
   };
+  /** Initial range. The toggle always switches week <-> month afterwards. */
+  defaultMode?: Mode;
 }) {
   const tag = locale === "fr" ? "fr-CA" : "en-CA";
-  const [mode, setMode] = useState<Mode>("week");
+  const [mode, setMode] = useState<Mode>(defaultMode);
   const [numbersOpen, setNumbersOpen] = useState(false);
   const period: CollectedPeriod = data[mode];
 
@@ -87,32 +90,44 @@ export default function CollectedCard({
         total: formatMoney(period.total, null, locale),
         period: mode === "week" ? labels.thisWeek : labels.thisMonth,
       })}
-      className="overflow-hidden rounded-[24px] bg-asphalt text-white dark:bg-soot"
+      className="overflow-hidden rounded-[24px] bg-asphalt text-hero-ink dark:bg-soot"
     >
       <div className="ej-reflective-stripe h-2.5" aria-hidden />
       <div className="p-5">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-[15px] font-semibold text-zinc-300">{labels.collected}</h2>
+          <h2 className="text-[15px] font-semibold text-ink-2">{labels.collected}</h2>
+          {/*
+            FIX-NOW S2: proper segmented control — no sliding-pill overlay.
+            Both labels are rendered as full, always-visible buttons (equal
+            widths, 44px targets); the selected one gets the hi-vis lime
+            treatment, the unselected one stays clearly readable on the dark
+            panel in both light and dark app modes.
+          */}
           <div
             role="radiogroup"
             aria-label={labels.collected}
-            className="ej-collected-toggle inline-flex rounded-full bg-surface/10 p-1"
+            className="flex min-w-0 flex-1 gap-1 rounded-[14px] border border-hero-ink/15 bg-surface/5 p-1 sm:max-w-[280px]"
           >
-            {(["week", "month"] as Mode[]).map((m) => (
-              <button
-                key={m}
-                type="button"
-                role="radio"
-                aria-checked={mode === m}
-                onClick={() => setMode(m)}
-                className={cn(
-                  "min-h-[36px] px-4 rounded-full text-[13px] font-semibold transition-colors",
-                  mode === m ? "bg-surface text-asphalt" : "text-zinc-300 hover:text-white"
-                )}
-              >
-                {m === "week" ? labels.thisWeek : labels.thisMonth}
-              </button>
-            ))}
+            {(["week", "month"] as Mode[]).map((m) => {
+              const selected = mode === m;
+              return (
+                <button
+                  key={m}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  onClick={() => setMode(m)}
+                  className={cn(
+                    "min-h-[44px] min-w-0 flex-1 whitespace-nowrap rounded-[10px] px-4 text-[13px] font-semibold transition-colors",
+                    selected
+                      ? "bg-hivis text-asphalt"
+                      : "text-ink-2 hover:bg-surface/10 hover:text-hero-ink"
+                  )}
+                >
+                  {m === "week" ? labels.thisWeek : labels.thisMonth}
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -138,7 +153,7 @@ export default function CollectedCard({
                 className="flex min-h-[44px] min-w-0 flex-1 flex-col items-center justify-end gap-1.5"
               >
                 {bar.isToday && bar.amount > 0 && (
-                  <span className="text-[11px] font-bold tabular-nums text-white">
+                  <span className="text-[11px] font-bold tabular-nums text-hero-ink">
                     {formatWhole(bar.amount, locale)}
                   </span>
                 )}
@@ -162,7 +177,7 @@ export default function CollectedCard({
           })}
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-3 border-t border-white/10 pt-4">
+        <div className="mt-4 grid grid-cols-2 gap-3 border-t border-hero-ink/10 pt-4">
           <div>
             <p className="text-[13px] text-ink-2">{labels.invoiced}</p>
             <p className="ej-figure text-[26px] font-bold tabular-nums">
@@ -183,14 +198,14 @@ export default function CollectedCard({
             type="button"
             aria-expanded={numbersOpen}
             onClick={() => setNumbersOpen((o) => !o)}
-            className="inline-flex min-h-[44px] items-center px-1 text-[14px] font-semibold text-zinc-300 underline underline-offset-2"
+            className="inline-flex min-h-[44px] items-center px-1 text-[14px] font-semibold text-ink-2 underline underline-offset-2"
           >
             {numbersOpen ? labels.hideNumbers : labels.showNumbers}
           </button>
           {numbersOpen && (
             <table className="mt-1 w-full text-left text-[13px]">
               <thead>
-                <tr className="border-b border-white/10 text-ink-2">
+                <tr className="border-b border-hero-ink/10 text-ink-2">
                   <th scope="col" className="py-2 pr-2 font-medium">
                     {labels.periodLabel}
                   </th>
@@ -201,15 +216,15 @@ export default function CollectedCard({
               </thead>
               <tbody>
                 {period.bars.map((bar, i) => (
-                  <tr key={bar.key} className="border-b border-white/5 last:border-0">
-                    <th scope="row" className="py-2 pr-2 font-medium text-white">
+                  <tr key={bar.key} className="border-b border-hero-ink/5 last:border-0">
+                    <th scope="row" className="py-2 pr-2 font-medium text-hero-ink">
                       {mode === "week"
                         ? weekdayLabel(bar.weekday)
                         : period.barMonths[i]
                           ? monthLabel(period.barMonths[i])
                           : ""}
                     </th>
-                    <td className="py-2 text-right tabular-nums text-zinc-200">
+                    <td className="py-2 text-right tabular-nums text-ink-2">
                       {formatMoney(bar.amount, null, locale)}
                     </td>
                   </tr>

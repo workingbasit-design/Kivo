@@ -2,12 +2,13 @@ import { notFound } from 'next/navigation';
 import { PenLine } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { Card, PageHeader } from '@/components/ui';
+import { Card } from '@/components/kit';
 import { formatMoney, centsToDollars } from '@/lib/money';
 import { formatDateShort } from '@/lib/utils';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import PrintButton from './PrintButton';
+import { PageTitle } from '../../../../../_components/PageTitle';
 
 /**
  * Owner-only print view of a signed quote - the target of the
@@ -80,7 +81,7 @@ export default async function SignedDocumentPrintPage({
     <div className="min-h-screen bg-paper font-sans">
       <main className="mx-auto max-w-2xl px-4 py-8 print:max-w-none print:px-0 print:py-0">
         <div className="no-print mb-4 flex items-center justify-between">
-          <PageHeader title={L('esign.title')} subtitle={quote.number} />
+          <PageTitle title={L('esign.title')} summary={quote.number} />
           <PrintButton label={L('esign.downloadSigned')} />
         </div>
 

@@ -97,7 +97,7 @@ export default function OnMyWayNotifier({
       }}
     >
       <summary className="flex items-center gap-2 text-sm font-bold text-ink cursor-pointer list-none select-none [&::-webkit-details-marker]:hidden">
-        <span className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-sky-500/10 text-sky-700 shrink-0">
+        <span className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-info/10 text-info shrink-0">
           <BellRing size={15} />
         </span>
         {tr('title')}
@@ -118,7 +118,7 @@ export default function OnMyWayNotifier({
           </p>
         )}
         {linkFailed && (
-          <p className="text-xs text-warn-text bg-warn-bg border border-amber-200 rounded-xl px-3 py-2.5">
+          <p className="text-xs text-warn-text bg-warn-bg border border-warn-line rounded-xl px-3 py-2.5">
             {tr('linkHint')}
           </p>
         )}

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { CalendarX2 } from '@/components/icons';
 import { getLocale } from '@/lib/i18n/server';
-import { Card } from '@/components/ui';
+import { Card } from '@/components/kit';
 
 /**
  * Friendly 404 for /book/[slug] when the slug doesn't exist or the
@@ -15,7 +15,7 @@ export default async function BookingNotFound() {
     <div className="min-h-screen bg-paper font-sans">
       <main className="max-w-lg mx-auto px-4 py-16">
         <Card className="p-8 text-center">
-          <CalendarX2 size={36} className="mx-auto text-zinc-300 mb-3" />
+          <CalendarX2 size={36} className="mx-auto text-ink-2 mb-3" />
           <h1 className="text-lg font-bold text-ink">
             {fr ? 'Page de réservation introuvable' : 'Booking page not found'}
           </h1>

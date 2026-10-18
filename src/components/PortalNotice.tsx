@@ -1,7 +1,7 @@
 import { CloudOff, FileWarning, Link2Off, Timer } from '@/components/icons';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
-import { Card } from '@/components/ui';
+import { Card } from '@/components/kit';
 
 /**
  * Friendly, data-free notice for the public quote/invoice portals.
@@ -19,22 +19,22 @@ export default async function PortalNotice({
   const locale = await getLocale();
   const copy = {
     expired: {
-      icon: <Link2Off size={36} className="mx-auto text-zinc-300 mb-3" />,
+      icon: <Link2Off size={36} className="mx-auto text-line-strong mb-3" />,
       title: t(locale, 't10money.noticeExpiredTitle'),
       body: t(locale, 't10money.noticeExpiredBody'),
     },
     legacy: {
-      icon: <FileWarning size={36} className="mx-auto text-amber-400 mb-3" />,
+      icon: <FileWarning size={36} className="mx-auto text-warn mb-3" />,
       title: t(locale, 't10money.noticeLegacyTitle'),
       body: t(locale, 't10money.noticeLegacyBody'),
     },
     'rate-limited': {
-      icon: <Timer size={36} className="mx-auto text-zinc-300 mb-3" />,
+      icon: <Timer size={36} className="mx-auto text-line-strong mb-3" />,
       title: t(locale, 't10money.noticeRateTitle'),
       body: t(locale, 't10money.noticeRateBody'),
     },
     unavailable: {
-      icon: <CloudOff size={36} className="mx-auto text-zinc-300 mb-3" />,
+      icon: <CloudOff size={36} className="mx-auto text-line-strong mb-3" />,
       title: t(locale, 't10money.noticeUnavailableTitle'),
       body: t(locale, 't10money.noticeUnavailableBody'),
     },

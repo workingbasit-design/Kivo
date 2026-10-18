@@ -2,11 +2,12 @@ import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
-import { PageHeader, Card } from '@/components/ui';
+import { Card } from '@/components/kit';
 import TicketStatusButtons from './TicketStatusButtons';
 import { formatDateShort, localeDateTag } from '@/lib/utils';
 import { isProductOwner } from '@/lib/owner';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
+import { PageTitle } from '../../_components/PageTitle';
 
 export const metadata = { title: 'Support inbox | EveryJob' };
 
@@ -22,7 +23,7 @@ export default async function SupportInboxPage() {
   if (!isProductOwner(user.email)) {
     return (
       <div className="space-y-6 max-w-3xl">
-        <PageHeader title={tr('inboxTitle')} subtitle={tr('inboxSub')} />
+        <PageTitle title={tr('inboxTitle')} summary={tr('inboxSub')} />
         <Card className="p-6">
           <p className="text-sm text-ink-2">{tr('inboxRestricted')}</p>
         </Card>
@@ -50,7 +51,7 @@ export default async function SupportInboxPage() {
 
   return (
     <div className="space-y-6 max-w-3xl">
-      <PageHeader title={tr('inboxTitle')} subtitle={tr('inboxSub')} />
+      <PageTitle title={tr('inboxTitle')} summary={tr('inboxSub')} />
       {tickets.length === 0 ? (
         <Card className="p-6">
           <p className="text-sm text-ink-2">{tr('inboxEmpty')}</p>

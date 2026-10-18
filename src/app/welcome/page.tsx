@@ -5,6 +5,7 @@ import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
 import Logo from '@/components/Logo';
 import WelcomeClient from '@/components/WelcomeClient';
+import { Card } from '@/components/kit';
 
 export const metadata = { title: 'Welcome | EveryJob' };
 
@@ -29,7 +30,7 @@ export default async function WelcomePage() {
       </nav>
       <div className="flex-1 flex items-center justify-center px-4 pb-16">
         <div className="w-full max-w-md">
-          <div className="bg-surface rounded-3xl border border-line/70 shadow-xl shadow-zinc-200/50 p-8">
+          <Card className="p-8">
             <h1 className="text-2xl font-bold tracking-tight text-ink">
               {t(locale, 'googleAuth.welcomeTitle')}
             </h1>
@@ -37,7 +38,7 @@ export default async function WelcomePage() {
               {t(locale, 'googleAuth.welcomeSubtitle')}
             </p>
             <WelcomeClient locale={locale} userName={session.user.name} />
-          </div>
+          </Card>
         </div>
       </div>
       <p className="text-center text-xs text-ink-2 pb-6">Every job. One place.</p>

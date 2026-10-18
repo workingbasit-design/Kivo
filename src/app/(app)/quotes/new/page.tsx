@@ -1,10 +1,11 @@
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { PageHeader } from '@/components/ui';
+
 import { getTaxConfig } from '@/lib/tax';
 import QuoteForm from './QuoteForm';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
+import { PageTitle } from '../../_components/PageTitle';
 
 export default async function NewQuotePage() {
   const { businessId } = await requireAuth();
@@ -26,9 +27,9 @@ export default async function NewQuotePage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageTitle
         title={t(locale, 'quotes.new.title')}
-        subtitle={t(locale, 'quotes.new.subtitle').replace('{taxLabel}', taxConfig.label)}
+        summary={t(locale, 'quotes.new.subtitle').replace('{taxLabel}', taxConfig.label)}
       />
       <QuoteForm customers={customers} taxConfig={taxConfig} locale={locale} />
     </div>

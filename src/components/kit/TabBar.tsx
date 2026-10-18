@@ -7,8 +7,8 @@ import { cn } from '@/lib/utils';
 export interface TabBarTab {
   id: string;
   label: string;
-  /** Icon component. The today tab must use `Sun` with weight="regular"
-   *  (the filled sun reads as a gear); TabBar always renders icons outlined. */
+  /** Icon component. The today tab always renders the duotone Sun (outline
+   *  + soft fill); TabBar forces `Sun` for id === 'today'. */
   icon: IconComponent;
   href: string;
   badge?: number | string;
@@ -24,8 +24,9 @@ export interface TabBarProps {
 /**
  * Fixed bottom tab bar. The active tab gets a lime pill behind its icon
  * (`bg-hivis`) and the active label colour (`text-nav-active`); inactive
- * tabs render in `text-nav-ink`. All icons render outlined at 24px — never
- * duotone/fill.
+ * tabs render in `text-nav-ink`. All icons render outlined at 24px; the
+ * today tab's Sun renders duotone (outline + soft fill) per the mockup's
+ * "duotone for status and active states" rule.
  */
 export function TabBar({ tabs, activeId, ariaLabel }: TabBarProps) {
   return (
@@ -36,7 +37,8 @@ export function TabBar({ tabs, activeId, ariaLabel }: TabBarProps) {
     >
       <div className="mx-auto grid w-full max-w-[480px] grid-cols-5">
         {tabs.map((tab) => {
-          const Icon = tab.id === 'today' ? Sun : tab.icon;
+          const isToday = tab.id === 'today';
+          const Icon = isToday ? Sun : tab.icon;
           const active = tab.id === activeId;
           return (
             <a
@@ -55,7 +57,7 @@ export function TabBar({ tabs, activeId, ariaLabel }: TabBarProps) {
                   active && 'bg-hivis text-hivis-ink'
                 )}
               >
-                <Icon size={24} weight="regular" aria-hidden />
+                <Icon size={24} weight={isToday ? 'duotone' : 'regular'} aria-hidden />
                 {tab.badge != null && (
                   <span
                     aria-hidden

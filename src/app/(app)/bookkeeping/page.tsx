@@ -4,9 +4,11 @@ import { getLocale } from "@/lib/i18n/server";
 import { t, type Locale } from "@/lib/i18n";
 import { localeMoneyTag } from "@/lib/utils";
 import { formatMoney } from "@/lib/money";
-import { PageHeader, Card, StatCard, EmptyState } from "@/components/ui";
+import { Card } from '@/components/kit';
 import { Wallet, TrendingUp, TrendingDown, PiggyBank, Receipt } from '@/components/icons';
 import Link from "next/link";
+import { PageTitle } from '../_components/PageTitle';
+import { Button, EmptyState, SummaryCard } from '@/components/kit';
 
 function catLabel(locale: Locale, category: string): string {
   const key = `bookkeeping.cat${category}` as never;
@@ -32,70 +34,49 @@ export default async function BookkeepingPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageTitle
         title={t(locale, "bookkeeping.title")}
-        subtitle={t(locale, "bookkeeping.subtitle")}
+        summary={t(locale, "bookkeeping.subtitle")}
       />
 
       {!data || !hasActivity ? (
         <Card>
           <EmptyState
-            icon={<PiggyBank size={28} className="text-ink-2" aria-hidden />}
+            icon={PiggyBank}
             title={t(locale, "bookkeeping.noData")}
-            description={t(locale, "bookkeeping.noDataDesc")}
-            action={
-              <div className="flex gap-2 flex-wrap justify-center">
-                <Link
-                  href="/invoices"
-                  className="inline-flex items-center px-4 py-2.5 rounded-xl bg-asphalt text-white text-sm font-bold min-h-[44px]"
-                >
-                  {t(locale, "bookkeeping.viewInvoices")}
-                </Link>
-                <Link
-                  href="/expenses"
-                  className="inline-flex items-center px-4 py-2.5 rounded-xl border border-line text-sm font-bold text-ink min-h-[44px]"
-                >
-                  {t(locale, "bookkeeping.viewExpenses")}
-                </Link>
-              </div>
-            }
+            text={t(locale, "bookkeeping.noDataDesc")}
           />
+          <div className="flex gap-2 flex-wrap justify-center pb-10 -mt-6">
+            <Button href="/invoices" variant="primary" sm>
+              {t(locale, "bookkeeping.viewInvoices")}
+            </Button>
+            <Button href="/expenses" variant="secondary" sm>
+              {t(locale, "bookkeeping.viewExpenses")}
+            </Button>
+          </div>
         </Card>
       ) : (
         <>
           {/* Headline numbers */}
-          <div className="grid grid-cols-2 gap-3">
-            <StatCard
-              label={t(locale, "bookkeeping.revenue")}
-              value={m(data.totalRevenue)}
-              icon={<TrendingUp size={18} aria-hidden />}
-              index={0}
-            />
-            <StatCard
-              label={t(locale, "bookkeeping.expenses")}
-              value={m(data.totalExpenses)}
-              icon={<TrendingDown size={18} aria-hidden />}
-              index={1}
-            />
-            <StatCard
-              label={t(locale, "bookkeeping.profit")}
-              value={m(data.totalProfit)}
-              sub={
-                data.marginPct != null
-                  ? `${t(locale, "bookkeeping.margin")}: ${data.marginPct}%`
-                  : undefined
-              }
-              icon={<Wallet size={18} aria-hidden />}
-              index={2}
-            />
-            <StatCard
-              label={t(locale, "bookkeeping.receivables")}
-              value={m(data.receivables)}
-              sub={t(locale, "bookkeeping.receivablesDesc")}
-              icon={<Receipt size={18} aria-hidden />}
-              index={3}
-            />
-          </div>
+          <SummaryCard
+            stats={[
+              { label: t(locale, "bookkeeping.revenue"), value: m(data.totalRevenue) },
+              { label: t(locale, "bookkeeping.expenses"), value: m(data.totalExpenses) },
+              {
+                label: t(locale, "bookkeeping.profit"),
+                value: m(data.totalProfit),
+                sub:
+                  data.marginPct != null
+                    ? `${t(locale, "bookkeeping.margin")}: ${data.marginPct}%`
+                    : undefined,
+              },
+              {
+                label: t(locale, "bookkeeping.receivables"),
+                value: m(data.receivables),
+                sub: t(locale, "bookkeeping.receivablesDesc"),
+              },
+            ]}
+          />
 
           {/* Month by month */}
           <section>
@@ -160,7 +141,7 @@ export default async function BookkeepingPage() {
                       </div>
                       <div className="h-2 rounded-full bg-surface-2 overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-lime-500"
+                          className="h-full rounded-full bg-hivis"
                           style={{ width: `${pct}%` }}
                         />
                       </div>

@@ -7,7 +7,7 @@ import { LogIn, AlertCircle } from '@/components/icons';
 import { login } from '@/app/actions/auth';
 import { verifyTotpLogin } from '@/app/actions/totp';
 import { useT } from '@/components/LanguageToggle';
-import { Field, inputClass, primaryBtnClass } from '@/components/ui';
+import { Button, Card, Input } from '@/components/kit';
 import GoogleAuthSection from '@/components/GoogleAuthSection';
 
 export default function LoginPage() {
@@ -21,7 +21,7 @@ export default function LoginPage() {
 
   if (state?.totpRequired && state.challenge) {
     return (
-      <div className="bg-surface rounded-3xl border border-line/70 shadow-xl shadow-zinc-200/50 p-6 sm:p-8">
+      <Card className="p-6 sm:p-8">
         <h1 className="text-2xl font-bold tracking-tight text-ink">
           {t('t10misc.auth.totpTitle') ?? 'Check your authenticator app'}
         </h1>
@@ -30,70 +30,61 @@ export default function LoginPage() {
         </p>
         <form action={totpFormAction} className="space-y-4">
           <input type="hidden" name="challenge" value={state.challenge} />
-          <Field label={t('t10misc.auth.totpLabel') ?? 'Verification code'}>
-            <input
-              id="code"
-              name="code"
-              type="text"
-              required
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              placeholder="123456"
-              maxLength={9}
-              className={inputClass}
-            />
-          </Field>
+          <Input
+            label={t('t10misc.auth.totpLabel') ?? 'Verification code'}
+            name="code"
+            type="text"
+            required
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            placeholder="123456"
+            maxLength={9}
+          />
           {(totpState as { error?: string } | null)?.error && (
             <div
               role="alert"
-              className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5"
+              className="flex items-start gap-2 bg-danger-bg border border-line text-danger text-xs font-medium rounded-xl px-3 py-2.5"
             >
               <AlertCircle size={14} className="mt-0.5 shrink-0" />
               <span>{(totpState as { error?: string }).error}</span>
             </div>
           )}
-          <button type="submit" disabled={totpPending} className={`${primaryBtnClass} w-full`}>
+          <Button type="submit" disabled={totpPending} block>
             <LogIn size={16} />
             {totpPending
               ? (t('t10misc.auth.verifying') ?? 'Verifying…')
               : (t('t10misc.auth.verifyButton') ?? 'Verify')}
-          </button>
+          </Button>
         </form>
-      </div>
+      </Card>
     );
   }
 
   return (
-    <div className="bg-surface rounded-3xl border border-line/70 shadow-xl shadow-zinc-200/50 p-6 sm:p-8">
+    <Card className="p-6 sm:p-8">
       <h1 className="text-2xl font-bold tracking-tight text-ink">{t('t10misc.auth.loginTitle')}</h1>
       <p className="text-sm text-ink-2 mt-1 mb-6">{t('t10misc.auth.loginSubtitle')}</p>
 
       <GoogleAuthSection />
 
       <form action={formAction} className="space-y-4">
-        <Field label={t('t10misc.auth.emailLabel')}>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            required
-            autoComplete="email"
-            placeholder={t('t10misc.auth.emailPlaceholder')}
-            className={inputClass}
-          />
-        </Field>
+        <Input
+          label={t('t10misc.auth.emailLabel')}
+          name="email"
+          type="email"
+          required
+          autoComplete="email"
+          placeholder={t('t10misc.auth.emailPlaceholder')}
+        />
 
-        <Field label={t('t10misc.auth.passwordLabel')}>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            required
-            autoComplete="current-password"
-            placeholder={t('t10misc.auth.passwordPlaceholder')}
-            className={inputClass}
-          />
-        </Field>
+        <Input
+          label={t('t10misc.auth.passwordLabel')}
+          name="password"
+          type="password"
+          required
+          autoComplete="current-password"
+          placeholder={t('t10misc.auth.passwordPlaceholder')}
+        />
 
         <div className="flex justify-end -mt-2">
           <Link
@@ -107,17 +98,17 @@ export default function LoginPage() {
         {state?.error && (
           <div
             role="alert"
-            className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5"
+            className="flex items-start gap-2 bg-danger-bg border border-line text-danger text-xs font-medium rounded-xl px-3 py-2.5"
           >
             <AlertCircle size={14} className="mt-0.5 shrink-0" />
             <span>{state.error}</span>
           </div>
         )}
 
-        <button type="submit" disabled={isPending} className={`${primaryBtnClass} w-full`}>
+        <Button type="submit" disabled={isPending} block>
           <LogIn size={16} />
           {isPending ? t('t10misc.auth.loggingIn') : t('t10misc.auth.loginButton')}
-        </button>
+        </Button>
       </form>
 
       <p className="text-center text-xs text-ink-2 mt-6">
@@ -135,6 +126,6 @@ export default function LoginPage() {
           </Link>
         </p>
       </div>
-    </div>
+    </Card>
   );
 }

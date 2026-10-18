@@ -17,10 +17,13 @@ import { getReportStats } from "@/lib/dashboard";
 import { cn } from "@/lib/utils";
 import { formatMoney } from "@/lib/money";
 import { getLocale } from "@/lib/i18n/server";
-import { PageHeader, Card, StatCard, StatusBadge, EmptyState } from "@/components/ui";
+import { Card, Button } from '@/components/kit';
 import { ReportBuilder, type SavedReportLite } from "@/components/ReportBuilder";
 import { parseFlags, isFlagOn, FLAG_REPORTS } from "@/lib/feature-flags";
 import { F9Reports } from "./f9-reports";
+import { PageTitle } from '../_components/PageTitle';
+import { StatusPill } from '../_components/status-ui';
+import { EmptyState, SummaryCard } from '@/components/kit';
 
 const JOB_STATUS_ORDER = ["NEW", "SCHEDULED", "IN PROGRESS", "COMPLETED", "PAID", "CANCELLED"];
 
@@ -175,9 +178,9 @@ export default async function ReportsPage({
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageTitle
         title={r.title}
-        subtitle={r.subtitle}
+        summary={r.subtitle}
       />
 
       {/* Natural-language report builder */}
@@ -186,52 +189,35 @@ export default async function ReportsPage({
       {!hasData ? (
         <Card>
           <EmptyState
-            icon={<TrendingUp size={22} />}
+            icon={TrendingUp}
             title={r.emptyTitle}
-            description={r.emptyDesc}
-            action={
-              <Link
-                href="/jobs/new"
-                className="bg-asphalt hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs inline-flex items-center gap-2"
-              >
-                {r.createFirstJob}
-              </Link>
-            }
+            text={r.emptyDesc}
           />
+<div className="flex justify-center pb-10 -mt-6">
+            <Button href="/jobs/new" variant="primary">
+              {r.createFirstJob}
+            </Button>
+          </div>
         </Card>
       ) : (
         <>
           {/* Stat cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard
-              label={r.collectedLabel}
-              value={formatMoney(stats.totalCollected, currency)}
-              sub={r.paymentsReceived}
-              icon={<TrendingUp size={16} />}
-              accent="bg-emerald-100 text-ok"
-            />
-            <StatCard
-              label={r.avgJobLabel}
-              value={formatMoney(stats.avgJobValue, currency)}
-              sub={r.completedPaid}
-              icon={<Briefcase size={16} />}
-              accent="bg-smoke text-ink"
-            />
-            <StatCard
-              label={r.outstandingLabel}
-              value={formatMoney(stats.outstanding, currency)}
-              sub={`${stats.outstandingCount} ${stats.outstandingCount === 1 ? r.unpaidInvoice : r.unpaidInvoices}`}
-              icon={<AlertCircle size={16} />}
-              accent="bg-amber-100 text-warn-text"
-            />
-            <StatCard
-              label={r.winRateLabel}
-              value={stats.quoteWinRate === null ? "-" : `${stats.quoteWinRate}%`}
-              sub={`${stats.quotesSent} ${stats.quotesSent === 1 ? r.quote : r.quotes} ${r.quoteTotalSuffix}`}
-              icon={<Target size={16} />}
-              accent="bg-blue-100 text-info"
-            />
-          </div>
+          <SummaryCard
+            stats={[
+              { label: r.collectedLabel, value: formatMoney(stats.totalCollected, currency), sub: r.paymentsReceived },
+              { label: r.avgJobLabel, value: formatMoney(stats.avgJobValue, currency), sub: r.completedPaid },
+              {
+                label: r.outstandingLabel,
+                value: formatMoney(stats.outstanding, currency),
+                sub: `${stats.outstandingCount} ${stats.outstandingCount === 1 ? r.unpaidInvoice : r.unpaidInvoices}`,
+              },
+              {
+                label: r.winRateLabel,
+                value: stats.quoteWinRate === null ? "-" : `${stats.quoteWinRate}%`,
+                sub: `${stats.quotesSent} ${stats.quotesSent === 1 ? r.quote : r.quotes} ${r.quoteTotalSuffix}`,
+              },
+            ]}
+          />
 
           <div className="grid lg:grid-cols-2 gap-4">
             {/* Revenue by service */}
@@ -312,7 +298,7 @@ export default async function ReportsPage({
             {/* Team performance shortcut */}
             <Link
               href="/reports/team"
-              className="lg:col-span-2 ej-glass-card rounded-2xl p-5 flex items-center justify-between gap-4 hover:border-smoke transition-colors"
+              className="lg:col-span-2 bg-surface border border-line shadow-kit-card rounded-2xl p-5 flex items-center justify-between gap-4 hover:border-smoke transition-colors"
             >
               <div>
                 <h2 className="text-sm font-bold text-ink">{r.teamPerf}</h2>
@@ -373,11 +359,11 @@ export default async function ReportsPage({
                   {orderedStatuses.map((g) => (
                     <div key={g.status} className="flex items-center gap-3">
                       <div className="w-32 shrink-0">
-                        <StatusBadge status={g.status} />
+                        <StatusPill status={g.status} locale={locale} />
                       </div>
                       <div className="flex-1 h-2.5 bg-surface-2 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-zinc-700 rounded-full"
+                          className="h-full bg-asphalt rounded-full"
                           style={{ width: `${Math.max(2, (g.count / totalJobs) * 100)}%` }}
                         />
                       </div>
@@ -393,7 +379,7 @@ export default async function ReportsPage({
               {/* Top customers */}
               <div className="mt-6 pt-5 border-t border-line">
                 <h2 className="text-sm font-bold text-ink mb-3 flex items-center gap-2">
-                  <Trophy size={14} className="text-amber-500" /> {r.topCustomers}
+                  <Trophy size={14} className="text-warn-text" /> {r.topCustomers}
                 </h2>
                 {stats.topCustomers.length === 0 ? (
                   <p className="text-sm text-ink-2">
@@ -411,7 +397,7 @@ export default async function ReportsPage({
                             className={cn(
                               "w-6 h-6 rounded-lg flex items-center justify-center text-[11px] font-bold shrink-0",
                               i === 0
-                                ? "bg-amber-100 text-warn-text"
+                                ? "bg-warn-bg text-warn-text"
                                 : "bg-line text-ink-2"
                             )}
                           >
@@ -435,7 +421,7 @@ export default async function ReportsPage({
 
           {/* Outstanding summary */}
           {stats.outstandingCount > 0 && (
-            <Card className="p-5 border-amber-200 bg-warn-bg/50">
+            <Card className="p-5 border-warn-line bg-warn-bg/50">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h2 className="text-sm font-bold text-ink">
@@ -447,7 +433,7 @@ export default async function ReportsPage({
                 </div>
                 <Link
                   href="/invoices"
-                  className="bg-asphalt hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm shrink-0"
+                  className="bg-asphalt hover:bg-graphite text-hero-ink px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm shrink-0"
                 >
                   {r.reviewInvoices} <ChevronRight size={13} />
                 </Link>

@@ -4,7 +4,7 @@ import React, { useActionState, useEffect, useRef, useState, useTransition } fro
 import { AlertCircle, Send, Trash2 } from '@/components/icons';
 import { toast } from 'sonner';
 import { addJobNote, deleteJobNote, type JobActionResult } from '@/app/actions/jobs';
-import { primaryBtnClass, textareaClass } from '@/components/ui';
+import { Button, Textarea } from '@/components/kit';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { t, type Locale } from '@/lib/i18n';
 
@@ -29,28 +29,24 @@ export function JobNoteForm({ jobId, locale }: { jobId: string; locale: Locale }
   return (
     <form ref={formRef} action={formAction} className="space-y-3">
       <input type="hidden" name="jobId" value={jobId} />
-      <label htmlFor="job-note-content" className="sr-only">
-        {T('noteAdd')}
-      </label>
-      <textarea
-        id="job-note-content"
+      <Textarea
+        label={<span className="sr-only">{T('noteAdd')}</span>}
         name="content"
         required
         rows={2}
         maxLength={2000}
         placeholder={T('notePlaceholder')}
-        className={textareaClass}
       />
       {state?.error && (
-        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-danger/25 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{state.error}</span>
         </div>
       )}
-      <button type="submit" disabled={isPending} className={primaryBtnClass}>
+      <Button variant="primary" type="submit" disabled={isPending} className="disabled:opacity-60 disabled:cursor-not-allowed">
         <Send size={14} />
         {isPending ? T('noteAdding') : T('noteAdd')}
-      </button>
+      </Button>
     </form>
   );
 }
@@ -107,7 +103,7 @@ export function JobNoteItem({
       <button
         onClick={() => setConfirming(true)}
         disabled={isPending}
-        className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-zinc-300 hover:text-danger hover:bg-danger-bg rounded-lg transition-colors shrink-0 disabled:opacity-60"
+        className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-line-strong hover:text-danger hover:bg-danger-bg rounded-lg transition-colors shrink-0 disabled:opacity-60"
         title={T('noteDelete')}
         aria-label={T('noteDelete')}
       >

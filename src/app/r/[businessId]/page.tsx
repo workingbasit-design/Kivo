@@ -54,7 +54,7 @@ export default async function PublicReviewInfoPage({
         </div>
 
         <div className="bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-8 text-center">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-ok flex items-center justify-center mx-auto mb-4">
+          <div className="w-12 h-12 rounded-2xl bg-ok-bg text-ok flex items-center justify-center mx-auto mb-4">
             <ShieldCheck size={24} />
           </div>
           <h2 className="text-lg font-bold text-ink mb-2">
@@ -66,7 +66,7 @@ export default async function PublicReviewInfoPage({
               business.name
             )}
           </p>
-          <p className="inline-flex items-center gap-1 mt-4 text-[11px] font-bold text-ok bg-ok-bg border border-emerald-200 rounded-full px-2.5 py-1">
+          <p className="inline-flex items-center gap-1 mt-4 text-[11px] font-bold text-ok bg-ok-bg border border-line rounded-full px-2.5 py-1">
             <BadgeCheck size={12} />
             {L('t10money.reviewVerifiedBadge')}
           </p>

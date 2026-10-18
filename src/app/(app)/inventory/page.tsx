@@ -2,12 +2,13 @@ import React from 'react';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { PageHeader, Card, EmptyState } from '@/components/ui';
+import { Card } from '@/components/kit';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { formatMoney, centsToDollars } from '@/lib/money';
 import { Package, Plus } from '@/components/icons';
 import InventoryClient from '@/components/InventoryClient';
+import { PageHeader, EmptyState, Button } from '@/components/kit';
 
 export const dynamic = 'force-dynamic';
 
@@ -65,15 +66,10 @@ export default async function InventoryPage({
     <div className="space-y-5">
       <PageHeader
         title={T('title')}
-        subtitle={T('subtitle')}
-        actions={
-          <Link
-            href="/inventory/new"
-            className="inline-flex items-center gap-1.5 rounded-xl bg-asphalt px-4 py-2.5 text-sm font-semibold text-white hover:bg-graphite min-h-[44px]"
-          >
-            <Plus size={16} /> {T('add')}
-          </Link>
-        }
+        summary={T('subtitle')}
+        actionLabel={T('add')}
+        actionHref="/inventory/new"
+        actionIcon={Plus}
       />
 
       {parts.length > 0 && (
@@ -88,20 +84,17 @@ export default async function InventoryPage({
       {parts.length === 0 ? (
         <Card>
           <EmptyState
-            icon={<Package size={24} />}
+            icon={Package}
             title={query ? T('noResults') : T('emptyTitle')}
-            description={query ? T('noResultsDesc') : T('emptyDesc')}
-            action={
-              !query ? (
-                <Link
-                  href="/inventory/new"
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-asphalt px-4 py-2.5 text-sm font-semibold text-white hover:bg-graphite min-h-[44px]"
-                >
-                  <Plus size={16} /> {T('add')}
-                </Link>
-              ) : undefined
-            }
+            text={query ? T('noResultsDesc') : T('emptyDesc')}
           />
+          {!query ? (
+            <div className="flex justify-center pb-10 -mt-6">
+              <Button href="/inventory/new" variant="primary">
+                <Plus size={16} /> {T('add')}
+              </Button>
+            </div>
+          ) : null}
         </Card>
       ) : (
         <InventoryClient parts={serialized} locale={locale} initialQuery={query} />

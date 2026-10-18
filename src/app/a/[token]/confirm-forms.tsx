@@ -22,7 +22,7 @@ function SubmitButton({
 }
 
 const approveBtn =
-  'w-full rounded-2xl bg-indigo-600 px-6 py-4 text-base font-semibold text-white shadow-lg shadow-indigo-600/25 transition-all duration-200 hover:bg-indigo-500 hover:shadow-xl hover:shadow-indigo-600/30 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] disabled:opacity-60 disabled:pointer-events-none';
+  'w-full rounded-2xl bg-hivis px-6 py-4 text-base font-semibold text-hivis-ink shadow-lg shadow-hivis/25 transition-all duration-200 hover:bg-hivis hover:shadow-xl hover:shadow-hivis/30 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] disabled:opacity-60 disabled:pointer-events-none';
 const declineBtn =
   'w-full rounded-2xl px-6 py-3 text-sm font-medium text-ink-2 transition-colors hover:text-ink hover:bg-surface-2 disabled:opacity-60';
 
@@ -89,7 +89,7 @@ export function ClaimAccountForm({
           autoComplete="new-password"
           minLength={8}
           required
-          className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink outline-none transition-shadow focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/15"
+          className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink outline-none transition-shadow focus:border-line focus:ring-4 focus:ring-focus/15"
         />
       </div>
       <div>
@@ -103,7 +103,7 @@ export function ClaimAccountForm({
           autoComplete="new-password"
           minLength={8}
           required
-          className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink outline-none transition-shadow focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/15"
+          className="w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink outline-none transition-shadow focus:border-line focus:ring-4 focus:ring-focus/15"
         />
       </div>
       <SubmitButton label={ctaLabel} pendingLabel={creatingLabel} className={approveBtn} />

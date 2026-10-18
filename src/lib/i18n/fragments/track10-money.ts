@@ -220,6 +220,10 @@ const fragment = {
       invCreating: 'Creating…',
       formCancel: 'Cancel',
 
+      // Single tax control (invoice + quote builders)
+      taxSelectLabel: 'Tax',
+      taxNoTax: 'No tax (not registered for GST/HST)',
+
       // Deposit request on the quote create form
       depositRequestLabel: 'Request deposit',
       depositRequestPh: '0.00',
@@ -257,7 +261,7 @@ const fragment = {
       qtyLabel: 'Quantity',
       rateLabel: 'Rate',
       removeItemLabel: 'Remove item',
-      itemPlaceholder: 'Item {n}. E.g. Fan installation',
+      itemPlaceholder: 'For example, furnace tune-up',
 
       // Public link notices
       noticeExpiredTitle: 'This link is expired or invalid',
@@ -677,6 +681,10 @@ const fragment = {
       invCreating: 'Création…',
       formCancel: 'Annuler',
 
+      // Single tax control (invoice + quote builders)
+      taxSelectLabel: 'Taxe',
+      taxNoTax: 'Aucune taxe (non inscrit aux TPS/TVQ)',
+
       // Deposit request on the quote create form
       depositRequestLabel: 'Demander un acompte',
       depositRequestPh: '0,00',
@@ -711,7 +719,7 @@ const fragment = {
       qtyLabel: 'Quantité',
       rateLabel: 'Prix',
       removeItemLabel: 'Retirer la ligne',
-      itemPlaceholder: 'Article {n}. P. Ex. Installation de ventilateur',
+      itemPlaceholder: 'Par exemple, mise au point de la fournaise',
 
       noticeExpiredTitle: 'Ce lien est expiré ou invalide',
       noticeExpiredBody:

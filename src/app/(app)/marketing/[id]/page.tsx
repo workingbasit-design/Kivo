@@ -3,13 +3,15 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { PageHeader, Card, StatusBadge } from '@/components/ui';
+import { Card } from '@/components/kit';
 import { getAudienceRecipients } from '@/app/actions/marketing';
 import { type Audience } from '@/lib/marketing';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
 import { formatDateShort } from '@/lib/utils';
 import CampaignDetailClient from './CampaignDetailClient';
+import { StatusPill } from '../../_components/status-ui';
+import { PageTitle } from '../../_components/PageTitle';
 
 export const metadata = { title: 'Campaign | EveryJob' };
 
@@ -47,11 +49,13 @@ export default async function CampaignDetailPage({
         <ArrowLeft size={14} /> {tr('t10misc.marketing.backToMarketing')}
       </Link>
 
-      <PageHeader
+      <PageTitle
         title={campaign.name}
-        subtitle={`${audienceLabel} · ${tr('t10misc.marketing.createdOn').replace('{date}', formatDateShort(campaign.createdAt, locale === 'fr' ? 'fr-CA' : 'en-CA'))}`}
-        actions={<StatusBadge status={campaign.status} />}
+        summary={`${audienceLabel} · ${tr('t10misc.marketing.createdOn').replace('{date}', formatDateShort(campaign.createdAt, locale === 'fr' ? 'fr-CA' : 'en-CA'))}`}
       />
+      <div className="flex flex-wrap gap-2">
+        <StatusPill status={campaign.status} />
+      </div>
 
       <Card className="p-6">
         <p className="text-[11px] font-bold text-ink-2 mb-1">{tr('t10misc.marketing.templateLabel')}</p>

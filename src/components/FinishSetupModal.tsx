@@ -91,23 +91,23 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
       <div className="bg-surface w-full max-w-lg rounded-3xl shadow-2xl border border-line overflow-hidden flex flex-col max-h-[90vh] ej-sheet-in">
 
         {/* Modal Header */}
-        <div className="p-6 bg-asphalt text-white flex justify-between items-center relative overflow-hidden shrink-0">
+        <div className="p-6 bg-asphalt text-hero-ink flex justify-between items-center relative overflow-hidden shrink-0">
           <div className="absolute top-0 right-0 w-32 h-32 bg-warn/20 rounded-full blur-2xl pointer-events-none"></div>
 
           <div className="flex items-center gap-3 relative z-10">
-            <div className="w-10 h-10 rounded-2xl bg-warn flex items-center justify-center text-white shadow-lg">
+            <div className="w-10 h-10 rounded-2xl bg-warn flex items-center justify-center text-hero-ink shadow-lg">
               <Zap size={20} />
             </div>
             <div>
               <h3 className="text-lg font-bold">{L('title')}</h3>
-              <p className="text-xs text-zinc-300">{L('subtitle')}</p>
+              <p className="text-xs text-ink-2">{L('subtitle')}</p>
             </div>
           </div>
 
           <button
             onClick={onClose}
             aria-label={t('t10misc.confirmDialog.close')}
-            className="min-w-[44px] min-h-[44px] rounded-full bg-surface/10 hover:bg-surface/20 text-white flex items-center justify-center transition-colors relative z-10"
+            className="min-w-[44px] min-h-[44px] rounded-full bg-surface/10 hover:bg-surface/20 text-hero-ink flex items-center justify-center transition-colors relative z-10"
           >
             <X size={16} />
           </button>
@@ -117,7 +117,7 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
         <div className="p-6 space-y-6 flex-1 overflow-y-auto">
           {isCompleted ? (
             <div className="py-8 text-center space-y-4">
-              <div className="w-16 h-16 rounded-full bg-emerald-100 text-ok mx-auto flex items-center justify-center shadow-inner">
+              <div className="w-16 h-16 rounded-full bg-ok-bg text-ok mx-auto flex items-center justify-center shadow-inner">
                 <CheckCircle2 size={36} />
               </div>
               <h3 className="text-2xl font-bold text-ink">{L('doneTitle')}</h3>
@@ -126,7 +126,7 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
               </p>
               <button
                 onClick={onClose}
-                className="w-full min-h-[52px] bg-asphalt hover:bg-graphite text-white font-bold py-3.5 rounded-2xl transition-all shadow-md shadow-ink/30 flex items-center justify-center gap-2 text-sm"
+                className="w-full min-h-[52px] bg-asphalt hover:bg-graphite text-hero-ink font-bold py-3.5 rounded-2xl transition-all shadow-md shadow-ink/30 flex items-center justify-center gap-2 text-sm"
               >
                 {L('backToDash')} <ArrowRight size={16} />
               </button>
@@ -137,7 +137,7 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
               <div className="bg-surface-2 p-4 rounded-2xl border border-line/80 space-y-3">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-8 h-8 rounded-xl bg-emerald-100 text-ok flex items-center justify-center shrink-0">
+                    <div className="w-8 h-8 rounded-xl bg-ok-bg text-ok flex items-center justify-center shrink-0">
                       <MessageSquare size={16} />
                     </div>
                     <div className="min-w-0">
@@ -154,7 +154,7 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
                       onChange={(e) => setWhatsappEnabled(e.target.checked)}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-line peer-focus-visible:outline-2 peer-focus-visible:outline-ink rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-1/2 after:-translate-y-1/2 after:left-[9px] after:bg-surface after:border-line-strong after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                    <div className="w-11 h-6 bg-line peer-focus-visible:outline-2 peer-focus-visible:outline-ink rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-hero-ink after:content-[''] after:absolute after:top-1/2 after:-translate-y-1/2 after:left-[9px] after:bg-surface after:border-line-strong after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-ok"></div>
                   </label>
                 </div>
 
@@ -228,14 +228,14 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
               {/* Action Buttons */}
               <div className="pt-2 space-y-2">
                 {saveError && (
-                  <p className="text-xs font-medium text-danger bg-danger-bg border border-rose-200 rounded-xl px-3 py-2.5">
+                  <p className="text-xs font-medium text-danger bg-danger-bg border border-line rounded-xl px-3 py-2.5">
                     {saveError}
                   </p>
                 )}
                 <button
                   onClick={handleSaveSetup}
                   disabled={isPending}
-                  className="w-full min-h-[52px] bg-asphalt hover:bg-graphite text-white font-bold py-3.5 rounded-2xl transition-all shadow-md shadow-ink/30 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer text-sm"
+                  className="w-full min-h-[52px] bg-asphalt hover:bg-graphite text-hero-ink font-bold py-3.5 rounded-2xl transition-all shadow-md shadow-ink/30 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer text-sm"
                 >
                   <ShieldCheck size={16} />
                   {isPending ? L('saving') : L('complete')}

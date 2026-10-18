@@ -4,9 +4,10 @@ import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { Clock, MapPin, Phone, User, ChevronRight } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
-import { StatusBadge } from '@/components/ui';
+import { StatusBadge, type StatusBadgeTone } from '@/components/kit';
 import { formatMoney } from '@/lib/money';
-import { hasJobTime, formatJobTime, cn } from '@/lib/utils';
+import { hasJobTime, formatJobTime, cn, statusLabel } from '@/lib/utils';
+import { jobStatusLabel } from '@/lib/job-status';
 import { updateJobStatus, assignJobTechnician } from '@/app/actions/dispatch';
 
 export interface DispatchJob {
@@ -29,6 +30,30 @@ const COLUMNS = [
   { status: 'IN PROGRESS', next: 'COMPLETED' },
   { status: 'COMPLETED', next: null },
 ] as const;
+
+/** Kit tone for a dispatch column status (replaces the old ui StatusBadge). */
+function columnTone(status: string): StatusBadgeTone {
+  switch (status) {
+    case 'SCHEDULED':
+      return 'scheduled';
+    case 'IN PROGRESS':
+      return 'warn';
+    case 'COMPLETED':
+      return 'done';
+    case 'LATE':
+      return 'late';
+    default:
+      return 'neutral';
+  }
+}
+
+/** Localised sentence-case status label (same resolution as the old StatusBadge). */
+function columnLabel(status: string, locale: Locale): string {
+  const normalized = status.replace(/_/g, ' ');
+  const dictLabel = statusLabel(normalized, locale);
+  if (dictLabel !== normalized) return dictLabel;
+  return jobStatusLabel(normalized, locale);
+}
 
 /**
  * Kanban-style dispatch board. Each column is a job status; dispatchers can
@@ -89,7 +114,9 @@ export default function DispatchBoardClient({
           <div key={col.status} className="rounded-2xl border border-line/70 bg-surface-2/50 p-3">
             <div className="flex items-center justify-between px-1 pb-3">
               <h2 className="text-sm font-bold text-ink flex items-center gap-2">
-                <StatusBadge status={col.status} />
+                <StatusBadge tone={columnTone(col.status)}>
+                  {columnLabel(col.status, locale)}
+                </StatusBadge>
                 <span className="tabular-nums text-ink-2 font-semibold">{colJobs.length}</span>
               </h2>
             </div>
@@ -154,7 +181,7 @@ export default function DispatchBoardClient({
                           type="button"
                           onClick={() => advance(job, col.next!)}
                           disabled={pending}
-                          className="flex-1 inline-flex items-center justify-center gap-1 rounded-xl bg-asphalt px-3 py-2 text-xs font-semibold text-white hover:bg-graphite disabled:opacity-50 min-h-[40px] transition-colors"
+                          className="flex-1 inline-flex items-center justify-center gap-1 rounded-xl bg-asphalt px-3 py-2 text-xs font-semibold text-hero-ink hover:bg-graphite disabled:opacity-50 min-h-[40px] transition-colors"
                         >
                           {col.next === 'IN PROGRESS' ? T('startJob') : T('completeJob')}
                         </button>

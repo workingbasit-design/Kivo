@@ -2,10 +2,11 @@ import Link from 'next/link';
 import { ChevronLeft } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { PageHeader } from '@/components/ui';
+
 import ExpenseForm from '@/components/ExpenseForm';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
+import { PageTitle } from '../../_components/PageTitle';
 
 export const metadata = { title: 'New expense | EveryJob' };
 
@@ -29,7 +30,7 @@ export default async function NewExpensePage() {
       >
         <ChevronLeft size={16} /> {T('back')}
       </Link>
-      <PageHeader title={T('newTitle')} subtitle={T('newSubtitle')} />
+      <PageTitle title={T('newTitle')} summary={T('newSubtitle')} />
       <ExpenseForm
         locale={locale}
         jobs={jobs.map((j) => ({ id: j.id, title: j.title, date: j.date.toISOString() }))}

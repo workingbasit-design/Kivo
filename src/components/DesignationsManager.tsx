@@ -5,15 +5,12 @@ import { Award, Pencil, Plus, Trash2, X } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import {
-  Badge,
-  Dialog,
-  Field,
-  dangerBtnClass,
-  inputClass,
-  primaryBtnClass,
-  secondaryBtnClass,
-  selectClass,
-} from '@/components/ui';
+  Button,
+  BottomSheet,
+  Input,
+  Select,
+  StatusBadge,
+} from '@/components/kit';
 import {
   createDesignation,
   deleteDesignation,
@@ -145,13 +142,13 @@ export default function DesignationsManager({
             key={d.id}
             className="flex items-start gap-3 rounded-xl border border-line bg-surface px-3.5 py-3"
           >
-            <div className="p-1.5 rounded-lg bg-lime/20 text-ink shrink-0 mt-0.5">
+            <div className="p-1.5 rounded-lg bg-hivis/20 text-ink shrink-0 mt-0.5">
               <Award size={15} />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-ink truncate">{d.title}</p>
               <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-ink-2">
-                <Badge>{tr(`credentials.types.${d.type}`)}</Badge>
+                <StatusBadge tone="neutral">{tr(`credentials.types.${d.type}`)}</StatusBadge>
                 {d.issuer && <span>{d.issuer}</span>}
                 {d.number && <span>#{d.number}</span>}
                 <span>
@@ -185,9 +182,9 @@ export default function DesignationsManager({
       </ul>
 
       {!showForm ? (
-        <button type="button" onClick={openAdd} className={secondaryBtnClass}>
+        <Button variant="secondary" type="button" onClick={openAdd}>
           <Plus size={14} /> {tr('credentials.addBtn')}
-        </button>
+        </Button>
       ) : (
         <div className="rounded-xl border border-line bg-surface-2 p-4 space-y-3">
           <div className="flex items-center justify-between">
@@ -202,87 +199,95 @@ export default function DesignationsManager({
             </button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Field label={tr('credentials.formType')}>
-              <select value={form.type} onChange={set('type')} className={selectClass}>
-                {DESIGNATION_TYPES.map((tp) => (
-                  <option key={tp} value={tp}>
-                    {tr(`credentials.types.${tp}`)}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label={tr('credentials.formTitle')}>
-              <input
-                value={form.title}
-                onChange={set('title')}
-                className={inputClass}
-                placeholder={tr('credentials.formTitlePh')}
-                maxLength={120}
-              />
-            </Field>
-            <Field label={tr('credentials.formIssuer')}>
-              <input
-                value={form.issuer}
-                onChange={set('issuer')}
-                className={inputClass}
-                placeholder={tr('credentials.formIssuerPh')}
-                maxLength={120}
-              />
-            </Field>
-            <Field label={tr('credentials.formNumber')}>
-              <input
-                value={form.number}
-                onChange={set('number')}
-                className={inputClass}
-                placeholder={tr('credentials.formNumberPh')}
-                maxLength={60}
-              />
-            </Field>
-            <Field label={tr('credentials.formIssued')}>
-              <input type="date" value={form.issuedAt} onChange={set('issuedAt')} className={inputClass} />
-            </Field>
-            <Field label={tr('credentials.formExpires')}>
-              <input type="date" value={form.expiresAt} onChange={set('expiresAt')} className={inputClass} />
-            </Field>
+            <Select
+              label={tr('credentials.formType')}
+              value={form.type}
+              onChange={set('type')}
+              options={DESIGNATION_TYPES.map((tp) => ({
+                value: tp,
+                label: tr(`credentials.types.${tp}`),
+              }))}
+            />
+            <Input
+              label={tr('credentials.formTitle')}
+              value={form.title}
+              onChange={set('title')}
+              placeholder={tr('credentials.formTitlePh')}
+              maxLength={120}
+            />
+            <Input
+              label={tr('credentials.formIssuer')}
+              value={form.issuer}
+              onChange={set('issuer')}
+              placeholder={tr('credentials.formIssuerPh')}
+              maxLength={120}
+            />
+            <Input
+              label={tr('credentials.formNumber')}
+              value={form.number}
+              onChange={set('number')}
+              placeholder={tr('credentials.formNumberPh')}
+              maxLength={60}
+            />
+            <Input
+              label={tr('credentials.formIssued')}
+              type="date"
+              value={form.issuedAt}
+              onChange={set('issuedAt')}
+            />
+            <Input
+              label={tr('credentials.formExpires')}
+              type="date"
+              value={form.expiresAt}
+              onChange={set('expiresAt')}
+            />
           </div>
           <div className="flex gap-2">
-            <button type="button" onClick={save} disabled={pending} className={primaryBtnClass}>
+            <Button
+              variant="primary"
+              type="button"
+              onClick={save}
+              disabled={pending}
+              className="disabled:opacity-60 disabled:cursor-not-allowed"
+            >
               {tr('credentials.save')}
-            </button>
-            <button type="button" onClick={() => setShowForm(false)} className={secondaryBtnClass}>
+            </Button>
+            <Button variant="secondary" type="button" onClick={() => setShowForm(false)}>
               {tr('credentials.cancel')}
-            </button>
+            </Button>
           </div>
         </div>
       )}
 
-      <Dialog
+      <BottomSheet
         open={deleteId !== null}
         onClose={() => setDeleteId(null)}
         title={tr('credentials.deleteConfirm')}
-        locale={locale}
+        footer={
+          <div className="mt-5 flex gap-2 justify-end">
+            <Button
+              variant="secondary"
+              type="button"
+              onClick={() => setDeleteId(null)}
+            >
+              {tr('credentials.cancel')}
+            </Button>
+            <Button
+              variant="danger"
+              type="button"
+              onClick={confirmRemove}
+              disabled={pending}
+              className="disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {tr('credentials.deleteBtn')}
+            </Button>
+          </div>
+        }
       >
         <p className="text-sm text-ink-2">
           {items.find((x) => x.id === deleteId)?.title}
         </p>
-        <div className="mt-5 flex gap-2 justify-end">
-          <button
-            type="button"
-            onClick={() => setDeleteId(null)}
-            className={secondaryBtnClass}
-          >
-            {tr('credentials.cancel')}
-          </button>
-          <button
-            type="button"
-            onClick={confirmRemove}
-            disabled={pending}
-            className={dangerBtnClass}
-          >
-            {tr('credentials.deleteBtn')}
-          </button>
-        </div>
-      </Dialog>
+      </BottomSheet>
     </div>
   );
 }

@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useActionState, useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
 import { Receipt, X } from '@/components/icons';
 import { toast } from 'sonner';
 import {
@@ -10,12 +9,12 @@ import {
   type ExpenseResult,
 } from '@/app/actions/expenses';
 import {
-  Field,
-  inputClass,
-  primaryBtnClass,
-  secondaryBtnClass,
+  Button,
   Card,
-} from '@/components/ui';
+  Input,
+  Select,
+  Textarea,
+} from '@/components/kit';
 import { EXPENSE_CATEGORIES } from '@/lib/expenses';
 import { formatDateShort } from '@/lib/utils';
 import { t, type Locale } from '@/lib/i18n';
@@ -86,81 +85,72 @@ export default function ExpenseForm({
   return (
     <form action={formAction} className="space-y-5">
       <Card className="p-5 md:p-6 space-y-5">
-        <Field label={T('description')}>
-          <input
-            name="description"
+        <Input
+          label={T('description')}
+          name="description"
+          required
+          maxLength={200}
+          defaultValue={initial?.description ?? ''}
+          placeholder={T('descriptionPlaceholder')}
+        />
+
+        <div className="grid grid-cols-2 gap-4 [&>*]:min-w-0">
+          <Input
+            label={T('amount')}
+            name="amount"
+            type="number"
             required
-            maxLength={200}
-            defaultValue={initial?.description ?? ''}
-            placeholder={T('descriptionPlaceholder')}
-            className={inputClass}
+            min="0.01"
+            step="0.01"
+            inputMode="decimal"
+            defaultValue={initial ? String(initial.amount) : ''}
+            placeholder="0.00"
           />
-        </Field>
-
-        <div className="grid grid-cols-2 gap-4 [&>*]:min-w-0">
-          <Field label={T('amount')}>
-            <input
-              name="amount"
-              type="number"
-              required
-              min="0.01"
-              step="0.01"
-              inputMode="decimal"
-              defaultValue={initial ? String(initial.amount) : ''}
-              placeholder="0.00"
-              className={inputClass}
-            />
-          </Field>
-          <Field label={T('date')}>
-            <input
-              name="spentAt"
-              type="date"
-              required
-              defaultValue={initial?.spentAt ?? new Date().toISOString().slice(0, 10)}
-              className={inputClass}
-            />
-          </Field>
+          <Input
+            label={T('date')}
+            name="spentAt"
+            type="date"
+            required
+            defaultValue={initial?.spentAt ?? new Date().toISOString().slice(0, 10)}
+          />
         </div>
 
         <div className="grid grid-cols-2 gap-4 [&>*]:min-w-0">
-          <Field label={T('category')}>
-            <select
-              name="category"
-              required
-              defaultValue={initial?.category ?? 'MATERIALS'}
-              className={inputClass}
-            >
-              {EXPENSE_CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {T(`categories.${c}`)}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label={T('job')}>
-            <select name="jobId" defaultValue={initial?.jobId ?? ''} className={inputClass}>
-              <option value="">{T('noJob')}</option>
-              {jobs.map((j) => (
-                <option key={j.id} value={j.id}>
-                  {j.title} - {formatDateShort(j.date, locale)}
-                </option>
-              ))}
-            </select>
-          </Field>
+          <Select
+            label={T('category')}
+            name="category"
+            required
+            defaultValue={initial?.category ?? 'MATERIALS'}
+            options={EXPENSE_CATEGORIES.map((c) => ({
+              value: c,
+              label: T(`categories.${c}`),
+            }))}
+          />
+          <Select
+            label={T('job')}
+            name="jobId"
+            defaultValue={initial?.jobId ?? ''}
+            options={[
+              { value: '', label: T('noJob') },
+              ...jobs.map((j) => ({
+                value: j.id,
+                label: `${j.title} - ${formatDateShort(j.date, locale)}`,
+              })),
+            ]}
+          />
         </div>
 
-        <Field label={T('note')}>
-          <textarea
-            name="note"
-            rows={3}
-            maxLength={1000}
-            defaultValue={initial?.note ?? ''}
-            placeholder={T('notePlaceholder')}
-            className={inputClass}
-          />
-        </Field>
+        <Textarea
+          label={T('note')}
+          name="note"
+          rows={3}
+          maxLength={1000}
+          defaultValue={initial?.note ?? ''}
+          placeholder={T('notePlaceholder')}
+        />
 
-        <Field label={T('receipt')}>
+        <div className="field">
+          <span>{T('receipt')}</span>
           {initial?.receiptUrl && !removeReceipt ? (
             <div className="flex items-center gap-3 rounded-xl border border-line bg-surface-2 p-3">
               {/* B12: receipts are private blobs - served through the
@@ -210,16 +200,21 @@ export default function ExpenseForm({
             </label>
           )}
           {removeReceipt && <input type="hidden" name="removeReceipt" value="1" />}
-        </Field>
+        </div>
       </Card>
 
       <div className="flex gap-3">
-        <button type="submit" disabled={isPending} className={primaryBtnClass}>
+        <Button
+          variant="primary"
+          type="submit"
+          disabled={isPending}
+          className="disabled:opacity-60 disabled:cursor-not-allowed"
+        >
           {T(isEdit ? 'update' : 'create')}
-        </button>
-        <Link href="/expenses" className={secondaryBtnClass}>
+        </Button>
+        <Button href="/expenses" variant="secondary">
           {T('back')}
-        </Link>
+        </Button>
       </div>
     </form>
   );

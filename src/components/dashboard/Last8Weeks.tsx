@@ -48,14 +48,14 @@ export default async function Last8Weeks({
   return (
     <section
       aria-label={t(locale, "dashboard.last8Weeks")}
-      className="rounded-[24px] border border-line/70 bg-surface p-5 dark:border-white/10 dark:bg-coal"
+      className="rounded-[24px] border border-line/70 bg-surface p-5 dark:border-hero-ink/10 dark:bg-coal"
     >
-      <h2 className="text-[17px] font-bold text-asphalt dark:text-white">
+      <h2 className="text-[17px] font-bold text-asphalt dark:text-hero-ink">
         {t(locale, "dashboard.last8Weeks")}
       </h2>
-      <div className="mt-3 flex items-center gap-4 text-[13px] text-ink-2 dark:text-zinc-400">
+      <div className="mt-3 flex items-center gap-4 text-[13px] text-ink-2 dark:text-ink-2">
         <span className="flex items-center gap-1.5">
-          <span aria-hidden className="h-2.5 w-2.5 rounded-[3px] bg-asphalt dark:bg-white" />
+          <span aria-hidden className="h-2.5 w-2.5 rounded-[3px] bg-asphalt dark:bg-surface" />
           {t(locale, "dashboard.legendCollected")}
         </span>
         <span className="flex items-center gap-1.5">
@@ -70,7 +70,7 @@ export default async function Last8Weeks({
             <div className="flex h-[110px] w-full items-end justify-center gap-1">
               <span
                 aria-hidden
-                className="w-full max-w-[14px] rounded-t-[4px] bg-asphalt dark:bg-white"
+                className="w-full max-w-[14px] rounded-t-[4px] bg-asphalt dark:bg-surface"
                 style={{ height: `${Math.max(3, (w.collected / max) * 110)}px` }}
               />
               <span
@@ -83,13 +83,13 @@ export default async function Last8Weeks({
               className={cn(
                 "ej-figure text-[13px] font-bold tabular-nums",
                 w.isCurrent
-                  ? "border-b-[3px] border-hivis text-asphalt dark:text-white"
-                  : "text-ink-2 dark:text-zinc-400"
+                  ? "border-b-[3px] border-hivis text-asphalt dark:text-hero-ink"
+                  : "text-ink-2 dark:text-ink-2"
               )}
             >
               {w.dayLabel}
             </span>
-            <span className="h-4 text-[11px] text-ink-2 dark:text-zinc-500">{labels[i] ?? ""}</span>
+            <span className="h-4 text-[11px] text-ink-2 dark:text-ink-2">{labels[i] ?? ""}</span>
           </div>
         ))}
       </div>
