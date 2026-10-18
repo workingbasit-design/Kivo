@@ -189,7 +189,7 @@ export default async function ReportsPage({
       {!hasData ? (
         <Card>
           <EmptyState
-            icon={TrendingUp}
+            icon={<TrendingUp />}
             title={r.emptyTitle}
             text={r.emptyDesc}
           />

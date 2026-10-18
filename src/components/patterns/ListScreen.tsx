@@ -1,6 +1,5 @@
 import { cn } from '@/lib/utils';
 import type { ReactNode } from 'react';
-import type { IconComponent } from '@/components/icons';
 import {
   PageHeader,
   SearchField,
@@ -43,7 +42,7 @@ export interface ListScreenProps {
   title: string;
   summary?: string;
   actionLabel: string;
-  actionIcon?: IconComponent;
+  actionIcon?: ReactNode;  // rendered element, not the component (see kit PageHeader)
   actionHref?: string;
   onAction?: () => void;
   searchValue: string;

@@ -360,7 +360,7 @@ export default function VoiceModeClient({
         </h2>
         {jobs.length === 0 ? (
           <Card>
-            <EmptyState icon={Mic} title={t(locale, "voice.noJobs")} />
+            <EmptyState icon={<Mic />} title={t(locale, "voice.noJobs")} />
           </Card>
         ) : (
           <div className="space-y-3">

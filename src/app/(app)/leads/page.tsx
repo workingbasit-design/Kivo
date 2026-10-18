@@ -55,7 +55,7 @@ export default async function LeadsPage() {
       {leads.length === 0 ? (
         <Card>
           <EmptyState
-            icon={UserPlus}
+            icon={<UserPlus />}
             title={T('emptyTitle')}
             text={T('emptyDesc')}
           />

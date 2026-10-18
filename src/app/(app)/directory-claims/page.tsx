@@ -28,7 +28,7 @@ export default async function DirectoryClaimsPage() {
         <PageTitle title={tr('t10misc.claims.title')} summary={tr('t10misc.claims.subtitle')} />
         <Card>
           <EmptyState
-            icon={Inbox}
+            icon={<Inbox />}
             title={tr('t10misc.claims.notAuthorizedTitle')}
             text={tr('t10misc.claims.notAuthorizedDesc')}
           />
@@ -71,7 +71,7 @@ export default async function DirectoryClaimsPage() {
       {claims.length === 0 ? (
         <Card>
           <EmptyState
-            icon={ShieldCheck}
+            icon={<ShieldCheck />}
             title={tr('t10misc.claims.noClaimsTitle')}
             text={tr('t10misc.claims.noClaimsDesc')}
           />

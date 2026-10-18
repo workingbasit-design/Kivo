@@ -48,7 +48,7 @@ export default async function EquipmentPage({
         summary={T('subtitle')}
         actionLabel={T('add')}
         actionHref="/equipment/new"
-        actionIcon={Plus}
+        actionIcon={<Plus />}
       />
 
       <EquipmentSearch initialQuery={query} locale={locale} />
@@ -56,7 +56,7 @@ export default async function EquipmentPage({
       {equipment.length === 0 ? (
         <Card>
           <EmptyState
-            icon={Wrench}
+            icon={<Wrench />}
             title={query ? T('noResults') : T('emptyTitle')}
             text={query ? T('noResultsDesc') : T('emptyDesc')}
           />

@@ -94,7 +94,7 @@ export default function InvoicesClient({
         summary={t(locale, 'billing.listSubtitle')}
         actionLabel={t(locale, 'billing.newInvoice')}
         actionHref="/invoices/new"
-        actionIcon={Plus}
+        actionIcon={<Plus />}
       />
       <div className="flex items-center gap-2 flex-wrap">
         <ExportButtons
@@ -147,7 +147,7 @@ export default function InvoicesClient({
       {filtered.length === 0 ? (
         <Card className="mb-28 md:mb-0">
           <EmptyState
-            icon={FileText}
+            icon={<FileText />}
             title={t(locale, 'billing.listEmptyTitle')}
             text={t(locale, 'billing.listEmptyDesc')}
           />

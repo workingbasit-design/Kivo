@@ -124,7 +124,7 @@ export default async function RemindersPage() {
 
           {jobs.length === 0 ? (
             <EmptyState
-              icon={BellRing}
+              icon={<BellRing />}
               title={t(locale, 'reminders.upcomingJobs')}
               text={t(locale, 'reminders.upcomingJobsEmpty')}
             />
@@ -169,7 +169,7 @@ export default async function RemindersPage() {
 
           {invoices.length === 0 ? (
             <EmptyState
-              icon={FileText}
+              icon={<FileText />}
               title={t(locale, 'reminders.invoiceFollowups')}
               text={t(locale, 'reminders.invoiceFollowupsEmpty')}
             />

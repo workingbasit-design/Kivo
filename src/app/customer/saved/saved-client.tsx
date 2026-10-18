@@ -33,7 +33,7 @@ export default function SavedProsClient({ initialPros, locale }: { initialPros: 
       {pros.length === 0 ? (
         <>
           <EmptyState
-            icon={Heart}
+            icon={<Heart />}
             title={tr('customer.saved.emptyTitle')}
             text={tr('customer.saved.emptyHint')}
           />

@@ -180,12 +180,7 @@ export default function JobDetailClient({ vm }: { vm: JobDetailVm }) {
   const [confirm, setConfirm] = useState<'cancel' | 'delete' | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const tradeIcon: IconComponent = (props) => (
-    <TradeIcon
-      trade={vm.tradeKey}
-      size={typeof props.size === 'number' ? props.size : 28}
-    />
-  );
+  const tradeIconNode = <TradeIcon trade={vm.tradeKey} size={28} />;
 
   const runStatus = (next: string, after?: () => void) => {
     startTransition(async () => {
@@ -234,7 +229,7 @@ export default function JobDetailClient({ vm }: { vm: JobDetailVm }) {
   if (!tech && (status === 'NEW' || status === 'SCHEDULED')) {
     badges.push({
       tone: 'warn',
-      icon: User,
+      icon: <User />,
       children: jobsL('noTechnicianYet'),
     });
   }
@@ -718,7 +713,7 @@ export default function JobDetailClient({ vm }: { vm: JobDetailVm }) {
             onClick: () => setMoreOpen(true),
           },
         ]}
-        icon={tradeIcon}
+        icon={tradeIconNode}
         title={vm.title}
         subtitle={jobsL('forCustomer').replace('{name}', vm.customer.name)}
         badges={badges}

@@ -51,13 +51,13 @@ export default async function ProjectsPage() {
         summary={t(locale, "projects.subtitle")}
         actionLabel={t(locale, "projects.new")}
         actionHref="/projects/new"
-        actionIcon={Plus}
+        actionIcon={<Plus />}
       />
 
       {projects.length === 0 ? (
         <Card>
           <EmptyState
-            icon={FolderKanban}
+            icon={<FolderKanban />}
             title={t(locale, "projects.noProjects")}
             text={t(locale, "projects.noProjectsDesc")}
           />

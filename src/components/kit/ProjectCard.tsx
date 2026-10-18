@@ -1,4 +1,4 @@
-import type { IconComponent } from '@/components/icons';
+import type { ReactNode } from 'react';
 import { formatCAD } from './money';
 
 export interface ProjectCardMetaLabels {
@@ -8,7 +8,7 @@ export interface ProjectCardMetaLabels {
 }
 
 export interface ProjectCardProps {
-  icon: IconComponent;
+  icon: ReactNode; // rendered element, not the component (see kit PageHeader)
   title: string;
   sub: string;
   progressPct: number;
@@ -27,7 +27,7 @@ export interface ProjectCardProps {
  * contract / invoiced / next meta. Presentational.
  */
 export function ProjectCard({
-  icon: Icon,
+  icon,
   title,
   sub,
   progressPct,
@@ -46,7 +46,7 @@ export function ProjectCard({
     >
       <div className="grid grid-cols-[40px_minmax(0,1fr)] items-center gap-3">
         <span className="grid h-10 w-10 place-items-center rounded-[12px] bg-surface-2 text-ink shadow-[inset_0_0_0_1px_var(--line)]">
-          <Icon className="h-[22px] w-[22px]" aria-hidden="true" />
+          <span aria-hidden="true" className="inline-flex [&_svg]:size-[22px]">{icon}</span>
         </span>
         <div className="min-w-0">
           <b className="block text-[17px] leading-[1.25]">{title}</b>

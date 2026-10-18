@@ -50,7 +50,7 @@ export default function SettingsSearch({ locale }: { locale: Locale }) {
       {visible === 0 && (
         <div className="mt-2">
           <EmptyState
-            icon={Search}
+            icon={<Search />}
             title={t(locale, 't10misc.settingsMain.noResults')}
             text={t(locale, 't10misc.settingsMain.noResultsHint')}
           />

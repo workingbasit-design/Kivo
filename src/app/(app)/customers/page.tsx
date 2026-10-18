@@ -89,7 +89,7 @@ export default async function CustomersPage() {
         summary={countLabel}
         actionLabel={custL('addCustomer')}
         actionHref="/customers/new"
-        actionIcon={Plus}
+        actionIcon={<Plus />}
       />
 
       {loadError ? (

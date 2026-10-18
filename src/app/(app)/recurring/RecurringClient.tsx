@@ -82,7 +82,7 @@ export default function RecurringClient({
         }
         actionLabel={T('recurNewPlan')}
         actionHref="/recurring/new"
-        actionIcon={Plus}
+        actionIcon={<Plus />}
       />
       <div className="flex flex-wrap gap-2">
         <GenerateDueJobsButton />
@@ -112,7 +112,7 @@ export default function RecurringClient({
       {filtered.length === 0 ? (
         <Card>
           <EmptyState
-            icon={Repeat}
+            icon={<Repeat />}
             title={
               activeFilter === 'ALL'
                 ? T('recurEmptyAll')

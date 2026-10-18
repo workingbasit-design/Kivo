@@ -86,7 +86,7 @@ export default async function DispatchPage({
       {jobs.length === 0 ? (
         <Card>
           <EmptyState
-            icon={CalendarDays}
+            icon={<CalendarDays />}
             title={T('emptyTitle')}
             text={T('emptyDesc')}
           />

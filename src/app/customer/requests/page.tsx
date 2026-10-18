@@ -56,7 +56,7 @@ export default async function CustomerRequestsPage() {
       {requests.length === 0 ? (
         <>
           <EmptyState
-            icon={Inbox}
+            icon={<Inbox />}
             title={tr('customer.requests.emptyTitle')}
             text={tr('customer.requests.emptyHint')}
           />

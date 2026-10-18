@@ -252,7 +252,7 @@ export default async function DirectoryPage({
                         <h2 className="font-bold text-ink leading-snug">{b.name}</h2>
                       </div>
                       {b.verified && (
-                        <Chip tone="ok" icon={BadgeCheck} className="shrink-0">
+                        <Chip tone="ok" icon={<BadgeCheck />} className="shrink-0">
                           {tr('t10misc.directory.verified')}
                         </Chip>
                       )}

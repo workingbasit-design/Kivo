@@ -193,7 +193,7 @@ export default function TeamClient({
       <Card className="p-0 overflow-hidden">
         {members.length === 0 ? (
           <EmptyState
-            icon={User}
+            icon={<User />}
             title={t('t10misc.team.noMembersTitle')}
             text={t('t10misc.team.noMembersDesc')}
           />

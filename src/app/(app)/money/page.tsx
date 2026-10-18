@@ -124,13 +124,13 @@ export default async function MoneyPage() {
         summary={L('t10money.money.subtitle')}
         actionLabel={L('t10money.money.newInvoice')}
         actionHref="/invoices/new"
-        actionIcon={Plus}
+        actionIcon={<Plus />}
       />
 
       {allCaughtUp ? (
         <Card>
           <EmptyState
-            icon={Wallet}
+            icon={<Wallet />}
             title={L('t10money.money.emptyTitle')}
             text={L('t10money.money.emptyDesc')}
           />

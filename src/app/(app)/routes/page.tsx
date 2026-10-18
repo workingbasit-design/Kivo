@@ -71,7 +71,7 @@ export default async function RoutesPage({
             </div>
           </form>
           <EmptyState
-            icon={MapPinned}
+            icon={<MapPinned />}
             title={T('routesEmptyTitle')}
             text={T('routesEmptyDesc')}
           />

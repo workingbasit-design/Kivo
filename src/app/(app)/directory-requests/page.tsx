@@ -28,7 +28,7 @@ export default async function DirectoryRequestsPage() {
         <PageTitle title={tr('t10misc.demand.title')} summary={tr('t10misc.demand.subtitle')} />
         <Card>
           <EmptyState
-            icon={Inbox}
+            icon={<Inbox />}
             title={tr('t10misc.claims.notAuthorizedTitle')}
             text={tr('t10misc.claims.notAuthorizedDesc')}
           />
@@ -56,7 +56,7 @@ export default async function DirectoryRequestsPage() {
       {requests.length === 0 ? (
         <Card>
           <EmptyState
-            icon={Inbox}
+            icon={<Inbox />}
             title={tr('t10misc.demand.noRequestsTitle')}
             text={tr('t10misc.demand.noRequestsDesc')}
           />

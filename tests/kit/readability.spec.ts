@@ -282,7 +282,7 @@ for (const scheme of SCHEMES) {
         await page.waitForTimeout(2000);
 
         let failure: string | null = null;
-        let reportData: any = null;
+        let reportData: Record<string, unknown> | null = null;
         try {
           // 0. The page must actually render — a 4xx/5xx has no readable content.
           const status = response?.status() ?? 0;

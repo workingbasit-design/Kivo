@@ -42,7 +42,7 @@ export default async function BookkeepingPage() {
       {!data || !hasActivity ? (
         <Card>
           <EmptyState
-            icon={PiggyBank}
+            icon={<PiggyBank />}
             title={t(locale, "bookkeeping.noData")}
             text={t(locale, "bookkeeping.noDataDesc")}
           />

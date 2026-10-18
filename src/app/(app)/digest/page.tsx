@@ -56,7 +56,7 @@ export default async function DigestPage() {
         <PageTitle title={t(locale, "digest.title")} />
         <Card>
           <EmptyState
-            icon={Sunrise}
+            icon={<Sunrise />}
             title={t(locale, "digest.title")}
             text={t(locale, "digest.subtitle")}
           />
@@ -159,7 +159,7 @@ export default async function DigestPage() {
         {data.actions.length === 0 ? (
           <Card>
             <EmptyState
-              icon={CheckCircle2}
+              icon={<CheckCircle2 />}
               title={t(locale, 'digest.allClear')}
             />
           </Card>

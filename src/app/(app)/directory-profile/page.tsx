@@ -58,7 +58,7 @@ export default async function DirectoryProfilePage() {
         <PageTitle title={tr('t10misc.profile.title')} summary={tr('t10misc.profile.subtitle')} />
         <Card>
           <EmptyState
-            icon={Store}
+            icon={<Store />}
             title={tr('t10misc.profile.notFoundTitle')}
             text={tr('t10misc.profile.notFoundDesc')}
           />

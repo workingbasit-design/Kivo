@@ -26,7 +26,7 @@ export default async function DirectoryReportsPage() {
         <PageTitle title={tr('t10misc.reports.title')} summary={tr('t10misc.reports.subtitle')} />
         <Card>
           <EmptyState
-            icon={Flag}
+            icon={<Flag />}
             title={tr('t10misc.claims.notAuthorizedTitle')}
             text={tr('t10misc.claims.notAuthorizedDesc')}
           />
@@ -59,7 +59,7 @@ export default async function DirectoryReportsPage() {
       {reports.length === 0 ? (
         <Card>
           <EmptyState
-            icon={Flag}
+            icon={<Flag />}
             title={tr('t10misc.reports.noReportsTitle')}
             text={tr('t10misc.reports.noReportsDesc')}
           />

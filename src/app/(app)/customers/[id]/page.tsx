@@ -214,7 +214,7 @@ export default async function CustomerDetailPage({
         summary={custL('detailSubtitle')}
         actionLabel={t(locale, 'jobs.newJob')}
         actionHref={`/jobs/new?customerId=${customer.id}`}
-        actionIcon={Plus}
+        actionIcon={<Plus />}
       />
 
       {/* E5: Identity + quick contact actions */}
@@ -356,7 +356,7 @@ export default async function CustomerDetailPage({
         <h3 className="text-base font-bold text-ink">{custL('historyTitle')}</h3>
         {timelineItems.length === 0 ? (
           <EmptyState
-            icon={Clock3}
+            icon={<Clock3 />}
             title={custL('historyTitle')}
             text={custL('noHistory')}
           />

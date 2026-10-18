@@ -174,7 +174,7 @@ export default function CustomersClient({
       {filtered.length === 0 ? (
         <Card>
           <EmptyState
-            icon={Users}
+            icon={<Users />}
             title={hasFilter ? t(locale, 'customers.noResults') : L('custListNoCustomersYet')}
             text={
               hasFilter

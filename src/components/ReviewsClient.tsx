@@ -272,7 +272,7 @@ export default function ReviewsClient({
       <Card>
         {reviews.length === 0 ? (
           <EmptyState
-            icon={Star}
+            icon={<Star />}
             title="No reviews yet"
             text="When customers praise your work, record it here. Good reviews help you win more jobs."
           />

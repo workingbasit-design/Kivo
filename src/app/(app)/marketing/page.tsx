@@ -34,7 +34,7 @@ export default async function MarketingPage() {
         summary={tr('t10misc.marketing.subtitle')}
         actionLabel={tr('t10misc.marketing.newCampaign')}
         actionHref="/marketing/new"
-        actionIcon={Plus}
+        actionIcon={<Plus />}
       />
       <div className="flex flex-wrap gap-2">
         <Button variant="secondary" sm href="/marketing/reviews">
@@ -45,7 +45,7 @@ export default async function MarketingPage() {
       {campaigns.length === 0 ? (
         <Card>
           <EmptyState
-            icon={Megaphone}
+            icon={<Megaphone />}
             title={tr('t10misc.marketing.noCampaignsTitle')}
             text={tr('t10misc.marketing.noCampaignsDesc')}
           />

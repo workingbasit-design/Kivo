@@ -165,7 +165,7 @@ export default async function SchedulePage({
         summary={weekLabel}
         actionLabel={T('schedNewJobBtn')}
         actionHref="/jobs/new"
-        actionIcon={CalendarDays}
+        actionIcon={<CalendarDays />}
       />
 
       {stripDays.length > 0 && (

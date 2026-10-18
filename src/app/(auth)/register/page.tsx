@@ -18,7 +18,7 @@ export default function RegisterPage() {
   return (
     <Card className="p-6 sm:p-8">
       <div className="mb-4">
-        <Chip tone="ok" icon={BadgeCheck}>
+        <Chip tone="ok" icon={<BadgeCheck />}>
           {t('t10misc.auth.freePlanBadge')}
         </Chip>
       </div>

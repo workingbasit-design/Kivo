@@ -1,6 +1,6 @@
 'use client';
 
-import type { IconComponent } from '@/components/icons';
+import type { ReactNode } from 'react';
 import { Plus } from '@/components/icons';
 import { cn } from '@/lib/utils';
 
@@ -9,8 +9,11 @@ export interface PageHeaderProps {
   summary?: string;
   /** Label for the primary action button. */
   actionLabel: string;
-  /** Leading icon on the action button; defaults to Plus. */
-  actionIcon?: IconComponent;
+  /** Leading icon on the action button; defaults to Plus.
+   *  Pass a rendered element (<Plus size={20} aria-hidden />), not the
+   *  component itself — component functions cannot cross the server/client
+   *  boundary as props. */
+  actionIcon?: ReactNode;
   /** Render the action as a link when an href is preferred over a handler. */
   actionHref?: string;
   onAction?: () => void;
@@ -28,10 +31,11 @@ export function PageHeader({
   actionHref,
   onAction,
 }: PageHeaderProps) {
-  const ActionIcon = actionIcon ?? Plus;
+  const actionIconNode = actionIcon ?? <Plus />;
   const actionClasses = cn(
     'inline-flex flex-none items-center gap-1.5 rounded-[14px] bg-hivis px-[18px] pl-[14px] text-[17px] font-bold text-hivis-ink no-underline',
     'min-h-[48px]',
+    '[&_svg]:size-5',
     'focus-visible:outline-2 focus-visible:outline-focus'
   );
   return (
@@ -45,12 +49,12 @@ export function PageHeader({
       </div>
       {actionHref ? (
         <a href={actionHref} className={actionClasses}>
-          <ActionIcon size={20} aria-hidden />
+          <span aria-hidden="true" className="inline-flex">{actionIconNode}</span>
           {actionLabel}
         </a>
       ) : (
         <button type="button" onClick={onAction} className={actionClasses}>
-          <ActionIcon size={20} aria-hidden />
+          <span aria-hidden="true" className="inline-flex">{actionIconNode}</span>
           {actionLabel}
         </button>
       )}

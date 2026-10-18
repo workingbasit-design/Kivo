@@ -97,7 +97,7 @@ export default async function AttentionPage({
       {items.length === 0 ? (
         <Card>
           <EmptyState
-            icon={CheckCircle2}
+            icon={<CheckCircle2 />}
             title={t(locale, "attention.emptyTitle")}
             text={t(locale, "attention.emptyDesc")}
           />

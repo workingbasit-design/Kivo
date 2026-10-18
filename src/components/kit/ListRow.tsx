@@ -2,11 +2,11 @@
 
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
-import type { IconComponent } from '@/components/icons';
 import { Avatar } from './Avatar';
 
 export interface ListRowProps {
-  icon?: IconComponent;
+  /** Rendered icon element, not the component itself (see PageHeader). */
+  icon?: ReactNode;
   avatarInitials?: string;
   title: string;
   subtitle?: string;
@@ -31,7 +31,7 @@ const amountCaptionTone: Record<NonNullable<ListRowProps['amountTone']>, string>
  * Renders as an <a> when `href` is given, otherwise a <div>.
  */
 export function ListRow({
-  icon: Icon,
+  icon,
   avatarInitials,
   title,
   subtitle,
@@ -57,9 +57,9 @@ export function ListRow({
         'focus-visible:outline-2 focus-visible:outline-focus',
       )}
     >
-      {Icon ? (
-        <span className="w-10 h-10 rounded-xl bg-surface-2 ring-1 ring-inset ring-line grid place-items-center text-ink">
-          <Icon size={22} aria-hidden="true" />
+      {icon ? (
+        <span className="w-10 h-10 rounded-xl bg-surface-2 ring-1 ring-inset ring-line grid place-items-center text-ink [&_svg]:size-[22px]">
+          {icon}
         </span>
       ) : avatarInitials ? (
         <Avatar initials={avatarInitials} />

@@ -40,7 +40,7 @@ export default async function CustomerMessagesPage() {
 
       {threads.length === 0 ? (
         <EmptyState
-          icon={MessageCircle}
+          icon={<MessageCircle />}
           title={tr('customer.messages.emptyTitle')}
           text={tr('customer.messages.emptyHint')}
         />

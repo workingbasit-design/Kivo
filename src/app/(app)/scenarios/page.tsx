@@ -71,7 +71,7 @@ export default async function ScenariosPage() {
       {!hasData ? (
         <Card>
           <EmptyState
-            icon={FlaskConical}
+            icon={<FlaskConical />}
             title={t(locale, "health.noData")}
             text={t(locale, "scenarios.subtitle")}
           />

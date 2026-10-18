@@ -215,7 +215,7 @@ export default async function InsightsPage() {
       {!hasData ? (
         <Card>
           <EmptyState
-            icon={Sparkles}
+            icon={<Sparkles />}
             title={r.noDataTitle}
             text={r.noDataDesc}
           />

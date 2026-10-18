@@ -1116,7 +1116,7 @@ export function Showcase({ lang }: { lang: Lang }) {
   // component showcase, not the app.
   const p = t.patterns;
   const patternEmpty = {
-    icon: Inbox,
+    icon: <Inbox />,
     title: p.emptyTitle,
     text: p.emptyText,
   };
@@ -1136,7 +1136,7 @@ export function Showcase({ lang }: { lang: Lang }) {
         {
           rowKey: 'late-1',
           filterIds: ['all', 'late'],
-          icon: Wrench,
+          icon: <Wrench />,
           title: p.rLate,
           subtitle: p.rLateSub,
           meta: (
@@ -1156,7 +1156,7 @@ export function Showcase({ lang }: { lang: Lang }) {
         {
           rowKey: 'today-1',
           filterIds: ['all', 'today', 'invoice'],
-          icon: House,
+          icon: <House />,
           title: p.rT1,
           subtitle: p.rT1Sub,
           meta: (
@@ -1171,7 +1171,7 @@ export function Showcase({ lang }: { lang: Lang }) {
         {
           rowKey: 'today-2',
           filterIds: ['all', 'today', 'invoice'],
-          icon: Sparkles,
+          icon: <Sparkles />,
           title: p.rT2,
           subtitle: p.rT2Sub,
           meta: (
@@ -1186,7 +1186,7 @@ export function Showcase({ lang }: { lang: Lang }) {
         {
           rowKey: 'today-3',
           filterIds: ['all', 'today', 'upcoming'],
-          icon: Wrench,
+          icon: <Wrench />,
           title: p.rT3,
           subtitle: p.rT3Sub,
           meta: (
@@ -1207,7 +1207,7 @@ export function Showcase({ lang }: { lang: Lang }) {
         {
           rowKey: 'tomorrow-1',
           filterIds: ['all', 'upcoming'],
-          icon: Sparkles,
+          icon: <Sparkles />,
           title: p.rT2,
           subtitle: p.rT2Sub,
           meta: (
@@ -1221,7 +1221,7 @@ export function Showcase({ lang }: { lang: Lang }) {
         {
           rowKey: 'tomorrow-2',
           filterIds: ['all', 'upcoming'],
-          icon: Wrench,
+          icon: <Wrench />,
           title: p.rT3,
           subtitle: p.rT3Sub,
           meta: (
@@ -1241,7 +1241,7 @@ export function Showcase({ lang }: { lang: Lang }) {
         {
           rowKey: 'earlier-1',
           filterIds: ['all', 'invoice'],
-          icon: House,
+          icon: <House />,
           title: p.rT1,
           subtitle: p.rT1Sub,
           meta: (
@@ -1349,7 +1349,7 @@ export function Showcase({ lang }: { lang: Lang }) {
           <Demo name={t.dListrow}>
             <div className="overflow-hidden rounded-2xl border border-line bg-surface">
               <ListRow
-                icon={Wrench}
+                icon={<Wrench />}
                 title={t.list.r1title}
                 subtitle={t.list.r1sub}
                 amount={t.list.r1amount}
@@ -1366,7 +1366,7 @@ export function Showcase({ lang }: { lang: Lang }) {
                 onClick={noop}
               />
               <ListRow
-                icon={FileText}
+                icon={<FileText />}
                 title={t.list.r3title}
                 subtitle={t.list.r3sub}
                 meta={<StatusBadge tone="late">{t.list.r3badge}</StatusBadge>}
@@ -1383,7 +1383,7 @@ export function Showcase({ lang }: { lang: Lang }) {
                 <StatusBadge
                   key={tone}
                   tone={tone}
-                  icon={tone === 'done' ? Check : undefined}
+                  icon={tone === 'done' ? <Check /> : undefined}
                 >
                   {t.badges[tone]}
                 </StatusBadge>
@@ -1425,7 +1425,7 @@ export function Showcase({ lang }: { lang: Lang }) {
           <Demo name={t.dKv}>
             <Card className="px-4 py-1">
               <KeyValueRow
-                icon={MapPin}
+                icon={<MapPin />}
                 label={t.kv.addr}
                 sub={t.kv.addrSub}
                 action={
@@ -1439,7 +1439,7 @@ export function Showcase({ lang }: { lang: Lang }) {
                 }
               />
               <KeyValueRow
-                icon={Clock}
+                icon={<Clock />}
                 label={t.kv.window}
                 sub={t.kv.windowSub}
                 action={
@@ -1602,7 +1602,7 @@ export function Showcase({ lang }: { lang: Lang }) {
           <Demo name={t.dEmpty}>
             <Card className="py-2">
               <EmptyState
-                icon={Inbox}
+                icon={<Inbox />}
                 title={t.empty.title}
                 text={t.empty.text}
                 actionLabel={t.empty.action}
@@ -1648,7 +1648,7 @@ export function Showcase({ lang }: { lang: Lang }) {
                 time="9:00"
                 ampm="AM"
                 tone="done"
-                icon={Wrench}
+                icon={<Wrench />}
                 title={t.agenda.a1title}
                 sub={t.agenda.a1sub}
                 who={t.agenda.a1who}
@@ -1662,7 +1662,7 @@ export function Showcase({ lang }: { lang: Lang }) {
                 time="10:30"
                 ampm="AM"
                 tone="open"
-                icon={Zap}
+                icon={<Zap />}
                 title={t.agenda.a2title}
                 sub={t.agenda.a2sub}
                 who={t.agenda.a2who}
@@ -1676,7 +1676,7 @@ export function Showcase({ lang }: { lang: Lang }) {
                 time="1:00"
                 ampm="PM"
                 tone="scheduled"
-                icon={CalendarCheck}
+                icon={<CalendarCheck />}
                 title={t.agenda.a3title}
                 sub={t.agenda.a3sub}
                 who={t.agenda.a3who}
@@ -1706,7 +1706,7 @@ export function Showcase({ lang }: { lang: Lang }) {
           </Demo>
           <Demo name={t.dProject}>
             <ProjectCard
-              icon={House}
+              icon={<House />}
               title={t.project.title}
               sub={t.project.sub}
               progressPct={65}
@@ -1731,7 +1731,7 @@ export function Showcase({ lang }: { lang: Lang }) {
           </Demo>
           <Demo name={t.dCopilot}>
             <CopilotActionCard
-              icon={Sparkles}
+              icon={<Sparkles />}
               title={t.copilot.title}
               text={t.copilot.text}
               primaryLabel={t.copilot.primary}
@@ -1788,24 +1788,24 @@ export function Showcase({ lang }: { lang: Lang }) {
               <DetailScreen
                 backLabel={p.backJobs}
                 onBack={noop}
-                icon={Wrench}
+                icon={<Wrench />}
                 title={p.dTitle}
                 subtitle={p.dSub}
                 badges={[
                   { tone: 'scheduled', children: p.bSched },
-                  { tone: 'warn', icon: Users, children: p.bNoTech },
+                  { tone: 'warn', icon: <Users />, children: p.bNoTech },
                 ]}
                 whenWhere={{
                   title: p.sWhen,
                   content: (
                     <>
                       <KeyValueRow
-                        icon={Clock}
+                        icon={<Clock />}
                         label={p.kvWhen}
                         sub={p.kvWhenSub}
                       />
                       <KeyValueRow
-                        icon={MapPin}
+                        icon={<MapPin />}
                         label={p.kvWhere}
                         sub={p.kvWhereSub}
                       />
@@ -1888,7 +1888,7 @@ export function Showcase({ lang }: { lang: Lang }) {
               <BuilderScreen
                 backLabel={p.backMoney}
                 onBack={noop}
-                icon={FileText}
+                icon={<FileText />}
                 title={p.bTitle}
                 subtitle={p.bSub}
                 lineItemsTitle={p.linesTitle}
@@ -1918,7 +1918,7 @@ export function Showcase({ lang }: { lang: Lang }) {
                 optionalTitle={p.optTitle}
                 optionalItems={
                   <KeyValueRow
-                    icon={Zap}
+                    icon={<Zap />}
                     label={t.lines.l1t}
                     sub={p.optTitle}
                   />
@@ -1926,7 +1926,7 @@ export function Showcase({ lang }: { lang: Lang }) {
                 termsTitle={p.termsTitle}
                 terms={
                   <KeyValueRow
-                    icon={CalendarCheck}
+                    icon={<CalendarCheck />}
                     label={p.tax}
                     sub={p.termsTitle}
                   />

@@ -85,7 +85,7 @@ export default async function ExpensesPage({
         summary={T('subtitle')}
         actionLabel={T('new')}
         actionHref="/expenses/new"
-        actionIcon={Plus}
+        actionIcon={<Plus />}
       />
 
       {/* Filters */}
@@ -154,7 +154,7 @@ export default async function ExpensesPage({
       {filtered.length === 0 ? (
         <Card>
           <EmptyState
-            icon={Receipt}
+            icon={<Receipt />}
             title={T('empty')}
             text={T('emptyHint')}
           />

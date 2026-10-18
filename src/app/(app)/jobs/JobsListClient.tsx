@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ListScreen,
@@ -27,19 +27,14 @@ import { t, type Locale } from '@/lib/i18n';
 import { tp } from '@/lib/i18n/plural';
 import type { TradeKey } from '@/lib/trade-icons';
 
-/** Stable IconComponent per trade key for the kit ListRow. */
-const tradeIconCache = new Map<TradeKey, IconComponent>();
-function tradeIconComponent(trade: TradeKey): IconComponent {
+/** Stable icon element per trade key for the kit ListRow. */
+const tradeIconCache = new Map<TradeKey, ReactNode>();
+function tradeIconNode(trade: TradeKey): ReactNode {
   const hit = tradeIconCache.get(trade);
   if (hit) return hit;
-  const c: IconComponent = (props) => (
-    <TradeIcon
-      trade={trade}
-      size={typeof props.size === 'number' ? props.size : 22}
-    />
-  );
-  tradeIconCache.set(trade, c);
-  return c;
+  const el = <TradeIcon trade={trade} size={22} />;
+  tradeIconCache.set(trade, el);
+  return el;
 }
 
 /** "$310" when whole dollars, "$310.50" otherwise (mockup style). */
@@ -182,7 +177,7 @@ export default function JobsListClient({
       const listRows: ListScreenRow[] = inGroup.map((r) => ({
         rowKey: r.id,
         filterIds: r.filterIds,
-        icon: tradeIconComponent(r.tradeKey),
+        icon: tradeIconNode(r.tradeKey),
         title: r.title,
         subtitle: r.address ? `${r.customerName}, ${r.address}` : r.customerName,
         meta: rowMeta(r),
@@ -234,7 +229,7 @@ export default function JobsListClient({
       ),
       tone: id === 'late' ? 'danger' : 'default',
       empty: {
-        icon: Icon,
+        icon: <Icon />,
         title: emptyKeys[id].title,
         text: emptyKeys[id].text,
         ...(id === 'all'
@@ -259,7 +254,7 @@ export default function JobsListClient({
         title={jobsL('title')}
         summary={summary}
         actionLabel={jobsL('newJob')}
-        actionIcon={Plus}
+        actionIcon={<Plus />}
         actionHref="/jobs/new"
         searchValue={query}
         onSearchChange={setQuery}

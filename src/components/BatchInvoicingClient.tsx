@@ -112,7 +112,7 @@ export default function BatchInvoicingClient({
       {rows.length === 0 ? (
         <Card>
           <EmptyState
-            icon={Receipt}
+            icon={<Receipt />}
             title={t(locale, 'billing.emptyTitle')}
             text={t(locale, 'billing.emptyDesc')}
           />

@@ -69,7 +69,7 @@ export default async function InventoryPage({
         summary={T('subtitle')}
         actionLabel={T('add')}
         actionHref="/inventory/new"
-        actionIcon={Plus}
+        actionIcon={<Plus />}
       />
 
       {parts.length > 0 && (
@@ -84,7 +84,7 @@ export default async function InventoryPage({
       {parts.length === 0 ? (
         <Card>
           <EmptyState
-            icon={Package}
+            icon={<Package />}
             title={query ? T('noResults') : T('emptyTitle')}
             text={query ? T('noResultsDesc') : T('emptyDesc')}
           />

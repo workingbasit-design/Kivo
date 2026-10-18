@@ -170,7 +170,7 @@ export default async function TeamPerformancePage({
       <Card>
         {rows.length === 0 ? (
           <EmptyState
-            icon={Users}
+            icon={<Users />}
             title={tr('t10misc.teamreport.noMembersTitle')}
             text={tr('t10misc.teamreport.noMembersDesc')}
           />

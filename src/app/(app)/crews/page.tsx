@@ -32,7 +32,7 @@ export default async function CrewsPage() {
       {crews.length === 0 ? (
         <Card>
           <EmptyState
-            icon={Users}
+            icon={<Users />}
             title={L('noCrews')}
             text={L('noCrewsDesc')}
           />

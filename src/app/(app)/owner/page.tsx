@@ -139,7 +139,7 @@ export default async function OwnerPage() {
             </div>
           ) : (
             <EmptyState
-              icon={Gauge}
+              icon={<Gauge />}
               title={t(locale, "health.noData")}
               text={t(locale, "attention.emptyDesc")}
             />
@@ -175,7 +175,7 @@ export default async function OwnerPage() {
         ) : (
           <Card>
             <EmptyState
-              icon={ArrowRight}
+              icon={<ArrowRight />}
               title={t(locale, "attention.emptyTitle")}
               text={t(locale, "attention.emptyDesc")}
             />
@@ -247,7 +247,7 @@ export default async function OwnerPage() {
         ) : (
           <Card>
             <EmptyState
-              icon={Droplets}
+              icon={<Droplets />}
               title={t(locale, "owner.leaksEmpty")}
             />
           </Card>
@@ -281,7 +281,7 @@ export default async function OwnerPage() {
         ) : (
           <Card>
             <EmptyState
-              icon={ArrowRight}
+              icon={<ArrowRight />}
               title={t(locale, "owner.tomorrowEmpty")}
               text={formatDateLabel(tomorrowStart, dateLocale)}
             />

@@ -167,7 +167,7 @@ export default async function TimesheetsPage({
       <Card>
         {entries.length === 0 ? (
           <EmptyState
-            icon={Clock3}
+            icon={<Clock3 />}
             title={T('tsEmptyTitle')}
             text={T('tsEmptyDesc')}
           />

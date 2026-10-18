@@ -1,7 +1,6 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import type { IconComponent } from '@/components/icons';
 import { cn } from '@/lib/utils';
 
 export type AgendaRowTone = 'done' | 'open' | 'scheduled';
@@ -10,7 +9,8 @@ export interface AgendaRowProps {
   time: string;
   ampm: string;
   tone: AgendaRowTone;
-  icon: IconComponent;
+  /** Rendered icon element, not the component itself (see PageHeader). */
+  icon: ReactNode;
   title: string;
   sub: string;
   who?: string;
@@ -35,7 +35,7 @@ export function AgendaRow({
   time,
   ampm,
   tone,
-  icon: Icon,
+  icon,
   title,
   sub,
   who,
@@ -52,8 +52,8 @@ export function AgendaRow({
       </span>
       <span className={cn('w-1 rounded-[2px]', BAR_TONE[tone])} aria-hidden="true" />
       <span className="flex min-w-0 items-start gap-3">
-        <span className="grid h-10 w-10 flex-none place-items-center rounded-[12px] bg-surface-2 text-ink shadow-[inset_0_0_0_1px_var(--line)]">
-          <Icon className="h-[22px] w-[22px]" aria-hidden="true" />
+        <span className="grid h-10 w-10 flex-none place-items-center rounded-[12px] bg-surface-2 text-ink shadow-[inset_0_0_0_1px_var(--line)] [&_svg]:size-[22px]">
+          {icon}
         </span>
         <span className="min-w-0 flex-1">
           <b className="block text-[16px] leading-[1.25] font-semibold">{title}</b>

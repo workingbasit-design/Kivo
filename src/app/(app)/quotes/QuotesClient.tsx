@@ -121,7 +121,7 @@ export default function QuotesClient({
         summary={subtitle}
         actionLabel={t(locale, 'quotes.list.newQuote')}
         actionHref="/quotes/new"
-        actionIcon={Plus}
+        actionIcon={<Plus />}
       />
       <div className="flex flex-wrap gap-2">
         <ExportButtons
@@ -246,7 +246,7 @@ export default function QuotesClient({
       {filtered.length === 0 ? (
         <Card>
           <EmptyState
-            icon={ClipboardList}
+            icon={<ClipboardList />}
             title={t(locale, 'quotes.list.emptyTitle')}
             text={t(locale, 'quotes.list.emptyDesc')}
           />

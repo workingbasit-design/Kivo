@@ -381,7 +381,7 @@ export default function ScheduleClient({
       {agendaJobs.length === 0 ? (
         <Card className="mb-28 md:mb-0">
           <EmptyState
-            icon={CalendarIcon}
+            icon={<CalendarIcon />}
             title={T('schedEmptyTitle')}
             text={initialJobs.length === 0 ? T('schedEmptyNone') : T('schedEmptyFiltered')}
           />

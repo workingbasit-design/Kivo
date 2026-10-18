@@ -2,13 +2,13 @@
 
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
-import type { IconComponent } from '@/components/icons';
 
 export type ChipTone = 'ok' | 'warn' | 'sched' | 'neutral';
 
 export interface ChipProps {
   tone?: ChipTone;
-  icon?: IconComponent;
+  /** Rendered icon element, not the component itself (see PageHeader). */
+  icon?: ReactNode;
   className?: string;
   children: ReactNode;
 }
@@ -25,7 +25,7 @@ const toneClasses: Record<ChipTone, string> = {
  * icon. FilterChips covers the selectable filter row; this is the static
  * display chip. Token utilities only — no hard-coded colours.
  */
-export function Chip({ tone = 'neutral', icon: Icon, className, children }: ChipProps) {
+export function Chip({ tone = 'neutral', icon, className, children }: ChipProps) {
   return (
     <span
       data-kit="chip"
@@ -36,7 +36,7 @@ export function Chip({ tone = 'neutral', icon: Icon, className, children }: Chip
         className,
       )}
     >
-      {Icon && <Icon size={16} aria-hidden="true" />}
+      {icon && <span className="inline-flex [&_svg]:size-4" aria-hidden="true">{icon}</span>}
       {children}
     </span>
   );
