@@ -154,7 +154,7 @@ export default async function MoneyPage() {
               ) : null}
             </div>
             {unbilledJobs.length === 0 ? (
-              <p className="text-sm text-ej-muted px-1">
+              <p className="text-sm text-ink-2 px-1">
                 {L('t10money.money.noUnbilled')}
               </p>
             ) : (
@@ -182,7 +182,7 @@ export default async function MoneyPage() {
               </Card>
             )}
             {unbilledJobs.length > 0 && (
-              <p className="mt-2 text-xs text-ej-muted px-1">{L('t10money.money.unbilledDesc')}</p>
+              <p className="mt-2 text-xs text-ink-2 px-1">{L('t10money.money.unbilledDesc')}</p>
             )}
           </section>
 
@@ -197,7 +197,7 @@ export default async function MoneyPage() {
               ) : null}
             </div>
             {unpaidInvoices.length === 0 ? (
-              <p className="text-sm text-ej-muted px-1">
+              <p className="text-sm text-ink-2 px-1">
                 {L('t10money.money.noInvoicesYet')}
               </p>
             ) : (
@@ -242,7 +242,7 @@ export default async function MoneyPage() {
               ) : null}
             </div>
             {openQuotes.length === 0 ? (
-              <p className="text-sm text-ej-muted px-1">
+              <p className="text-sm text-ink-2 px-1">
                 {L('t10money.money.noQuotesYet')}
               </p>
             ) : (

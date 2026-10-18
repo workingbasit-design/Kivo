@@ -122,7 +122,7 @@ export default async function SettingsPage() {
           <a
             key={g.id}
             href={`#settings-${g.id}`}
-            className="shrink-0 rounded-full border border-ej-border bg-ej-surface px-4 py-2 text-sm font-semibold text-ej-secondary hover:text-ej-ink hover:border-ej-ink/30 min-h-[44px] inline-flex items-center transition-colors"
+            className="shrink-0 rounded-full border border-line bg-surface px-4 py-2 text-sm font-semibold text-ink-2 hover:text-ink hover:border-line min-h-[44px] inline-flex items-center transition-colors"
           >
             {g.title}
           </a>
@@ -138,7 +138,7 @@ export default async function SettingsPage() {
       >
         <div>
           <h3 className="text-base font-bold text-ink">{groups[0].title}</h3>
-          <p className="text-sm text-ej-secondary -mt-2 mb-1">{groups[0].desc}</p>
+          <p className="text-sm text-ink-2 -mt-2 mb-1">{groups[0].desc}</p>
         </div>
         <SettingsForm
           business={{
@@ -196,7 +196,7 @@ export default async function SettingsPage() {
       >
         <div>
           <h3 className="text-base font-bold text-ink">{groups[1].title}</h3>
-          <p className="text-sm text-ej-secondary -mt-2 mb-1">{groups[1].desc}</p>
+          <p className="text-sm text-ink-2 -mt-2 mb-1">{groups[1].desc}</p>
         </div>
         <Card className="p-5 md:p-6">
           <h2 className="text-sm font-bold text-ink mb-1">{tr('t10misc.settingsMain.paymentsTitle')}</h2>
@@ -237,7 +237,7 @@ export default async function SettingsPage() {
       >
         <div>
           <h3 className="text-base font-bold text-ink">{groups[2].title}</h3>
-          <p className="text-sm text-ej-secondary -mt-2 mb-1">{groups[2].desc}</p>
+          <p className="text-sm text-ink-2 -mt-2 mb-1">{groups[2].desc}</p>
         </div>
         <Card className="p-5 md:p-6">
           <h2 className="text-sm font-bold text-ink mb-1">{tr('t10misc.settingsMain.messagingTitle')}</h2>
@@ -265,7 +265,7 @@ export default async function SettingsPage() {
       >
         <div>
           <h3 className="text-base font-bold text-ink">{groups[3].title}</h3>
-          <p className="text-sm text-ej-secondary -mt-2 mb-1">{groups[3].desc}</p>
+          <p className="text-sm text-ink-2 -mt-2 mb-1">{groups[3].desc}</p>
         </div>
         <Card className="p-5 md:p-6">
           <h2 className="text-sm font-bold text-ink mb-1">{tr('t10misc.booking.pageTitle')}</h2>
@@ -309,7 +309,7 @@ export default async function SettingsPage() {
       >
         <div>
           <h3 className="text-base font-bold text-ink">{groups[4].title}</h3>
-          <p className="text-sm text-ej-secondary -mt-2 mb-1">{groups[4].desc}</p>
+          <p className="text-sm text-ink-2 -mt-2 mb-1">{groups[4].desc}</p>
         </div>
         <Card className="p-5 md:p-6">
           <h2 className="text-sm font-bold text-ink mb-1 flex items-center gap-2">
@@ -331,7 +331,7 @@ export default async function SettingsPage() {
       >
         <div>
           <h3 className="text-base font-bold text-ink">{groups[5].title}</h3>
-          <p className="text-sm text-ej-secondary -mt-2 mb-1">{groups[5].desc}</p>
+          <p className="text-sm text-ink-2 -mt-2 mb-1">{groups[5].desc}</p>
         </div>
         <Card className="p-5 md:p-6">
           <h2 className="text-sm font-bold text-ink mb-1">{t(locale, 'googleAuth.profileTitle')}</h2>
@@ -396,7 +396,7 @@ export default async function SettingsPage() {
       >
         <div>
           <h3 className="text-base font-bold text-ink">{groups[6].title}</h3>
-          <p className="text-sm text-ej-secondary -mt-2 mb-1">{groups[6].desc}</p>
+          <p className="text-sm text-ink-2 -mt-2 mb-1">{groups[6].desc}</p>
         </div>
         <Card className="p-5 md:p-6">
           <h2 className="text-sm font-bold text-ink mb-1">{t(locale, 'support.inboxTitle')}</h2>

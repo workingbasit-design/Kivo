@@ -19,7 +19,7 @@ import { writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 
 const ROUTES = [
-  '/',
+  '/dashboard',
   '/jobs',
   '/schedule',
   '/money',
