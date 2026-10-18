@@ -115,7 +115,7 @@ export function NewProjectForm({
           />
           <a
             href="/customers/new"
-            className="text-sm font-semibold text-ej-ink hover:underline mt-1 inline-block min-h-[44px] py-2"
+            className="text-sm font-semibold text-ink hover:underline mt-1 inline-block min-h-[44px] py-2"
           >
             {t(locale, 'projects.newCustomer')}
           </a>
@@ -163,12 +163,12 @@ export function NewProjectForm({
       </div>
 
       <fieldset>
-        <legend className="block text-sm font-semibold text-ej-ink mb-1.5">
+        <legend className="block text-sm font-semibold text-ink mb-1.5">
           {t(locale, 'projects.phasesLabel')}
         </legend>
         <p className="text-sm text-ej-muted mb-3">{t(locale, 'projects.phasesHint')}</p>
 
-        <p className="text-sm font-semibold text-ej-ink mb-2">
+        <p className="text-sm font-semibold text-ink mb-2">
           {t(locale, 'projects.phasesTemplateLabel')}
         </p>
         <div className="flex flex-wrap gap-2 mb-4">

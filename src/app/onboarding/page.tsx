@@ -35,7 +35,7 @@ export default async function OnboardingPage() {
   }));
 
   return (
-    <div className="min-h-screen bg-ej-bg flex flex-col">
+    <div className="min-h-screen bg-surface flex flex-col">
       <nav className="px-6 py-4">
         <Link href="/dashboard" className="inline-flex items-center gap-2 rounded-lg" aria-label="EveryJob">
           <Logo size={32} />
@@ -43,10 +43,10 @@ export default async function OnboardingPage() {
       </nav>
       <div className="flex-1 flex items-start justify-center px-4 pb-16 pt-4">
         <div className="w-full max-w-md">
-          <h1 className="text-2xl font-bold tracking-tight text-ej-ink">
+          <h1 className="text-2xl font-bold tracking-tight text-ink">
             {tr('support.firstRun.title')}
           </h1>
-          <p className="text-sm text-ej-secondary mt-1 mb-6">
+          <p className="text-sm text-ink-2 mt-1 mb-6">
             {tr('support.firstRun.subtitle')}
           </p>
           <OnboardingQuestions
@@ -61,7 +61,7 @@ export default async function OnboardingPage() {
           />
         </div>
       </div>
-      <p className="text-center text-xs text-ej-muted pb-6">Every job. One place.</p>
+      <p className="text-center text-xs text-ink-2 pb-6">Every job. One place.</p>
     </div>
   );
 }

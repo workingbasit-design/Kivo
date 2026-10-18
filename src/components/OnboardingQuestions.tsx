@@ -71,10 +71,10 @@ export default function OnboardingQuestions({
     <form action={formAction}>
       <Card className="p-5 md:p-6 space-y-6">
         <fieldset>
-          <legend className="text-base font-semibold text-ej-ink mb-2">
+          <legend className="text-base font-semibold text-ink mb-2">
             {tr('support.firstRun.qTrade')}
           </legend>
-          <div className="divide-y divide-ej-border rounded-xl border border-ej-border">
+          <div className="divide-y divide-line rounded-xl border border-line">
             {trades.map((trade) => (
               <div key={trade.key} className="px-3">
                 <RadioRow
@@ -90,10 +90,10 @@ export default function OnboardingQuestions({
         </fieldset>
 
         <fieldset>
-          <legend className="text-base font-semibold text-ej-ink mb-2">
+          <legend className="text-base font-semibold text-ink mb-2">
             {tr('support.firstRun.qTeam')}
           </legend>
-          <div className="divide-y divide-ej-border rounded-xl border border-ej-border">
+          <div className="divide-y divide-line rounded-xl border border-line">
             {teamOptions.map((opt) => (
               <div key={opt.value} className="px-3">
                 <RadioRow
@@ -120,7 +120,7 @@ export default function OnboardingQuestions({
         />
 
         {state?.error && (
-          <p role="alert" className="text-sm font-medium text-ej-danger">
+          <p role="alert" className="text-sm font-medium text-danger">
             {state.error}
           </p>
         )}
