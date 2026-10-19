@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import React, { useActionState, useEffect, useRef, useState } from 'react';
 import { Send, CheckCircle2, XCircle, Undo2, Trash2, Briefcase, AlertCircle, Mail } from '@/components/icons';
 import { toast } from 'sonner';
@@ -89,10 +90,12 @@ export default function QuoteActions({
   id,
   status,
   locale = 'en',
+  convertedJobId = null,
 }: {
   id: string;
   status: string;
   locale?: Locale;
+  convertedJobId?: string | null;
 }) {
   const [emailState, emailAction, emailPending] = useActionState<ActionResult, FormData>(
     sendQuoteEmail,
@@ -153,7 +156,19 @@ export default function QuoteActions({
           </form>
         )}
 
-        {status === 'APPROVED' && (
+        {/* 2026-10-19 QA: an already-converted quote must not offer a second
+            conversion — link to the existing job instead. */}
+        {status === 'APPROVED' && convertedJobId && (
+          <Link
+            href={`/jobs/${convertedJobId}`}
+            className="inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-xl bg-asphalt text-hero-ink text-xs font-bold"
+          >
+            <Briefcase size={14} />
+            {t(locale, 't10money.quoteConvertedViewJob')}
+          </Link>
+        )}
+
+        {status === 'APPROVED' && !convertedJobId && (
           <form action={convertAction}>
             <input type="hidden" name="id" value={id} />
             <button type="submit" disabled={convertPending} className={primaryBtnClass}>

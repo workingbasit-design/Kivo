@@ -18,6 +18,7 @@ import {
   revokeQuoteShareLink,
   setQuoteShareLinkExpiry,
 } from '@/app/actions/quotes';
+import { convertedJobNotesPrefix } from '@/lib/quotes';
 import QuoteActions from './QuoteActions';
 import QuoteAddons from './QuoteAddons';
 import ShareTokenManager from '@/components/ShareTokenManager';
@@ -50,6 +51,19 @@ export default async function QuoteDetailPage({
   if (!quote) notFound();
 
   const shareState = await getQuoteShareState(quote.id);
+
+  // Duplicate-conversion guard (2026-10-19 morning QA): a converted quote
+  // keeps APPROVED status, so without this the "Convert to job" button
+  // stays mounted and a second click silently creates a duplicate job.
+  // The job carries the canonical "Converted from quote <number>." notes
+  // marker (quote numbers are unique per business).
+  const convertedJob = await prisma.job.findFirst({
+    where: {
+      businessId,
+      notes: { startsWith: convertedJobNotesPrefix(quote.number) },
+    },
+    select: { id: true },
+  });
 
   const locale = await getLocale();
   const moneyLocale = localeMoneyTag(locale);
@@ -193,7 +207,12 @@ export default async function QuoteDetailPage({
         </dl>
 
         <div className="border-t border-line pt-5 space-y-3">
-          <QuoteActions id={quote.id} status={quote.status} locale={locale} />
+          <QuoteActions
+            id={quote.id}
+            status={quote.status}
+            locale={locale}
+            convertedJobId={convertedJob?.id ?? null}
+          />
           <Link
             href={`/quotes/${quote.id}/sign`}
             className="min-h-[44px] inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-700"

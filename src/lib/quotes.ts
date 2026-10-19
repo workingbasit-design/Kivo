@@ -39,6 +39,19 @@ export function addonQuoteTotal(
  * client on the invoice. The notes keep the client-approved tax-inclusive
  * total so the agreed amount is never lost.
  */
+/**
+ * Canonical notes marker stamped on every job created from a quote.
+ * Quote numbers are unique per business (@@unique([businessId, number])),
+ * so `Converted from quote <number>.` uniquely identifies the job that
+ * came from a given quote. Used both to stamp the job (below) and as the
+ * duplicate-conversion guard in convertQuoteToJob — a converted quote
+ * keeps its APPROVED status, so without this check "Convert to job" would
+ * create a second job (2026-10-19 morning QA: Q-0001 -> 2 jobs).
+ */
+export function convertedJobNotesPrefix(quoteNumber: string): string {
+  return `Converted from quote ${quoteNumber}.`;
+}
+
 export function convertedJobDetails(
   quoteNumber: string,
   preTaxBase: number,
@@ -57,5 +70,5 @@ export function convertedJobDetails(
     taxInclusiveTotal != null
       ? ` Client-approved total: $${taxInclusiveTotal.toFixed(2)} (incl. tax).`
       : '';
-  return { price, notes: `Converted from quote ${quoteNumber}.${suffix}${agreed}` };
+  return { price, notes: `${convertedJobNotesPrefix(quoteNumber)}${suffix}${agreed}` };
 }
