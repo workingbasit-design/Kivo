@@ -1,10 +1,11 @@
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { PageHeader } from '@/components/ui';
+
 import { getTaxConfig } from '@/lib/tax';
 import InvoiceForm from './InvoiceForm';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
+import { PageTitle } from '../../_components/PageTitle';
 
 export default async function NewInvoicePage() {
   const { businessId } = await requireAuth();
@@ -26,10 +27,7 @@ export default async function NewInvoicePage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={t(locale, 'billing.newInvoice')}
-        subtitle={t(locale, 'billing.newInvoiceSubtitle').replace('{taxLabel}', taxConfig.label)}
-      />
+      <PageTitle title={t(locale, 'billing.newInvoice')} />
       <InvoiceForm customers={customers} taxConfig={taxConfig} locale={locale} />
     </div>
   );

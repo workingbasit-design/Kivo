@@ -47,21 +47,21 @@ export default function MorphChips<T extends string | number>({
               selected
                 ? 'text-ink'
                 : dark
-                  ? 'text-white hover:text-white'
+                  ? 'text-hero-ink hover:text-hero-ink'
                   : 'text-ink-2 hover:text-ink'
             }`}
           >
             {selected && (
               <motion.span
                 layoutId={`morph-chip-${groupId}`}
-                className="absolute inset-0 rounded-full bg-lime shadow-[0_2px_8px_rgba(200,240,74,0.4)]"
+                className="absolute inset-0 rounded-full bg-lime shadow-[0_2px_8px] shadow-hivis/40"
                 transition={{ type: 'spring', stiffness: 500, damping: 35 }}
               />
             )}
             {!selected && (
               <span
                 className={`absolute inset-0 rounded-full border ${
-                  dark ? 'border-white/30 bg-surface/10' : 'border-line bg-surface'
+                  dark ? 'border-hero-ink/30 bg-surface/10' : 'border-line bg-surface'
                 }`}
               />
             )}
@@ -82,7 +82,7 @@ export default function MorphChips<T extends string | number>({
         );
       })}
       {hidden.length > 0 && (
-        <span className={`text-xs font-semibold px-2 ${dark ? 'text-white/60' : 'text-ink-2'}`}>
+        <span className={`text-xs font-semibold px-2 ${dark ? 'text-hero-ink/60' : 'text-ink-2'}`}>
           +{hidden.length} more{hiddenSelected ? ' (selected)' : ''}
         </span>
       )}

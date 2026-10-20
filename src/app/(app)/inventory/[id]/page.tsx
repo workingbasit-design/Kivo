@@ -3,13 +3,15 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { PageHeader, Card } from '@/components/ui';
+
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { ArrowLeft } from '@/components/icons';
 import PartForm from '@/components/PartForm';
 import DeletePartButton from '@/components/DeletePartButton';
 import { centsToDollars } from '@/lib/money';
+import { Card } from '@/components/kit';
+import { PageTitle } from '../../_components/PageTitle';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,11 +38,10 @@ export default async function PartDetailPage({
       >
         <ArrowLeft size={16} /> {T('back')}
       </Link>
-      <PageHeader
-        title={part.name}
-        subtitle={part.sku ? `SKU: ${part.sku}` : undefined}
-        actions={<DeletePartButton id={part.id} locale={locale} />}
-      />
+      <PageTitle title={part.name} summary={part.sku ? `SKU: ${part.sku}` : undefined} />
+      <div className="flex flex-wrap gap-2">
+        <DeletePartButton id={part.id} locale={locale} />
+      </div>
       <Card>
         <PartForm
           locale={locale}

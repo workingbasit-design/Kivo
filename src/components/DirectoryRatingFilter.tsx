@@ -28,7 +28,7 @@ export default function DirectoryRatingFilter({
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="text-white/60 font-medium text-xs">{minRatingLabel}</span>
+      <span className="text-hero-ink/60 font-medium text-xs">{minRatingLabel}</span>
       <MorphChips
         options={options}
         value={current}

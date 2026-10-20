@@ -6,15 +6,6 @@ import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import { createLead, updateLeadStatus, deleteLead } from '@/app/actions/leads';
 import { convertLeadToCustomer } from '@/app/actions/customers';
-import {
-  Card,
-  Field,
-  FormGrid,
-  StatusBadge,
-  inputClass,
-  primaryBtnClass,
-  secondaryBtnClass,
-} from '@/components/ui';
 import { formatDateShort } from '@/lib/utils';
 import { LEAD_STATUSES } from '@/lib/validations';
 
@@ -99,7 +90,7 @@ function StatusButton({ lead, target, locale }: { lead: LeadItem; target: string
       <button
         type="submit"
         disabled={isPending}
-        className="min-h-[44px] inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-700 disabled:opacity-50"
+        className="min-h-[44px] inline-flex items-center gap-1 text-xs font-bold text-info hover:text-info disabled:opacity-50"
       >
         {fill(t(locale, 't10money.leadMark'), {
           status: statusLabel(target, locale).toLowerCase(),
@@ -151,25 +142,19 @@ function DeleteButton({ leadId, locale }: { leadId: string; locale: Locale }) {
   return (
     <form action={formAction} className="inline-flex flex-wrap items-center gap-2">
       <input type="hidden" name="id" value={leadId} />
-      <button
-        type="submit"
-        disabled={isPending}
-        className="min-h-[44px] px-3 inline-flex items-center text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-lg disabled:opacity-60"
-      >
+      <Button type="submit" variant="danger" sm disabled={isPending}>
         {t(locale, 't10money.leadConfirmDelete')}
-      </button>
-      <button
-        type="button"
-        onClick={() => setConfirming(false)}
-        className="min-h-[44px] px-3 inline-flex items-center text-xs font-semibold text-ink-2"
-      >
+      </Button>
+      <Button type="button" variant="ghost" sm onClick={() => setConfirming(false)}>
         {t(locale, 't10money.leadCancel')}
-      </button>
+      </Button>
     </form>
   );
 }
 
-import { BottomSheet } from '@/components/design/overlays';
+
+import { BottomSheet, Card, Input, Select, Textarea, Button } from '@/components/kit';
+import { StatusPill } from '../_components/status-ui';
 
 const DECLINE_REASONS = [
   { value: 'tooFar', labelKey: 't10money.leadDeclineReasonTooFar' },
@@ -271,7 +256,7 @@ function LeadCard({ lead, locale }: { lead: LeadItem; locale: Locale }) {
         <div className="min-w-0">
           <p className="font-bold text-sm text-ink truncate">{lead.name}</p>
           <div className="mt-1.5">
-            <StatusBadge status={statusLabel(lead.status, locale)} />
+            <StatusPill status={lead.status} locale={locale} />
           </div>
         </div>
         <DeleteButton leadId={lead.id} locale={locale} />
@@ -317,14 +302,14 @@ export function AddLeadForm({ locale = 'en' }: { locale?: Locale }) {
 
   if (!open) {
     return (
-      <button onClick={() => setOpen(true)} className={primaryBtnClass}>
+      <Button variant="primary" sm onClick={() => setOpen(true)}>
         <Plus size={14} /> {t(locale, 't10money.leadAdd')}
-      </button>
+      </Button>
     );
   }
 
   return (
-    <form action={formAction} className="ej-glass-card rounded-[20px] p-5 space-y-4">
+    <form action={formAction} className="bg-surface border border-line shadow-kit-card rounded-[20px] p-5 space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="font-bold text-sm text-ink">{t(locale, 't10money.leadNew')}</h3>
         <button
@@ -337,47 +322,62 @@ export function AddLeadForm({ locale = 'en' }: { locale?: Locale }) {
         </button>
       </div>
 
-      <FormGrid>
-        <Field label={t(locale, 't10money.leadName')}>
-          <input name="name" required placeholder={t(locale, 't10money.leadNamePlaceholder')} className={inputClass} />
-        </Field>
-        <Field label={t(locale, 't10money.leadPhone')} hint={t(locale, 't10money.leadPhoneHint')}>
-          <input name="phone" type="tel" placeholder="+1 416 555 0100" className={inputClass} />
-        </Field>
-      </FormGrid>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Input
+          label={t(locale, 't10money.leadName')}
+          name="name"
+          required
+          placeholder={t(locale, 't10money.leadNamePlaceholder')}
+        />
+        <Input
+          label={t(locale, 't10money.leadPhone')}
+          hint={t(locale, 't10money.leadPhoneHint')}
+          name="phone"
+          type="tel"
+          placeholder="+1 416 555 0100"
+        />
+      </div>
 
-      <FormGrid>
-        <Field label={t(locale, 't10money.leadEmail')}>
-          <input name="email" type="email" placeholder="lead@example.com" className={inputClass} />
-        </Field>
-        <Field label={t(locale, 't10money.leadSource')}>
-          <select name="source" defaultValue="" className={inputClass}>
-            <option value="">{t(locale, 't10money.leadSourceSelect')}</option>
-            {LEAD_SOURCES.map((s) => (
-              <option key={s.value} value={s.value}>{t(locale, s.labelKey)}</option>
-            ))}
-          </select>
-        </Field>
-      </FormGrid>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Input
+          label={t(locale, 't10money.leadEmail')}
+          name="email"
+          type="email"
+          placeholder="lead@example.com"
+        />
+        <Select
+          label={t(locale, 't10money.leadSource')}
+          name="source"
+          defaultValue=""
+          options={[
+            { value: '', label: t(locale, 't10money.leadSourceSelect') },
+            ...LEAD_SOURCES.map((s) => ({ value: s.value, label: t(locale, s.labelKey) })),
+          ]}
+        />
+      </div>
 
-      <Field label={t(locale, 't10money.leadDetails')} hint={t(locale, 't10money.leadDetailsHint')}>
-        <textarea name="details" rows={2} placeholder={t(locale, 't10money.leadDetailsPlaceholder')} className={inputClass} />
-      </Field>
+      <Textarea
+        label={t(locale, 't10money.leadDetails')}
+        hint={t(locale, 't10money.leadDetailsHint')}
+        name="details"
+        rows={2}
+        placeholder={t(locale, 't10money.leadDetailsPlaceholder')}
+      />
 
       {state?.error && (
-        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-line text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{state.error}</span>
         </div>
       )}
 
       <div className="flex flex-wrap gap-2">
-        <button type="submit" disabled={isPending} className={primaryBtnClass}>
+        <Button type="submit" variant="primary" disabled={isPending}>
           {isPending ? t(locale, 't10money.leadSaving') : t(locale, 't10money.leadSave')}
-        </button>
-        <button type="button" onClick={() => setOpen(false)} className={secondaryBtnClass}>
+        </Button>
+        <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
           {t(locale, 't10money.leadCancel')}
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -395,7 +395,7 @@ export function LeadsBoard({ leads, locale = 'en' }: { leads: LeadItem[]; locale
       {LEAD_STATUSES.map((status) => (
         <div key={status} className="bg-surface-2/70 rounded-2xl p-3">
           <div className="flex items-center justify-between px-1 pb-2">
-            <StatusBadge status={statusLabel(status, locale)} />
+            <StatusPill status={status} locale={locale} />
             <span className="text-[11px] font-bold bg-surface border border-line rounded-full px-2 py-0.5 text-ink-2">
               {grouped[status].length}
             </span>

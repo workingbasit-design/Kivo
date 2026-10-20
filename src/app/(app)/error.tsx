@@ -2,7 +2,8 @@
 
 import React, { useEffect } from 'react';
 import { AlertTriangle, RotateCcw } from '@/components/icons';
-import { primaryBtnClass } from '@/components/ui';
+
+import { Button } from '@/components/kit';
 
 /**
  * Error boundary for the signed-in app. Next.js renders this when any page
@@ -26,7 +27,7 @@ export default function AppError({
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-6">
       <div className="max-w-md w-full text-center bg-surface border border-line rounded-3xl p-8 md:p-10 shadow-sm">
-        <div className="w-12 h-12 rounded-2xl bg-amber-100 text-warn-text flex items-center justify-center mx-auto mb-5">
+        <div className="w-12 h-12 rounded-2xl bg-warn-bg text-warn-text flex items-center justify-center mx-auto mb-5">
           <AlertTriangle size={22} />
         </div>
         <h1 className="text-xl font-bold text-ink mb-2">Something went wrong</h1>
@@ -34,13 +35,14 @@ export default function AppError({
           This page couldn&apos;t load. Your data is safe - try again, and if it
           keeps happening, contact support with the code below.
         </p>
-        <button
+        <Button
           type="button"
           onClick={reset}
-          className={primaryBtnClass + ' rounded-full px-8'}
+          variant="primary"
+          className="rounded-full px-8"
         >
           <RotateCcw size={15} /> Try again
-        </button>
+        </Button>
         {error.digest && (
           <p className="mt-5 text-[11px] font-mono text-ink-2">Error code: {error.digest}</p>
         )}

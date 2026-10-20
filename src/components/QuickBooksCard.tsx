@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { PlugZap, Unplug, RefreshCw, CheckCircle2, XCircle, MinusCircle, ExternalLink } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
-import { Badge, Card, dangerBtnClass, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
+import { Button, Card, StatusBadge } from '@/components/kit';
 import ConfirmDialog from '@/components/ConfirmDialog';
 
 interface SyncItemResult {
@@ -154,10 +154,10 @@ export default function QuickBooksCard({
 
   const bannerClass =
     banner?.kind === 'ok'
-      ? 'bg-ok-bg text-emerald-800 border-emerald-200'
+      ? 'bg-ok-bg text-ok border-line'
       : banner?.kind === 'warn'
-        ? 'bg-warn-bg text-amber-800 border-amber-200'
-        : 'bg-danger-bg text-rose-800 border-rose-200';
+        ? 'bg-warn-bg text-warn-text border-warn-line'
+        : 'bg-danger-bg text-danger border-line';
 
   const notable = result?.items.filter((i) => i.status !== 'synced') ?? [];
 
@@ -168,13 +168,13 @@ export default function QuickBooksCard({
           <h3 className="font-bold text-ink">{t(locale, 'quickbooks.cardTitle')}</h3>
           <p className="text-sm text-ink-2 mt-1">{t(locale, 'quickbooks.cardDesc')}</p>
         </div>
-        <Badge tone={connected ? 'success' : 'neutral'}>
+        <StatusBadge tone={connected ? 'done' : 'neutral'}>
           {connected ? t(locale, 'quickbooks.connected') : t(locale, 'quickbooks.notConnected')}
-        </Badge>
+        </StatusBadge>
       </div>
 
       {sandbox && connected && (
-        <p className="mt-3 inline-block text-xs font-semibold px-2 py-1 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200">
+        <p className="mt-3 inline-block text-xs font-semibold px-2 py-1 rounded-lg bg-info-bg text-info border border-line">
           {t(locale, 'quickbooks.sandboxBadge')}
         </p>
       )}
@@ -195,7 +195,7 @@ export default function QuickBooksCard({
                 href="https://developer.intuit.com"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1 text-indigo-600 hover:underline font-semibold"
+                className="inline-flex items-center gap-1 text-info hover:underline font-semibold"
               >
                 developer.intuit.com <ExternalLink size={12} />
               </a>
@@ -213,22 +213,22 @@ export default function QuickBooksCard({
 
       <div className="mt-4 flex flex-wrap gap-2">
         {!connected ? (
-          <button
+          <Button
             type="button"
+            variant="primary"
             onClick={() => (window.location.href = '/api/integrations/quickbooks/connect')}
-            className={primaryBtnClass}
           >
             <PlugZap size={16} /> {t(locale, 'quickbooks.connectBtn')}
-          </button>
+          </Button>
         ) : (
           <>
-            <button type="button" onClick={doSync} disabled={syncing} className={primaryBtnClass}>
+            <Button type="button" variant="primary" onClick={doSync} disabled={syncing}>
               <RefreshCw size={16} className={syncing ? 'animate-spin' : ''} />{' '}
               {syncing ? t(locale, 'quickbooks.syncing') : t(locale, 'quickbooks.syncNowBtn')}
-            </button>
-            <button type="button" onClick={() => setConfirming(true)} className={secondaryBtnClass}>
+            </Button>
+            <Button type="button" variant="secondary" onClick={() => setConfirming(true)}>
               <Unplug size={16} /> {t(locale, 'quickbooks.disconnectBtn')}
-            </button>
+            </Button>
           </>
         )}
       </div>

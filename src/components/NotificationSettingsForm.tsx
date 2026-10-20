@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Bell } from '@/components/icons';
 import { toast } from 'sonner';
-import { Card, primaryBtnClass } from '@/components/ui';
+import { Button, Card } from '@/components/kit';
 import { t, type Locale } from '@/lib/i18n';
 import {
   NOTIFICATION_TYPES,
@@ -69,9 +69,9 @@ export default function NotificationSettingsForm({
           </label>
         ))}
         <div className="pt-3 flex items-center gap-3">
-          <button type="submit" className={primaryBtnClass}>
+          <Button variant="primary" type="submit">
             {t(locale, 'notifications.saveSettings')}
-          </button>
+          </Button>
           {saved && (
             <p role="status" className="text-xs font-medium text-ok">
               {savedMessage}

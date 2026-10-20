@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Search, Minus, Plus, AlertTriangle } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
-import { Card, Badge } from '@/components/ui';
+import { Card, StatusBadge } from '@/components/kit';
 import { adjustPartQuantity } from '@/app/actions/inventory';
 import { cn } from '@/lib/utils';
 
@@ -96,7 +96,7 @@ export default function InventoryClient({
           }}
           placeholder={T('searchPlaceholder')}
           aria-label={T('searchPlaceholder')}
-          className="w-full rounded-xl border border-line bg-surface pl-10 pr-4 py-3 text-sm min-h-[48px] focus:outline-none focus:ring-2 focus:ring-lime-500/40 focus:border-lime-500"
+          className="w-full rounded-xl border border-line bg-surface pl-10 pr-4 py-3 text-sm min-h-[48px] focus:outline-none focus:ring-2 focus:ring-focus/50 focus:border-ink"
         />
       </div>
 
@@ -107,7 +107,7 @@ export default function InventoryClient({
               <div className="min-w-0 flex-1">
                 <Link
                   href={`/inventory/${part.id}`}
-                  className="font-semibold text-sm text-ink hover:text-lime-700 truncate block"
+                  className="font-semibold text-sm text-ink truncate block"
                 >
                   {part.name}
                 </Link>
@@ -116,13 +116,13 @@ export default function InventoryClient({
                 )}
               </div>
               {part.outOfStock ? (
-                <Badge tone="danger">{T('outOfStock')}</Badge>
+                <StatusBadge tone="late">{T('outOfStock')}</StatusBadge>
               ) : part.lowStock ? (
-                <Badge tone="warning" className="inline-flex items-center gap-1">
+                <StatusBadge tone="warn">
                   <AlertTriangle size={11} /> {T('lowStock')}
-                </Badge>
+                </StatusBadge>
               ) : (
-                <Badge tone="success">{T('inStock')}</Badge>
+                <StatusBadge tone="done">{T('inStock')}</StatusBadge>
               )}
             </div>
 

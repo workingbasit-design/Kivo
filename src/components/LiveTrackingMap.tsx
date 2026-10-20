@@ -1,9 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import DispatcherMap, { type MapPin } from '@/components/DispatcherMap';
-import { Card } from '@/components/ui';
+import { Button } from '@/components/kit';
 import { t } from '@/lib/i18n';
 import type { Locale } from '@/lib/i18n';
 
@@ -71,7 +70,7 @@ export default function LiveTrackingMap({ locale = 'en' }: { locale?: Locale }) 
   if (!loaded) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-line border-t-zinc-900" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-line border-t-ink" />
       </div>
     );
   }
@@ -89,12 +88,9 @@ export default function LiveTrackingMap({ locale = 'en' }: { locale?: Locale }) 
         <p className="mx-auto mt-2 max-w-sm text-sm text-ink-2">
           {t(locale, 'gps.noJobsDesc') || 'When you have scheduled jobs, they\'ll appear here. Your technician\'s live location shows on the map once they start sharing.'}
         </p>
-        <Link
-          href="/jobs/new"
-          className="mt-4 inline-flex items-center rounded-lg bg-asphalt px-4 py-2.5 text-sm font-semibold text-white hover:bg-zinc-700"
-        >
+        <Button variant="primary" sm href="/jobs/new" className="mt-4">
           + {t(locale, 'gps.scheduleJob') || 'Schedule a job'}
-        </Link>
+        </Button>
       </div>
     );
   }
@@ -103,16 +99,16 @@ export default function LiveTrackingMap({ locale = 'en' }: { locale?: Locale }) 
   if (sharing === 0) {
     return (
       <div className="space-y-4">
-        <div className="rounded-xl bg-sky-50 border border-sky-200 p-4">
-          <h3 className="font-bold text-sky-900 text-sm">
+        <div className="rounded-xl bg-info-bg border border-info/25 p-4">
+          <h3 className="font-bold text-info text-sm">
             📍 {t(locale, 'gps.howToShareTitle') || 'How live tracking works'}
           </h3>
-          <ol className="mt-2 space-y-1.5 text-sm text-sky-800">
+          <ol className="mt-2 space-y-1.5 text-sm text-ink-2">
             <li>1. {t(locale, 'gps.howToShare1') || 'Open the job on your technician\'s phone'}</li>
             <li>2. {t(locale, 'gps.howToShare2') || 'Tap "Share my location" when starting the job'}</li>
             <li>3. {t(locale, 'gps.howToShare3') || 'Their live position appears on this map, auto-refreshing every 30 seconds'}</li>
           </ol>
-          <p className="mt-2 text-xs text-sky-600">
+          <p className="mt-2 text-xs text-ink-2">
             {t(locale, 'gps.privacyNoteShort') || 'Location is only shared during active jobs and auto-deletes after 24 hours.'}
           </p>
         </div>
@@ -153,8 +149,8 @@ export default function LiveTrackingMap({ locale = 'en' }: { locale?: Locale }) 
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <span className="relative flex h-2.5 w-2.5">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
-          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-600" />
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-ok opacity-75" />
+          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-ok" />
         </span>
         <p className="text-sm font-semibold text-ink">
           {t(locale, 'gps.sharingNow').replace('{count}', String(sharing))}
@@ -170,9 +166,9 @@ export default function LiveTrackingMap({ locale = 'en' }: { locale?: Locale }) 
             <a
               key={job.id}
               href={`/jobs/${job.id}`}
-              className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-ok-bg/50 p-3 hover:shadow-sm transition-shadow"
+              className="flex items-center gap-3 rounded-xl border border-ok/25 bg-ok-bg/50 p-3 hover:shadow-sm transition-shadow"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-lg">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ok-bg text-lg">
                 📍
               </div>
               <div className="min-w-0 flex-1">
@@ -181,7 +177,7 @@ export default function LiveTrackingMap({ locale = 'en' }: { locale?: Locale }) 
                   {[job.customerName, job.technician].filter(Boolean).join(' · ')}
                 </p>
               </div>
-              <span className="shrink-0 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-bold text-ok">
+              <span className="shrink-0 rounded-full bg-ok-bg px-2.5 py-1 text-[11px] font-bold text-ok">
                 ● {t(locale, 'gps.live') || 'LIVE'}
               </span>
             </a>

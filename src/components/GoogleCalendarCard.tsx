@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { CalendarDays, RefreshCw } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
-import { Badge, primaryBtnClass } from '@/components/ui';
+import { Button, StatusBadge } from '@/components/kit';
 import type { SyncOutcome } from '@/lib/googleCalendarSync';
 
 export type CalendarInitial = {
@@ -68,19 +68,25 @@ export default function GoogleCalendarCard({
             <p className="text-sm text-ink-2">{tr('integrations.calendarNotConnected')}</p>
           )}
         </div>
-        {state.connected && !state.needsScope && <Badge tone="success">Google</Badge>}
+        {state.connected && !state.needsScope && <StatusBadge tone="done">Google</StatusBadge>}
       </div>
 
       <div className="flex flex-wrap gap-2">
         {!state.connected || state.needsScope ? (
-          <a href="/api/google/connect" className={primaryBtnClass}>
+          <Button href="/api/google/connect" variant="primary">
             {tr('integrations.connectGoogle')}
-          </a>
+          </Button>
         ) : (
-          <button type="button" onClick={sync} disabled={pending} className={primaryBtnClass}>
+          <Button
+            variant="primary"
+            type="button"
+            onClick={sync}
+            disabled={pending}
+            className="disabled:opacity-60 disabled:cursor-not-allowed"
+          >
             <RefreshCw size={16} className={pending ? 'animate-spin' : ''} />
             {tr('integrations.calendarSyncNow')}
-          </button>
+          </Button>
         )}
       </div>
     </div>

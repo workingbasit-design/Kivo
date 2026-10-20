@@ -40,7 +40,7 @@ export default function MorphEmptyState({
             animate={{ scale: 1, opacity: 1, rotate: 0 }}
             exit={{ scale: 0.6, opacity: 0, rotate: 8 }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-            className="absolute inset-0 rounded-3xl bg-gradient-to-br from-zinc-100 to-zinc-200 flex items-center justify-center"
+            className="absolute inset-0 rounded-3xl bg-gradient-to-br from-surface-2 to-line flex items-center justify-center"
           >
             <Icon size={32} className="text-ink-2" />
           </motion.div>

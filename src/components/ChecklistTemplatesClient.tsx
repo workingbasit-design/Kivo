@@ -9,7 +9,7 @@ import {
   deleteChecklistTemplate,
   type JobOpsActionResult,
 } from '@/app/actions/jobops';
-import { Card } from '@/components/ui';
+import { Card } from '@/components/kit';
 import { jInputClass, jPrimaryBtnClass, jSecondaryBtnClass } from '@/components/jobops-classes';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { formatMoney } from '@/lib/money';
@@ -39,9 +39,9 @@ export function ChecklistTemplatesClient({
     <div className="space-y-4">
       {templates.length === 0 && editing !== 'new' ? (
         <Card className="p-8 text-center">
-          <ListChecks size={28} className="mx-auto text-zinc-300 mb-3" />
+          <ListChecks size={28} className="mx-auto text-line-strong mb-3" />
           <p className="text-sm font-bold text-ink">{t(locale, 'jobops.templates.empty')}</p>
-          <p className="text-xs text-graphite mt-1 mb-4">{t(locale, 'jobops.templates.emptyHint')}</p>
+          <p className="text-xs text-ink-2 mt-1 mb-4">{t(locale, 'jobops.templates.emptyHint')}</p>
           <button type="button" onClick={() => setEditing('new')} className={jPrimaryBtnClass}>
             <Plus size={14} /> {t(locale, 'jobops.templates.new')}
           </button>
@@ -114,10 +114,10 @@ function TemplateRow({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="text-sm font-bold text-ink flex items-center gap-2">
-            <ListChecks size={14} className="text-graphite shrink-0" />
+            <ListChecks size={14} className="text-ink-2 shrink-0" />
             <span className="truncate">{template.name}</span>
           </h3>
-          <p className="text-[11px] text-graphite mt-1">
+          <p className="text-[11px] text-ink-2 mt-1">
             {template.items.length} {t(locale, 'jobops.templates.items')}
           </p>
           {(template.price != null || template.durationMin != null) && (
@@ -128,23 +128,23 @@ function TemplateRow({
                 </span>
               )}
               {template.durationMin != null && (
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-graphite bg-surface-2 rounded-lg px-2 py-0.5">
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-ink-2 bg-surface-2 rounded-lg px-2 py-0.5">
                   <Clock size={10} /> {template.durationMin} min
                 </span>
               )}
             </div>
           )}
           {template.notes && (
-            <p className="text-xs text-graphite mt-2 line-clamp-2">{template.notes}</p>
+            <p className="text-xs text-ink-2 mt-2 line-clamp-2">{template.notes}</p>
           )}
           <ul className="mt-2 space-y-1">
             {template.items.slice(0, 5).map((label, i) => (
-              <li key={i} className="text-xs text-graphite truncate">
+              <li key={i} className="text-xs text-ink-2 truncate">
                 {i + 1}. {label}
               </li>
             ))}
             {template.items.length > 5 && (
-              <li className="text-[11px] text-graphite">…</li>
+              <li className="text-[11px] text-ink-2">…</li>
             )}
           </ul>
           <Link
@@ -162,7 +162,7 @@ function TemplateRow({
             disabled={editing || isPending}
             title={t(locale, 'jobops.templates.edit')}
             aria-label={`${t(locale, 'jobops.templates.edit')}: ${template.name}`}
-            className="min-w-[44px] min-h-[44px] inline-flex items-center justify-center text-graphite hover:text-ink hover:bg-surface-2 rounded-lg transition-colors"
+            className="min-w-[44px] min-h-[44px] inline-flex items-center justify-center text-ink-2 hover:text-ink hover:bg-surface-2 rounded-lg transition-colors"
           >
             <Pencil size={14} />
           </button>
@@ -172,7 +172,7 @@ function TemplateRow({
             disabled={editing || isPending}
             title={t(locale, 'jobops.templates.delete')}
             aria-label={`${t(locale, 'jobops.templates.delete')}: ${template.name}`}
-            className="min-w-[44px] min-h-[44px] inline-flex items-center justify-center text-zinc-300 hover:text-danger hover:bg-danger-bg rounded-lg transition-colors"
+            className="min-w-[44px] min-h-[44px] inline-flex items-center justify-center text-line-strong hover:text-danger hover:bg-danger-bg rounded-lg transition-colors"
           >
             <Trash2 size={14} />
           </button>
@@ -216,7 +216,7 @@ function TemplateEditor({
       <form ref={formRef} action={formAction} className="space-y-4">
         {template && <input type="hidden" name="id" value={template.id} />}
         <div>
-          <label className="block text-[11px] font-bold text-graphite mb-1">
+          <label className="block text-[11px] font-bold text-ink-2 mb-1">
             {t(locale, 'jobops.templates.name')}
           </label>
           <input
@@ -232,7 +232,7 @@ function TemplateEditor({
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-[11px] font-bold text-graphite mb-1">
+            <label className="block text-[11px] font-bold text-ink-2 mb-1">
               {bundle('price')}
             </label>
             <input
@@ -246,7 +246,7 @@ function TemplateEditor({
             />
           </div>
           <div>
-            <label className="block text-[11px] font-bold text-graphite mb-1">
+            <label className="block text-[11px] font-bold text-ink-2 mb-1">
               {bundle('duration')}
             </label>
             <input
@@ -262,7 +262,7 @@ function TemplateEditor({
           </div>
         </div>
         <div>
-          <label className="block text-[11px] font-bold text-graphite mb-1">
+          <label className="block text-[11px] font-bold text-ink-2 mb-1">
             {bundle('notes')}
           </label>
           <textarea
@@ -275,7 +275,7 @@ function TemplateEditor({
           />
         </div>
         <div>
-          <label className="block text-[11px] font-bold text-graphite mb-1">
+          <label className="block text-[11px] font-bold text-ink-2 mb-1">
             {t(locale, 'jobops.templates.itemsLabel')}
           </label>
           <textarea
@@ -285,10 +285,10 @@ function TemplateEditor({
             defaultValue={template?.items.join('\n') ?? ''}
             className={`${jInputClass} font-mono text-[13px]`}
           />
-          <p className="text-[11px] text-graphite mt-1">{t(locale, 'jobops.templates.itemsHint')}</p>
+          <p className="text-[11px] text-ink-2 mt-1">{t(locale, 'jobops.templates.itemsHint')}</p>
         </div>
         {state?.error && (
-          <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
+          <div className="flex items-start gap-2 bg-danger-bg border border-danger/30 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
             <AlertCircle size={14} className="mt-0.5 shrink-0" />
             <span>{state.error}</span>
           </div>

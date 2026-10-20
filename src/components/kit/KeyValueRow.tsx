@@ -1,8 +1,7 @@
 import type { ReactNode } from 'react';
-import type { IconComponent } from '@/components/icons';
 
 export interface KeyValueRowProps {
-  icon: IconComponent;
+  icon: ReactNode; // rendered element, not the component (see kit PageHeader)
   label: string;
   sub?: string;
   action?: ReactNode;
@@ -11,13 +10,13 @@ export interface KeyValueRowProps {
 /**
  * Icon + label/sub + right-side action (mockup `.kv2`).
  */
-export function KeyValueRow({ icon: Icon, label, sub, action }: KeyValueRowProps) {
+export function KeyValueRow({ icon, label, sub, action }: KeyValueRowProps) {
   return (
     <div
       data-kit="key-value-row"
       className="grid grid-cols-[24px_minmax(0,1fr)_auto] gap-3 items-center py-2.5 border-t border-line first:border-t-0"
     >
-      <Icon size={22} aria-hidden="true" className="text-ink-2" />
+      <span aria-hidden="true" className="inline-flex text-ink-2 [&_svg]:size-[22px]">{icon}</span>
       <div className="min-w-0">
         <b className="block font-semibold text-ink">{label}</b>
         {sub && (

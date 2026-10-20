@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { CreditCard, Link2, PlugZap } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
-import { Card, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
+import { Button, Card } from '@/components/kit';
 import CopyButton from '@/components/CopyButton';
 
 /**
@@ -53,9 +53,9 @@ export default function InvoicePayButton({
             <p className="text-xs text-ink-2 mt-1">
               {t(locale, 'invoicePay.notConnectedDesc')}
             </p>
-            <a href={paymentsHref} className={`${secondaryBtnClass} mt-3`}>
+            <Button variant="secondary" href={paymentsHref} className="mt-3">
               {t(locale, 'invoicePay.goToPayments')}
-            </a>
+            </Button>
           </div>
         </div>
       </Card>
@@ -112,16 +112,16 @@ export default function InvoicePayButton({
         <p className="text-[11px] text-ink-2 mt-2">
           {t(locale, 'invoicePay.feeNote')}
         </p>
-        <button
-          type="button"
+        <Button
+          variant="secondary"
+          className="mt-3"
           onClick={() => {
             setUrl(null);
             setError(null);
           }}
-          className={`${secondaryBtnClass} mt-3`}
         >
           {t(locale, 'invoicePay.newLink')}
-        </button>
+        </Button>
       </Card>
     );
   }
@@ -129,17 +129,19 @@ export default function InvoicePayButton({
   return (
     <Card className="p-5">
       <p className="text-xs text-ink-2 mb-3">{t(locale, 'invoicePay.collectDesc')}</p>
-      <button
+      <Button
+        variant="primary"
+        block
         type="button"
         onClick={create}
         disabled={pending}
-        className={`${primaryBtnClass} w-full min-h-[52px] text-sm`}
+        className="text-sm disabled:opacity-60 disabled:cursor-not-allowed"
       >
         <CreditCard size={16} />
         {pending
           ? t(locale, 'invoicePay.creating')
           : `${t(locale, 'invoicePay.collectPayment')} · ${formatMoney(balance, currency, locale)}`}
-      </button>
+      </Button>
       <p className="text-[11px] text-ink-2 mt-2 text-center">
         {t(locale, 'invoicePay.feeNote')}
       </p>

@@ -1,0 +1,168 @@
+/* EveryJob design tokens — the tokens file.
+   Tailwind v4 @theme token definitions. Kit-owned colours reference
+   docs/design/everyjob-kit.css variables (single source); legacy/third-party
+   tokens keep their values here. Excluded from the hard-coded colour count
+   by path ("tokens"). */
+
+/* ---------- EveryJob Vector design tokens ----------
+   FIX-NOW Session 2: where the kit already owns a colour, the token
+   references the kit CSS variable (e.g. --color-hivis: var(--hivis)) so
+   docs/design/everyjob-kit.css stays the single source — no hex here.
+   Tokens with no kit equivalent (legacy single-valued work-screen tokens,
+   deliberate accessibility remaps, dark-mode-only surfaces, third-party
+   brand colours) keep their values here, in the tokens section. */
+@theme {
+  /* --- Kit-owned colours: var() reference, no hex --- */
+  --color-ink: var(--ink); /* kit --ink (also mapped in the @theme inline block below) */
+  --color-lime: var(--hivis); /* canonical lime is kit --hivis (#D4F24C) */
+  --color-asphalt: var(--asphalt); /* text, the Collected panel, tab bar */
+  --color-concrete: var(--bg); /* page background (light) */
+  --color-hivis: var(--hivis); /* hi-vis lime: main action, active tab, money bars, now marker */
+  --color-reflective: var(--reflect); /* the stripe motif */
+  --color-safety: var(--warn); /* needs attention */
+  --color-safety-ink: var(--warn-text); /* safety-orange text on light surfaces */
+  --color-signal: var(--danger); /* late, overdue */
+  --color-pine: var(--ok); /* done */
+  --color-steel: var(--steel); /* charts on white (3:1+), secondary marks */
+  --color-ej-info: var(--info);
+  --color-ej-paper: var(--surface);
+  --color-ej-bg: var(--surface);
+  --color-ej-raised: var(--surface);
+  --color-ej-lime: var(--hivis);
+  --color-ej-accent: var(--hivis);
+
+  /* --- Legacy tokens with no kit equivalent: values live here --- */
+  --color-paper: #fafaf7; /* page background */
+  --color-smoke: #e8e8e3; /* borders, dividers */
+  --color-graphite: #55554e; /* secondary text */
+
+  /* DESIGN.md (Part C) - deliberate tokens. Use these on work screens:
+     bg-ej-paper, text-ej-ink, text-ej-muted, border-ej-smoke, bg-ej-lime,
+     text-ej-alert. Lime is a fill behind dark text, never text on white. */
+  --color-ej-ink: #14181a;
+  --color-ej-smoke: #f2f4f3;
+  --color-ej-muted: #5a6366;
+  --color-ej-alert: #c0392b;
+  /* 2026-10-01 accessibility: zinc-400 (#a1a1aa) is ~2.3:1 on paper -
+     unreadable for secondary text. Remapped to the zinc-500 value (#71717a,
+     ~4.8:1, passes WCAG 2.1 AA) so all 300+ muted-text usages stay legible. */
+  --color-zinc-400: #71717a;
+
+  /* ---------- Part B design tokens (docs/DESIGN.md) ----------
+     Full semantic palette. All text pairs measured >= 4.5:1 (2026-10-17).
+     Use bg-ej-*, text-ej-*, border-ej-* utilities.
+     Dark mode (Part B) is explicit: components opt in with `dark:` variants
+     (see @custom-variant above). Semantic tokens stay single-valued so
+     unmigrated screens never flip into an unreadable state. */
+  --color-ej-ink: #14181a;
+  --color-ej-muted: #5a6366;
+  --color-ej-secondary: #55554e;
+  --color-ej-disabled: #71717a;
+  --color-ej-surface: #fafaf7;
+  --color-ej-border: #e8e8e3;
+  --color-ej-primary: #161616;
+  --color-ej-on-primary: #ffffff;
+  --color-ej-focus: #161616;
+  --color-ej-success: #047857;
+  --color-ej-success-bg: #ecfdf5;
+  --color-ej-warning: #b45309;
+  --color-ej-warning-bg: #fffbeb;
+  --color-ej-danger: #c0392b;
+  --color-ej-danger-bg: #fef2f2;
+  --color-ej-info-bg: #eff6ff;
+  /* Radius by hierarchy */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+  /* Motion */
+  --motion-fast: 100ms;
+  --motion-base: 200ms;
+  --motion-slow: 250ms;
+  /* Type: system stack (migrate from Geist in Part C) */
+  --font-ej-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  /* Brand colours (third-party). Not part of the mockup palette; used only
+     for the WhatsApp brand surfaces. */
+  --color-wa: #25d366;
+  --color-wa-dark: #1fb857;
+  --color-wa-deep: #128c4a;
+
+  /* Dark-mode surfaces, sampled from the Part B mockup. Single-valued:
+     mapping these to a flipping kit var would invert light-mode usage. */
+  --color-night: #131518; /* page background (dark) */
+  --color-coal: #1c1f23; /* cards, tab bar (dark) */
+  --color-soot: #22262b; /* Collected panel (dark) */
+  /* Type: Barlow for interface text, Barlow Condensed for numbers and big
+     figures (self-hosted woff2, OFL - see docs/LICENSES.md). */
+  --font-sans: var(--font-barlow), -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-condensed: var(--font-barlow-condensed), var(--font-barlow),
+    -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+:root {
+  color-scheme: light;
+  /* DESIGN.md: paper white background, ink text. */
+  --background: #ffffff;
+  --foreground: #14181a;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* ---------- FIX-NOW Session 2 ----------
+   The kit token blocks (:root light + .dark) used to live here. They are
+   now served by docs/design/everyjob-kit.css (imported at the top of this
+   file) — the single global source. The only var defined locally is the
+   third-party brand gradient used by ui.tsx. */
+:root {
+  /* Brand gradient (Instagram-style CTA). Raw colours live here, in the tokens file. */
+  --gradient-instagram: linear-gradient(45deg, #833AB4, #FD1D1D, #FCB045);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-hivis-ink: var(--hivis-ink);
+  --color-hivis-soft: var(--hivis-soft);
+  --color-warn: var(--warn);
+  --color-warn-text: var(--warn-text);
+  --color-warn-bg: var(--warn-bg);
+  --color-warn-line: var(--warn-line);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-ok: var(--ok);
+  --color-ok-bg: var(--ok-bg);
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
+  --color-star: var(--star);
+  --color-biz: var(--biz);
+  --color-hero: var(--hero);
+  --color-hero-2: var(--hero-2);
+  --color-hero-ink: var(--hero-ink);
+  --color-hero-ink-2: var(--hero-ink-2);
+  --color-hero-line: var(--hero-line);
+  --color-nav: var(--nav);
+  --color-nav-ink: var(--nav-ink);
+  --color-nav-active: var(--nav-active);
+  --color-chart-a: var(--chart-a);
+  --color-chart-b: var(--chart-b);
+  --color-toast-bg: var(--toast-bg);
+  --color-toast-ink: var(--toast-ink);
+  --color-focus: var(--focus);
+  --color-topbar: var(--topbar);
+  /* Elevation tokens (the tokens file is the one place raw colours live). */
+  --shadow-kit-card: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-kit-pop: 0 8px 24px rgba(0, 0, 0, 0.14);
+  --shadow-kit-sheet: 0 -12px 40px rgba(0, 0, 0, 0.25);
+  --shadow-kit-toast: 0 10px 30px rgba(0, 0, 0, 0.25);
+}

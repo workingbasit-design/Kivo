@@ -1,10 +1,11 @@
 import { redirect } from 'next/navigation';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { PageHeader } from '@/components/ui';
+
 import TeamClient from '@/components/TeamClient';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
+import { PageTitle } from '../../_components/PageTitle';
 
 export const metadata = { title: 'Team | EveryJob' };
 
@@ -36,9 +37,9 @@ export default async function TeamPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageTitle
         title={tr('t10misc.team.pageTitle')}
-        subtitle={tr('t10misc.team.pageSubtitle')}
+        summary={tr('t10misc.team.pageSubtitle')}
       />
       <TeamClient
         members={members.map(

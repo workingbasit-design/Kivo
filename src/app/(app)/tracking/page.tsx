@@ -1,8 +1,9 @@
 import { requireAuth } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
-import { PageHeader, Card } from '@/components/ui';
+import { Card } from '@/components/kit';
 import LiveTrackingMap from '@/components/LiveTrackingMap';
+import { PageTitle } from '../_components/PageTitle';
 
 export const metadata = { title: 'Live tracking | EveryJob' };
 
@@ -17,7 +18,7 @@ export default async function TrackingPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={t(locale, 'gps.trackingTitle')} subtitle={t(locale, 'gps.mapDesc')} />
+      <PageTitle title={t(locale, 'gps.trackingTitle')} summary={t(locale, 'gps.mapDesc')} />
       <Card className="p-5 md:p-6">
         <LiveTrackingMap locale={locale} />
       </Card>

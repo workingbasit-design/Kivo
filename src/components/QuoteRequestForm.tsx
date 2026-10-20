@@ -30,7 +30,7 @@ export default function QuoteRequestForm() {
   if (state?.ok && !state.unmatched) {
     return (
       <div className="bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-6 md:p-8 text-center">
-        <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center mx-auto mb-4">
+        <div className="w-12 h-12 rounded-2xl bg-ok-bg flex items-center justify-center mx-auto mb-4">
           <CheckCircle2 className="w-6 h-6 text-ok" />
         </div>
         <h2 className="text-lg font-bold text-ink">{t('t10misc.directory.qrSentTitle')}</h2>
@@ -57,7 +57,7 @@ export default function QuoteRequestForm() {
   if (state?.ok && state.unmatched) {
     return (
       <div className="bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-6 md:p-8 text-center">
-        <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center mx-auto mb-4">
+        <div className="w-12 h-12 rounded-2xl bg-warn-bg flex items-center justify-center mx-auto mb-4">
           <Clock className="w-6 h-6 text-warn-text" />
         </div>
         <h2 className="text-lg font-bold text-ink">{t('t10misc.directory.qrSavedTitle')}</h2>
@@ -215,7 +215,7 @@ export default function QuoteRequestForm() {
       </div>
 
       {state?.error && (
-        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5" role="alert">
+        <div className="flex items-start gap-2 bg-danger-bg border border-line text-danger text-xs font-medium rounded-xl px-3 py-2.5" role="alert">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{state.error}</span>
         </div>
@@ -224,7 +224,7 @@ export default function QuoteRequestForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="w-full min-h-[48px] inline-flex items-center justify-center gap-2 rounded-xl bg-asphalt hover:bg-graphite text-white text-sm font-bold px-5 py-3 transition-colors disabled:opacity-60"
+        className="w-full min-h-[48px] inline-flex items-center justify-center gap-2 rounded-xl bg-asphalt hover:bg-graphite text-hero-ink text-sm font-bold px-5 py-3 transition-colors disabled:opacity-60"
       >
         <Send size={15} /> {isPending ? t('t10misc.directory.qrSending') : t('t10misc.directory.qrSubmit')}
       </button>

@@ -101,7 +101,7 @@ export default function TemplateEditor({
             onClick={() => setSelected(id)}
             className={`px-3 py-2 rounded text-sm ${
               selected === id
-                ? 'bg-asphalt text-white'
+                ? 'bg-asphalt text-hero-ink'
                 : 'bg-surface-2 text-ink'
             }`}
           >
@@ -114,18 +114,18 @@ export default function TemplateEditor({
       <div className="flex gap-2">
         <button
           onClick={() => setEditLocale('en')}
-          className={`px-3 py-1 rounded text-sm ${editLocale === 'en' ? 'bg-asphalt text-white' : 'bg-surface-2'}`}
+          className={`px-3 py-1 rounded text-sm ${editLocale === 'en' ? 'bg-asphalt text-hero-ink' : 'bg-surface-2'}`}
         >
           English
         </button>
         <button
           onClick={() => setEditLocale('fr')}
-          className={`px-3 py-1 rounded text-sm ${editLocale === 'fr' ? 'bg-asphalt text-white' : 'bg-surface-2'}`}
+          className={`px-3 py-1 rounded text-sm ${editLocale === 'fr' ? 'bg-asphalt text-hero-ink' : 'bg-surface-2'}`}
         >
           Français
         </button>
         {isCustom && (
-          <span className="ml-2 px-2 py-1 bg-amber-100 text-amber-800 rounded text-xs self-center">
+          <span className="ml-2 px-2 py-1 bg-warn-bg text-warn-text rounded text-xs self-center">
             {t('Customized', 'Personnalisé')}
           </span>
         )}
@@ -184,7 +184,7 @@ export default function TemplateEditor({
         <button
           onClick={handleSave}
           disabled={pending || !subject.trim() || !body.trim()}
-          className="px-4 py-2 bg-asphalt text-white rounded disabled:opacity-50"
+          className="px-4 py-2 bg-asphalt text-hero-ink rounded disabled:opacity-50"
         >
           {t('Save template', 'Enregistrer le modèle')}
         </button>

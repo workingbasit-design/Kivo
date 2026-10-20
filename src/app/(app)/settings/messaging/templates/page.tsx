@@ -1,8 +1,9 @@
 import { requireAuth } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';
-import { PageHeader } from '@/components/ui';
+
 import TemplateEditor from '@/components/TemplateEditor';
 import Link from 'next/link';
+import { PageTitle } from '../../../_components/PageTitle';
 
 export const metadata = { title: 'Message templates | EveryJob' };
 
@@ -13,9 +14,9 @@ export default async function TemplatesPage() {
 
   return (
     <div className="space-y-6 max-w-2xl">
-      <PageHeader
+      <PageTitle
         title={loc === 'fr' ? 'Modèles de messages' : 'Message templates'}
-        subtitle={
+        summary={
           loc === 'fr'
             ? 'Personnalisez les messages automatiques. Laissez vide pour utiliser le modèle intégré.'
             : 'Customize automatic messages. Leave empty to use the built-in template.'

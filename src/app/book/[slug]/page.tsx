@@ -76,14 +76,14 @@ export default async function PublicBookingPage({
 
   return (
     <div className="min-h-screen bg-paper font-sans">
-      <header className="bg-asphalt text-white">
+      <header className="bg-asphalt text-hero-ink">
         <div className="max-w-lg mx-auto px-4 py-8 text-center">
           <div className="mx-auto mb-3 w-fit">
             <EveryJobLogo size={44} />
           </div>
           <h1 className="text-2xl font-bold tracking-tight">{business.name}</h1>
           {page.headline && (
-            <p className="text-white/70 mt-1 text-sm">{page.headline}</p>
+            <p className="text-hero-ink/70 mt-1 text-sm">{page.headline}</p>
           )}
         </div>
       </header>

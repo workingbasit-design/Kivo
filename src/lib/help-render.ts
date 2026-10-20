@@ -31,11 +31,11 @@ export function renderHelpBody(body: string): string {
         inList = false;
       }
       out.push(
-        `<h2 class="mt-6 mb-2 text-base font-bold text-zinc-900">${escapeHtml(line.slice(3))}</h2>`
+        `<h2 class="mt-6 mb-2 text-base font-bold text-ink">${escapeHtml(line.slice(3))}</h2>`
       );
     } else if (/^[-*] /.test(line)) {
       if (!inList) {
-        out.push('<ul class="my-2 space-y-1.5 list-disc pl-5 text-sm text-zinc-700">');
+        out.push('<ul class="my-2 space-y-1.5 list-disc pl-5 text-sm text-ink">');
         inList = true;
       }
       out.push(`<li>${escapeHtml(line.slice(2))}</li>`);
@@ -49,13 +49,13 @@ export function renderHelpBody(body: string): string {
         out.push('</ul>');
         inList = false;
       }
-      out.push(`<p class="my-1.5 text-sm text-zinc-700">${escapeHtml(line)}</p>`);
+      out.push(`<p class="my-1.5 text-sm text-ink">${escapeHtml(line)}</p>`);
     } else {
       if (inList) {
         out.push('</ul>');
         inList = false;
       }
-      out.push(`<p class="my-2 text-sm leading-6 text-zinc-700">${escapeHtml(line)}</p>`);
+      out.push(`<p class="my-2 text-sm leading-6 text-ink">${escapeHtml(line)}</p>`);
     }
   }
   if (inList) out.push('</ul>');

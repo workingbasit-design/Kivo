@@ -20,7 +20,7 @@ export default function OfflinePage() {
           <EveryJobLogo size={52} />
         </div>
         <div className="bg-surface rounded-3xl border border-line/60 shadow-sm p-8">
-          <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center mx-auto mb-4">
+          <div className="w-12 h-12 rounded-2xl bg-warn-bg flex items-center justify-center mx-auto mb-4">
             <WifiOff className="w-6 h-6 text-warn-text" />
           </div>
           <h1 className="text-xl font-bold text-ink tracking-tight">You&apos;re offline</h1>

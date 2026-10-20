@@ -42,38 +42,38 @@ function Msg({
  */
 export default function CopilotDemo({ strings }: { strings: CopilotDemoStrings }) {
   return (
-    <div className="bg-surface/[0.05] rounded-[24px] border border-white/10 p-6 md:p-8">
+    <div className="bg-surface/[0.05] rounded-[24px] border border-hero-ink/10 p-6 md:p-8">
       <div
         className="ej-chat-msg flex items-center gap-2.5 mb-6"
         style={{ '--msg-delay': '0ms' } as CSSProperties}
       >
         <span className="w-8 h-8 rounded-full bg-asphalt flex items-center justify-center">
-          <Bot size={16} className="text-white" />
+          <Bot size={16} className="text-hero-ink" />
         </span>
         <span className="font-semibold text-[15px]">{strings.chatTitle}</span>
-        <span className="ml-auto text-[11px] font-mediumst text-white/40">
+        <span className="ml-auto text-[11px] font-mediumst text-hero-ink/40">
           {strings.langBadge}
         </span>
       </div>
       <div className="space-y-4 text-[14px]">
         <Msg side="user" delay={250}>
-          <p className="bg-asphalt text-white px-4 py-2.5 rounded-2xl rounded-br-md">
+          <p className="bg-asphalt text-hero-ink px-4 py-2.5 rounded-2xl rounded-br-md">
             {strings.msg1}
           </p>
         </Msg>
         <Msg side="bot" delay={950}>
-          <p className="bg-surface/10 text-zinc-200 px-4 py-2.5 rounded-2xl rounded-bl-md">
+          <p className="bg-surface/10 text-ink-2 px-4 py-2.5 rounded-2xl rounded-bl-md">
             {strings.msg2}
           </p>
         </Msg>
         <Msg side="user" delay={1650}>
-          <p className="bg-asphalt text-white px-4 py-2.5 rounded-2xl rounded-br-md">
+          <p className="bg-asphalt text-hero-ink px-4 py-2.5 rounded-2xl rounded-br-md">
             {strings.msg3}
           </p>
         </Msg>
         <Msg side="bot" delay={2350}>
-          <div className="bg-emerald-500/10 border border-emerald-400/25 px-4 py-3 rounded-2xl rounded-bl-md">
-            <p className="text-emerald-300 font-semibold flex items-center gap-2 mb-1 text-[14px]">
+          <div className="bg-ok/10 border border-ok/25 px-4 py-3 rounded-2xl rounded-bl-md">
+            <p className="text-ok font-semibold flex items-center gap-2 mb-1 text-[14px]">
               <Check size={15} /> {strings.msg4Title}
             </p>
             <p className="text-ink-2 text-[13px]">{strings.msg4Detail}</p>
@@ -81,12 +81,12 @@ export default function CopilotDemo({ strings }: { strings: CopilotDemoStrings }
         </Msg>
       </div>
       <div
-        className="ej-chat-msg mt-6 bg-surface/5 border border-white/10 rounded-full px-5 py-3 flex items-center gap-3"
+        className="ej-chat-msg mt-6 bg-surface/5 border border-hero-ink/10 rounded-full px-5 py-3 flex items-center gap-3"
         style={{ '--msg-delay': '2900ms' } as CSSProperties}
       >
         <span className="text-lime text-[13px] font-medium">{strings.inputLabel}</span>
         <span className="w-px h-4 bg-surface/15" />
-        <span className="text-white/30 text-[14px]">{strings.inputHint}</span>
+        <span className="text-hero-ink/30 text-[14px]">{strings.inputHint}</span>
       </div>
     </div>
   );

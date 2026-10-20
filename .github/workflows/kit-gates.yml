@@ -1,0 +1,83 @@
+name: Kit Gates
+
+# FIX-NOW Session 3: runs on EVERY push (all branches) and every PR.
+# Fails the push if any of these fail:
+#   - hard-coded colour count > 0 (scripts/check-colour-count.mjs)
+#   - readability test (tests/kit/readability.spec.ts, no new deps)
+#   - lint
+#   - typecheck
+#
+# Merging to main requires these checks (branch protection).
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  gates:
+    name: lint / typecheck / colour-count / tokens
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      - run: node scripts/check-colour-count.mjs
+      - run: node scripts/check-design-tokens.mjs
+      - run: node --experimental-strip-types scripts/check-i18n-parity.mjs
+      - run: node scripts/check-copy-lint.mjs
+
+  readability:
+    name: readability (light + dark, 390px)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: kivo_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://test:test@localhost:5432/kivo_test
+      E2E_BASE_URL: http://127.0.0.1:3100
+      KIT_BASE_URL: http://127.0.0.1:3100
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx prisma migrate deploy
+      - run: npx playwright install --with-deps chromium
+      # Seed: creates seed-owner@mapleleaf.example.ca (password SeedPass123!).
+      - run: node tests/scripts/seed-e2e.mjs
+      - run: npm run build
+      # Start the production build in the background; wait for :3100.
+      - run: |
+          (npm run start:e2e > /tmp/next-start.log 2>&1 &)
+          for i in $(seq 1 60); do
+            if curl -sf http://127.0.0.1:3100/api/health > /dev/null; then break; fi
+            sleep 2
+          done
+          curl -sf http://127.0.0.1:3100/api/health > /dev/null
+      # Sign in as the seeded owner and save the storageState the spec needs.
+      - run: node tests/kit/gen-auth.mjs
+      - run: npx playwright test -c playwright.readability.config.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: readability-screenshots
+          path: test-results/kit/
+          retention-days: 14

@@ -17,8 +17,8 @@ type Report = {
 };
 
 const STATUS_STYLE: Record<string, string> = {
-  OPEN: 'bg-warn-bg text-warn-text border-amber-200',
-  REVIEWED: 'bg-sky-50 text-sky-700 border-sky-200',
+  OPEN: 'bg-warn-bg text-warn-text border-warn-line',
+  REVIEWED: 'bg-info-bg text-info border-line',
   DISMISSED: 'bg-surface-2 text-ink-2 border-line',
 };
 
@@ -81,7 +81,7 @@ export default function ReportRow({ report }: { report: Report }) {
             <button
               onClick={() => setStatusTo('REVIEWED')}
               disabled={busy}
-              className="min-h-[44px] inline-flex items-center justify-center gap-1.5 text-xs font-bold px-4 rounded-xl bg-sky-600 hover:bg-sky-700 text-white disabled:opacity-60"
+              className="min-h-[44px] inline-flex items-center justify-center gap-1.5 text-xs font-bold px-4 rounded-xl bg-info hover:bg-info text-hero-ink disabled:opacity-60"
             >
               <Check size={14} /> {busy ? '…' : t('t10misc.reports.markReviewed')}
             </button>

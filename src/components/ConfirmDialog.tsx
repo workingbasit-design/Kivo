@@ -3,7 +3,7 @@
 import { useEffect, type ReactNode } from 'react';
 import { X } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
-import { dangerBtnClass, secondaryBtnClass } from '@/components/ui';
+import { Button } from '@/components/kit';
 
 /**
  * Shared in-app confirmation dialog. Never use the native `confirm()`
@@ -79,7 +79,7 @@ export default function ConfirmDialog({
       <button
         aria-label={t(locale, 't10misc.confirmDialog.close')}
         onClick={() => !busy && close()}
-        className="absolute inset-0 bg-zinc-950/50 backdrop-blur-[2px] cursor-default"
+        className="absolute inset-0 bg-ink/45 backdrop-blur-[2px] cursor-default"
       />
       <div className="relative w-full sm:max-w-sm bg-surface rounded-t-3xl sm:rounded-3xl shadow-2xl border border-line p-6 max-h-[90vh] overflow-y-auto ej-sheet-in">
         <div className="flex items-start justify-between gap-3">
@@ -98,22 +98,28 @@ export default function ConfirmDialog({
         {error && (
           <div
             role="alert"
-            className="mt-4 flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5"
+            className="mt-4 flex items-start gap-2 bg-danger-bg border border-danger/30 text-danger text-xs font-medium rounded-xl px-3 py-2.5"
           >
             <span>{error}</span>
           </div>
         )}
         <div className="mt-6 flex flex-col-reverse sm:flex-row gap-2">
-          <button onClick={close} disabled={busy} className={secondaryBtnClass + ' flex-1'}>
+          <Button
+            variant="secondary"
+            onClick={close}
+            disabled={busy}
+            className="flex-1 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
             {keep}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant={danger ? 'danger' : 'secondary'}
             onClick={onConfirm}
             disabled={busy}
-            className={(danger ? dangerBtnClass : secondaryBtnClass) + ' flex-1'}
+            className="flex-1 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {busy ? t(locale, 't10misc.confirmDialog.working') : yes}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

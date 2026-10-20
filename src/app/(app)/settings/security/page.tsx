@@ -1,9 +1,10 @@
 import { requireAuth } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
-import { PageHeader } from '@/components/ui';
+
 import { prisma } from '@/lib/prisma';
 import TotpSetupClient from '@/components/TotpSetupClient';
+import { PageTitle } from '../../_components/PageTitle';
 
 export const metadata = { title: 'Security | EveryJob' };
 
@@ -26,7 +27,7 @@ export default async function SecuritySettingsPage({
   });
   return (
     <div className="space-y-6">
-      <PageHeader title={t(locale, 'security.title')} subtitle={t(locale, 'security.subtitle')} />
+      <PageTitle title={t(locale, 'security.title')} summary={t(locale, 'security.subtitle')} />
       <TotpSetupClient
         locale={locale}
         initiallyEnabled={row?.totpEnabled ?? false}

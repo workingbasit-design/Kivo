@@ -1,7 +1,7 @@
 import React from 'react';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { PageHeader, Card, EmptyState, primaryBtnClass, inputClass, Field } from '@/components/ui';
+
 import { dayRange, toISODateLocal, formatDateLabel, localeDateTag } from '@/lib/utils';
 import { MapPinned } from '@/components/icons';
 import RoutesClient from '@/components/RoutesClient';
@@ -9,6 +9,8 @@ import type { RouteStop } from '@/lib/routes';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { centsToDollars } from '@/lib/money';
+import { EmptyState, DateField, Button, Card } from '@/components/kit';
+import { PageTitle } from '../_components/PageTitle';
 
 const ROUTE_STATUSES = ['SCHEDULED', 'IN PROGRESS'];
 
@@ -51,45 +53,33 @@ export default async function RoutesPage({
 
   return (
     <div className="space-y-5">
-      <PageHeader
+      <PageTitle
         title={T('routesTitle')}
-        subtitle={T('routesSubtitle').replace('{date}', formatDateLabel(dateStr, dateLocale))}
+        summary={T('routesSubtitle').replace('{date}', formatDateLabel(dateStr, dateLocale))}
       />
 
       {stops.length === 0 ? (
         <Card>
           <form method="GET" action="/routes" className="px-5 pt-5">
             <div className="flex items-end gap-2 max-w-md">
-              <div className="flex-1">
-                <Field label={T('routesDay')}>
-                  <input
-                    id="route-date-empty"
-                    type="date"
-                    name="date"
-                    defaultValue={dateStr}
-                    className={inputClass}
-                    aria-label={T('routesRouteDate')}
-                  />
-                </Field>
+              <div className="flex-1 min-w-0">
+                <DateField label={T('routesDay')} name="date" defaultValue={dateStr} />
               </div>
-              <button
-                type="submit"
-                className="bg-asphalt hover:bg-zinc-700 text-white min-h-[44px] px-5 rounded-xl font-semibold text-xs transition-colors"
-              >
+              <Button type="submit" variant="secondary" sm>
                 {T('routesShow')}
-              </button>
+              </Button>
             </div>
           </form>
           <EmptyState
-            icon={<MapPinned size={24} />}
+            icon={<MapPinned />}
             title={T('routesEmptyTitle')}
-            description={T('routesEmptyDesc')}
-            action={
-              <a href="/schedule" className={primaryBtnClass}>
-                {T('routesGoSchedule')}
-              </a>
-            }
+            text={T('routesEmptyDesc')}
           />
+<div className="flex justify-center pb-10 -mt-6">
+            <Button href="/schedule" variant="primary">
+              {T('routesGoSchedule')}
+            </Button>
+          </div>
         </Card>
       ) : (
         <RoutesClient

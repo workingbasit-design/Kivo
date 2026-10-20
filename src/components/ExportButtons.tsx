@@ -5,7 +5,7 @@ import { Download } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { escapeCsvCell } from '@/lib/costing';
 import { formatMoney } from '@/lib/money';
-import { secondaryBtnClass } from '@/components/ui';
+import { Button } from '@/components/kit';
 
 export type ExportColumn = {
   key: string;
@@ -124,15 +124,16 @@ export default function ExportButtons({
   });
 
   return (
-    <button
+    <Button
+      variant="secondary"
       type="button"
       onClick={downloadCsv}
       disabled={disabled}
-      className={secondaryBtnClass}
+      className="disabled:opacity-60 disabled:cursor-not-allowed"
       title={t(locale, 'exports.csv')}
     >
       <Download size={14} />
       {busy === 'csv' ? t(locale, 'exports.preparing') : t(locale, 'exports.csv')}
-    </button>
+    </Button>
   );
 }

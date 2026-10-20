@@ -5,7 +5,7 @@ import { CalendarCheck, CheckCircle2, Clock, Phone } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { getBookingSlots, submitBookingWithTime, type SlotsResult } from '@/app/actions/booking-slots';
 import { HONEYPOT_FIELD, FORM_STARTED_FIELD } from '@/lib/bot-check';
-import { Field, inputClass, primaryBtnClass } from '@/components/ui';
+import { Button, Input, Select, Textarea } from '@/components/kit';
 import { formatMoney } from '@/lib/money';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 
@@ -97,8 +97,8 @@ export default function BookingForm({
 
   if (state.ok) {
     return (
-      <div className="bg-surface rounded-2xl border border-smoke shadow-sm p-8 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-ok flex items-center justify-center mx-auto mb-4">
+      <div className="bg-surface rounded-2xl border border-line shadow-sm p-8 text-center">
+        <div className="w-14 h-14 rounded-2xl bg-ok-bg text-ok flex items-center justify-center mx-auto mb-4">
           <CheckCircle2 size={28} />
         </div>
         <h2 className="text-lg font-bold text-ink mb-1">{L('t10money.bookingFormReceived')}</h2>
@@ -121,7 +121,7 @@ export default function BookingForm({
   const availableCount = showSlots ? slotsResult.slots.filter((s) => s.available).length : 0;
 
   return (
-    <form action={formAction} className="bg-surface rounded-2xl border border-smoke shadow-sm p-6 space-y-4">
+    <form action={formAction} className="bg-surface rounded-2xl border border-line shadow-sm p-6 space-y-4">
       <input type="hidden" name="slug" value={slug} />
       <input type="hidden" name="idempotencyKey" value={idempotencyKey} />
       <input type="hidden" name="time" value={selectedTime} />
@@ -144,73 +144,86 @@ export default function BookingForm({
       <input type="hidden" name={FORM_STARTED_FIELD} value={formStartedAt} />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Field label={L('t10money.bookingFormYourName')}>
-          <input name="name" required minLength={2} maxLength={100} placeholder={L('t10money.bookingFormNamePlaceholder')} className={inputClass} autoComplete="name" />
-        </Field>
-        <Field label={L('t10money.bookingFormPhone')}>
-          <input name="phone" required maxLength={25} placeholder={L('t10money.bookingFormPhonePlaceholder')} className={inputClass} autoComplete="tel" inputMode="tel" />
-        </Field>
+        <Input
+          label={L('t10money.bookingFormYourName')}
+          name="name"
+          required
+          minLength={2}
+          maxLength={100}
+          placeholder={L('t10money.bookingFormNamePlaceholder')}
+          autoComplete="name"
+        />
+        <Input
+          label={L('t10money.bookingFormPhone')}
+          name="phone"
+          required
+          maxLength={25}
+          placeholder={L('t10money.bookingFormPhonePlaceholder')}
+          autoComplete="tel"
+          inputMode="tel"
+        />
       </div>
 
-      <Field label={L('t10money.bookingFormAddress')}>
-        <AddressAutocomplete name="address" rows={2} maxLength={500} placeholder={L('t10money.bookingFormAddressPlaceholder')} className={inputClass} />
-      </Field>
+      <div className="field">
+        <span>{L('t10money.bookingFormAddress')}</span>
+        <AddressAutocomplete name="address" rows={2} maxLength={500} placeholder={L('t10money.bookingFormAddressPlaceholder')} className="input" />
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Field label={L('t10money.bookingFormDate')}>
-          <input
-            name="date"
-            type="date"
-            required
-            min={today}
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className={inputClass}
-          />
-        </Field>
-        <Field label={L('t10money.bookingFormService')}>
-          <select name="serviceId" className={inputClass} defaultValue="">
-            <option value="">{L('t10money.bookingFormGeneral')}</option>
-            {services.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-                {s.price > 0 ? ` - ${formatMoney(s.price, currency)}` : ''}
-              </option>
-            ))}
-          </select>
-        </Field>
+        <Input
+          label={L('t10money.bookingFormDate')}
+          name="date"
+          type="date"
+          required
+          min={today}
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+        />
+        <Select
+          label={L('t10money.bookingFormService')}
+          name="serviceId"
+          defaultValue=""
+          options={[
+            { value: '', label: L('t10money.bookingFormGeneral') },
+            ...services.map((s) => ({
+              value: s.id,
+              label: s.price > 0 ? `${s.name} - ${formatMoney(s.price, currency)}` : s.name,
+            })),
+          ]}
+        />
       </div>
 
       {/* Time slot picker (only when the business configured working hours) */}
-      <Field label={strings.preferredTime}>
+      <div className="field">
+        <span>{strings.preferredTime}</span>
         {hoursSummary && (
-          <p className="text-[11px] text-graphite mb-2 flex items-center gap-1">
+          <p className="text-[11px] text-ink-2 mb-2 flex items-center gap-1">
             <Clock size={11} /> {hoursSummary}
           </p>
         )}
         {slotsLoading && (
-          <p className="text-xs text-graphite py-2">{strings.loadingSlots}</p>
+          <p className="text-xs text-ink-2 py-2">{strings.loadingSlots}</p>
         )}
         {!slotsLoading && !slotsResult && (
-          <p className="text-xs text-graphite py-2">-</p>
+          <p className="text-xs text-ink-2 py-2">-</p>
         )}
         {slotsResult?.error && (
-          <p className="text-xs text-warn-text bg-warn-bg border border-amber-200 rounded-xl px-3 py-2">
+          <p className="text-xs text-warn-text bg-warn-bg border border-warn-line rounded-xl px-3 py-2">
             {slotsResult.error}
           </p>
         )}
         {slotsResult?.closed && (
-          <p className="text-xs text-warn-text bg-warn-bg border border-amber-200 rounded-xl px-3 py-2">
+          <p className="text-xs text-warn-text bg-warn-bg border border-warn-line rounded-xl px-3 py-2">
             {strings.dayClosed}
           </p>
         )}
         {slotsResult?.hoursNotSet && (
-          <p className="text-xs text-ink-2 bg-surface-2 border border-smoke rounded-xl px-3 py-2">
+          <p className="text-xs text-ink-2 bg-surface-2 border border-line rounded-xl px-3 py-2">
             {strings.hoursNotSetNote}
           </p>
         )}
         {showSlots && availableCount === 0 && (
-          <p className="text-xs text-warn-text bg-warn-bg border border-amber-200 rounded-xl px-3 py-2">
+          <p className="text-xs text-warn-text bg-warn-bg border border-warn-line rounded-xl px-3 py-2">
             {strings.noSlotsLeft}
           </p>
         )}
@@ -229,10 +242,10 @@ export default function BookingForm({
                     onClick={() => setSelectedTime(slot.start)}
                     className={
                       selected
-                        ? 'min-h-[44px] px-2 py-2 rounded-xl text-xs font-bold bg-asphalt text-white shadow-sm'
+                        ? 'min-h-[44px] px-2 py-2 rounded-xl text-xs font-bold bg-asphalt text-hero-ink shadow-sm'
                         : slot.available
-                          ? 'min-h-[44px] px-2 py-2 rounded-xl text-xs font-semibold bg-surface-2 border border-smoke text-ink hover:border-asphalt hover:text-ink'
-                          : 'min-h-[44px] px-2 py-2 rounded-xl text-xs font-medium bg-surface-2 border border-smoke text-zinc-300 line-through cursor-not-allowed'
+                          ? 'min-h-[44px] px-2 py-2 rounded-xl text-xs font-semibold bg-surface-2 border border-line text-ink hover:border-asphalt hover:text-ink'
+                          : 'min-h-[44px] px-2 py-2 rounded-xl text-xs font-medium bg-surface-2 border border-line text-ink-2 line-through cursor-not-allowed'
                     }
                   >
                     {slot.label}
@@ -241,27 +254,36 @@ export default function BookingForm({
               })}
             </div>
             {slotsResult.unscheduledCount > 0 && (
-              <p className="text-[11px] text-graphite mt-2">{strings.someUnscheduledNote}</p>
+              <p className="text-[11px] text-ink-2 mt-2">{strings.someUnscheduledNote}</p>
             )}
           </>
         )}
-      </Field>
+      </div>
 
-      <Field label={L('t10money.bookingFormNotes')}>
-        <textarea name="notes" rows={2} maxLength={1000} placeholder={L('t10money.bookingFormNotesPlaceholder')} className={inputClass} />
-      </Field>
+      <Textarea
+        label={L('t10money.bookingFormNotes')}
+        name="notes"
+        rows={2}
+        maxLength={1000}
+        placeholder={L('t10money.bookingFormNotesPlaceholder')}
+      />
 
       {state.error && (
-        <p className="text-sm font-medium text-danger bg-danger-bg border border-red-100 rounded-xl px-4 py-2.5">
+        <p className="text-sm font-medium text-danger bg-danger-bg border border-danger/20 rounded-xl px-4 py-2.5">
           {state.error}
         </p>
       )}
 
-      <button type="submit" disabled={pending} className={`${primaryBtnClass} w-full justify-center min-h-[52px] !py-3 !text-sm`}>
+      <Button
+        variant="primary"
+        type="submit"
+        disabled={pending}
+        className="w-full justify-center min-h-[52px] !py-3 !text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+      >
         <CalendarCheck size={16} />
         {pending ? L('t10money.bookingFormRequesting') : L('t10money.bookingFormRequest')}
-      </button>
-      <p className="text-[11px] text-graphite text-center">
+      </Button>
+      <p className="text-[11px] text-ink-2 text-center">
         {L('t10money.bookingFormNoPayment')}
       </p>
     </form>

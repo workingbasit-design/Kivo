@@ -5,7 +5,7 @@ import { AlertCircle, MessageCircle, PhoneMissed, Smartphone } from '@/component
 import { draftMissedCall } from '@/app/actions/reminders';
 import CopyButton from '@/components/CopyButton';
 import WhatsAppButton from '@/components/WhatsAppButton';
-import { secondaryBtnClass, inputClass, Field } from '@/components/ui';
+import { Button } from '@/components/kit';
 import { smsDraftLink } from '@/lib/reminders';
 import type { ReminderUiStrings } from './ReminderRow';
 
@@ -73,15 +73,19 @@ export default function MissedCallCard({
 
       <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
         <div className="flex-1">
-          <Field label={pickCustomerLabel}>
+          <label htmlFor="missed-call-customer" className="block text-xs font-semibold text-ink mb-1.5">
+            {pickCustomerLabel}
+          </label>
+          <div className="select">
             <select
+              id="missed-call-customer"
               value={customerId}
               onChange={(e) => {
                 setCustomerId(e.target.value);
                 setText(null);
                 setError(null);
               }}
-              className={inputClass}
+              className="input"
             >
               <option value="">{pickCustomerLabel}</option>
               {customers.map((c) => (
@@ -90,21 +94,21 @@ export default function MissedCallCard({
                 </option>
               ))}
             </select>
-          </Field>
+          </div>
         </div>
-        <button
-          type="button"
+        <Button
+          variant="secondary"
           onClick={() => void handleDraft()}
           disabled={loading || !customerId}
-          className={`${secondaryBtnClass} shrink-0 disabled:opacity-50`}
+          className="shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <MessageCircle size={13} />
           {loading ? ui.preparing : draftLabel}
-        </button>
+        </Button>
       </div>
 
       {error && (
-        <div className="mt-3 flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="mt-3 flex items-start gap-2 bg-danger-bg border border-danger/25 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{error}</span>
         </div>
@@ -135,8 +139,8 @@ export default function MissedCallCard({
               <CopyButton text={text} label={ui.copy} />
             </div>
           </div>
-          <p className="text-sm text-white/85 whitespace-pre-wrap">{text}</p>
-          <p className="text-[11px] text-white/60 mt-2">{ui.neverSendsNote}</p>
+          <p className="text-sm text-hero-ink/85 whitespace-pre-wrap">{text}</p>
+          <p className="text-[11px] text-hero-ink/60 mt-2">{ui.neverSendsNote}</p>
         </div>
       )}
     </div>

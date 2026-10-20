@@ -1,11 +1,13 @@
 import { Flag } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
-import { PageHeader, Card, EmptyState } from '@/components/ui';
+import { Card } from '@/components/kit';
 import { isDirectoryAdminEmail } from '@/lib/directory';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import ReportRow from './report-row';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
+import { PageTitle } from '../_components/PageTitle';
+import { EmptyState } from '@/components/kit';
 
 export const metadata = { title: 'Directory reports | EveryJob' };
 
@@ -21,12 +23,12 @@ export default async function DirectoryReportsPage() {
   if (!isDirectoryAdminEmail(user.email)) {
     return (
       <div className="space-y-6">
-        <PageHeader title={tr('t10misc.reports.title')} subtitle={tr('t10misc.reports.subtitle')} />
+        <PageTitle title={tr('t10misc.reports.title')} summary={tr('t10misc.reports.subtitle')} />
         <Card>
           <EmptyState
-            icon={<Flag size={24} />}
+            icon={<Flag />}
             title={tr('t10misc.claims.notAuthorizedTitle')}
-            description={tr('t10misc.claims.notAuthorizedDesc')}
+            text={tr('t10misc.claims.notAuthorizedDesc')}
           />
         </Card>
       </div>
@@ -53,13 +55,13 @@ export default async function DirectoryReportsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={tr('t10misc.reports.title')} subtitle={subtitle} />
+      <PageTitle title={tr('t10misc.reports.title')} summary={subtitle} />
       {reports.length === 0 ? (
         <Card>
           <EmptyState
-            icon={<Flag size={24} />}
+            icon={<Flag />}
             title={tr('t10misc.reports.noReportsTitle')}
-            description={tr('t10misc.reports.noReportsDesc')}
+            text={tr('t10misc.reports.noReportsDesc')}
           />
         </Card>
       ) : (

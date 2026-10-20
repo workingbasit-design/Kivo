@@ -9,22 +9,24 @@ import {
   renderNotificationBody,
   type ListedNotification,
 } from '@/lib/notifications';
-import { PageHeader, Card, secondaryBtnClass } from '@/components/ui';
+
 import { formatDateShort } from '@/lib/utils';
 import {
   markAllNotificationsRead,
   markNotificationRead,
 } from '@/app/actions/notifications';
+import { Card, Button } from '@/components/kit';
+import { PageTitle } from '../_components/PageTitle';
 
 export const metadata = { title: 'Notifications | EveryJob' };
 
 const TYPE_ICON_BG: Record<string, string> = {
-  job_tomorrow: 'bg-blue-100 text-info',
-  job_soon: 'bg-amber-100 text-warn-text',
-  invoice_overdue: 'bg-red-100 text-danger',
-  quote_expiring: 'bg-purple-100 text-purple-700',
-  booking_new: 'bg-lime-100 text-lime-800',
-  payment_recorded: 'bg-emerald-100 text-ok',
+  job_tomorrow: 'bg-info-bg text-info',
+  job_soon: 'bg-warn-bg text-warn-text',
+  invoice_overdue: 'bg-danger-bg text-danger',
+  quote_expiring: 'bg-info-bg text-info',
+  booking_new: 'bg-hivis-soft text-hivis-ink',
+  payment_recorded: 'bg-ok-bg text-ok',
 };
 
 function timeAgo(createdAt: Date, locale: Locale): string {
@@ -108,20 +110,18 @@ export default async function NotificationsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageTitle
         title={t(locale, 'notifications.title')}
-        subtitle={t(locale, 'notifications.subtitle')}
-        actions={
-          unreadCount > 0 ? (
-            <form action={markAllNotificationsRead}>
-              <button type="submit" className={secondaryBtnClass}>
-                <CheckCheck size={14} />
-                {t(locale, 'notifications.markAllRead')}
-              </button>
-            </form>
-          ) : undefined
-        }
+        summary={t(locale, 'notifications.subtitle')}
       />
+      {unreadCount > 0 ? (
+        <form action={markAllNotificationsRead}>
+          <Button type="submit" variant="secondary" sm>
+            <CheckCheck size={14} />
+            {t(locale, 'notifications.markAllRead')}
+          </Button>
+        </form>
+      ) : null}
 
       {items.length === 0 ? (
         <Card className="p-10 text-center">
@@ -132,9 +132,9 @@ export default async function NotificationsPage() {
           <p className="mx-auto mt-2 max-w-md text-sm text-graphite">
             {t(locale, 'notifications.emptyHint')}
           </p>
-          <Link href="/settings" className={`${secondaryBtnClass} mt-5 inline-flex`}>
+          <Button href="/settings" variant="secondary" className="mt-5 inline-flex">
             {t(locale, 'notifications.settingsTitle')}
-          </Link>
+          </Button>
         </Card>
       ) : (
         <div className="space-y-3">

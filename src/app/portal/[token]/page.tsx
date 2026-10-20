@@ -4,9 +4,9 @@ import { Briefcase, FileText, Phone, ReceiptText, Wallet } from '@/components/ic
 import { prisma } from '@/lib/prisma';
 import { rateLimit } from '@/lib/rate-limit';
 import { resolveCustomerPortalToken } from '@/lib/portal';
-import { Card, StatusBadge } from '@/components/ui';
+import { Card, StatusBadge, type StatusBadgeTone } from '@/components/kit';
 import { formatCents } from '@/lib/money';
-import { formatDateShort, formatJobTime, jobDisplayStatus } from '@/lib/utils';
+import { formatDateShort, formatJobTime, jobDisplayStatus, statusLabel } from '@/lib/utils';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import PortalNotice from '@/components/PortalNotice';
@@ -20,6 +20,30 @@ import { clientIpFromHeaders } from '@/lib/client-ip';
  */
 
 const PORTAL_LIMIT = { limit: 30, windowMs: 60 * 1000 };
+
+/** Map a display status onto a kit StatusBadge tone (mirrors the old ui badge colours). */
+function statusTone(status: string): StatusBadgeTone {
+  switch (status) {
+    case 'LATE':
+      return 'late';
+    case 'IN PROGRESS':
+    case 'PARTIALLY PAID':
+    case 'DRAFT':
+      return 'warn';
+    case 'SCHEDULED':
+      return 'scheduled';
+    case 'SENT':
+    case 'CONTACTED':
+      return 'info';
+    case 'COMPLETED':
+    case 'PAID':
+    case 'APPROVED':
+    case 'CONVERTED':
+      return 'done';
+    default:
+      return 'neutral';
+  }
+}
 
 async function clientIp(): Promise<string> {
   return clientIpFromHeaders(await headers());
@@ -96,16 +120,16 @@ export default async function CustomerPortalPage({
 
   return (
     <div className="min-h-screen bg-paper font-sans">
-      <header className="bg-asphalt text-white">
+      <header className="bg-asphalt text-hero-ink">
         <div className="max-w-lg mx-auto px-4 py-8">
           <div className="mb-4">
             <Logo tone="onDark" size={28} />
           </div>
-          <p className="text-[11px] font-semibold text-white/60 mb-1">
+          <p className="text-[11px] font-semibold text-hero-ink/60 mb-1">
             {customer.business.name}
           </p>
           <h1 className="text-2xl font-bold tracking-tight">{L('portal.hiName').replace('{name}', customer.name)}</h1>
-          <p className="text-white/60 mt-1 text-sm">
+          <p className="text-hero-ink/60 mt-1 text-sm">
             {L('portal.tagline')}
           </p>
         </div>
@@ -113,7 +137,7 @@ export default async function CustomerPortalPage({
 
       <main className="max-w-lg mx-auto px-4 py-6 space-y-5 pb-12">
         {totalOwed > BigInt(0) && (
-          <Card className="p-5 bg-warn-bg/60 border-amber-200">
+          <Card className="p-5 bg-warn-bg border-warn-line">
             <div className="flex items-center justify-between">
               <p className="text-sm font-semibold text-ink flex items-center gap-2">
                 <Wallet size={15} className="text-warn-text" /> {L('portal.balanceDue')}
@@ -149,7 +173,9 @@ export default async function CustomerPortalPage({
                       <p className="text-xs text-ink-2">
                         {formatDateShort(j.date, dateLocale)}{j.time ? ` · ${formatJobTime(j.time, locale)}` : ''}
                       </p>
-                      <StatusBadge status={jobDisplayStatus(j.status, j.date)} />
+                      <StatusBadge tone={statusTone(jobDisplayStatus(j.status, j.date))}>
+                        {statusLabel(jobDisplayStatus(j.status, j.date).replace(/_/g, ' '), locale)}
+                      </StatusBadge>
                     </div>
                   </li>
                 ))}
@@ -177,7 +203,9 @@ export default async function CustomerPortalPage({
                     </div>
                     <div className="flex items-center justify-between gap-3 mt-1.5">
                       <p className="text-xs text-ink-2">{q.number}</p>
-                      <StatusBadge status={q.status} />
+                      <StatusBadge tone={statusTone(q.status.replace(/_/g, ' '))}>
+                        {statusLabel(q.status.replace(/_/g, ' '), locale)}
+                      </StatusBadge>
                     </div>
                   </li>
                 ))}

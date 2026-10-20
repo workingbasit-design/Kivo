@@ -2,7 +2,7 @@
 
 import { useActionState } from 'react';
 import { openDemoBusiness, leaveDemoBusiness, type DemoResult } from '@/app/actions/demo';
-import { Card, secondaryBtnClass } from '@/components/ui';
+import { Card, Button } from '@/components/kit';
 
 const initialState: DemoResult = {};
 
@@ -37,16 +37,16 @@ export default function DemoSwitchCard({
         <>
           <p className="text-xs font-semibold text-warn-text mb-3">{viewingLabel}</p>
           <form action={leaveAction}>
-            <button type="submit" className={secondaryBtnClass}>
+            <Button variant="secondary" type="submit">
               {backLabel}
-            </button>
+            </Button>
           </form>
         </>
       ) : (
         <form action={openAction}>
-          <button type="submit" className={secondaryBtnClass}>
+          <Button variant="secondary" type="submit">
             {openLabel}
-          </button>
+          </Button>
           {openState?.error && (
             <p role="alert" className="mt-2 text-xs font-medium text-danger">
               {openState.error}

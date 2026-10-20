@@ -14,9 +14,9 @@ import {
   type ActionResult,
 } from '@/app/actions/invoices';
 import { isValidVoidReason } from '@/lib/voiding';
-import { Field, inputClass, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { currencySymbol, formatMoney, centsToDollars } from '@/lib/money';
+import { Input, Select, Textarea, Button } from '@/components/kit';
 
 /**
  * Fires a toast exactly once per server-action result. Minimal inline
@@ -110,7 +110,7 @@ export default function InvoiceActions({
   return (
     <div className="space-y-4">
       {error && (
-        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-line text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{error}</span>
         </div>
@@ -126,38 +126,31 @@ export default function InvoiceActions({
           </h3>
           <input type="hidden" name="invoiceId" value={id} />
           <div className="grid sm:grid-cols-3 gap-3">
-            <Field label={`${t(locale, 't10money.invAmount')} ${currencySymbol(currency)}`}>
-              <input
-                name="amount"
-                type="text"
-                inputMode="decimal"
-                pattern="[0-9]*\.?[0-9]*"
-                required
-                defaultValue={remaining}
-                className={inputClass}
-              />
-            </Field>
-            <Field label={t(locale, 't10money.invMode')}>
-              <select name="provider" className={inputClass} defaultValue="CASH">
-                {PROVIDERS.map((p) => (
-                  <option key={p} value={p}>
-                    {providerLabel(p, locale)}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label={t(locale, 't10money.invTxnRef')}>
-              <input
-                name="transactionId"
-                maxLength={200}
-                placeholder={t(locale, 't10money.invTxnPlaceholder')}
-                className={inputClass}
-              />
-            </Field>
+            <Input
+              label={`${t(locale, 't10money.invAmount')} ${currencySymbol(currency)}`}
+              name="amount"
+              type="text"
+              inputMode="decimal"
+              pattern="[0-9]*\.?[0-9]*"
+              required
+              defaultValue={remaining}
+            />
+            <Select
+              label={t(locale, 't10money.invMode')}
+              name="provider"
+              defaultValue="CASH"
+              options={PROVIDERS.map((p) => ({ value: p, label: providerLabel(p, locale) }))}
+            />
+            <Input
+              label={t(locale, 't10money.invTxnRef')}
+              name="transactionId"
+              maxLength={200}
+              placeholder={t(locale, 't10money.invTxnPlaceholder')}
+            />
           </div>
-          <button type="submit" disabled={payPending} className={primaryBtnClass}>
+          <Button type="submit" disabled={payPending} variant="primary">
             {payPending ? t(locale, 't10money.invRecording') : t(locale, 't10money.invRecordPayment')}
-          </button>
+          </Button>
           <p className="text-[11px] text-ink-2 leading-relaxed">
             {t(locale, 't10money.recordFullMarksPaid')}.{' '}
             <span className="text-ink-2">{t(locale, 't10money.invBookkeepingNote')}</span>
@@ -174,17 +167,17 @@ export default function InvoiceActions({
 
         <form action={emailAction}>
           <input type="hidden" name="id" value={id} />
-          <button
+          <Button
             type="submit"
             disabled={emailPending}
-            className={secondaryBtnClass}
+            variant="secondary"
             title={t(locale, 't10money.invoiceEmailHint')}
           >
             <Mail size={14} />
             {emailPending
               ? t(locale, 't10money.invSending')
               : t(locale, 't10money.invoiceEmailButton')}
-          </button>
+          </Button>
         </form>
 
         {/* Launch-pack item 7: DRAFT invoices are hard-deleted; every other
@@ -292,21 +285,14 @@ export default function InvoiceActions({
         onClose={() => !voidPaymentPending && setConfirmingVoidPayment(false)}
       >
         <div className="mt-4">
-          <label
-            htmlFor="void-payment-reason"
-            className="block text-xs font-bold text-ink mb-1.5"
-          >
-            {t(locale, 't10money.invVoidReason')}
-          </label>
-          <textarea
-            id="void-payment-reason"
+          <Textarea
+            label={t(locale, 't10money.invVoidReason')}
             name="reason"
             rows={3}
             maxLength={500}
             value={voidPaymentReason}
             onChange={(e) => setVoidPaymentReason(e.target.value)}
             placeholder={t(locale, 't10money.invVoidReasonPh')}
-            className={inputClass}
           />
           {!isValidVoidReason(voidPaymentReason) && voidPaymentReason.length > 0 && (
             <p className="mt-1.5 text-[11px] text-warn-text">
@@ -374,14 +360,14 @@ function VoidInvoiceButton({ id, locale = 'en' }: { id: string; locale?: Locale 
           >
             {t(locale, 't10money.invVoidReason')}
           </label>
-          <textarea
-            id="void-reason"
+          <Textarea
+            label={t(locale, 't10money.invVoidReason')}
+            name="reason"
             rows={3}
             maxLength={500}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             placeholder={t(locale, 't10money.invVoidReasonPh')}
-            className={inputClass}
           />
           {!reasonOk && reason.length > 0 && (
             <p className="mt-1.5 text-[11px] text-warn-text">

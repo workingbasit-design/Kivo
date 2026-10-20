@@ -1,6 +1,7 @@
 'use server';
 
 import { z } from 'zod';
+import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { DASHBOARD_SECTIONS, isDashboardSectionKey } from '@/lib/dashboard-layout';
@@ -30,10 +31,22 @@ export async function saveDashboardLayout(
     seen.add(s.key);
     return true;
   });
-  await prisma.dashboardLayout.upsert({
-    where: { userId_businessId: { userId: user.id, businessId } },
-    update: { sections: JSON.stringify(clean) },
-    create: { userId: user.id, businessId, sections: JSON.stringify(clean) },
-  });
+  try {
+    await prisma.dashboardLayout.upsert({
+      where: { userId_businessId: { userId: user.id, businessId } },
+      update: { sections: JSON.stringify(clean) },
+      create: { userId: user.id, businessId, sections: JSON.stringify(clean) },
+    });
+  } catch {
+    // Never throw out of the action: the client treats a throw as a dead
+    // arrow (see CustomizePanel), so report failure the same way as a
+    // validation failure. No internals are leaked to the client.
+    return { ok: false, error: 'That layout could not be saved. Please try again.' };
+  }
+  // FIX-NOW S2: the reorder arrows looked dead because the saved order only
+  // showed after a manual reload — the server-rendered sections below the
+  // editor never re-rendered. Revalidating here makes the whole page pick
+  // up the new order immediately.
+  revalidatePath('/dashboard');
   return { ok: true };
 }

@@ -26,8 +26,33 @@ import { PROPOSAL_STATUS, isProposalExpired } from '@/lib/agent-protocol';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import Logo from '@/components/Logo';
-import { Avatar, Card, Stagger } from '@/components/customer/ui';
+import { Avatar, Card } from '@/components/kit';
+import { cn } from '@/lib/utils';
 import { ProposalActions, ClaimAccountForm } from './confirm-forms';
+
+/**
+ * Stagger — entrance-animation wrapper. The kit has no equivalent, so the
+ * customer/ui implementation is inlined here (same `ej-anim-fade-up`
+ * animation, same 60ms step capped at 8) to keep behaviour identical.
+ */
+function Stagger({
+  index,
+  children,
+  className,
+}: {
+  index: number;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn('ej-anim-fade-up', className)}
+      style={{ animationDelay: `${Math.min(index, 8) * 60}ms` }}
+    >
+      {children}
+    </div>
+  );
+}
 
 type SearchParams = { declined?: string };
 
@@ -57,8 +82,8 @@ function StateCard({
 }) {
   const tones = {
     zinc: 'bg-surface-2 text-ink-2',
-    green: 'bg-green-100 text-ok',
-    amber: 'bg-amber-100 text-warn-text',
+    green: 'bg-ok-bg text-ok',
+    amber: 'bg-warn-bg text-warn-text',
   } as const;
   return (
     <Stagger index={0}>
@@ -70,7 +95,7 @@ function StateCard({
         <p className="mt-2 text-sm leading-relaxed text-ink-2">{body}</p>
         <Link
           href="/directory"
-          className="mt-6 inline-flex items-center justify-center rounded-2xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-600/25 transition-all duration-200 hover:bg-indigo-500 hover:-translate-y-0.5 active:translate-y-0"
+          className="mt-6 inline-flex items-center justify-center rounded-2xl bg-hivis px-6 py-3 text-sm font-semibold text-hivis-ink shadow-lg shadow-hivis/25 transition-all duration-200 hover:bg-hivis hover:-translate-y-0.5 active:translate-y-0"
         >
           EveryJob Directory
         </Link>
@@ -150,7 +175,7 @@ export default async function AgentConfirmPage({
       <Shell>
         <Stagger index={0}>
           <Card className="p-8 text-center">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-green-100 text-ok">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-ok-bg text-ok">
               <CheckCircle2 className="h-7 w-7" />
             </div>
             <h1 className="text-xl font-bold text-ink">{tr('agent.approved.title')}</h1>
@@ -185,7 +210,7 @@ export default async function AgentConfirmPage({
               <div className="mt-4 flex gap-2">
                 <Link
                   href="/customer/login"
-                  className="flex-1 rounded-2xl bg-indigo-600 px-6 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-indigo-600/25 transition-all duration-200 hover:bg-indigo-500"
+                  className="flex-1 rounded-2xl bg-hivis px-6 py-3 text-center text-sm font-semibold text-hivis-ink shadow-lg shadow-hivis/25 transition-all duration-200 hover:bg-hivis"
                 >
                   {tr('agent.approved.login')}
                 </Link>
@@ -228,8 +253,8 @@ export default async function AgentConfirmPage({
   return (
     <Shell>
       <Stagger index={0}>
-        <div className="mb-4 flex items-center gap-3 rounded-2xl border border-indigo-100 bg-indigo-50/70 px-4 py-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-600/30">
+        <div className="mb-4 flex items-center gap-3 rounded-2xl border border-line bg-info-bg/70 px-4 py-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-hivis text-hivis-ink shadow-md shadow-hivis/30">
             <Bot className="h-5 w-5" />
           </span>
           <div>
@@ -247,7 +272,7 @@ export default async function AgentConfirmPage({
             {tr('agent.confirm.to')}
           </p>
           <div className="mt-2 flex items-center gap-3">
-            <Avatar name={proposal.business.name} logoUrl={null} size="md" />
+            <Avatar initials={proposal.business.name.charAt(0).toUpperCase()} size="md" />
             <div>
               <p className="font-bold text-ink">{proposal.business.name}</p>
               <p className="flex items-center gap-1 text-xs text-ok">
@@ -305,7 +330,7 @@ export default async function AgentConfirmPage({
 
       <Stagger index={4} className="mt-4">
         <p className="flex items-start justify-center gap-1.5 px-2 text-center text-xs leading-relaxed text-ink-2">
-          <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-indigo-500" />
+          <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-info" />
           {tr('agent.confirm.note')}
         </p>
       </Stagger>

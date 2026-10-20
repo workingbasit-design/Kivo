@@ -5,11 +5,13 @@ import { getLocale } from "@/lib/i18n/server";
 import { t } from "@/lib/i18n";
 import { tp } from "@/lib/i18n/plural";
 import { localeMoneyTag } from "@/lib/utils";
-import { PageHeader, Card, EmptyState } from "@/components/ui";
+import { Card } from '@/components/kit';
 import { AttentionRow } from "@/components/AttentionBriefing";
 import { CheckCircle2 } from '@/components/icons';
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { PageTitle } from '../_components/PageTitle';
+import { EmptyState } from '@/components/kit';
 
 const CATEGORIES: AttentionCategory[] = ['jobs', 'money', 'leads', 'quotes', 'inventory', 'schedule'];
 
@@ -51,9 +53,9 @@ export default async function AttentionPage({
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageTitle
         title={t(locale, "attention.title")}
-        subtitle={
+        summary={
           allItems.length > 0
             ? tp(locale, "attention.subtitle", allItems.length)
             : undefined
@@ -68,8 +70,8 @@ export default async function AttentionPage({
             className={cn(
               "shrink-0 px-4 py-2 rounded-full text-sm font-semibold border transition-colors min-h-[44px] flex items-center",
               !activeCat
-                ? "bg-asphalt text-white border-zinc-900"
-                : "bg-surface text-ink border-line hover:border-zinc-400"
+                ? "bg-asphalt text-hero-ink border-line-strong"
+                : "bg-surface text-ink border-line hover:border-line-strong"
             )}
           >
             {t(locale, "attention.filterAll")} · {allItems.length}
@@ -83,8 +85,8 @@ export default async function AttentionPage({
               className={cn(
                 "shrink-0 px-4 py-2 rounded-full text-sm font-semibold border transition-colors min-h-[44px] flex items-center",
                 activeCat === c
-                  ? "bg-asphalt text-white border-zinc-900"
-                  : "bg-surface text-ink border-line hover:border-zinc-400"
+                  ? "bg-asphalt text-hero-ink border-line-strong"
+                  : "bg-surface text-ink border-line hover:border-line-strong"
               )}
             >
               {t(locale, `attention.category.${c}`)} · {count}
@@ -95,9 +97,9 @@ export default async function AttentionPage({
       {items.length === 0 ? (
         <Card>
           <EmptyState
-            icon={<CheckCircle2 size={28} className="text-emerald-500" aria-label="All clear" />}
+            icon={<CheckCircle2 />}
             title={t(locale, "attention.emptyTitle")}
-            description={t(locale, "attention.emptyDesc")}
+            text={t(locale, "attention.emptyDesc")}
           />
         </Card>
       ) : (

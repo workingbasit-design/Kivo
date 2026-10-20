@@ -13,7 +13,7 @@ import {
 } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
-import { Card, Field, inputClass, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
+import { Button, Card, Input } from '@/components/kit';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import {
   getMessagingDashboard,
@@ -49,7 +49,7 @@ function QuotaBar({ used, limit, label }: { used: number; limit: number; label: 
       </div>
       <div className="h-2 rounded-full bg-surface-2 overflow-hidden">
         <div
-          className={`h-full rounded-full ${exhausted ? 'bg-rose-500' : pct > 80 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+          className={`h-full rounded-full ${exhausted ? 'bg-danger' : pct > 80 ? 'bg-warn' : 'bg-ok'}`}
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -163,8 +163,8 @@ export default function MessagingSettingsClient({
       <div
         className={`rounded-xl border px-4 py-3 text-sm font-semibold flex items-center gap-2 ${
           s.dryRun
-            ? 'bg-warn-bg border-amber-200 text-amber-800'
-            : 'bg-ok-bg border-emerald-200 text-emerald-800'
+            ? 'bg-warn-bg border-warn-line text-warn-text'
+            : 'bg-ok-bg border-ok/25 text-ok'
         }`}
       >
         {s.dryRun ? <Eye size={16} /> : <Play size={16} />}
@@ -183,30 +183,37 @@ export default function MessagingSettingsClient({
         </p>
         {dash.whatsapp.connected ? (
           <div className="flex flex-wrap items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-ok bg-ok-bg border border-emerald-200 rounded-full px-3 py-1">
+            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-ok bg-ok-bg border border-ok/25 rounded-full px-3 py-1">
               <ShieldCheck size={13} /> {t(locale, 'messaging.connected')}
               {dash.whatsapp.displayNumber ? ` · ${dash.whatsapp.displayNumber}` : ''}
             </span>
             {dash.whatsapp.tokenMasked && (
               <span className="text-xs text-ink-2">Token {dash.whatsapp.tokenMasked}</span>
             )}
-            <button onClick={() => setConfirming({ kind: 'disconnect', channel: 'WHATSAPP' })} className={secondaryBtnClass}>
+            <Button variant="secondary" onClick={() => setConfirming({ kind: 'disconnect', channel: 'WHATSAPP' })}>
               <Unplug size={13} /> {t(locale, 'messaging.disconnect')}
-            </button>
+            </Button>
           </div>
         ) : (
           <form action={waAction} className="space-y-3 max-w-lg">
             <p className="text-xs text-ink-2">{t(locale, 'messaging.whatsappSetupHint')}</p>
-            <Field label={t(locale, 'messaging.phoneNumberId')}>
-              <input name="phoneNumberId" required className={inputClass} placeholder="123456789012345" />
-            </Field>
-            <Field label={t(locale, 'messaging.accessToken')}>
+            <Input
+              label={t(locale, 'messaging.phoneNumberId')}
+              name="phoneNumberId"
+              required
+              placeholder="123456789012345"
+            />
+            <div>
+              <label htmlFor="wa-access-token" className="block text-xs font-semibold text-ink mb-1.5">
+                {t(locale, 'messaging.accessToken')}
+              </label>
               <div className="relative">
                 <input
+                  id="wa-access-token"
                   name="accessToken"
                   required
                   type={showToken ? 'text' : 'password'}
-                  className={`${inputClass} pr-12`}
+                  className="input pr-12"
                   autoComplete="off"
                 />
                 <button
@@ -219,19 +226,22 @@ export default function MessagingSettingsClient({
                   {showToken ? <EyeOff size={17} /> : <Eye size={17} />}
                 </button>
               </div>
-            </Field>
+            </div>
             <div className="grid grid-cols-2 gap-3">
-              <Field label={t(locale, 'messaging.displayNumber')}>
-                <input name="displayNumber" className={inputClass} placeholder="+1 416-555-0123" />
-              </Field>
-              <Field label={t(locale, 'messaging.businessAccountId')}>
-                <input name="businessAccountId" className={inputClass} />
-              </Field>
+              <Input
+                label={t(locale, 'messaging.displayNumber')}
+                name="displayNumber"
+                placeholder="+1 416-555-0123"
+              />
+              <Input
+                label={t(locale, 'messaging.businessAccountId')}
+                name="businessAccountId"
+              />
             </div>
             {waState.error && <p className="text-xs font-semibold text-danger">{waState.error}</p>}
-            <button type="submit" className={primaryBtnClass}>
+            <Button variant="primary" type="submit">
               {t(locale, 'messaging.connect')} WhatsApp
-            </button>
+            </Button>
             <p className="text-[11px] text-ink-2">{t(locale, 'messaging.tokenSaved')}</p>
           </form>
         )}
@@ -240,41 +250,51 @@ export default function MessagingSettingsClient({
       {/* Email connection */}
       <Card className="p-5">
         <h2 className="text-sm font-bold text-ink mb-1 flex items-center gap-2">
-          <Mail size={15} className="text-sky-600" />
+          <Mail size={15} className="text-info" />
           {t(locale, 'messaging.emailTitle')}
         </h2>
         <p className="text-xs text-ink-2 mb-4">{t(locale, 'messaging.emailDesc')}</p>
         {dash.email.connected ? (
           <div className="flex flex-wrap items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-ok bg-ok-bg border border-emerald-200 rounded-full px-3 py-1">
+            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-ok bg-ok-bg border border-ok/25 rounded-full px-3 py-1">
               <ShieldCheck size={13} /> {t(locale, 'messaging.connected')}
               {dash.email.fromAddress ? ` · ${dash.email.fromAddress}` : ''}
             </span>
             {dash.email.keyMasked && (
               <span className="text-xs text-ink-2">Key {dash.email.keyMasked}</span>
             )}
-            <button onClick={() => setConfirming({ kind: 'disconnect', channel: 'EMAIL' })} className={secondaryBtnClass}>
+            <Button variant="secondary" onClick={() => setConfirming({ kind: 'disconnect', channel: 'EMAIL' })}>
               <Unplug size={13} /> {t(locale, 'messaging.disconnect')}
-            </button>
+            </Button>
           </div>
         ) : (
           <form action={emAction} className="space-y-3 max-w-lg">
             <p className="text-xs text-ink-2">{t(locale, 'messaging.emailSetupHint')}</p>
             <div className="grid grid-cols-2 gap-3">
-              <Field label={t(locale, 'messaging.fromName')}>
-                <input name="fromName" className={inputClass} placeholder="Acme Plumbing" />
-              </Field>
-              <Field label={t(locale, 'messaging.fromAddress')}>
-                <input name="fromAddress" required type="email" className={inputClass} placeholder="hello@acme.ca" />
-              </Field>
+              <Input
+                label={t(locale, 'messaging.fromName')}
+                name="fromName"
+                placeholder="Acme Plumbing"
+              />
+              <Input
+                label={t(locale, 'messaging.fromAddress')}
+                name="fromAddress"
+                required
+                type="email"
+                placeholder="hello@acme.ca"
+              />
             </div>
-            <Field label={t(locale, 'messaging.apiKey')}>
+            <div>
+              <label htmlFor="email-api-key" className="block text-xs font-semibold text-ink mb-1.5">
+                {t(locale, 'messaging.apiKey')}
+              </label>
               <div className="relative">
                 <input
+                  id="email-api-key"
                   name="apiKey"
                   required
                   type={showKey ? 'text' : 'password'}
-                  className={`${inputClass} pr-12`}
+                  className="input pr-12"
                   autoComplete="off"
                 />
                 <button
@@ -287,11 +307,11 @@ export default function MessagingSettingsClient({
                   {showKey ? <EyeOff size={17} /> : <Eye size={17} />}
                 </button>
               </div>
-            </Field>
+            </div>
             {emState.error && <p className="text-xs font-semibold text-danger">{emState.error}</p>}
-            <button type="submit" className={primaryBtnClass}>
+            <Button variant="primary" type="submit">
               {t(locale, 'messaging.connect')} Email
-            </button>
+            </Button>
             <p className="text-[11px] text-ink-2">{t(locale, 'messaging.tokenSaved')}</p>
           </form>
         )}
@@ -312,7 +332,7 @@ export default function MessagingSettingsClient({
                   type="checkbox"
                   name={key}
                   defaultChecked={s[key]}
-                  className="mt-1 h-4 w-4 accent-emerald-600"
+                  className="mt-1 h-4 w-4 rounded-md border-line-strong accent-ok"
                 />
                 <span>
                   <span className="block text-xs font-bold text-ink">
@@ -341,7 +361,7 @@ export default function MessagingSettingsClient({
                     min={0}
                     max={23}
                     defaultValue={s.quietStartHour}
-                    className={`${inputClass} w-20`}
+                    className="input w-20"
                   />
                 </label>
                 <label className="text-xs text-ink-2">
@@ -352,17 +372,17 @@ export default function MessagingSettingsClient({
                     min={0}
                     max={23}
                     defaultValue={s.quietEndHour}
-                    className={`${inputClass} w-20`}
+                    className="input w-20"
                   />
                 </label>
               </div>
             </div>
-            <label className="flex items-start gap-3 rounded-xl border border-amber-200 bg-warn-bg/60 px-3 py-2.5 cursor-pointer">
+            <label className="flex items-start gap-3 rounded-xl border border-warn-line bg-warn-bg/60 px-3 py-2.5 cursor-pointer">
               <input
                 type="checkbox"
                 name="dryRun"
                 defaultChecked={s.dryRun}
-                className="mt-1 h-4 w-4 accent-amber-600"
+                className="mt-1 h-4 w-4 rounded-md border-line-strong accent-warn"
               />
               <span>
                 <span className="block text-xs font-bold text-ink">
@@ -377,9 +397,9 @@ export default function MessagingSettingsClient({
 
           {saveState.error && <p className="text-xs font-semibold text-danger">{saveState.error}</p>}
           {saveState.ok && <p className="text-xs font-semibold text-ok">{t(locale, 'messaging.settingsSaved')}</p>}
-          <button type="submit" className={primaryBtnClass}>
+          <Button variant="primary" type="submit">
             {t(locale, 'messaging.saveSettings')}
-          </button>
+          </Button>
         </form>
       </Card>
 
@@ -407,12 +427,12 @@ export default function MessagingSettingsClient({
         <h2 className="text-sm font-bold text-ink mb-1">{t(locale, 'messaging.previewTitle')}</h2>
         <p className="text-xs text-ink-2 mb-4">{t(locale, 'messaging.previewDesc')}</p>
         <div className="flex flex-wrap gap-2 mb-2">
-          <button onClick={doPreview} disabled={running} className={secondaryBtnClass}>
+          <Button variant="secondary" onClick={doPreview} disabled={running} className="disabled:opacity-60 disabled:cursor-not-allowed">
             <Eye size={13} /> {t(locale, 'messaging.previewButton')}
-          </button>
-          <button onClick={doRun} disabled={running} className={primaryBtnClass}>
+          </Button>
+          <Button variant="primary" onClick={doRun} disabled={running} className="disabled:opacity-60 disabled:cursor-not-allowed">
             <Play size={13} /> {t(locale, 'messaging.runNowButton')}
-          </button>
+          </Button>
         </div>
         <p className="text-[11px] text-ink-2 mb-3">{t(locale, 'messaging.runNowNote')}</p>
         {running && <p className="text-xs text-ink-2">…</p>}
@@ -466,7 +486,7 @@ export default function MessagingSettingsClient({
                 </thead>
                 <tbody>
                   {dash.log.map((row) => (
-                    <tr key={row.id} className="border-b border-zinc-50">
+                    <tr key={row.id} className="border-b border-line">
                       <td className="py-1.5 pr-2 text-ink-2 whitespace-nowrap">
                         {new Date(row.createdAt).toLocaleString(locale === 'fr' ? 'fr-CA' : 'en-CA')}
                       </td>

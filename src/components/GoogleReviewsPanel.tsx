@@ -20,7 +20,7 @@ import {
   type GoogleStatus,
 } from '@/app/actions/google-reviews';
 import { googleErrorMessage, type GoogleErrorKind } from '@/lib/google-reviews';
-import { Card } from '@/components/ui';
+import { Card } from '@/components/kit';
 import ConfirmDialog from '@/components/ConfirmDialog';
 
 const G = (locale: Locale, key: string) => t(locale, `googleReviews.${key}`);
@@ -41,7 +41,7 @@ function SetupChecklist({ locale }: { locale: Locale }) {
         ))}
         <li>
           {steps[2]}
-          <code className="block mt-1 bg-smoke rounded-lg px-2 py-1.5 font-mono text-[11px] text-ink break-all">
+          <code className="block mt-1 bg-surface-2 rounded-lg px-2 py-1.5 font-mono text-[11px] text-ink break-all">
             {typeof window !== 'undefined' ? `${window.location.origin}/api/google/callback` : '/api/google/callback'}
           </code>
         </li>
@@ -178,7 +178,7 @@ export default function GoogleReviewsPanel({
       </div>
 
       {msg && (
-        <div className={`flex items-start gap-2 text-xs font-medium rounded-xl px-3 py-2.5 mb-3 ${msg.ok ? 'bg-ok-bg border border-emerald-200 text-ok' : 'bg-danger-bg border border-rose-200 text-danger'}`}>
+        <div className={`flex items-start gap-2 text-xs font-medium rounded-xl px-3 py-2.5 mb-3 ${msg.ok ? 'bg-ok-bg border border-ok/30 text-ok' : 'bg-danger-bg border border-danger/30 text-danger'}`}>
           {msg.ok ? <CheckCircle2 size={14} className="mt-0.5 shrink-0" /> : <AlertCircle size={14} className="mt-0.5 shrink-0" />}
           <span>{msg.text}</span>
         </div>
@@ -191,7 +191,7 @@ export default function GoogleReviewsPanel({
           <p className="text-xs text-ink-2">{G(locale, 'connectDesc')}</p>
           <a
             href="/api/google/connect"
-            className="min-h-[44px] inline-flex items-center gap-2 bg-asphalt hover:bg-graphite text-white px-4 rounded-xl font-bold text-xs"
+            className="min-h-[44px] inline-flex items-center gap-2 bg-asphalt hover:bg-graphite text-hero-ink px-4 rounded-xl font-bold text-xs"
           >
             <ExternalLink size={13} /> {G(locale, 'connectButton')}
           </a>
@@ -204,7 +204,7 @@ export default function GoogleReviewsPanel({
           {locations && locations.length > 0 && (
             <div className="space-y-2">
               {locations.map((l) => (
-                <form key={l.locationId} action={doSelectLocation} className="flex items-center justify-between gap-2 bg-paper border border-line/60 rounded-xl px-3 py-2.5">
+                <form key={l.locationId} action={doSelectLocation} className="flex items-center justify-between gap-2 bg-surface border border-line/60 rounded-xl px-3 py-2.5">
                   <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink min-w-0">
                     <MapPin size={13} className="text-ink-2 shrink-0" />
                     <span className="truncate">{l.title}</span>
@@ -246,7 +246,7 @@ export default function GoogleReviewsPanel({
             <button
               onClick={doSync}
               disabled={syncing}
-              className="min-h-[44px] inline-flex items-center gap-1.5 bg-asphalt hover:bg-graphite text-white px-4 rounded-xl font-bold text-xs disabled:opacity-60"
+              className="min-h-[44px] inline-flex items-center gap-1.5 bg-asphalt hover:bg-graphite text-hero-ink px-4 rounded-xl font-bold text-xs disabled:opacity-60"
             >
               <RefreshCw size={13} className={syncing ? 'animate-spin' : ''} />
               {syncing ? G(locale, 'syncing') : G(locale, 'syncNow')}
@@ -254,7 +254,7 @@ export default function GoogleReviewsPanel({
             <button
               onClick={() => setConfirmingDisconnect(true)}
               disabled={disconnecting}
-              className="min-h-[44px] inline-flex items-center gap-1.5 border border-line-strong hover:border-zinc-500 text-ink-2 px-4 rounded-xl font-bold text-xs disabled:opacity-60"
+              className="min-h-[44px] inline-flex items-center gap-1.5 border border-line-strong text-ink-2 px-4 rounded-xl font-bold text-xs disabled:opacity-60"
             >
               <Unplug size={13} /> {G(locale, 'disconnect')}
             </button>

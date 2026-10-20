@@ -3,9 +3,8 @@
 import React, { useState, useTransition } from 'react';
 import { PlusCircle, AlertCircle } from '@/components/icons';
 import { createManualEntry } from '@/app/actions/timesheets';
-import { Field, inputClass, primaryBtnClass } from '@/components/ui';
+import { Button, Input, Select } from '@/components/kit';
 import { useResolvedT } from '@/hooks/useResolvedLocale';
-import { cn } from '@/lib/utils';
 
 /** Form to log a manual time entry. Admins pick any member; members are locked to self. */
 export default function ManualEntryForm({
@@ -47,7 +46,7 @@ export default function ManualEntryForm({
   };
 
   return (
-    <div className="ej-glass-card rounded-[20px] p-5">
+    <div className="bg-surface border border-line shadow-kit-card rounded-[20px] p-5">
       <button
         onClick={() => setOpen(!open)}
         className="flex items-center gap-2 text-sm font-bold text-ink"
@@ -59,53 +58,54 @@ export default function ManualEntryForm({
       {open && (
         <form onSubmit={submit} className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
           {isAdmin && (
-            <Field label={t('t10work.manualMember')}>
-              <select name="userId" required className={inputClass} defaultValue={selfId}>
-                {members.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.name || m.email}
-                  </option>
-                ))}
-              </select>
-            </Field>
+            <Select
+              label={t('t10work.manualMember')}
+              name="userId"
+              required
+              defaultValue={selfId}
+              options={members.map((m) => ({ value: m.id, label: m.name || m.email }))}
+            />
           )}
-          <Field label={t('t10work.manualStart')}>
-            <input name="clockIn" type="datetime-local" required className={inputClass} />
-          </Field>
-          <Field label={t('t10work.manualEnd')}>
-            <input name="clockOut" type="datetime-local" required className={inputClass} />
-          </Field>
-          <Field label={t('t10work.manualJob')}>
-            <select name="jobId" className={inputClass} defaultValue="">
-              <option value="">{t('t10work.manualNoJob')}</option>
-              {jobs.map((j) => (
-                <option key={j.id} value={j.id}>
-                  {j.title}
-                </option>
-              ))}
-            </select>
-          </Field>
+          <Input
+            label={t('t10work.manualStart')}
+            name="clockIn"
+            type="datetime-local"
+            required
+          />
+          <Input
+            label={t('t10work.manualEnd')}
+            name="clockOut"
+            type="datetime-local"
+            required
+          />
+          <Select
+            label={t('t10work.manualJob')}
+            name="jobId"
+            defaultValue=""
+            options={[
+              { value: '', label: t('t10work.manualNoJob') },
+              ...jobs.map((j) => ({ value: j.id, label: j.title })),
+            ]}
+          />
           <div className="sm:col-span-2">
-            <Field label={t('t10work.manualNotes')}>
-              <input
-                name="notes"
-                type="text"
-                maxLength={500}
-                placeholder={t('t10work.manualNotesPh')}
-                className={inputClass}
-              />
-            </Field>
+            <Input
+              label={t('t10work.manualNotes')}
+              name="notes"
+              type="text"
+              maxLength={500}
+              placeholder={t('t10work.manualNotesPh')}
+            />
           </div>
           {error && (
-            <div className="sm:col-span-2 flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
+            <div className="sm:col-span-2 flex items-start gap-2 bg-danger-bg border border-danger/25 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
               <AlertCircle size={14} className="mt-0.5 shrink-0" />
               <span>{error}</span>
             </div>
           )}
           <div className="sm:col-span-2">
-            <button type="submit" disabled={isPending} className={cn(primaryBtnClass)}>
+            <Button variant="primary" type="submit" disabled={isPending} className="disabled:opacity-60 disabled:cursor-not-allowed">
               {isPending ? t('t10work.manualSaving') : t('t10work.manualSave')}
-            </button>
+            </Button>
           </div>
         </form>
       )}

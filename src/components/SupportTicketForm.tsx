@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { t, type Locale } from '@/lib/i18n';
-import { Field, inputClass, textareaClass, primaryBtnClass } from '@/components/ui';
+import { Button, Input, Textarea } from '@/components/kit';
 import { HONEYPOT_FIELD, FORM_STARTED_FIELD } from '@/lib/bot-check';
 
 /** Public support ticket form. Posts to /api/support/ticket; shows a success state. */
@@ -59,15 +59,14 @@ export default function SupportTicketForm({ locale }: { locale: Locale }) {
 
   if (status === 'success') {
     return (
-      <div className="rounded-2xl bg-lime-50 p-5" role="status">
+      <div className="rounded-2xl bg-hivis-soft p-5" role="status">
         <p className="font-bold text-ink">{t(locale, 'support.formSuccessTitle')}</p>
         <p className="mt-1 text-sm text-ink">{t(locale, 'support.formSuccessMsg')}</p>
       </div>
     );
   }
 
-  const errCls = (f: string) =>
-    bad.includes(f) ? 'border-rose-400 focus:border-rose-500' : '';
+  const err = (f: string) => (bad.includes(f) ? '' : undefined);
 
   return (
     <form onSubmit={submit} noValidate className="space-y-4">
@@ -89,47 +88,43 @@ export default function SupportTicketForm({ locale }: { locale: Locale }) {
         />
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label={t(locale, 'support.formName')}>
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder={t(locale, 'support.formNamePh')}
-            maxLength={80}
-            autoComplete="name"
-            className={`${inputClass} ${errCls('name')}`}
-          />
-        </Field>
-        <Field label={t(locale, 'support.formEmail')}>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder={t(locale, 'support.formEmailPh')}
-            maxLength={254}
-            autoComplete="email"
-            className={`${inputClass} ${errCls('email')}`}
-          />
-        </Field>
+        <Input
+          label={t(locale, 'support.formName')}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder={t(locale, 'support.formNamePh')}
+          maxLength={80}
+          autoComplete="name"
+          error={err('name')}
+        />
+        <Input
+          label={t(locale, 'support.formEmail')}
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder={t(locale, 'support.formEmailPh')}
+          maxLength={254}
+          autoComplete="email"
+          error={err('email')}
+        />
       </div>
-      <Field label={t(locale, 'support.formSubject')}>
-        <input
-          value={subject}
-          onChange={(e) => setSubject(e.target.value)}
-          placeholder={t(locale, 'support.formSubjectPh')}
-          maxLength={120}
-          className={`${inputClass} ${errCls('subject')}`}
-        />
-      </Field>
-      <Field label={t(locale, 'support.formMessage')}>
-        <textarea
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder={t(locale, 'support.formMessagePh')}
-          rows={5}
-          maxLength={5000}
-          className={`${textareaClass} ${errCls('message')}`}
-        />
-      </Field>
+      <Input
+        label={t(locale, 'support.formSubject')}
+        value={subject}
+        onChange={(e) => setSubject(e.target.value)}
+        placeholder={t(locale, 'support.formSubjectPh')}
+        maxLength={120}
+        error={err('subject')}
+      />
+      <Textarea
+        label={t(locale, 'support.formMessage')}
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        placeholder={t(locale, 'support.formMessagePh')}
+        rows={5}
+        maxLength={5000}
+        error={err('message')}
+      />
       {bad.length > 0 && status === 'idle' && (
         <p className="text-sm text-danger" role="alert">
           {t(locale, 'support.formInvalid')}
@@ -145,15 +140,15 @@ export default function SupportTicketForm({ locale }: { locale: Locale }) {
           {t(locale, 'support.formRateLimited')}
         </p>
       )}
-      <button
+      <Button
         type="submit"
+        variant="primary"
         disabled={status === 'sending'}
-        className={primaryBtnClass}
       >
         {status === 'sending'
           ? t(locale, 'support.formSending')
           : t(locale, 'support.formSubmit')}
-      </button>
+      </Button>
     </form>
   );
 }

@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import type { IconComponent } from '@/components/icons';
 import { TopBar, Card, StickyActionBar, StatusBadge } from '@/components/kit';
 import type { TopBarAction, StatusBadgeProps } from '@/components/kit';
 
@@ -19,7 +18,7 @@ export interface DetailScreenProps {
   backLabel: string;
   onBack: () => void;
   topActions?: TopBarAction[];
-  icon: IconComponent;
+  icon: ReactNode; // rendered element, not the component (see kit PageHeader)
   title: string;
   subtitle?: string;
   badges?: StatusBadgeProps[];
@@ -49,7 +48,7 @@ export function DetailScreen({
   backLabel,
   onBack,
   topActions,
-  icon: Icon,
+  icon,
   title,
   subtitle,
   badges,
@@ -83,7 +82,7 @@ export function DetailScreen({
       />
       <div className="flex items-center gap-3 px-0 pb-2.5 pt-1.5">
         <span className="grid h-[52px] w-[52px] flex-none place-items-center rounded-2xl border border-line bg-surface text-ink">
-          <Icon size={28} aria-hidden="true" />
+          <span aria-hidden="true" className="inline-flex [&_svg]:size-7">{icon}</span>
         </span>
         <div className="min-w-0">
           <h1 className="m-0 text-[26px] font-bold leading-[1.1] tracking-tight text-ink">

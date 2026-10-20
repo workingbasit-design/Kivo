@@ -273,7 +273,7 @@ export default function DispatcherMap({
           <button
             type="button"
             onClick={() => setAttempt((a) => a + 1)}
-            className="rounded-xl bg-asphalt px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-700"
+            className="rounded-xl bg-asphalt px-4 py-2 text-sm font-semibold text-hero-ink hover:bg-asphalt"
           >
             Retry map
           </button>

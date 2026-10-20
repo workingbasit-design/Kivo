@@ -58,7 +58,7 @@ export default function ReviewLinkButton({
         type="button"
         onClick={run}
         disabled={status === 'working'}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border bg-amber-500/10 border-amber-500/30 text-warn-text hover:bg-amber-500/20 disabled:opacity-60 min-h-[36px]"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border bg-warn/10 border-warn/30 text-warn-text hover:bg-warn/20 disabled:opacity-60 min-h-[36px]"
       >
         {status === 'working' ? (
           <Loader2 size={13} className="animate-spin" />

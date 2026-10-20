@@ -4,13 +4,14 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { PageHeader, Card } from '@/components/ui';
+import { Card } from '@/components/kit';
 import JobForm from '@/components/JobForm';
 import { updateJob } from '@/app/actions/jobs';
 import { toISODateLocal } from '@/lib/utils';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { centsToDollars } from '@/lib/money';
+import { PageTitle } from '../../../_components/PageTitle';
 
 export default async function EditJobPage({
   params,
@@ -47,7 +48,7 @@ export default async function EditJobPage({
         <ArrowLeft size={14} /> {T('jobBackToJob')}
       </Link>
 
-      <PageHeader title={T('jobEditTitle')} subtitle={job.title} />
+      <PageTitle title={T('jobEditTitle')} summary={job.title} />
 
       <Card className="p-5 md:p-6">
         <JobForm

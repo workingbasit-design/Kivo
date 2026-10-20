@@ -13,7 +13,7 @@
 import { useEffect, useState } from 'react';
 import { Download, X } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
-import { primaryBtnClass } from '@/components/ui';
+import { Button } from '@/components/kit';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -87,7 +87,7 @@ export default function PwaInstallPrompt({ locale = 'en' }: { locale?: Locale })
     <div
       role="dialog"
       aria-label={tr('title')}
-      className="fixed bottom-4 inset-x-4 sm:inset-x-auto sm:right-6 sm:max-w-sm z-50 rounded-2xl bg-asphalt text-white p-4 shadow-2xl"
+      className="fixed bottom-4 inset-x-4 sm:inset-x-auto sm:right-6 sm:max-w-sm z-50 rounded-2xl bg-asphalt text-hero-ink p-4 shadow-2xl"
     >
       <div className="flex items-start gap-3">
         <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-lime text-ink">
@@ -95,16 +95,16 @@ export default function PwaInstallPrompt({ locale = 'en' }: { locale?: Locale })
         </span>
         <div className="min-w-0 flex-1">
           <p className="font-bold text-sm">{tr('title')}</p>
-          <p className="mt-1 text-xs text-zinc-300 leading-relaxed">{tr('body')}</p>
+          <p className="mt-1 text-xs text-ink-2 leading-relaxed">{tr('body')}</p>
           <div className="mt-3 flex gap-2">
-            <button type="button" onClick={install} className={primaryBtnClass}>
+            <Button type="button" variant="primary" sm onClick={install}>
               {tr('installBtn')}
-            </button>
+            </Button>
             <button
               type="button"
               onClick={dismiss}
               aria-label={tr('dismissBtn')}
-              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl px-3 text-sm font-semibold text-zinc-300 hover:text-white hover:bg-surface/10"
+              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl px-3 text-sm font-semibold text-ink-2 hover:text-hero-ink hover:bg-surface/10"
             >
               <X size={16} />
             </button>

@@ -4,9 +4,10 @@ import React, { useState } from 'react';
 import { Check, Copy, Link2, PenLine, CalendarDays, Type } from '@/components/icons';
 import { createSignRequest } from '@/app/actions/esign';
 import type { SignField } from '@/lib/esign';
-import { primaryBtnClass, secondaryBtnClass } from '@/components/ui';
+
 import { cn } from '@/lib/utils';
 import WhatsAppButton from '@/components/WhatsAppButton';
+import { Button } from '@/components/kit';
 
 type FieldType = 'signature' | 'date' | 'initials';
 
@@ -124,8 +125,8 @@ export default function SignPrepareClient({
             className={cn(
               'inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold border transition-colors',
               activeType === d.type
-                ? 'bg-asphalt text-white border-zinc-900'
-                : 'bg-surface text-ink border-line hover:border-zinc-400'
+                ? 'bg-asphalt text-hero-ink border-line-strong'
+                : 'bg-surface text-ink border-line hover:border-line-strong'
             )}
           >
             {d.icon} {s[d.labelKey]}
@@ -145,7 +146,7 @@ export default function SignPrepareClient({
               e.stopPropagation();
               removeField(i);
             }}
-            className="absolute z-10 flex items-center justify-center w-9 h-9 -translate-x-1/2 -translate-y-1/2 rounded-lg bg-indigo-600/90 text-white text-[11px] font-bold shadow-md border-2 border-dashed border-white hover:bg-rose-600 transition-colors"
+            className="absolute z-10 flex items-center justify-center w-9 h-9 -translate-x-1/2 -translate-y-1/2 rounded-lg bg-hivis/90 text-hivis-ink text-[11px] font-bold shadow-md border-2 border-dashed border-hivis-ink hover:bg-danger transition-colors"
             style={{ left: `${f.x}%`, top: `${f.y}%` }}
           >
             {FIELD_LETTER[f.type]}
@@ -159,14 +160,14 @@ export default function SignPrepareClient({
           {fields.map((f, i) => (
             <span
               key={i}
-              className="inline-flex items-center gap-1.5 bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-semibold rounded-lg pl-3 pr-1.5 py-1.5"
+              className="inline-flex items-center gap-1.5 bg-info-bg border border-line text-info text-xs font-semibold rounded-lg pl-3 pr-1.5 py-1.5"
             >
               {s[FIELD_DEFS.find((d) => d.type === f.type)!.labelKey]}
               <button
                 type="button"
                 onClick={() => removeField(i)}
                 title={s.remove}
-                className="text-indigo-400 hover:text-danger font-bold px-1"
+                className="text-info hover:text-danger font-bold px-1"
               >
                 ×
               </button>
@@ -187,21 +188,21 @@ export default function SignPrepareClient({
           maxLength={100}
           onChange={(e) => setContact(e.target.value)}
           placeholder={customerPhone ?? ''}
-          className="w-full max-w-sm px-3.5 py-2.5 rounded-xl border border-line text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900/10 focus:border-zinc-400"
+          className="w-full max-w-sm px-3.5 py-2.5 rounded-xl border border-line text-sm focus:outline-none focus:ring-2 focus:ring-ink/10 focus:border-line-strong"
         />
       </div>
 
       {error && <p className="text-xs font-semibold text-danger">{error}</p>}
 
-      <button
+      <Button
         type="button"
         onClick={send}
         disabled={fields.length === 0 || sending}
-        className={cn(primaryBtnClass, 'w-full sm:w-auto')}
+        variant="primary" className="w-full sm:w-auto"
       >
         <Link2 size={14} />
         {sending ? '…' : s.sendLink}
-      </button>
+      </Button>
 
       <p className="text-[11px] text-ink-2">{s.legalLine}</p>
     </div>
@@ -251,10 +252,10 @@ function SignShareSheet({
         <p className="flex-1 min-w-0 px-3.5 py-2.5 rounded-xl border border-line bg-surface-2 text-xs font-mono text-ink break-all select-all">
           {link}
         </p>
-        <button type="button" onClick={copy} className={secondaryBtnClass}>
+        <Button type="button" onClick={copy} variant="secondary">
           {copied ? <Check size={14} /> : <Copy size={14} />}
           {copied ? s.copied : s.copyLink}
-        </button>
+        </Button>
       </div>
 
       <div className="flex flex-wrap gap-2">

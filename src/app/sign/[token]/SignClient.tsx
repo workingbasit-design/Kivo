@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Card } from '@/components/ui';
+import { Button, Card } from '@/components/kit';
 
 /**
  * Client-side signing widget for the public /sign/[token] page.
@@ -130,7 +130,7 @@ export default function SignClient({
   if (status === 'done') {
     return (
       <Card className="p-8 text-center">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-ok-bg">
           <svg viewBox="0 0 24 24" className="h-7 w-7 text-ok" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
             <path d="M20 6 9 17l-5-5" />
           </svg>
@@ -206,7 +206,7 @@ export default function SignClient({
           onChange={(e) => setName(e.target.value)}
           maxLength={100}
           placeholder={signerNameHint ?? undefined}
-          className="w-full rounded-lg border border-line-strong bg-surface px-3 py-2.5 text-sm text-ink outline-none focus:border-asphalt focus:ring-1 focus:ring-ink"
+          className="input"
         />
       </label>
 
@@ -223,14 +223,15 @@ export default function SignClient({
         </div>
       )}
 
-      <button
+      <Button
         type="button"
         onClick={sign}
         disabled={!nameOk || status === 'sending'}
-        className="mt-4 min-h-[52px] w-full rounded-lg bg-asphalt px-4 py-3 text-sm font-bold text-white transition disabled:opacity-40"
+        block
+        className="mt-4"
       >
         {status === 'sending' ? s.signing : s.signButton}
-      </button>
+      </Button>
 
       <p className="mt-4 text-center text-[11px] leading-relaxed text-ink-2">{s.legalLine}</p>
     </Card>

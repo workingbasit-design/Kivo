@@ -8,7 +8,7 @@ import {
   categoryLabel,
   type HelpArticle,
 } from '@/lib/help-articles';
-import { Card } from '@/components/ui';
+import { Card } from '@/components/kit';
 import { renderHelpBody } from '@/lib/help-render';
 
 export async function generateStaticParams() {
@@ -49,7 +49,7 @@ export default async function HelpArticlePage({
       >
         ← {t(locale, 'support.backToHelp')}
       </Link>
-      <div className="mt-3 text-xs font-semibold text-lime-700">
+      <div className="mt-3 text-xs font-semibold text-ink">
         {categoryLabel(article.category, locale)}
       </div>
       <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
@@ -74,7 +74,7 @@ export default async function HelpArticlePage({
                 <a
                   key={r.slug}
                   href={`/help/${r.slug}`}
-                  className="block rounded-2xl border border-line bg-surface p-4 hover:border-lime-500 hover:shadow-sm transition-shadow"
+                  className="block rounded-2xl border border-line bg-surface p-4 hover:border-hivis hover:shadow-sm transition-shadow"
                 >
                   <div className="font-semibold text-ink">{rl.title}</div>
                   <div className="mt-1 text-xs text-ink-2">

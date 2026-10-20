@@ -2,11 +2,11 @@ import React from 'react';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { PageHeader, Card, EmptyState, inputClass } from '@/components/ui';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { Wrench, Plus, ChevronRight } from '@/components/icons';
 import EquipmentSearch from '@/components/EquipmentSearch';
+import { PageHeader, EmptyState, Button, Card } from '@/components/kit';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,15 +45,10 @@ export default async function EquipmentPage({
     <div className="space-y-5">
       <PageHeader
         title={T('title')}
-        subtitle={T('subtitle')}
-        actions={
-          <Link
-            href="/equipment/new"
-            className="inline-flex items-center gap-1.5 rounded-xl bg-asphalt px-4 py-2.5 text-sm font-semibold text-white hover:bg-graphite min-h-[44px]"
-          >
-            <Plus size={16} /> {T('add')}
-          </Link>
-        }
+        summary={T('subtitle')}
+        actionLabel={T('add')}
+        actionHref="/equipment/new"
+        actionIcon={<Plus />}
       />
 
       <EquipmentSearch initialQuery={query} locale={locale} />
@@ -61,20 +56,17 @@ export default async function EquipmentPage({
       {equipment.length === 0 ? (
         <Card>
           <EmptyState
-            icon={<Wrench size={24} />}
+            icon={<Wrench />}
             title={query ? T('noResults') : T('emptyTitle')}
-            description={query ? T('noResultsDesc') : T('emptyDesc')}
-            action={
-              !query ? (
-                <Link
-                  href="/equipment/new"
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-asphalt px-4 py-2.5 text-sm font-semibold text-white hover:bg-graphite min-h-[44px]"
-                >
-                  <Plus size={16} /> {T('add')}
-                </Link>
-              ) : undefined
-            }
+            text={query ? T('noResultsDesc') : T('emptyDesc')}
           />
+          {!query ? (
+            <div className="flex justify-center pb-10 -mt-6">
+              <Button href="/equipment/new" variant="primary">
+                <Plus size={16} /> {T('add')}
+              </Button>
+            </div>
+          ) : null}
         </Card>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -93,13 +85,13 @@ export default async function EquipmentPage({
                       </p>
                     )}
                   </div>
-                  <ChevronRight size={16} className="text-zinc-300 shrink-0 mt-1" />
+                  <ChevronRight size={16} className="text-ink-2 shrink-0 mt-1" />
                 </div>
               </Link>
               <div className="mt-3 pt-3 border-t border-line">
                 <Link
                   href={`/customers/${eq.customer.id}`}
-                  className="text-xs font-medium text-lime-700 hover:text-lime-800 truncate block"
+                  className="text-xs font-medium text-ink hover:text-hivis-ink truncate block"
                 >
                   {eq.customer.name}
                 </Link>

@@ -1,8 +1,8 @@
 import React from 'react';
-import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { PageHeader, Card, EmptyState } from '@/components/ui';
+import { Card, EmptyState, Button } from '@/components/kit';
+import { PageTitle } from '../_components/PageTitle';
 import { dayRange, toISODateLocal, formatDateShort } from '@/lib/utils';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
@@ -76,23 +76,25 @@ export default async function DispatchPage({
 
   return (
     <div className="space-y-5">
-      <PageHeader
+      <PageTitle
         title={T('title')}
-        subtitle={formatDateShort(new Date(dateStr + 'T12:00:00'))}
-        actions={<DispatchDatePicker currentDate={dateStr} label={T('selectDate')} />}
+        summary={formatDateShort(new Date(dateStr + 'T12:00:00'))}
       />
+      <div className="flex flex-wrap gap-2">
+        <DispatchDatePicker currentDate={dateStr} label={T('selectDate')} />
+      </div>
       {jobs.length === 0 ? (
         <Card>
           <EmptyState
-            icon={<CalendarDays size={24} />}
+            icon={<CalendarDays />}
             title={T('emptyTitle')}
-            description={T('emptyDesc')}
-            action={
-              <Link href="/jobs/new" className="inline-flex items-center gap-1.5 rounded-xl bg-asphalt px-4 py-2.5 text-sm font-semibold text-white hover:bg-graphite min-h-[44px]">
-                {T('newJob')}
-              </Link>
-            }
+            text={T('emptyDesc')}
           />
+          <div className="flex justify-center pb-10 -mt-6">
+            <Button href="/jobs/new" variant="primary" sm>
+              {T('newJob')}
+            </Button>
+          </div>
         </Card>
       ) : (
         <DispatchBoardClient

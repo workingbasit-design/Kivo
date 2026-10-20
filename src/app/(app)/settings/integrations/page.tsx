@@ -2,10 +2,11 @@ import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
-import { PageHeader, Card } from '@/components/ui';
+import { Card } from '@/components/kit';
 import GoogleCalendarCard, { type CalendarInitial } from '@/components/GoogleCalendarCard';
 import QuickBooksCard from '@/components/QuickBooksCard';
 import { SCOPE_CALENDAR_WRITE, type SyncOutcome } from '@/lib/googleCalendarSync';
+import { PageTitle } from '../../_components/PageTitle';
 
 export const metadata = { title: 'Integrations | EveryJob' };
 
@@ -55,7 +56,7 @@ export default async function IntegrationsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={tr('integrations.title')} subtitle={tr('integrations.subtitle')} />
+      <PageTitle title={tr('integrations.title')} summary={tr('integrations.subtitle')} />
       <Card>
         <GoogleCalendarCard locale={locale} initial={calendarInitial} onSync={runCalendarSync} />
       </Card>

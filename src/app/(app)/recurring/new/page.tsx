@@ -3,12 +3,13 @@ import Link from 'next/link';
 import { ArrowLeft } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { PageHeader, Card } from '@/components/ui';
+import { Card } from '@/components/kit';
 import RecurringForm from '@/components/RecurringForm';
 import { createRecurring } from '@/app/actions/recurring';
 import { centsToDollars } from '@/lib/money';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
+import { PageTitle } from '../../_components/PageTitle';
 
 export default async function NewRecurringPage() {
   const { businessId } = await requireAuth();
@@ -38,15 +39,15 @@ export default async function NewRecurringPage() {
         <ArrowLeft size={14} /> {t(locale, 'recurringPage.backLink')}
       </Link>
 
-      <PageHeader
+      <PageTitle
         title={t(locale, 'recurringPage.newTitle')}
-        subtitle={t(locale, 'recurringPage.newSubtitle')}
+        summary={t(locale, 'recurringPage.newSubtitle')}
       />
 
       <Card className="p-6">
         {customers.length === 0 ? (
           <div className="space-y-5">
-            <div className="bg-warn-bg border border-amber-200 text-amber-800 text-xs font-medium rounded-xl px-4 py-3">
+            <div className="bg-warn-bg border border-warn-line text-warn-text text-xs font-medium rounded-xl px-4 py-3">
               You need a customer first.{' '}
               <Link href="/customers" className="font-bold underline">
                 Add one

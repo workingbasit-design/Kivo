@@ -3,15 +3,15 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { List, LogOut, X, ChevronDown, SlidersHorizontal } from '@/components/icons';
+import { List, LogOut, ChevronDown, SlidersHorizontal } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { navSections, bottomTabs, advancedNavItems, type NavItem } from '@/components/nav-sections';
 import { NavIconView } from '@/components/animated-icons/nav-icon';
-import { Dialog, ghostBtnClass } from '@/components/ui';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { logout } from '@/app/actions/auth';
 import { cn } from '@/lib/utils';
 import { useAutoExpandFlag } from '@/hooks/useStoredFlag';
+import { BottomSheet, Button } from '@/components/kit';
 
 /** localStorage key for the More-sheet Advanced group's open/closed state. */
 const ADVANCED_OPEN_KEY = 'ej-advanced-open';
@@ -71,10 +71,10 @@ export default function BottomNav({
       'flex flex-col items-center justify-center gap-1 min-h-[60px] py-2 text-[10px]',
       'focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-hivis',
       'transition-colors',
-      active ? 'text-hivis font-bold' : 'text-white/60 font-semibold hover:text-white'
+      active ? 'text-hivis font-bold' : 'text-hero-ink/60 font-semibold hover:text-hero-ink'
     );
 
-  const renderTabIcon = (active: boolean, icon: NavItem['icon']) => (
+  const renderTabIcon = (active: boolean, icon: NavItem['icon'], href: string) => (
     <span
       className={cn(
         'flex items-center justify-center rounded-full transition-colors',
@@ -84,7 +84,9 @@ export default function BottomNav({
       <NavIconView
         icon={icon}
         size={22}
-        filled={active}
+        // The Today tab always renders the outlined duotone sun (as in the
+        // mockup), never the plain outline - it must not read as a gear.
+        filled={active || href === '/dashboard'}
         aria-hidden
         className={active ? 'text-asphalt' : undefined}
       />
@@ -101,7 +103,7 @@ export default function BottomNav({
         <div
           className={cn(
             'grid grid-cols-5 bg-asphalt dark:bg-coal',
-            'border-t border-white/10',
+            'border-t border-hero-ink/10',
             'pb-[env(safe-area-inset-bottom)]'
           )}
         >
@@ -114,7 +116,7 @@ export default function BottomNav({
                 aria-current={active ? 'page' : undefined}
                 className={tabClass(active)}
               >
-                {renderTabIcon(active, tab.icon)}
+                {renderTabIcon(active, tab.icon, tab.href)}
                 <span className="leading-none">{t(locale, tab.nameKey)}</span>
               </Link>
             );
@@ -126,13 +128,18 @@ export default function BottomNav({
             aria-label={t(locale, 'nav.more') ?? 'More'}
             className={tabClass(!anyPrimaryActive && moreOpen)}
           >
-            {renderTabIcon(!anyPrimaryActive && moreOpen, List)}
+            {renderTabIcon(!anyPrimaryActive && moreOpen, List, '/more')}
             <span className="leading-none">{t(locale, 'nav.more') ?? 'More'}</span>
           </button>
         </div>
       </nav>
 
-      <Dialog open={moreOpen} onClose={() => setMoreOpen(false)} title={t(locale, 'nav.menu') ?? 'Menu'}>
+      <BottomSheet
+        open={moreOpen}
+        onClose={() => setMoreOpen(false)}
+        title={t(locale, 'nav.menu') ?? 'Menu'}
+        doneLabel={t(locale, 'nav.close') ?? 'Close'}
+      >
         <div className="space-y-5 max-h-[65vh] overflow-y-auto -mx-1 px-1">
           {navSections.map((section) => {
             // Deferred features live under the Advanced group, not in the normal sections.
@@ -185,21 +192,13 @@ export default function BottomNav({
             </div>
           </div>
           <form action={logout} className="pt-3">
-            <button type="submit" className={ghostBtnClass + ' w-full'}>
+            <Button type="submit" variant="ghost" block>
               <LogOut size={18} />
               {t(locale, 'nav.logout')} ({user.name || user.email})
-            </button>
+            </Button>
           </form>
-          <button
-            type="button"
-            onClick={() => setMoreOpen(false)}
-            className="w-full min-h-[44px] text-sm font-semibold text-ink-2 hover:text-ink"
-          >
-            <X size={16} className="inline mr-1 -mt-0.5" />
-            {t(locale, 'nav.close') ?? 'Close'}
-          </button>
         </div>
-      </Dialog>
+      </BottomSheet>
     </>
   );
 }

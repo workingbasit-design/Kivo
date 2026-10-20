@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react';
 import { t, type Locale } from '@/lib/i18n';
 import { updateProject, deleteProject } from '@/app/actions/projects';
-import { inputClass, selectClass, primaryBtnClass, dangerBtnClass } from '@/components/ui';
+import { Button, Input, Select, Textarea } from '@/components/kit';
 import { Trash2 } from '@/components/icons';
 import { useRouter } from 'next/navigation';
 
@@ -82,7 +82,7 @@ export function ProjectHeaderForm({
         <button
           type="button"
           onClick={() => setEditing(true)}
-          className="shrink-0 text-sm font-semibold text-lime-700 hover:underline min-h-[44px] px-2"
+          className="shrink-0 text-sm font-semibold text-ink hover:underline min-h-[44px] px-2"
         >
           {t(locale, 'projects.edit')}
         </button>
@@ -92,48 +92,34 @@ export function ProjectHeaderForm({
 
   return (
     <div className="space-y-3">
-      <div>
-        <label className="text-xs font-semibold text-ink-2 block mb-1">
-          {t(locale, 'projects.titleLabel')}
-        </label>
-        <input value={title} onChange={(e) => setTitle(e.target.value)} className={inputClass} />
-      </div>
-      <div>
-        <label className="text-xs font-semibold text-ink-2 block mb-1">
-          {t(locale, 'projects.descriptionLabel')}
-        </label>
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className={inputClass}
-          rows={2}
-        />
-      </div>
+      <Input
+        label={t(locale, 'projects.titleLabel')}
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
+      <Textarea
+        label={t(locale, 'projects.descriptionLabel')}
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        rows={2}
+      />
       <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="text-xs font-semibold text-ink-2 block mb-1">
-            {t(locale, 'projects.status')}
-          </label>
-          <select value={status} onChange={(e) => setStatus(e.target.value)} className={selectClass}>
-            {STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {t(locale, STATUS_LABEL_KEY[s])}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="text-xs font-semibold text-ink-2 block mb-1">
-            {t(locale, 'projects.budgetLabel')}
-          </label>
-          <input
-            value={budget}
-            onChange={(e) => setBudget(e.target.value)}
-            className={inputClass}
-            inputMode="decimal"
-            placeholder="0.00"
-          />
-        </div>
+        <Select
+          label={t(locale, 'projects.status')}
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+          options={STATUSES.map((s) => ({
+            value: s,
+            label: t(locale, STATUS_LABEL_KEY[s]),
+          }))}
+        />
+        <Input
+          label={t(locale, 'projects.budgetLabel')}
+          value={budget}
+          onChange={(e) => setBudget(e.target.value)}
+          inputMode="decimal"
+          placeholder="0.00"
+        />
       </div>
       {msg && (
         <p className="text-sm text-ok font-medium" role="status">
@@ -141,25 +127,21 @@ export function ProjectHeaderForm({
         </p>
       )}
       <div className="flex gap-2 flex-wrap">
-        <button type="button" onClick={save} disabled={pending} className={primaryBtnClass}>
+        <Button type="button" variant="primary" onClick={save} disabled={pending}>
           {t(locale, 'projects.save')}
-        </button>
-        <button
-          type="button"
-          onClick={() => setEditing(false)}
-          className="px-4 py-2.5 rounded-xl text-sm font-semibold text-ink-2 hover:bg-surface-2 min-h-[44px]"
-        >
+        </Button>
+        <Button type="button" variant="ghost" onClick={() => setEditing(false)}>
           {t(locale, 'projects.cancel')}
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant="danger"
           onClick={remove}
           disabled={pending}
-          className={dangerBtnClass}
           aria-label={t(locale, 'projects.delete')}
         >
           <Trash2 size={16} aria-hidden />
-        </button>
+        </Button>
       </div>
     </div>
   );

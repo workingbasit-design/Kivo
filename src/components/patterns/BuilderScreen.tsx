@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import type { IconComponent } from '@/components/icons';
 import {
   TopBar,
   Card,
@@ -11,7 +10,7 @@ import type { LineItem } from '@/components/kit';
 export interface BuilderScreenProps {
   backLabel: string;
   onBack: () => void;
-  icon: IconComponent;
+  icon: ReactNode; // rendered element, not the component (see kit PageHeader)
   title: string;
   subtitle?: string;
   /** Line items section. */
@@ -53,7 +52,7 @@ export interface BuilderScreenProps {
 export function BuilderScreen({
   backLabel,
   onBack,
-  icon: Icon,
+  icon,
   title,
   subtitle,
   lineItemsTitle,
@@ -84,7 +83,7 @@ export function BuilderScreen({
       <TopBar variant="back" backLabel={backLabel} onBack={onBack} />
       <div className="flex items-center gap-3 px-0 pb-2.5 pt-1.5">
         <span className="grid h-[52px] w-[52px] flex-none place-items-center rounded-2xl border border-line bg-surface text-ink">
-          <Icon size={28} aria-hidden="true" />
+          <span aria-hidden="true" className="inline-flex [&_svg]:size-7">{icon}</span>
         </span>
         <div className="min-w-0">
           <h1 className="m-0 text-[26px] font-bold leading-[1.1] tracking-tight text-ink">

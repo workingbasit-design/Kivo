@@ -31,7 +31,7 @@ export default async function VerifyEmailPage({
         </p>
         <Link
           href="/settings/messaging"
-          className="inline-block mt-6 rounded-xl bg-asphalt text-white text-sm font-semibold px-5 py-2.5"
+          className="inline-block mt-6 rounded-xl bg-asphalt text-hero-ink text-sm font-semibold px-5 py-2.5"
         >
           {t(locale, 'security.backToMessaging')}
         </Link>

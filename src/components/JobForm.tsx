@@ -3,7 +3,7 @@
 import React, { useActionState, useEffect, useState } from 'react';
 import { AlertCircle, CloudOff, Save } from '@/components/icons';
 import { toast } from 'sonner';
-import { Field, inputClass, primaryBtnClass } from '@/components/ui';
+import { Button, Input, Select, Textarea } from '@/components/kit';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 import { toISODateLocal } from '@/lib/utils';
 import { currencySymbol } from '@/lib/money';
@@ -121,82 +121,71 @@ export default function JobForm({
       {initial?.templateId && <input
             autoComplete="off" type="hidden" name="templateId" value={initial.templateId} />}
 
-      <Field label={T('formTitleLabel')}>
-        <input
-            autoComplete="off"
-          name="title"
-          required
-          autoFocus
-          defaultValue={initial?.title ?? ''}
-          placeholder={T('formTitlePlaceholder')}
-          maxLength={200}
-          className={inputClass}
-        />
-      </Field>
+      <Input
+        label={T('formTitleLabel')}
+        name="title"
+        required
+        autoFocus
+        autoComplete="off"
+        defaultValue={initial?.title ?? ''}
+        placeholder={T('formTitlePlaceholder')}
+        maxLength={200}
+      />
 
-      <Field label={jobsL('customer')}>
-        <select
-          name="customerId"
-          value={customerChoice}
-          onChange={(e) => setCustomerChoice(e.target.value)}
-          className={inputClass}
-        >
-          {liveCustomers.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-          <option value="__NEW__">{T('formNewCustomerOption')}</option>
-        </select>
-      </Field>
+      <Select
+        label={jobsL('customer')}
+        name="customerId"
+        value={customerChoice}
+        onChange={(e) => setCustomerChoice(e.target.value)}
+        options={[
+          ...liveCustomers.map((c) => ({ value: c.id, label: c.name })),
+          { value: '__NEW__', label: T('formNewCustomerOption') },
+        ]}
+      />
 
       {showNewCustomer && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-paper border border-smoke rounded-2xl">
-          <Field label={T('formNewCustomerName')}>
-            <input
+          <Input
+            label={T('formNewCustomerName')}
+            name="newCustomerName"
             autoComplete="off"
-              name="newCustomerName"
-              placeholder={T('formNewCustomerNamePlaceholder')}
-              maxLength={120}
-              className={inputClass}
-            />
-          </Field>
-          <Field label={T('formNewCustomerPhone')}>
-            <input
+            placeholder={T('formNewCustomerNamePlaceholder')}
+            maxLength={120}
+          />
+          <Input
+            label={T('formNewCustomerPhone')}
+            name="newCustomerPhone"
             autoComplete="off"
-              name="newCustomerPhone"
-              placeholder={T('formPhonePlaceholder')}
-              maxLength={25}
-              inputMode="tel"
-              className={inputClass}
-            />
-          </Field>
+            placeholder={T('formPhonePlaceholder')}
+            maxLength={25}
+            inputMode="tel"
+          />
         </div>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Field label={jobsL('date')}>
+        <Input
+          label={jobsL('date')}
+          type="date"
+          name="date"
+          required
+          autoComplete="off"
+          defaultValue={initial?.date ?? toISODateLocal(new Date())}
+        />
+        <Input
+          label={jobsL('time')}
+          name="time"
+          autoComplete="off"
+          defaultValue={initial?.time ?? ''}
+          placeholder="10:00 AM"
+          maxLength={30}
+        />
+        <div>
+          <label htmlFor="job-price" className="block text-xs font-semibold text-ink mb-1.5">
+            {T('formPriceLabel').replace('{symbol}', currencySymbol(currency))}
+          </label>
           <input
-            autoComplete="off"
-            type="date"
-            name="date"
-            required
-            defaultValue={initial?.date ?? toISODateLocal(new Date())}
-            className={inputClass}
-          />
-        </Field>
-        <Field label={jobsL('time')}>
-          <input
-            autoComplete="off"
-            name="time"
-            defaultValue={initial?.time ?? ''}
-            placeholder="10:00 AM"
-            maxLength={30}
-            className={inputClass}
-          />
-        </Field>
-        <Field label={T('formPriceLabel').replace('{symbol}', currencySymbol(currency))}>
-          <input
+            id="job-price"
             autoComplete="off"
             type="text"
             inputMode="decimal"
@@ -205,7 +194,7 @@ export default function JobForm({
             required
             defaultValue={initial?.price ?? ''}
             placeholder="0"
-            className={inputClass}
+            className="input"
             onChange={(e) => setPriceValue(e.target.value)}
             // Normalize float artifacts (e.g. 149.99000549316406) on blur so
             // the displayed value always matches the cents-rounded save.
@@ -215,7 +204,7 @@ export default function JobForm({
             }}
           />
           {showZeroWarning && (
-            <p role="alert" className="mt-2 flex items-start gap-2 text-xs font-semibold text-warn-text bg-warn-bg border border-amber-200 rounded-xl px-3 py-2">
+            <p role="alert" className="mt-2 flex items-start gap-2 text-xs font-semibold text-warn-text bg-warn-bg border border-warn-line rounded-xl px-3 py-2">
               <AlertCircle size={14} className="shrink-0 mt-0.5" aria-hidden />
               No price set - is this a no-charge job?
             </p>
@@ -226,83 +215,75 @@ export default function JobForm({
               name="noCharge"
               checked={noCharge}
               onChange={(e) => setNoCharge(e.target.checked)}
-              className="h-5 w-5 rounded border-line-strong text-lime-600 focus:ring-lime-500"
+              className="h-5 w-5 rounded-md border-line-strong accent-ink"
             />
             <span className="text-sm text-ink">
               {T('formNoCharge')}{' '}
               <span className="text-ink-2">{T('formNoChargeHint')}</span>
             </span>
           </label>
-        </Field>
+        </div>
       </div>
 
-      <Field label={`${jobsL('address')} (${T('formOptional')})`}>
+      <div>
+        <span className="block text-xs font-semibold text-ink mb-1.5">{`${jobsL('address')} (${T('formOptional')})`}</span>
         <AddressAutocomplete
           name="address"
           defaultValue={initial?.address ?? ''}
           placeholder={T('formAddressPlaceholder')}
           maxLength={500}
-          className={inputClass}
+          className="input"
         />
-      </Field>
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Field label={`${jobsL('technician')} (${T('formOptional')})`}>
-          <input
-            autoComplete="off"
-            name="technician"
-            defaultValue={initial?.technician ?? ''}
-            placeholder={T('formTechnicianPlaceholder')}
-            maxLength={120}
-            className={inputClass}
-          />
-        </Field>
+        <Input
+          label={`${jobsL('technician')} (${T('formOptional')})`}
+          name="technician"
+          autoComplete="off"
+          defaultValue={initial?.technician ?? ''}
+          placeholder={T('formTechnicianPlaceholder')}
+          maxLength={120}
+        />
         {crews && crews.length > 0 && (
-          <Field label={`${crewsL('jobCrewOptional')}`}>
-            <select
-              name="crewId"
-              defaultValue={initial?.crewId ?? ''}
-              className={`${inputClass} min-h-[44px]`}
-            >
-              <option value="">{crewsL('jobCrewNone')}</option>
-              {crews.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </Field>
-        )}
-        <Field label={`${jobsL('notes')} (${T('formOptional')})`}>
-          <textarea
-            name="notes"
-            defaultValue={initial?.notes ?? ''}
-            placeholder={T('formNotesPlaceholder')}
-            rows={2}
-            maxLength={2000}
-            className={inputClass}
+          <Select
+            label={crewsL('jobCrewOptional')}
+            name="crewId"
+            defaultValue={initial?.crewId ?? ''}
+            options={[
+              { value: '', label: crewsL('jobCrewNone') },
+              ...crews.map((c) => ({ value: c.id, label: c.name })),
+            ]}
           />
-        </Field>
+        )}
+        <Textarea
+          label={`${jobsL('notes')} (${T('formOptional')})`}
+          name="notes"
+          defaultValue={initial?.notes ?? ''}
+          placeholder={T('formNotesPlaceholder')}
+          rows={2}
+          maxLength={2000}
+        />
       </div>
 
       {state?.queued && (
-        <div className="flex items-start gap-2 bg-warn-bg border border-amber-200 text-amber-800 text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-warn-bg border border-warn-line text-warn-text text-xs font-medium rounded-xl px-3 py-2.5">
           <CloudOff size={14} className="mt-0.5 shrink-0" />
           <span>{T('formOffline')}</span>
         </div>
       )}
 
       {state?.error && (
-        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-danger/25 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{state.error}</span>
         </div>
       )}
 
-      <button type="submit" disabled={isPending} className={primaryBtnClass}>
+      <Button variant="primary" type="submit" disabled={isPending} className="disabled:opacity-60 disabled:cursor-not-allowed">
         <Save size={14} />
         {isPending ? t(locale, 'common.saving') : submitLabel}
-      </button>
+      </Button>
     </form>
   );
 }

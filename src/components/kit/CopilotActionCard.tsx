@@ -1,10 +1,11 @@
 'use client';
 
-import type { IconComponent } from '@/components/icons';
+import type { ReactNode } from 'react';
 import { kitButtonClass } from './kit-button';
 
 export interface CopilotActionCardProps {
-  icon: IconComponent;
+  /** Rendered icon element, not the component itself (see PageHeader). */
+  icon: ReactNode;
   title: string;
   text: string;
   primaryLabel: string;
@@ -18,7 +19,7 @@ export interface CopilotActionCardProps {
  * icon + title, descriptive text, primary + optional secondary buttons.
  */
 export function CopilotActionCard({
-  icon: Icon,
+  icon,
   title,
   text,
   primaryLabel,
@@ -32,7 +33,7 @@ export function CopilotActionCard({
       className="self-stretch rounded-2xl border-[1.5px] border-line-strong bg-surface p-[14px] shadow-kit-card"
     >
       <div className="flex items-center gap-2 font-bold text-ink">
-        <Icon className="h-5 w-5" aria-hidden="true" />
+        <span className="inline-flex [&_svg]:size-5" aria-hidden="true">{icon}</span>
         <span>{title}</span>
       </div>
       <p className="my-1.5 mb-3 text-[15px] text-ink-2">{text}</p>

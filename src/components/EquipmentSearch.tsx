@@ -56,7 +56,7 @@ export default function EquipmentSearch({
         onChange={(e) => setValue(e.target.value)}
         placeholder={T('searchPlaceholder')}
         aria-label={T('searchPlaceholder')}
-        className="w-full rounded-xl border border-line bg-surface pl-10 pr-4 py-3 text-sm min-h-[48px] focus:outline-none focus:ring-2 focus:ring-lime-500/40 focus:border-lime-500"
+        className="w-full rounded-xl border border-line bg-surface pl-10 pr-4 py-3 text-sm min-h-[48px] focus:outline-none focus:ring-2 focus:ring-hivis/40 focus:border-hivis"
       />
     </form>
   );

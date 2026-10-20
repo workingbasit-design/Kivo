@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import type { IconComponent } from '@/components/icons';
 import { PageHeader, SegmentedControl } from '@/components/kit';
 import type { SegmentedOption } from '@/components/kit';
 
@@ -7,7 +6,7 @@ export interface HubScreenProps {
   title: string;
   summary?: string;
   actionLabel: string;
-  actionIcon?: IconComponent;
+  actionIcon?: ReactNode;  // rendered element, not the component (see kit PageHeader)
   actionHref?: string;
   onAction?: () => void;
   /** Segmented views; the first one is the default ("To do"). */

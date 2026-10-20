@@ -4,7 +4,7 @@ import { getLocale } from "@/lib/i18n/server";
 import { t } from "@/lib/i18n";
 import { localeMoneyTag } from "@/lib/utils";
 import { formatMoney, centsToDollars } from "@/lib/money";
-import { Card } from "@/components/ui";
+import { Card } from '@/components/kit';
 import { PhaseCard, AddPhaseForm, type Phase } from "@/components/ProjectPhases";
 import { ProjectHeaderForm } from "@/components/ProjectHeaderForm";
 import { ArrowLeft } from '@/components/icons';

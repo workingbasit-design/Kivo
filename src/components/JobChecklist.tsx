@@ -11,7 +11,7 @@ import {
   deleteChecklistItem,
   type JobOpsActionResult,
 } from '@/app/actions/jobops';
-import { Card, ProgressBar } from '@/components/ui';
+import { Card } from '@/components/kit';
 import { jInputClass, jPrimaryBtnClass, jSecondaryBtnClass } from '@/components/jobops-classes';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { t, type Locale } from '@/lib/i18n';
@@ -60,7 +60,7 @@ export function JobChecklist({
       </div>
 
       {items.length > 0 && (
-        <ProgressBar
+        <ChecklistProgress
           value={doneCount}
           max={items.length}
           label={T('checklistProgress')}
@@ -87,6 +87,42 @@ export function JobChecklist({
         <AddItemForm jobId={jobId} locale={locale} />
       </div>
     </Card>
+  );
+}
+
+/** Percent progress bar (kit tokens). The kit's MarginBar is profit-specific
+ *  and ProgressSteps is a step rail — neither fits a plain percentage bar. */
+function ChecklistProgress({
+  value,
+  max,
+  label,
+  className,
+}: {
+  value: number;
+  max: number;
+  label: string;
+  className?: string;
+}) {
+  const pct = Math.max(0, Math.min(100, (value / max) * 100));
+  return (
+    <div className={className}>
+      <div className="flex justify-between text-[11px] font-semibold text-ink-2 mb-1.5">
+        <span>{label}</span>
+        <span>{Math.round(pct)}%</span>
+      </div>
+      <div
+        role="progressbar"
+        aria-valuenow={Math.round(pct)}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        className="h-2 rounded-full bg-surface-2 overflow-hidden"
+      >
+        <div
+          className="h-full rounded-full bg-asphalt transition-all duration-500"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
   );
 }
 
@@ -194,7 +230,7 @@ function ChecklistRow({ item, locale }: { item: ChecklistItemData; locale: Local
         aria-pressed={item.done}
         aria-label={item.label}
         className={`shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors disabled:opacity-60 ${
-          item.done ? 'text-ok' : 'text-zinc-300 hover:text-graphite'
+          item.done ? 'text-ok' : 'text-line-strong hover:text-ink-2'
         }`}
       >
         {item.done ? <CheckSquare size={22} /> : <Square size={22} />}
@@ -213,7 +249,7 @@ function ChecklistRow({ item, locale }: { item: ChecklistItemData; locale: Local
         disabled={isPending}
         title={t(locale, 'jobops.checklist.deleteItem')}
         aria-label={t(locale, 'jobops.checklist.deleteItem')}
-        className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-zinc-300 hover:text-danger hover:bg-danger-bg rounded-lg transition-colors shrink-0 disabled:opacity-60"
+        className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-line-strong hover:text-danger hover:bg-danger-bg rounded-lg transition-colors shrink-0 disabled:opacity-60"
       >
         <Trash2 size={15} />
       </button>
@@ -264,7 +300,7 @@ function AddItemForm({ jobId, locale }: { jobId: string; locale: Locale }) {
         </button>
       </div>
       {state?.error && (
-        <div className="mt-2 flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="mt-2 flex items-start gap-2 bg-danger-bg border border-danger/25 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{state.error}</span>
         </div>

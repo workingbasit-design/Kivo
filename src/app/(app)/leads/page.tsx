@@ -4,8 +4,10 @@ import { requireAuth } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { prisma } from '@/lib/prisma';
-import { PageHeader, Card, EmptyState } from '@/components/ui';
+import { Card } from '@/components/kit';
 import { AddLeadForm, LeadsBoard, type LeadItem } from './leads-client';
+import { PageTitle } from '../_components/PageTitle';
+import { EmptyState } from '@/components/kit';
 
 export default async function LeadsPage() {
   const { businessId } = await requireAuth();
@@ -38,24 +40,28 @@ export default async function LeadsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageTitle
         title={T('title')}
-        subtitle={
+        summary={
           newCount > 0
             ? T('subtitleWaiting', { count: newCount })
             : T('subtitleDefault')
         }
-        actions={<AddLeadForm locale={locale} />}
       />
+      <div className="flex flex-wrap gap-2">
+        <AddLeadForm locale={locale} />
+      </div>
 
       {leads.length === 0 ? (
         <Card>
           <EmptyState
-            icon={<UserPlus size={24} />}
+            icon={<UserPlus />}
             title={T('emptyTitle')}
-            description={T('emptyDesc')}
-            action={<AddLeadForm locale={locale} />}
+            text={T('emptyDesc')}
           />
+          <div className="flex justify-center pb-10 -mt-6">
+            <AddLeadForm locale={locale} />
+          </div>
         </Card>
       ) : (
         <LeadsBoard leads={items} locale={locale} />

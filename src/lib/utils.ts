@@ -304,30 +304,30 @@ export function statusClasses(status: string): string {
     case 'LATE':
       // Computed display state (see jobDisplayStatus): past-due and still
       // open. Loud red so it can't be missed on a phone screen.
-      return 'bg-red-100 text-red-800 border-red-300';
+      return 'bg-danger-bg text-danger border-line';
     case "IN PROGRESS":
-      return "bg-amber-50 text-amber-700 border-amber-200";
+      return "bg-warn-bg text-warn-text border-warn-line";
     case "SCHEDULED":
-      return "bg-blue-50 text-blue-700 border-blue-200";
+      return "bg-info-bg text-info border-line";
     case "COMPLETED":
     case "PAID":
     case "APPROVED":
     case "CONVERTED":
-      return "bg-emerald-50 text-emerald-700 border-emerald-200";
+      return "bg-ok-bg text-ok border-line";
     case "UNPAID":
     case "NEW":
-      return "bg-zinc-100 text-zinc-700 border-zinc-200";
+      return "bg-surface-2 text-ink border-line";
     case "CANCELLED":
     case "DECLINED":
-      return "bg-rose-50 text-rose-700 border-rose-200";
+      return "bg-danger-bg text-danger border-line";
     case "SENT":
     case "CONTACTED":
-      return "bg-indigo-50 text-indigo-700 border-indigo-200";
+      return "bg-info-bg text-info border-line";
     case "PARTIALLY PAID":
     case "DRAFT":
-      return "bg-orange-50 text-orange-700 border-orange-200";
+      return "bg-warn-bg text-warn-text border-warn-line";
     default:
-      return "bg-zinc-100 text-zinc-700 border-zinc-200";
+      return "bg-surface-2 text-ink border-line";
   }
 }
 

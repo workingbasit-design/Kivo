@@ -2,14 +2,7 @@ import Link from 'next/link';
 import { Plus, Receipt, Search, X } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import {
-  PageHeader,
-  Card,
-  EmptyState,
-  primaryBtnClass,
-  inputClass,
-  secondaryBtnClass,
-} from '@/components/ui';
+
 import { formatMoney, centsToDollars } from '@/lib/money';
 import { formatDateShort, cn } from '@/lib/utils';
 import { getLocale } from '@/lib/i18n/server';
@@ -19,6 +12,7 @@ import {
   EXPENSE_CATEGORIES,
   isExpenseCategory,
 } from '@/lib/expenses';
+import { PageHeader, EmptyState, Input, Select, DateField, Button, Card } from '@/components/kit';
 
 export const metadata = { title: 'Expenses | EveryJob' };
 
@@ -88,63 +82,50 @@ export default async function ExpensesPage({
     <div className="space-y-6">
       <PageHeader
         title={T('title')}
-        subtitle={T('subtitle')}
-        actions={
-          <Link href="/expenses/new" className={primaryBtnClass}>
-            <Plus size={16} /> {T('new')}
-          </Link>
-        }
+        summary={T('subtitle')}
+        actionLabel={T('new')}
+        actionHref="/expenses/new"
+        actionIcon={<Plus />}
       />
 
       {/* Filters */}
       <Card className="p-4 md:p-5">
         <form method="GET" action="/expenses" className="flex flex-col gap-3">
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-2" />
-              <input
+          <div className="flex gap-2 items-end">
+            <div className="flex-1 min-w-0">
+              <Input
+                label={F('search')}
                 name="q"
                 defaultValue={filters.q}
                 placeholder={F('search')}
-                className={cn(inputClass, 'pl-9')}
               />
             </div>
-            <button type="submit" className={secondaryBtnClass}>
+            <Button type="submit" variant="secondary" sm>
               {F('search').split('…')[0]}
-            </button>
+            </Button>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <label className="block">
-              <span className="text-xs font-semibold text-ink-2 mb-1 block">{F('category')}</span>
-              <select name="category" defaultValue={filters.category} className={inputClass}>
-                <option value="ALL">{F('all')}</option>
-                {EXPENSE_CATEGORIES.map((c) => (
-                  <option key={c} value={c}>
-                    {T(`categories.${c}`)}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="block">
-              <span className="text-xs font-semibold text-ink-2 mb-1 block">{F('job')}</span>
-              <select name="jobId" defaultValue={filters.jobId} className={inputClass}>
-                <option value="ALL">{F('all')}</option>
-                <option value="UNLINKED">{F('unlinked')}</option>
-                {jobs.map((j) => (
-                  <option key={j.id} value={j.id}>
-                    {j.title}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="block">
-              <span className="text-xs font-semibold text-ink-2 mb-1 block">{F('from')}</span>
-              <input type="date" name="from" defaultValue={filters.from} className={inputClass} />
-            </label>
-            <label className="block">
-              <span className="text-xs font-semibold text-ink-2 mb-1 block">{F('to')}</span>
-              <input type="date" name="to" defaultValue={filters.to} className={inputClass} />
-            </label>
+            <Select
+              label={F('category')}
+              name="category"
+              defaultValue={filters.category}
+              options={[
+                { value: 'ALL', label: F('all') },
+                ...EXPENSE_CATEGORIES.map((c) => ({ value: c, label: T(`categories.${c}`) })),
+              ]}
+            />
+            <Select
+              label={F('job')}
+              name="jobId"
+              defaultValue={filters.jobId}
+              options={[
+                { value: 'ALL', label: F('all') },
+                { value: 'UNLINKED', label: F('unlinked') },
+                ...jobs.map((j) => ({ value: j.id, label: j.title })),
+              ]}
+            />
+            <DateField label={F('from')} name="from" defaultValue={filters.from} />
+            <DateField label={F('to')} name="to" defaultValue={filters.to} />
           </div>
           {hasFilters && (
             <Link
@@ -173,15 +154,15 @@ export default async function ExpensesPage({
       {filtered.length === 0 ? (
         <Card>
           <EmptyState
-            icon={<Receipt size={32} />}
+            icon={<Receipt />}
             title={T('empty')}
-            description={T('emptyHint')}
-            action={
-              <Link href="/expenses/new" className={primaryBtnClass}>
-                <Plus size={16} /> {T('new')}
-              </Link>
-            }
+            text={T('emptyHint')}
           />
+<div className="flex justify-center pb-10 -mt-6">
+            <Button href="/expenses/new" variant="primary">
+              <Plus size={16} /> {T('new')}
+            </Button>
+          </div>
         </Card>
       ) : (
         <div className="space-y-2">

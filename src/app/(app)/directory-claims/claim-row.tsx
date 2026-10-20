@@ -22,8 +22,8 @@ type Claim = {
 };
 
 const STATUS_STYLE: Record<string, string> = {
-  PENDING: 'bg-warn-bg text-warn-text border-amber-200',
-  APPROVED: 'bg-ok-bg text-ok border-emerald-200',
+  PENDING: 'bg-warn-bg text-warn-text border-warn-line',
+  APPROVED: 'bg-ok-bg text-ok border-line',
   REJECTED: 'bg-surface-2 text-ink-2 border-line',
 };
 
@@ -118,7 +118,7 @@ export default function ClaimRow({ claim }: { claim: Claim }) {
             <button
               onClick={approve}
               disabled={busy}
-              className="min-h-[44px] inline-flex items-center justify-center gap-1.5 text-xs font-bold px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-60"
+              className="min-h-[44px] inline-flex items-center justify-center gap-1.5 text-xs font-bold px-4 rounded-xl bg-ok hover:bg-ok text-hero-ink disabled:opacity-60"
             >
               <Check size={14} /> {busy ? '…' : t('t10misc.claims.approve')}
             </button>
@@ -126,7 +126,7 @@ export default function ClaimRow({ claim }: { claim: Claim }) {
               onClick={() => setRejecting((v) => !v)}
               disabled={busy}
               aria-expanded={rejecting}
-              className="min-h-[44px] inline-flex items-center justify-center gap-1.5 text-xs font-bold px-4 rounded-xl border border-line-strong hover:border-rose-400 text-ink-2 hover:text-danger disabled:opacity-60"
+              className="min-h-[44px] inline-flex items-center justify-center gap-1.5 text-xs font-bold px-4 rounded-xl border border-line-strong hover:border-danger text-ink-2 hover:text-danger disabled:opacity-60"
             >
               <X size={14} /> {t('t10misc.claims.reject')}
             </button>
@@ -144,12 +144,12 @@ export default function ClaimRow({ claim }: { claim: Claim }) {
             onChange={(e) => setNote(e.target.value)}
             placeholder={t('t10misc.claims.reasonPlaceholder')}
             maxLength={500}
-            className="flex-1 min-h-[44px] rounded-xl border border-line-strong px-3 py-2 text-xs outline-none focus:border-zinc-500"
+            className="flex-1 min-h-[44px] rounded-xl border border-line-strong px-3 py-2 text-xs outline-none focus:border-line-strong"
           />
           <button
             type="submit"
             disabled={busy}
-            className="min-h-[44px] text-xs font-bold px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white disabled:opacity-60"
+            className="min-h-[44px] text-xs font-bold px-4 rounded-xl bg-danger hover:bg-danger text-hero-ink disabled:opacity-60"
           >
             {busy ? '…' : t('t10misc.claims.confirmReject')}
           </button>

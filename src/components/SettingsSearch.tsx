@@ -1,22 +1,27 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { t, type Locale } from '@/lib/i18n';
-import { SearchField } from '@/components/design/navigation';
-import { EmptyState } from '@/components/design/feedback';
+import { SearchField, EmptyState } from '@/components/kit';
+import { Search } from '@/components/icons';
 
 /**
  * E7: client-side settings search. The input finds the nearest
  * [data-settings-root] ancestor and filters its [data-settings-section]
  * blocks by their data-keywords attribute. Instant, no refetch.
+ *
+ * Kit migration: design/SearchField took an event onChange; the kit
+ * SearchField passes the value, so the wrapper ref locates the
+ * [data-settings-root] ancestor instead of the input element.
  */
 export default function SettingsSearch({ locale }: { locale: Locale }) {
   const [query, setQuery] = useState('');
   const [visible, setVisible] = useState<number | null>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
 
-  const applyFilter = (value: string, input: HTMLInputElement) => {
+  const applyFilter = (value: string) => {
     setQuery(value);
-    const root = input.closest('[data-settings-root]');
+    const root = wrapRef.current?.closest('[data-settings-root]');
     if (!root) return;
     const needle = value.trim().toLowerCase();
     const sections = root.querySelectorAll<HTMLElement>('[data-settings-section]');
@@ -33,23 +38,21 @@ export default function SettingsSearch({ locale }: { locale: Locale }) {
   };
 
   return (
-    <div className="sticky top-0 z-10 bg-ej-bg/95 py-2">
+    <div ref={wrapRef} className="sticky top-0 z-10 bg-ej-bg/95 py-2">
       <SearchField
-        id="settings-search"
         label={t(locale, 't10misc.settingsMain.searchLabel')}
         value={query}
-        onChange={(e) => applyFilter(e.target.value, e.target)}
-        onClear={() => {
-          const input = document.getElementById('settings-search') as HTMLInputElement | null;
-          if (input) applyFilter('', input);
-        }}
+        onChange={applyFilter}
+        onClear={() => applyFilter('')}
         placeholder={t(locale, 't10misc.settingsMain.searchPh')}
+        clearLabel={t(locale, 'jobs.clearSearch')}
       />
       {visible === 0 && (
         <div className="mt-2">
           <EmptyState
+            icon={<Search />}
             title={t(locale, 't10misc.settingsMain.noResults')}
-            description={t(locale, 't10misc.settingsMain.noResultsHint')}
+            text={t(locale, 't10misc.settingsMain.noResultsHint')}
           />
         </div>
       )}

@@ -3,7 +3,7 @@
 import { useActionState } from 'react';
 import { useRouter } from 'next/navigation';
 import { t, type Locale } from '@/lib/i18n';
-import { Field, inputClass } from '@/components/ui';
+import { Button, Input, Select, Textarea } from '@/components/kit';
 import { createEquipment, updateEquipment, type ActionResult } from '@/app/actions/equipment';
 
 const initialState: ActionResult = { ok: false };
@@ -49,67 +49,76 @@ export default function EquipmentForm({
   return (
     <form action={formAction} className="space-y-4">
       {mode === 'create' && (
-        <Field label={T('customer')} required>
-          <select
-            name="customerId"
-            required
-            defaultValue={preselectedCustomerId ?? ''}
-            className={inputClass}
-          >
-            <option value="">{T('selectCustomer')}</option>
-            {customers.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </Field>
+        <Select
+          label={
+            <>
+              {T('customer')}
+              <span className="text-danger ml-1" aria-hidden="true">*</span>
+            </>
+          }
+          name="customerId"
+          required
+          defaultValue={preselectedCustomerId ?? ''}
+          options={[
+            { value: '', label: T('selectCustomer') },
+            ...customers.map((c) => ({ value: c.id, label: c.name })),
+          ]}
+        />
       )}
 
-      <Field label={T('name')}>
-        <input
-          name="name"
-          required
+      <Input
+        label={T('name')}
+        name="name"
+        required
+        maxLength={100}
+        defaultValue={existing?.name ?? ''}
+        placeholder={T('namePlaceholder')}
+      />
+
+      <div className="grid grid-cols-2 gap-4">
+        <Input
+          label={T('brand')}
+          name="brand"
           maxLength={100}
-          defaultValue={existing?.name ?? ''}
-          placeholder={T('namePlaceholder')}
-          className={inputClass}
+          defaultValue={existing?.brand ?? ''}
         />
-      </Field>
-
-      <div className="grid grid-cols-2 gap-4">
-        <Field label={T('brand')}>
-          <input name="brand" maxLength={100} defaultValue={existing?.brand ?? ''} className={inputClass} />
-        </Field>
-        <Field label={T('model')}>
-          <input name="model" maxLength={100} defaultValue={existing?.model ?? ''} className={inputClass} />
-        </Field>
+        <Input
+          label={T('model')}
+          name="model"
+          maxLength={100}
+          defaultValue={existing?.model ?? ''}
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <Field label={T('serial')}>
-          <input name="serial" maxLength={100} defaultValue={existing?.serial ?? ''} className={inputClass} />
-        </Field>
-        <Field label={T('installDate')}>
-          <input
-            name="installDate"
-            type="date"
-            defaultValue={existing?.installDate ?? ''}
-            className={inputClass}
-          />
-        </Field>
+        <Input
+          label={T('serial')}
+          name="serial"
+          maxLength={100}
+          defaultValue={existing?.serial ?? ''}
+        />
+        <Input
+          label={T('installDate')}
+          name="installDate"
+          type="date"
+          defaultValue={existing?.installDate ?? ''}
+        />
       </div>
 
-      <Field label={T('notes')}>
-        <textarea name="notes" rows={3} maxLength={2000} defaultValue={existing?.notes ?? ''} className={inputClass} />
-      </Field>
+      <Textarea
+        label={T('notes')}
+        name="notes"
+        rows={3}
+        maxLength={2000}
+        defaultValue={existing?.notes ?? ''}
+      />
 
       {state.error && <p className="text-sm font-medium text-danger">{state.error}</p>}
 
       <button
         type="submit"
         disabled={pending}
-        className="w-full inline-flex items-center justify-center rounded-xl bg-asphalt px-4 py-3 text-sm font-semibold text-white hover:bg-graphite disabled:opacity-50 min-h-[48px]"
+        className="w-full inline-flex items-center justify-center rounded-xl bg-asphalt px-4 py-3 text-sm font-semibold text-hero-ink hover:bg-graphite disabled:opacity-50 min-h-[48px]"
       >
         {pending ? '…' : mode === 'create' ? T('save') : T('update')}
       </button>

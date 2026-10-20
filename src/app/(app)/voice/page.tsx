@@ -2,9 +2,10 @@ import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getLocale } from "@/lib/i18n/server";
 import { t } from "@/lib/i18n";
-import { PageHeader } from "@/components/ui";
+
 import VoiceModeClient from "@/components/VoiceModeClient";
 import { dayRange, todayInTimezone } from "@/lib/utils";
+import { PageTitle } from '../_components/PageTitle';
 
 export default async function VoicePage() {
   const { businessId } = await requireAuth();
@@ -38,9 +39,9 @@ export default async function VoicePage() {
 
   return (
     <div className="space-y-6 max-w-2xl">
-      <PageHeader
+      <PageTitle
         title={t(locale, "voice.title")}
-        subtitle={t(locale, "voice.subtitle")}
+        summary={t(locale, "voice.subtitle")}
       />
       <VoiceModeClient
         locale={locale}

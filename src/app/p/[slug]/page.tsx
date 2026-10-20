@@ -27,6 +27,7 @@ import { parseServiceAreas } from '@/lib/directory-claim';
 import ReportBusinessForm from '@/components/ReportBusinessForm';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
 import { LanguageToggle } from '@/components/LanguageToggle';
+import { Card } from '@/components/kit';
 
 async function getProfile(slug: string) {
   // Public directory entry point: the slug is the public address of the
@@ -208,32 +209,32 @@ export default async function PublicProfilePage({
         nonce={await getCspNonce()}
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <header className="bg-asphalt text-white">
+      <header className="bg-asphalt text-hero-ink">
         <div className="max-w-2xl mx-auto px-4 py-8">
-          <Link href="/directory" className="min-h-[44px] inline-flex items-center text-xs text-white/60 hover:text-white">
+          <Link href="/directory" className="min-h-[44px] inline-flex items-center text-xs text-hero-ink/60 hover:text-hero-ink">
             {L('t10money.profileBack')}
           </Link>
           <div className="flex items-start justify-between gap-3 mt-3">
             <div className="flex items-center gap-3">
               {b.logoUrl ? (
-                <img src={b.logoUrl} alt="" className="w-14 h-14 rounded-2xl object-contain bg-surface border border-white/20 shrink-0" />
+                <img src={b.logoUrl} alt="" className="w-14 h-14 rounded-2xl object-contain bg-surface border border-hero-ink/20 shrink-0" />
               ) : null}
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{b.name}</h1>
-                {headline && <p className="text-white/60 mt-1 text-sm">{headline}</p>}
+                {headline && <p className="text-hero-ink/60 mt-1 text-sm">{headline}</p>}
               </div>
             </div>
             {verified && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-400/30 rounded-full px-2.5 py-1 shrink-0">
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-lime border border-hero-ink/20 rounded-full px-2.5 py-1 shrink-0">
                 <BadgeCheck size={12} /> {L('t10money.profilePhoneVerified')}
               </span>
             )}
           </div>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-3 text-xs text-white/60">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-3 text-xs text-hero-ink/60">
             {avg !== null ? (
-              <span className="inline-flex items-center gap-1.5 text-white font-semibold">
-                <Star size={13} className="fill-amber-400 text-amber-400" />
-                {avg} <span className="font-normal text-white/60">({count} {L(count === 1 ? 't10money.profileReviewsOne' : 't10money.profileReviewsMany')})</span>
+              <span className="inline-flex items-center gap-1.5 text-hero-ink font-semibold">
+                <Star size={13} className="fill-star text-star" />
+                {avg} <span className="font-normal text-hero-ink/60">({count} {L(count === 1 ? 't10money.profileReviewsOne' : 't10money.profileReviewsMany')})</span>
               </span>
             ) : (
               <span>{L('t10money.profileNoReviewsCta')}</span>
@@ -261,7 +262,7 @@ export default async function PublicProfilePage({
                 href={wa}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="min-h-[44px] inline-flex items-center gap-1.5 rounded-xl bg-wa hover:bg-wa-dark text-white text-sm font-bold px-5 py-2.5 transition-colors"
+                className="min-h-[44px] inline-flex items-center gap-1.5 rounded-xl bg-wa hover:bg-wa-dark text-hero-ink text-sm font-bold px-5 py-2.5 transition-colors"
               >
                 <MessageCircle size={15} /> {L('t10money.profileWhatsapp')}
               </a>
@@ -269,7 +270,7 @@ export default async function PublicProfilePage({
             {showContact && b.phone && (
               <a
                 href={`tel:${b.phone.replace(/\s/g, '')}`}
-                className="min-h-[44px] inline-flex items-center gap-1.5 rounded-xl border border-white/25 hover:border-white/60 text-white text-sm font-bold px-5 py-2.5 transition-colors"
+                className="min-h-[44px] inline-flex items-center gap-1.5 rounded-xl border border-hero-ink/25 hover:border-hero-ink/60 text-hero-ink text-sm font-bold px-5 py-2.5 transition-colors"
               >
                 <Phone size={15} /> {L('t10money.profileCall')}
               </a>
@@ -280,14 +281,14 @@ export default async function PublicProfilePage({
 
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-5">
         {aboutText && (
-          <section className="bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
+          <Card className="p-5">
             <h2 className="text-sm font-bold text-ink mb-1.5">{L('t10money.profileAbout')}</h2>
             <p className="text-sm text-ink-2 leading-relaxed whitespace-pre-line">{aboutText}</p>
-          </section>
+          </Card>
         )}
 
         {serviceAreas.length > 0 && (
-          <section className="bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
+          <Card className="p-5">
             <h2 className="text-sm font-bold text-ink mb-3">{L('t10money.profileAreas')}</h2>
             <div className="flex flex-wrap gap-1.5">
               {serviceAreas.map((a) => (
@@ -296,13 +297,13 @@ export default async function PublicProfilePage({
                 </span>
               ))}
             </div>
-          </section>
+          </Card>
         )}
 
         {/* E8: Trust signals — licences, insurance, certifications.
             Self-declared by the business; displayed exactly as entered. */}
         {designations.length > 0 && (
-          <section className="bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
+          <Card className="p-5">
             <h2 className="text-sm font-bold text-ink mb-3">{L('t10money.profileTrust')}</h2>
             <ul className="space-y-2.5">
               {designations.map((d) => (
@@ -319,10 +320,10 @@ export default async function PublicProfilePage({
                 </li>
               ))}
             </ul>
-          </section>
+          </Card>
         )}
 
-        <section className="bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
+        <Card className="p-5">
           <h2 className="text-sm font-bold text-ink mb-3">{L('t10money.profileServices')}</h2>
           {services.length === 0 ? (
             <p className="text-sm text-ink-2">{L('t10money.profileServicesEmpty')}</p>
@@ -339,9 +340,9 @@ export default async function PublicProfilePage({
             </ul>
           )}
           <p className="text-[11px] text-ink-2 mt-3">{L('t10money.profilePricesNote')}</p>
-        </section>
+        </Card>
 
-        <section className="bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
+        <Card className="p-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-bold text-ink">
               {L('t10money.profileReviewsMany')} {count > 0 && <span className="text-ink-2 font-medium">({count})</span>}
@@ -365,7 +366,7 @@ export default async function PublicProfilePage({
                         <Star
                           key={n}
                           size={12}
-                          className={n <= r.rating ? 'fill-amber-400 text-amber-400' : 'text-zinc-300'}
+                          className={n <= r.rating ? 'fill-star text-star' : 'text-ink-2'}
                         />
                       ))}
                     </span>
@@ -381,9 +382,9 @@ export default async function PublicProfilePage({
               ))}
             </ul>
           )}
-        </section>
+        </Card>
 
-        <section className="bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
+        <Card className="p-5">
           <h2 className="text-sm font-bold text-ink mb-1 flex items-center gap-1.5">
             <Flag size={13} /> {L('t10money.profileReportTitle')}
           </h2>
@@ -391,10 +392,10 @@ export default async function PublicProfilePage({
             {L('t10money.profileReportDesc')}
           </p>
           <ReportBusinessForm slug={slug} />
-        </section>
+        </Card>
 
         {similarPros.length > 0 && (
-          <section className="bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
+          <Card className="p-5">
             <h2 className="text-sm font-bold text-ink mb-3">{L('t10money.profileSimilar')}</h2>
             <ul className="space-y-2">
               {similarPros.map((p) => (
@@ -409,14 +410,14 @@ export default async function PublicProfilePage({
                     </span>
                     {p.avg !== null && (
                       <span className="inline-flex items-center gap-1 text-xs font-bold text-ink shrink-0">
-                        <Star size={12} className="fill-amber-400 text-amber-400" /> {p.avg}
+                        <Star size={12} className="fill-star text-star" /> {p.avg}
                       </span>
                     )}
                   </Link>
                 </li>
               ))}
             </ul>
-          </section>
+          </Card>
         )}
 
         <p className="text-center text-[11px] text-ink-2 pb-4 flex items-center justify-center gap-1.5">

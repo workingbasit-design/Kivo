@@ -184,7 +184,7 @@ export default function AddressAutocomplete({
       {showDropdown && (
         <ul
           role="listbox"
-          className="absolute z-50 left-0 right-0 mt-1 max-h-64 overflow-auto rounded-xl border border-line bg-surface shadow-xl shadow-zinc-900/5 py-1"
+          className="absolute z-50 left-0 right-0 mt-1 max-h-64 overflow-auto rounded-xl border border-line bg-surface shadow-xl shadow-ink/5 py-1"
         >
           {loading && (
             <li className="flex items-center gap-2 px-4 py-2.5 text-xs text-ink-2">

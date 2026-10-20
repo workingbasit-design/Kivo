@@ -113,7 +113,7 @@ function ActionCard({
         <span className="block text-sm font-bold text-ink leading-tight">{label}</span>
         <span className="block text-[11px] text-ink-2 leading-tight mt-0.5 truncate">{desc}</span>
       </span>
-      <ChevronRight size={16} className="ml-auto shrink-0 text-zinc-300" />
+      <ChevronRight size={16} className="ml-auto shrink-0 text-ink-2" />
     </button>
   );
 }
@@ -135,7 +135,7 @@ function Chip({
       className={cx(
         'min-h-[44px] px-4 py-2.5 rounded-full text-sm font-semibold border transition-colors',
         selected
-          ? 'bg-asphalt text-white border-asphalt'
+          ? 'bg-asphalt text-hero-ink border-asphalt'
           : 'bg-surface text-ink border-line hover:border-asphalt/40'
       )}
     >
@@ -158,7 +158,7 @@ function PrimaryButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="w-full min-h-[52px] bg-asphalt hover:bg-graphite disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-bold py-3 rounded-2xl flex items-center justify-center gap-2 transition-colors"
+      className="w-full min-h-[52px] bg-asphalt hover:bg-graphite disabled:opacity-40 disabled:cursor-not-allowed text-hero-ink text-sm font-bold py-3 rounded-2xl flex items-center justify-center gap-2 transition-colors"
     >
       {children}
     </button>
@@ -321,7 +321,7 @@ function PreviewCard({
             onChange={(e) => set({ phone: e.target.value.replace(/\D/g, '').slice(0, 10) || null })}
             placeholder={t(locale, 'copilot.phonePlaceholder')}
             aria-label={t(locale, 'copilot.fieldPhone')}
-            className={`${innerField} ${phoneOk ? '' : '!border-red-400'}`}
+            className={`${innerField} ${phoneOk ? '' : '!border-danger'}`}
           />
         </EditRow>
         {preview.address && <Row icon={<MapPin size={15} />} label={t(locale, 'copilot.fieldAddress')} value={preview.address} />}
@@ -335,7 +335,7 @@ function PreviewCard({
             }}
             placeholder={`amount (${currencySymbol(currency)})`}
             aria-label={t(locale, 'copilot.fieldPrice')}
-            className={`${innerField} ${priceOk ? '' : '!border-red-400'}`}
+            className={`${innerField} ${priceOk ? '' : '!border-danger'}`}
           />
         </EditRow>
       </div>
@@ -343,7 +343,7 @@ function PreviewCard({
         <button
           onClick={() => onConfirm({ ...draft, customerName: draft.customerName.trim(), phone: phoneDigits || null })}
           disabled={!canConfirm}
-          className="flex-1 min-h-[44px] bg-asphalt hover:bg-graphite disabled:opacity-50 text-white text-xs font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-colors"
+          className="flex-1 min-h-[44px] bg-asphalt hover:bg-graphite disabled:opacity-50 text-hero-ink text-xs font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-colors"
         >
           <Check size={14} />
           {confirming ? t(locale, 't10misc.copilot.booking') : t(locale, 't10misc.copilot.confirmBook')}
@@ -412,7 +412,7 @@ function CustomerPreviewCard({
             onChange={(e) => set({ phone: e.target.value.replace(/\D/g, '').slice(0, 10) || null })}
             placeholder={t(locale, 'copilot.phonePlaceholder')}
             aria-label={t(locale, 'copilot.fieldPhone')}
-            className={`${innerField} ${phoneOk ? '' : '!border-red-400'}`}
+            className={`${innerField} ${phoneOk ? '' : '!border-danger'}`}
           />
         </EditRow>
         <EditRow icon={<MapPin size={15} />} label={t(locale, 'copilot.fieldAddress')}>
@@ -428,7 +428,7 @@ function CustomerPreviewCard({
         <button
           onClick={() => onConfirm({ ...draft, name: draft.name.trim(), phone: phoneDigits || null })}
           disabled={!canConfirm}
-          className="flex-1 min-h-[44px] bg-asphalt hover:bg-graphite disabled:opacity-50 text-white text-xs font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-colors"
+          className="flex-1 min-h-[44px] bg-asphalt hover:bg-graphite disabled:opacity-50 text-hero-ink text-xs font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-colors"
         >
           <Check size={14} />
           {confirming ? t(locale, 't10misc.copilot.adding') : t(locale, 't10misc.copilot.confirmAdd')}
@@ -834,7 +834,7 @@ export default function GlobalCopilotWidget({
                       <span className="block text-sm font-bold text-ink truncate">{c.name}</span>
                       {c.phone && <span className="block text-[11px] text-ink-2">{c.phone}</span>}
                     </span>
-                    <ChevronRight size={16} className="ml-auto shrink-0 text-zinc-300" />
+                    <ChevronRight size={16} className="ml-auto shrink-0 text-ink-2" />
                   </button>
                 ))}
                 {customers.length === 0 && (
@@ -1014,7 +1014,7 @@ export default function GlobalCopilotWidget({
               value={f.phone}
               onChange={(e) => set({ phone: onlyDigits(e.target.value).slice(0, 10) })}
               placeholder={t(lang, 'copilot.phonePlaceholder')}
-              className={cx(fieldClass, !phoneOk && '!border-red-400')}
+              className={cx(fieldClass, !phoneOk && '!border-danger')}
             />
             {!phoneOk && <p className="text-[11px] text-danger mt-1">{t(lang, 't10misc.copilot.phoneInvalid')}</p>}
           </div>
@@ -1093,7 +1093,7 @@ export default function GlobalCopilotWidget({
               onChange={(e) => set({ phone: onlyDigits(e.target.value).slice(0, 10) })}
               placeholder={t(lang, 'copilot.phonePlaceholder')}
               aria-label={t(lang, 't10misc.copilot.custPhoneTitle')}
-              className={cx(fieldClass, !ok && '!border-red-400')}
+              className={cx(fieldClass, !ok && '!border-danger')}
               autoFocus
             />
             {!ok && <p className="text-[11px] text-danger">{t(lang, 't10misc.copilot.phoneInvalid')}</p>}
@@ -1172,7 +1172,7 @@ export default function GlobalCopilotWidget({
           ];
     return (
       <div className="flex flex-col items-center text-center pt-10 px-2">
-        <span className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mb-4">
+        <span className="w-16 h-16 rounded-full bg-ok-bg flex items-center justify-center mb-4">
           <CheckCircle2 size={32} className="text-ok" />
         </span>
         <h3 className="text-xl font-bold text-ink">{d.headline}</h3>
@@ -1186,7 +1186,7 @@ export default function GlobalCopilotWidget({
               className="w-full min-h-[52px] bg-surface border border-line rounded-2xl px-4 text-sm font-bold text-ink hover:border-asphalt/40 active:scale-[0.99] transition-all flex items-center justify-between"
             >
               {f.label}
-              <ChevronRight size={16} className="text-zinc-300" />
+              <ChevronRight size={16} className="text-ink-2" />
             </button>
           ))}
         </div>
@@ -1284,7 +1284,7 @@ export default function GlobalCopilotWidget({
           <button
             type="submit"
             disabled={!homeAsk.trim()}
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 w-11 h-11 rounded-xl bg-asphalt hover:bg-graphite disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-white transition-colors"
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 w-11 h-11 rounded-xl bg-asphalt hover:bg-graphite disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-hero-ink transition-colors"
             aria-label={lang === 'fr' ? 'Envoyer la question' : 'Send question'}
           >
             <Send className="w-4 h-4 ml-0.5" />
@@ -1326,7 +1326,7 @@ export default function GlobalCopilotWidget({
                 <div
                   className={`p-3 rounded-2xl flex-1 ${
                     msg.role === 'user'
-                      ? 'bg-asphalt text-white rounded-tr-sm'
+                      ? 'bg-asphalt text-hero-ink rounded-tr-sm'
                       : 'bg-surface border border-line shadow-sm rounded-tl-sm text-ink'
                   }`}
                 >
@@ -1422,7 +1422,7 @@ export default function GlobalCopilotWidget({
           <button
             type="submit"
             disabled={!input.trim() || isTyping}
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 w-11 h-11 rounded-xl bg-asphalt hover:bg-graphite disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-white transition-colors"
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 w-11 h-11 rounded-xl bg-asphalt hover:bg-graphite disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-hero-ink transition-colors"
             aria-label={t(lang, 'copilot.sendLabel')}
           >
             <Send className="w-4 h-4 ml-0.5" />
@@ -1484,12 +1484,12 @@ export default function GlobalCopilotWidget({
                   </button>
                 )}
                 <div className="w-8 h-8 bg-asphalt rounded-lg flex items-center justify-center shadow-sm">
-                  <Bot className="w-4 h-4 text-lime" />
+                  <Sparkles className="w-4 h-4 text-lime" />
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold tracking-tight text-ink">{headerTitle}</h3>
                   <div className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-ok animate-pulse"></span>
                     <span className="text-[10px] text-ink-2 font-semibold">
                       {t(lang, 't10misc.copilot.onlineBadge')}
                     </span>

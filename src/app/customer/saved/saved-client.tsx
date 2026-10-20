@@ -5,12 +5,7 @@ import { Heart } from '@/components/icons';
 import { toggleSavePro } from '@/app/actions/customer-pros';
 import { t, type Locale } from '@/lib/i18n';
 import ProCard, { type ProCardData } from '@/components/ProCard';
-import {
-  EmptyState,
-  PageHeader,
-  PrimaryCTA,
-  Stagger,
-} from '@/components/customer/ui';
+import { Button, Chip, EmptyState } from '@/components/kit';
 
 export default function SavedProsClient({ initialPros, locale }: { initialPros: ProCardData[]; locale: Locale }) {
   const tr = (path: string) => t(locale, path as never);
@@ -30,38 +25,39 @@ export default function SavedProsClient({ initialPros, locale }: { initialPros: 
 
   return (
     <div className="space-y-4">
-      <PageHeader
-        title={tr('customer.saved.title')}
-        action={
-          pros.length > 0 ? (
-            <span className="text-xs font-bold text-indigo-700 bg-indigo-100 rounded-full px-2.5 py-1">
-              {pros.length}
-            </span>
-          ) : undefined
-        }
-      />
+      <div className="ej-anim-fade-up flex items-start justify-between gap-3">
+        <h1 className="text-xl font-bold tracking-tight text-ink">{tr('customer.saved.title')}</h1>
+        {pros.length > 0 && <Chip tone="neutral">{pros.length}</Chip>}
+      </div>
 
       {pros.length === 0 ? (
-        <EmptyState
-          icon={Heart}
-          title={tr('customer.saved.emptyTitle')}
-          hint={tr('customer.saved.emptyHint')}
-          delay={80}
-          action={
-            <PrimaryCTA href="/customer">{tr('customer.saved.findPro')}</PrimaryCTA>
-          }
-        />
+        <>
+          <EmptyState
+            icon={<Heart />}
+            title={tr('customer.saved.emptyTitle')}
+            text={tr('customer.saved.emptyHint')}
+          />
+          <div className="text-center -mt-4 pb-2">
+            <Button href="/customer" sm>
+              {tr('customer.saved.findPro')}
+            </Button>
+          </div>
+        </>
       ) : (
         <div className="space-y-3">
           {pros.map((pro, i) => (
-            <Stagger key={pro.id} index={i}>
+            <div
+              key={pro.id}
+              className="ej-anim-fade-up"
+              style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}
+            >
               <ProCard
                 pro={pro}
                 saved={saved.has(pro.id)}
                 onToggleSave={toggleSave}
                 locale={locale}
               />
-            </Stagger>
+            </div>
           ))}
         </div>
       )}

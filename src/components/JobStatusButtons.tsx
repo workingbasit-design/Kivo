@@ -5,11 +5,10 @@ import { useRouter } from 'next/navigation';
 import { ArrowRight, ArrowLeft, Ban, RotateCcw, Trash2, AlertCircle } from '@/components/icons';
 import { toast } from 'sonner';
 import { updateJobStatus, deleteJob } from '@/app/actions/jobs';
-import {
-  primaryBtnClass, secondaryBtnClass, dangerBtnClass, Dialog, StatusBadge,
-} from '@/components/ui';
+import { BottomSheet, Button } from '@/components/kit';
+import { StatusPill } from '@/app/(app)/_components/status-ui';
 import { t, type Locale } from '@/lib/i18n';
-import { cn, jobDisplayStatus } from '@/lib/utils';
+import { jobDisplayStatus } from '@/lib/utils';
 import { previousPipelineStatus } from '@/lib/job-status';
 
 const PIPELINE = ['NEW', 'SCHEDULED', 'IN PROGRESS', 'COMPLETED', 'PAID'] as const;
@@ -116,106 +115,112 @@ export default function JobStatusButtons({
     <div className="space-y-4">
       {/* Badge - updates instantly with the buttons below. */}
       <div className="flex items-center gap-3 flex-wrap">
-        <StatusBadge status={jobDisplayStatus(status, jobDate)} />
+        <StatusPill status={jobDisplayStatus(status, jobDate)} locale={locale} />
         <span className="text-xs text-ink-2">{createdLabel}</span>
       </div>
 
       <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2">
         {nextStatus && (
-          <button
+          <Button
+            variant="primary"
             onClick={() => runStatus(nextStatus)}
             disabled={isPending}
-            className={cn(primaryBtnClass, 'w-full sm:w-auto')}
+            className="w-full sm:w-auto disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <ArrowRight size={14} />
             {isPending ? T('statusUpdating') : (nextLabel[nextStatus] ?? `Mark ${nextStatus}`)}
-          </button>
+          </Button>
         )}
 
         {/* Undo: step back one pipeline stage after a mistaken tap. */}
         {prevStatus && status !== 'CANCELLED' && (
-          <button
+          <Button
+            variant="secondary"
             onClick={() => runStatus(prevStatus)}
             disabled={isPending}
-            className={cn(secondaryBtnClass, 'w-full sm:w-auto')}
+            className="w-full sm:w-auto disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <ArrowLeft size={14} />
             {T('statusBack').replace('{status}', prevStatus)}
-          </button>
+          </Button>
         )}
 
         {status === 'CANCELLED' ? (
-          <button
+          <Button
+            variant="secondary"
             onClick={() => runStatus('SCHEDULED')}
             disabled={isPending}
-            className={cn(secondaryBtnClass, 'w-full sm:w-auto')}
+            className="w-full sm:w-auto disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <RotateCcw size={14} />
             {T('statusReopen')}
-          </button>
+          </Button>
         ) : (
           status !== 'PAID' && (
-            <button
+            <Button
+              variant="secondary"
               onClick={() => setPendingAction('cancel')}
               disabled={isPending}
-              className={cn(
-                secondaryBtnClass,
-                'w-full sm:w-auto text-danger border-rose-200 hover:bg-danger-bg'
-              )}
+              className="w-full sm:w-auto text-danger hover:bg-danger-bg disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <Ban size={14} />
               {jobsL('cancelJob')}
-            </button>
+            </Button>
           )
         )}
 
-        <button
+        <Button
+          variant="secondary"
           onClick={() => setPendingAction('delete')}
           disabled={isPending}
-          className={cn(secondaryBtnClass, 'w-full sm:w-auto text-danger border-rose-200 hover:bg-danger-bg sm:ml-auto')}
+          className="w-full sm:w-auto text-danger hover:bg-danger-bg sm:ml-auto disabled:opacity-60 disabled:cursor-not-allowed"
         >
           <Trash2 size={14} />
           {T('statusDelete')}
-        </button>
+        </Button>
       </div>
 
       {error && (
-        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-danger/25 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       {/* In-app confirmation dialog (foundation: bottom sheet on mobile, Esc closes) */}
-      <Dialog
+      <BottomSheet
         open={pendingAction !== null}
         onClose={() => !isPending && setPendingAction(null)}
         title={pendingAction === 'cancel' ? jobsL('confirmCancelTitle') : jobsL('confirmDeleteTitle')}
+        footer={
+          <div className="mt-4 flex gap-2">
+            <Button
+              variant="secondary"
+              onClick={() => setPendingAction(null)}
+              disabled={isPending}
+              className="flex-1 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {T('statusKeepJob')}
+            </Button>
+            <Button
+              variant="danger"
+              onClick={confirmPending}
+              disabled={isPending}
+              className="flex-1 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {isPending
+                ? T('statusWorking')
+                : pendingAction === 'cancel'
+                  ? jobsL('yesCancel')
+                  : jobsL('yesDelete')}
+            </Button>
+          </div>
+        }
       >
         <p className="text-sm text-ink-2 leading-relaxed">
           {pendingAction === 'cancel' ? jobsL('confirmCancelBody') : T('statusDeleteBody')}
         </p>
-        <div className="mt-6 flex gap-2">
-          <button
-            onClick={() => setPendingAction(null)}
-            disabled={isPending}
-            className={cn(secondaryBtnClass, 'flex-1')}
-          >
-            {T('statusKeepJob')}
-          </button>
-          <button
-            onClick={confirmPending}
-            disabled={isPending}
-            className={cn(dangerBtnClass, 'flex-1')}
-          >
-            {isPending
-              ? T('statusWorking')
-              : pendingAction === 'cancel'
-                ? jobsL('yesCancel')
-                : jobsL('yesDelete')}
-          </button>
-        </div>
-      </Dialog>
+      </BottomSheet>
     </div>
   );
 }

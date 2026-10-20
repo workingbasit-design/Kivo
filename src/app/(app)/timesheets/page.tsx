@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Clock3, Filter, Timer } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { PageHeader, Card, EmptyState, Field } from '@/components/ui';
+
 import ClockWidget from '@/components/ClockWidget';
 import ManualEntryForm from '@/components/ManualEntryForm';
 import DeleteEntryButton from '@/components/DeleteEntryButton';
@@ -18,6 +18,8 @@ import {
 import { formatDateLabel, localeDateTag } from '@/lib/utils';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
+import { PageTitle } from '../_components/PageTitle';
+import { EmptyState, Card, Select, DateField, Button } from '@/components/kit';
 
 function formatClockTime(d: Date | string, locale: string): string {
   return new Date(d).toLocaleTimeString(localeDateTag(locale), {
@@ -95,9 +97,9 @@ export default async function TimesheetsPage({
 
   return (
     <div className="space-y-5">
-      <PageHeader
+      <PageTitle
         title={T('tsTitle')}
-        subtitle={T('tsSubtitle')}
+        summary={T('tsSubtitle')}
       />
 
       <ClockWidget
@@ -116,49 +118,27 @@ export default async function TimesheetsPage({
       <Card className="p-4">
         <form method="GET" action="/timesheets" className="flex flex-col sm:flex-row gap-3 sm:items-end">
           {isAdmin && (
-            <div className="flex-1">
-              <Field label={T('tsTeamMember')}>
-                <select
-                  name="member"
-                  defaultValue={sp.member || ''}
-                  className="w-full min-h-[44px] px-4 py-2.5 rounded-xl border border-line bg-surface-2 text-sm focus:outline-none focus:ring-2 focus:ring-ink/30 focus:border-asphalt text-ink"
-                >
-                  <option value="">{T('tsEveryone')}</option>
-                  {members.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name || m.email}
-                    </option>
-                  ))}
-                </select>
-              </Field>
+            <div className="flex-1 min-w-0">
+              <Select
+                label={T('tsTeamMember')}
+                name="member"
+                defaultValue={sp.member || ''}
+                options={[
+                  { value: '', label: T('tsEveryone') },
+                  ...members.map((m) => ({ value: m.id, label: m.name || m.email })),
+                ]}
+              />
             </div>
           )}
-          <div className="flex-1">
-            <Field label={T('tsFrom')}>
-              <input
-                type="date"
-                name="from"
-                defaultValue={toDateInputValue(fromDate)}
-                className="w-full min-h-[44px] px-4 py-2.5 rounded-xl border border-line bg-surface-2 text-sm focus:outline-none focus:ring-2 focus:ring-ink/30 focus:border-asphalt text-ink"
-              />
-            </Field>
+          <div className="flex-1 min-w-0">
+            <DateField label={T('tsFrom')} name="from" defaultValue={toDateInputValue(fromDate)} />
           </div>
-          <div className="flex-1">
-            <Field label={T('tsTo')}>
-              <input
-                type="date"
-                name="to"
-                defaultValue={toDateInputValue(toDate)}
-                className="w-full min-h-[44px] px-4 py-2.5 rounded-xl border border-line bg-surface-2 text-sm focus:outline-none focus:ring-2 focus:ring-ink/30 focus:border-asphalt text-ink"
-              />
-            </Field>
+          <div className="flex-1 min-w-0">
+            <DateField label={T('tsTo')} name="to" defaultValue={toDateInputValue(toDate)} />
           </div>
-          <button
-            type="submit"
-            className="bg-asphalt hover:bg-graphite text-white min-h-[44px] px-5 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center justify-center gap-2 shadow-sm"
-          >
+          <Button type="submit" variant="secondary" sm>
             <Filter size={14} /> {T('tsApply')}
-          </button>
+          </Button>
         </form>
       </Card>
 
@@ -187,9 +167,9 @@ export default async function TimesheetsPage({
       <Card>
         {entries.length === 0 ? (
           <EmptyState
-            icon={<Clock3 size={22} />}
+            icon={<Clock3 />}
             title={T('tsEmptyTitle')}
-            description={T('tsEmptyDesc')}
+            text={T('tsEmptyDesc')}
           />
         ) : (
           <ul className="divide-y divide-line">
@@ -213,7 +193,7 @@ export default async function TimesheetsPage({
                         {e.user.name || e.user.email}
                       </p>
                       {isActive && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-ok bg-ok-bg border border-emerald-200 rounded-md px-2 py-0.5">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-ok bg-ok-bg border border-line rounded-md px-2 py-0.5">
                           <Timer size={10} /> {T('tsActive')}
                         </span>
                       )}

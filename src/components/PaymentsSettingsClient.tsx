@@ -4,7 +4,7 @@ import { useActionState, useEffect, useState, useTransition } from 'react';
 import { CreditCard, Unplug, ShieldCheck, ExternalLink, Receipt } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
-import { Card, dangerBtnClass, primaryBtnClass } from '@/components/ui';
+import { Button, Card } from '@/components/kit';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { formatMoney } from '@/lib/money';
 import {
@@ -47,7 +47,7 @@ function PaymentCards({
               href={p.receiptUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1 min-h-[44px] text-indigo-600 hover:underline font-semibold py-1"
+              className="inline-flex items-center gap-1 min-h-[44px] text-info hover:underline font-semibold py-1"
             >
               <Receipt size={12} /> {t(locale, 'payments.receiptLink')}
             </a>
@@ -95,12 +95,12 @@ export default function PaymentsSettingsClient({
   return (
     <div className="space-y-6">
       {connectFailed && (
-        <div className="rounded-xl border border-red-200 bg-danger-bg px-4 py-3 text-sm font-semibold text-red-800">
+        <div className="rounded-xl border border-danger/25 bg-danger-bg px-4 py-3 text-sm font-semibold text-danger">
           {t(locale, 'payments.connectFailed')}
         </div>
       )}
       {!initial.stripeConfigured && (
-        <div className="rounded-xl border border-amber-200 bg-warn-bg px-4 py-3 text-sm font-semibold text-amber-800">
+        <div className="rounded-xl border border-warn-line bg-warn-bg px-4 py-3 text-sm font-semibold text-warn-text">
           {t(locale, 'payments.notConfigured')}
         </div>
       )}
@@ -108,19 +108,19 @@ export default function PaymentsSettingsClient({
       {/* Stripe Connect */}
       <Card className="p-5">
         <h2 className="text-sm font-bold text-ink mb-1 flex items-center gap-2">
-          <CreditCard size={15} className="text-indigo-600" />
+          <CreditCard size={15} className="text-info" />
           {t(locale, 'payments.connectTitle')}
         </h2>
         <p className="text-xs text-ink-2 mb-4">{t(locale, 'payments.connectDesc')}</p>
 
         {!conn ? (
-          <a href="/api/stripe/connect" className={primaryBtnClass}>
+          <Button variant="primary" href="/api/stripe/connect">
             <ExternalLink size={13} /> {t(locale, 'payments.connectButton')}
-          </a>
+          </Button>
         ) : (
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-ok bg-ok-bg border border-emerald-200 rounded-full px-3 py-1">
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-ok bg-ok-bg border border-ok/25 rounded-full px-3 py-1">
                 <ShieldCheck size={13} /> {t(locale, 'payments.connected')}
               </span>
               {conn.livemode ? (
@@ -128,7 +128,7 @@ export default function PaymentsSettingsClient({
                   {t(locale, 'payments.liveModeBadge')}
                 </span>
               ) : (
-                <span className="text-xs font-bold text-warn-text bg-warn-bg border border-amber-200 rounded-full px-3 py-1">
+                <span className="text-xs font-bold text-warn-text bg-warn-bg border border-warn-line rounded-full px-3 py-1">
                   {t(locale, 'payments.testModeBadge')}
                 </span>
               )}
@@ -145,27 +145,27 @@ export default function PaymentsSettingsClient({
               </p>
             )}
             {conn.livemode && !conn.liveConfirmedAt && (
-              <form action={liveAction} className="rounded-xl border border-rose-200 bg-danger-bg/60 p-3 space-y-2">
+              <form action={liveAction} className="rounded-xl border border-danger/25 bg-danger-bg/60 p-3 space-y-2">
                 <p className="text-xs font-bold text-ink">{t(locale, 'payments.liveConfirmTitle')}</p>
                 <p className="text-xs text-ink-2">{t(locale, 'payments.liveConfirmDesc')}</p>
                 <label className="flex items-start gap-2 text-xs text-ink cursor-pointer">
-                  <input type="checkbox" name="confirm" value="yes" required className="mt-0.5 h-4 w-4 accent-rose-600" />
+                  <input type="checkbox" name="confirm" value="yes" required className="mt-0.5 h-4 w-4 rounded-md border-line-strong accent-danger" />
                   <span className="font-semibold">{t(locale, 'payments.liveConfirmLabel')}</span>
                 </label>
                 {liveState.error && <p className="text-xs font-semibold text-danger">{liveState.error}</p>}
                 {liveState.ok && <p className="text-xs font-semibold text-ok">{t(locale, 'payments.liveConfirmed')}</p>}
-                <button type="submit" disabled={livePending} className={primaryBtnClass}>
+                <Button variant="primary" type="submit" disabled={livePending} className="disabled:opacity-60 disabled:cursor-not-allowed">
                   {t(locale, 'payments.liveConfirmButton')}
-                </button>
+                </Button>
               </form>
             )}
             {conn.livemode && conn.liveConfirmedAt && (
               <p className="text-xs font-semibold text-ok">{t(locale, 'payments.liveConfirmed')}</p>
             )}
             <div>
-              <button onClick={() => setConfirmingDisconnect(true)} className={dangerBtnClass}>
+              <Button variant="danger" onClick={() => setConfirmingDisconnect(true)} className="disabled:opacity-60 disabled:cursor-not-allowed">
                 <Unplug size={13} /> {t(locale, 'payments.disconnect')}
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -193,7 +193,7 @@ export default function PaymentsSettingsClient({
                 </thead>
                 <tbody>
                   {initial.payments.map((p) => (
-                    <tr key={p.id} className="border-b border-zinc-50">
+                    <tr key={p.id} className="border-b border-line">
                       <td className="py-1.5 pr-2 text-ink-2 whitespace-nowrap">
                         {new Date(p.createdAt).toLocaleDateString(locale === 'fr' ? 'fr-CA' : 'en-CA')}
                       </td>
@@ -203,11 +203,11 @@ export default function PaymentsSettingsClient({
                       <td className="py-1.5 pr-2">{p.status}</td>
                       <td className="py-1.5">
                         {p.receiptUrl ? (
-                          <a href={p.receiptUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-indigo-600 hover:underline font-semibold">
+                          <a href={p.receiptUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-info hover:underline font-semibold">
                             <Receipt size={12} /> {t(locale, 'payments.receiptLink')}
                           </a>
                         ) : (
-                          <span className="text-zinc-300">-</span>
+                          <span className="text-line-strong">-</span>
                         )}
                       </td>
                     </tr>
@@ -241,7 +241,7 @@ export default function PaymentsSettingsClient({
                 </thead>
                 <tbody>
                   {initial.deposits.map((d) => (
-                    <tr key={d.id} className="border-b border-zinc-50">
+                    <tr key={d.id} className="border-b border-line">
                       <td className="py-1.5 pr-2 text-ink-2 whitespace-nowrap">
                         {new Date(d.createdAt).toLocaleDateString(locale === 'fr' ? 'fr-CA' : 'en-CA')}
                       </td>
@@ -251,11 +251,11 @@ export default function PaymentsSettingsClient({
                       <td className="py-1.5 pr-2">{d.status}</td>
                       <td className="py-1.5">
                         {d.receiptUrl ? (
-                          <a href={d.receiptUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-indigo-600 hover:underline font-semibold">
+                          <a href={d.receiptUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-info hover:underline font-semibold">
                             <Receipt size={12} /> {t(locale, 'payments.receiptLink')}
                           </a>
                         ) : (
-                          <span className="text-zinc-300">-</span>
+                          <span className="text-line-strong">-</span>
                         )}
                       </td>
                     </tr>

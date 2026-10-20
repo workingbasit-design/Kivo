@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
-import type { IconComponent } from '@/components/icons';
 
 export type StatusBadgeTone =
   | 'late'
@@ -12,7 +11,7 @@ export type StatusBadgeTone =
 
 export interface StatusBadgeProps {
   tone: StatusBadgeTone;
-  icon?: IconComponent;
+  icon?: ReactNode; // rendered element, not the component (see kit PageHeader)
   children: ReactNode;
 }
 
@@ -26,7 +25,7 @@ const toneClasses: Record<StatusBadgeTone, string> = {
 };
 
 /** Pill badge (mockup `.sb`). */
-export function StatusBadge({ tone, icon: Icon, children }: StatusBadgeProps) {
+export function StatusBadge({ tone, icon, children }: StatusBadgeProps) {
   return (
     <span
       data-kit="status-badge"
@@ -36,7 +35,7 @@ export function StatusBadge({ tone, icon: Icon, children }: StatusBadgeProps) {
         toneClasses[tone],
       )}
     >
-      {Icon && <Icon size={14} aria-hidden="true" />}
+      {icon && <span aria-hidden="true" className="inline-flex [&_svg]:size-[14px]">{icon}</span>}
       {children}
     </span>
   );

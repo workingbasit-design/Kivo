@@ -3,8 +3,9 @@
 import React, { useActionState } from 'react';
 import { Wand2, CheckCircle2, AlertCircle } from '@/components/icons';
 import { runRecurringGeneration } from '@/app/actions/recurring';
-import { secondaryBtnClass } from '@/components/ui';
+
 import { useResolvedT } from '@/hooks/useResolvedLocale';
+import { Button } from '@/components/kit';
 
 /**
  * "Generate due jobs" button. Tapping it creates SCHEDULED jobs for every
@@ -18,10 +19,10 @@ export default function GenerateDueJobsButton() {
   return (
     <div className="flex flex-col items-end gap-1.5">
       <form action={formAction}>
-        <button type="submit" disabled={isPending} className={secondaryBtnClass}>
+        <Button type="submit" disabled={isPending} variant="secondary">
           <Wand2 size={14} />
           {isPending ? t('t10work.recurGenerating') : t('t10work.recurGenerate')}
-        </button>
+        </Button>
       </form>
       {state.ok && (
         <p className="flex items-center gap-1 text-[11px] font-semibold text-ok">

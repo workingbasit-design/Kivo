@@ -12,7 +12,7 @@ import {
 import { t, type Locale } from "@/lib/i18n";
 import { fillTemplate } from "@/lib/revenue";
 import { useSpeechSupport } from "@/hooks/useSpeechSupport";
-import { Card, EmptyState } from "@/components/ui";
+import { Card, EmptyState } from "@/components/kit";
 import { cn } from "@/lib/utils";
 
 /* Minimal Web Speech API typing (not in TS DOM lib everywhere). */
@@ -322,8 +322,8 @@ export default function VoiceModeClient({
               onClick={toggleListening}
               aria-pressed={listening}
               className={cn(
-                "ej-spring mx-auto flex h-24 w-24 items-center justify-center rounded-full text-white shadow-lg transition-colors min-h-[96px] min-w-[96px]",
-                listening ? "bg-red-600 hover:bg-red-700" : "bg-asphalt hover:bg-graphite"
+                "ej-spring mx-auto flex h-24 w-24 items-center justify-center rounded-full text-hero-ink shadow-lg transition-colors min-h-[96px] min-w-[96px]",
+                listening ? "bg-danger" : "bg-asphalt hover:bg-graphite"
               )}
             >
               {listening ? (
@@ -339,7 +339,7 @@ export default function VoiceModeClient({
             {voiceError && (
               <p
                 role="alert"
-                className="mt-3 rounded-xl border border-amber-200 bg-warn-bg px-4 py-3 text-sm text-amber-800"
+                className="mt-3 rounded-xl border border-warn-line bg-warn-bg px-4 py-3 text-sm text-warn-text"
               >
                 {voiceError}
               </p>
@@ -360,7 +360,7 @@ export default function VoiceModeClient({
         </h2>
         {jobs.length === 0 ? (
           <Card>
-            <EmptyState icon={<Mic size={22} />} title={t(locale, "voice.noJobs")} description="" />
+            <EmptyState icon={<Mic />} title={t(locale, "voice.noJobs")} />
           </Card>
         ) : (
           <div className="space-y-3">
@@ -377,7 +377,7 @@ export default function VoiceModeClient({
                       type="button"
                       disabled={!!isBusy}
                       onClick={() => tap({ kind: "start", jobId: job.id })}
-                      className="min-h-[56px] rounded-xl bg-asphalt text-white text-sm font-bold inline-flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="min-h-[56px] rounded-xl bg-asphalt text-hero-ink text-sm font-bold inline-flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       <Play size={16} /> {t(locale, "voice.startJob")}
                     </button>
@@ -385,7 +385,7 @@ export default function VoiceModeClient({
                       type="button"
                       disabled={!!isBusy}
                       onClick={() => tap({ kind: "complete", jobId: job.id })}
-                      className="min-h-[56px] rounded-xl bg-emerald-600 text-white text-sm font-bold inline-flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="min-h-[56px] rounded-xl bg-ok text-hero-ink text-sm font-bold inline-flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       <Check size={16} /> {t(locale, "voice.completeJob")}
                     </button>

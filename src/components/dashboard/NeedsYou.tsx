@@ -46,10 +46,10 @@ function NeedsRow({
         {SEVERITY_ICON[item.severity].icon}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-[15px] font-semibold leading-snug text-asphalt dark:text-white">
+        <p className="text-[15px] font-semibold leading-snug text-asphalt dark:text-hero-ink">
           {renderLine("title", item.titleKey, item.titleParams)}
         </p>
-        <p className="mt-0.5 text-[13px] text-ink-2 dark:text-zinc-400">
+        <p className="mt-0.5 text-[13px] text-ink-2 dark:text-ink-2">
           {renderLine("detail", item.detailKey, item.detailParams)}
           {item.amount != null && item.amount > 0 && (
             <> · <span className="font-semibold tabular-nums">{formatMoney(item.amount, null, moneyLocale)}</span></>
@@ -58,7 +58,7 @@ function NeedsRow({
       </div>
       <Link
         href={item.href}
-        className="shrink-0 rounded-full border border-line-strong px-4 py-2 text-[13px] font-semibold text-asphalt transition-colors hover:bg-surface-2 active:bg-surface-2 dark:border-white/20 dark:text-white dark:hover:bg-white/5 min-h-[40px] inline-flex items-center"
+        className="shrink-0 rounded-full border border-line-strong px-4 py-2 text-[13px] font-semibold text-asphalt transition-colors hover:bg-surface-2 active:bg-surface-2 dark:border-hero-ink/20 dark:text-hero-ink dark:hover:bg-surface/5 min-h-[40px] inline-flex items-center"
       >
         {t(locale, `attention.${item.ctaKey}`)}
       </Link>
@@ -75,10 +75,10 @@ export default async function NeedsYou({ businessId }: { businessId: string }) {
   return (
     <section
       aria-label={t(locale, "dashboard.needsYou")}
-      className="rounded-[24px] border border-line/70 bg-surface dark:border-white/10 dark:bg-coal"
+      className="rounded-[24px] border border-line/70 bg-surface dark:border-hero-ink/10 dark:bg-coal"
     >
       <div className="flex items-center justify-between px-5 pt-4 pb-1">
-        <h2 className="flex items-center gap-2 text-[17px] font-bold text-asphalt dark:text-white">
+        <h2 className="flex items-center gap-2 text-[17px] font-bold text-asphalt dark:text-hero-ink">
           {t(locale, "dashboard.needsYou")}
           <span
             aria-label={fillTemplate(t(locale, "dashboard.needsYouCount"), { count: total })}
@@ -89,7 +89,7 @@ export default async function NeedsYou({ businessId }: { businessId: string }) {
         </h2>
         <Link
           href="/attention"
-          className="inline-flex min-h-[44px] items-center px-2 text-[13px] font-semibold text-asphalt underline underline-offset-2 dark:text-zinc-300"
+          className="inline-flex min-h-[44px] items-center px-2 text-[13px] font-semibold text-asphalt underline underline-offset-2 dark:text-ink-2"
         >
           {t(locale, "dashboard.seeAll")}
         </Link>

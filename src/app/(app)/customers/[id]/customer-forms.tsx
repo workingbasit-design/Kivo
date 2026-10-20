@@ -11,16 +11,10 @@ import {
   unarchiveCustomer,
   type ActionResult,
 } from '@/app/actions/customers';
-import {
-  Field,
-  FormGrid,
-  inputClass,
-  primaryBtnClass,
-  secondaryBtnClass,
-} from '@/components/ui';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 import { CA_PROVINCES } from '@/lib/tax';
+import { Button, Input, Select, Textarea } from '@/components/kit';
 
 /**
  * Fires a toast exactly once per server-action result. Minimal inline
@@ -79,9 +73,9 @@ export function EditCustomerForm({
 
   if (!editing) {
     return (
-      <button onClick={() => setEditing(true)} className={secondaryBtnClass}>
+      <Button variant="secondary" sm onClick={() => setEditing(true)}>
         <Pencil size={14} /> Edit
-      </button>
+      </Button>
     );
   }
 
@@ -89,88 +83,84 @@ export function EditCustomerForm({
     <form action={formAction} className="space-y-4">
       <input type="hidden" name="id" value={customer.id} />
 
-      <Field label="Name *">
-        <input name="name" required defaultValue={customer.name} className={inputClass} />
-      </Field>
+      <Input label="Name *" name="name" required defaultValue={customer.name} />
 
-      <FormGrid>
-        <Field label="Phone" hint="e.g. +1 416 555 0100">
-          <input
-            name="phone"
-            type="tel"
-            defaultValue={customer.phone ?? ''}
-            className={inputClass}
-          />
-        </Field>
-        <Field label="Email">
-          <input
-            name="email"
-            type="email"
-            defaultValue={customer.email ?? ''}
-            placeholder="customer@example.com"
-            className={inputClass}
-          />
-        </Field>
-      </FormGrid>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Input
+          label="Phone"
+          hint="e.g. +1 416 555 0100"
+          name="phone"
+          type="tel"
+          defaultValue={customer.phone ?? ''}
+        />
+        <Input
+          label="Email"
+          name="email"
+          type="email"
+          defaultValue={customer.email ?? ''}
+          placeholder="customer@example.com"
+        />
+      </div>
 
-      <Field label="Address">
+      <label className="field">
+        <span>Address</span>
         <AddressAutocomplete
           name="address"
           rows={2}
           defaultValue={customer.address ?? ''}
-          className={inputClass}
+          className="input"
         />
-      </Field>
+      </label>
 
-      <FormGrid>
-        <Field label="Province">
-          <select name="province" defaultValue={customer.province ?? ''} className={inputClass}>
-            <option value="">-</option>
-            {CA_PROVINCES.map((p) => (
-              <option key={p.code} value={p.code}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field label="Postal code" hint="e.g. M5V 2T6">
-          <input
-            name="postalCode"
-            defaultValue={customer.postalCode ?? ''}
-            maxLength={7}
-            className={inputClass + ' uppercase'}
-          />
-        </Field>
-      </FormGrid>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Select
+          label="Province"
+          name="province"
+          defaultValue={customer.province ?? ''}
+          options={[
+            { value: '', label: '-' },
+            ...CA_PROVINCES.map((p) => ({ value: p.code, label: p.name })),
+          ]}
+        />
+        <Input
+          label="Postal code"
+          hint="e.g. M5V 2T6"
+          name="postalCode"
+          defaultValue={customer.postalCode ?? ''}
+          maxLength={7}
+        />
+      </div>
 
-      <Field label="Notes">
-        <textarea name="notes" rows={3} defaultValue={customer.notes ?? ''} className={inputClass} />
-      </Field>
+      <Textarea label="Notes" name="notes" rows={3} defaultValue={customer.notes ?? ''} />
 
-      <Field label="Tags" hint="Comma-separated, e.g. vip, senior">
-        <input name="tags" defaultValue={customer.tags ?? ''} maxLength={400} className={inputClass} />
-      </Field>
+      <Input
+        label="Tags"
+        hint="Comma-separated, e.g. vip, senior"
+        name="tags"
+        defaultValue={customer.tags ?? ''}
+        maxLength={400}
+      />
 
       {state?.error && (
-        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-line text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{state.error}</span>
         </div>
       )}
       {state?.ok && (
-        <div className="flex items-start gap-2 bg-ok-bg border border-emerald-200 text-ok text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-ok-bg border border-line text-ok text-xs font-medium rounded-xl px-3 py-2.5">
           <CheckCircle2 size={14} className="mt-0.5 shrink-0" />
           <span>{t(locale, 't10money.customerSaved')}</span>
         </div>
       )}
 
       <div className="flex gap-2">
-        <button type="submit" disabled={isPending} className={primaryBtnClass}>
+        <Button type="submit" variant="primary" disabled={isPending}>
           {isPending ? t(locale, 't10money.custEditSaving') : t(locale, 't10money.custEditSaveChanges')}
-        </button>
-        <button type="button" onClick={() => setEditing(false)} className={secondaryBtnClass}>
+        </Button>
+        <Button type="button" variant="secondary" onClick={() => setEditing(false)}>
           <X size={14} /> {t(locale, 't10money.custEditCancel')}
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -197,12 +187,9 @@ export function DeleteCustomerButton({
 
   return (
     <>
-      <button
-        onClick={() => setConfirming(true)}
-        className="text-danger hover:text-danger min-h-[44px] px-4 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 border border-rose-200 hover:bg-danger-bg"
-      >
+      <Button variant="danger" sm onClick={() => setConfirming(true)}>
         <Trash2 size={14} /> {t(locale, 't10money.custDelete')}
-      </button>
+      </Button>
       <ConfirmDialog
         open={confirming}
         locale={locale}
@@ -248,16 +235,12 @@ export function ArchiveCustomerButton({
   return (
     <form action={formAction} className="inline-flex items-center gap-2">
       <input type="hidden" name="id" value={customerId} />
-      <button
-        type="submit"
-        disabled={isPending}
-        className="min-h-[44px] px-4 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 border border-line text-ink hover:bg-surface-2 disabled:opacity-60"
-      >
+      <Button type="submit" variant="secondary" sm disabled={isPending}>
         {archived ? <ArchiveRestore size={14} /> : <Archive size={14} />}
         {isPending
           ? t(locale, archived ? 't10money.custRestoring' : 't10money.custArchiving')
           : t(locale, archived ? 't10money.custRestore' : 't10money.custArchive')}
-      </button>
+      </Button>
       {state?.error && <span className="text-xs text-danger">{state.error}</span>}
     </form>
   );

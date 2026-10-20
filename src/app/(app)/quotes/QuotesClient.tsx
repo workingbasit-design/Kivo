@@ -4,7 +4,7 @@ import { useMemo, useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { Plus, ClipboardList, Clock } from '@/components/icons';
 import { fillTemplate, daysWaiting } from '@/lib/revenue';
-import { PageHeader, Card, StatusBadge, EmptyState, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
+import { Card, Button } from '@/components/kit';
 import { formatDateShort, cn } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import MoneyText from '@/components/MoneyText';
@@ -14,6 +14,8 @@ import { t, type Locale } from '@/lib/i18n';
 import SmsButton from '@/components/SmsButton';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import ExportButtons, { type ExportColumn, type ExportRow } from '@/components/ExportButtons';
+import { PageHeader, EmptyState } from '@/components/kit';
+import { StatusPill } from '../_components/status-ui';
 
 const FILTERS = ['ALL', ...QUOTE_STATUSES] as const;
 type Filter = (typeof FILTERS)[number];
@@ -116,22 +118,20 @@ export default function QuotesClient({
     <div className="space-y-6">
       <PageHeader
         title={t(locale, 'quotes.list.title')}
-        subtitle={subtitle}
-        actions={
-          <>
-            <ExportButtons
-              columns={exportColumns}
-              rows={exportRows}
-              fileBase={exportFileBase}
-              currency={business?.currency}
-              locale={locale}
-            />
-            <Link href="/quotes/new" className={primaryBtnClass}>
-              <Plus size={14} /> {t(locale, 'quotes.list.newQuote')}
-            </Link>
-          </>
-        }
+        summary={subtitle}
+        actionLabel={t(locale, 'quotes.list.newQuote')}
+        actionHref="/quotes/new"
+        actionIcon={<Plus />}
       />
+      <div className="flex flex-wrap gap-2">
+        <ExportButtons
+          columns={exportColumns}
+          rows={exportRows}
+          fileBase={exportFileBase}
+          currency={business?.currency}
+          locale={locale}
+        />
+      </div>
 
       <div className="flex gap-2 flex-wrap" role="tablist" aria-label={t(locale, 'quotes.list.title')}>
         {FILTERS.map((f) => (
@@ -144,7 +144,7 @@ export default function QuotesClient({
             className={cn(
               'min-h-[44px] inline-flex items-center px-4 rounded-full text-xs font-semibold border transition-colors',
               activeFilter === f
-                ? 'bg-asphalt text-white border-asphalt'
+                ? 'bg-asphalt text-hero-ink border-asphalt'
                 : 'bg-surface text-ink-2 border-line hover:border-line-strong'
             )}
           >
@@ -159,13 +159,13 @@ export default function QuotesClient({
         <Card className="!p-0 overflow-hidden">
           <div className="px-5 pt-5 pb-3">
             <div className="flex items-center gap-2.5">
-              <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600">
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-info/10 text-info">
                 <Clock className="h-4 w-4" aria-hidden />
               </span>
               <div>
                 <h2 className="font-semibold">
                   {t(locale, 't10money.followups.title')}{' '}
-                  <span className="text-sm font-bold text-violet-700">({staleQuotes.length})</span>
+                  <span className="text-sm font-bold text-info">({staleQuotes.length})</span>
                 </h2>
                 <p className="text-xs text-ink-2">{t(locale, 't10money.followups.desc')}</p>
               </div>
@@ -192,7 +192,7 @@ export default function QuotesClient({
                         <span className="font-normal text-ink-2"> · {q.customer.name}</span>
                       </p>
                       <p className="text-xs text-ink-2 mt-1 tabular-nums">
-                        <span className="font-semibold text-violet-700">
+                        <span className="font-semibold text-info">
                           {t(locale, 't10money.followups.daysWaiting').replace(
                             '{days}',
                             String(waitingDays),
@@ -204,7 +204,7 @@ export default function QuotesClient({
                     </div>
                   </div>
                   <details className="mt-2 group">
-                    <summary className="inline-flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-sky-700 hover:underline min-h-[32px]">
+                    <summary className="inline-flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-info hover:underline min-h-[32px]">
                       {t(locale, 't10money.followups.sendFollowup')}
                     </summary>
                     <div className="mt-2 rounded-xl bg-surface-2 border border-line p-3 space-y-3">
@@ -236,9 +236,9 @@ export default function QuotesClient({
             })}
           </ul>
           <div className="px-5 py-3 border-t border-line">
-            <button type="button" onClick={() => switchFilter('SENT')} className={secondaryBtnClass}>
+            <Button type="button" onClick={() => switchFilter('SENT')} variant="secondary">
               {t(locale, 't10money.followups.viewAll')}
-            </button>
+            </Button>
           </div>
         </Card>
       )}
@@ -246,15 +246,15 @@ export default function QuotesClient({
       {filtered.length === 0 ? (
         <Card>
           <EmptyState
-            icon={<ClipboardList size={24} />}
+            icon={<ClipboardList />}
             title={t(locale, 'quotes.list.emptyTitle')}
-            description={t(locale, 'quotes.list.emptyDesc')}
-            action={
-              <Link href="/quotes/new" className={primaryBtnClass}>
-                <Plus size={14} /> {t(locale, 'quotes.list.newQuote')}
-              </Link>
-            }
+            text={t(locale, 'quotes.list.emptyDesc')}
           />
+<div className="flex justify-center pb-10 -mt-6">
+            <Button href="/quotes/new" variant="primary">
+              <Plus size={14} /> {t(locale, 'quotes.list.newQuote')}
+            </Button>
+          </div>
         </Card>
       ) : (
         <Card className="!p-0 overflow-hidden">
@@ -279,7 +279,7 @@ export default function QuotesClient({
                   </div>
                   <div className="flex flex-col items-end gap-1.5 shrink-0">
                     <span className="text-sm font-bold text-ink tabular-nums"><MoneyText dollars={q.total} locale={locale} /></span>
-                    <StatusBadge status={q.status} />
+                    <StatusPill status={q.status} locale={locale} />
                   </div>
                 </Link>
               </li>

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { BadgeCheck, Clock3, EyeOff, ExternalLink, Store } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { PageHeader, Card, EmptyState } from '@/components/ui';
+import { Card } from '@/components/kit';
 import {
   ensureClaimState,
   requestDirectoryClaim,
@@ -11,6 +11,8 @@ import { parseServiceAreas } from '@/lib/directory-claim';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import DirectoryProfileForm from './profile-form';
+import { PageTitle } from '../_components/PageTitle';
+import { EmptyState } from '@/components/kit';
 
 export const metadata = { title: 'Directory listing | EveryJob' };
 export const dynamic = 'force-dynamic';
@@ -53,12 +55,12 @@ export default async function DirectoryProfilePage() {
   if (!business) {
     return (
       <div className="space-y-6">
-        <PageHeader title={tr('t10misc.profile.title')} subtitle={tr('t10misc.profile.subtitle')} />
+        <PageTitle title={tr('t10misc.profile.title')} summary={tr('t10misc.profile.subtitle')} />
         <Card>
           <EmptyState
-            icon={<Store size={24} />}
+            icon={<Store />}
             title={tr('t10misc.profile.notFoundTitle')}
-            description={tr('t10misc.profile.notFoundDesc')}
+            text={tr('t10misc.profile.notFoundDesc')}
           />
         </Card>
       </div>
@@ -72,7 +74,7 @@ export default async function DirectoryProfilePage() {
 
   return (
     <div className="space-y-6 max-w-3xl">
-      <PageHeader title={tr('t10misc.profile.title')} subtitle={tr('t10misc.profile.subtitle')} />
+      <PageTitle title={tr('t10misc.profile.title')} summary={tr('t10misc.profile.subtitle')} />
 
       {/* Verification status */}
       <Card>
@@ -119,7 +121,7 @@ export default async function DirectoryProfilePage() {
                 <form action={requestDirectoryClaim} className="mt-3">
                   <button
                     type="submit"
-                    className="min-h-[44px] inline-flex items-center bg-asphalt hover:bg-graphite text-white px-4 py-2.5 rounded-xl font-bold text-xs"
+                    className="min-h-[44px] inline-flex items-center bg-asphalt hover:bg-graphite text-hero-ink px-4 py-2.5 rounded-xl font-bold text-xs"
                   >
                     {tr('t10misc.profile.requestButton')}
                   </button>

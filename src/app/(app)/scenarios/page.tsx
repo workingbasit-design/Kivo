@@ -7,7 +7,9 @@ import { formatMoney } from "@/lib/money";
 import { getLocale } from "@/lib/i18n/server";
 import { t } from "@/lib/i18n";
 import { localeMoneyTag } from "@/lib/utils";
-import { PageHeader, Card, EmptyState } from "@/components/ui";
+import { Card } from '@/components/kit';
+import { PageTitle } from '../_components/PageTitle';
+import { EmptyState } from '@/components/kit';
 
 export default async function ScenariosPage() {
   const { businessId } = await requireAuth();
@@ -62,16 +64,16 @@ export default async function ScenariosPage() {
 
   return (
     <div className="space-y-6 max-w-3xl">
-      <PageHeader
+      <PageTitle
         title={t(locale, "scenarios.title")}
-        subtitle={t(locale, "scenarios.subtitle")}
+        summary={t(locale, "scenarios.subtitle")}
       />
       {!hasData ? (
         <Card>
           <EmptyState
-            icon={<FlaskConical size={22} />}
+            icon={<FlaskConical />}
             title={t(locale, "health.noData")}
-            description={t(locale, "scenarios.subtitle")}
+            text={t(locale, "scenarios.subtitle")}
           />
         </Card>
       ) : (
@@ -79,7 +81,7 @@ export default async function ScenariosPage() {
           <Card key={c.title} className="p-5">
             <div className="flex items-center justify-between gap-3 mb-4">
               <h2 className="text-sm font-bold text-ink">{c.title}</h2>
-              <span className="text-[10px] font-bold text-warn-text bg-warn-bg border border-amber-200 rounded-full px-2 py-0.5 shrink-0">
+              <span className="text-[10px] font-bold text-warn-text bg-warn-bg border border-warn-line rounded-full px-2 py-0.5 shrink-0">
                 {t(locale, "scenarios.estimateLabel")}
               </span>
             </div>

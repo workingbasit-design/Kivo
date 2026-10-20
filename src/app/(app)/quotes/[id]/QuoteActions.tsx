@@ -12,9 +12,10 @@ import {
   deleteQuote,
   type ActionResult,
 } from '@/app/actions/quotes';
-import { primaryBtnClass, secondaryBtnClass } from '@/components/ui';
+
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/kit';
 
 /**
  * Fires a toast exactly once per server-action result. Minimal inline
@@ -75,13 +76,13 @@ function StatusForm({
     <form action={action}>
       <input type="hidden" name="id" value={id} />
       <input type="hidden" name="status" value={target.status} />
-      <button
+      <Button
         type="submit"
         disabled={isPending}
-        className={cn(target.primary ? primaryBtnClass : secondaryBtnClass)}
+        variant={target.primary ? 'primary' : 'secondary'}
       >
         {target.icon} {isPending ? t(locale, 't10money.quoteSaving') : t(locale, `t10money.${target.key}`)}
-      </button>
+      </Button>
     </form>
   );
 }
@@ -128,7 +129,7 @@ export default function QuoteActions({
   return (
     <div className="space-y-3">
       {error && (
-        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-line text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{error}</span>
         </div>
@@ -142,17 +143,17 @@ export default function QuoteActions({
         {(status === 'DRAFT' || status === 'SENT') && (
           <form action={emailAction}>
             <input type="hidden" name="id" value={id} />
-            <button
+            <Button
               type="submit"
               disabled={emailPending}
-              className={cn(secondaryBtnClass)}
+              variant="secondary"
               title={t(locale, 't10money.quoteEmailHint')}
             >
               <Mail size={14} />
               {emailPending
                 ? t(locale, 't10money.quoteSending')
                 : t(locale, 't10money.quoteEmailButton')}
-            </button>
+            </Button>
           </form>
         )}
 
@@ -171,10 +172,10 @@ export default function QuoteActions({
         {status === 'APPROVED' && !convertedJobId && (
           <form action={convertAction}>
             <input type="hidden" name="id" value={id} />
-            <button type="submit" disabled={convertPending} className={primaryBtnClass}>
+            <Button type="submit" disabled={convertPending} variant="primary">
               <Briefcase size={14} />
               {convertPending ? t(locale, 't10money.quoteConverting') : t(locale, 't10money.quoteConvert')}
-            </button>
+            </Button>
           </form>
         )}
       </div>

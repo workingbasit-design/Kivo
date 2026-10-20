@@ -37,21 +37,21 @@ export default function ProCard({
 }) {
   const tr = (path: string) => t(locale, path as never);
   return (
-    <article className="group bg-surface rounded-3xl border border-line/80 p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all duration-300 hover:shadow-[0_12px_32px_rgba(79,70,229,0.12)] hover:border-indigo-200 hover:-translate-y-0.5">
+    <article className="group bg-surface rounded-3xl border border-line/80 p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all duration-300 hover:shadow-[0_12px_32px] hover:shadow-hivis/10 hover:border-line hover:-translate-y-0.5">
       <div className="flex items-start gap-3">
         <div className="relative shrink-0">
-          <div className="w-14 h-14 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center overflow-hidden transition-transform duration-300 group-hover:scale-105">
+          <div className="w-14 h-14 rounded-2xl bg-info-bg border border-line flex items-center justify-center overflow-hidden transition-transform duration-300 group-hover:scale-105">
             {pro.logoUrl ? (
               <img src={pro.logoUrl} alt="" className="w-full h-full object-cover" />
             ) : (
-              <span className="text-xl font-bold text-indigo-600">
+              <span className="text-xl font-bold text-info">
                 {pro.name.charAt(0).toUpperCase()}
               </span>
             )}
           </div>
           {pro.verified && (
             <span className="absolute -bottom-1 -right-1 bg-surface rounded-full p-0.5 shadow-sm transition-transform duration-300 group-hover:scale-110">
-              <BadgeCheck className="w-5 h-5 text-indigo-600 fill-indigo-100" aria-label={tr('customer.proCard.verified')} />
+              <BadgeCheck className="w-5 h-5 text-info fill-info-bg" aria-label={tr('customer.proCard.verified')} />
             </span>
           )}
         </div>
@@ -62,8 +62,8 @@ export default function ProCard({
           </h3>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
             {pro.avg != null ? (
-              <span className="inline-flex items-center gap-1 text-xs font-bold text-ink bg-warn-bg border border-amber-200/70 rounded-full px-2 py-0.5">
-                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+              <span className="inline-flex items-center gap-1 text-xs font-bold text-ink bg-warn-bg border border-warn-line/70 rounded-full px-2 py-0.5">
+                <Star className="w-3.5 h-3.5 fill-star text-star" />
                 {pro.avg.toFixed(1)}
                 <span className="font-medium text-ink-2">({pro.count})</span>
               </span>
@@ -84,7 +84,7 @@ export default function ProCard({
               {pro.services.slice(0, 3).map((s) => (
                 <span
                   key={s}
-                  className="text-[11px] font-medium bg-indigo-50 text-indigo-700 rounded-full px-2 py-0.5"
+                  className="text-[11px] font-medium bg-info-bg text-info rounded-full px-2 py-0.5"
                 >
                   {s}
                 </span>
@@ -99,11 +99,11 @@ export default function ProCard({
             aria-label={saved ? tr('customer.proCard.unsave') : tr('customer.proCard.save')}
             className={cn(
               'ej-icon-hover p-2 -m-1 shrink-0 rounded-full',
-              saved ? 'text-rose-500' : 'text-zinc-300 hover:text-rose-400 hover:bg-danger-bg'
+              saved ? 'text-danger' : 'text-ink-2 hover:text-danger hover:bg-danger-bg'
             )}
           >
             <Heart
-              className={cn('w-6 h-6 transition-all duration-300', saved && 'fill-rose-500 scale-110')}
+              className={cn('w-6 h-6 transition-all duration-300', saved && 'fill-danger scale-110')}
             />
           </button>
         )}
@@ -112,7 +112,7 @@ export default function ProCard({
       <div className="flex gap-2 mt-4">
         <Link
           href={`/customer/request/${pro.slug}`}
-          className="flex-1 min-h-[46px] inline-flex items-center justify-center gap-1.5 rounded-2xl bg-indigo-600 text-white text-sm font-bold shadow-sm shadow-indigo-600/20 transition-all duration-200 hover:bg-indigo-700 hover:shadow-md hover:shadow-indigo-600/25 hover:-translate-y-px active:translate-y-0 active:scale-[0.98]"
+          className="flex-1 min-h-[46px] inline-flex items-center justify-center gap-1.5 rounded-2xl bg-hivis text-hivis-ink text-sm font-bold shadow-sm shadow-hivis/20 transition-all duration-200 hover:bg-hivis hover:shadow-md hover:shadow-hivis/25 hover:-translate-y-px active:translate-y-0 active:scale-[0.98]"
         >
           <MessageSquareQuote className="w-4 h-4 transition-transform duration-300 group-hover:scale-110" />
           {tr('customer.proCard.requestQuote')}

@@ -3,7 +3,8 @@
  * Design token lint (Part 1, all-modules redesign).
  *
  * Fails on ANY hex / rgb / hsl colour literal in src ts/tsx files outside the
- * token definitions (src/app/globals.css) and the documented EXCEPTIONS below.
+ * token definitions (src/app/tokens.css, imported by src/app/globals.css)
+ * and the documented EXCEPTIONS below.
  * Colours must come from the mockup token set (docs/design/app-mockup.html):
  * bg-surface, text-ink, border-line, bg-hivis, text-warn-text, bg-danger-bg,
  * text-ok, bg-info-bg, bg-hero, bg-nav, ... or var(--token) references.
@@ -19,7 +20,7 @@ const ROOT = new URL('..', import.meta.url).pathname;
 const SRC = join(ROOT, 'src');
 
 // Token definitions: raw colours are allowed here (they ARE the tokens).
-const TOKEN_FILES = new Set(['src/app/globals.css']);
+const TOKEN_FILES = new Set(['src/app/globals.css', 'src/app/tokens.css']);
 
 // Documented exceptions: file -> reason. Keep this list short.
 const EXCEPTIONS = new Map([

@@ -43,10 +43,10 @@ export default function WeatherStrip({
   if (usable.length === 0) return null;
 
   return (
-    <div className="rounded-2xl border border-sky-100 bg-gradient-to-r from-sky-50 to-indigo-50 px-4 py-3">
+    <div className="rounded-2xl border border-line bg-gradient-to-r from-info-bg to-info-bg px-4 py-3">
       <div className="flex items-center justify-between mb-2">
-        <p className="text-[11px] font-bold text-sky-700">
-          Weather · <span className="normal-case font-semibold text-sky-600">{placeName}</span>
+        <p className="text-[11px] font-bold text-info">
+          Weather · <span className="normal-case font-semibold text-info">{placeName}</span>
         </p>
       </div>
       <div className="grid grid-cols-5 gap-2">
@@ -58,12 +58,12 @@ export default function WeatherStrip({
             <div
               key={d.dateISO}
               title={w ? `${d.label}: ${weatherLabel(w.code)}, ${w.lowC}-${w.highC}°C, ${w.precipProb}% rain` : d.label}
-              className="flex flex-col items-center rounded-xl bg-surface/70 border border-white px-1 py-2"
+              className="flex flex-col items-center rounded-xl bg-surface/70 border border-line px-1 py-2"
             >
               <span className="text-[10px] font-bold text-ink-2">{d.label}</span>
               <Icon
                 size={18}
-                className={cn('my-1', w === null ? 'text-zinc-300' : rainy ? 'text-sky-500' : 'text-amber-500')}
+                className={cn('my-1', w === null ? 'text-ink-2' : rainy ? 'text-info' : 'text-warn-text')}
               />
               {w ? (
                 <>
@@ -73,7 +73,7 @@ export default function WeatherStrip({
                   <span
                     className={cn(
                       'mt-0.5 inline-flex items-center gap-0.5 text-[10px] font-bold',
-                      rainy ? 'text-sky-600' : 'text-ink-2'
+                      rainy ? 'text-info' : 'text-ink-2'
                     )}
                   >
                     <Umbrella size={10} />
@@ -81,7 +81,7 @@ export default function WeatherStrip({
                   </span>
                 </>
               ) : (
-                <span className="text-[10px] font-semibold text-zinc-300">-</span>
+                <span className="text-[10px] font-semibold text-ink-2">-</span>
               )}
             </div>
           );

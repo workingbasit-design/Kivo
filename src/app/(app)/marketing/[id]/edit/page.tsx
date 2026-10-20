@@ -3,11 +3,12 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { PageHeader } from '@/components/ui';
+
 import CampaignForm from '@/components/CampaignForm';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import type { Audience } from '@/lib/marketing';
+import { PageTitle } from '../../../_components/PageTitle';
 
 export const metadata = { title: 'Edit campaign | EveryJob' };
 
@@ -35,9 +36,9 @@ export default async function EditCampaignPage({
       >
         <ArrowLeft size={14} /> {tr('t10misc.marketing.backToCampaign')}
       </Link>
-      <PageHeader
+      <PageTitle
         title={tr('t10misc.marketing.editPageTitle')}
-        subtitle={tr('t10misc.marketing.editPageSubtitle')}
+        summary={tr('t10misc.marketing.editPageSubtitle')}
       />
       <CampaignForm
         locale={locale}

@@ -74,13 +74,13 @@ export default function ProfileForm({
       )}
 
       {state?.error && (
-        <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-danger-bg border border-line text-danger text-xs font-medium rounded-xl px-3 py-2.5">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{state.error}</span>
         </div>
       )}
       {state?.ok && (
-        <div className="flex items-start gap-2 bg-ok-bg border border-emerald-200 text-ok text-xs font-medium rounded-xl px-3 py-2.5">
+        <div className="flex items-start gap-2 bg-ok-bg border border-line text-ok text-xs font-medium rounded-xl px-3 py-2.5">
           <CheckCircle2 size={14} className="mt-0.5 shrink-0" />
           <span>{t(locale, 'googleAuth.profileSaved')}</span>
         </div>
@@ -89,7 +89,7 @@ export default function ProfileForm({
       <button
         type="submit"
         disabled={isPending}
-        className="min-h-[44px] inline-flex items-center justify-center w-full sm:w-auto bg-asphalt hover:bg-graphite disabled:opacity-60 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors"
+        className="min-h-[44px] inline-flex items-center justify-center w-full sm:w-auto bg-asphalt hover:bg-graphite disabled:opacity-60 text-hero-ink font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors"
       >
         {isPending ? '…' : t(locale, 'googleAuth.save')}
       </button>

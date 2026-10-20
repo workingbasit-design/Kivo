@@ -17,7 +17,7 @@ export interface ScheduleMockStrings {
 const TONES = [
   'text-ok bg-ok-bg',
   'text-warn-text bg-warn-bg',
-  'text-sky-600 bg-sky-50',
+  'text-info bg-info-bg',
 ];
 
 /**
@@ -36,7 +36,7 @@ export default function ScheduleMock({ strings }: { strings: ScheduleMockStrings
         <span className="w-3 h-3 rounded-full bg-[#febc2e]" />
         <span className="w-3 h-3 rounded-full bg-[#28c840]" />
         <span className="ml-3 text-[13px] text-ink-2">{strings.title}</span>
-        <span className="ej-mock-live-dot ml-auto w-2 h-2 rounded-full bg-emerald-500" aria-hidden />
+        <span className="ej-mock-live-dot ml-auto w-2 h-2 rounded-full bg-ok" aria-hidden />
       </div>
       <div className="grid sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-line">
         {strings.jobs.map((j, i) => (

@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { ChevronLeft, Receipt, Pencil, Trash2 } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { PageHeader, Card, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
+
 import ExpenseForm, { type ExpenseFormInitial } from '@/components/ExpenseForm';
 import DeleteExpenseButton from '@/components/DeleteExpenseButton';
 import { formatMoney, centsToDollars } from '@/lib/money';
@@ -11,6 +11,8 @@ import { formatDateShort } from '@/lib/utils';
 import { toDateInputValue } from '@/lib/timesheets';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
+import { kitButtonClass, Card } from '@/components/kit';
+import { PageTitle } from '../../_components/PageTitle';
 
 export const metadata = { title: 'Expense | EveryJob' };
 
@@ -63,14 +65,16 @@ export default async function ExpenseDetailPage({
         <ChevronLeft size={16} /> {T('back')}
       </Link>
 
-      <PageHeader
+      <PageTitle
         title={T('editTitle')}
-        subtitle={`${formatMoney(centsToDollars(expense.amountCents), currency)} · ${formatDateShort(
+        summary={`${formatMoney(centsToDollars(expense.amountCents), currency)} · ${formatDateShort(
           expense.spentAt.toISOString(),
           locale as Locale
         )}`}
-        actions={<DeleteExpenseButton id={expense.id} locale={locale} />}
       />
+      <div className="flex flex-wrap gap-2">
+        <DeleteExpenseButton id={expense.id} locale={locale} />
+      </div>
 
       {expense.job && (
         <Card className="p-4">

@@ -1,16 +1,17 @@
 'use client';
 
 import { Printer } from '@/components/icons';
-import { secondaryBtnClass } from '@/components/ui';
+
+import { Button } from '@/components/kit';
 
 export default function PrintButton() {
   return (
-    <button
+    <Button
       type="button"
       onClick={() => window.print()}
-      className={secondaryBtnClass + ' print:hidden'}
+      variant="secondary" className=" print:hidden"
     >
       <Printer size={14} /> Print
-    </button>
+    </Button>
   );
 }

@@ -3,12 +3,43 @@
 import { useActionState } from 'react';
 import { saveOnboarding, skipOnboarding } from '@/app/actions/onboarding';
 import { t, type Locale } from '@/lib/i18n';
-import { Radio } from '@/components/design/controls';
-import { Select } from '@/components/design/fields';
-import { Button } from '@/components/design/Button';
-import { Card } from '@/components/ui';
+import { Select, Button, Card } from '@/components/kit';
+import { Loader2 } from '@/components/icons';
 
 type Initial = { trade: string; teamSize: string; province: string };
+
+/**
+ * Radio row — the kit has no Radio component, so this is the design-library
+ * Radio inlined with kit tokens (same markup, behaviour and 44px target).
+ * Kept local: it is only used by the two fieldsets below.
+ */
+function RadioRow({
+  name,
+  value,
+  label,
+  defaultChecked,
+  required,
+}: {
+  name: string;
+  value: string;
+  label: string;
+  defaultChecked?: boolean;
+  required?: boolean;
+}) {
+  return (
+    <label className="flex items-start gap-3 min-h-[44px] py-2 cursor-pointer">
+      <input
+        type="radio"
+        name={name}
+        value={value}
+        defaultChecked={defaultChecked}
+        required={required}
+        className="mt-1 h-5 w-5 shrink-0 accent-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+      />
+      <span className="block text-base text-ink">{label}</span>
+    </label>
+  );
+}
 
 /**
  * E7 first-run questions: trade, team size, province.
@@ -40,13 +71,13 @@ export default function OnboardingQuestions({
     <form action={formAction}>
       <Card className="p-5 md:p-6 space-y-6">
         <fieldset>
-          <legend className="text-base font-semibold text-ej-ink mb-2">
+          <legend className="text-base font-semibold text-ink mb-2">
             {tr('support.firstRun.qTrade')}
           </legend>
-          <div className="divide-y divide-ej-border rounded-xl border border-ej-border">
+          <div className="divide-y divide-line rounded-xl border border-line">
             {trades.map((trade) => (
               <div key={trade.key} className="px-3">
-                <Radio
+                <RadioRow
                   name="trade"
                   value={trade.key}
                   label={trade.label}
@@ -59,13 +90,13 @@ export default function OnboardingQuestions({
         </fieldset>
 
         <fieldset>
-          <legend className="text-base font-semibold text-ej-ink mb-2">
+          <legend className="text-base font-semibold text-ink mb-2">
             {tr('support.firstRun.qTeam')}
           </legend>
-          <div className="divide-y divide-ej-border rounded-xl border border-ej-border">
+          <div className="divide-y divide-line rounded-xl border border-line">
             {teamOptions.map((opt) => (
               <div key={opt.value} className="px-3">
-                <Radio
+                <RadioRow
                   name="teamSize"
                   value={opt.value}
                   label={opt.label}
@@ -89,21 +120,29 @@ export default function OnboardingQuestions({
         />
 
         {state?.error && (
-          <p role="alert" className="text-sm font-medium text-ej-danger">
+          <p role="alert" className="text-sm font-medium text-danger">
             {state.error}
           </p>
         )}
 
         <div className="flex items-center justify-between gap-3 pt-1">
           <Button
-            variant="tertiary"
+            variant="ghost"
             type="button"
             onClick={() => skipOnboarding()}
             disabled={isPending}
           >
             {tr('support.firstRun.doLater')}
           </Button>
-          <Button variant="primary" type="submit" loading={isPending}>
+          <Button
+            variant="primary"
+            type="submit"
+            disabled={isPending}
+            aria-busy={isPending}
+          >
+            {isPending && (
+              <Loader2 size={16} className="animate-spin" aria-hidden="true" />
+            )}
             {tr('support.firstRun.continue')}
           </Button>
         </div>

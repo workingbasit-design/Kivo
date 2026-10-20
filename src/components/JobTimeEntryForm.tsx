@@ -3,7 +3,7 @@
 import React, { useState, useTransition } from 'react';
 import { PlusCircle, AlertCircle, Clock } from '@/components/icons';
 import { createManualEntry } from '@/app/actions/timesheets';
-import { Card, Field, inputClass, primaryBtnClass } from '@/components/ui';
+import { Button, Card, Input, Select } from '@/components/kit';
 import { cn } from '@/lib/utils';
 import { t, type Locale } from '@/lib/i18n';
 
@@ -80,50 +80,37 @@ export default function JobTimeEntryForm({
         {open && (
           <form onSubmit={submit} className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
             {isAdmin && (
-              <Field label={t(locale, 't10work.manualMember')}>
-                <select
-                  name="userId"
-                  required
-                  className={inputClass}
-                  defaultValue={selfId}
-                >
-                  {members.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name || m.email}
-                    </option>
-                  ))}
-                </select>
-              </Field>
+              <Select
+                label={t(locale, 't10work.manualMember')}
+                name="userId"
+                required
+                defaultValue={selfId}
+                options={members.map((m) => ({ value: m.id, label: m.name || m.email }))}
+              />
             )}
-            <Field label={t(locale, 't10work.manualStart')}>
-              <input
-                name="clockIn"
-                type="datetime-local"
-                required
-                className={inputClass}
-              />
-            </Field>
-            <Field label={t(locale, 't10work.manualEnd')}>
-              <input
-                name="clockOut"
-                type="datetime-local"
-                required
-                className={inputClass}
-              />
-            </Field>
+            <Input
+              label={t(locale, 't10work.manualStart')}
+              name="clockIn"
+              type="datetime-local"
+              required
+            />
+            <Input
+              label={t(locale, 't10work.manualEnd')}
+              name="clockOut"
+              type="datetime-local"
+              required
+            />
             <div className="sm:col-span-2">
-              <Field label={t(locale, 't10work.manualNotes')}>
-                <input
-                  name="notes"
-                  type="text"
-                  maxLength={500}
-                  placeholder={t(locale, 't10work.manualNotesPh')}
-                  className={inputClass}
-                />
-              </Field>
+              <Input
+                label={t(locale, 't10work.manualNotes')}
+                name="notes"
+                type="text"
+                maxLength={500}
+                placeholder={t(locale, 't10work.manualNotesPh')}
+              />
             </div>
             {error && (
-              <div className="sm:col-span-2 flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
+              <div className="sm:col-span-2 flex items-start gap-2 bg-danger-bg border border-danger/25 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
                 <AlertCircle size={14} className="mt-0.5 shrink-0" />
                 <span>{error}</span>
               </div>
@@ -134,11 +121,11 @@ export default function JobTimeEntryForm({
               </p>
             )}
             <div className="sm:col-span-2">
-              <button type="submit" disabled={isPending} className={cn(primaryBtnClass)}>
+              <Button variant="primary" type="submit" disabled={isPending} className="disabled:opacity-60 disabled:cursor-not-allowed">
                 {isPending
                   ? t(locale, 't10work.manualSaving')
                   : t(locale, 't10work.manualSave')}
-              </button>
+              </Button>
             </div>
           </form>
         )}

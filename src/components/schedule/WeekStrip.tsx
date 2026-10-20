@@ -122,7 +122,7 @@ export default function WeekStrip({
       <div className="flex items-center justify-between gap-2 mb-4">
         <Link
           href={prevWeekHref}
-          className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-ej-ink bg-ej-bg border border-ej-border"
+          className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-ink bg-surface border border-line"
           aria-label={strings.prevWeek}
         >
           <ChevronLeft size={18} aria-hidden="true" />
@@ -131,23 +131,23 @@ export default function WeekStrip({
           {isCurrentWeek ? (
             <span
               aria-disabled="true"
-              className="text-xs font-bold text-ej-disabled px-4 py-2 min-h-[44px] inline-flex items-center rounded-full bg-ej-surface cursor-not-allowed"
+              className="text-xs font-bold text-ink-2 px-4 py-2 min-h-[44px] inline-flex items-center rounded-full bg-surface cursor-not-allowed"
             >
               {strings.thisWeek}
             </span>
           ) : (
             <Link
               href={thisWeekHref}
-              className="text-xs font-bold text-ej-ink px-4 py-2 min-h-[44px] inline-flex items-center rounded-full bg-ej-bg border border-ej-border"
+              className="text-xs font-bold text-ink px-4 py-2 min-h-[44px] inline-flex items-center rounded-full bg-surface border border-line"
             >
               {strings.thisWeek}
             </Link>
           )}
-          <span className="text-sm font-bold text-ej-ink">{weekLabel}</span>
+          <span className="text-sm font-bold text-ink">{weekLabel}</span>
         </div>
         <Link
           href={nextWeekHref}
-          className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-ej-ink bg-ej-bg border border-ej-border"
+          className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-ink bg-surface border border-line"
           aria-label={strings.nextWeek}
         >
           <ChevronRight size={18} aria-hidden="true" />
@@ -177,17 +177,17 @@ export default function WeekStrip({
               onDrop={handleDrop(d.key)}
               className={cn(
                 'flex flex-col items-center rounded-xl border-2 py-2 md:py-3 min-h-[64px]',
-                'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ej-focus',
+                'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
                 isActive
-                  ? 'bg-ej-primary text-ej-on-primary border-ej-primary'
-                  : 'bg-ej-bg border-ej-border',
-                isDropTarget && 'border-ej-info bg-ej-info-bg'
+                  ? 'bg-ink text-surface border-ink'
+                  : 'bg-surface border-line',
+                isDropTarget && 'border-line bg-info-bg'
               )}
             >
               <span
                 className={cn(
                   'text-[10px] font-bold',
-                  isActive ? 'text-ej-on-primary/80' : d.isToday ? 'text-ej-ink' : 'text-ej-muted'
+                  isActive ? 'text-surface/80' : d.isToday ? 'text-ink' : 'text-ink-2'
                 )}
               >
                 {d.dayName}
@@ -195,7 +195,7 @@ export default function WeekStrip({
               <span
                 className={cn(
                   'text-sm md:text-base font-bold mt-0.5 tabular-nums',
-                  isActive ? 'text-ej-on-primary' : 'text-ej-ink'
+                  isActive ? 'text-surface' : 'text-ink'
                 )}
               >
                 {d.dayNum}
@@ -207,7 +207,7 @@ export default function WeekStrip({
                   aria-hidden="true"
                   className={cn(
                     'mt-1 h-1.5 w-1.5 rounded-full',
-                    isActive ? 'bg-ej-on-primary' : 'bg-ej-ink'
+                    isActive ? 'bg-surface' : 'bg-ink'
                   )}
                 />
               )}
@@ -216,7 +216,7 @@ export default function WeekStrip({
                 <span
                   className={cn(
                     'mt-1 min-w-5 h-5 px-1 rounded-full text-[10px] font-bold flex items-center justify-center tabular-nums',
-                    isActive ? 'bg-ej-on-primary/25 text-ej-on-primary' : 'bg-ej-ink/10 text-ej-ink'
+                    isActive ? 'bg-surface/25 text-surface' : 'bg-ink/10 text-ink'
                   )}
                 >
                   {d.count}
@@ -238,7 +238,7 @@ export default function WeekStrip({
         <div className="mt-3 text-center">
           <Link
             href={clearDayHref}
-            className="text-xs font-semibold text-ej-ink inline-flex items-center min-h-[44px] px-3"
+            className="text-xs font-semibold text-ink inline-flex items-center min-h-[44px] px-3"
           >
             {strings.showWholeWeek}
           </Link>

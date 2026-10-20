@@ -5,7 +5,7 @@ import { BadgeCheck, Star, Trash2, AlertCircle, Plus } from '@/components/icons'
 import { toast } from 'sonner';
 import { createReview, deleteReview, type ReviewResult } from '@/app/actions/reviews';
 import ConfirmDialog from '@/components/ConfirmDialog';
-import { Card, StatCard, EmptyState, Field, FormGrid, inputClass, primaryBtnClass, secondaryBtnClass } from '@/components/ui';
+import { Button, Card, EmptyState, Select, SummaryCard, Textarea } from '@/components/kit';
 import { t, type Locale } from '@/lib/i18n';
 import { formatDateShort } from '@/lib/utils';
 
@@ -54,7 +54,7 @@ function Stars({ rating, size = 14 }: { rating: number; size?: number }) {
         <Star
           key={i}
           size={size}
-          className={i <= rating ? 'fill-amber-400 text-amber-400' : 'text-zinc-300'}
+          className={i <= rating ? 'fill-star text-star' : 'text-ink-2'}
         />
       ))}
     </span>
@@ -89,64 +89,71 @@ function AddReviewForm({
   return (
     <div>
       {!show ? (
-        <button onClick={() => setShow(true)} className={primaryBtnClass}>
+        <Button type="button" variant="primary" onClick={() => setShow(true)}>
           <Plus size={14} /> {t(locale, 't10money.reviewAdd')}
-        </button>
+        </Button>
       ) : (
         <Card className="p-5 mb-6">
           <h3 className="font-bold text-ink mb-4">{t(locale, 't10money.reviewAddTitle')}</h3>
           <form action={formAction} className="space-y-4">
-            <Field label={t(locale, 't10money.reviewJobLabel')} hint={t(locale, 't10money.reviewJobHint')}>
-              <select name="jobId" required defaultValue="" className={inputClass}>
-                <option value="" disabled>
-                  {eligibleJobs.length === 0
-                    ? t(locale, 't10money.reviewNoEligibleJobs')
-                    : '-'}
-                </option>
-                {eligibleJobs.map((j) => (
-                  <option key={j.id} value={j.id}>
-                    {j.title} · {j.customerName}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <FormGrid>
-              <Field label={t(locale, 't10money.reviewRating')}>
-                <select name="rating" required defaultValue="5" className={inputClass}>
-                  {[5, 4, 3, 2, 1].map((r) => (
-                    <option key={r} value={r}>
-                      {r === 1
-                        ? t(locale, 't10money.reviewStarOne')
-                        : t(locale, 't10money.reviewStarMany').replace('{count}', String(r))}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-            </FormGrid>
-            <Field label={t(locale, 't10money.reviewComment')}>
-              <textarea
-                name="comment"
-                rows={3}
-                maxLength={2000}
-                placeholder={t(locale, 't10money.reviewAddCommentPlaceholder')}
-                className={inputClass}
+            <Select
+              label={t(locale, 't10money.reviewJobLabel')}
+              hint={t(locale, 't10money.reviewJobHint')}
+              name="jobId"
+              required
+              defaultValue=""
+              options={[
+                {
+                  value: '',
+                  label:
+                    eligibleJobs.length === 0
+                      ? t(locale, 't10money.reviewNoEligibleJobs')
+                      : '-',
+                  disabled: true,
+                },
+                ...eligibleJobs.map((j) => ({
+                  value: j.id,
+                  label: `${j.title} · ${j.customerName}`,
+                })),
+              ]}
+            />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Select
+                label={t(locale, 't10money.reviewRating')}
+                name="rating"
+                required
+                defaultValue="5"
+                options={[5, 4, 3, 2, 1].map((r) => ({
+                  value: String(r),
+                  label:
+                    r === 1
+                      ? t(locale, 't10money.reviewStarOne')
+                      : t(locale, 't10money.reviewStarMany').replace('{count}', String(r)),
+                }))}
               />
-            </Field>
+            </div>
+            <Textarea
+              label={t(locale, 't10money.reviewComment')}
+              name="comment"
+              rows={3}
+              maxLength={2000}
+              placeholder={t(locale, 't10money.reviewAddCommentPlaceholder')}
+            />
 
             {state?.error && (
-              <div className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
+              <div className="flex items-start gap-2 bg-danger-bg border border-line text-danger text-xs font-medium rounded-xl px-3 py-2.5">
                 <AlertCircle size={14} className="mt-0.5 shrink-0" />
                 <span>{state.error}</span>
               </div>
             )}
 
             <div className="flex flex-wrap gap-2">
-              <button type="submit" disabled={isPending || eligibleJobs.length === 0} className={primaryBtnClass}>
+              <Button type="submit" variant="primary" disabled={isPending || eligibleJobs.length === 0}>
                 {isPending ? t(locale, 't10money.reviewSaving') : t(locale, 't10money.reviewSave')}
-              </button>
-              <button type="button" onClick={() => setShow(false)} className={secondaryBtnClass}>
+              </Button>
+              <Button type="button" variant="secondary" onClick={() => setShow(false)}>
                 {t(locale, 't10money.leadCancel')}
-              </button>
+              </Button>
             </div>
           </form>
         </Card>
@@ -177,7 +184,7 @@ function ReviewRow({ review, locale }: { review: ReviewItem; locale: Locale }) {
   return (
     <div className="px-5 py-4 border-b border-line last:border-0">
       {error && (
-        <div className="bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2 mb-2">
+        <div className="bg-danger-bg border border-line text-danger text-xs font-medium rounded-xl px-3 py-2 mb-2">
           Couldn&apos;t delete: {error}
         </div>
       )}
@@ -186,7 +193,7 @@ function ReviewRow({ review, locale }: { review: ReviewItem; locale: Locale }) {
           <div className="flex flex-wrap items-center gap-2 mb-1">
             <Stars rating={review.rating} />
             {review.verified ? (
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-ok bg-ok-bg border border-emerald-200 rounded-full px-2 py-0.5">
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-ok bg-ok-bg border border-line rounded-full px-2 py-0.5">
                 <BadgeCheck size={11} />
                 {t(locale, 't10money.reviewVerifiedBadge')}
               </span>
@@ -204,7 +211,7 @@ function ReviewRow({ review, locale }: { review: ReviewItem; locale: Locale }) {
         <button
           onClick={() => setConfirming(true)}
           disabled={isPending}
-          className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center text-zinc-300 hover:text-danger rounded-xl hover:bg-danger-bg transition-colors shrink-0 disabled:opacity-50"
+          className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center text-ink-2 hover:text-danger rounded-xl hover:bg-danger-bg transition-colors shrink-0 disabled:opacity-50"
           title={t(locale, 't10money.reviewDeleteAria')}
           aria-label={t(locale, 't10money.reviewDeleteAria')}
         >
@@ -240,35 +247,34 @@ export default function ReviewsClient({
 }) {
   return (
     <div className="space-y-6">
-      <div className="grid sm:grid-cols-2 gap-4">
-        <StatCard
-          label={t(locale, 't10money.reviewAvgRating')}
-          value={average}
-          sub={total === 0
-            ? t(locale, 't10money.reviewNoReviewsYet')
-            : total === 1
-              ? t(locale, 't10money.reviewAcrossOne')
-              : t(locale, 't10money.reviewAcrossMany').replace('{count}', String(total))}
-          icon={<Star size={16} />}
-          accent="bg-amber-100 text-warn-text"
-        />
-        <StatCard
-          label={t(locale, 't10money.reviewTotalReviews')}
-          value={String(total)}
-          sub={t(locale, 't10money.reviewCollectHint')}
-          icon={<Star size={16} />}
-          accent="bg-surface-2 text-ink-2"
-        />
-      </div>
+      <SummaryCard
+        stats={[
+          {
+            label: t(locale, 't10money.reviewAvgRating'),
+            value: average,
+            sub:
+              total === 0
+                ? t(locale, 't10money.reviewNoReviewsYet')
+                : total === 1
+                  ? t(locale, 't10money.reviewAcrossOne')
+                  : t(locale, 't10money.reviewAcrossMany').replace('{count}', String(total)),
+          },
+          {
+            label: t(locale, 't10money.reviewTotalReviews'),
+            value: String(total),
+            sub: t(locale, 't10money.reviewCollectHint'),
+          },
+        ]}
+      />
 
       <AddReviewForm eligibleJobs={eligibleJobs} locale={locale} />
 
       <Card>
         {reviews.length === 0 ? (
           <EmptyState
-            icon={<Star size={24} />}
+            icon={<Star />}
             title="No reviews yet"
-            description="When customers praise your work, record it here. Good reviews help you win more jobs."
+            text="When customers praise your work, record it here. Good reviews help you win more jobs."
           />
         ) : (
           <div>

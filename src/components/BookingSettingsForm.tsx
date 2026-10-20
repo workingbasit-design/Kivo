@@ -4,7 +4,7 @@ import { useActionState, useEffect, useState } from 'react';
 import { Check, CheckCircle2, Copy, ExternalLink, Link2, AlertCircle } from '@/components/icons';
 import { toast } from 'sonner';
 import { saveBookingSettings } from '@/app/actions/booking';
-import { Card, Field, inputClass, primaryBtnClass } from '@/components/ui';
+import { Button, Card, Input, Textarea } from '@/components/kit';
 import { slugify } from '@/lib/slug';
 import { useResolvedT } from '@/hooks/useResolvedLocale';
 
@@ -55,7 +55,7 @@ export default function BookingSettingsForm({
               type="checkbox"
               name="enabled"
               defaultChecked={initial?.enabled ?? true}
-              className="mt-1 w-5 h-5 accent-ink shrink-0"
+              className="mt-1 w-5 h-5 rounded-md border-line-strong accent-ink shrink-0"
             />
             <span>
               <span className="block text-sm font-semibold text-ink">{t('t10misc.booking.enableTitle')}</span>
@@ -63,7 +63,8 @@ export default function BookingSettingsForm({
             </span>
           </label>
 
-          <Field label={t('t10misc.booking.linkLabel')} hint={t('t10misc.booking.linkHint')}>
+          <div className="field">
+            <span>{t('t10misc.booking.linkLabel')}</span>
             <div className="flex items-center gap-2">
               <span className="text-xs text-ink-2 whitespace-nowrap">/book/</span>
               <input
@@ -73,48 +74,52 @@ export default function BookingSettingsForm({
                 required
                 minLength={3}
                 maxLength={60}
-                className={inputClass}
+                className="input"
                 placeholder={suggestedSlug}
               />
             </div>
-          </Field>
+            <small>{t('t10misc.booking.linkHint')}</small>
+          </div>
 
-          <Field label={t('t10misc.booking.headlineLabel')} hint={t('t10misc.booking.headlineHint')}>
-            <input
-              name="headline"
-              defaultValue={initial?.headline ?? ''}
-              maxLength={120}
-              placeholder={t('t10misc.booking.headlinePlaceholder')}
-              className={inputClass}
-            />
-          </Field>
+          <Input
+            label={t('t10misc.booking.headlineLabel')}
+            hint={t('t10misc.booking.headlineHint')}
+            name="headline"
+            defaultValue={initial?.headline ?? ''}
+            maxLength={120}
+            placeholder={t('t10misc.booking.headlinePlaceholder')}
+          />
 
-          <Field label={t('t10misc.booking.introLabel')} hint={t('t10misc.booking.introHint')}>
-            <textarea
-              name="intro"
-              defaultValue={initial?.intro ?? ''}
-              rows={3}
-              maxLength={1000}
-              placeholder={t('t10misc.booking.introPlaceholder')}
-              className={inputClass}
-            />
-          </Field>
+          <Textarea
+            label={t('t10misc.booking.introLabel')}
+            hint={t('t10misc.booking.introHint')}
+            name="intro"
+            defaultValue={initial?.intro ?? ''}
+            rows={3}
+            maxLength={1000}
+            placeholder={t('t10misc.booking.introPlaceholder')}
+          />
 
           {state.error && (
-            <div role="alert" className="flex items-start gap-2 bg-danger-bg border border-rose-200 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
+            <div role="alert" className="flex items-start gap-2 bg-danger-bg border border-danger/30 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
               <AlertCircle size={14} className="mt-0.5 shrink-0" />
               <span>{state.error}</span>
             </div>
           )}
           {state.ok && (
-            <p role="status" className="flex items-center gap-2 text-sm font-medium text-ok bg-ok-bg border border-emerald-100 rounded-xl px-4 py-2.5">
+            <p role="status" className="flex items-center gap-2 text-sm font-medium text-ok bg-ok-bg border border-ok/30 rounded-xl px-4 py-2.5">
               <CheckCircle2 size={15} className="shrink-0" /> {t('t10misc.booking.saved')}
             </p>
           )}
 
-          <button type="submit" disabled={pending} className={`${primaryBtnClass} w-full sm:w-auto`}>
+          <Button
+            variant="primary"
+            type="submit"
+            disabled={pending}
+            className="w-full sm:w-auto disabled:opacity-60 disabled:cursor-not-allowed"
+          >
             {pending ? t('t10misc.booking.saving') : t('t10misc.booking.save')}
-          </button>
+          </Button>
         </Card>
       </form>
 
@@ -142,7 +147,7 @@ export default function BookingSettingsForm({
                   href={publicUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="min-h-[44px] shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2.5 rounded-xl bg-asphalt text-white hover:bg-graphite"
+                  className="min-h-[44px] shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2.5 rounded-xl bg-asphalt text-hero-ink hover:bg-graphite"
                 >
                   <ExternalLink size={14} /> {t('t10misc.booking.open')}
                 </a>

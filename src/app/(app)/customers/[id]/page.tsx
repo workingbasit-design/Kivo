@@ -1,17 +1,16 @@
 import React from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, Phone, Mail, MapPin, MessageSquare, Navigation, Plus } from '@/components/icons';
+import { ArrowLeft, Clock3, Phone, Mail, MapPin, MessageSquare, Navigation, Plus } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { logPiiAccess } from '@/lib/pii-audit';
 import { formatDateShort } from '@/lib/utils';
 import { formatMoney, centsToDollars } from '@/lib/money';
 import { formatDisplayDate } from '@/lib/attention';
-import { PageHeader, Card, Badge } from '@/components/ui';
-import { secondaryBtnClass, primaryBtnClass } from '@/components/ui';
-import { Timeline, SectionHeader } from '@/components/design/lists';
-import { EmptyState } from '@/components/design/feedback';
+import { Card, Button } from '@/components/kit';
+
+
 import { EditCustomerForm, DeleteCustomerButton, ArchiveCustomerButton } from './customer-forms';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import SmsButton from '@/components/SmsButton';
@@ -22,6 +21,8 @@ import CustomerCustomFields from '@/components/CustomerCustomFields';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { CA_PROVINCES } from '@/lib/tax';
+import { PageHeader, EmptyState, Chip } from '@/components/kit';
+import { Timeline } from '../../_components/Timeline';
 
 /**
  * Minimal, null-tolerant customer load for the detail page. Selects only
@@ -205,19 +206,15 @@ export default async function CustomerDetailPage({
 
   return (
     <div className="space-y-6 max-w-4xl">
+      <Button href="/customers" variant="secondary" className=" self-start">
+        <ArrowLeft size={14} /> {custL('allCustomers')}
+      </Button>
       <PageHeader
         title={customerName}
-        subtitle={custL('detailSubtitle')}
-        actions={
-          <div className="flex items-center gap-2">
-            <Link href="/customers" className={secondaryBtnClass}>
-              <ArrowLeft size={14} /> {custL('allCustomers')}
-            </Link>
-            <Link href={`/jobs/new?customerId=${customer.id}`} className={primaryBtnClass}>
-              <Plus size={14} /> {t(locale, 'jobs.newJob')}
-            </Link>
-          </div>
-        }
+        summary={custL('detailSubtitle')}
+        actionLabel={t(locale, 'jobs.newJob')}
+        actionHref={`/jobs/new?customerId=${customer.id}`}
+        actionIcon={<Plus />}
       />
 
       {/* E5: Identity + quick contact actions */}
@@ -230,7 +227,7 @@ export default async function CustomerDetailPage({
             <h2 className="text-lg font-bold text-ej-ink flex items-center gap-2 flex-wrap">
               {customerName}
               {customer.archivedAt && (
-                <Badge>{t(locale, 't10money.custArchivedBadge')}</Badge>
+                <Chip>{t(locale, 't10money.custArchivedBadge')}</Chip>
               )}
             </h2>
             <p className="text-xs text-ej-muted mt-0.5">
@@ -356,12 +353,12 @@ export default async function CustomerDetailPage({
 
       {/* E5: Unified history timeline */}
       <Card className="p-6 md:p-8">
-        <SectionHeader title={custL('historyTitle')} />
+        <h3 className="text-base font-bold text-ink">{custL('historyTitle')}</h3>
         {timelineItems.length === 0 ? (
           <EmptyState
+            icon={<Clock3 />}
             title={custL('historyTitle')}
-            description={custL('noHistory')}
-            compact
+            text={custL('noHistory')}
           />
         ) : (
           <Timeline items={timelineItems} />
@@ -392,7 +389,7 @@ export default async function CustomerDetailPage({
 
       {/* Properties */}
       <Card className="p-6 md:p-8">
-        <SectionHeader title={custL('propertiesTitle')} />
+        <h3 className="text-base font-bold text-ink">{custL('propertiesTitle')}</h3>
         <CustomerProperties
           customerId={customer.id}
           locale={locale}
@@ -422,17 +419,15 @@ export default async function CustomerDetailPage({
       {/* Equipment */}
       {(customer.equipment ?? []).length > 0 && (
         <Card className="p-6 md:p-8">
-          <SectionHeader
-            title="Equipment"
-            action={
-              <Link
-                href={`/equipment/new?customerId=${customer.id}`}
-                className="text-sm font-semibold text-ej-ink underline underline-offset-2 min-h-[44px] inline-flex items-center"
-              >
-                Add equipment
-              </Link>
-            }
-          />
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-base font-bold text-ink">Equipment</h3>
+            <Link
+              href={`/equipment/new?customerId=${customer.id}`}
+              className="text-sm font-semibold text-ej-ink underline underline-offset-2 min-h-[44px] inline-flex items-center"
+            >
+              Add equipment
+            </Link>
+          </div>
           <ul className="divide-y divide-ej-border">
             {(customer.equipment ?? []).map((eq) => (
               <li key={eq.id} className="py-3">

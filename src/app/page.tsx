@@ -39,9 +39,6 @@ export const metadata: Metadata = {
     'EveryJob is free field-service software for Canadian home-service businesses: jobs, schedule, customers, quotes, invoices, payment records and a bilingual English-French AI assistant - all in one place. No credit card required.',
 };
 
-const APPLE_FONT =
-  "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', Inter, 'Segoe UI', sans-serif";
-
 export default async function LandingPage() {
   const locale = await getLocale();
   const h = (path: string) => t(locale, `home.${path}`);
@@ -124,10 +121,7 @@ export default async function LandingPage() {
   const heroDelay = (ms: number) => ({ '--ej-delay': `${ms}ms` }) as CSSProperties;
 
   return (
-    <div
-      className="landing-focus min-h-screen bg-paper text-ink antialiased"
-      style={{ fontFamily: APPLE_FONT }}
-    >
+    <div className="landing-focus min-h-screen bg-paper text-ink antialiased">
       {/* Sticky nav */}
       <header className="sticky top-0 z-50 bg-paper/80 backdrop-blur-xl border-b border-smoke">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -155,7 +149,7 @@ export default async function LandingPage() {
               </Link>
               <Link
                 href="/register"
-                className="bg-asphalt text-white px-5 py-2.5 rounded-full text-[15px] font-medium hover:bg-graphite transition active:scale-95 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.4)]"
+                className="bg-asphalt text-hero-ink px-5 py-2.5 rounded-full text-[15px] font-medium hover:bg-graphite transition active:scale-95 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.4)]"
               >
                 {h('nav.signUp')}
               </Link>
@@ -200,7 +194,7 @@ export default async function LandingPage() {
             >
               <Link
                 href="/register"
-                className="group inline-flex items-center justify-center gap-2 bg-asphalt text-white px-8 py-3.5 rounded-full text-[17px] font-medium hover:bg-graphite transition active:scale-95 shadow-[0_16px_40px_-12px_rgba(22,22,22,0.5)]"
+                className="group inline-flex items-center justify-center gap-2 bg-asphalt text-hero-ink px-8 py-3.5 rounded-full text-[17px] font-medium hover:bg-graphite transition active:scale-95 shadow-[0_16px_40px_-12px_rgba(22,22,22,0.5)]"
               >
                 {h('hero.ctaStart')}
                 <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
@@ -271,19 +265,19 @@ export default async function LandingPage() {
         </section>
 
         {/* AI Copilot - dark premium section with aurora glow */}
-        <SectionWave fillClass="text-zinc-950" label="Wave divider into the AI copilot section" />
-        <section id="copilot" className="relative py-16 md:py-28 bg-zinc-950 text-white scroll-mt-16 overflow-hidden">
+        <SectionWave fillClass="text-asphalt" label="Wave divider into the AI copilot section" />
+        <section id="copilot" className="relative py-16 md:py-28 bg-asphalt text-hero-ink scroll-mt-16 overflow-hidden">
           <div aria-hidden className="pointer-events-none absolute inset-0">
             <div
               className="ej-aurora-blob absolute -top-40 left-[8%] h-[420px] w-[560px] rounded-full bg-lime/[0.13] blur-[100px]"
               style={{ animationDuration: '30s' }}
             />
             <div
-              className="ej-aurora-blob absolute top-1/3 right-[-6rem] h-[380px] w-[420px] rounded-full bg-cyan-500/[0.12] blur-[100px]"
+              className="ej-aurora-blob absolute top-1/3 right-[-6rem] h-[380px] w-[420px] rounded-full bg-info/[0.12] blur-[100px]"
               style={{ animationDuration: '24s', animationDelay: '-11s' }}
             />
             <div
-              className="ej-aurora-blob absolute bottom-[-8rem] left-[38%] h-[300px] w-[480px] rounded-full bg-violet-600/[0.14] blur-[100px]"
+              className="ej-aurora-blob absolute bottom-[-8rem] left-[38%] h-[300px] w-[480px] rounded-full bg-biz/[0.14] blur-[100px]"
               style={{ animationDuration: '34s', animationDelay: '-19s' }}
             />
           </div>
@@ -318,13 +312,13 @@ export default async function LandingPage() {
                     <br />
                     {h('copilot.title2')}
                   </h2>
-                  <p className="text-lg md:text-[19px] text-white/55 mb-8 leading-relaxed max-w-lg">
+                  <p className="text-lg md:text-[19px] text-hero-ink/55 mb-8 leading-relaxed max-w-lg">
                     {h('copilot.subtitle')}
                   </p>
                 </Reveal>
                 <ul className="space-y-4 mb-10">
                   {[1, 2, 3].map((n) => (
-                    <Reveal as="li" key={n} delay={n * 90} className="flex items-start gap-3 text-white/75 text-[15px]">
+                    <Reveal as="li" key={n} delay={n * 90} className="flex items-start gap-3 text-hero-ink/75 text-[15px]">
                       <span className="w-5 h-5 rounded-full bg-lime flex items-center justify-center shrink-0 mt-0.5">
                         <Check size={12} className="text-ink" />
                       </span>
@@ -335,7 +329,7 @@ export default async function LandingPage() {
                 <Reveal delay={300}>
                   <Link
                     href="/register"
-                    className="group inline-flex items-center gap-2 text-lime font-medium text-[17px] hover:text-white transition-colors"
+                    className="group inline-flex items-center gap-2 text-lime font-medium text-[17px] hover:text-hero-ink transition-colors"
                   >
                     {h('copilot.cta')}
                     <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
@@ -346,7 +340,7 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        <div className="bg-zinc-950">
+        <div className="bg-asphalt">
           <SectionWave fillClass="text-paper" flip label="Wave divider out of the AI copilot section" />
         </div>
 
@@ -376,7 +370,7 @@ export default async function LandingPage() {
             <Reveal className="text-center mt-14">
               <Link
                 href="/register"
-                className="group inline-flex items-center justify-center gap-2 bg-asphalt text-white px-8 py-3.5 rounded-full text-[17px] font-medium hover:bg-graphite transition active:scale-95 shadow-[0_12px_32px_-12px_rgba(0,0,0,0.45)]"
+                className="group inline-flex items-center justify-center gap-2 bg-asphalt text-hero-ink px-8 py-3.5 rounded-full text-[17px] font-medium hover:bg-graphite transition active:scale-95 shadow-[0_12px_32px_-12px_rgba(0,0,0,0.45)]"
               >
                 {h('stats.cta')}
                 <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
@@ -403,10 +397,10 @@ export default async function LandingPage() {
                   delay={i * 110}
                   className="relative bg-surface rounded-[24px] border border-smoke p-8 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_24px_56px_-20px_rgba(0,0,0,0.18)] hover:border-line-strong"
                 >
-                  <span className="absolute top-6 right-7 text-[64px] leading-none font-bold text-zinc-100 select-none">
+                  <span className="absolute top-6 right-7 text-[64px] leading-none font-bold text-smoke select-none">
                     {s.n}
                   </span>
-                  <div className="w-12 h-12 rounded-2xl bg-asphalt text-white flex items-center justify-center mb-5">
+                  <div className="w-12 h-12 rounded-2xl bg-asphalt text-hero-ink flex items-center justify-center mb-5">
                     <s.icon size={22} strokeWidth={1.6} />
                   </div>
                   <h3 className="text-[19px] font-semibold tracking-tight text-ink mb-2">
@@ -447,7 +441,7 @@ export default async function LandingPage() {
                   <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-3">
                     {CANADA_POINTS.map((p) => (
                       <li key={p} className="flex items-start gap-3 text-[15px] text-graphite">
-                        <span className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
+                        <span className="w-5 h-5 rounded-full bg-ok-bg flex items-center justify-center shrink-0 mt-0.5">
                           <Check size={12} className="text-ok" />
                         </span>
                         {p}
@@ -483,7 +477,7 @@ export default async function LandingPage() {
                   <div className="flex flex-col sm:flex-row gap-3">
                     <Link
                       href="/directory"
-                      className="group inline-flex items-center justify-center gap-2 bg-asphalt text-white px-6 py-3 rounded-full text-[15px] font-medium hover:bg-graphite transition active:scale-95"
+                      className="group inline-flex items-center justify-center gap-2 bg-asphalt text-hero-ink px-6 py-3 rounded-full text-[15px] font-medium hover:bg-graphite transition active:scale-95"
                     >
                       {h('directory.ctaExplore')}
                       <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
@@ -584,7 +578,7 @@ export default async function LandingPage() {
               </h2>
               <Link
                 href="/register"
-                className="group inline-flex items-center justify-center gap-2 bg-asphalt text-white px-9 py-4 rounded-full text-[17px] font-medium hover:bg-graphite transition active:scale-95 shadow-[0_16px_40px_-12px_rgba(22,22,22,0.5)]"
+                className="group inline-flex items-center justify-center gap-2 bg-asphalt text-hero-ink px-9 py-4 rounded-full text-[17px] font-medium hover:bg-graphite transition active:scale-95 shadow-[0_16px_40px_-12px_rgba(22,22,22,0.5)]"
               >
                 {h('finalCta.cta')}
                 <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />

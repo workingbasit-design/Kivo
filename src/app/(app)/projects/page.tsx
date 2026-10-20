@@ -4,13 +4,14 @@ import { getLocale } from "@/lib/i18n/server";
 import { t } from "@/lib/i18n";
 import { localeMoneyTag } from "@/lib/utils";
 import { formatMoney, centsToDollars } from "@/lib/money";
-import { PageHeader, Card, EmptyState } from "@/components/ui";
+import { Card, Button } from '@/components/kit';
 import { FolderKanban, Plus, ArrowRight } from '@/components/icons';
 import Link from "next/link";
+import { PageHeader, EmptyState } from '@/components/kit';
 
 const STATUS_TONE: Record<string, string> = {
-  ACTIVE: "bg-emerald-100 text-emerald-800",
-  ON_HOLD: "bg-amber-100 text-amber-800",
+  ACTIVE: "bg-ok-bg text-ok",
+  ON_HOLD: "bg-warn-bg text-warn-text",
   COMPLETED: "bg-line text-ink",
   CANCELLED: "bg-surface-2 text-ink-2",
 };
@@ -47,32 +48,24 @@ export default async function ProjectsPage() {
     <div className="space-y-6">
       <PageHeader
         title={t(locale, "projects.title")}
-        subtitle={t(locale, "projects.subtitle")}
-        actions={
-          <Link
-            href="/projects/new"
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-lime-500 text-ink text-sm font-bold hover:bg-lime-400 transition-colors min-h-[44px]"
-          >
-            <Plus size={16} aria-hidden /> {t(locale, "projects.new")}
-          </Link>
-        }
+        summary={t(locale, "projects.subtitle")}
+        actionLabel={t(locale, "projects.new")}
+        actionHref="/projects/new"
+        actionIcon={<Plus />}
       />
 
       {projects.length === 0 ? (
         <Card>
           <EmptyState
-            icon={<FolderKanban size={28} className="text-ink-2" aria-hidden />}
+            icon={<FolderKanban />}
             title={t(locale, "projects.noProjects")}
-            description={t(locale, "projects.noProjectsDesc")}
-            action={
-              <Link
-                href="/projects/new"
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-lime-500 text-ink text-sm font-bold hover:bg-lime-400 transition-colors min-h-[44px]"
-              >
-                <Plus size={16} aria-hidden /> {t(locale, "projects.createFirst")}
-              </Link>
-            }
+            text={t(locale, "projects.noProjectsDesc")}
           />
+<div className="flex justify-center pb-10 -mt-6">
+            <Button href="/projects/new" variant="primary">
+              <Plus size={16} aria-hidden /> {t(locale, "projects.createFirst")}
+            </Button>
+          </div>
         </Card>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
@@ -117,7 +110,7 @@ export default async function ProjectsPage() {
                   {p.phases.length > 0 && (
                     <div className="h-1.5 rounded-full bg-surface-2 mt-3 overflow-hidden">
                       <div
-                        className="h-full rounded-full bg-lime-500 transition-all"
+                        className="h-full rounded-full bg-hivis transition-all"
                         style={{ width: `${Math.round((donePhases / p.phases.length) * 100)}%` }}
                       />
                     </div>

@@ -90,7 +90,7 @@ export default async function TokenReviewPage({
                   <Star
                     key={n}
                     size={16}
-                    className="fill-amber-400 text-amber-400"
+                    className="fill-star text-star"
                   />
                 ))}
               </div>
@@ -108,7 +108,7 @@ export default async function TokenReviewPage({
                     )
                   )}
               </p>
-              <p className="inline-flex items-center gap-1 mt-2 text-[11px] font-bold text-ok bg-ok-bg border border-emerald-200 rounded-full px-2.5 py-1">
+              <p className="inline-flex items-center gap-1 mt-2 text-[11px] font-bold text-ok bg-ok-bg border border-line rounded-full px-2.5 py-1">
                 <BadgeCheck size={12} />
                 {L('t10money.reviewVerifiedBadge')}
               </p>

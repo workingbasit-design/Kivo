@@ -98,7 +98,7 @@ export default function QuotePortalActions({
   return (
     <div className="space-y-4">
       {message && (
-        <p className="text-sm font-medium text-danger bg-danger-bg border border-red-100 rounded-xl px-4 py-2.5">
+        <p className="text-sm font-medium text-danger bg-danger-bg border border-line rounded-xl px-4 py-2.5">
           {message}
         </p>
       )}
@@ -196,7 +196,7 @@ export default function QuotePortalActions({
           type="button"
           disabled={pending}
           onClick={() => decide('APPROVED')}
-          className="bg-asphalt hover:bg-asphalt/90 text-white justify-center px-4 py-3 rounded-xl font-semibold text-sm transition-colors inline-flex items-center gap-2 shadow-sm disabled:opacity-60"
+          className="bg-asphalt hover:bg-asphalt/90 text-hero-ink justify-center px-4 py-3 rounded-xl font-semibold text-sm transition-colors inline-flex items-center gap-2 shadow-sm disabled:opacity-60"
         >
           <Check size={16} /> {pending ? strings.waitLabel : strings.approveLabel}
         </button>

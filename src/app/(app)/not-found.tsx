@@ -15,7 +15,7 @@ export default async function AppNotFound() {
   return (
     <main className="max-w-lg mx-auto px-4 py-16">
       <div className="rounded-3xl border border-smoke bg-surface p-8 text-center shadow-[0_16px_48px_-20px_rgba(0,0,0,0.15)]">
-        <FileQuestion size={36} className="mx-auto text-zinc-300 mb-3" aria-hidden />
+        <FileQuestion size={36} className="mx-auto text-ink-2 mb-3" aria-hidden />
         <h1 className="text-lg font-bold text-ink">
           {fr ? 'Page introuvable' : 'Page not found'}
         </h1>
@@ -26,7 +26,7 @@ export default async function AppNotFound() {
         </p>
         <Link
           href="/dashboard"
-          className="inline-flex items-center justify-center mt-5 bg-asphalt text-white px-6 py-2.5 rounded-full text-[15px] font-medium hover:bg-graphite transition active:scale-95"
+          className="inline-flex items-center justify-center mt-5 bg-asphalt text-hero-ink px-6 py-2.5 rounded-full text-[15px] font-medium hover:bg-graphite transition active:scale-95"
         >
           {fr ? '← Tableau de bord' : '← Dashboard'}
         </Link>
