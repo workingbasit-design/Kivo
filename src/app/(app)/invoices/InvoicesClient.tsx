@@ -3,7 +3,6 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Plus, FileText, Wallet, Receipt } from '@/components/icons';
-
 import { statusLabel, localeMoneyTag } from '@/lib/utils';
 import { formatDateShort, cn } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
@@ -185,7 +184,7 @@ export default function InvoicesClient({
                       <p className="text-xs text-ink-2 mt-1 tabular-nums">
                         <DateTimeText date={inv.date} variant="short" locale={locale} />
                         {due > 0 && inv.status !== 'PAID' && (
-                          <span className="text-warn-text font-semibold"> · {t(locale, 'billing.dueSuffix').replace('{amount}', formatMoney(due, currency))}</span>
+                          <span className="text-warn-text font-semibold"> · {t(locale, 'billing.dueSuffix').replace('{amount}', formatMoney(due, currency, localeMoneyTag(locale)))}</span>
                         )}
                       </p>
                     </div>

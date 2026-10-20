@@ -27,3 +27,15 @@ Standing order from the user (2026-10-17 ~20:13 EDT): "start from here, do every
 - [x] Readability test implemented without new dependencies — @axe-core/playwright NOT installed per the ask-before-dependencies rule (tests/kit/readability.spec.ts; inline WCAG contrast + dark-mode light-block scan). NOTE: cannot execute in this sandbox (Chromium Local Network Access checks block localhost; Vercel SSO blocks preview). Will run in CI (Session 3). Manual screenshot review: New Invoice page verified readable (hi-vis Create, secondary Cancel/+Add item, HST 13% dropdown, correct placeholder, no date spill).
 - [x] Screenshots of every page at 390px, light + dark, side by side with the mockup — docs/design-screens/fix-now-s2/ (12 routes × light/dark; home (/) captured the landing page unauthenticated — dashboard screenshots to be recaptured)
 - [x] On a preview link, not production — branch fix-now-kit pushed (0f864c3e); preview deployment dpl_HHDzFh2RsRDPAmJWSuJ3WbLHwj3V building at https://kivo-nsamv8zoe-abdulbasits-projects-94796c6e.vercel.app
+
+## Production eye-test reports (2026-10-19, user on production = main, pre-merge)
+
+Context: user eye-tested PRODUCTION (main, 3d5c9b6e) — FIX-NOW branch never merged, so all items below reproduce the pre-kit code. User directed a fresh Oracle Cloud DB + merge as part of the rebuild (2026-10-19 21:41 EDT).
+
+| # | Issue | Root cause | Status |
+|---|-------|------------|--------|
+| 15 | Dashboard sections toggles/arrows "not working" — save succeeds ("✓ Saved" shows) but sections don't visibly change | main's saveDashboardLayout lacks revalidatePath; page never re-renders (FIX-NOW S2 fix, item 1) | fixed on branch — pending merge |
+| 16 | Money page: amounts/section headers invisible ("Ready to invoice (1)", "$100.00" total ghosted) | dark-mode contrast: pre-kit light-only tokens on main; money page migrated to theme-aware kit tokens in FIX-NOW repair (2026-10-18) | fixed on branch — pending merge |
+| 17 | Buttons feel slow when loading (responsiveness) | partly Prisma Postgres degraded latency (~1.7–2.0s during outage week) + cold starts; always-on Toronto-region Oracle VM (no scale-to-zero) is the structural fix | addressed by Oracle migration |
+| 18 | New Project form: labels dark-on-dark (invisible), fields render white in dark theme | pre-kit ej-* light-only tokens in NewProjectForm; migrated to theme-aware kit tokens in FIX-NOW repair (2026-10-18) | fixed on branch — pending merge |
+| 19 | Colour theme not matching across pages (Projects buttons bright lime vs Money "New invoice" dark grey) | main has per-page ad-hoc styles; FIX-NOW kit is the single style source (hard-coded colour count 0) | fixed on branch — pending merge |

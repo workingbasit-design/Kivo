@@ -21,7 +21,7 @@ import {
   setShareTokenExpiry,
   resolveShareToken,
 } from '@/lib/share';
-import { convertedJobDetails } from '@/lib/quotes';
+import { convertedJobDetails, convertedJobNotesPrefix } from '@/lib/quotes';
 import { sendPlatformEmail } from '@/lib/messaging/platform-email';
 import { quoteEmail } from '@/lib/messaging/email-templates';
 import { appBaseUrl } from '@/lib/app-url';
@@ -557,6 +557,27 @@ export async function convertQuoteToJob(
   if (!quote) return { error: 'Quote not found.' };
   if (quote.status !== 'APPROVED') {
     return { error: 'Only approved quotes can be converted to jobs.' };
+  }
+
+  // Duplicate-conversion guard (2026-10-19 morning QA): a converted quote
+  // keeps its APPROVED status, so "Convert to job" stays mounted and a
+  // second click silently created a duplicate job (Q-0001 -> 2 jobs).
+  // The job carries the canonical notes marker from convertedJobDetails,
+  // and quote numbers are unique per business, so a marker hit means this
+  // quote was already converted. Returning the existing job id lets the
+  // caller link to it instead of erroring blindly.
+  const existingJob = await prisma.job.findFirst({
+    where: {
+      businessId,
+      notes: { startsWith: convertedJobNotesPrefix(quote.number) },
+    },
+    select: { id: true },
+  });
+  if (existingJob) {
+    return {
+      error: 'This quote has already been converted to a job.',
+      id: existingJob.id,
+    };
   }
 
   // The job price must be PRE-TAX and POST-DISCOUNT: every downstream
