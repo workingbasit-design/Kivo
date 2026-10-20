@@ -1899,7 +1899,7 @@
         "adminA": "allow",
         "dispatcherA": "allow",
         "technicianA": "allow",
-        "ownerB": "deny"
+        "ownerB": "allow"
       }
     },
     {
