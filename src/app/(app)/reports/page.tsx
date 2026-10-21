@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { forbidden } from "next/navigation";
+import { forbidden, redirect } from "next/navigation";
 import {
   TrendingUp,
   Briefcase,
@@ -130,10 +130,12 @@ export default async function ReportsPage({
 
   // SEE_PRICES gate: reports are money data (the role matrix names
   // reports explicitly). Viewers without the capability (technicians)
-  // get a 403 before any stats load — same denial style as the F9
-  // check below.
+  // are bounced to their dashboard before any stats load — same denial
+  // style as the rest of the money pages. (The F9 check below keeps
+  // forbidden(): it denies roles that CAN see prices, so a redirect
+  // would be wrong there.)
   if (!canSeePrices(role)) {
-    forbidden();
+    redirect('/dashboard');
   }
 
   const locale = await getLocale();

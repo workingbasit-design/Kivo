@@ -7,11 +7,12 @@
  * These are source-wiring tests in the repo's readFileSync style: for
  * every gated page they pin that (a) the page destructures `role` from
  * requireAuth, (b) it denies via canSeePrices(role), (c) the denial is
- * the page family's established style — redirect('/dashboard') for the
- * money/invoices/quotes/expenses pages (the settings/team page
- * pattern), forbidden() for the reports pages (that page's own F9
- * pattern) — and (d) the gate sits BEFORE the first prisma query, so a
- * denied viewer receives no money data in the response.
+ * the page family's established style — redirect('/dashboard') for
+ * every SEE_PRICES gate (the money/invoices/quotes/expenses pages, and
+ * /reports + /reports/team since the 2026-10-21 final polish aligned
+ * them with the family) — and (d) the gate sits BEFORE the first
+ * prisma query, so a denied viewer receives no money data in the
+ * response.
  *
  * Shared work views (jobs list, job detail, schedule) are deliberately
  * NOT page-gated — prices there are interleaved with a technician's own
@@ -19,8 +20,9 @@
  * ~/workspace/mobile-qa/full-flow-2026-10-21/fix-report.md.
  *
  * The "forbidden() surfaces as a real HTTP 403" describe below
- * pins the framework plumbing the reports denial relies on: Next 16's
- * forbidden() only throws its NEXT_HTTP_ERROR_FALLBACK;403 digest when
+ * pins the framework plumbing the one remaining forbidden() denial
+ * relies on: the /reports F9 owner/admin check. Next 16's forbidden()
+ * only throws its NEXT_HTTP_ERROR_FALLBACK;403 digest when
  * experimental.authInterrupts is enabled in next.config.ts — without
  * it, forbidden() throws a plain Error that the (app) error boundary
  * renders as a generic crash page in a 200 response (live-verified
@@ -48,9 +50,9 @@ const REDIRECT_GATED = [
   'quotes/page.tsx',
   'quotes/[id]/page.tsx',
   'expenses/page.tsx',
+  'reports/page.tsx',
+  'reports/team/page.tsx',
 ] as const;
-
-const FORBIDDEN_GATED = ['reports/page.tsx', 'reports/team/page.tsx'] as const;
 
 describe('money gates: the predicate the pages rely on', () => {
   test('only OWNER / ADMIN / DISPATCHER pass; TECHNICIAN fails closed', () => {
@@ -104,22 +106,29 @@ describe('money gates: forbidden() surfaces as a real HTTP 403, not the error bo
   });
 });
 
-for (const rel of FORBIDDEN_GATED) {
-  describe(`money gate: /${rel.replace(/\/page\.tsx$/, '')}`, () => {
-    const src = page(rel);
-    test('takes role from requireAuth and denies via canSeePrices(role)', () => {
-      assert.match(src, /const \{[^}]*\brole\b[^}]*\} = await requireAuth\(\)/);
-      assert.match(src, /if \(!canSeePrices\(role\)\)/);
-    });
-    test('denial is forbidden() (the reports pages’ own F9 pattern)', () => {
-      assert.match(src, /forbidden\(\)/);
-    });
-    test('gate runs before the first prisma query (no data in a denied response)', () => {
-      const gateAt = src.indexOf('canSeePrices(role)');
-      const queryAt = src.indexOf('prisma.');
-      assert.ok(gateAt > -1, 'gate missing');
-      assert.ok(queryAt > -1, 'expected a prisma query to compare against');
-      assert.ok(gateAt < queryAt, 'gate must precede the first prisma query');
-    });
+describe('money gate: /reports — SEE_PRICES redirects, the F9 check stays forbidden()', () => {
+  const src = page('reports/page.tsx');
+
+  test('the SEE_PRICES denial itself is the redirect, not forbidden()', () => {
+    const gateAt = src.indexOf('if (!canSeePrices(role))');
+    assert.ok(gateAt > -1, 'SEE_PRICES gate missing');
+    const gateBlock = src.slice(gateAt, gateAt + 120);
+    assert.match(gateBlock, /redirect\('\/dashboard'\)/);
+    assert.doesNotMatch(gateBlock, /forbidden\(\)/);
   });
-}
+
+  test('the F9 owner/admin check still denies via forbidden()', () => {
+    assert.match(
+      src,
+      /f9On && role !== 'OWNER' && role !== 'ADMIN'\) \{\s*forbidden\(\);/
+    );
+  });
+});
+
+describe('money gate: /reports/team — no forbidden() remains', () => {
+  const src = page('reports/team/page.tsx');
+
+  test('SEE_PRICES was the only gate, so forbidden() is gone entirely', () => {
+    assert.doesNotMatch(src, /forbidden/);
+  });
+});

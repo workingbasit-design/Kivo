@@ -217,9 +217,12 @@ export default async function MoneyPage() {
               <Card className="!p-0 overflow-hidden">
                 <ul className="divide-y divide-ej-border">
                   {unpaidInvoices.map((inv) => {
+                    // Voided payments are not money: the row balance
+                    // counts only COMPLETED payments, exactly like the
+                    // section total above (2026-10-21).
                     const remaining = remainingBalance(
                       centsToDollars(inv.totalCents),
-                      inv.payments.map((p) => centsToDollars(p.amountCents))
+                      [centsToDollars(sumMoneyPayments(inv.payments))]
                     );
                     const isOverdue = new Date(inv.date) < overdueThreshold();
                     const overdueDays = isOverdue

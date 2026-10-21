@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { forbidden } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { ArrowLeft, Users, Clock3, Briefcase, DollarSign, Trophy } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
@@ -64,10 +64,11 @@ export default async function TeamPerformancePage({
   const { businessId, role } = await requireAuth();
 
   // SEE_PRICES gate: per-member revenue and the team total are money
-  // data. Viewers without the capability (technicians) get a 403 before
-  // any rows load — same denial style as /reports.
+  // data. Viewers without the capability (technicians) are bounced to
+  // their dashboard before any rows load — same denial style as the
+  // rest of the money pages.
   if (!canSeePrices(role)) {
-    forbidden();
+    redirect('/dashboard');
   }
 
   const locale: Locale = await getLocale();
