@@ -10,7 +10,15 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { isJobLate, isRunningOver, jobStatusLabel, JOB_STATUSES } from '../job-status.ts';
+import {
+  isJobLate,
+  isRunningOver,
+  jobStatusLabel,
+  JOB_STATUSES,
+  deriveJobWindow,
+  storedTimeMinutes,
+  DEFAULT_JOB_DURATION_MINUTES,
+} from '../job-status.ts';
 
 const D = (iso: string) => new Date(iso);
 
@@ -169,4 +177,88 @@ test('isRunningOver: IN PROGRESS past its end time', () => {
     isRunningOver({ status: 'COMPLETED', endAt: D('2026-10-13T17:00:00Z') }, now),
     false,
   );
+});
+
+/* ------------------------------------------------------------------ */
+/* D2 (2026-10-21): "Running over" must be reachable for jobs whose    */
+/* canonical startAt/endAt were never written. The window derives from */
+/* the stored date + time exactly the way the create/edit actions now  */
+/* persist it (deriveJobWindow), so old and new rows behave alike.     */
+/* ------------------------------------------------------------------ */
+
+test('storedTimeMinutes: canonical HH:MM only', () => {
+  assert.equal(storedTimeMinutes('08:00'), 480);
+  assert.equal(storedTimeMinutes('13:30'), 810);
+  assert.equal(storedTimeMinutes('00:00'), 0);
+  assert.equal(storedTimeMinutes('TBD'), null);
+  assert.equal(storedTimeMinutes('8am'), null);
+  assert.equal(storedTimeMinutes('25:00'), null);
+  assert.equal(storedTimeMinutes(''), null);
+  assert.equal(storedTimeMinutes(null), null);
+  assert.equal(storedTimeMinutes(undefined), null);
+});
+
+test('deriveJobWindow: stored startAt/endAt win over derivation', () => {
+  const w = deriveJobWindow({
+    date: D('2026-10-21T04:00:00Z'),
+    time: '08:00',
+    startAt: D('2026-10-21T14:00:00Z'),
+    endAt: D('2026-10-21T16:30:00Z'),
+  });
+  assert.equal(w.startAt?.toISOString(), '2026-10-21T14:00:00.000Z');
+  assert.equal(w.endAt?.toISOString(), '2026-10-21T16:30:00.000Z');
+});
+
+test('deriveJobWindow: derives start from date + time, end = start + standard length', () => {
+  // 2026-10-21T04:00:00Z is midnight in America/Toronto (EDT).
+  const w = deriveJobWindow({ date: D('2026-10-21T04:00:00Z'), time: '08:00' });
+  assert.equal(w.startAt?.toISOString(), '2026-10-21T12:00:00.000Z');
+  assert.equal(
+    w.endAt?.getTime(),
+    w.startAt!.getTime() + DEFAULT_JOB_DURATION_MINUTES * 60_000,
+  );
+});
+
+test('deriveJobWindow: honours an explicit duration (price-book service length)', () => {
+  const w = deriveJobWindow({ date: D('2026-10-21T04:00:00Z'), time: '08:00' }, 120);
+  assert.equal(w.endAt?.toISOString(), '2026-10-21T14:00:00.000Z');
+});
+
+test('deriveJobWindow: no usable time → no window (nothing to run over)', () => {
+  assert.deepEqual(deriveJobWindow({ date: D('2026-10-21T04:00:00Z'), time: null }), {
+    startAt: null,
+    endAt: null,
+  });
+  assert.deepEqual(deriveJobWindow({ date: D('2026-10-21T04:00:00Z'), time: 'TBD' }), {
+    startAt: null,
+    endAt: null,
+  });
+  assert.deepEqual(deriveJobWindow({}), { startAt: null, endAt: null });
+});
+
+test('isRunningOver (D2): QA scenario — 8:00 AM job still in progress at 11:05 AM', () => {
+  const job = {
+    status: 'IN PROGRESS',
+    date: D('2026-10-21T04:00:00Z'), // midnight Toronto
+    time: '08:00',
+    startAt: null,
+    endAt: null,
+  };
+  // 15:05Z = 11:05 EDT — over three hours after the 8 AM start.
+  assert.equal(isRunningOver(job, D('2026-10-21T15:05:00Z')), true);
+  // 12:30Z = 8:30 EDT — inside the standard one-hour window.
+  assert.equal(isRunningOver(job, D('2026-10-21T12:30:00Z')), false);
+  // Exactly at the derived end (13:00Z): not yet over.
+  assert.equal(isRunningOver(job, D('2026-10-21T13:00:00Z')), false);
+});
+
+test('isRunningOver (D2): derives the end from a stored startAt alone', () => {
+  const job = { status: 'IN PROGRESS', startAt: D('2026-10-21T12:00:00Z'), endAt: null };
+  assert.equal(isRunningOver(job, D('2026-10-21T12:59:00Z')), false);
+  assert.equal(isRunningOver(job, D('2026-10-21T13:01:00Z')), true);
+});
+
+test('isRunningOver (D2): untimed in-progress job can never run over', () => {
+  const job = { status: 'IN PROGRESS', date: D('2026-10-20T04:00:00Z'), time: null };
+  assert.equal(isRunningOver(job, D('2026-10-21T15:05:00Z')), false);
 });

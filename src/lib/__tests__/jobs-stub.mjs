@@ -58,6 +58,23 @@ export const JOB_STATUSES = ['NEW', 'SCHEDULED', 'IN PROGRESS', 'COMPLETED', 'PA
 export function isValidTransition() {
   return true;
 }
+// Added for D2 (2026-10-21): jobs.ts imports deriveJobWindow to persist
+// the scheduled window on create/edit. Faithful mini-implementation of
+// the real contract (stored time wins, 60-minute default duration).
+export const DEFAULT_JOB_DURATION_MINUTES = 60;
+export function deriveJobWindow(job) {
+  if (job?.startAt && job?.endAt) return { startAt: job.startAt, endAt: job.endAt };
+  const time = typeof job?.time === 'string' ? job.time.trim() : '';
+  const m = time.match(/^(\d{1,2}):(\d{2})/);
+  if (!job?.date || !m) return { startAt: null, endAt: null };
+  const startAt = new Date(job.date);
+  startAt.setHours(Number(m[1]), Number(m[2]), 0, 0);
+  const duration =
+    typeof job?.durationMinutes === 'number' && job.durationMinutes > 0
+      ? job.durationMinutes
+      : DEFAULT_JOB_DURATION_MINUTES;
+  return { startAt, endAt: new Date(startAt.getTime() + duration * 60000) };
+}
 
 // @/lib/phone
 export function validatePhone() {

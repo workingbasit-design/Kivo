@@ -5,6 +5,7 @@ import { requireAuth } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { dollarsToCents } from '@/lib/money';
 
 export interface ActionResult {
   ok: boolean;
@@ -26,6 +27,9 @@ const equipmentSchema = z.object({
   model: z.string().trim().max(100).optional(),
   serial: z.string().trim().max(100).optional(),
   installDate: z.string().optional(),
+  // D5 (2026-10-21): optional purchase cost, entered in dollars and
+  // stored as integer cents — same pattern as inventory unitCost.
+  purchaseCost: z.coerce.number().min(0).optional(),
   notes: z.string().trim().max(2000).optional(),
   customerId: z.string().min(1),
 });
@@ -54,6 +58,7 @@ export async function createEquipment(formData: FormData): Promise<ActionResult>
       model: formData.get('model') || undefined,
       serial: formData.get('serial') || undefined,
       installDate: formData.get('installDate') || undefined,
+      purchaseCost: formData.get('purchaseCost') || undefined,
       notes: formData.get('notes') || undefined,
       customerId: formData.get('customerId'),
     });
@@ -67,6 +72,8 @@ export async function createEquipment(formData: FormData): Promise<ActionResult>
         model: parsed.model || null,
         serial: parsed.serial || null,
         installDate: parsed.installDate ? new Date(parsed.installDate) : null,
+        purchaseCostCents:
+          parsed.purchaseCost != null ? dollarsToCents(parsed.purchaseCost) : null,
         notes: parsed.notes || null,
         customerId: parsed.customerId,
         businessId,
@@ -97,6 +104,7 @@ export async function updateEquipment(id: string, formData: FormData): Promise<A
       model: formData.get('model') || undefined,
       serial: formData.get('serial') || undefined,
       installDate: formData.get('installDate') || undefined,
+      purchaseCost: formData.get('purchaseCost') || undefined,
       notes: formData.get('notes') || undefined,
       customerId: existing.customerId,
     });
@@ -108,6 +116,8 @@ export async function updateEquipment(id: string, formData: FormData): Promise<A
         model: parsed.model || null,
         serial: parsed.serial || null,
         installDate: parsed.installDate ? new Date(parsed.installDate) : null,
+        purchaseCostCents:
+          parsed.purchaseCost != null ? dollarsToCents(parsed.purchaseCost) : null,
         notes: parsed.notes || null,
       },
     });

@@ -17,6 +17,7 @@ import {
   extractPhone,
   extractServiceTitle,
   extractTime,
+  resolveFollowUpName,
 } from '../copilot/parse.ts';
 
 // --- Intent: service + date + price is a booking, not a schedule query ---
@@ -578,4 +579,77 @@ test('extractServiceTitle: "Schedule something for next Monday" is null (not "So
 
 test('extractServiceTitle: "Schedule a job for February 30" is null (not "A Job For February 30")', () => {
   assert.equal(extractServiceTitle('Schedule a job for February 30'), null);
+});
+
+// --- 2026-10-21 audit regressions -------------------------------------------
+// Live production probe (QATEST account) found these user-visible errors.
+
+test('detectIntent: "Add an expense of $40 for gas" is out_of_scope, never a booking for customer "Gas"', () => {
+  assert.equal(detectIntent('Add an expense of $40 for gas'), 'out_of_scope');
+});
+
+test('detectIntent: "Reschedule my next job to Friday" never becomes a new booking', () => {
+  assert.equal(detectIntent('Reschedule my next job to Friday'), 'unknown');
+});
+
+test('detectIntent: "Quels travaux ai-je aujourd\'hui ?" is ask_schedule (widget FR example)', () => {
+  assert.equal(detectIntent("Quels travaux ai-je aujourd'hui ?"), 'ask_schedule');
+});
+
+test('detectIntent: "Combien me doit-on?" is ask_unpaid (widget FR quick prompt)', () => {
+  assert.equal(detectIntent('Combien me doit-on?'), 'ask_unpaid');
+});
+
+test('detectIntent: "Combien ai-je gagné aujourd\'hui?" is ask_revenue (widget FR earnings action)', () => {
+  assert.equal(detectIntent("Combien ai-je gagné aujourd'hui?"), 'ask_revenue');
+});
+
+test('detectIntent: "Quoi au programme aujourd\'hui?" is ask_schedule (widget FR example)', () => {
+  assert.equal(detectIntent("Quoi au programme aujourd'hui?"), 'ask_schedule');
+});
+
+test('detectIntent: "Sarah\'s number" is find_customer (advertised in the help text)', () => {
+  assert.equal(detectIntent("Sarah's number"), 'find_customer');
+});
+
+test('detectMessageLang: "Qui me doit de l\'argent ?" is French', () => {
+  assert.equal(detectMessageLang("Qui me doit de l'argent ?"), 'fr');
+});
+
+test('extractDate: "aujourd\'hui" resolves to today despite the norm() split form', () => {
+  const today = new Date();
+  const iso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  assert.equal(extractDate("Quels travaux ai-je aujourd'hui ?"), iso);
+  assert.equal(extractDate("Les tâches d'aujourd'hui?"), iso);
+});
+
+test('extractCustomerName: digit-containing name tokens are kept ("QATEST Inl3 355707" -> "Qatest Inl3")', () => {
+  assert.equal(
+    extractCustomerName('Book a furnace tune-up for QATEST Inl3 355707 tomorrow at 3pm'),
+    'Qatest Inl3'
+  );
+});
+
+test('extractCustomerName: digit-STARTING tokens still cannot leak into a name', () => {
+  assert.equal(extractCustomerName('AC repair for Priya on 25 oct'), 'Priya');
+  assert.equal(extractCustomerName('book Sarah 4165551234 for tomorrow'), 'Sarah');
+});
+
+test('extractCustomerName: "Create a quote for $200" has no customer (not "Quote")', () => {
+  assert.equal(extractCustomerName('Create a quote for $200'), null);
+});
+
+test('extractServiceTitle: "Create a quote for $200" is null (not "A Quote For $200")', () => {
+  assert.equal(extractServiceTitle('Create a quote for $200'), null);
+});
+
+test('extractServiceTitle: "Book Sarah for tomorrow" is null (not the customer name "Sarah")', () => {
+  assert.equal(extractServiceTitle('Book Sarah for tomorrow'), null);
+});
+
+test('resolveFollowUpName: French "Client:" preview lines resolve pronoun follow-ups', () => {
+  const history = [
+    { role: 'assistant' as const, content: 'Voici la tâche que j’ai comprise - confirmez-vous?\n\nService: HVAC Service\nClient: Sarah Tremblay\nDate: demain' },
+  ];
+  assert.equal(resolveFollowUpName('Déplace-le à demain', history), 'Sarah Tremblay');
 });

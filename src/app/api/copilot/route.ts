@@ -143,14 +143,28 @@ export async function POST(req: Request) {
   const originCheck = checkSameOrigin(req);
   if (!originCheck.ok) return originForbidden(originCheck.reason);
 
-  const session = await getSession();
-  const membership = session ? await getActiveMembershipForUser(session.user.id) : null;
+  const fr = (await getLocale()) === 'fr';
+  const tr = (en: string, frText: string) => (fr ? frText : en);
+
+  // getSession() throws DatabaseUnavailableError during a DB outage (by
+  // design, so an outage never looks like a logout) - catch it here so the
+  // widget gets a structured JSON error, not an unhandled 500 HTML page.
+  let session: Awaited<ReturnType<typeof getSession>>;
+  let membership: Awaited<ReturnType<typeof getActiveMembershipForUser>>;
+  try {
+    session = await getSession();
+    membership = session ? await getActiveMembershipForUser(session.user.id) : null;
+  } catch (err) {
+    console.error('[copilot] session lookup failed', err);
+    return NextResponse.json(
+      { error: tr('Something went wrong on my side - please try again in a moment.', 'Un problème est survenu de mon côté - réessayez dans un instant.') },
+      { status: 500 }
+    );
+  }
   const businessId = membership?.businessId;
   if (!session || !businessId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  const fr = (await getLocale()) === 'fr';
-  const tr = (en: string, frText: string) => (fr ? frText : en);
 
   // Rate limit: 30 copilot calls/min per user
   const rl = rateLimit(`copilot:${session.user.id}`, { limit: 30, windowMs: 60_000 });
@@ -223,16 +237,43 @@ export async function POST(req: Request) {
   // --- Normal chat message --------------------------------------------------
   const asMessage = messageSchema.safeParse(body);
   if (!asMessage.success) {
+    // Name the actual failure: a confirm payload that failed validation and
+    // an over-long message used to get the "empty message" error too, which
+    // sent users debugging the wrong thing (2026-10-21 QA).
+    const b = body as { confirm?: unknown; message?: unknown } | null;
+    if (b && b.confirm === true) {
+      return NextResponse.json(
+        { error: tr('That confirmation didn\'t validate - please re-open the preview and try again.', 'Cette confirmation n\'a pas été validée - rouvrez l\'aperçu et réessayez.') },
+        { status: 400 }
+      );
+    }
+    if (b && typeof b.message === 'string' && b.message.length > 2000) {
+      return NextResponse.json(
+        { error: tr('That message is too long - please shorten it and try again.', 'Ce message est trop long - raccourcissez-le et réessayez.') },
+        { status: 400 }
+      );
+    }
     return NextResponse.json({ error: tr('Send a message - an empty message won\'t work.', 'Envoyez un message - un message vide ne fonctionne pas.') }, { status: 400 });
   }
 
-  const result = await runCopilot(
-    businessId,
-    session.user.id,
-    asMessage.data.message,
-    (asMessage.data.history ?? []) as CopilotHistoryItem[],
-    { locale: fr ? 'fr' : 'en' }
-  );
+  // A DB/engine failure must surface as a structured JSON error, not an
+  // unhandled 500 HTML page the widget cannot parse (2026-10-21 QA).
+  let result: Awaited<ReturnType<typeof runCopilot>>;
+  try {
+    result = await runCopilot(
+      businessId,
+      session.user.id,
+      asMessage.data.message,
+      (asMessage.data.history ?? []) as CopilotHistoryItem[],
+      { locale: fr ? 'fr' : 'en' }
+    );
+  } catch (err) {
+    console.error('[copilot] runCopilot failed', err);
+    return NextResponse.json(
+      { error: tr('Something went wrong on my side - please try again in a moment.', 'Un problème est survenu de mon côté - réessayez dans un instant.') },
+      { status: 500 }
+    );
+  }
 
   // B13.6: tool-call logging - every copilot invocation is audited (intent,
   // never the raw message which may hold PII).

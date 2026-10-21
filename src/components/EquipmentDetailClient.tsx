@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Trash2 } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
+import { formatMoney } from '@/lib/money';
+import { localeMoneyTag } from '@/lib/utils';
 import { Button, Card } from '@/components/kit';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { deleteEquipment } from '@/app/actions/equipment';
@@ -20,6 +22,7 @@ export default function EquipmentDetailClient({
     model: string | null;
     serial: string | null;
     installDate: string | null;
+    purchaseCostCents: number | null;
     notes: string | null;
     customerId: string;
     customerName: string;
@@ -48,6 +51,13 @@ export default function EquipmentDetailClient({
     [T('model'), equipment.model],
     [T('serial'), equipment.serial],
     [T('installDate'), equipment.installDate],
+    // D5: purchase cost shows only when one was recorded.
+    [
+      T('purchaseCost'),
+      equipment.purchaseCostCents != null
+        ? formatMoney(equipment.purchaseCostCents / 100, 'CAD', localeMoneyTag(locale))
+        : null,
+    ],
   ];
 
   return (

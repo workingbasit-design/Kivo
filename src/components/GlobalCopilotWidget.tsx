@@ -274,7 +274,12 @@ function PreviewCard({
   const phoneDigits = (draft.phone ?? '').replace(/\D/g, '');
   const phoneOk = phoneDigits === '' || PHONE_RE.test(phoneDigits);
   const priceOk = draft.price == null || (Number.isFinite(draft.price) && draft.price >= 0);
-  const canConfirm = !confirming && draft.customerName.trim().length > 0 && phoneOk && priceOk;
+  // The date must be a real YYYY-MM-DD before confirming: for an impossible
+  // date ("February 30") the engine deliberately leaves it blank, and
+  // confirming a blank date used to fail server-side with a confusing
+  // "empty message" error (2026-10-21 QA).
+  const dateOk = /^\d{4}-\d{2}-\d{2}$/.test(draft.date);
+  const canConfirm = !confirming && draft.customerName.trim().length > 0 && phoneOk && priceOk && dateOk;
   const innerField =
     'w-full bg-surface-2 border border-line rounded-lg px-2.5 py-2 min-h-[44px] text-sm text-ink font-medium focus:outline-none focus:ring-2 focus:ring-ink/30';
 

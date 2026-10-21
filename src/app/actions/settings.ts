@@ -9,6 +9,11 @@ import { requireAuth } from '@/lib/auth';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { CA_PROVINCES, DEFAULT_CA_PROVINCE } from '@/lib/tax';
 import {
+  INVITABLE_ROLES,
+  DEFAULT_INVITE_ROLE,
+  inviteMemberToBusiness,
+} from '@/lib/team-invite';
+import {
   WEEK_DAYS,
   isValidTime,
   serializeWorkingHours,
@@ -62,7 +67,12 @@ const inviteMemberSchema = z.object({
     .max(128)
     .regex(/[A-Za-z]/, 'Password must contain a letter')
     .regex(/\d/, 'Password must contain a number'),
-  role: z.enum(['ADMIN', 'MEMBER']).default('MEMBER'),
+  // D1 fix (2026-10-21): the form used to submit 'MEMBER', which the
+  // Membership_role_check DB constraint rejects (OWNER/ADMIN/DISPATCHER/
+  // TECHNICIAN only) — and the un-transacted insert orphaned the account.
+  // Invitable roles now live in @/lib/team-invite and are validated
+  // before any row is written.
+  role: z.enum(INVITABLE_ROLES).default(DEFAULT_INVITE_ROLE),
 });
 
 function limited(key: string): SettingsResult | null {
@@ -243,11 +253,6 @@ export async function inviteTeamMember(
   }
   const { name, email, password, role } = parsed.data;
 
-  const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) {
-    return { error: 'A user with this email already exists.' };
-  }
-
   // B7.3a: reject breached passwords (fail-open on HIBP outage).
   const { isPasswordBreached } = await import('@/lib/breached-passwords');
   const breach = await isPasswordBreached(password);
@@ -257,17 +262,17 @@ export async function inviteTeamMember(
 
   const passwordHash = await bcrypt.hash(password, 12);
   // M9: role + business assignment live on Membership, not the User row.
-  const newUser = await prisma.user.create({
-    data: { name, email, passwordHash },
+  // D1 fix (2026-10-21): user + membership are created in ONE transaction
+  // by @/lib/team-invite, and an email orphaned by a previously failed
+  // invite (user row, zero memberships) is recovered instead of refused.
+  const invited = await inviteMemberToBusiness({
+    businessId,
+    name,
+    email,
+    passwordHash,
+    role,
   });
-  await prisma.membership.create({
-    data: {
-      userId: newUser.id,
-      businessId,
-      role,
-      status: 'ACTIVE',
-    },
-  });
+  if (!invited.ok) return { error: invited.error };
   revalidatePath('/settings/team');
   return { ok: true };
 }

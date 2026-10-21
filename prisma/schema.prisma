@@ -1735,6 +1735,7 @@ model Equipment {
   model       String?
   serial      String?
   installDate DateTime?
+  purchaseCostCents BigInt? // cents (M8 cutover); null = not recorded (D5, 2026-10-21)
   notes       String?
   customerId  String
   customer    Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)

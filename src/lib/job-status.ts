@@ -152,22 +152,95 @@ function toDayKey(v: Date | string, timezone: string): string | null {
 }
 
 /**
+ * The standard job length (minutes) assumed when a job has a scheduled
+ * start but no explicit end. Matches DEFAULT_JOB_MINUTES in
+ * lib/reminders.ts, which the booking engine already uses for overlap
+ * math — one assumption, everywhere.
+ */
+export const DEFAULT_JOB_DURATION_MINUTES = 60;
+
+/**
+ * Minutes after midnight for a stored job `time`, or null when the job
+ * has no usable time. Stored times are canonical "HH:MM" (every write
+ * path normalizes via normalizeJobTime); legacy free text simply does
+ * not parse, which safely means "no scheduled time".
+ */
+export function storedTimeMinutes(
+  time: string | null | undefined,
+): number | null {
+  if (!time) return null;
+  const m = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(time.trim());
+  if (!m) return null;
+  return Number(m[1]) * 60 + Number(m[2]);
+}
+
+/**
+ * The job's scheduled window: canonical `startAt`/`endAt`, derived from
+ * the stored fields when the canonical columns are null.
+ *
+ * Derivation (the same pattern isJobLate uses for its start): a stored
+ * `startAt` wins; otherwise the start is the stored `date` (every write
+ * path stores it as the start of the scheduled day in the business
+ * timezone) plus the stored `time`. The end is a stored `endAt`, else
+ * start + `durationMinutes`.
+ *
+ * Why this exists (D2, 2026-10-21): the create/edit actions never wrote
+ * startAt/endAt, so every UI-created job had null canonical fields and
+ * end-based logic ("Running over") could never fire. The actions now
+ * store the window via this same helper; the read-time derivation keeps
+ * pre-existing rows (and rows from other create paths) working.
+ */
+export function deriveJobWindow(
+  job: {
+    date?: Date | string | null | undefined;
+    time?: string | null | undefined;
+    startAt?: Date | string | null | undefined;
+    endAt?: Date | string | null | undefined;
+  },
+  durationMinutes: number = DEFAULT_JOB_DURATION_MINUTES,
+): { startAt: Date | null; endAt: Date | null } {
+  let start = toValidDate(job.startAt);
+  if (!start) {
+    const day = toValidDate(job.date);
+    const minutes = storedTimeMinutes(job.time);
+    if (day && minutes !== null) {
+      start = new Date(day.getTime() + minutes * 60_000);
+    }
+  }
+  let end = toValidDate(job.endAt);
+  if (!end && start) {
+    const dur =
+      Number.isFinite(durationMinutes) && durationMinutes > 0
+        ? durationMinutes
+        : DEFAULT_JOB_DURATION_MINUTES;
+    end = new Date(start.getTime() + dur * 60_000);
+  }
+  return { startAt: start, endAt: end };
+}
+
+/**
  * True when a job is IN PROGRESS and its end time has passed. A job in
  * progress is never "Late" (standing owner rule, 2026-10-17); it is
- * "Running over" instead. Requires an `endAt` — without a scheduled end
- * there is nothing to run over.
+ * "Running over" instead. The end comes from deriveJobWindow: a stored
+ * `endAt` when present, otherwise the scheduled start plus the standard
+ * job length — so jobs created before startAt/endAt were populated
+ * still report correctly. A job with no scheduled time at all has
+ * nothing to run over.
  */
 export function isRunningOver(
   job: {
     status: string;
     endAt?: Date | string | null | undefined;
+    startAt?: Date | string | null | undefined;
+    date?: Date | string | null | undefined;
+    time?: string | null | undefined;
   },
   now: Date = new Date(),
 ): boolean {
   if (job.status !== 'IN PROGRESS') return false;
-  const end = toValidDate(job.endAt);
-  if (!end) return false;
-  return end.getTime() < now.getTime();
+  const { endAt } = deriveJobWindow(job);
+  if (!endAt) return false;
+  return endAt.getTime() < now.getTime();
 }
 
 /** Re-exported so call sites have one import location for status display. */

@@ -77,9 +77,10 @@ function InviteForm() {
               <Select
                 label={t('t10misc.team.roleLabel')}
                 name="role"
-                defaultValue="MEMBER"
+                defaultValue="TECHNICIAN"
                 options={[
-                  { value: 'MEMBER', label: t('t10misc.team.roleMember') },
+                  { value: 'TECHNICIAN', label: t('t10misc.team.roleTechnician') },
+                  { value: 'DISPATCHER', label: t('t10misc.team.roleDispatcher') },
                   { value: 'ADMIN', label: t('t10misc.team.roleAdmin') },
                 ]}
               />

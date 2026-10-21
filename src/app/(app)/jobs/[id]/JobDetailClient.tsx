@@ -22,6 +22,8 @@ import {
   User,
 } from '@/components/icons';
 import { JobChecklist } from '@/components/JobChecklist';
+import TechLocationSharer from '@/components/TechLocationSharer';
+import OnMyWayNotifier from '@/components/OnMyWayNotifier';
 import { JobExpenses } from '@/components/JobExpenses';
 import JobTimeEntryForm from '@/components/JobTimeEntryForm';
 import { JobNoteForm, JobNoteItem } from '@/components/JobNoteForm';
@@ -112,6 +114,12 @@ export interface JobDetailVm {
   timeEntryMembers: { id: string; name: string | null; email: string }[];
   isAdmin: boolean;
   selfId: string;
+  /** D3a: server-gated — active job AND (assigned to me OR owner/admin). */
+  canShareLocation: boolean;
+  businessName: string;
+  regionCode: string | null;
+  /** Name used in the "on my way" customer message. */
+  notifyTechName: string;
   reviewEligible: boolean;
   locale: Locale;
 }
@@ -269,7 +277,9 @@ export default function JobDetailClient({ vm }: { vm: JobDetailVm }) {
   } else if (status === 'COMPLETED') {
     if (vm.uninvoiced) {
       primaryLabel = jobsL('createInvoice');
-      onPrimary = () => router.push('/invoices/new');
+      // D4: carry the job context so the invoice form opens prefilled
+      // and the created invoice links back to this job.
+      onPrimary = () => router.push(`/invoices/new?jobId=${vm.id}`);
     } else if (vm.invoices[0]) {
       primaryLabel = jobsL('viewInvoice');
       onPrimary = () => router.push(`/invoices/${vm.invoices[0].id}`);
@@ -447,6 +457,38 @@ export default function JobDetailClient({ vm }: { vm: JobDetailVm }) {
             locale={locale}
           />
         </div>
+        {/* D3a: live location sharing + customer tracking link. The
+            server gates visibility (canShareLocation); the live status
+            check keeps the card from lingering after the job closes
+            from this very page. TechLocationSharer includes the
+            customer-link controls (create / copy / WhatsApp / revoke). */}
+        {vm.canShareLocation &&
+          (status === 'SCHEDULED' || status === 'IN PROGRESS') && (
+            <div className="mt-5 space-y-5">
+              <TechLocationSharer
+                jobs={[
+                  {
+                    id: vm.id,
+                    title: vm.title,
+                    customerName: vm.customer.name,
+                    address: vm.address,
+                  },
+                ]}
+              />
+              <Card className="px-3.5 py-3">
+                <OnMyWayNotifier
+                  jobId={vm.id}
+                  jobTitle={vm.title}
+                  customerName={vm.customer.name}
+                  phone={vm.customer.phone}
+                  regionCode={vm.regionCode}
+                  businessName={vm.businessName}
+                  techName={vm.notifyTechName}
+                  locale={locale}
+                />
+              </Card>
+            </div>
+          )}
       </>
     ),
   };

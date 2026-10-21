@@ -44,7 +44,7 @@ import {
   type QuoteDraft,
   type JobDraft,
 } from './parse';
-import { findCustomerNameCandidates, exactNameMatch } from './match-customer';
+import { findCustomerNameCandidates, exactNameMatch, bestSimilarCandidate } from './match-customer';
 
 // Re-export the pure parsing API (and shared types) for route handlers,
 // widgets and tests.
@@ -412,7 +412,7 @@ export async function runCopilot(
         const candidates = await findCustomerNameCandidates(prisma, businessId, draft.customerName);
         customerExists = exactNameMatch(candidates, draft.customerName) !== null;
         if (!customerExists && candidates.length > 0) {
-          similarCustomer = candidates[0].name;
+          similarCustomer = bestSimilarCandidate(candidates, draft.customerName)?.name ?? null;
         }
       }
 
@@ -540,7 +540,7 @@ export async function runCopilot(
         const candidates = await findCustomerNameCandidates(prisma, businessId, customerName);
         customerExists = exactNameMatch(candidates, customerName) !== null;
         if (!customerExists && candidates.length > 0) {
-          similarCustomer = candidates[0].name;
+          similarCustomer = bestSimilarCandidate(candidates, customerName)?.name ?? null;
         }
       }
 
@@ -776,6 +776,16 @@ export async function runCopilot(
       // (the copilot can't create those - point to the right page instead of
       // the generic out-of-scope text).
       const t = norm(message);
+      if (hasAny(' ' + t + ' ', [' expense ', ' expenses ', ' depense ', ' depenses '])) {
+        return {
+          intent,
+          reply: pick(
+            lang,
+            'I can’t record expenses - but you can in seconds from the Expenses page: open Expenses → New expense, enter the amount and what it was for. Want me to explain any of those steps?',
+            'Je ne peux pas enregistrer de dépenses - mais vous pouvez le faire en quelques secondes depuis la page Dépenses : ouvrez Dépenses → Nouvelle dépense, entrez le montant et l’objet. Voulez-vous que j’explique une de ces étapes?'
+          ),
+        };
+      }
       if (hasAny(' ' + t + ' ', [' invoice ', ' invoices ', ' facture ', ' factures '])) {
         return {
           intent,

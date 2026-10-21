@@ -46,10 +46,20 @@ export default function InvoiceForm({
   customers,
   taxConfig,
   locale = 'en',
+  jobContext = null,
 }: {
   customers: { id: string; name: string }[];
   taxConfig: TaxConfig;
   locale?: Locale;
+  /** D4: set when the form was opened from a job's "Create invoice"
+   *  button — prefills the customer + first line item and links the
+   *  created invoice back to the job (hidden jobId field). */
+  jobContext?: {
+    jobId: string;
+    jobTitle: string;
+    customerId: string;
+    price: number;
+  } | null;
 }) {
   const [state, formAction, isPending] = useActionState<ActionResult, FormData>(
     createInvoice,
@@ -77,6 +87,17 @@ export default function InvoiceForm({
     <form action={formAction} className="space-y-6 max-w-2xl">
       <input type="hidden" name="taxType" value={taxSel.taxType} />
       <input type="hidden" name="taxRate" value={taxSel.taxRate} />
+      {jobContext && (
+        <input type="hidden" name="jobId" value={jobContext.jobId} />
+      )}
+
+      {jobContext && (
+        <p className="text-sm text-ink-2 bg-surface-2 border border-line rounded-xl px-4 py-3">
+          Invoice for job <strong className="text-ink">{jobContext.jobTitle}</strong> —
+          the customer and first line item are filled in from the job, and
+          the invoice will be linked to it. Edit anything before creating.
+        </p>
+      )}
 
       <Card className="p-6 space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -85,7 +106,7 @@ export default function InvoiceForm({
               label="Customer"
               name="customerId"
               required
-              defaultValue=""
+              defaultValue={jobContext?.customerId ?? ''}
               options={[
                 { value: '', label: 'Select a customer', disabled: true },
                 ...customers.map((c) => ({ value: c.id, label: c.name })),
@@ -127,7 +148,22 @@ export default function InvoiceForm({
 
       <Card className="p-6">
         <h2 className="text-sm font-bold text-ink mb-3">Line items</h2>
-        <LineItemsEditor onSubtotal={setSubtotal} currency={taxConfig.currency} locale={locale} />
+        <LineItemsEditor
+          onSubtotal={setSubtotal}
+          currency={taxConfig.currency}
+          locale={locale}
+          initialItems={
+            jobContext
+              ? [
+                  {
+                    desc: jobContext.jobTitle,
+                    qty: '1',
+                    rate: String(jobContext.price),
+                  },
+                ]
+              : undefined
+          }
+        />
       </Card>
 
       <Card className="p-6 space-y-4">

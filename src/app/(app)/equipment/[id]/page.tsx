@@ -53,6 +53,8 @@ export default async function EquipmentDetailPage({
           model: eq.model,
           serial: eq.serial,
           installDate: eq.installDate?.toISOString().slice(0, 10) ?? null,
+          purchaseCostCents:
+            eq.purchaseCostCents != null ? Number(eq.purchaseCostCents) : null,
           notes: eq.notes,
           customerId: eq.customer.id,
           customerName: eq.customer.name,

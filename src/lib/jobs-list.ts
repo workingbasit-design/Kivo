@@ -105,7 +105,13 @@ export function classifyJobRow(
     timezone,
   );
   const runningOver = isRunningOver(
-    { status: job.status, endAt: job.endAt ?? null },
+    {
+      status: job.status,
+      endAt: job.endAt ?? null,
+      startAt: job.startAt ?? null,
+      date: job.date,
+      time: job.time ?? null,
+    },
     now,
   );
   const uninvoiced =

@@ -7,7 +7,7 @@ import { getTaxConfig, calcTaxCents, CA_PROVINCES } from '@/lib/tax';
 import { sumLaborMinutes, summarizeJobCost } from '@/lib/costing';
 import { entryMinutes, formatDuration } from '@/lib/timesheets';
 import { centsToDollars } from '@/lib/money';
-import { isJobLate, isRunningOver, jobStatusLabel } from '@/lib/job-status';
+import { isJobLate, isRunningOver, jobStatusLabel, deriveJobWindow } from '@/lib/job-status';
 import { tradeKeyForService } from '@/lib/trade-icons';
 import {
   formatDateLabel,
@@ -77,6 +77,7 @@ export default async function JobDetailPage({
     include: {
       customer: true,
       assignedTo: { select: { id: true, name: true } },
+      jobAssignments: { select: { userId: true } },
       service: {
         select: { name: true, nameFr: true, category: true, iconKey: true },
       },
@@ -128,8 +129,27 @@ export default async function JobDetailPage({
     now,
     timezone,
   );
+
+  // D3a (2026-10-21): live location sharing lives on this page (the
+  // /tracking page points techs here). The card renders only for an
+  // active job (the ping/share APIs reject anything else) and only for
+  // the people who work it: the assigned member(s) or an owner/admin
+  // (role matrix: MY_DAY / DISPATCH_ASSIGN holders).
+  const isAssignedToMe =
+    job.assignedToId === user.id ||
+    job.jobAssignments.some((a) => a.userId === user.id);
+  const canShareLocation =
+    (job.status === 'SCHEDULED' || job.status === 'IN PROGRESS') &&
+    (role === 'OWNER' || role === 'ADMIN' || isAssignedToMe);
+  const notifyTechName = job.assignedTo?.name ?? user.name ?? '';
   const runningOver = isRunningOver(
-    { status: job.status, endAt: job.endAt },
+    {
+      status: job.status,
+      endAt: job.endAt,
+      startAt: job.startAt,
+      date: job.date,
+      time: job.time,
+    },
     now,
   );
 
@@ -141,8 +161,16 @@ export default async function JobDetailPage({
     : hasJobTime(job.time)
       ? formatJobTime(job.time, locale)
       : null;
-  const endLabel = job.endAt
-    ? formatInstantTime(job.endAt, timezone, locale)
+  // End label: the stored endAt, or the derived window end (start + the
+  // standard job length) for rows created before endAt was populated.
+  const derivedEnd = deriveJobWindow({
+    date: job.date,
+    time: job.time,
+    startAt: job.startAt,
+    endAt: job.endAt,
+  }).endAt;
+  const endLabel = derivedEnd
+    ? formatInstantTime(derivedEnd, timezone, locale)
     : null;
   const whenPrimary =
     startLabel && endLabel
@@ -286,6 +314,10 @@ export default async function JobDetailPage({
     })),
     isAdmin: role === 'ADMIN',
     selfId: user.id,
+    canShareLocation,
+    businessName: business?.name ?? '',
+    regionCode: business?.regionCode ?? null,
+    notifyTechName,
     reviewEligible: reviewEligibility.ok,
     locale,
   };

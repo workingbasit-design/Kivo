@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { isPublicPath, isProxyBypassed, PROXY_STATIC_BYPASS } from '@/lib/public-paths.ts';
+import { isPublicPath, isProxyBypassed, isMapPath, PROXY_STATIC_BYPASS } from '@/lib/public-paths.ts';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 
@@ -119,4 +119,27 @@ test('public paths: agent protocol SKILL.md files bypass the proxy without a ses
   }
   // Guard still applies to lookalike app routes.
   assert.equal(isProxyBypassed('/skillsx'), false);
+});
+
+// D3b (2026-10-21): the Leaflet CSP allowance (unpkg) is scoped to the
+// only two surfaces that render DispatcherMap. If this table widens,
+// the nonce-only script policy weakens with it — keep it exact.
+test('map paths: exactly /tracking and /track/<token> get the map CSP allowance', () => {
+  assert.equal(isMapPath('/tracking'), true);
+  assert.equal(isMapPath('/track/abc123token'), true);
+  assert.equal(isMapPath('/track/'), true);
+  // Lookalikes and the rest of the app keep the strict policy.
+  for (const p of [
+    '/',
+    '/dashboard',
+    '/jobs',
+    '/jobs/cm123',
+    '/track',
+    '/tracking/',
+    '/trackingx',
+    '/track-record',
+    '/api/locations/latest',
+  ]) {
+    assert.equal(isMapPath(p), false, p);
+  }
 });

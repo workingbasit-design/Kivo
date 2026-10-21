@@ -5,6 +5,8 @@ import { requireAuth } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { Wrench, Plus, ChevronRight } from '@/components/icons';
+import { centsToDollars, formatMoney } from '@/lib/money';
+import { localeMoneyTag } from '@/lib/utils';
 import EquipmentSearch from '@/components/EquipmentSearch';
 import { PageHeader, EmptyState, Button, Card } from '@/components/kit';
 
@@ -82,6 +84,14 @@ export default async function EquipmentPage({
                     {eq.serial && (
                       <p className="text-xs text-ink-2 font-mono mt-1 truncate">
                         {T('serial')}: {eq.serial}
+                      </p>
+                    )}
+                    {eq.purchaseCostCents != null && (
+                      <p className="text-xs text-ink-2 mt-1 truncate">
+                        {T('purchaseCost')}:{' '}
+                        <span className="font-semibold text-ink">
+                          {formatMoney(centsToDollars(eq.purchaseCostCents), 'CAD', localeMoneyTag(locale))}
+                        </span>
                       </p>
                     )}
                   </div>

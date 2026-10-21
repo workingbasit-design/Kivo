@@ -168,6 +168,23 @@ export async function createInvoice(
   });
   if (!customer) return { error: 'Customer not found.' };
 
+  // D4 (2026-10-21): link the invoice to its job when the form carried
+  // one (opened from the job's "Create invoice" button). Tenant-scoped,
+  // and the link is honoured only when the job belongs to the SAME
+  // customer the invoice is for — a mismatched pair stays unlinked
+  // rather than corrupting the job's invoice list.
+  const rawJobId = String(formData.get('jobId') ?? '').trim();
+  let linkJob: { id: string; invoicedAt: Date | null } | null = null;
+  if (rawJobId) {
+    const job = await prisma.job.findFirst({
+      where: { id: rawJobId, businessId },
+      select: { id: true, customerId: true, invoicedAt: true },
+    });
+    if (job && job.customerId === customer.id) {
+      linkJob = { id: job.id, invoicedAt: job.invoicedAt };
+    }
+  }
+
   // Server-side money math - the single source of truth. Tax is computed
   // per line through the shared tax engine (calcTax), exactly like the
   // invoice form preview: reconstruct the lines from the stored tax type +
@@ -200,6 +217,7 @@ export async function createInvoice(
         notes: notesParts.join('\n\n') || null,
         customerId: customer.id,
         businessId,
+        jobId: linkJob?.id ?? undefined,
       },
     });
     await tx.invoiceLineItem.createMany({
@@ -211,11 +229,20 @@ export async function createInvoice(
         position: idx,
       })),
     });
+    if (linkJob && !linkJob.invoicedAt) {
+      // A1: invoicedAt tracks when the first invoice links to the job
+      // (same bookkeeping as settleJobPaidTx in this file).
+      await tx.job.update({
+        where: { id: linkJob.id },
+        data: { invoicedAt: new Date() },
+      });
+    }
     return inv;
   });
 
   revalidatePath('/invoices');
   revalidatePath('/dashboard');
+  if (linkJob) revalidatePath(`/jobs/${linkJob.id}`);
   // Outgoing webhook: invoice created. Best-effort - never fails creation.
   try {
     const { emitWebhookEvent } = await import('@/lib/webhooks');

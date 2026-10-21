@@ -7,7 +7,7 @@ import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
 import { requireAuth } from '@/lib/auth';
 import { jobSchema, JOB_STATUSES } from '@/lib/validations';
-import { isValidTransition } from '@/lib/job-status';
+import { isValidTransition, deriveJobWindow } from '@/lib/job-status';
 import { validatePhone, INVALID_PHONE_MESSAGE } from '@/lib/phone';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { normalizeJobTime, parseDateInputInTimezone } from '@/lib/utils';
@@ -39,6 +39,26 @@ async function businessTimeZone(businessId: string): Promise<string> {
 
 async function getOwnedJob(businessId: string, jobId: string) {
   return prisma.job.findFirst({ where: { id: jobId, businessId } });
+}
+
+/**
+ * The scheduled length to keep when re-deriving a job's window on edit:
+ * the length of the window already stored (e.g. from a price-book
+ * service's duration), so rescheduling a 2-hour job keeps it 2 hours.
+ * Undefined when no window was stored — deriveJobWindow then applies
+ * the standard length.
+ */
+function preservedDurationMinutes(job: {
+  startAt: Date | null;
+  endAt: Date | null;
+}): number | undefined {
+  if (job.startAt && job.endAt) {
+    const mins = Math.round(
+      (job.endAt.getTime() - job.startAt.getTime()) / 60_000
+    );
+    if (mins > 0) return mins;
+  }
+  return undefined;
 }
 
 function revalidateJobPaths(jobId?: string) {
@@ -111,14 +131,19 @@ export async function createJob(
 
   // Optional price-book service link: tenant-scoped - a service that doesn't
   // belong to this business is ignored rather than failing the whole job.
+  // The service's duration (when set) becomes the job's scheduled length.
   let serviceId: string | null = null;
+  let serviceDurationMin: number | null = null;
   const rawServiceId = String(formData.get('serviceId') ?? '').trim();
   if (rawServiceId) {
     const service = await prisma.service.findFirst({
       where: { id: rawServiceId, businessId },
-      select: { id: true },
+      select: { id: true, durationMin: true },
     });
-    if (service) serviceId = service.id;
+    if (service) {
+      serviceId = service.id;
+      serviceDurationMin = service.durationMin;
+    }
   }
 
   // Optional crew link: tenant-scoped - a crew that doesn't belong to this
@@ -134,13 +159,24 @@ export async function createJob(
   }
 
   const tz = await businessTimeZone(businessId);
+  const dateValue = parseDateInputInTimezone(parsed.data.date, tz);
+  const timeNorm = normalizeJobTime(parsed.data.time);
+  // D2 fix (2026-10-21): persist the canonical window. Before this, no
+  // create/edit path ever wrote startAt/endAt, so end-based states
+  // ("Running over") were unreachable for UI-created jobs.
+  const jobWindow = deriveJobWindow(
+    { date: dateValue, time: timeNorm },
+    serviceDurationMin ?? undefined,
+  );
   const job = await prisma.job.create({
     data: {
       title: parsed.data.title,
       customerId: parsed.data.customerId,
       businessId,
-      date: parseDateInputInTimezone(parsed.data.date, tz),
-      time: normalizeJobTime(parsed.data.time),
+      date: dateValue,
+      time: timeNorm,
+      startAt: jobWindow.startAt,
+      endAt: jobWindow.endAt,
       address: parsed.data.address || null,
       priceCents: dollarsToCents(parsed.data.price) ?? BigInt(0),
       noCharge,
@@ -244,13 +280,23 @@ export async function updateJob(
   }
 
   const tz = await businessTimeZone(businessId);
+  const dateValue = parseDateInputInTimezone(parsed.data.date, tz);
+  const timeNorm = normalizeJobTime(parsed.data.time);
+  // D2 fix (2026-10-21): keep the canonical window in sync with the
+  // edited schedule, preserving the stored window's length.
+  const jobWindow = deriveJobWindow(
+    { date: dateValue, time: timeNorm },
+    preservedDurationMinutes(existing)
+  );
   await prisma.job.update({
     where: { id, businessId },
     data: {
       title: parsed.data.title,
       customerId: parsed.data.customerId,
-      date: parseDateInputInTimezone(parsed.data.date, tz),
-      time: normalizeJobTime(parsed.data.time),
+      date: dateValue,
+      time: timeNorm,
+      startAt: jobWindow.startAt,
+      endAt: jobWindow.endAt,
       address: parsed.data.address || null,
       priceCents: dollarsToCents(parsed.data.price) ?? BigInt(0),
       noCharge,
@@ -345,12 +391,21 @@ export async function updateJobSchedule(
   }
 
   const tz = await businessTimeZone(businessId);
+  const dateValue = parseDateInputInTimezone(dateStr, tz);
+  const timeNorm = normalizeJobTime(time);
+  // D2 fix (2026-10-21): rescheduling moves the canonical window too.
+  const jobWindow = deriveJobWindow(
+    { date: dateValue, time: timeNorm },
+    preservedDurationMinutes(job)
+  );
   await prisma.$transaction(async (tx) => {
     await tx.job.update({
       where: { id: jobId, businessId },
       data: {
-        date: parseDateInputInTimezone(dateStr, tz),
-        time: normalizeJobTime(time),
+        date: dateValue,
+        time: timeNorm,
+        startAt: jobWindow.startAt,
+        endAt: jobWindow.endAt,
         status,
       },
     });

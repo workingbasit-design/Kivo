@@ -46,6 +46,8 @@ export default async function EditEquipmentPage({
             model: eq.model,
             serial: eq.serial,
             installDate: eq.installDate?.toISOString().slice(0, 10) ?? null,
+            purchaseCostCents:
+              eq.purchaseCostCents != null ? Number(eq.purchaseCostCents) : null,
             notes: eq.notes,
           }}
           locale={locale}

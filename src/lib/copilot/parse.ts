@@ -72,6 +72,11 @@ export function norm(s: string): string {
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '') // strip accents so "après" matches "apres"
+    // Hyphen between letters is a word separator: French inverted forms
+    // ("doit-on", "ai-je", "rendez-vous") must match their padded word
+    // lists (" me doit ", " rendez vous "). Digit-hyphen-digit runs
+    // (phone numbers, ISO dates) are left untouched.
+    .replace(/([a-z])-(?=[a-z])/g, '$1 ')
     .replace(/[।!?.,;:'"()\[\]{}]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
@@ -123,7 +128,9 @@ export function extractDate(raw: string): string | null {
     return toISODateLocal(d);
   };
 
-  if (/\b(today|aujourdhui)\b/.test(text)) return addDays(0);
+  // "aujourd'hui" arrives from norm() in its split form "aujourd hui"
+  // (the apostrophe becomes a space) - accept both spellings.
+  if (/\b(today|aujourdhui|aujourd hui)\b/.test(text)) return addDays(0);
   if (/\b(tomorrow|demain)\b/.test(text)) return addDays(1);
   if (/\b(day after tomorrow|apres demain|apres-demain)\b/.test(text)) return addDays(2);
 
@@ -178,6 +185,7 @@ export function detectMessageLang(raw: string): 'fr' | 'en' | null {
     ' quand ', ' pourquoi ', ' comment ', " s il ", ' etes ', ' suis ', ' aujourd hui ', ' tache ', ' taches ',
     ' devis ', ' paiement ', ' paiements ', ' horaire ', ' revenu ', ' revenus ', ' gagne ', ' dois ',
     ' rendez vous ', ' plomberie ', ' plombier ', ' fournaise ', ' rappel ', ' rappelle ',
+    ' qui ', ' doit ', ' argent ', ' travaux ',
     // NOTE: 'client'/'clients' deliberately excluded - English speakers use
     // them too, so they are not reliable French signals.
   ];
@@ -396,6 +404,11 @@ const NAME_STOPWORDS = new Set([
   'cleaning', 'painting', 'plumbing', 'wiring', 'roofing', 'mowing', 'entretien', 'reparation',
   // name-cue verbs - never part of a name ("named Testy" -> "Testy")
   'named', 'nomme', 'nommee', 'appele', 'appelle',
+  // document/expense nouns - never a person's name ("Create a quote for
+  // $200" used to extract the customer "Quote", 2026-10-21 QA)
+  'quote', 'quotes', 'devis', 'soumission', 'soumissions',
+  'invoice', 'invoices', 'facture', 'factures',
+  'expense', 'expenses', 'depense', 'depenses',
 ]);
 
 /** Month names can never be a customer name ("book Sarah for dec 5"). */
@@ -442,6 +455,11 @@ function extractCustomTitle(raw: string): string | null {
   
   // Guard: customer-creation intents ("Add a new customer named...") are not jobs
   if (/\b(customer|client)s?\b/i.test(trimmed)) return null;
+
+  // Guard: quote/invoice/expense requests are not job titles either -
+  // "Create a quote for $200" used to yield the title "A Quote For $200"
+  // (2026-10-21 QA). The quote flow supplies its own fallback title.
+  if (/\b(quotes?|devis|soumissions?|invoices?|factures?|expenses?)\b/i.test(trimmed)) return null;
   
   let text = trimmed.slice(verbMatch[0].length);
   
@@ -464,6 +482,13 @@ function extractCustomTitle(raw: string): string | null {
     (w) => !NAME_STOPWORDS.has(w) && !/^\d+$/.test(w) && !/^\d+(st|nd|rd|th)$/.test(w)
   );
   if (meaningful.length === 0) return null;
+
+  // Guard: when the "title" is just the customer's name ("Book Sarah for
+  // tomorrow" -> title "Sarah"), there is no service - return null so the
+  // engine falls back to its generic title + customer flow instead of
+  // showing the customer as their own service (2026-10-21 QA).
+  const custName = extractCustomerName(raw);
+  if (custName && text.trim().toLowerCase() === custName.toLowerCase()) return null;
 
   // Preserve user's capitalization (E2E3 stays E2E3); only title-case ALL-CAPS words
   return text.split(/\s+/).map(capitalizeWord).join(' ');
@@ -498,7 +523,13 @@ const DATE_TIME_WORDS = new Set<string>([
  * XYZ" -> null: booking under a half-guessed name is worse than asking).
  */
 function leadingName(rawToks: string[]): string | null {
-  const toks = rawToks.map((t) => t.trim()).filter((t) => t.length >= 2);
+  // Tokens starting with a digit are never part of a name - they are time
+  // or phone fragments ("3pm", "355707"). Dropping them here lets the name
+  // captures below accept digit-CONTAINING tokens ("Inl3") without
+  // swallowing times or phone tails.
+  const toks = rawToks
+    .map((t) => t.trim())
+    .filter((t) => t.length >= 2 && !/^\d/.test(t));
   while (toks.length > 1 && NAME_STOPWORDS.has(toks[toks.length - 1].toLowerCase())) {
     toks.pop();
   }
@@ -536,11 +567,15 @@ export function extractCustomerName(raw: string): string | null {
   const text = raw.trim().replace(HONORIFIC_RE, ' ');
 
   // English "for Priya" / French "pour Sarah Tremblay" - up to three name
-  // words. Trailing fillers are dropped and only the leading name-like run
+  // words. Non-initial tokens may contain digits ("QATEST Inl3 355707" -
+  // a [A-Za-z]-only class truncated that name to "Qatest" and the confirm
+  // then created a duplicate customer, 2026-10-21 QA); leadingName drops
+  // digit-STARTING tokens so times/phones still can't leak in.
+  // Trailing fillers are dropped and only the leading name-like run
   // is kept, so "for Priya on 25 oct" -> "Priya" and "for Sarah tomorrow
   // at 3pm" -> "Sarah".
   const mFor = text.match(
-    /\b(?:for|pour)\s+([A-Za-z]{2,25}(?:\s+[A-Za-z]{2,25}){0,2})(?=[\s,]|$)/i
+    /\b(?:for|pour)\s+([A-Za-z]{2,25}(?:\s+[A-Za-z0-9]{2,25}){0,2})(?=[\s,]|$)/i
   );
   if (mFor) {
     const name = leadingName(mFor[1].split(/\s+/));
@@ -551,7 +586,7 @@ export function extractCustomerName(raw: string): string | null {
   // The name-cue verbs are stopwords themselves, so a trailing "named"
   // never leaks into the result.
   const mNamed = text.match(
-    /\b(?:named|nomme|nommee|appele|appelle|s\s*appelle)\s+([A-Za-z]{2,25}(?:\s+[A-Za-z]{2,25}){0,2})/i
+    /\b(?:named|nomme|nommee|appele|appelle|s\s*appelle)\s+([A-Za-z]{2,25}(?:\s+[A-Za-z0-9]{2,25}){0,2})/i
   );
   if (mNamed) {
     const name = leadingName(mNamed[1].split(/\s+/));
@@ -562,7 +597,7 @@ export function extractCustomerName(raw: string): string | null {
   // A possessive almost always marks the customer; fillers ("tomorrow's",
   // "it's") are rejected by the stopword check.
   const mPoss = text.match(
-    /\b([A-Za-z]{2,25}(?:\s+[A-Za-z]{2,25}){0,1})['\u2019]s\b/i
+    /\b([A-Za-z]{2,25}(?:\s+[A-Za-z0-9]{2,25}){0,1})['\u2019]s\b/i
   );
   if (mPoss) {
     // A leading booking verb is not part of the name ("schedule Sarah's"
@@ -576,7 +611,7 @@ export function extractCustomerName(raw: string): string | null {
   }
 
   const m2 = text.match(
-    /(?:customer|client)\s*[:\-]?\s*([A-Za-z][A-Za-z\s]{1,30}?)(?:\s*,|\s*\d|$)/i
+    /(?:customer|client)\s*[:\-]?\s*([A-Za-z][A-Za-z0-9\s]{1,30}?)(?:\s*,|\s*\d|$)/i
   );
   if (m2) {
     const name = m2[1].trim().split(/\s+/).map(capitalizeWord).join(' ');
@@ -595,7 +630,7 @@ export function extractCustomerName(raw: string): string | null {
   // and a "with"/"phone"/number cue. The m2 pattern above can't handle the
   // "with phone +..." tail, so capture up to that cue explicitly.
   const m2b = text.match(
-    /(?:customer|client)\s+([A-Za-z]{2,25}(?:\s+[A-Za-z]{2,25}){0,2})\s+(?:with\s+)?(?:phone|tel|telephone|mobile|cell)?\s*\+?[\d][\d\s\-.()]{5,17}/i
+    /(?:customer|client)\s+([A-Za-z]{2,25}(?:\s+[A-Za-z0-9]{2,25}){0,2})\s+(?:with\s+)?(?:phone|tel|telephone|mobile|cell)?\s*\+?[\d][\d\s\-.()]{5,17}/i
   );
   if (m2b) {
     const name = leadingName(m2b[1].split(/\s+/));
@@ -609,7 +644,7 @@ export function extractCustomerName(raw: string): string | null {
   // phone chunk may sit between the name and "for". Tried after the
   // explicit patterns above: a "for <name>" always wins.
   const mForBefore = text.match(
-    /\b(?:schedule|scheduling|book|booking|booked|create|add|plan|arrange|reserver|reserve|reservation|planifier|planifie|ajouter|ajoute|creer|cree)\s+(?:(?:a|an|the|un|une|le|la|les|des|du)\s+)?([A-Za-z]{2,25}(?:\s+[A-Za-z]{2,25}){0,1})(?:\s+\+?[\d][\d\s\-.()]{5,17})?\s+(?:for|pour)\b/i
+    /\b(?:schedule|scheduling|book|booking|booked|create|add|plan|arrange|reserver|reserve|reservation|planifier|planifie|ajouter|ajoute|creer|cree)\s+(?:(?:a|an|the|un|une|le|la|les|des|du)\s+)?([A-Za-z]{2,25}(?:\s+[A-Za-z0-9]{2,25}){0,1})(?:\s+\+?[\d][\d\s\-.()]{5,17})?\s+(?:for|pour)\b/i
   );
   if (mForBefore) {
     const name = leadingName(mForBefore[1].split(/\s+/));
@@ -635,7 +670,7 @@ export function extractAddress(raw: string): string | null {
  * to the most recently mentioned customer from the conversation history
  * (assistant preview lines carry "Customer: <name>").
  */
-const FOLLOWUP_PRONOUNS = ['him', 'her', 'them', 'lui', 'elle', 'elles', 'ils'];
+const FOLLOWUP_PRONOUNS = ['him', 'her', 'them', 'lui', 'elle', 'elles', 'ils', 'le', 'la', 'les'];
 
 export interface CopilotHistoryItem {
   role: 'user' | 'assistant';
@@ -656,7 +691,9 @@ export function resolveFollowUpName(
     const h = history[i];
     let name: string | null = null;
     if (h.role === 'assistant') {
-      const m = h.content.match(/Customer:\s*([A-Za-z][A-Za-z ]{1,30})/);
+      // Preview lines are "Customer: X" in English and "Client: X" in
+      // French - accept both or FR pronoun follow-ups never resolve.
+      const m = h.content.match(/(?:Customer|Client):\s*([A-Za-z][A-Za-z ]{1,30})/);
       if (m) name = m[1].trim();
     } else {
       name = extractCustomerName(h.content);
@@ -877,6 +914,19 @@ export function detectIntent(raw: string, followUpName: string | null = null): C
   // query either ("cancel tomorrow's job" contains "tomorrow"). Ask.
   if (isCancellation(text)) return 'unknown';
 
+  // Rescheduling - the copilot has no reschedule capability either. Without
+  // this guard "Reschedule my next job to Friday" became a create_job
+  // preview for a NEW "General Service" job on Friday, silently leaving
+  // the original job in place and inviting a duplicate (2026-10-21 QA).
+  if (
+    hasAny(text, [
+      ' reschedule ', ' rescheduling ', ' rescheduled ',
+      ' reprogrammer ', ' replanifier ', ' reporter ',
+    ])
+  ) {
+    return 'unknown';
+  }
+
   // A message LED by a booking verb ("Book ...", "Schedule ...", "Planifie ...")
   // is a booking command, not a question - even if the job title contains the
   // word "check" (e.g. "Book schedule check for Alice tomorrow", 2026-09-28 QA).
@@ -929,6 +979,16 @@ export function detectIntent(raw: string, followUpName: string | null = null): C
     return 'out_of_scope';
   }
 
+  // 0c. Expense creation - the copilot cannot record expenses. Without this
+  // guard "Add an expense of $40 for gas" fell through to create_job and
+  // produced a booking preview for a customer named "Gas" (2026-10-21 QA).
+  if (
+    hasAny(text, [' expense ', ' expenses ', ' depense ', ' depenses ']) &&
+    hasAny(text, [' add ', ' create ', ' new ', ' log ', ' record ', ' ajouter ', ' ajoute ', ' creer ', ' cree ', ' nouveau ', ' nouvelle '])
+  ) {
+    return 'out_of_scope';
+  }
+
   // 1. Payment reminder drafting
   if (hasAny(text, [' reminder ', ' remind ', ' payment reminder ', ' rappel ', ' rappelle ', ' rappeler ', ' relance '])) {
     return 'draft_reminder';
@@ -939,7 +999,7 @@ export function detectIntent(raw: string, followUpName: string | null = null): C
   //    "collect/collected" is dashboard-canonical ("COLLECTED · 7 DAYS");
   //    without it "How much did I collect this week?" fell through to
   //    ask_schedule (2026-10-10 QA).
-  if (hasAny(text, [' revenue ', ' earning ', ' earnings ', ' earn ', ' earned ', ' income ', ' collection ', ' collect ', ' collected ', ' collecting ', ' collecte ', ' encaisse ', ' encaisser ', ' encaisses ', ' revenu ', ' revenus ', ' gains ', ' chiffre '])) {
+  if (hasAny(text, [' revenue ', ' earning ', ' earnings ', ' earn ', ' earned ', ' income ', ' collection ', ' collect ', ' collected ', ' collecting ', ' collecte ', ' encaisse ', ' encaisser ', ' encaisses ', ' revenu ', ' revenus ', ' gains ', ' chiffre ', ' gagne ', ' gagner ', ' recettes '])) {
     if (hasAny(text, [' booked ', ' reserve ', ' scheduled ', ' planifie '])) {
       return 'ask_booked_revenue';
     }
@@ -1030,18 +1090,20 @@ export function detectIntent(raw: string, followUpName: string | null = null): C
     return 'ask_customers';
   }
 
-  // 5b. Customer lookup
+  // 5b. Customer lookup - including the possessive form the help text
+  // advertises ("Sarah's number"), which names no "customer" keyword.
   if (
     mentionsCustomer ||
     /\bfind\b/.test(text) ||
-    /\btrouver\b/.test(text)
+    /\btrouver\b/.test(text) ||
+    (extractCustomerName(raw) !== null && hasAny(text, [' number ', ' numero ']))
   ) {
     return 'find_customer';
   }
 
   // 6. Schedule questions
   if (
-    hasAny(text, [' schedule ', ' horaire ', ' jobs ', ' appointments ', ' rendez vous ', ' rendezvous ', ' today ', ' tomorrow ', ' aujourdhui ', ' demain ', ' this week ', ' cette semaine '])
+    hasAny(text, [' schedule ', ' horaire ', ' jobs ', ' appointments ', ' rendez vous ', ' rendezvous ', ' today ', ' tomorrow ', ' aujourdhui ', ' aujourd hui ', ' demain ', ' travaux ', ' this week ', ' cette semaine '])
   ) {
     return 'ask_schedule';
   }

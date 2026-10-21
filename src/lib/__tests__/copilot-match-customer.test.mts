@@ -82,3 +82,20 @@ test('exactNameMatch does not match a partial name', () => {
 test('exactNameMatch returns null when there are no candidates', () => {
   assert.equal(exactNameMatch([], 'Anyone'), null);
 });
+
+// --- 2026-10-21 audit: "did you mean" must point at the closest customer ---
+import { bestSimilarCandidate } from '../copilot/match-customer.ts';
+
+test('bestSimilarCandidate picks the longest shared leading-token run', () => {
+  const rows = [
+    { id: '1', name: 'QATEST Cust 194234' },
+    { id: '2', name: 'QATEST Inl3 355707' },
+  ];
+  assert.equal(bestSimilarCandidate(rows, 'Qatest Inl3')?.id, '2');
+  assert.equal(bestSimilarCandidate(rows, 'Qatest Cust')?.id, '1');
+});
+
+test('bestSimilarCandidate returns null when no candidate shares the first token', () => {
+  const rows = [{ id: '1', name: 'QATEST Cust 194234' }];
+  assert.equal(bestSimilarCandidate(rows, 'Priya Sharma'), null);
+});

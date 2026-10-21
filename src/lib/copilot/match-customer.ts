@@ -42,3 +42,33 @@ export function exactNameMatch(
   const wanted = name.trim().toLowerCase();
   return candidates.find((c) => c.name.trim().toLowerCase() === wanted) ?? null;
 }
+
+/**
+ * Best "did you mean …?" candidate: the one sharing the longest run of
+ * leading name tokens with the draft name. `contains` candidate order is
+ * database-arbitrary - with draft "Qatest Inl3", the raw first row pointed
+ * at the WRONG customer ("QATEST Cust 194234" instead of "QATEST Inl3
+ * 355707", 2026-10-21 QA). Ties keep the original order. Null when no
+ * candidate shares even the first token.
+ */
+export function bestSimilarCandidate(
+  candidates: NameMatchCandidate[],
+  name: string
+): NameMatchCandidate | null {
+  const wanted = name.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  if (wanted.length === 0) return null;
+  let best: NameMatchCandidate | null = null;
+  let bestScore = 0;
+  for (const c of candidates) {
+    const toks = c.name.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    let score = 0;
+    while (score < wanted.length && score < toks.length && toks[score] === wanted[score]) {
+      score++;
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      best = c;
+    }
+  }
+  return bestScore > 0 ? best : null;
+}

@@ -268,7 +268,7 @@ export default function DispatcherMap({
       {mapFailed && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl bg-surface-2 px-6 text-center">
           <p className="text-sm text-ink-2">
-            Map unavailable - check your connection. The job list below is still up to date.
+            Map unavailable - the map library couldn&rsquo;t load. The job list below is still up to date.
           </p>
           <button
             type="button"

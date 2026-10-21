@@ -85,3 +85,15 @@ export const PROXY_STATIC_BYPASS =
 export function isProxyBypassed(pathname: string): boolean {
   return new RegExp(`^/(${PROXY_STATIC_BYPASS})`).test(pathname);
 }
+
+/**
+ * Paths that render the live map (components/DispatcherMap.tsx): the
+ * dispatcher page and the public customer tracking page. The proxy
+ * scopes its CSP allowance for the Leaflet CDN to exactly these paths
+ * (fix D3b, 2026-10-21) — every other page keeps the nonce-only
+ * script-src. '/tracking' must NOT swallow '/tracking-anything', and
+ * '/track/' is a prefix because the token is a path segment.
+ */
+export function isMapPath(pathname: string): boolean {
+  return pathname === '/tracking' || pathname.startsWith('/track/');
+}

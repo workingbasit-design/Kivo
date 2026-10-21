@@ -3,6 +3,7 @@
 import { useActionState } from 'react';
 import { useRouter } from 'next/navigation';
 import { t, type Locale } from '@/lib/i18n';
+import { centsToDollars } from '@/lib/money';
 import { Button, Input, Select, Textarea } from '@/components/kit';
 import { createEquipment, updateEquipment, type ActionResult } from '@/app/actions/equipment';
 
@@ -24,6 +25,7 @@ export default function EquipmentForm({
     model: string | null;
     serial: string | null;
     installDate: string | null;
+    purchaseCostCents: number | null;
     notes: string | null;
   } | null;
   locale: Locale;
@@ -104,6 +106,21 @@ export default function EquipmentForm({
           defaultValue={existing?.installDate ?? ''}
         />
       </div>
+
+      {/* D5: optional purchase cost — dollars in the UI, cents in the DB. */}
+      <Input
+        label={T('purchaseCost')}
+        name="purchaseCost"
+        type="text"
+        inputMode="decimal"
+        pattern="[0-9]*\.?[0-9]*"
+        placeholder="0.00"
+        defaultValue={
+          existing?.purchaseCostCents != null
+            ? String(centsToDollars(existing.purchaseCostCents))
+            : ''
+        }
+      />
 
       <Textarea
         label={T('notes')}

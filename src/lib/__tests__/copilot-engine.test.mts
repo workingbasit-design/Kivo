@@ -289,3 +289,43 @@ test('engine: "Book for 31 April" flags the impossible date', async () => {
   const res = await convo('Book a job for 31 April');
   assert.match(res.reply, /isn't a real calendar date/i);
 });
+
+// --- 2026-10-21 audit regressions (live production probe) -------------------
+test('engine: "Add an expense of $40 for gas" gets Expenses-page guidance, never a booking preview', async () => {
+  const res = await convo('Add an expense of $40 for gas');
+  assert.equal(res.intent, 'out_of_scope');
+  assert.equal(res.preview, undefined);
+  assert.match(res.reply, /Expenses page/);
+});
+
+test('engine: "Qui me doit de l\'argent ?" is answered in French under an English UI locale', async () => {
+  const res = await convo("Qui me doit de l'argent ?");
+  assert.equal(res.intent, 'ask_unpaid');
+  assert.match(res.reply, /impayée|Parfait/);
+});
+
+test('engine: "Quels travaux ai-je aujourd\'hui ?" answers the schedule in French', async () => {
+  const res = await convo("Quels travaux ai-je aujourd'hui ?");
+  assert.equal(res.intent, 'ask_schedule');
+  assert.match(res.reply, /Aucune tâche prévue/);
+});
+
+test('engine: "Combien me doit-on?" answers outstanding in French', async () => {
+  const res = await convo('Combien me doit-on?');
+  assert.equal(res.intent, 'ask_unpaid');
+  assert.match(res.reply, /impayée|Parfait/);
+});
+
+test('engine: "Reschedule my next job to Friday" clarifies instead of previewing a new job', async () => {
+  const res = await convo('Reschedule my next job to Friday');
+  assert.equal(res.intent, 'unknown');
+  assert.equal(res.preview, undefined);
+});
+
+test('engine: "Create a quote for $200" drafts a quote with no fake customer or title', async () => {
+  const res = await convo('Create a quote for $200');
+  assert.equal(res.intent, 'draft_quote');
+  assert.equal(res.preview?.customerName, '');
+  assert.notEqual(res.preview?.title, 'A Quote For $200');
+  assert.equal(res.preview?.price, 200);
+});
