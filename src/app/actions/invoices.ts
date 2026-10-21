@@ -233,7 +233,7 @@ export async function createInvoice(
       // A1: invoicedAt tracks when the first invoice links to the job
       // (same bookkeeping as settleJobPaidTx in this file).
       await tx.job.update({
-        where: { id: linkJob.id },
+        where: { id: linkJob.id, businessId },
         data: { invoicedAt: new Date() },
       });
     }
