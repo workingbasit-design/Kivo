@@ -12,6 +12,7 @@ import {
   CalendarClock,
 } from '@/components/icons';
 import { requireAuth } from "@/lib/auth";
+import { canSeePrices } from "@/lib/roles";
 import { prisma } from "@/lib/prisma";
 import { getReportStats } from "@/lib/dashboard";
 import { cn } from "@/lib/utils";
@@ -126,6 +127,15 @@ export default async function ReportsPage({
   searchParams: Promise<{ year?: string }>;
 }) {
   const { businessId, role } = await requireAuth();
+
+  // SEE_PRICES gate: reports are money data (the role matrix names
+  // reports explicitly). Viewers without the capability (technicians)
+  // get a 403 before any stats load — same denial style as the F9
+  // check below.
+  if (!canSeePrices(role)) {
+    forbidden();
+  }
+
   const locale = await getLocale();
   const r = locale === 'fr' ? frReports : enReports;
   const moneyLocale = locale === 'fr' ? 'fr' : 'en';

@@ -15,6 +15,7 @@ const {
   PERMISSION_MATRIX,
   CAPABILITIES,
   canRole,
+  canSeePrices,
   overlaps,
   findDoubleBookings,
   doubleBookingMessage,
@@ -192,5 +193,30 @@ describe('F4-002: double-booking overlap logic', () => {
       end: d(11),
     });
     assert.match(msg, /^Marc is already on Job 1041 \d{1,2}:\d{2}.*–.*\d{1,2}:\d{2}/);
+  });
+});
+
+describe('canSeePrices: SEE_PRICES UI gate (dashboard money line, Money tab)', () => {
+  test('OWNER, ADMIN and DISPATCHER see prices', () => {
+    assert.equal(canSeePrices('OWNER'), true);
+    assert.equal(canSeePrices('ADMIN'), true);
+    assert.equal(canSeePrices('DISPATCHER'), true);
+  });
+
+  test('TECHNICIAN does not see prices', () => {
+    assert.equal(canSeePrices('TECHNICIAN'), false);
+  });
+
+  test('unknown / missing roles fail closed', () => {
+    assert.equal(canSeePrices('MEMBER'), false);
+    assert.equal(canSeePrices(null), false);
+    assert.equal(canSeePrices(undefined), false);
+    assert.equal(canSeePrices(''), false);
+  });
+
+  test('matches the SEE_PRICES matrix entry for every role', () => {
+    for (const role of ROLES) {
+      assert.equal(canSeePrices(role), PERMISSION_MATRIX[role].SEE_PRICES);
+    }
   });
 });

@@ -118,11 +118,14 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
         if (!res.ok) throw new Error(`ping ${res.status}`);
         setLastPingAt(new Date());
       } catch {
-        // Keep trying on transient failures; the visible indicator stays on
-        // so the tech knows sharing is still attempted.
+        // A failed ping must never be silent: stop sharing cleanly and
+        // show the error, instead of leaving the card stuck on
+        // "Not sharing" (or pretending to share) with no explanation.
+        stopSharing();
+        say('error', t(localeRef.current, 'gps.shareFailed'));
       }
     },
-    [stopSharing]
+    [stopSharing, say]
   );
 
   const sendCurrentPosition = useCallback(() => {
@@ -222,7 +225,7 @@ export default function TechLocationSharer({ jobs }: { jobs: SharableJob[] }) {
           })
           .catch(() => {
             setState('idle');
-            say('error', tr('gps.pingFailed'));
+            say('error', tr('gps.shareFailed'));
           });
       },
       (err) => {

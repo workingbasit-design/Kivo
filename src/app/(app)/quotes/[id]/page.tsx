@@ -1,7 +1,8 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { ArrowLeft, User } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
+import { canSeePrices } from '@/lib/roles';
 import { prisma } from '@/lib/prisma';
 import { Card } from '@/components/kit';
 import { localeMoneyTag } from '@/lib/utils';
@@ -37,7 +38,14 @@ export default async function QuoteDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { businessId } = await requireAuth();
+  const { businessId, role } = await requireAuth();
+
+  // SEE_PRICES gate: line items, deposits and the tax-inclusive total are
+  // money data. Viewers without the capability (technicians) are bounced
+  // to their dashboard before the quote is loaded.
+  if (!canSeePrices(role)) {
+    redirect('/dashboard');
+  }
 
   const { id } = await params;
   const quote = await prisma.quote.findFirst({

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { locationPingSchema } from '@/lib/location-ping';
 import { getSession } from '@/lib/auth';
 import { getActiveMembershipForUser } from '@/lib/membership';
 import { rateLimit } from '@/lib/rate-limit';
@@ -20,13 +20,6 @@ const ACTIVE_STATUSES = ['SCHEDULED', 'IN PROGRESS'] as const;
 // One ping per 15 s per tech is the client cadence; 60/min leaves headroom
 // for retries while stopping abuse.
 const PING_LIMIT = { limit: 60, windowMs: 60_000 };
-
-const pingSchema = z.object({
-  lat: z.number().min(-90).max(90),
-  lng: z.number().min(-180).max(180),
-  accuracy: z.number().positive().max(100_000).optional(),
-  jobId: z.string().min(1).max(64),
-});
 
 export async function POST(req: Request) {
   const originCheck = checkSameOrigin(req);
@@ -54,7 +47,7 @@ export async function POST(req: Request) {
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body.' }, { status: 400 });
   }
-  const parsed = pingSchema.safeParse(body);
+  const parsed = locationPingSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: 'Invalid location payload.' }, { status: 400 });
   }

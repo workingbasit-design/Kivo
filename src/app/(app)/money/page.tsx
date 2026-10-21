@@ -1,5 +1,7 @@
 import { Plus, FileText, Clock, Hourglass, Wallet } from '@/components/icons';
+import { redirect } from 'next/navigation';
 import { requireAuth } from '@/lib/auth';
+import { canSeePrices } from '@/lib/roles';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { prisma } from '@/lib/prisma';
@@ -37,7 +39,15 @@ function requestNowMs(): number {
  * No giant $0.00 numbers. Empty sections show a compact empty state.
  */
 export default async function MoneyPage() {
-  const { businessId } = await requireAuth();
+  const { businessId, role } = await requireAuth();
+
+  // SEE_PRICES gate: every list on this page is money data. Viewers
+  // without the capability (technicians) are bounced to their dashboard
+  // before any query runs, so no amounts reach the response.
+  if (!canSeePrices(role)) {
+    redirect('/dashboard');
+  }
+
   const locale = await getLocale();
   const L = (path: string) => t(locale, path);
 

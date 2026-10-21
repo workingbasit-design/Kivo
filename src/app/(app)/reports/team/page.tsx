@@ -1,8 +1,10 @@
 import React from 'react';
 import Link from 'next/link';
+import { forbidden } from 'next/navigation';
 import { ArrowLeft, Users, Clock3, Briefcase, DollarSign, Trophy } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { canSeePrices } from '@/lib/roles';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
 import { Card } from '@/components/kit';
@@ -59,7 +61,15 @@ export default async function TeamPerformancePage({
 }: {
   searchParams: Promise<{ period?: string }>;
 }) {
-  const { businessId } = await requireAuth();
+  const { businessId, role } = await requireAuth();
+
+  // SEE_PRICES gate: per-member revenue and the team total are money
+  // data. Viewers without the capability (technicians) get a 403 before
+  // any rows load — same denial style as /reports.
+  if (!canSeePrices(role)) {
+    forbidden();
+  }
+
   const locale: Locale = await getLocale();
   const tr = (path: string) => t(locale, path);
   const business = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } });

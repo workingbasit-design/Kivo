@@ -19,10 +19,17 @@ export default async function DashboardHeader({
   businessId,
   timezone,
   regionCode,
+  showMoney = true,
 }: {
   businessId: string;
   timezone?: string | null;
   regionCode?: string | null;
+  /**
+   * False for viewers whose role lacks SEE_PRICES (technicians): the
+   * "ready to invoice" money aggregate is omitted from the summary
+   * sentence. Defaults to true so owner/admin/dispatcher are unchanged.
+   */
+  showMoney?: boolean;
 }) {
   const locale: Locale = await getLocale();
   const moneyLocale = localeMoneyTag(locale);
@@ -30,12 +37,16 @@ export default async function DashboardHeader({
 
   const visits = tp(locale, "dashboard.visitsToday", summary.visitsToday);
   const done = tp(locale, "dashboard.visitsDone", summary.doneToday);
-  const amount = formatMoney(summary.readyToInvoice, null, moneyLocale);
-  const sentence = fillTemplate(t(locale, "dashboard.summarySentence"), {
-    visits,
-    done,
-    amount,
-  });
+  const sentence = showMoney
+    ? fillTemplate(t(locale, "dashboard.summarySentence"), {
+        visits,
+        done,
+        amount: formatMoney(summary.readyToInvoice, null, moneyLocale),
+      })
+    : fillTemplate(t(locale, "dashboard.summarySentenceNoMoney"), {
+        visits,
+        done,
+      });
 
   return (
     <header>

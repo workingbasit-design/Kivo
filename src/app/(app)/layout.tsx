@@ -13,6 +13,7 @@ import PortalNotice from '@/components/PortalNotice';
 import { getLocale } from '@/lib/i18n/server';
 import { syncNotifications, getUnreadCount } from '@/lib/notifications';
 import { centsToDollars } from '@/lib/money';
+import { canSeePrices } from '@/lib/roles';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   // A database outage must NEVER look like a logout: if we can't validate
@@ -113,7 +114,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <main id="main-content" className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-8 pb-[calc(12rem+env(safe-area-inset-bottom))] md:pb-8">
           {children}
         </main>
-        <BottomNav user={user} locale={locale} />
+        <BottomNav user={user} locale={locale} showMoney={canSeePrices(auth.role)} />
       </div>
       <LazyOverlays currency={business?.currency} locale={locale} />
     </div>

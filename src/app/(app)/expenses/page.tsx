@@ -1,7 +1,9 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { Plus, Receipt, Search, X } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { canSeePrices } from '@/lib/roles';
 
 import { formatMoney, centsToDollars } from '@/lib/money';
 import { formatDateShort, cn } from '@/lib/utils';
@@ -21,7 +23,16 @@ export default async function ExpensesPage({
 }: {
   searchParams: Promise<{ category?: string; jobId?: string; from?: string; to?: string; q?: string }>;
 }) {
-  const { businessId } = await requireAuth();
+  const { businessId, role } = await requireAuth();
+
+  // SEE_PRICES gate: the business-wide expense ledger (every job, with
+  // a running total) is money data. Viewers without the capability
+  // (technicians) are bounced to their dashboard before any query runs;
+  // they still log expenses from the job page's expense form.
+  if (!canSeePrices(role)) {
+    redirect('/dashboard');
+  }
+
   const locale = await getLocale();
   const T = (k: string) => t(locale, `expenses.${k}` as never);
   const F = (k: string) => t(locale, `expenses.filters.${k}` as never);

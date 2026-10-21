@@ -383,6 +383,7 @@ const fr: Dictionary = {
     newLeadsHint: 'Prospects des 30 derniers jours',
     // Part C (dashboard rebuild): section-by-section dashboard.
     summarySentence: '{visits}, {done}. {amount} à facturer.',
+    summarySentenceNoMoney: '{visits}, {done}.',
     visitsToday: {
       one: "{count} visite aujourd'hui",
       other: "{count} visites aujourd'hui",

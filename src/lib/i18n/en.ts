@@ -382,6 +382,7 @@ const en: Dict = {
     newLeadsHint: 'Leads from the last 30 days',
     // Part C (dashboard rebuild): section-by-section dashboard.
     summarySentence: '{visits}, {done}. {amount} ready to invoice.',
+    summarySentenceNoMoney: '{visits}, {done}.',
     visitsToday: {
       one: '{count} visit today',
       other: '{count} visits today',

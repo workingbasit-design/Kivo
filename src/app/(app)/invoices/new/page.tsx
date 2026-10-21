@@ -1,4 +1,6 @@
+import { redirect } from 'next/navigation';
 import { requireAuth } from '@/lib/auth';
+import { canSeePrices } from '@/lib/roles';
 import { prisma } from '@/lib/prisma';
 
 import { getTaxConfig } from '@/lib/tax';
@@ -13,7 +15,15 @@ export default async function NewInvoicePage({
 }: {
   searchParams: Promise<{ jobId?: string }>;
 }) {
-  const { businessId } = await requireAuth();
+  const { businessId, role } = await requireAuth();
+
+  // SEE_PRICES gate: creating an invoice means working with prices and
+  // totals (including a job's price via ?jobId=). Viewers without the
+  // capability (technicians) are bounced to their dashboard first.
+  if (!canSeePrices(role)) {
+    redirect('/dashboard');
+  }
+
   const locale = await getLocale();
   const { jobId } = await searchParams;
 

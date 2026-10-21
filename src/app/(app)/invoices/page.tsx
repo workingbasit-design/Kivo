@@ -1,4 +1,6 @@
+import { redirect } from 'next/navigation';
 import { requireAuth } from '@/lib/auth';
+import { canSeePrices } from '@/lib/roles';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { prisma } from '@/lib/prisma';
@@ -14,7 +16,14 @@ export default async function InvoicesPage({
 }: {
   searchParams: Promise<{ status?: string }>;
 }) {
-  const { businessId } = await requireAuth();
+  const { businessId, role } = await requireAuth();
+
+  // SEE_PRICES gate: invoice totals and collected/outstanding aggregates
+  // are money data. Viewers without the capability (technicians) are
+  // bounced to their dashboard before any query runs.
+  if (!canSeePrices(role)) {
+    redirect('/dashboard');
+  }
 
   const { status } = await searchParams;
   const initialFilter = FILTERS.includes(status as (typeof FILTERS)[number])

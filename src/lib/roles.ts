@@ -112,6 +112,16 @@ export function canRole(role: string | null | undefined, capability: Capability)
   return PERMISSION_MATRIX[role][capability];
 }
 
+/**
+ * Pure UI gate: may this viewer see prices and money aggregates
+ * (dashboard money lines, the Money tab)? Thin named wrapper over the
+ * SEE_PRICES matrix entry so every surface gates the same way.
+ * TECHNICIAN (and any unknown role) => false.
+ */
+export function canSeePrices(role: string | null | undefined): boolean {
+  return canRole(role, 'SEE_PRICES');
+}
+
 export type AuthedTeamUser = {
   user: { id: string; name: string | null; email: string | null };
   businessId: string;

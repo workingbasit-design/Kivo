@@ -30,6 +30,7 @@ import MoneyPipeline from "@/components/dashboard/MoneyPipeline";
 import Last8Weeks from "@/components/dashboard/Last8Weeks";
 import CustomizePanel from "@/components/dashboard/CustomizePanel";
 import { getDashboardLayout, type DashboardSectionKey } from "@/lib/dashboard-layout";
+import { canSeePrices } from "@/lib/roles";
 
 function Section({
   errorMessage,
@@ -104,6 +105,8 @@ export default async function DashboardPage() {
 
   const timezone = business?.timezone ?? "America/Toronto";
   const regionCode = business?.regionCode ?? null;
+  // SEE_PRICES gate: technicians never see money aggregates (header line).
+  const showMoney = canSeePrices(role);
   const isNewBusiness = jobCount === 0 && invoiceCount === 0 && customerCount === 0;
   const errorMessage = L("dashboard.sectionFailed");
   const retryLabel = L("dashboard.sectionRetry");
@@ -112,7 +115,7 @@ export default async function DashboardPage() {
   if (isNewBusiness) {
     return (
       <div className="space-y-6">
-        <DashboardHeader businessId={businessId} timezone={timezone} regionCode={regionCode} />
+        <DashboardHeader businessId={businessId} timezone={timezone} regionCode={regionCode} showMoney={showMoney} />
         <OnboardingChecklist
           locale={locale}
           businessId={businessId}
@@ -133,7 +136,7 @@ export default async function DashboardPage() {
   if (role === "TECHNICIAN") {
     return (
       <div className="space-y-6">
-        <DashboardHeader businessId={businessId} timezone={timezone} regionCode={regionCode} />
+        <DashboardHeader businessId={businessId} timezone={timezone} regionCode={regionCode} showMoney={showMoney} />
         <Section errorMessage={errorMessage} retryLabel={retryLabel}>
           <TodaysVisits
             businessId={businessId}
@@ -160,7 +163,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-5">
-      <DashboardHeader businessId={businessId} timezone={timezone} regionCode={regionCode} />
+      <DashboardHeader businessId={businessId} timezone={timezone} regionCode={regionCode} showMoney={showMoney} />
       <QuickActions />
       {layout
         .filter((s) => s.visible)

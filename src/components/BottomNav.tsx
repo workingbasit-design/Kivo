@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { List, LogOut, ChevronDown, SlidersHorizontal } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { navSections, bottomTabs, advancedNavItems, type NavItem } from '@/components/nav-sections';
+import { visibleBottomTabs } from '@/components/nav-logic';
 import { NavIconView } from '@/components/animated-icons/nav-icon';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { logout } from '@/app/actions/auth';
@@ -29,15 +30,22 @@ const ADVANCED_OPEN_KEY = 'ej-advanced-open';
 export default function BottomNav({
   user,
   locale = 'en',
+  showMoney = true,
 }: {
   user: { name?: string | null; email: string };
   locale?: Locale;
+  /**
+   * False for viewers whose role lacks SEE_PRICES (technicians): the
+   * Money tab is removed from the bottom bar. Defaults to true.
+   */
+  showMoney?: boolean;
 }) {
   const [moreOpen, setMoreOpen] = useState(false);
   const pathname = usePathname();
+  const tabs = visibleBottomTabs(bottomTabs, showMoney);
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
-  const anyPrimaryActive = bottomTabs.some((tab) => isActive(tab.href));
+  const anyPrimaryActive = tabs.some((tab) => isActive(tab.href));
   const advancedActive = advancedNavItems.some((item) => isActive(item.href));
 
   // Advanced group: collapsed by default, persisted per device. Auto-expands
@@ -102,12 +110,13 @@ export default function BottomNav({
       >
         <div
           className={cn(
-            'grid grid-cols-5 bg-asphalt dark:bg-coal',
+            tabs.length >= 4 ? 'grid grid-cols-5' : 'grid grid-cols-4',
+            'bg-asphalt dark:bg-coal',
             'border-t border-hero-ink/10',
             'pb-[env(safe-area-inset-bottom)]'
           )}
         >
-          {bottomTabs.map((tab) => {
+          {tabs.map((tab) => {
             const active = isActive(tab.href);
             return (
               <Link
