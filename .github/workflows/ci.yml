@@ -120,13 +120,13 @@ jobs:
       # Playwright's webServer starts `npm run start:e2e` and waits for :3100.
       # One project per job (matrix) for reliability.
       - run: npx playwright test --project=${{ matrix.project }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: playwright-report-${{ matrix.project }}
           path: playwright-report/
           retention-days: 14
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: playwright-traces-${{ matrix.project }}
