@@ -6,6 +6,7 @@ import { rateLimit } from '@/lib/rate-limit';
 import { resolveCustomerPortalToken } from '@/lib/portal';
 import { Card, StatusBadge, type StatusBadgeTone } from '@/components/kit';
 import { formatCents } from '@/lib/money';
+import { sumMoneyPayments } from '@/lib/invoice-status';
 import { formatDateShort, formatJobTime, jobDisplayStatus, statusLabel } from '@/lib/utils';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
@@ -98,7 +99,7 @@ export default async function CustomerPortalPage({
         date: true,
         totalCents: true,
         status: true,
-        payments: { select: { amountCents: true } },
+        payments: { select: { amountCents: true, status: true } },
       },
       orderBy: { date: 'desc' },
       take: 10,
@@ -107,7 +108,9 @@ export default async function CustomerPortalPage({
 
   const currency = customer.business.currency;
   const balances = invoices.map((inv) => {
-    const paid = inv.payments.reduce((s, p) => s + p.amountCents, BigInt(0));
+    // Voided payments are not money: the portal owes the genuine balance
+    // (2026-10-21).
+    const paid = sumMoneyPayments(inv.payments);
     const balance = inv.totalCents > paid ? inv.totalCents - paid : BigInt(0);
     return { ...inv, balance };
   });

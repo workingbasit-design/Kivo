@@ -8,6 +8,7 @@ import { displayNotes } from '@/lib/invoice-notes';
 import { Card } from '@/components/kit';
 import { StatusPill } from '@/app/(app)/_components/status-ui';
 import { formatCents, centsToDollars, dollarsToCents } from '@/lib/money';
+import { sumMoneyPayments } from '@/lib/invoice-status';
 import { taxIdLabelForRegion } from '@/lib/tax';
 import CopyButton from '@/components/CopyButton';
 import PortalNotice from '@/components/PortalNotice';
@@ -87,7 +88,7 @@ export default async function InvoicePortalPage({
         },
       },
       payments: {
-        select: { amountCents: true, createdAt: true },
+        select: { amountCents: true, createdAt: true, status: true },
         orderBy: { createdAt: 'desc' },
       },
     },
@@ -95,7 +96,9 @@ export default async function InvoicePortalPage({
 
   if (!invoice) return <PortalNotice variant="expired" />;
 
-  const paid = invoice.payments.reduce((s, p) => s + p.amountCents, BigInt(0));
+  // Voided payments keep their history row but never count toward the
+  // balance (2026-10-21).
+  const paid = sumMoneyPayments(invoice.payments);
   const rawBalance = invoice.totalCents - paid;
   const balance = rawBalance < BigInt(0) ? BigInt(0) : rawBalance;
   const lineTotalCents = (qty: number, unitPriceCents: bigint) =>

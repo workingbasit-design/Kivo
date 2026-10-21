@@ -5,6 +5,7 @@ import { requireAuth } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
 import { formatCents } from '@/lib/money';
+import { sumMoneyPayments } from '@/lib/invoice-status';
 import {
   buildJobReminderDraft,
   buildInvoiceFollowupDraft,
@@ -54,13 +55,15 @@ export async function draftInvoiceFollowup(invoiceId: string): Promise<DraftResu
     where: { id: invoiceId, businessId },
     include: {
       customer: { select: { name: true } },
-      payments: { select: { amountCents: true } },
+      payments: { select: { amountCents: true, status: true } },
       business: { select: { name: true, interacEmail: true, currency: true } },
     },
   });
   if (!invoice) return { error: t(locale, 'reminders.errors.notFound') };
 
-  const paid = invoice.payments.reduce((s, p) => s + p.amountCents, BigInt(0));
+  // Voided payments are not money: the follow-up asks for the genuine
+  // remaining balance (2026-10-21).
+  const paid = sumMoneyPayments(invoice.payments);
   const remaining = invoice.totalCents - paid;
   if (remaining <= BigInt(0)) return { error: t(locale, 'reminders.errors.alreadyPaid') };
 

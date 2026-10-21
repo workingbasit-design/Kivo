@@ -70,6 +70,17 @@ test('fully-paid invoice: records nothing', async () => {
   assert.equal(stub.calls.invoiceUpdate.length, 0);
 });
 
+test('voided payment: settles the genuine outstanding, ignoring the void', async () => {
+  stub.setScenario('voided-payment');
+  stub.resetSettleStub();
+  await settleJobPaid('biz_1', 'job_1', stub.makeTx());
+
+  assert.equal(stub.calls.paymentCreate.length, 1);
+  assert.equal(stub.calls.paymentCreate[0].amountCents, BigInt(29900));
+  assert.equal(stub.calls.paymentCreate[0].status, 'COMPLETED');
+  assert.equal(stub.calls.invoiceUpdate[0].data.status, 'PAID');
+});
+
 test('unknown job: does nothing', async () => {
   stub.setScenario('no-invoice');
   stub.resetSettleStub();

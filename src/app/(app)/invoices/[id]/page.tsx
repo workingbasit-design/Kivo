@@ -7,6 +7,7 @@ import { prisma } from '@/lib/prisma';
 import { Card } from '@/components/kit';
 import { localeMoneyTag } from '@/lib/utils';
 import { formatMoney, centsToDollars } from '@/lib/money';
+import { sumMoneyPayments } from '@/lib/invoice-status';
 import MoneyText from '@/components/MoneyText';
 import DateTimeText from '@/components/DateTimeText';
 import { splitStoredTax, taxIdLabelForRegion } from '@/lib/tax';
@@ -74,7 +75,9 @@ export default async function InvoiceDetailPage({
 
   const shareState = await getInvoiceShareState(invoice.id);
 
-  const paidCents = invoice.payments.reduce((s, p) => s + p.amountCents, BigInt(0));
+  // VOID payments keep their audit row (rendered below with a VOID badge)
+  // but never count toward paid / balance due (2026-10-21).
+  const paidCents = sumMoneyPayments(invoice.payments);
   const paid = centsToDollars(paidCents);
   const remainingCents = invoice.totalCents - paidCents;
   const remaining = centsToDollars(remainingCents);

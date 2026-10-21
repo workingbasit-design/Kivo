@@ -9,6 +9,7 @@ import { Card, EmptyState, Button, ListRow } from '@/components/kit';
 
 
 import { formatMoney, centsToDollars } from '@/lib/money';
+import { sumMoneyPayments } from '@/lib/invoice-status';
 import { daysOverdue, remainingBalance, OVERDUE_AFTER_DAYS, DAY_MS } from '@/lib/revenue';
 import { formatDisplayDate } from '@/lib/attention';
 import { kitButtonClass , PageHeader} from '@/components/kit';
@@ -84,7 +85,7 @@ export default async function MoneyPage() {
         totalCents: true,
         date: true,
         customer: { select: { name: true, phone: true } },
-        payments: { select: { amountCents: true } },
+        payments: { select: { amountCents: true, status: true } },
       },
       orderBy: { date: 'asc' },
       take: 10,
@@ -116,9 +117,11 @@ export default async function MoneyPage() {
     0
   );
   const awaitingTotal = unpaidInvoices.reduce((s, inv) => {
+    // Voided payments are not money: awaiting counts only what the customer
+    // genuinely still owes (2026-10-21).
     const remaining = remainingBalance(
       centsToDollars(inv.totalCents),
-      inv.payments.map((p) => centsToDollars(p.amountCents))
+      [centsToDollars(sumMoneyPayments(inv.payments))]
     );
     return s + remaining;
   }, 0);

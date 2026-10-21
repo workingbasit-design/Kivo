@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { formatCents } from '@/lib/money';
+import { sumMoneyPayments } from '@/lib/invoice-status';
 import {
   type Audience,
   AUDIENCE_LABELS,
@@ -189,13 +190,15 @@ export async function draftPaymentReminder(
     where: { id: invoiceId, businessId },
     include: {
       customer: { select: { name: true } },
-      payments: { select: { amountCents: true } },
+      payments: { select: { amountCents: true, status: true } },
       business: { select: { name: true, interacEmail: true, phone: true, currency: true } },
     },
   });
   if (!invoice) return { error: 'Invoice not found.' };
 
-  const paid = invoice.payments.reduce((s, p) => s + p.amountCents, BigInt(0));
+  // Voided payments are not money: the draft quotes the genuine remaining
+  // balance (2026-10-21).
+  const paid = sumMoneyPayments(invoice.payments);
   const remaining = invoice.totalCents - paid;
   if (remaining <= BigInt(0)) return { error: 'This invoice is already fully paid.' };
 

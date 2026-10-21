@@ -4,6 +4,7 @@ import { getLocale } from "@/lib/i18n/server";
 import { t } from "@/lib/i18n";
 import { localeMoneyTag } from "@/lib/utils";
 import { formatMoney, centsToDollars } from "@/lib/money";
+import { countsAsMoney } from "@/lib/invoice-status";
 import { Card } from '@/components/kit';
 import { PhaseCard, AddPhaseForm, type Phase } from "@/components/ProjectPhases";
 import { ProjectHeaderForm } from "@/components/ProjectHeaderForm";
@@ -67,12 +68,15 @@ export default async function ProjectDetailPage({
       where: { businessId, jobId: { in: jobIds }, voidedAt: null },
       select: {
         totalCents: true,
-        payments: { select: { amountCents: true } },
+        payments: { select: { amountCents: true, status: true } },
       },
     });
     for (const inv of invoices) {
       invoicedCents += inv.totalCents;
-      for (const p of inv.payments) paidCents += p.amountCents;
+      // Voided payments are not money (2026-10-21).
+      for (const p of inv.payments) {
+        if (countsAsMoney(p.status)) paidCents += p.amountCents;
+      }
     }
   }
   const remainingCents = invoicedCents - paidCents;

@@ -10,7 +10,11 @@ import { requireAuth } from '@/lib/auth';
 import { invoiceSchema, paymentSchema, INVOICE_STATUSES } from '@/lib/validations';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { dollarsToCents, centsToDollars, formatCents } from '@/lib/money';
-import { deriveInvoiceStatus } from '@/lib/invoice-status';
+import {
+  deriveInvoiceStatus,
+  deriveStatusFromPayments,
+  sumMoneyPayments,
+} from '@/lib/invoice-status';
 import { isValidVoidReason } from '@/lib/voiding';
 import { nextDocumentNumber } from '@/lib/numbering';
 import {
@@ -414,19 +418,51 @@ export async function voidPayment(
   // `where: { id }` both threw TenantScopeError (surfaced as React #441).
   const payment = await prisma.payment.findFirst({
     where: { id, businessId },
-    select: { id: true, voidedAt: true, status: true },
+    select: { id: true, voidedAt: true, status: true, invoiceId: true },
   });
   if (!payment) return { error: 'Payment not found.' };
   if (payment.voidedAt || payment.status === 'VOID') return { error: 'This payment is already voided.' };
 
-  await prisma.payment.update({
-    where: { id, businessId },
-    // M10: status='VOID' is the single source of truth; voidedAt/voidReason
-    // stay as the audit fields.
-    data: { status: 'VOID', voidedAt: new Date(), voidReason: reason },
+  // Void the payment AND recompute the invoice's derived status in ONE
+  // transaction: invoice payment status is derived from money, never set
+  // directly (src/lib/invoice-status.ts). 2026-10-21 regression
+  // (void-payment-totals-not-recomputed): voiding the only payment left the
+  // invoice PAID with a $0 balance because the recompute was missing here.
+  await prisma.$transaction(async (tx) => {
+    await tx.payment.update({
+      where: { id, businessId },
+      // M10: status='VOID' is the single source of truth; voidedAt/voidReason
+      // stay as the audit fields.
+      data: { status: 'VOID', voidedAt: new Date(), voidReason: reason },
+    });
+
+    const invoice = await tx.invoice.findFirst({
+      where: { id: payment.invoiceId, businessId },
+      select: {
+        totalCents: true,
+        status: true,
+        voidedAt: true,
+        payments: { select: { amountCents: true, status: true } },
+      },
+    });
+    // A voided invoice keeps its VOID status - never derive it back.
+    if (invoice && !invoice.voidedAt && invoice.status !== 'VOID') {
+      const newStatus = deriveStatusFromPayments(
+        invoice.totalCents,
+        invoice.payments
+      );
+      await tx.invoice.update({
+        where: { id: payment.invoiceId, businessId },
+        // invoicePaidUpdate stamps paidAt exactly when the invoice becomes
+        // fully paid; paidAt is never cleared (a fully-paid invoice stays
+        // fully paid) - see src/lib/invoice-paid.ts.
+        data: invoicePaidUpdate(newStatus),
+      });
+    }
   });
 
   revalidatePath('/invoices');
+  revalidatePath('/money');
   revalidatePath('/dashboard');
   return { ok: true };
 }
@@ -524,13 +560,16 @@ export async function recordPayment(
     const invoice = await tx.invoice.findFirst({
       where: { id: parsed.data.invoiceId, businessId },
       include: {
-        payments: { select: { amountCents: true } },
+        payments: { select: { amountCents: true, status: true } },
         business: { select: { currency: true } },
       },
     });
     if (!invoice) return { error: 'Invoice not found.' };
 
-    const alreadyPaidCents = invoice.payments.reduce((s, p) => s + p.amountCents, BigInt(0));
+    // Voided (and other non-COMPLETED) payments are not money: after a void,
+    // the replacement payment must not be rejected as "already paid in full"
+    // (2026-10-21).
+    const alreadyPaidCents = sumMoneyPayments(invoice.payments);
     const remainingCents = invoice.totalCents - alreadyPaidCents;
     if (remainingCents <= BigInt(0)) {
       return { error: 'This invoice is already paid in full.' };
@@ -656,7 +695,7 @@ async function settleJobPaidTx(tx: PrismaTx, businessId: string, jobId: string):
     select: {
       id: true,
       totalCents: true,
-      payments: { select: { amountCents: true } },
+      payments: { select: { amountCents: true, status: true } },
     },
     orderBy: { createdAt: 'desc' },
   });
@@ -717,7 +756,8 @@ async function settleJobPaidTx(tx: PrismaTx, businessId: string, jobId: string):
   }
 
   for (const inv of invoices) {
-    const paidCents = inv.payments.reduce((s, p) => s + p.amountCents, BigInt(0));
+    // Voided payments are not money: settle the genuine outstanding balance.
+    const paidCents = sumMoneyPayments(inv.payments);
     const outstandingCents = inv.totalCents - paidCents;
     if (outstandingCents > BigInt(0)) {
       await tx.payment.create({

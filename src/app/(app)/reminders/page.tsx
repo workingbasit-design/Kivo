@@ -6,6 +6,7 @@ import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
 import { Card } from '@/components/kit';
 import { formatMoney, centsToDollars } from '@/lib/money';
+import { sumMoneyPayments } from '@/lib/invoice-status';
 import { formatWhenLabel } from '@/lib/reminders';
 import { todayInTimezone } from '@/lib/utils';
 import ReminderRow, { type ReminderUiStrings } from '@/components/reminders/ReminderRow';
@@ -72,7 +73,7 @@ export default async function RemindersPage() {
       where: { businessId, status: { in: ['UNPAID', 'PARTIALLY PAID'] } },
       include: {
         customer: { select: { name: true, phone: true, email: true } },
-        payments: { select: { amountCents: true } },
+        payments: { select: { amountCents: true, status: true } },
       },
       orderBy: { date: 'asc' },
       take: 50,
@@ -92,7 +93,9 @@ export default async function RemindersPage() {
 
   const invoices = invoiceRows
     .map((inv) => {
-      const paidCents = inv.payments.reduce((s, p) => s + p.amountCents, BigInt(0));
+      // Voided payments are not money: follow-ups ask for the genuine
+      // remaining balance (2026-10-21).
+      const paidCents = sumMoneyPayments(inv.payments);
       const remainingCents = inv.totalCents - paidCents;
       const remaining = centsToDollars(remainingCents);
       return { ...inv, remaining };

@@ -47,9 +47,13 @@ export function makeTx() {
         if (where?.jobId !== 'job_1' || where?.businessId !== 'biz_1') return [];
         if (scenario === 'no-invoice') return [];
         if (scenario === 'open-invoice')
-          return [{ id: 'inv_1', totalCents: BigInt(29900), payments: [{ amountCents: BigInt(10000) }] }];
+          return [{ id: 'inv_1', totalCents: BigInt(29900), payments: [{ amountCents: BigInt(10000), status: 'COMPLETED' }] }];
         if (scenario === 'paid-invoice')
-          return [{ id: 'inv_1', totalCents: BigInt(29900), payments: [{ amountCents: BigInt(29900) }] }];
+          return [{ id: 'inv_1', totalCents: BigInt(29900), payments: [{ amountCents: BigInt(29900), status: 'COMPLETED' }] }];
+        if (scenario === 'voided-payment')
+          // 2026-10-21: a voided payment is not money - settle must record
+          // the genuine outstanding (the full total here), not $0.
+          return [{ id: 'inv_1', totalCents: BigInt(29900), payments: [{ amountCents: BigInt(29900), status: 'VOID' }] }];
         return [];
       },
       create: async ({ data }) => {

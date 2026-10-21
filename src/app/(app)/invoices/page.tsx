@@ -6,6 +6,7 @@ import { t } from '@/lib/i18n';
 import { prisma } from '@/lib/prisma';
 import { INVOICE_STATUSES } from '@/lib/validations';
 import { centsToDollars } from '@/lib/money';
+import { sumMoneyPayments } from '@/lib/invoice-status';
 import InvoicesClient, { type InvoiceListItem } from './InvoicesClient';
 import type { ExportColumn } from '@/components/ExportButtons';
 
@@ -39,13 +40,17 @@ export default async function InvoicesPage({
       where: { businessId },
       include: {
         customer: { select: { name: true } },
-        payments: { select: { amountCents: true } },
+        payments: { select: { amountCents: true, status: true } },
       },
       orderBy: { createdAt: 'desc' },
     }),
     prisma.invoice.findMany({
       where: { businessId, voidedAt: null },
-      select: { totalCents: true, status: true, payments: { select: { amountCents: true } } },
+      select: {
+        totalCents: true,
+        status: true,
+        payments: { select: { amountCents: true, status: true } },
+      },
     }),
   ]);
 
@@ -56,7 +61,10 @@ export default async function InvoicesPage({
     status: inv.status,
     date: inv.date.toISOString(),
     customer: { name: inv.customer.name },
-    payments: inv.payments.map((p) => ({ amount: centsToDollars(p.amountCents) })),
+    payments: inv.payments.map((p) => ({
+      amount: centsToDollars(p.amountCents),
+      status: p.status,
+    })),
   }));
 
   const outstanding = aggregates
@@ -65,11 +73,11 @@ export default async function InvoicesPage({
       (s, i) =>
         s +
         (centsToDollars(i.totalCents) -
-          i.payments.reduce((p, pay) => p + centsToDollars(pay.amountCents), 0)),
+          centsToDollars(sumMoneyPayments(i.payments))),
       0
     );
   const collected = aggregates.reduce(
-    (s, i) => s + i.payments.reduce((p, pay) => p + centsToDollars(pay.amountCents), 0),
+    (s, i) => s + centsToDollars(sumMoneyPayments(i.payments)),
     0
   );
 

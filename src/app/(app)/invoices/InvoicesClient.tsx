@@ -6,6 +6,7 @@ import { Plus, FileText, Wallet, Receipt } from '@/components/icons';
 import { statusLabel, localeMoneyTag } from '@/lib/utils';
 import { formatDateShort, cn } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
+import { countsAsMoney } from '@/lib/invoice-status';
 import MoneyText from '@/components/MoneyText';
 import DateTimeText from '@/components/DateTimeText';
 import { t, type Locale } from '@/lib/i18n';
@@ -24,7 +25,7 @@ export type InvoiceListItem = {
   status: string;
   date: string | Date;
   customer: { name: string };
-  payments: { amount: number }[];
+  payments: { amount: number; status: string }[];
 };
 
 const OVERDUE_MS = 30 * 24 * 60 * 60 * 1000;
@@ -160,7 +161,11 @@ export default function InvoicesClient({
         <Card className="!p-0 overflow-hidden">
           <ul className="divide-y divide-line">
             {filtered.map((inv) => {
-              const paid = inv.payments.reduce((s, p) => s + p.amount, 0);
+              // Voided payments are not money: they never reduce the row's
+              // balance due (2026-10-21).
+              const paid = inv.payments
+                .filter((p) => countsAsMoney(p.status))
+                .reduce((s, p) => s + p.amount, 0);
               const due = Math.round((inv.total - paid) * 100) / 100;
               // Usual 30-day payment terms - the Invoice model stores no
               // contractual due date, so this is a follow-up hint, not a legal state.
