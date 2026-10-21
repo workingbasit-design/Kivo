@@ -17,6 +17,15 @@
  * NOT page-gated — prices there are interleaved with a technician's own
  * work data; see the "Money gates audit" section of
  * ~/workspace/mobile-qa/full-flow-2026-10-21/fix-report.md.
+ *
+ * The "forbidden() surfaces as a real HTTP 403" describe below
+ * pins the framework plumbing the reports denial relies on: Next 16's
+ * forbidden() only throws its NEXT_HTTP_ERROR_FALLBACK;403 digest when
+ * experimental.authInterrupts is enabled in next.config.ts — without
+ * it, forbidden() throws a plain Error that the (app) error boundary
+ * renders as a generic crash page in a 200 response (live-verified
+ * 2026-10-21, check T2) — and the denial needs an (app)/forbidden.tsx
+ * boundary to render.
  */
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
@@ -73,6 +82,27 @@ for (const rel of REDIRECT_GATED) {
     });
   });
 }
+
+describe('money gates: forbidden() surfaces as a real HTTP 403, not the error boundary', () => {
+  const config = readFileSync(new URL('../../../next.config.ts', import.meta.url), 'utf8');
+
+  test('next.config.ts enables experimental.authInterrupts', () => {
+    assert.match(
+      config,
+      /authInterrupts:\s*true/,
+      'forbidden() throws a plain (non-403) error unless experimental.authInterrupts is enabled'
+    );
+  });
+
+  test('(app)/forbidden.tsx exists as the branded 403 boundary', () => {
+    const src = page('forbidden.tsx');
+    assert.match(src, /export default async function AppForbidden/);
+    // A clear access-denied message in both locales, not a crash page.
+    assert.match(src, /You don’t have access to this page/);
+    assert.match(src, /Accès refusé/);
+    assert.doesNotMatch(src, /Something went wrong/);
+  });
+});
 
 for (const rel of FORBIDDEN_GATED) {
   describe(`money gate: /${rel.replace(/\/page\.tsx$/, '')}`, () => {

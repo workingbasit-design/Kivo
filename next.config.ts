@@ -1,6 +1,16 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    // Required for forbidden() / unauthorized() from next/navigation
+    // (used by the reports money gates). Without this flag, Next 16's
+    // forbidden() throws a plain Error ("only allowed to be enabled when
+    // experimental.authInterrupts is enabled") instead of the framework's
+    // NEXT_HTTP_ERROR_FALLBACK;403 digest — the (app) error boundary then
+    // renders it as a generic "Something went wrong" page in a 200
+    // response instead of a real HTTP 403 via (app)/forbidden.tsx.
+    authInterrupts: true,
+  },
   async headers() {
     return [
       {
