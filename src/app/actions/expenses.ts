@@ -168,8 +168,8 @@ export async function updateExpense(
     receiptUrl = null;
   }
 
-  await prisma.jobExpense.update({
-    where: { id: existing.id },
+  const updated = await prisma.jobExpense.updateMany({
+    where: { id: existing.id, businessId },
     data: {
       jobId: parsed.data.jobId,
       description: parsed.data.description,
@@ -180,6 +180,7 @@ export async function updateExpense(
       receiptUrl,
     },
   });
+  if (updated.count !== 1) return { ok: false, error: 'notFound' };
   revalidateExpenses();
   revalidatePath(`/expenses/${existing.id}`);
   if (parsed.data.jobId) revalidatePath(`/jobs/${parsed.data.jobId}`);
@@ -205,7 +206,10 @@ export async function deleteExpense(id: string): Promise<ExpenseResult> {
       if (token) await del(existing.receiptUrl, { token }).catch(() => {});
     }
 
-    await prisma.jobExpense.delete({ where: { id: existing.id } });
+    const deleted = await prisma.jobExpense.deleteMany({
+      where: { id: existing.id, businessId },
+    });
+    if (deleted.count !== 1) return { ok: false, error: 'notFound' };
     revalidateExpenses();
     if (existing.jobId) revalidatePath(`/jobs/${existing.jobId}`);
     return { ok: true };
