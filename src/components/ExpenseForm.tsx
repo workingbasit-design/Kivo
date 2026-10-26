@@ -56,11 +56,15 @@ export default function ExpenseForm({
     null
   );
   const seen = useRef<ExpenseResult | null | undefined>(undefined);
+  const formRef = useRef<HTMLFormElement>(null);
   useEffect(() => {
     if (!state || seen.current === state) return;
     seen.current = state;
     if (state.ok) {
       toast.success(T(isEdit ? 'updated' : 'created'));
+      // Create mode stays on the page for rapid entry: clear the form so the
+      // just-saved values cannot be re-submitted as a duplicate expense.
+      if (!isEdit) formRef.current?.reset();
     } else if (state.error === 'validation' && state.errorKey) {
       toast.error(t(locale, state.errorKey as never));
     } else {
@@ -83,7 +87,7 @@ export default function ExpenseForm({
   const fileRef = useRef<HTMLInputElement>(null);
 
   return (
-    <form action={formAction} className="space-y-5">
+    <form ref={formRef} action={formAction} className="space-y-5">
       <Card className="p-5 md:p-6 space-y-5">
         <Input
           label={T('description')}
