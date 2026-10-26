@@ -44,6 +44,9 @@
     "eslint-plugin-react-hooks": "^7.1.1"
   },
   "overrides": {
-    "source-map-js": "^1.2.2"
+    "source-map-js": "^1.2.2",
+    "ajv": { "fast-uri": "3.1.9" },
+    "undici": "6.29.1",
+    "@vercel/cli-config": { "zod": "4.6.7" }
   }
 }

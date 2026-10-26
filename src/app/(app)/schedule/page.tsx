@@ -190,11 +190,11 @@ export default async function SchedulePage({
                   className="flex items-center justify-between gap-3 px-4 py-3 min-h-[56px]"
                 >
                   <span className="min-w-0">
-                    <span className="block text-sm font-semibold text-ej-ink truncate">
+                    <span className="block text-sm font-semibold text-ej-ink dark:text-ink truncate">
                       {j.title}
                     </span>
-                    <span className="block text-xs text-ej-secondary truncate">{j.customer.name}</span>
-                    <span className="block text-xs text-ej-muted truncate">
+                    <span className="block text-xs text-ej-secondary dark:text-ink-2 truncate">{j.customer.name}</span>
+                    <span className="block text-xs text-ej-muted dark:text-ink-2 truncate">
                       {formatDisplayDate(j.date, business?.timezone, locale)}
                     </span>
                   </span>
