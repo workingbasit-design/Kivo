@@ -27,6 +27,7 @@ import PrintButton from './PrintButton';
 import ReminderDraft from '@/components/ReminderDraft';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import SmsButton from '@/components/SmsButton';
+import RecordLastOpened from '@/components/RecordLastOpened';
 import { Chip } from '@/components/kit';
 import { StatusPill } from '../../_components/status-ui';
 import { PageTitle } from '../../_components/PageTitle';
@@ -119,6 +120,7 @@ export default async function InvoiceDetailPage({
 
   return (
     <div className="space-y-6 max-w-3xl">
+      <RecordLastOpened kind="invoice" id={invoice.id} title={invoice.number} subtitle={invoice.customer.name} />
       <div className="flex items-center justify-between">
         <Link
           href="/invoices"

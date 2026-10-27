@@ -15,6 +15,13 @@ import { daysOverdue } from "./revenue.ts";
 import { todayInTimezone, toISODateInTimezone, dayRangeInTimezone } from "./utils.ts";
 import { tradeKeyForService, TRADE_ICON_COMPONENTS, type TradeKey } from "./trade-icons.ts";
 import { getAttentionItems, type AttentionItem } from "./attention.ts";
+import {
+  selectContinueCandidate,
+  type ContinueCandidate,
+  type ContinueJobRow,
+  type ContinueQuoteRow,
+  type ContinueInvoiceRow,
+} from "./continue-candidate.ts";
 
 /* ------------------------------------------------------------------ */
 /* Pure date-key helpers (no Prisma, fully unit-tested)                */
@@ -738,4 +745,111 @@ export async function getLast8Weeks(
     });
   }
   return weeks;
+}
+
+/**
+ * Scroll lesson 1 — the "Continue" candidate: the single record the pro
+ * should resume on open. Tenant-scoped; technicians only ever see their
+ * own jobs (never quotes or invoices, which carry money).
+ */
+export async function getContinueCandidate(
+  businessId: string,
+  opts?: {
+    timezone?: string | null;
+    regionCode?: string | null;
+    /** When set, only visits assigned to this user (technician "My day"). */
+    technicianUserId?: string | null;
+  }
+): Promise<ContinueCandidate | null> {
+  const { timezone, regionCode } = await businessTz(businessId, {
+    timezone: opts?.timezone,
+    regionCode: opts?.regionCode,
+  });
+  const todayKey = todayInTimezone(timezone, regionCode);
+  const techFilter = opts?.technicianUserId
+    ? {
+        OR: [
+          { assignedToId: opts.technicianUserId },
+          { jobAssignments: { some: { userId: opts.technicianUserId } } },
+        ],
+      }
+    : {};
+
+  const [jobs, quotes, invoices] = await Promise.all([
+    prisma.job.findMany({
+      where: {
+        businessId,
+        archivedAt: null,
+        status: { in: ["NEW", "SCHEDULED", "IN PROGRESS"] },
+        ...techFilter,
+      },
+      select: {
+        id: true,
+        title: true,
+        time: true,
+        date: true,
+        startAt: true,
+        updatedAt: true,
+        status: true,
+        customer: { select: { name: true, address: true } },
+      },
+    }),
+    opts?.technicianUserId
+      ? Promise.resolve([])
+      : prisma.quote.findMany({
+          where: { businessId, status: "DRAFT" },
+          select: {
+            id: true,
+            title: true,
+            updatedAt: true,
+            customer: { select: { name: true } },
+          },
+          orderBy: { updatedAt: "desc" },
+          take: 5,
+        }),
+    opts?.technicianUserId
+      ? Promise.resolve([])
+      : prisma.invoice.findMany({
+          where: { businessId, status: { in: OPEN_INVOICE }, voidedAt: null },
+          select: {
+            id: true,
+            number: true,
+            date: true,
+            updatedAt: true,
+            customer: { select: { name: true } },
+          },
+          orderBy: { date: "asc" },
+          take: 5,
+        }),
+  ]);
+
+  const jobRows: ContinueJobRow[] = jobs.map((j) => ({
+    id: j.id,
+    title: j.title,
+    customerName: j.customer.name,
+    area: areaFromAddress(j.customer.address),
+    status: j.status,
+    date: j.date,
+    time: j.time,
+    startAt: j.startAt,
+    updatedAt: j.updatedAt,
+  }));
+  const quoteRows: ContinueQuoteRow[] = quotes.map((q) => ({
+    id: q.id,
+    title: q.title,
+    customerName: q.customer.name,
+    updatedAt: q.updatedAt,
+  }));
+  const invoiceRows: ContinueInvoiceRow[] = invoices.map((inv) => ({
+    id: inv.id,
+    number: inv.number,
+    customerName: inv.customer.name,
+    date: inv.date,
+    updatedAt: inv.updatedAt,
+  }));
+
+  return selectContinueCandidate(
+    { jobs: jobRows, quotes: quoteRows, invoices: invoiceRows },
+    { todayKey, timezone, now: new Date() }
+  );
 }

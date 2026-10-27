@@ -23,6 +23,7 @@ import SectionShell from "@/components/dashboard/SectionShell";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import QuickActions from "@/components/dashboard/QuickActions";
 import CollectedSection from "@/components/dashboard/CollectedSection";
+import ContinueSection from "@/components/dashboard/ContinueSection";
 import NeedsYou from "@/components/dashboard/NeedsYou";
 import KeyNumbers from "@/components/dashboard/KeyNumbers";
 import TodaysVisits from "@/components/dashboard/TodaysVisits";
@@ -138,6 +139,14 @@ export default async function DashboardPage() {
       <div className="space-y-6">
         <DashboardHeader businessId={businessId} timezone={timezone} regionCode={regionCode} showMoney={showMoney} />
         <Section errorMessage={errorMessage} retryLabel={retryLabel}>
+          <ContinueSection
+            businessId={businessId}
+            timezone={timezone}
+            regionCode={regionCode}
+            technicianUserId={user.id}
+          />
+        </Section>
+        <Section errorMessage={errorMessage} retryLabel={retryLabel}>
           <TodaysVisits
             businessId={businessId}
             timezone={timezone}
@@ -164,6 +173,9 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-5">
       <DashboardHeader businessId={businessId} timezone={timezone} regionCode={regionCode} showMoney={showMoney} />
+      <Section errorMessage={errorMessage} retryLabel={retryLabel}>
+        <ContinueSection businessId={businessId} timezone={timezone} regionCode={regionCode} />
+      </Section>
       <QuickActions />
       {layout
         .filter((s) => s.visible)

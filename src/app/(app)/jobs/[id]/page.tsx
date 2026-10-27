@@ -18,6 +18,7 @@ import {
 import { formatDisplayDate } from '@/lib/attention';
 import { getReviewEligibility } from '@/lib/review-eligibility';
 import JobDetailClient, { type JobDetailVm } from './JobDetailClient';
+import RecordLastOpened from '@/components/RecordLastOpened';
 
 function initialsOf(name: string | null | undefined): string {
   const parts = (name ?? '').trim().split(/\s+/).filter(Boolean);
@@ -322,5 +323,10 @@ export default async function JobDetailPage({
     locale,
   };
 
-  return <JobDetailClient vm={vm} />;
+  return (
+    <>
+      <RecordLastOpened kind="job" id={job.id} title={vm.title} subtitle={vm.customer.name} />
+      <JobDetailClient vm={vm} />
+    </>
+  );
 }

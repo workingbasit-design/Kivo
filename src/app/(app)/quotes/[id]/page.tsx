@@ -28,6 +28,7 @@ import SmsButton from '@/components/SmsButton';
 import QuoteDepositCard from '@/components/QuoteDepositCard';
 import QuoteItemsEditor from './QuoteItemsEditor';
 import RecordDepositForm from '@/components/RecordDepositForm';
+import RecordLastOpened from '@/components/RecordLastOpened';
 import { StatusPill } from '../../_components/status-ui';
 import { PageTitle } from '../../_components/PageTitle';
 
@@ -124,6 +125,7 @@ export default async function QuoteDetailPage({
 
   return (
     <div className="space-y-6 max-w-3xl">
+      <RecordLastOpened kind="quote" id={quote.id} title={quote.title} subtitle={quote.customer.name} />
       <Link
         href="/quotes"
         className="min-h-[44px] inline-flex items-center gap-1.5 text-xs font-semibold text-ink-2 hover:text-ink"
