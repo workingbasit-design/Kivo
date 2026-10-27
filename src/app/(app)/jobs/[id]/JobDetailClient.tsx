@@ -80,7 +80,6 @@ export interface JobDetailVm {
     totalCents: number;
     status: string;
   }[];
-  uninvoiced: boolean;
   costing: {
     profitCents: number;
     marginPct: number | null;
@@ -278,7 +277,12 @@ export default function JobDetailClient({ vm }: { vm: JobDetailVm }) {
       onSecondary = () => runStatus(undoTo);
     }
   } else if (status === 'COMPLETED') {
-    if (vm.uninvoiced) {
+    // Live check on vm.invoices, not a fetch-time "uninvoiced" prop:
+    // a prop computed from the status at fetch time stays false right
+    // after a client-side Mark-complete, so the pro was offered
+    // "Edit job" instead of "Create invoice" until a full reload.
+    // vm.invoices does not change during completion, so it stays correct.
+    if (vm.invoices.length === 0) {
       primaryLabel = jobsL('createInvoice');
       // D4: carry the job context so the invoice form opens prefilled
       // and the created invoice links back to this job.

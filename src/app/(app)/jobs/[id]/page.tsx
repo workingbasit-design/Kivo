@@ -270,7 +270,6 @@ export default async function JobDetailPage({
       totalCents: Number(inv.totalCents),
       status: inv.status,
     })),
-    uninvoiced: job.status === 'COMPLETED' && job.invoices.length === 0,
     costing: showCosting
       ? {
           profitCents: Math.round(costing.profit * 100),
