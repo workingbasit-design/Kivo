@@ -15,6 +15,7 @@ import {
 } from '@/app/actions/invoices';
 import { isValidVoidReason } from '@/lib/voiding';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import { clearLastOpenedRecord } from '@/lib/continue-candidate';
 import { currencySymbol, formatMoney, centsToDollars } from '@/lib/money';
 import { Input, Select, Textarea, Button } from '@/components/kit';
 
@@ -204,6 +205,8 @@ export default function InvoiceActions({
                   onConfirm={() => {
                     const fd = new FormData();
                     fd.append('id', id);
+                    // Never leave the Continue card pointing at this deleted invoice.
+                    clearLastOpenedRecord(id);
                     deleteAction(fd);
                   }}
                   onClose={() => !deletePending && setConfirmingDelete(false)}

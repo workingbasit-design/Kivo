@@ -8,6 +8,8 @@ import assert from 'node:assert/strict';
 import {
   selectContinueCandidate,
   resolveContinueDisplay,
+  clearLastOpenedRecord,
+  LAST_OPENED_KEY,
   type ContinueJobRow,
   type ContinueQuoteRow,
   type ContinueInvoiceRow,
@@ -223,4 +225,30 @@ test('resolveDisplay: nulls fall through in order', () => {
   );
   assert.equal(out?.id, 'j1');
   assert.equal(out?.href, '/jobs/j1');
+});
+
+test('clearLastOpenedRecord removes only the matching entry', () => {
+  const store = new Map<string, string>();
+  const prevWindow = (globalThis as Record<string, unknown>).window;
+  (globalThis as Record<string, unknown>).window = {
+    localStorage: {
+      getItem: (k: string) => store.get(k) ?? null,
+      setItem: (k: string, v: string) => { store.set(k, v); },
+      removeItem: (k: string) => { store.delete(k); },
+    },
+  };
+  try {
+    store.set(LAST_OPENED_KEY, JSON.stringify({ kind: 'job', id: 'gone', title: 'Gone' }));
+    clearLastOpenedRecord('other');
+    assert.equal(store.has(LAST_OPENED_KEY), true);
+    clearLastOpenedRecord('gone');
+    assert.equal(store.has(LAST_OPENED_KEY), false);
+    // Corrupt storage must not throw.
+    store.set(LAST_OPENED_KEY, '{not json');
+    clearLastOpenedRecord('gone');
+    assert.equal(store.get(LAST_OPENED_KEY), '{not json');
+  } finally {
+    if (prevWindow === undefined) delete (globalThis as Record<string, unknown>).window;
+    else (globalThis as Record<string, unknown>).window = prevWindow;
+  }
 });

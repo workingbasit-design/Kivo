@@ -233,6 +233,31 @@ export function selectContinueCandidate(
 /** localStorage key for the last record the pro opened (Continue card). */
 export const LAST_OPENED_KEY = "everyjob:continue:last";
 
+/**
+ * Remove the last-opened entry when it points at `id`. Called by the
+ * job/quote/invoice delete flows so the Continue card never links to a
+ * deleted record. Safe to call optimistically before the delete
+ * resolves: if the delete fails, the record still exists and the
+ * server candidate surfaces it on the next dashboard visit.
+ */
+export function clearLastOpenedRecord(id: string): void {
+  try {
+    const raw = window.localStorage.getItem(LAST_OPENED_KEY);
+    if (!raw) return;
+    const parsed: unknown = JSON.parse(raw);
+    if (
+      parsed &&
+      typeof parsed === "object" &&
+      (parsed as Record<string, unknown>).id === id
+    ) {
+      window.localStorage.removeItem(LAST_OPENED_KEY);
+    }
+  } catch {
+    // Storage unavailable or corrupt — the card falls back to the
+    // server candidate. Never break a delete flow for this.
+  }
+}
+
 /** A record the pro opened before, as stored in localStorage. */
 export interface LastOpenedRecord {
   kind: ContinueKind;

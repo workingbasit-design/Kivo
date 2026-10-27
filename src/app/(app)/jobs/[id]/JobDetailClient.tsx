@@ -33,6 +33,7 @@ import ReviewLinkButton from '@/components/ReviewLinkButton';
 import { updateJobStatus, deleteJob } from '@/app/actions/jobs';
 import { assignJobTechnician } from '@/app/actions/dispatch';
 import { previousPipelineStatus, jobStatusLabel } from '@/lib/job-status';
+import { clearLastOpenedRecord } from '@/lib/continue-candidate';
 import { formatMoney } from '@/lib/money';
 import { localeMoneyTag, statusLabel, cn } from '@/lib/utils';
 import { t, type Locale } from '@/lib/i18n';
@@ -220,6 +221,8 @@ export default function JobDetailClient({ vm }: { vm: JobDetailVm }) {
   const runDelete = () => {
     startTransition(async () => {
       await deleteJob(vm.id);
+      // Never leave the Continue card pointing at this deleted job.
+      clearLastOpenedRecord(vm.id);
       router.push('/jobs');
     });
   };

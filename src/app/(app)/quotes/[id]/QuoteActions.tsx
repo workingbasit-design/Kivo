@@ -14,6 +14,7 @@ import {
 } from '@/app/actions/quotes';
 
 import ConfirmDialog from '@/components/ConfirmDialog';
+import { clearLastOpenedRecord } from '@/lib/continue-candidate';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/kit';
 
@@ -198,6 +199,8 @@ export default function QuoteActions({
             onConfirm={() => {
               const fd = new FormData();
               fd.append('id', id);
+              // Never leave the Continue card pointing at this deleted quote.
+              clearLastOpenedRecord(id);
               deleteAction(fd);
             }}
             onClose={() => !deletePending && setConfirmingDelete(false)}
