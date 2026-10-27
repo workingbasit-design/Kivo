@@ -168,6 +168,15 @@ export default async function SchedulePage({
         actionIcon={<CalendarDays />}
       />
 
+      {/* Today focus mode (Scroll lesson 4): one job per card, vertical swipe. */}
+      <Link
+        href="/today"
+        className="min-h-[52px] flex items-center justify-center gap-2 bg-hivis text-asphalt px-6 rounded-xl font-bold text-sm"
+      >
+        <CalendarDays size={16} />
+        {T('todayViewButton')}
+      </Link>
+
       {stripDays.length > 0 && (
         <WeatherStrip days={stripDays} placeName={geo?.name.split(',').slice(0, 2).join(',') ?? ''} />
       )}
