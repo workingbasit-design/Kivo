@@ -22,6 +22,10 @@ import {
   type ContinueQuoteRow,
   type ContinueInvoiceRow,
 } from "./continue-candidate.ts";
+import {
+  selectNextAction,
+  type NextAction,
+} from "./next-action.ts";
 
 /* ------------------------------------------------------------------ */
 /* Pure date-key helpers (no Prisma, fully unit-tested)                */
@@ -851,5 +855,151 @@ export async function getContinueCandidate(
   return selectContinueCandidate(
     { jobs: jobRows, quotes: quoteRows, invoices: invoiceRows },
     { todayKey, timezone, now: new Date() }
+  );
+}
+
+/**
+ * Scroll lesson 2 — the single next-best-action for this business.
+ * Tenant-scoped by businessId; technicians get schedule-only actions
+ * (their invoice/completed rows are empty by construction).
+ */
+export async function getNextAction(
+  businessId: string,
+  opts?: {
+    timezone?: string | null;
+    regionCode?: string | null;
+    /** When set, only jobs assigned to this user (technician "My day"). */
+    technicianUserId?: string | null;
+  }
+): Promise<NextAction | null> {
+  const { timezone, regionCode } = await businessTz(businessId, {
+    timezone: opts?.timezone,
+    regionCode: opts?.regionCode,
+  });
+  const todayKey = todayInTimezone(timezone, regionCode);
+  const tomorrowKey = addDaysToKey(todayKey, 1);
+  const { gte: tomorrowStart, lte: tomorrowEnd } = dayRangeInTimezone(
+    tomorrowKey,
+    timezone
+  );
+  const techFilter = opts?.technicianUserId
+    ? {
+        OR: [
+          { assignedToId: opts.technicianUserId },
+          { jobAssignments: { some: { userId: opts.technicianUserId } } },
+        ],
+      }
+    : {};
+  const isTech = !!opts?.technicianUserId;
+
+  const [invoices, tomorrowJobs, tomorrowCount, completedJobs] =
+    await Promise.all([
+      isTech
+        ? Promise.resolve([])
+        : prisma.invoice.findMany({
+            where: {
+              businessId,
+              status: { in: OPEN_INVOICE },
+              voidedAt: null,
+            },
+            select: {
+              id: true,
+              number: true,
+              date: true,
+              dueAt: true,
+              customer: { select: { name: true } },
+            },
+          }),
+      prisma.job.findMany({
+        where: {
+          businessId,
+          archivedAt: null,
+          status: { in: ["NEW", "SCHEDULED"] },
+          date: { gte: tomorrowStart, lte: tomorrowEnd },
+          ...techFilter,
+        },
+        select: {
+          id: true,
+          title: true,
+          time: true,
+          startAt: true,
+          date: true,
+          status: true,
+          customer: { select: { name: true } },
+        },
+      }),
+      prisma.job.count({
+        where: {
+          businessId,
+          archivedAt: null,
+          status: { not: "CANCELLED" },
+          date: { gte: tomorrowStart, lte: tomorrowEnd },
+          ...techFilter,
+        },
+      }),
+      isTech
+        ? Promise.resolve([])
+        : prisma.job.findMany({
+            where: {
+              businessId,
+              archivedAt: null,
+              status: { in: ["COMPLETED", "PAID"] },
+            },
+            select: {
+              id: true,
+              title: true,
+              date: true,
+              customerId: true,
+              customer: { select: { name: true } },
+            },
+            orderBy: { date: "desc" },
+            take: 10,
+          }),
+    ]);
+
+  const paidCustomerIds = new Set<string>();
+  if (completedJobs.length > 0) {
+    const paid = await prisma.invoice.findMany({
+      where: {
+        businessId,
+        status: "PAID",
+        voidedAt: null,
+        customerId: {
+          in: [...new Set(completedJobs.map((j) => j.customerId))],
+        },
+      },
+      select: { customerId: true },
+    });
+    for (const p of paid) paidCustomerIds.add(p.customerId);
+  }
+
+  return selectNextAction(
+    {
+      invoices: invoices.map((inv) => ({
+        id: inv.id,
+        number: inv.number,
+        customerName: inv.customer.name,
+        dueAt: inv.dueAt,
+        date: inv.date,
+      })),
+      tomorrowJobs: tomorrowJobs.map((j) => ({
+        id: j.id,
+        title: j.title,
+        customerName: j.customer.name,
+        status: j.status,
+        date: j.date,
+        time: j.time,
+        startAt: j.startAt,
+      })),
+      completedJobs: completedJobs.map((j) => ({
+        id: j.id,
+        title: j.title,
+        customerName: j.customer.name,
+        date: j.date,
+        hasPaidInvoice: paidCustomerIds.has(j.customerId),
+      })),
+      tomorrowHasAnyJob: tomorrowCount > 0,
+    },
+    { now: new Date() }
   );
 }

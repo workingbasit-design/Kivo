@@ -24,6 +24,7 @@ import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import QuickActions from "@/components/dashboard/QuickActions";
 import CollectedSection from "@/components/dashboard/CollectedSection";
 import ContinueSection from "@/components/dashboard/ContinueSection";
+import NextActionSection from "@/components/dashboard/NextActionSection";
 import NeedsYou from "@/components/dashboard/NeedsYou";
 import KeyNumbers from "@/components/dashboard/KeyNumbers";
 import TodaysVisits from "@/components/dashboard/TodaysVisits";
@@ -147,6 +148,14 @@ export default async function DashboardPage() {
           />
         </Section>
         <Section errorMessage={errorMessage} retryLabel={retryLabel}>
+          <NextActionSection
+            businessId={businessId}
+            timezone={timezone}
+            regionCode={regionCode}
+            technicianUserId={user.id}
+          />
+        </Section>
+        <Section errorMessage={errorMessage} retryLabel={retryLabel}>
           <TodaysVisits
             businessId={businessId}
             timezone={timezone}
@@ -175,6 +184,9 @@ export default async function DashboardPage() {
       <DashboardHeader businessId={businessId} timezone={timezone} regionCode={regionCode} showMoney={showMoney} />
       <Section errorMessage={errorMessage} retryLabel={retryLabel}>
         <ContinueSection businessId={businessId} timezone={timezone} regionCode={regionCode} />
+      </Section>
+      <Section errorMessage={errorMessage} retryLabel={retryLabel}>
+        <NextActionSection businessId={businessId} timezone={timezone} regionCode={regionCode} />
       </Section>
       <QuickActions />
       {layout
