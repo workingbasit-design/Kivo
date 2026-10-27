@@ -26,6 +26,10 @@ import {
   selectNextAction,
   type NextAction,
 } from "./next-action.ts";
+import {
+  computeWeekProgress,
+  type WeekProgress,
+} from "./week-progress.ts";
 
 /* ------------------------------------------------------------------ */
 /* Pure date-key helpers (no Prisma, fully unit-tested)                */
@@ -1002,4 +1006,98 @@ export async function getNextAction(
     },
     { now: new Date() }
   );
+}
+
+/* ------------------------------------------------------------------ */
+/* Week progress (Scroll lesson 5) — forgiving, no streaks             */
+/* ------------------------------------------------------------------ */
+
+/**
+ * This week's progress: jobs done, invoices issued, money collected,
+ * plus one dot per day (Mon…Sun, business timezone). Jobs count on
+ * their scheduled day when completed; invoices on their issue date;
+ * payments on the day they were recorded. Technicians get the jobs-only
+ * variant (money rows skipped, component hides the money lines).
+ */
+export async function getWeekProgress(
+  businessId: string,
+  opts?: {
+    timezone?: string | null;
+    regionCode?: string | null;
+    /** When set, only jobs assigned to this user (technician view). */
+    technicianUserId?: string | null;
+  },
+): Promise<WeekProgress & { currency: string; technician: boolean }> {
+  const { timezone, regionCode } = await businessTz(businessId, {
+    timezone: opts?.timezone,
+    regionCode: opts?.regionCode,
+  });
+  const todayKey = todayInTimezone(timezone, regionCode);
+  const keys = weekDayKeys(todayKey);
+  const { gte: weekStart } = dayRangeInTimezone(keys[0], timezone);
+  const { lte: weekEnd } = dayRangeInTimezone(keys[6], timezone);
+  const technician = !!opts?.technicianUserId;
+  const techFilter = opts?.technicianUserId
+    ? {
+        OR: [
+          { assignedToId: opts.technicianUserId },
+          { jobAssignments: { some: { userId: opts.technicianUserId } } },
+        ],
+      }
+    : {};
+  const invoicePromise: Promise<{ date: Date }[]> = technician
+    ? Promise.resolve([])
+    : prisma.invoice.findMany({
+        where: {
+          businessId,
+          voidedAt: null,
+          date: { gte: weekStart, lte: weekEnd },
+        },
+        select: { date: true },
+      });
+  const paymentPromise: Promise<{ createdAt: Date; amountCents: bigint }[]> =
+    technician
+      ? Promise.resolve([])
+      : prisma.payment.findMany({
+          where: {
+            businessId,
+            status: "COMPLETED",
+            voidedAt: null,
+            createdAt: { gte: weekStart, lte: weekEnd },
+          },
+          select: { createdAt: true, amountCents: true },
+        });
+  const [business, jobs, invoices, payments] = await Promise.all([
+    prisma.business.findUnique({
+      where: { id: businessId },
+      select: { currency: true },
+    }),
+    prisma.job.findMany({
+      where: {
+        businessId,
+        archivedAt: null,
+        status: { in: ["COMPLETED", "PAID"] },
+        date: { gte: weekStart, lte: weekEnd },
+        ...techFilter,
+      },
+      select: { date: true },
+    }),
+    invoicePromise,
+    paymentPromise,
+  ]);
+  return {
+    ...computeWeekProgress({
+      weekKeys: keys,
+      todayKey,
+      timezone,
+      jobs: jobs.map((j) => ({ day: j.date })),
+      invoices: invoices.map((i) => ({ day: i.date })),
+      payments: payments.map((p) => ({
+        createdAt: p.createdAt,
+        amountCents: Number(p.amountCents),
+      })),
+    }),
+    currency: business?.currency ?? "CAD",
+    technician,
+  };
 }
