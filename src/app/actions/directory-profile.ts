@@ -189,6 +189,38 @@ export async function updateDirectoryProfile(
 }
 
 /* ------------------------------------------------------------------ */
+/* Share card (Scroll lesson 3)                                         */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Toggle for the shareable pro card: include the aggregate review rating
+ * in shares. Tenant-scoped; the toggle only ever gates the aggregate
+ * rating — customer names, photos and quotes are never share inputs
+ * (see src/lib/share-card.ts). No booking page yet (profile never saved)
+ * means there is no card to configure, so the toggle is a no-op there.
+ * Returns void because it is used as a plain form action; the checkbox
+ * state after revalidation is the feedback.
+ */
+export async function setShareRating(formData: FormData): Promise<void> {
+  const { businessId, user } = await requireAuth();
+  const limited = await checkLimit(user.id);
+  if (limited) return;
+
+  const page = await prisma.bookingPage.findUnique({
+    where: { businessId },
+    select: { id: true },
+  });
+  if (!page) return;
+
+  await prisma.bookingPage.update({
+    where: { businessId },
+    data: { shareRating: formData.get('shareRating') === 'on' },
+  });
+
+  revalidatePath('/directory-profile');
+}
+
+/* ------------------------------------------------------------------ */
 /* Admin (KIVO_ADMIN_EMAILS): explicit approve / reject                 */
 /* ------------------------------------------------------------------ */
 

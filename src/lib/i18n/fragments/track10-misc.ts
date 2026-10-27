@@ -322,6 +322,22 @@ const fragment = {
         saved: 'Profile saved.',
         saving: 'Saving…',
         saveProfile: 'Save profile',
+        shareTitle: 'Share my business card',
+        shareDesc:
+          'One card customers can open and pass along. It links to your directory profile and never includes customer names, photos, or review quotes.',
+        shareButton: 'Share my card',
+        shareCopied: 'Card copied.',
+        shareCopyManually: 'Copy this link:',
+        shareRatingLabel: 'Include my review rating when I share',
+        shareRatingHint:
+          'Adds only the overall rating and review count, for example ★ 4.9 (12 reviews). Customer names and quotes are never shared.',
+        shareRatingLineOne: '★ {avg} (1 review)',
+        shareRatingLineMany: '★ {avg} ({count} reviews)',
+        shareNotPublic:
+          'Your card will be shareable once your directory listing is verified. Nothing is public yet.',
+        shareNoPage:
+          'Save your public profile first — that creates your shareable card.',
+        shareSave: 'Save',
       },
       demand: {
         title: 'Directory demand',
@@ -994,6 +1010,22 @@ const fragment = {
         saved: 'Profil enregistré.',
         saving: 'Enregistrement…',
         saveProfile: 'Enregistrer le profil',
+        shareTitle: 'Partager ma carte professionnelle',
+        shareDesc:
+          'Une carte que les clients peuvent ouvrir et transmettre. Elle mène à votre profil d’annuaire et ne contient jamais de noms de clients, de photos ou de citations d’avis.',
+        shareButton: 'Partager ma carte',
+        shareCopied: 'Carte copiée.',
+        shareCopyManually: 'Copiez ce lien :',
+        shareRatingLabel: 'Inclure ma note d’avis dans mes partages',
+        shareRatingHint:
+          'Ajoute seulement la note globale et le nombre d’avis, par exemple ★ 4,9 (12 avis). Les noms et citations de clients ne sont jamais partagés.',
+        shareRatingLineOne: '★ {avg} (1 avis)',
+        shareRatingLineMany: '★ {avg} ({count} avis)',
+        shareNotPublic:
+          'Votre carte pourra être partagée une fois votre inscription à l’annuaire vérifiée. Rien n’est public pour le moment.',
+        shareNoPage:
+          'Enregistrez d’abord votre profil public — cela créera votre carte partageable.',
+        shareSave: 'Enregistrer',
       },
       demand: {
         title: 'Demandes du répertoire',

@@ -840,6 +840,10 @@ model BookingPage {
   descriptionFr String? // longer public "about" text (FR); falls back to description
   serviceAreas  String? // JSON array of city/area strings the business serves
   showPhone     Boolean  @default(true) // display phone/WhatsApp on the public profile
+  // Scroll lesson 3: include the aggregate review rating in the shared pro
+  // card. Default off; aggregate only — customer names, photos and review
+  // quotes are never part of a share (see src/lib/share-card.ts).
+  shareRating   Boolean  @default(false)
   // F7: online-booking settings
   approvalRequired Boolean @default(true) // true = requests need owner approval; false = instant booking
   bufferMin        Int     @default(30) // buffer minutes between visits

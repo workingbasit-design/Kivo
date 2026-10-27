@@ -11,6 +11,7 @@ import { parseServiceAreas } from '@/lib/directory-claim';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import DirectoryProfileForm from './profile-form';
+import ShareCardSection from './share-card-section';
 import { PageTitle } from '../_components/PageTitle';
 import { EmptyState } from '@/components/kit';
 
@@ -146,6 +147,9 @@ export default async function DirectoryProfilePage() {
           enabled: page?.enabled ?? true,
         }}
       />
+
+      {/* Shareable pro card (Scroll lesson 3) */}
+      <ShareCardSection businessId={businessId} />
     </div>
   );
 }
