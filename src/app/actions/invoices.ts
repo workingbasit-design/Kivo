@@ -35,6 +35,7 @@ import { sendPlatformEmail } from '@/lib/messaging/platform-email';
 import { invoiceEmail } from '@/lib/messaging/email-templates';
 import { appBaseUrl } from '@/lib/app-url';
 import { invoicePaidUpdate, invoiceDueAt } from '@/lib/invoice-paid';
+import { parseDateInputInTimezone } from '@/lib/utils';
 
 export type ActionResult = { error?: string; ok?: boolean; id?: string };
 
@@ -65,6 +66,22 @@ async function businessTaxConfig(businessId: string): Promise<TaxConfig> {
     select: { regionCode: true, taxRegion: true },
   });
   return getTaxConfig(business?.regionCode, business?.taxRegion);
+}
+
+/**
+ * Business timezone for date storage (mirrors jobs.ts). Invoice dates are
+ * date-only values picked in the business's timezone, so they must be
+ * stored as that timezone's midnight — the same convention jobs use.
+ * Storing server-local midnight (UTC on Vercel) put a Monday invoice 4h
+ * before the business week's Monday boundary, so tz-aware week queries
+ * (dashboard week strip, collected week) silently dropped it.
+ */
+async function businessTimeZone(businessId: string): Promise<string> {
+  const business = await prisma.business.findUnique({
+    where: { id: businessId },
+    select: { timezone: true },
+  });
+  return business?.timezone || 'America/Toronto';
 }
 
 async function clientKey(prefix: string): Promise<string> {
@@ -207,11 +224,17 @@ export async function createInvoice(
   const invoice = await prisma.$transaction(async (tx) => {
     // Number generated inside the same transaction as the insert (M4).
     const number = await nextDocumentNumber(tx, businessId, 'INVOICE');
+    // Date-only value in the business timezone (jobs convention) — see
+    // businessTimeZone above for why server-local midnight is wrong.
+    const dateValue = parseDateInputInTimezone(
+      parsed.data.date,
+      await businessTimeZone(businessId),
+    );
     const inv = await tx.invoice.create({
       data: {
         number,
-        date: new Date(`${parsed.data.date}T00:00:00`),
-        dueAt: invoiceDueAt(new Date(`${parsed.data.date}T00:00:00`)),
+        date: dateValue,
+        dueAt: invoiceDueAt(dateValue),
         subtotalCents: dollarsToCents(subtotal) ?? BigInt(0),
         taxRate: parsed.data.taxRate,
         taxType,
