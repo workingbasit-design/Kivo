@@ -264,6 +264,24 @@
     },
     {
       "type": "route",
+      "path": "/api/customers/[id]/payment-summary",
+      "methods": [
+        "GET"
+      ],
+      "auth": "session",
+      "hint": "allow:business-personas",
+      "expected": {
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerA": "allow",
+        "adminA": "allow",
+        "dispatcherA": "deny",
+        "technicianA": "deny",
+        "ownerB": "deny"
+      }
+    },
+    {
+      "type": "route",
       "path": "/api/customers/options",
       "methods": [
         "GET"
@@ -1521,6 +1539,38 @@
     {
       "type": "action",
       "file": "custom-fields.ts",
+      "function": "listJobFieldDefs",
+      "auth": "session",
+      "hint": "",
+      "expected": {
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerA": "allow",
+        "adminA": "allow",
+        "dispatcherA": "allow",
+        "technicianA": "deny",
+        "ownerB": "deny"
+      }
+    },
+    {
+      "type": "action",
+      "file": "custom-fields.ts",
+      "function": "listPropertyFieldDefs",
+      "auth": "session",
+      "hint": "",
+      "expected": {
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerA": "allow",
+        "adminA": "allow",
+        "dispatcherA": "allow",
+        "technicianA": "deny",
+        "ownerB": "deny"
+      }
+    },
+    {
+      "type": "action",
+      "file": "custom-fields.ts",
       "function": "renameFieldDef",
       "auth": "session",
       "hint": "",
@@ -1538,6 +1588,38 @@
       "type": "action",
       "file": "custom-fields.ts",
       "function": "setFieldValue",
+      "auth": "session",
+      "hint": "",
+      "expected": {
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerA": "allow",
+        "adminA": "allow",
+        "dispatcherA": "allow",
+        "technicianA": "deny",
+        "ownerB": "deny"
+      }
+    },
+    {
+      "type": "action",
+      "file": "custom-fields.ts",
+      "function": "setJobFieldValue",
+      "auth": "session",
+      "hint": "",
+      "expected": {
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerA": "allow",
+        "adminA": "allow",
+        "dispatcherA": "allow",
+        "technicianA": "deny",
+        "ownerB": "deny"
+      }
+    },
+    {
+      "type": "action",
+      "file": "custom-fields.ts",
+      "function": "setPropertyFieldValue",
       "auth": "session",
       "hint": "",
       "expected": {
@@ -2033,6 +2115,22 @@
     {
       "type": "action",
       "file": "directory-profile.ts",
+      "function": "addJobServiceToDirectoryProfile",
+      "auth": "session",
+      "hint": "",
+      "expected": {
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerA": "allow",
+        "adminA": "allow",
+        "dispatcherA": "allow",
+        "technicianA": "deny",
+        "ownerB": "deny"
+      }
+    },
+    {
+      "type": "action",
+      "file": "directory-profile.ts",
       "function": "approveDirectoryClaim",
       "auth": "session",
       "hint": "",
@@ -2082,6 +2180,22 @@
       "type": "action",
       "file": "directory-profile.ts",
       "function": "requestDirectoryClaim",
+      "auth": "session",
+      "hint": "",
+      "expected": {
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerA": "allow",
+        "adminA": "allow",
+        "dispatcherA": "allow",
+        "technicianA": "deny",
+        "ownerB": "deny"
+      }
+    },
+    {
+      "type": "action",
+      "file": "directory-profile.ts",
+      "function": "setShareRating",
       "auth": "session",
       "hint": "",
       "expected": {
@@ -3761,6 +3875,22 @@
     {
       "type": "action",
       "file": "quotes.ts",
+      "function": "createQuoteTemplate",
+      "auth": "session",
+      "hint": "",
+      "expected": {
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerA": "allow",
+        "adminA": "allow",
+        "dispatcherA": "allow",
+        "technicianA": "deny",
+        "ownerB": "deny"
+      }
+    },
+    {
+      "type": "action",
+      "file": "quotes.ts",
       "function": "deleteQuote",
       "auth": "session",
       "hint": "",
@@ -3778,6 +3908,22 @@
       "type": "action",
       "file": "quotes.ts",
       "function": "deleteQuoteAddon",
+      "auth": "session",
+      "hint": "",
+      "expected": {
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerA": "allow",
+        "adminA": "allow",
+        "dispatcherA": "allow",
+        "technicianA": "deny",
+        "ownerB": "deny"
+      }
+    },
+    {
+      "type": "action",
+      "file": "quotes.ts",
+      "function": "deleteQuoteTemplate",
       "auth": "session",
       "hint": "",
       "expected": {
@@ -3921,6 +4067,22 @@
     {
       "type": "action",
       "file": "quotes.ts",
+      "function": "updateQuoteExpiry",
+      "auth": "session",
+      "hint": "",
+      "expected": {
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerA": "allow",
+        "adminA": "allow",
+        "dispatcherA": "allow",
+        "technicianA": "deny",
+        "ownerB": "deny"
+      }
+    },
+    {
+      "type": "action",
+      "file": "quotes.ts",
       "function": "updateQuoteItems",
       "auth": "session",
       "hint": "",
@@ -3938,6 +4100,22 @@
       "type": "action",
       "file": "quotes.ts",
       "function": "updateQuoteStatus",
+      "auth": "session",
+      "hint": "",
+      "expected": {
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerA": "allow",
+        "adminA": "allow",
+        "dispatcherA": "allow",
+        "technicianA": "deny",
+        "ownerB": "deny"
+      }
+    },
+    {
+      "type": "action",
+      "file": "quotes.ts",
+      "function": "updateQuoteTemplate",
       "auth": "session",
       "hint": "",
       "expected": {
@@ -3986,6 +4164,22 @@
       "type": "action",
       "file": "recurring.ts",
       "function": "runRecurringGeneration",
+      "auth": "session",
+      "hint": "",
+      "expected": {
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerA": "allow",
+        "adminA": "allow",
+        "dispatcherA": "allow",
+        "technicianA": "deny",
+        "ownerB": "deny"
+      }
+    },
+    {
+      "type": "action",
+      "file": "recurring.ts",
+      "function": "runScheduledInvoiceGeneration",
       "auth": "session",
       "hint": "",
       "expected": {
@@ -4538,6 +4732,118 @@
         "ownerA": "allow",
         "adminA": "deny",
         "dispatcherA": "deny",
+        "technicianA": "deny",
+        "ownerB": "deny"
+      }
+    },
+    {
+      "type": "action",
+      "file": "subcontractors.ts",
+      "function": "assignSubcontractor",
+      "auth": "session",
+      "hint": "",
+      "expected": {
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerA": "allow",
+        "adminA": "allow",
+        "dispatcherA": "allow",
+        "technicianA": "deny",
+        "ownerB": "deny"
+      }
+    },
+    {
+      "type": "action",
+      "file": "subcontractors.ts",
+      "function": "createSubcontractor",
+      "auth": "session",
+      "hint": "",
+      "expected": {
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerA": "allow",
+        "adminA": "allow",
+        "dispatcherA": "allow",
+        "technicianA": "deny",
+        "ownerB": "deny"
+      }
+    },
+    {
+      "type": "action",
+      "file": "subcontractors.ts",
+      "function": "deleteSubcontractor",
+      "auth": "session",
+      "hint": "",
+      "expected": {
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerA": "allow",
+        "adminA": "allow",
+        "dispatcherA": "allow",
+        "technicianA": "deny",
+        "ownerB": "deny"
+      }
+    },
+    {
+      "type": "action",
+      "file": "subcontractors.ts",
+      "function": "listJobSubcontractors",
+      "auth": "session",
+      "hint": "",
+      "expected": {
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerA": "allow",
+        "adminA": "allow",
+        "dispatcherA": "allow",
+        "technicianA": "deny",
+        "ownerB": "deny"
+      }
+    },
+    {
+      "type": "action",
+      "file": "subcontractors.ts",
+      "function": "listSubcontractors",
+      "auth": "session",
+      "hint": "",
+      "expected": {
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerA": "allow",
+        "adminA": "allow",
+        "dispatcherA": "allow",
+        "technicianA": "deny",
+        "ownerB": "deny"
+      }
+    },
+    {
+      "type": "action",
+      "file": "subcontractors.ts",
+      "function": "removeSubcontractorFromJob",
+      "auth": "session",
+      "hint": "",
+      "expected": {
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerA": "allow",
+        "adminA": "allow",
+        "dispatcherA": "allow",
+        "technicianA": "deny",
+        "ownerB": "deny"
+      }
+    },
+    {
+      "type": "action",
+      "file": "subcontractors.ts",
+      "function": "updateSubcontractor",
+      "auth": "session",
+      "hint": "",
+      "expected": {
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerA": "allow",
+        "adminA": "allow",
+        "dispatcherA": "allow",
         "technicianA": "deny",
         "ownerB": "deny"
       }
