@@ -6,6 +6,10 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { clientIpFromHeaders } from '@/lib/client-ip';
+import {
+  CUSTOM_FIELD_TARGETS,
+  type CustomFieldTarget,
+} from '@/lib/custom-field-targets';
 
 export type CustomFieldErrorCode =
   | 'tooMany'
@@ -25,10 +29,6 @@ export type CustomFieldResult =
 
 const MAX_NAME = 40;
 const MAX_VALUE = 500;
-
-/** Slice 6: def targets. CUSTOMER is the original (default). */
-export const CUSTOM_FIELD_TARGETS = ['CUSTOMER', 'PROPERTY', 'JOB'] as const;
-export type CustomFieldTarget = (typeof CUSTOM_FIELD_TARGETS)[number];
 
 function validateTarget(raw: unknown): CustomFieldTarget {
   const t = String(raw ?? 'CUSTOMER').toUpperCase();
