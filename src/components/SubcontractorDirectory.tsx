@@ -42,7 +42,7 @@ export default function SubcontractorDirectory({
                 <div className="min-w-0">
                   <p className="text-base font-bold text-ink truncate">{s.name}</p>
                   <p className="text-xs text-ink-2 mt-0.5">
-                    {s.defaultRateCents != null ? `${formatMoney(s.defaultRateCents, currency)}/${L('perHour')}` : L('noRate')}
+                    {s.defaultRateCents != null ? `${formatMoney(s.defaultRateCents / 100, currency)}/${L('perHour')}` : L('noRate')}
                     {' · '}
                     {L('jobs').replace('{count}', String(s.jobCount))}
                   </p>

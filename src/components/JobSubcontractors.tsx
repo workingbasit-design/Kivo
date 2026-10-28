@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import { Button, Card, Input, Select } from '@/components/kit';
@@ -37,6 +38,7 @@ export default function JobSubcontractors({
   initialJobSubs: JobSubRow[];
 }) {
   const L = (k: string) => t(locale, `subcontractors.${k}`);
+  const router = useRouter();
   const [rows, setRows] = useState<JobSubRow[]>(initialJobSubs);
   const [assignSub, setAssignSub] = useState('');
   const [assignHours, setAssignHours] = useState('');
@@ -51,6 +53,9 @@ export default function JobSubcontractors({
   const refresh = async () => {
     const r = await listJobSubcontractors(jobId);
     if (r.ok && r.jobSubs) setRows(r.jobSubs);
+    // The costing card is server-rendered: refetch it so the subtotal
+    // and margin update without a manual reload.
+    router.refresh();
   };
 
   const editFor = (row: JobSubRow) =>
@@ -157,7 +162,7 @@ export default function JobSubcontractors({
 
       {subtotal > 0 && (
         <p className="text-sm font-bold text-ink mt-4">
-          {L('payoutSubtotal')}: {formatMoney(subtotal, currency)}
+          {L('payoutSubtotal')}: {formatMoney(subtotal / 100, currency)}
         </p>
       )}
 
