@@ -25,6 +25,7 @@ import { JobChecklist } from '@/components/JobChecklist';
 import TechLocationSharer from '@/components/TechLocationSharer';
 import OnMyWayNotifier from '@/components/OnMyWayNotifier';
 import { JobExpenses } from '@/components/JobExpenses';
+import JobSubcontractors from '@/components/JobSubcontractors';
 import JobTimeEntryForm from '@/components/JobTimeEntryForm';
 import { JobNoteForm, JobNoteItem } from '@/components/JobNoteForm';
 import Attachments from '@/components/Attachments';
@@ -90,8 +91,24 @@ export interface JobDetailVm {
     laborCents: number;
     laborDuration: string;
     expensesCents: number;
+    subcontractorCents: number;
     hourlyRate: number | null;
   } | null;
+  /** Slice 7: subcontractor assignments + payouts for this job. */
+  subcontractors: {
+    id: string;
+    subcontractorId: string;
+    name: string;
+    hours: number | null;
+    amountCents: number | null;
+    note: string | null;
+  }[];
+  /** Slice 7: all business subcontractors (assign picker). */
+  allSubcontractors: {
+    id: string;
+    name: string;
+    defaultRateCents: number | null;
+  }[];
   jobNotes: {
     id: string;
     content: string;
@@ -551,7 +568,7 @@ export default function JobDetailClient({ vm }: { vm: JobDetailVm }) {
                   .replace('{costs}', fmtMoney(vm.costing.costCents))
                   .replace(
                     '{detail}',
-                    `${jobsL('labourWord')} ${vm.costing.laborDuration}, ${fmtMoney(vm.costing.laborCents)}; ${jobsL('expenses').toLowerCase()} ${fmtMoney(vm.costing.expensesCents)}`,
+                    `${jobsL('labourWord')} ${vm.costing.laborDuration}, ${fmtMoney(vm.costing.laborCents)}; ${jobsL('expenses').toLowerCase()} ${fmtMoney(vm.costing.expensesCents)}${vm.costing.subcontractorCents > 0 ? `; ${jobsL('subcontractors').toLowerCase()} ${fmtMoney(vm.costing.subcontractorCents)}` : ''}`,
                   )}
                 barLabel={`${jobsL('jobCosting')}: ${vm.costing.marginPct ?? 0}% ${jobsL('marginWord')}`}
               />
@@ -591,6 +608,15 @@ export default function JobDetailClient({ vm }: { vm: JobDetailVm }) {
             expenses={vm.expenses}
             locale={locale}
             currency={vm.currency}
+          />
+        </div>
+        <div className="mt-5">
+          <JobSubcontractors
+            jobId={vm.id}
+            locale={locale}
+            currency={vm.currency}
+            subs={vm.allSubcontractors}
+            initialJobSubs={vm.subcontractors}
           />
         </div>
       </>

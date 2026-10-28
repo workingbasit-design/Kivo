@@ -78,6 +78,26 @@ test('summarizeJobCost: profit and margin with labor + expenses', () => {
   assert.equal(s.marginPct, 52);
 });
 
+test('summarizeJobCost: subcontractor bucket reduces profit (slice 7)', () => {
+  const s = summarizeJobCost({
+    price: 500,
+    laborMinutes: 180,
+    hourlyRate: 60,
+    expenses: [{ amount: 40, category: 'MATERIALS' }],
+    subcontractorCost: 100,
+  });
+  assert.equal(s.subcontractorCost, 100);
+  assert.equal(s.totalCost, 320);
+  assert.equal(s.profit, 180);
+  assert.equal(s.marginPct, 36);
+});
+
+test('summarizeJobCost: missing subcontractor bucket defaults to 0', () => {
+  const s = summarizeJobCost({ price: 100, laborMinutes: 0, hourlyRate: null, expenses: [] });
+  assert.equal(s.subcontractorCost, 0);
+  assert.equal(s.totalCost, 0);
+});
+
 test('summarizeJobCost: zero price guards margin (no divide-by-zero)', () => {
   const s = summarizeJobCost({
     price: 0,

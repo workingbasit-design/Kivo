@@ -67,6 +67,8 @@ export interface CostInput {
   /** Business.defaultHourlyRate (CAD/hr); null = not set. */
   hourlyRate: number | null;
   expenses: ExpenseLike[];
+  /** Slice 7: subcontractor payouts for this job (dollars); default 0. */
+  subcontractorCost?: number;
 }
 
 export interface CostSummary {
@@ -76,6 +78,8 @@ export interface CostSummary {
   travelCost: number;
   otherCost: number;
   expensesTotal: number;
+  /** Slice 7: total subcontractor payouts (dollars). */
+  subcontractorCost: number;
   totalCost: number;
   price: number;
   profit: number;
@@ -92,7 +96,11 @@ export function summarizeJobCost(input: CostInput): CostSummary {
       : 0;
   const exp = expenseTotals(input.expenses);
   const laborCost = laborHours * hourlyRate;
-  const totalCost = laborCost + exp.total;
+  const subcontractorCost =
+    typeof input.subcontractorCost === 'number' && Number.isFinite(input.subcontractorCost) && input.subcontractorCost > 0
+      ? input.subcontractorCost
+      : 0;
+  const totalCost = laborCost + exp.total + subcontractorCost;
   const profit = price - totalCost;
   const marginPct = price > 0 ? (profit / price) * 100 : null;
   return {
@@ -102,6 +110,7 @@ export function summarizeJobCost(input: CostInput): CostSummary {
     travelCost: exp.travel,
     otherCost: exp.other,
     expensesTotal: exp.total,
+    subcontractorCost,
     totalCost,
     price,
     profit,

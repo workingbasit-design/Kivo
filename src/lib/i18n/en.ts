@@ -197,6 +197,7 @@ const en: Dict = {
     profit: 'Profit',
     marginWord: 'margin',
     labourWord: 'labour',
+    subcontractors: 'Subcontractors',
     statusChanged: 'Status updated.',
     statusError: 'Could not update the job. Try again.',
     assignError: 'Could not assign the technician. Try again.',

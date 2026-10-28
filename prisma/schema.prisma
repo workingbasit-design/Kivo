@@ -205,6 +205,7 @@ model Business {
   parts                Part[]
   projects             Project[]
   crews                Crew[]
+  subcontractors      Subcontractor[] // slice 7: directory records, not users
   savedReports         SavedReport[]
   digestSetting        DigestSetting?
   createdAt            DateTime              @default(now())
@@ -320,6 +321,7 @@ model Job {
   expenses       JobExpense[]
   checklistItems JobChecklistItem[]
   fieldValues    JobFieldValue[] // slice 6: custom field values for this job
+  subcontractors JobSubcontractor[] // slice 7: subcontractor assignments + payouts
   invoices       Invoice[]
   idempotencyKey String?            @unique // booking-confirm dedupe key (UUID); null for jobs not created via booking
   bookingRequests BookingRequest[] // F7: requests that created this job
@@ -1416,6 +1418,46 @@ model CustomFieldDef {
   createdAt  DateTime             @default(now())
 
   @@unique([businessId, target, name])
+}
+
+// Slice 7 (2026-10-28): subcontractors are DIRECTORY records + payouts,
+// NOT users — no login, no role, no auth change. Payouts are records
+// only; the pro pays the sub outside EveryJob (like manual deposits).
+model Subcontractor {
+  id               String             @id @default(cuid())
+  businessId       String
+  business         Business           @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  name             String
+  phone            String?
+  email            String?
+  defaultRateCents BigInt? // hourly default in cents; null = not set
+  note             String?
+  jobs             JobSubcontractor[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  @@index([businessId])
+}
+
+// One row per sub per job. amountCents = agreed payout (null until set);
+// hours = the sub's time on this job (null = not tracked). Delete of a
+// Subcontractor is BLOCKED while rows exist, so payout history is never
+// silently destroyed (enforced in the action, not the schema).
+model JobSubcontractor {
+  id              String        @id @default(cuid())
+  jobId           String
+  job             Job           @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  subcontractorId String
+  subcontractor   Subcontractor @relation(fields: [subcontractorId], references: [id], onDelete: Cascade)
+  hours           Float?
+  amountCents     BigInt?
+  note            String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@unique([jobId, subcontractorId])
+  @@index([jobId])
+  @@index([subcontractorId])
 }
 
 model CustomerFieldValue {

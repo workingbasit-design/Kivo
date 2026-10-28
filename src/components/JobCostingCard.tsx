@@ -34,6 +34,7 @@ export function JobCostingCard({
   entries,
   hourlyRate,
   expenses,
+  subcontractorCost = 0,
   locale,
   currency,
 }: {
@@ -44,6 +45,8 @@ export function JobCostingCard({
   entries: CostingEntryData[];
   hourlyRate: number | null;
   expenses: CostingExpenseData[];
+  /** Slice 7: subcontractor payouts (dollars); default 0. */
+  subcontractorCost?: number;
   locale: Locale;
   currency?: string;
 }) {
@@ -52,9 +55,10 @@ export function JobCostingCard({
     laborMinutes,
     hourlyRate,
     expenses,
+    subcontractorCost,
   });
 
-  const hasCostData = laborMinutes > 0 || expenses.length > 0;
+  const hasCostData = laborMinutes > 0 || expenses.length > 0 || subcontractorCost > 0;
   const [editingRate, setEditingRate] = useState(false);
 
   // Per-job rate override (job-only, not saved to the business). When set,
@@ -72,7 +76,7 @@ export function JobCostingCard({
   const effectiveRate = validCustomRate ?? hourlyRate;
   const liveSummary =
     validCustomRate !== null
-      ? summarizeJobCost({ price, laborMinutes, hourlyRate: validCustomRate, expenses })
+      ? summarizeJobCost({ price, laborMinutes, hourlyRate: validCustomRate, expenses, subcontractorCost })
       : summary;
 
   // Profit-bar color: ok at healthy margins, warn when thin, danger when
@@ -200,6 +204,12 @@ export function JobCostingCard({
           <CostRow
             label={t(locale, 'jobops.costing.other')}
             value={formatMoney(liveSummary.otherCost, currency)}
+          />
+        )}
+        {liveSummary.subcontractorCost > 0 && (
+          <CostRow
+            label={t(locale, 'jobops.costing.subcontractors')}
+            value={formatMoney(liveSummary.subcontractorCost, currency)}
           />
         )}
 

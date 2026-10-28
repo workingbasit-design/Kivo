@@ -197,6 +197,7 @@ const fr: Dictionary = {
     profit: 'Profit',
     marginWord: 'marge',
     labourWord: 'main-d’œuvre',
+    subcontractors: 'Sous-traitants',
     statusChanged: 'Statut mis à jour.',
     statusError: 'Impossible de mettre à jour le travail. Réessayez.',
     assignError: 'Impossible d’assigner le technicien. Réessayez.',

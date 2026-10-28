@@ -110,11 +110,15 @@ export default async function JobDetailPage({
           milestoneLabel: true,
         },
       },
+      subcontractors: {
+        include: { subcontractor: { select: { name: true } } },
+        orderBy: { createdAt: 'asc' },
+      },
     },
   });
   if (!job) notFound();
 
-  const [members, templates, customerJobCount, reviewEligibility, bookingPage] =
+  const [members, templates, customerJobCount, reviewEligibility, bookingPage, allSubs] =
     await Promise.all([
       prisma.membership.findMany({
         where: { businessId, status: 'ACTIVE' },
@@ -131,6 +135,11 @@ export default async function JobDetailPage({
       prisma.bookingPage.findUnique({
         where: { businessId },
         select: { serviceAreas: true },
+      }),
+      prisma.subcontractor.findMany({
+        where: { businessId },
+        select: { id: true, name: true, defaultRateCents: true },
+        orderBy: { name: 'asc' },
       }),
     ]);
 
@@ -216,12 +225,17 @@ export default async function JobDetailPage({
     ? `${taxConfig.label} (${provinceName})`
     : taxConfig.label;
 
-  // Costing: quoted price vs labor + expenses (same math as JobCostingCard).
+  // Costing: quoted price vs labor + expenses + subcontractor payouts
+  // (same math as JobCostingCard).
   const laborMinutes = sumLaborMinutes(job.timeEntries);
   const hourlyRate =
     business?.defaultHourlyRateCents != null
       ? centsToDollars(business.defaultHourlyRateCents)
       : null;
+  const subcontractorCents = job.subcontractors.reduce(
+    (sum, r) => sum + (r.amountCents != null ? Number(r.amountCents) : 0),
+    0,
+  );
   const costing = summarizeJobCost({
     price: centsToDollars(priceCents),
     laborMinutes,
@@ -230,9 +244,10 @@ export default async function JobDetailPage({
       category: e.category,
       amount: centsToDollars(e.amountCents),
     })),
+    subcontractorCost: subcontractorCents / 100,
   });
   const showCosting =
-    priceCents > 0 || laborMinutes > 0 || costing.expensesTotal > 0;
+    priceCents > 0 || laborMinutes > 0 || costing.expensesTotal > 0 || subcontractorCents > 0;
 
   const vm: JobDetailVm = {
     id: job.id,
@@ -306,9 +321,23 @@ export default async function JobDetailPage({
           laborCents: Math.round(costing.laborCost * 100),
           laborDuration: formatDuration(laborMinutes),
           expensesCents: Math.round(costing.expensesTotal * 100),
+          subcontractorCents,
           hourlyRate,
         }
       : null,
+    subcontractors: job.subcontractors.map((r) => ({
+      id: r.id,
+      subcontractorId: r.subcontractorId,
+      name: r.subcontractor.name,
+      hours: r.hours,
+      amountCents: r.amountCents != null ? Number(r.amountCents) : null,
+      note: r.note,
+    })),
+    allSubcontractors: allSubs.map((s) => ({
+      id: s.id,
+      name: s.name,
+      defaultRateCents: s.defaultRateCents != null ? Number(s.defaultRateCents) : null,
+    })),
     jobNotes: job.jobNotes.map((n) => ({
       id: n.id,
       content: n.content,

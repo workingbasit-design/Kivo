@@ -9,6 +9,7 @@ import {
   Receipt,
   Palette,
   Toolbox,
+  Briefcase,
 } from '@/components/icons';
 import type { NavIcon } from './animated-icons/nav-icon';
 
@@ -42,6 +43,7 @@ export const navSections: NavSection[] = [
       { nameKey: 'nav.jobs', href: '/jobs', icon: Toolbox },
       { nameKey: 'nav.projects', href: '/projects', icon: FolderKanban },
       { nameKey: 'nav.crews', href: '/crews', icon: Users },
+      { nameKey: 'nav.subcontractors', href: '/subcontractors', icon: Briefcase },
       { nameKey: 'nav.dispatch', href: '/dispatch', icon: ClipboardCheck },
       { nameKey: 'nav.recurring', href: '/recurring', icon: Repeat },
       { nameKey: 'nav.routes', href: '/routes', icon: Route, advanced: true },
