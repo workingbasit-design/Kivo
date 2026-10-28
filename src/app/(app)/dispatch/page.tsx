@@ -9,6 +9,7 @@ import { t } from '@/lib/i18n';
 import { CalendarDays } from '@/components/icons';
 import DispatchBoardClient from '@/components/DispatchBoardClient';
 import DispatchDatePicker from '@/components/DispatchDatePicker';
+import RouteOrderSection from './RouteOrderSection';
 import { centsToDollars } from '@/lib/money';
 
 export const dynamic = 'force-dynamic';
@@ -35,7 +36,7 @@ export default async function DispatchPage({
 
   const business = await prisma.business.findUnique({
     where: { id: businessId },
-    select: { currency: true, timezone: true },
+    select: { currency: true, timezone: true, address: true },
   });
 
   const jobs = await prisma.job.findMany({
@@ -97,12 +98,25 @@ export default async function DispatchPage({
           </div>
         </Card>
       ) : (
-        <DispatchBoardClient
-          jobs={serialized}
-          team={team}
-          currency={business?.currency}
-          locale={locale}
-        />
+        <>
+          <RouteOrderSection
+            jobs={serialized.map((j) => ({
+              id: j.id,
+              title: j.title,
+              time: j.time,
+              address: j.address,
+              customerName: j.customerName,
+            }))}
+            businessAddress={business?.address ?? null}
+            locale={locale}
+          />
+          <DispatchBoardClient
+            jobs={serialized}
+            team={team}
+            currency={business?.currency}
+            locale={locale}
+          />
+        </>
       )}
     </div>
   );

@@ -22,6 +22,8 @@ export interface MapPin {
   tone?: 'active' | 'arrived';
   /** ISO timestamp of the ping - shown as "updated Xm ago" in the popup. */
   updatedAt?: string;
+  /** Slice 9: visit-order number shown as a badge on the pin. */
+  order?: number;
 }
 
 const LEAFLET_VERSION = '1.9.4';
@@ -57,17 +59,21 @@ function leaflet(): LeafletNS | null {
 
 // divIcon markers avoid Leaflet's packaged image assets, whose paths break
 // under bundlers/CDN.
-function makeIcon(tone: 'active' | 'arrived'): unknown {
+function makeIcon(tone: 'active' | 'arrived', order?: number): unknown {
   const L = leaflet();
   if (!L) return undefined;
   const color = tone === 'arrived' ? 'var(--ok)' : 'var(--info)';
+  const center =
+    order != null
+      ? `<span style="color:var(--surface);font-weight:800;font-size:13px;line-height:1;">${order}</span>`
+      : `<div style="width:8px;height:8px;border-radius:50%;background:var(--surface);"></div>`;
   return L.divIcon({
     className: 'ej-map-pin',
     html:
       `<div style="width:28px;height:28px;border-radius:50%;background:${color};` +
       `border:3px solid var(--surface);box-shadow:0 2px 8px color-mix(in srgb, var(--asphalt) 35%, transparent);` +
       `display:flex;align-items:center;justify-content:center;">` +
-      `<div style="width:8px;height:8px;border-radius:50%;background:var(--surface);"></div></div>`,
+      `${center}</div>`,
     iconSize: [28, 28],
     iconAnchor: [14, 14],
     popupAnchor: [0, -14],
@@ -172,7 +178,7 @@ export default function DispatcherMap({
     );
     for (const p of pts) {
       const ago = timeAgo(p.updatedAt);
-      L.marker([p.lat, p.lng], { icon: makeIcon(p.tone ?? 'active') })
+      L.marker([p.lat, p.lng], { icon: makeIcon(p.tone ?? 'active', p.order) })
         .bindPopup(
           `<strong>${escapeHtml(p.label)}</strong>` +
             (p.sub ? `<br/>${escapeHtml(p.sub)}` : '') +
