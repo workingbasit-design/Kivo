@@ -145,7 +145,7 @@ export default async function CustomerDetailPage({
       select: { id: true, createdAt: true },
     });
     fieldDefs = await prisma.customFieldDef.findMany({
-      where: { businessId },
+      where: { businessId, target: 'CUSTOMER' },
       orderBy: { createdAt: 'asc' },
       select: { id: true, name: true },
     });
