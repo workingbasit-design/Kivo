@@ -319,6 +319,7 @@ model Job {
   jobPhotos      JobPhoto[]
   expenses       JobExpense[]
   checklistItems JobChecklistItem[]
+  fieldValues    JobFieldValue[] // slice 6: custom field values for this job
   invoices       Invoice[]
   idempotencyKey String?            @unique // booking-confirm dedupe key (UUID); null for jobs not created via booking
   bookingRequests BookingRequest[] // F7: requests that created this job
@@ -1391,6 +1392,7 @@ model CustomerProperty {
   // performed, not where the business is registered. Null = unknown.
   province   String?
   jobs       Job[]
+  fieldValues PropertyFieldValue[] // slice 6: custom field values for this property
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -1398,16 +1400,22 @@ model CustomerProperty {
   @@index([businessId])
 }
 
-// Business-defined custom fields for customers ("Gate code", "Dog name"…).
+// Business-defined custom fields ("Gate code", "Dog name"…). Slice 6
+// (2026-10-28) widened targets: CUSTOMER (original), PROPERTY, JOB.
+// Same name may exist once per target (e.g. "Gate code" on customers
+// AND on properties is legitimate, not a collision).
 model CustomFieldDef {
   id         String               @id @default(cuid())
   businessId String
   business   Business             @relation(fields: [businessId], references: [id], onDelete: Cascade)
   name       String
+  target     String               @default("CUSTOMER")
   values     CustomerFieldValue[]
+  propertyValues PropertyFieldValue[]
+  jobValues  JobFieldValue[]
   createdAt  DateTime             @default(now())
 
-  @@unique([businessId, name])
+  @@unique([businessId, target, name])
 }
 
 model CustomerFieldValue {
@@ -1421,6 +1429,36 @@ model CustomerFieldValue {
 
   @@unique([fieldId, customerId])
   @@index([customerId])
+}
+
+// Slice 6: same shape as CustomerFieldValue, for properties. No
+// businessId here either — scoped via the parent property (which IS
+// business-scoped), so no TENANT_MODELS entry, by design.
+model PropertyFieldValue {
+  id         String         @id @default(cuid())
+  fieldId    String
+  field      CustomFieldDef @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  propertyId String
+  property   CustomerProperty @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  value      String
+  updatedAt  DateTime       @updatedAt
+
+  @@unique([fieldId, propertyId])
+  @@index([propertyId])
+}
+
+// Slice 6: same shape, for jobs.
+model JobFieldValue {
+  id         String         @id @default(cuid())
+  fieldId    String
+  field      CustomFieldDef @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+  jobId      String
+  job        Job            @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  value      String
+  updatedAt  DateTime       @updatedAt
+
+  @@unique([fieldId, jobId])
+  @@index([jobId])
 }
 
 // Persisted quote line items (previously only the total was stored).

@@ -7,6 +7,7 @@ import { t, type Locale } from '@/lib/i18n';
 import { Button, Card, Input, Textarea, Select } from '@/components/kit';
 import { CA_PROVINCES } from '@/lib/tax';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import PropertyCustomFields from '@/components/PropertyCustomFields';
 import {
   listProperties,
   addProperty,
@@ -197,6 +198,19 @@ export default function CustomerProperties({
                 {L('properties.cancel')}
               </Button>
             </div>
+            {/* Slice 6: per-property custom fields live in the editor —
+                properties have no detail page. Only when editing (a new
+                property has no id yet). */}
+            {editingId != null && (
+              <div className="pt-3 border-t border-line/70">
+                <PropertyCustomFields
+                  propertyId={editingId}
+                  locale={locale}
+                  initial={{ defs: [], values: [] }}
+                  fetchOnMount
+                />
+              </div>
+            )}
           </div>
         )}
 

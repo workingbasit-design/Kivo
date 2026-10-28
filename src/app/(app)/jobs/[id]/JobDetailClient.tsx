@@ -98,6 +98,8 @@ export interface JobDetailVm {
     authorName: string;
     createdAtLabel: string;
   }[];
+  /** Slice 6: set custom field values only (name + value, display-only). */
+  customFields: { name: string; value: string }[];
   checklistItems: { id: string; label: string; done: boolean }[];
   checklistTemplates: { id: string; name: string }[];
   expenses: {
@@ -629,6 +631,23 @@ export default function JobDetailClient({ vm }: { vm: JobDetailVm }) {
             <JobNoteForm jobId={vm.id} locale={locale} />
           </div>
         </Card>
+        {/* Slice 6: set custom field values (display-only; editing lives
+            on the job edit page). */}
+        {vm.customFields.length > 0 && (
+          <Card className="px-3.5 py-3 mt-5">
+            <p className="m-0 pb-2 text-[13px] font-bold text-ink">
+              {t(locale, 'customfields.titleJob')}
+            </p>
+            <dl className="m-0 space-y-1.5">
+              {vm.customFields.map((f) => (
+                <div key={f.name} className="flex gap-2 text-[14px]">
+                  <dt className="text-ink-2 shrink-0">{f.name}</dt>
+                  <dd className="m-0 text-ink whitespace-pre-wrap">{f.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </Card>
+        )}
         <div className="mt-5">
           <Attachments entityType="job" entityId={vm.id} locale={locale} />
         </div>

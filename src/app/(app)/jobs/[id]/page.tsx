@@ -96,6 +96,10 @@ export default async function JobDetailPage({
         orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
       },
       expenses: { orderBy: { spentAt: 'desc' } },
+      fieldValues: {
+        include: { field: { select: { name: true, businessId: true } } },
+        orderBy: { field: { name: 'asc' } },
+      },
       invoices: {
         orderBy: { createdAt: 'desc' },
         select: {
@@ -311,6 +315,9 @@ export default async function JobDetailPage({
       authorName: n.author.name || n.author.email,
       createdAtLabel: formatDateLabel(n.createdAt, dateLocale),
     })),
+    customFields: job.fieldValues
+      .filter((v) => v.field.businessId === businessId && v.value.trim() !== '')
+      .map((v) => ({ name: v.field.name, value: v.value })),
     checklistItems: job.checklistItems.map((i) => ({
       id: i.id,
       label: i.label,

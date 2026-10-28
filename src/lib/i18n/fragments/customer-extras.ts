@@ -40,7 +40,11 @@ const fragment = {
     },
     customfields: {
       title: 'Custom fields',
+      titleProperty: 'Property custom fields',
+      titleJob: 'Job custom fields',
       hint: 'Extra details you define once and fill in per customer.',
+      hintProperty: 'Extra details you define once and fill in per property.',
+      hintJob: 'Extra details you define once and fill in per job.',
       addField: 'Add field',
       fieldName: 'Field name',
       fieldNamePlaceholder: 'e.g. Gate code',
@@ -98,7 +102,11 @@ const fragment = {
     },
     customfields: {
       title: 'Champs personnalisés',
+      titleProperty: 'Champs personnalisés de la propriété',
+      titleJob: 'Champs personnalisés du travail',
       hint: 'Détails supplémentaires que vous définissez une fois et remplissez par client.',
+      hintProperty: 'Détails supplémentaires que vous définissez une fois et remplissez par propriété.',
+      hintJob: 'Détails supplémentaires que vous définissez une fois et remplissez par travail.',
       addField: 'Ajouter un champ',
       fieldName: 'Nom du champ',
       fieldNamePlaceholder: 'p. Ex. Code du portail',

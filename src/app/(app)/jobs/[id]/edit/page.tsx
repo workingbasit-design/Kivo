@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { Card } from '@/components/kit';
 import JobForm from '@/components/JobForm';
+import JobCustomFields from '@/components/JobCustomFields';
 import { updateJob } from '@/app/actions/jobs';
 import { toISODateLocal } from '@/lib/utils';
 import { getLocale } from '@/lib/i18n/server';
@@ -80,6 +81,14 @@ export default async function EditJobPage({
           submitLabel={t(locale, 'common.save')}
         />
       </Card>
+
+      {/* Slice 6: per-job custom fields, same editor as customers. */}
+      <JobCustomFields
+        jobId={job.id}
+        locale={locale}
+        initial={{ defs: [], values: [] }}
+        fetchOnMount
+      />
     </div>
   );
 }
