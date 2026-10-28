@@ -221,15 +221,19 @@ export async function createInvoice(
   const userNotes = parsed.data.notes?.trim();
   if (userNotes) notesParts.push(userNotes);
 
+  // Date-only value in the business timezone (jobs convention) — see
+  // businessTimeZone above for why server-local midnight is wrong.
+  // Computed BEFORE the transaction: with connection_limit=1, awaiting
+  // a global-client query inside the tx callback deadlocks the pool
+  // (see the deadlock-safety note in lib/prisma.ts).
+  const dateValue = parseDateInputInTimezone(
+    parsed.data.date,
+    await businessTimeZone(businessId),
+  );
+
   const invoice = await prisma.$transaction(async (tx) => {
     // Number generated inside the same transaction as the insert (M4).
     const number = await nextDocumentNumber(tx, businessId, 'INVOICE');
-    // Date-only value in the business timezone (jobs convention) — see
-    // businessTimeZone above for why server-local midnight is wrong.
-    const dateValue = parseDateInputInTimezone(
-      parsed.data.date,
-      await businessTimeZone(businessId),
-    );
     const inv = await tx.invoice.create({
       data: {
         number,
