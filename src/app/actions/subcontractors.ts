@@ -188,11 +188,19 @@ export async function updateSubcontractor(
   const v = validateSubFields(input);
   if ('error' in v) return { ok: false, error: v.error };
   try {
-    const updated = await prisma.subcontractor.update({
-      where: { id },
+    // Tenant guard requires where.businessId on tenant models, and Prisma
+    // update() needs a unique where — so updateMany + refetch (the scoped
+    // pattern used by designations/expenses deletes).
+    const res = await prisma.subcontractor.updateMany({
+      where: { id, businessId },
       data: { name: v.name, phone: v.phone, email: v.email, defaultRateCents: v.defaultRateCents, note: v.note },
+    });
+    if (res.count === 0) return { ok: false, error: 'notFound' };
+    const updated = await prisma.subcontractor.findFirst({
+      where: { id, businessId },
       include: { _count: { select: { jobs: true } } },
     });
+    if (!updated) return { ok: false, error: 'notFound' };
     revalidatePath('/subcontractors');
     return { ok: true, subcontractor: toRow(updated) };
   } catch {
@@ -214,7 +222,10 @@ export async function deleteSubcontractor(id: string): Promise<SubcontractorResu
   const refs = await prisma.jobSubcontractor.count({ where: { subcontractorId: id } });
   if (refs > 0) return { ok: false, error: 'hasPayouts' };
   try {
-    await prisma.subcontractor.delete({ where: { id } });
+    // Scoped deleteMany: the tenant guard blocks delete({where:{id}}) on
+    // tenant models, and delete() needs a unique where anyway.
+    const res = await prisma.subcontractor.deleteMany({ where: { id, businessId } });
+    if (res.count === 0) return { ok: false, error: 'notFound' };
     revalidatePath('/subcontractors');
     return { ok: true };
   } catch {

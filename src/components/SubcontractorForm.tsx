@@ -62,9 +62,7 @@ export default function SubcontractorForm({
     startTransition(async () => {
       const r = await deleteSubcontractor(initial.id);
       if (!r.ok) {
-        // DIAGNOSTIC (temporary): surface the action error code so QA can
-        // identify why deletes fail; reverted once the root cause is fixed.
-        setMsg(r.error === 'hasPayouts' ? L('deleteBlocked') : `${L('saveError')} [${r.error}]`);
+        setMsg(r.error === 'hasPayouts' ? L('deleteBlocked') : L('saveError'));
         return;
       }
       toast.success(L('deleted'));
