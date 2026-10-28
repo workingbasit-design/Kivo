@@ -324,6 +324,135 @@ export async function updateQuoteItems(
   return { ok: true };
 }
 
+/**
+ * Slice 4: quote templates. A template is a reusable line package owned by
+ * one business. Applying one COPIES its lines into a new quote — a template
+ * edit never rewrites quotes already built from it.
+ */
+const templateSchema = z.object({
+  name: z.string().trim().min(1, 'Template name is required').max(100),
+});
+
+async function ownedTemplate(businessId: string, id: string) {
+  return prisma.quoteTemplate.findFirst({
+    where: { id, businessId },
+    include: { items: { orderBy: { position: 'asc' } } },
+  });
+}
+
+export async function createQuoteTemplate(
+  _prev: ActionResult,
+  formData: FormData
+): Promise<ActionResult> {
+  const limited = checkLimit(await clientKey('quote-template:create'));
+  if (limited) return limited;
+
+  let businessId: string;
+  try {
+    ({ businessId } = await requireAuth());
+  } catch {
+    return { error: 'Please log in again.' };
+  }
+
+  const parsed = templateSchema.safeParse({ name: formData.get('name') });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? 'Invalid template name.' };
+  }
+  const { items, error: itemsError } = parseLineItems(
+    formData.get('itemsJson') as string | null
+  );
+  if (itemsError || !items) return { error: itemsError ?? 'Invalid line items.' };
+
+  await prisma.quoteTemplate.create({
+    data: {
+      name: parsed.data.name,
+      businessId,
+      items: {
+        create: items.map((item, index) => ({
+          description: item.desc,
+          qty: item.qty,
+          unitPriceCents: dollarsToCents(item.rate) ?? BigInt(0),
+          unitCostCents:
+            item.cost == null ? null : (dollarsToCents(item.cost) ?? BigInt(0)),
+          position: index,
+        })),
+      },
+    },
+  });
+
+  revalidatePath('/quotes/templates');
+  revalidatePath('/quotes/new');
+  redirect('/quotes/templates');
+}
+
+export async function updateQuoteTemplate(
+  _prev: ActionResult,
+  formData: FormData
+): Promise<ActionResult> {
+  const limited = checkLimit(await clientKey('quote-template:update'));
+  if (limited) return limited;
+
+  let businessId: string;
+  try {
+    ({ businessId } = await requireAuth());
+  } catch {
+    return { error: 'Please log in again.' };
+  }
+
+  const id = String(formData.get('id') ?? '');
+  const template = await ownedTemplate(businessId, id);
+  if (!template) return { error: 'Template not found.' };
+
+  const parsed = templateSchema.safeParse({ name: formData.get('name') });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? 'Invalid template name.' };
+  }
+  const { items, error: itemsError } = parseLineItems(
+    formData.get('itemsJson') as string | null
+  );
+  if (itemsError || !items) return { error: itemsError ?? 'Invalid line items.' };
+
+  await prisma.$transaction([
+    prisma.quoteTemplateItem.deleteMany({ where: { templateId: id } }),
+    prisma.quoteTemplateItem.createMany({
+      data: items.map((item, index) => ({
+        templateId: id,
+        description: item.desc,
+        qty: item.qty,
+        unitPriceCents: dollarsToCents(item.rate) ?? BigInt(0),
+        unitCostCents:
+          item.cost == null ? null : (dollarsToCents(item.cost) ?? BigInt(0)),
+        position: index,
+      })),
+    }),
+    prisma.quoteTemplate.update({
+      where: { id, businessId },
+      data: { name: parsed.data.name },
+    }),
+  ]);
+
+  revalidatePath('/quotes/templates');
+  revalidatePath('/quotes/new');
+  redirect('/quotes/templates');
+}
+
+export async function deleteQuoteTemplate(id: string): Promise<ActionResult> {
+  let businessId: string;
+  try {
+    ({ businessId } = await requireAuth());
+  } catch {
+    return { error: 'Please log in again.' };
+  }
+
+  const template = await ownedTemplate(businessId, id);
+  if (!template) return { error: 'Template not found.' };
+
+  await prisma.quoteTemplate.delete({ where: { id, businessId } });
+  revalidatePath('/quotes/templates');
+  revalidatePath('/quotes/new');
+  return { ok: true };
+}
+
 const MANUAL_DEPOSIT_PROVIDERS = ['INTERAC', 'CASH', 'CHEQUE'] as const;
 
 /**

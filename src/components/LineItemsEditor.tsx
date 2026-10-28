@@ -29,6 +29,7 @@ export default function LineItemsEditor({
   currency,
   initialItems,
   initialDiscount,
+  hideDiscount = false,
   locale = 'en',
 }: {
   onSubtotal?: (subtotal: number) => void;
@@ -36,6 +37,8 @@ export default function LineItemsEditor({
   currency?: string;
   initialItems?: { desc: string; qty: string; rate: string; cost?: string }[];
   initialDiscount?: { type: 'PERCENT' | 'AMOUNT' | null; value: string };
+  /** Slice 4: templates carry lines only — hide the discount controls. */
+  hideDiscount?: boolean;
   locale?: Locale;
 }) {
   const [rows, setRows] = useState<LineItemRow[]>(
@@ -205,6 +208,7 @@ export default function LineItemsEditor({
         </p>
       </div>
 
+      {!hideDiscount && (
       <div className="flex flex-wrap items-center gap-2 mt-3">
         <label htmlFor="discountType" className="text-xs font-semibold text-ink-2 shrink-0">
           {L('t10money.discountLabel')}
@@ -239,6 +243,7 @@ export default function LineItemsEditor({
           </span>
         )}
       </div>
+      )}
     </div>
   );
 }

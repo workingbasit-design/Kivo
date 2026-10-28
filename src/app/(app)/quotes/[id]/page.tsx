@@ -4,7 +4,7 @@ import { ArrowLeft, User } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { canSeePrices } from '@/lib/roles';
 import { prisma } from '@/lib/prisma';
-import { Card } from '@/components/kit';
+import { Button, Card } from '@/components/kit';
 import { localeMoneyTag } from '@/lib/utils';
 import { formatMoney, centsToDollars } from '@/lib/money';
 import { lineMargin, summarizeLineMargins } from '@/lib/line-margin';
@@ -145,6 +145,12 @@ export default async function QuoteDetailPage({
       />
       <div className="flex flex-wrap gap-2">
         <StatusPill status={quote.status} locale={locale} />
+        <Button
+          href={`/quotes/templates/new?fromQuote=${quote.id}`}
+          variant="secondary"
+        >
+          {t(locale, 'quotes.templates.saveAsTemplate')}
+        </Button>
       </div>
 
       <Card className="p-6 space-y-5">

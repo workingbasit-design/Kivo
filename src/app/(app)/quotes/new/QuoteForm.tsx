@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { createQuote, type ActionResult } from '@/app/actions/quotes';
 import LineItemsEditor from '@/components/LineItemsEditor';
 import MorphSelect from '@/components/MorphSelect';
-import { Button, Card, Input } from '@/components/kit';
+import { Button, Card, Input, Select } from '@/components/kit';
 import { TaxSelect, defaultTaxSelection, type TaxSelection } from '../../_components/TaxSelect';
 import { formatMoney } from '@/lib/money';
 import { calcTax, splitStoredTax, type TaxConfig } from '@/lib/tax';
@@ -38,10 +38,17 @@ function useResultToast<T extends { ok?: boolean; error?: string }>(
 export default function QuoteForm({
   customers,
   taxConfig,
+  templates = [],
   locale = 'en',
 }: {
   customers: { id: string; name: string }[];
   taxConfig: TaxConfig;
+  /** Slice 4: templates for the "start from template" picker. */
+  templates?: {
+    id: string;
+    name: string;
+    items: { desc: string; qty: string; rate: string; cost: string }[];
+  }[];
   locale?: Locale;
 }) {
   const [state, formAction, isPending] = useActionState<ActionResult, FormData>(
@@ -50,6 +57,12 @@ export default function QuoteForm({
   );
   const [subtotal, setSubtotal] = useState(0);
   const [customerId, setCustomerId] = useState('');
+  // Slice 4: title is CONTROLLED so picking a template can fill it, and
+  // so a failed save (useActionState resets the form element) never
+  // wipes it — the JobForm form-reset lesson.
+  const [title, setTitle] = useState('');
+  const [appliedId, setAppliedId] = useState('');
+  const applied = templates.find((tpl) => tpl.id === appliedId) ?? null;
   const [taxSel, setTaxSel] = useState<TaxSelection>(() =>
     defaultTaxSelection(taxConfig)
   );
@@ -74,6 +87,8 @@ export default function QuoteForm({
         <Input
           label="Title"
           name="title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
           required
           maxLength={200}
           placeholder="e.g. Full house wiring repair"
@@ -101,7 +116,36 @@ export default function QuoteForm({
 
       <Card className="p-6">
         <h2 className="text-sm font-bold text-ink mb-3">Line items</h2>
-        <LineItemsEditor onSubtotal={setSubtotal} currency={taxConfig.currency} locale={locale} />
+        {templates.length > 0 && (
+          <div className="mb-4">
+            <Select
+              label={t(locale, 'quotes.templates.useTemplate')}
+              options={[
+                { value: '', label: t(locale, 'quotes.templates.blankOption') },
+                ...templates.map((tpl) => ({ value: tpl.id, label: tpl.name })),
+              ]}
+              value={appliedId}
+              onChange={(e) => {
+                const id = e.target.value;
+                setAppliedId(id);
+                // Applying a template COPIES its lines and fills the
+                // title; picking Blank clears lines only, never a title
+                // the pro already typed.
+                const tpl = templates.find((x) => x.id === id);
+                if (tpl) setTitle(tpl.name);
+              }}
+            />
+          </div>
+        )}
+        {/* Remount on template change: the editor owns its rows in state,
+            so a new key is what swaps blank rows for template lines. */}
+        <LineItemsEditor
+          key={applied?.id ?? 'blank'}
+          initialItems={applied?.items}
+          onSubtotal={setSubtotal}
+          currency={taxConfig.currency}
+          locale={locale}
+        />
       </Card>
 
       <Card className="p-6 space-y-4">

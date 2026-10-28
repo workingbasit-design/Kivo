@@ -147,6 +147,7 @@ export const TENANT_MODELS: ReadonlySet<string> = new Set([
   'Quote',
   'QuoteDeposit',
   'QuoteSignature',
+  'QuoteTemplate',
   'RecurringJob',
   'Review',
   'ReviewRequest',

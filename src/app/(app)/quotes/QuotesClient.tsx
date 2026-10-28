@@ -124,6 +124,9 @@ export default function QuotesClient({
         actionIcon={<Plus />}
       />
       <div className="flex flex-wrap gap-2">
+        <Button href="/quotes/templates" variant="secondary">
+          {t(locale, 'quotes.templates.title')}
+        </Button>
         <ExportButtons
           columns={exportColumns}
           rows={exportRows}

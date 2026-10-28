@@ -153,6 +153,7 @@ model Business {
   bookableServices     BookableService[] // F7: services bookable online
   bookingRequests      BookingRequest[] // F7: customer booking submissions
   checklistTemplates   ChecklistTemplate[]
+  quoteTemplates       QuoteTemplate[] // slice 4 (2026-10-28): reusable quote line packages
   expenses             JobExpense[]
   isDemo               Boolean               @default(false) // Part 0: seeded demo business — UI labels it "Demo" everywhere; never set for real businesses
   trade                String? // primary trade: plumbing|electrical|hvac|carpentry|painting|landscaping|cleaning|renovation|other
@@ -1436,6 +1437,34 @@ model QuoteLineItem {
   createdAt   DateTime @default(now())
 
   @@index([quoteId])
+}
+
+// Slice 4 (2026-10-28): reusable quote line packages. Applying a template
+// COPIES its lines into a new quote — later template edits never rewrite
+// quotes already built from it (same snapshot rule as issued documents).
+model QuoteTemplate {
+  id         String              @id @default(cuid())
+  businessId String
+  business   Business            @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  name       String
+  items      QuoteTemplateItem[]
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+
+  @@index([businessId])
+}
+
+model QuoteTemplateItem {
+  id             String        @id @default(cuid())
+  templateId     String
+  template       QuoteTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  description    String
+  qty            Float
+  unitPriceCents BigInt // cents
+  unitCostCents  BigInt? // slice-3 synergy: costs ride along, margins flow through
+  position       Int // display order
+
+  @@index([templateId])
 }
 
 // Safe workflow engine: triggers are evaluated on a schedule; actions are

@@ -74,6 +74,31 @@ const fragment = {
         subtitle:
           'Line items in, total out. {taxLabel} is added automatically from your region settings.',
       },
+      templates: {
+        title: 'Quote templates',
+        subtitle:
+          'Saved line packages — start a quote from one instead of retyping it.',
+        newTemplate: 'New template',
+        editTemplate: 'Edit template',
+        nameLabel: 'Template name',
+        namePlaceholder: 'e.g. Furnace tune-up package',
+        saveTemplate: 'Save template',
+        templateSaved: 'Template saved.',
+        templateDeleted: 'Template deleted.',
+        deleteTemplate: 'Delete template',
+        deleteConfirm:
+          'Delete this template? Quotes already built from it are unaffected.',
+        emptyTitle: 'No templates yet',
+        emptyDesc:
+          'Save a template once, then start any quote from it in seconds.',
+        useTemplate: 'Start from template…',
+        blankOption: 'Blank quote',
+        saveAsTemplate: 'Save as template',
+        lineOne: '1 line',
+        lineOther: '{count} lines',
+        fromQuoteHint:
+          'Starting from quote {title} — edit the lines, then save as a new template.',
+      },
     },
   } as Dictionary,
   fr: {
@@ -144,6 +169,31 @@ const fragment = {
         title: 'Nouveau devis',
         subtitle:
           'Articles entrés, total en sortie. {taxLabel} est ajouté automatiquement selon vos paramètres régionaux.',
+      },
+      templates: {
+        title: 'Modèles de devis',
+        subtitle:
+          'Ensembles de lignes enregistrés — commencez un devis à partir d’un modèle au lieu de tout retaper.',
+        newTemplate: 'Nouveau modèle',
+        editTemplate: 'Modifier le modèle',
+        nameLabel: 'Nom du modèle',
+        namePlaceholder: 'p. ex. Forfait de mise au point de fournaise',
+        saveTemplate: 'Enregistrer le modèle',
+        templateSaved: 'Modèle enregistré.',
+        templateDeleted: 'Modèle supprimé.',
+        deleteTemplate: 'Supprimer le modèle',
+        deleteConfirm:
+          'Supprimer ce modèle? Les devis déjà créés à partir de celui-ci ne seront pas touchés.',
+        emptyTitle: 'Aucun modèle pour le moment',
+        emptyDesc:
+          'Enregistrez un modèle une fois, puis commencez n’importe quel devis à partir de celui-ci en quelques secondes.',
+        useTemplate: 'Commencer à partir d’un modèle…',
+        blankOption: 'Devis vierge',
+        saveAsTemplate: 'Enregistrer comme modèle',
+        lineOne: '1 ligne',
+        lineOther: '{count} lignes',
+        fromQuoteHint:
+          'À partir du devis {title} — modifiez les lignes, puis enregistrez comme nouveau modèle.',
       },
     },
   } as Dictionary,
