@@ -12,6 +12,11 @@ import DateTimeText from '@/components/DateTimeText';
 import { getTaxConfig, totalTaxRate } from '@/lib/tax';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
+import MoneyExplainer from '@/components/MoneyExplainer';
+import {
+  buildQuoteExplainerLines,
+  buildExplainerStrings,
+} from '@/lib/money-explainer';
 import RevokeSignButton from './RevokeSignButton';
 import {
   getQuoteShareState,
@@ -219,6 +224,24 @@ export default async function QuoteDetailPage({
             <dd className="font-bold"><MoneyText dollars={centsToDollars(quote.totalCents)} locale={locale} /></dd>
           </div>
         </dl>
+
+        <MoneyExplainer
+          title={L('explainer.title')}
+          lines={buildQuoteExplainerLines({
+            subtotal: formatMoney(subtotal, currency, moneyLocale),
+            discount: showDiscount
+              ? { label: discountLabel, amount: formatMoney(discountAmount, currency, moneyLocale) }
+              : null,
+            taxes: taxLines.map((l) => ({
+              name: l.name,
+              rate: l.rate,
+              amount: formatMoney(l.amount, currency, moneyLocale),
+            })),
+            total: formatMoney(centsToDollars(quote.totalCents), currency, moneyLocale),
+            status: quote.status,
+            strings: buildExplainerStrings((k) => L(`explainer.${k}`)),
+          })}
+        />
 
         <div className="border-t border-line pt-5 space-y-3">
           <QuoteActions

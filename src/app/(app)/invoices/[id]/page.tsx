@@ -14,6 +14,11 @@ import { splitStoredTax, taxIdLabelForRegion } from '@/lib/tax';
 import { displayNotes } from '@/lib/invoice-notes';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
+import MoneyExplainer from '@/components/MoneyExplainer';
+import {
+  buildInvoiceExplainerLines,
+  buildExplainerStrings,
+} from '@/lib/money-explainer';
 import {
   getInvoiceShareState,
   regenerateInvoiceShareLink,
@@ -247,6 +252,30 @@ export default async function InvoiceDetailPage({
             <dd className="font-bold"><MoneyText dollars={remaining} locale={locale} /></dd>
           </div>
         </dl>
+
+        <MoneyExplainer
+          title={L('explainer.title')}
+          lines={buildInvoiceExplainerLines({
+            subtotal: formatMoney(subtotalDollars, currency, moneyLocale),
+            taxes: taxLines.map((l) => ({
+              name: l.name,
+              rate: l.rate,
+              amount: formatMoney(l.amount, currency, moneyLocale),
+            })),
+            total: formatMoney(centsToDollars(invoice.totalCents), currency, moneyLocale),
+            paid: formatMoney(paid, currency, moneyLocale),
+            paidCents,
+            balance: formatMoney(remaining, currency, moneyLocale),
+            remainingCents,
+            status: invoice.status,
+            voided: invoice.voidedAt != null,
+            dueAt: invoice.dueAt,
+            dueTimezone: invoice.business.timezone ?? 'America/Toronto',
+            locale,
+            overdue,
+            strings: buildExplainerStrings((k) => L(`explainer.${k}`)),
+          })}
+        />
 
         {invoice.business.interacEmail && remaining > 0 && (
           <div className="mt-6 bg-surface-2 border border-line rounded-xl px-4 py-3">
