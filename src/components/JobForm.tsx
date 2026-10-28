@@ -103,6 +103,23 @@ export default function JobForm({
   const [liveProperties, setLiveProperties] = useState<JobFormProperty[]>([]);
   const [priceValue, setPriceValue] = useState<string>(String(initial?.price ?? ''));
   const [noCharge, setNoCharge] = useState<boolean>(initial?.noCharge ?? false);
+  // Every typed field is CONTROLLED, not defaultValue: React's
+  // useActionState resets the form element when the server action
+  // returns (even an application-level { error }), which silently wiped
+  // the user's title/price/address after any validation failure and left
+  // them re-submitting an emptied form (found live 2026-10-28: a $0 job
+  // could never be fixed by ticking "No charge", because the price field
+  // was already empty on the retry). State-owned values survive the reset.
+  const [titleValue, setTitleValue] = useState(initial?.title ?? '');
+  const [dateValue, setDateValue] = useState(initial?.date ?? toISODateLocal(new Date()));
+  const [timeValue, setTimeValue] = useState(initial?.time ?? '');
+  const [addressValue, setAddressValue] = useState(initial?.address ?? '');
+  const [technicianValue, setTechnicianValue] = useState(initial?.technician ?? '');
+  const [crewValue, setCrewValue] = useState(initial?.crewId ?? '');
+  const [notesValue, setNotesValue] = useState(initial?.notes ?? '');
+  const [newCustomerNameValue, setNewCustomerNameValue] = useState('');
+  const [newCustomerPhoneValue, setNewCustomerPhoneValue] = useState('');
+  const [propertyValue, setPropertyValue] = useState(initial?.propertyId ?? '');
   const priceIsZero = (() => {
     const n = parseFloat(priceValue);
     return priceValue.trim() !== '' && Number.isFinite(n) && n === 0;
@@ -131,6 +148,13 @@ export default function JobForm({
   const [customerChoice, setCustomerChoice] = useState<string>(
     initial?.customerId ?? (customers[0]?.id ?? '__NEW__')
   );
+  // Switching customers resets the property link (a property belongs to
+  // exactly one customer) — except when switching back to the job's
+  // original customer on the edit page, which restores the saved link.
+  const onCustomerChange = (value: string) => {
+    setCustomerChoice(value);
+    setPropertyValue(value === initial?.customerId ? (initial?.propertyId ?? '') : '');
+  };
   const showNewCustomer = customerChoice === '__NEW__';
   // Service properties for the picker: server-provided on the edit page,
   // otherwise the live refresh above. Filtered to the selected customer.
@@ -145,10 +169,10 @@ export default function JobForm({
     const prop = effectiveProperties.find((p) => p.id === value);
     if (!prop) return;
     // Prefill the address only when it is still empty — never overwrite
-    // a hand-typed address.
-    const addressInput = document.querySelector<HTMLInputElement>('input[name="address"]');
-    if (addressInput && addressInput.value.trim() === '') {
-      addressInput.value = prop.address;
+    // a hand-typed address. State-owned (not a DOM write) so the prefill
+    // survives the post-action form reset like every other field.
+    if (addressValue.trim() === '') {
+      setAddressValue(prop.address);
     }
   };
 
@@ -167,7 +191,8 @@ export default function JobForm({
         required
         autoFocus
         autoComplete="off"
-        defaultValue={initial?.title ?? ''}
+        value={titleValue}
+        onChange={(e) => setTitleValue(e.target.value)}
         placeholder={T('formTitlePlaceholder')}
         maxLength={200}
       />
@@ -176,7 +201,7 @@ export default function JobForm({
         label={jobsL('customer')}
         name="customerId"
         value={customerChoice}
-        onChange={(e) => setCustomerChoice(e.target.value)}
+        onChange={(e) => onCustomerChange(e.target.value)}
         options={[
           ...liveCustomers.map((c) => ({ value: c.id, label: c.name })),
           { value: '__NEW__', label: T('formNewCustomerOption') },
@@ -188,13 +213,14 @@ export default function JobForm({
           key={customerChoice}
           label={jobsL('serviceProperty')}
           name="propertyId"
-          // Keep the saved link only while the original customer is still
-          // selected; any other customer starts with no property (the
-          // key remount above makes this a true reset, not a stale id).
-          defaultValue={
-            customerChoice === initial?.customerId ? (initial?.propertyId ?? '') : ''
-          }
-          onChange={(e) => onPropertyChange(e.target.value)}
+          // Controlled like every other field so a failed submit cannot
+          // wipe the link; the customer-change handler above owns the
+          // reset semantics (clear on switch, restore on return).
+          value={propertyValue}
+          onChange={(e) => {
+            setPropertyValue(e.target.value);
+            onPropertyChange(e.target.value);
+          }}
           options={[
             { value: '', label: jobsL('noSpecificProperty') },
             ...effectiveProperties.map((p) => ({
@@ -211,6 +237,8 @@ export default function JobForm({
             label={T('formNewCustomerName')}
             name="newCustomerName"
             autoComplete="off"
+            value={newCustomerNameValue}
+            onChange={(e) => setNewCustomerNameValue(e.target.value)}
             placeholder={T('formNewCustomerNamePlaceholder')}
             maxLength={120}
           />
@@ -218,6 +246,8 @@ export default function JobForm({
             label={T('formNewCustomerPhone')}
             name="newCustomerPhone"
             autoComplete="off"
+            value={newCustomerPhoneValue}
+            onChange={(e) => setNewCustomerPhoneValue(e.target.value)}
             placeholder={T('formPhonePlaceholder')}
             maxLength={25}
             inputMode="tel"
@@ -232,13 +262,15 @@ export default function JobForm({
           name="date"
           required
           autoComplete="off"
-          defaultValue={initial?.date ?? toISODateLocal(new Date())}
+          value={dateValue}
+          onChange={(e) => setDateValue(e.target.value)}
         />
         <Input
           label={jobsL('time')}
           name="time"
           autoComplete="off"
-          defaultValue={initial?.time ?? ''}
+          value={timeValue}
+          onChange={(e) => setTimeValue(e.target.value)}
           placeholder="10:00 AM"
           maxLength={30}
         />
@@ -254,15 +286,17 @@ export default function JobForm({
             pattern="[0-9]*\.?[0-9]*"
             name="price"
             required
-            defaultValue={initial?.price ?? ''}
+            value={priceValue}
             placeholder="0"
             className="input"
             onChange={(e) => setPriceValue(e.target.value)}
             // Normalize float artifacts (e.g. 149.99000549316406) on blur so
             // the displayed value always matches the cents-rounded save.
+            // State-owned (not a direct DOM write): a DOM write here would
+            // desync React's value tracker and get reverted on re-render.
             onBlur={(e) => {
               const n = parseFloat(e.target.value);
-              if (Number.isFinite(n)) e.target.value = n.toFixed(2);
+              if (Number.isFinite(n)) setPriceValue(n.toFixed(2));
             }}
           />
           {showZeroWarning && (
@@ -291,7 +325,8 @@ export default function JobForm({
         <span className="block text-xs font-semibold text-ink mb-1.5">{`${jobsL('address')} (${T('formOptional')})`}</span>
         <AddressAutocomplete
           name="address"
-          defaultValue={initial?.address ?? ''}
+          value={addressValue}
+          onChange={setAddressValue}
           placeholder={T('formAddressPlaceholder')}
           maxLength={500}
           className="input"
@@ -303,7 +338,8 @@ export default function JobForm({
           label={`${jobsL('technician')} (${T('formOptional')})`}
           name="technician"
           autoComplete="off"
-          defaultValue={initial?.technician ?? ''}
+          value={technicianValue}
+          onChange={(e) => setTechnicianValue(e.target.value)}
           placeholder={T('formTechnicianPlaceholder')}
           maxLength={120}
         />
@@ -311,7 +347,8 @@ export default function JobForm({
           <Select
             label={crewsL('jobCrewOptional')}
             name="crewId"
-            defaultValue={initial?.crewId ?? ''}
+            value={crewValue}
+            onChange={(e) => setCrewValue(e.target.value)}
             options={[
               { value: '', label: crewsL('jobCrewNone') },
               ...crews.map((c) => ({ value: c.id, label: c.name })),
@@ -321,7 +358,8 @@ export default function JobForm({
         <Textarea
           label={`${jobsL('notes')} (${T('formOptional')})`}
           name="notes"
-          defaultValue={initial?.notes ?? ''}
+          value={notesValue}
+          onChange={(e) => setNotesValue(e.target.value)}
           placeholder={T('formNotesPlaceholder')}
           rows={2}
           maxLength={2000}
