@@ -24,6 +24,7 @@ import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import QuickActions from "@/components/dashboard/QuickActions";
 import CollectedSection from "@/components/dashboard/CollectedSection";
 import ContinueSection from "@/components/dashboard/ContinueSection";
+import MorningGlanceSection from "@/components/dashboard/MorningGlanceSection";
 import NextActionSection from "@/components/dashboard/NextActionSection";
 import WeekProgressSection from "@/components/dashboard/WeekProgressSection";
 import NeedsYou from "@/components/dashboard/NeedsYou";
@@ -141,6 +142,14 @@ export default async function DashboardPage() {
       <div className="space-y-6">
         <DashboardHeader businessId={businessId} timezone={timezone} regionCode={regionCode} showMoney={showMoney} />
         <Section errorMessage={errorMessage} retryLabel={retryLabel}>
+          <MorningGlanceSection
+            businessId={businessId}
+            timezone={timezone}
+            regionCode={regionCode}
+            technicianUserId={user.id}
+          />
+        </Section>
+        <Section errorMessage={errorMessage} retryLabel={retryLabel}>
           <ContinueSection
             businessId={businessId}
             timezone={timezone}
@@ -191,6 +200,9 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-5">
       <DashboardHeader businessId={businessId} timezone={timezone} regionCode={regionCode} showMoney={showMoney} />
+      <Section errorMessage={errorMessage} retryLabel={retryLabel}>
+        <MorningGlanceSection businessId={businessId} timezone={timezone} regionCode={regionCode} />
+      </Section>
       <Section errorMessage={errorMessage} retryLabel={retryLabel}>
         <ContinueSection businessId={businessId} timezone={timezone} regionCode={regionCode} />
       </Section>

@@ -30,6 +30,9 @@ import {
   computeWeekProgress,
   type WeekProgress,
 } from "./week-progress.ts";
+import {
+  selectFirstUpcoming,
+} from "./morning-glance.ts";
 
 /* ------------------------------------------------------------------ */
 /* Pure date-key helpers (no Prisma, fully unit-tested)                */
@@ -1099,5 +1102,88 @@ export async function getWeekProgress(
     }),
     currency: business?.currency ?? "CAD",
     technician,
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* Morning glance (Scroll lesson 6) — today at a glance                */
+/* ------------------------------------------------------------------ */
+
+export interface MorningGlance {
+  /** Business-today key (drives the client's per-day dismiss/notify). */
+  todayKey: string;
+  /** Non-cancelled jobs scheduled for today (done included). */
+  jobsToday: number;
+  /** Past, not-started jobs (the late pile, counted exactly). */
+  lateCount: number;
+  /** First job still to do today, if any. */
+  first: { title: string; time: string | null; startAt: Date | null } | null;
+}
+
+/**
+ * Today's shape in one read: how much work, what is late, what is
+ * first. Technicians get their own visits only (same OR filter as the
+ * other dashboard sections). No money in the glance — money lives in
+ * the Collected/KeyNumbers sections.
+ */
+export async function getMorningGlance(
+  businessId: string,
+  opts?: {
+    timezone?: string | null;
+    regionCode?: string | null;
+    /** When set, only jobs assigned to this user (technician view). */
+    technicianUserId?: string | null;
+  },
+): Promise<MorningGlance> {
+  const { timezone, regionCode } = await businessTz(businessId, {
+    timezone: opts?.timezone,
+    regionCode: opts?.regionCode,
+  });
+  const todayKey = todayInTimezone(timezone, regionCode);
+  const { gte: todayStart, lte: todayEnd } = dayRangeInTimezone(
+    todayKey,
+    timezone,
+  );
+  const techFilter = opts?.technicianUserId
+    ? {
+        OR: [
+          { assignedToId: opts.technicianUserId },
+          { jobAssignments: { some: { userId: opts.technicianUserId } } },
+        ],
+      }
+    : {};
+  const [todayJobs, lateCount] = await Promise.all([
+    prisma.job.findMany({
+      where: {
+        businessId,
+        archivedAt: null,
+        status: { not: "CANCELLED" },
+        date: { gte: todayStart, lte: todayEnd },
+        ...techFilter,
+      },
+      select: { id: true, title: true, time: true, date: true, startAt: true, status: true },
+    }),
+    prisma.job.count({
+      where: {
+        businessId,
+        archivedAt: null,
+        status: { in: ["NEW", "SCHEDULED"] },
+        date: { lt: todayStart },
+        ...techFilter,
+      },
+    }),
+  ]);
+  const first = selectFirstUpcoming(todayJobs);
+  return {
+    todayKey,
+    jobsToday: todayJobs.length,
+    lateCount,
+    first: first
+      ? {
+          title: first.title,
+          time: first.time ?? null,
+          startAt: first.startAt ? new Date(first.startAt) : null,
+        }
+      : null,
   };
 }
