@@ -5,7 +5,7 @@ import { t, type Locale } from '@/lib/i18n';
 import { Card } from '@/components/kit';
 import { formatMoney } from '@/lib/money';
 import SubcontractorForm from './SubcontractorForm';
-import type { SubcontractorRow } from '@/app/actions/subcontractors';
+import { listSubcontractors, type SubcontractorRow } from '@/app/actions/subcontractors';
 
 /** Slice 7: directory list with inline create + per-row edit. */
 export default function SubcontractorDirectory({
@@ -18,19 +18,25 @@ export default function SubcontractorDirectory({
   initial: SubcontractorRow[];
 }) {
   const L = (k: string) => t(locale, `subcontractors.${k}`);
+  const [rows, setRows] = useState<SubcontractorRow[]>(initial);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
 
+  const refresh = async () => {
+    const r = await listSubcontractors();
+    if (r.ok && r.subcontractors) setRows(r.subcontractors);
+  };
+
   return (
     <div className="space-y-6">
-      {initial.length === 0 ? (
+      {rows.length === 0 ? (
         <Card className="p-6">
           <p className="text-sm font-bold text-ink">{L('noSubs')}</p>
           <p className="text-sm text-ink-2 mt-1">{L('noSubsDesc')}</p>
         </Card>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {initial.map((s) => (
+          {rows.map((s) => (
             <Card key={s.id} className="p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
@@ -54,7 +60,7 @@ export default function SubcontractorDirectory({
               </div>
               {editingId === s.id && (
                 <div className="mt-4 pt-4 border-t border-line">
-                  <SubcontractorForm locale={locale} initial={s} />
+                  <SubcontractorForm locale={locale} initial={s} onDone={refresh} />
                 </div>
               )}
             </Card>
@@ -72,7 +78,14 @@ export default function SubcontractorDirectory({
         </button>
         {showCreate && (
           <Card className="p-5 mt-3">
-            <SubcontractorForm locale={locale} initial={null} onDone={() => setShowCreate(false)} />
+            <SubcontractorForm
+              locale={locale}
+              initial={null}
+              onDone={() => {
+                setShowCreate(false);
+                refresh();
+              }}
+            />
           </Card>
         )}
       </section>
