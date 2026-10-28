@@ -132,7 +132,13 @@ export const recurringSchema = z.object({
     .max(10_000_000)
     .transform((n) => Number(n.toFixed(2))),
   notes: z.string().trim().max(2000).optional().default(""),
-});
+  // Slice 8: invoice schedule for the series. Day required iff MONTHLY.
+  invoiceSchedule: z.enum(["NONE", "PER_VISIT", "MONTHLY"]).optional().default("NONE"),
+  invoiceDayOfMonth: z.coerce.number().int().min(1).max(28).optional(),
+}).refine(
+  (v) => v.invoiceSchedule !== "MONTHLY" || v.invoiceDayOfMonth != null,
+  { message: "Monthly billing needs a day of the month (1–28).", path: ["invoiceDayOfMonth"] }
+);
 
 export const registerSchema = z.object({
   name: z.string().trim().min(2, "Your name is required").max(100),

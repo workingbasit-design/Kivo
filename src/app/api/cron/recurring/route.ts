@@ -55,6 +55,31 @@ export async function GET(req: Request) {
           metaJson: JSON.stringify({ created, date: toISODateInTimezone(new Date(), tz) }),
         },
       });
+      // Slice 8: monthly scheduled invoices for due series (previous
+      // month, idempotent). Runs in the same daily pass; a business with
+      // no due MONTHLY series is a no-op. Logged only when it creates.
+      try {
+        const { generateMonthlyInvoices } = await import('@/lib/scheduled-invoices');
+        const monthly = await generateMonthlyInvoices(b.id, new Date(), 'system');
+        if (monthly.created > 0) {
+          await prisma.automationLog.create({
+            data: {
+              businessId: b.id,
+              kind: 'SCHEDULED_INVOICE',
+              summary: `Scheduled monthly invoices: ${monthly.created} created (${monthly.numbers.join(', ')}).`,
+              metaJson: JSON.stringify({ created: monthly.created, numbers: monthly.numbers }),
+            },
+          });
+        }
+      } catch (err) {
+        await prisma.automationLog.create({
+          data: {
+            businessId: b.id,
+            kind: 'SCHEDULED_INVOICE',
+            summary: `Scheduled monthly invoices failed: ${err instanceof Error ? err.message : 'unknown error'}.`,
+          },
+        });
+      }
     } catch (err) {
       await prisma.automationLog.create({
         data: {

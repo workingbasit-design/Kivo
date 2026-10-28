@@ -383,6 +383,13 @@ model Invoice {
   voidedAt       DateTime? // set when voided; voided invoices keep number, excluded from reports
   voidReason     String? // required reason for voiding
   dueAt          DateTime? // net-30 due date; set on issue/send, null for drafts (M10)
+  // Slice 8: scheduled-invoice source key. recurringJobId = the series;
+  // schedulePeriod = "YYYY-MM" for monthly (previous month billed) or the
+  // visit jobId for per-visit. One generated invoice per (business,
+  // series, period) — enforced by the generation transaction (row lock +
+  // marker), not a DB unique, so no db-push gate on this populated table.
+  recurringJobId String?
+  schedulePeriod String?
   createdBy            String? // M7: User.id of the acting membership user; 'system' for system/cron writes
   updatedBy            String? // M7: User.id of the last acting membership user
   createdAt            DateTime          @default(now())
@@ -788,6 +795,17 @@ model RecurringJob {
   businessId String
   business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
   jobs       Job[]
+  // Slice 8: invoice schedule for the series. NONE = manual invoicing
+  // (today's behaviour); PER_VISIT = a DRAFT invoice on each visit
+  // completion; MONTHLY = one DRAFT invoice per month on invoiceDayOfMonth
+  // covering the PREVIOUS month's completed visits. lastInvoicePeriod is
+  // the idempotency marker for monthly generation ("2026-09") — the
+  // generation transaction locks this row and sets the marker, so a
+  // double-fired cron cannot bill the same period twice (no DB unique
+  // needed, which would trip the db-push gate on populated tables).
+  invoiceSchedule   String  @default("NONE")
+  invoiceDayOfMonth Int?
+  lastInvoicePeriod String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }

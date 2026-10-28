@@ -384,8 +384,19 @@ export async function updateJobStatus(
     return { error: 'Could not update the job. Please try again.' };
   }
   revalidateJobPaths(jobId);
-  // Outgoing webhook: job completed. Best-effort - never fails the update.
+  // Slice 8: a completed visit of a PER_VISIT series bills itself — a
+  // DRAFT invoice appears for the pro to review and send. Best-effort:
+  // generation never fails the status update (the helper never throws,
+  // and this is guarded anyway).
   if (newStatus === 'COMPLETED') {
+    try {
+      const { generatePerVisitInvoice } = await import('@/lib/scheduled-invoices');
+      await generatePerVisitInvoice(businessId, jobId, user.id);
+    } catch (err) {
+      logger.error('jobs: per-visit invoice generation failed', { businessId, jobId, error: err });
+    }
+    revalidatePath('/invoices');
+    // Outgoing webhook: job completed. Best-effort - never fails the update.
     try {
       const { emitWebhookEvent } = await import('@/lib/webhooks');
       await emitWebhookEvent(businessId, 'job.completed', {
@@ -450,6 +461,14 @@ export async function updateJobSchedule(
   });
   revalidateJobPaths(jobId);
   if (status === 'COMPLETED') {
+    // Slice 8: same per-visit billing as the Mark-complete button path.
+    try {
+      const { generatePerVisitInvoice } = await import('@/lib/scheduled-invoices');
+      await generatePerVisitInvoice(businessId, jobId, user.id);
+    } catch (err) {
+      logger.error('jobs: per-visit invoice generation failed', { businessId, jobId, error: err });
+    }
+    revalidatePath('/invoices');
     try {
       const { emitWebhookEvent } = await import('@/lib/webhooks');
       await emitWebhookEvent(businessId, 'job.completed', {

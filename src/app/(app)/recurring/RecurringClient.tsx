@@ -8,6 +8,7 @@ import { formatMoney } from '@/lib/money';
 import { t, type Locale } from '@/lib/i18n';
 import RecurringRowActions from './RecurringRowActions';
 import GenerateDueJobsButton from './GenerateDueJobsButton';
+import GenerateScheduledInvoicesButton from './GenerateScheduledInvoicesButton';
 import { PageHeader, EmptyState, Button, Chip, Card } from '@/components/kit';
 
 const FILTERS = ['ALL', 'active', 'paused'] as const;
@@ -24,6 +25,8 @@ export type RecurringPlanItem = {
   address: string | null;
   customer: { id: string; name: string };
   jobCount: number;
+  invoiceSchedule: string;
+  invoiceDayOfMonth: number | null;
 };
 
 /**
@@ -86,6 +89,7 @@ export default function RecurringClient({
       />
       <div className="flex flex-wrap gap-2">
         <GenerateDueJobsButton />
+        <GenerateScheduledInvoicesButton />
       </div>
 
       {/* Filter tabs */}
@@ -156,6 +160,14 @@ export default function RecurringClient({
                   <p className="text-xs text-ink-2 mt-1">
                     {plan.customer.name} · {freqLabel(plan.frequency)}
                   </p>
+                  {plan.invoiceSchedule === 'PER_VISIT' && (
+                    <p className="text-xs text-ink-2 mt-1">{T('recurBadgePerVisit')}</p>
+                  )}
+                  {plan.invoiceSchedule === 'MONTHLY' && plan.invoiceDayOfMonth != null && (
+                    <p className="text-xs text-ink-2 mt-1">
+                      {T('recurBadgeMonthly').replace('{day}', String(plan.invoiceDayOfMonth))}
+                    </p>
+                  )}
                 </div>
                 <RecurringRowActions id={plan.id} active={plan.active} />
               </div>

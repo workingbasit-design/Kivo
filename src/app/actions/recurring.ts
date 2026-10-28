@@ -65,6 +65,8 @@ export async function createRecurring(
     address: formData.get('address') ?? '',
     price: formData.get('price'),
     notes: formData.get('notes') ?? '',
+    invoiceSchedule: formData.get('invoiceSchedule') ?? 'NONE',
+    invoiceDayOfMonth: formData.get('invoiceDayOfMonth') ?? undefined,
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? 'Invalid recurring job details.' };
@@ -85,6 +87,9 @@ export async function createRecurring(
       notes: parsed.data.notes || null,
       customerId: parsed.data.customerId,
       businessId,
+      invoiceSchedule: parsed.data.invoiceSchedule,
+      invoiceDayOfMonth:
+        parsed.data.invoiceSchedule === 'MONTHLY' ? parsed.data.invoiceDayOfMonth ?? null : null,
     },
   });
 
@@ -114,6 +119,8 @@ export async function updateRecurring(
     address: formData.get('address') ?? '',
     price: formData.get('price'),
     notes: formData.get('notes') ?? '',
+    invoiceSchedule: formData.get('invoiceSchedule') ?? 'NONE',
+    invoiceDayOfMonth: formData.get('invoiceDayOfMonth') ?? undefined,
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? 'Invalid recurring job details.' };
@@ -134,6 +141,9 @@ export async function updateRecurring(
       priceCents: dollarsToCents(parsed.data.price),
       notes: parsed.data.notes || null,
       customerId: parsed.data.customerId,
+      invoiceSchedule: parsed.data.invoiceSchedule,
+      invoiceDayOfMonth:
+        parsed.data.invoiceSchedule === 'MONTHLY' ? parsed.data.invoiceDayOfMonth ?? null : null,
     },
   });
 
@@ -190,6 +200,25 @@ export async function runRecurringGeneration(): Promise<RecurringActionResult> {
 
   const { created } = await generateDueJobs(businessId);
 
+  revalidateRecurringPaths();
+  return { ok: true, created };
+}
+
+/**
+ * Slice 8: manual "Generate scheduled invoices" control — same monthly
+ * generation the cron runs (previous month, due series only, idempotent).
+ * Returns how many DRAFT invoices were created; 0 is a normal result
+ * (nothing due, wrong day, or already billed).
+ */
+export async function runScheduledInvoiceGeneration(): Promise<RecurringActionResult> {
+  const { businessId, user } = await requireAuth();
+  const limited = await checkLimit(user.id, 'runScheduledInvoices');
+  if (limited) return limited;
+
+  const { generateMonthlyInvoices } = await import('@/lib/scheduled-invoices');
+  const { created } = await generateMonthlyInvoices(businessId, new Date(), user.id);
+
+  revalidatePath('/invoices');
   revalidateRecurringPaths();
   return { ok: true, created };
 }

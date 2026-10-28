@@ -72,6 +72,8 @@ export default async function EditRecurringPage({
             address: plan.address,
             price: centsToDollars(plan.priceCents),
             notes: plan.notes,
+            invoiceSchedule: plan.invoiceSchedule,
+            invoiceDayOfMonth: plan.invoiceDayOfMonth,
           }}
         />
       </Card>

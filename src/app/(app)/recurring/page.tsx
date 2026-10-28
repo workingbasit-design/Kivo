@@ -45,6 +45,8 @@ export default async function RecurringPage({
     address: plan.address,
     customer: { id: plan.customer.id, name: plan.customer.name },
     jobCount: plan._count.jobs,
+    invoiceSchedule: plan.invoiceSchedule,
+    invoiceDayOfMonth: plan.invoiceDayOfMonth,
   }));
 
   return (

@@ -31,6 +31,8 @@ export interface RecurringFormInitial {
   address?: string | null;
   price?: number;
   notes?: string | null;
+  invoiceSchedule?: string;
+  invoiceDayOfMonth?: number | null;
 }
 
 /** Resolve the app locale in a client component: an explicit prop wins,
@@ -74,6 +76,13 @@ export default function RecurringForm({
   const T = (k: string) => t(locale, `t10work.${k}`);
   const jobsL = (k: string) => t(locale, `jobs.${k}`);
   const [price, setPrice] = useState<string>(initial?.price != null ? String(initial.price) : '');
+  // Slice 8: schedule fields are CONTROLLED (batch-2 lesson — useActionState
+  // resets the form element on an action return, wiping uncontrolled inputs;
+  // the day input's visibility also depends on the schedule value).
+  const [schedule, setSchedule] = useState<string>(initial?.invoiceSchedule ?? 'NONE');
+  const [day, setDay] = useState<string>(
+    initial?.invoiceDayOfMonth != null ? String(initial.invoiceDayOfMonth) : ''
+  );
 
   const todayISO = toISODateLocal(new Date());
   const freqLabel = (f: string) =>
@@ -161,6 +170,37 @@ export default function RecurringForm({
           onChange={(e) => setPrice(e.target.value)}
           placeholder={T('recurFormPricePlaceholder')}
         />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Select
+          label={T('recurFormInvoiceSchedule')}
+          hint={T('recurFormInvoiceScheduleHint')}
+          name="invoiceSchedule"
+          value={schedule}
+          onChange={(e) => setSchedule(e.target.value)}
+          options={[
+            { value: 'NONE', label: T('recurSchedNone') },
+            { value: 'PER_VISIT', label: T('recurSchedPerVisit') },
+            { value: 'MONTHLY', label: T('recurSchedMonthly') },
+          ]}
+        />
+
+        {schedule === 'MONTHLY' && (
+          <Input
+            label={T('recurFormInvoiceDay')}
+            hint={T('recurFormInvoiceDayHint')}
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={28}
+            name="invoiceDayOfMonth"
+            required
+            value={day}
+            onChange={(e) => setDay(e.target.value)}
+            placeholder="15"
+          />
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
