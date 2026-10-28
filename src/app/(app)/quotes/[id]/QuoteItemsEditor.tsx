@@ -42,7 +42,7 @@ export default function QuoteItemsEditor({
   quoteId: string;
   locale: Locale;
   initial: {
-    items: { desc: string; qty: string; rate: string }[];
+    items: { desc: string; qty: string; rate: string; cost?: string }[];
     discountType: 'PERCENT' | 'AMOUNT' | null;
     discountValue: number | null;
   };

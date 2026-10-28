@@ -400,6 +400,7 @@ model InvoiceLineItem {
   description String
   qty         Float
   unitPriceCents BigInt // cents (M8 cutover: Float column dropped)
+  unitCostCents BigInt? // slice 3 (2026-10-28): owner's unit cost in cents; null = unknown, never $0
   taxRateBps  Int? // snapshot of the applicable tax rate (basis points) at creation (M3)
   taxType     String? // snapshot of the tax type(s), e.g. "HST", "GST+QST" (M3)
   position    Int // display order
@@ -1428,6 +1429,7 @@ model QuoteLineItem {
   description String
   qty         Float
   unitPriceCents BigInt // cents (M8 cutover: Float column dropped)
+  unitCostCents BigInt? // slice 3 (2026-10-28): owner's unit cost in cents; null = unknown, never $0
   taxRateBps  Int? // snapshot of the applicable tax rate (basis points) at creation (M3)
   taxType     String? // snapshot of the tax type(s), e.g. "HST", "GST+QST" (M3)
   position    Int // display order

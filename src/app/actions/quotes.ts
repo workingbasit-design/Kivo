@@ -69,6 +69,13 @@ const lineItemSchema = z.object({
   desc: z.string().trim().min(1, 'Item description is required').max(200),
   qty: z.coerce.number().min(0.01, 'Qty must be positive').max(100000),
   rate: z.coerce.number().min(0, "Rate can't be negative").max(10_000_000),
+  // Slice 3: optional unit cost. Preprocess first — bare z.coerce.number()
+  // turns null into 0, which would silently convert "unknown" into "free".
+  // Blank/missing → null (unknown); garbage → NaN → validation error.
+  cost: z.preprocess(
+    (v) => (v === '' || v == null ? null : v),
+    z.coerce.number().min(0, "Cost can't be negative").max(10_000_000).nullable()
+  ),
 });
 
 type LineItem = z.infer<typeof lineItemSchema>;
@@ -231,6 +238,8 @@ export async function createQuote(
         description: item.desc,
         qty: item.qty,
         unitPriceCents: dollarsToCents(item.rate) ?? BigInt(0),
+        unitCostCents:
+          item.cost == null ? null : (dollarsToCents(item.cost) ?? BigInt(0)),
         position: index,
       })),
     });
@@ -294,6 +303,8 @@ export async function updateQuoteItems(
         description: item.desc,
         qty: item.qty,
         unitPriceCents: dollarsToCents(item.rate) ?? BigInt(0),
+        unitCostCents:
+          item.cost == null ? null : (dollarsToCents(item.cost) ?? BigInt(0)),
         position: index,
       })),
     }),

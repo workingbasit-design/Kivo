@@ -261,6 +261,10 @@ const fragment = {
       itemAmountPreview: 'Amount',
       qtyLabel: 'Quantity',
       rateLabel: 'Rate',
+      costLabel: 'Cost',
+      lineMarginLabel: 'Margin',
+      marginCostLabel: 'Cost (costed lines)',
+      marginCoverage: '{costed} of {total} lines have costs',
       removeItemLabel: 'Remove item',
       itemPlaceholder: 'For example, furnace tune-up',
 
@@ -720,6 +724,10 @@ const fragment = {
       itemAmountPreview: 'Montant',
       qtyLabel: 'Quantité',
       rateLabel: 'Prix',
+      costLabel: 'Coût',
+      lineMarginLabel: 'Marge',
+      marginCostLabel: 'Coût (lignes avec coût)',
+      marginCoverage: '{costed} lignes sur {total} ont un coût',
       removeItemLabel: 'Retirer la ligne',
       itemPlaceholder: 'Par exemple, mise au point de la fournaise',
 

@@ -10,9 +10,11 @@ export interface LineItemRow {
   desc: string;
   qty: string;
   rate: string;
+  /** Owner's unit cost as typed; '' = unknown (never $0). Slice 3. */
+  cost: string;
 }
 
-const blankRow = (): LineItemRow => ({ desc: '', qty: '1', rate: '' });
+const blankRow = (): LineItemRow => ({ desc: '', qty: '1', rate: '', cost: '' });
 
 /**
  * Dynamic line-item rows. Serializes valid rows into a hidden `itemsJson`
@@ -32,12 +34,14 @@ export default function LineItemsEditor({
   onSubtotal?: (subtotal: number) => void;
   onDiscount?: (discount: { type: 'PERCENT' | 'AMOUNT' | null; value: number }) => void;
   currency?: string;
-  initialItems?: { desc: string; qty: string; rate: string }[];
+  initialItems?: { desc: string; qty: string; rate: string; cost?: string }[];
   initialDiscount?: { type: 'PERCENT' | 'AMOUNT' | null; value: string };
   locale?: Locale;
 }) {
   const [rows, setRows] = useState<LineItemRow[]>(
-    initialItems && initialItems.length > 0 ? initialItems : [blankRow()]
+    initialItems && initialItems.length > 0
+      ? initialItems.map((it) => ({ ...it, cost: it.cost ?? '' }))
+      : [blankRow()]
   );
   const [discountType, setDiscountType] = useState<'' | 'PERCENT' | 'AMOUNT'>(
     initialDiscount?.type === 'PERCENT' || initialDiscount?.type === 'AMOUNT'
@@ -48,14 +52,23 @@ export default function LineItemsEditor({
 
   const L = (path: string) => t(locale, path);
 
+  // Slice 3: cost is optional metadata. Blank or unparseable → null
+  // (unknown), never $0 — the server re-validates, and the live margin
+  // preview below makes a mistyped cost visible before submit.
   const validRows = useMemo(
     () =>
       rows
-        .map((r) => ({
-          desc: r.desc.trim(),
-          qty: Number(r.qty),
-          rate: Number(r.rate),
-        }))
+        .map((r) => {
+          const costRaw = r.cost.trim();
+          const costNum = costRaw === '' ? NaN : Number(costRaw);
+          return {
+            desc: r.desc.trim(),
+            qty: Number(r.qty),
+            rate: Number(r.rate),
+            cost:
+              Number.isFinite(costNum) && costNum >= 0 ? costNum : null,
+          };
+        })
         .filter(
           (r) => r.desc.length > 0 && Number.isFinite(r.qty) && r.qty > 0 && Number.isFinite(r.rate) && r.rate >= 0
         ),
@@ -113,7 +126,7 @@ export default function LineItemsEditor({
               placeholder={L('t10money.itemPlaceholder').replace('{n}', String(i + 1))}
               maxLength={200}
             />
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               <Input
                 label={L('t10money.qtyLabel')}
                 value={row.qty}
@@ -128,6 +141,13 @@ export default function LineItemsEditor({
                 placeholder="0.00"
                 inputMode="decimal"
               />
+              <Input
+                label={`${L('t10money.costLabel')} ${currencySymbol(currency)}`}
+                value={row.cost}
+                onChange={(e) => setRow(i, { cost: e.target.value })}
+                placeholder="0.00"
+                inputMode="decimal"
+              />
             </div>
             <div className="flex items-center justify-between">
               <p className="text-xs text-ink-2">
@@ -138,6 +158,30 @@ export default function LineItemsEditor({
                     currency
                   )}
                 </span>
+                {(() => {
+                  // Slice 3 live margin preview: only when the typed cost
+                  // parses — a blank or mistyped cost shows nothing, so a
+                  // missing preview is itself the signal to check the cost.
+                  const qty = Number(row.qty);
+                  const rate = Number(row.rate);
+                  const cost = row.cost.trim() === '' ? NaN : Number(row.cost);
+                  if (
+                    !Number.isFinite(qty) || qty <= 0 ||
+                    !Number.isFinite(rate) || rate < 0 ||
+                    !Number.isFinite(cost) || cost < 0
+                  ) {
+                    return null;
+                  }
+                  const revenue = qty * rate;
+                  const margin = Math.round((revenue - qty * cost) * 100) / 100;
+                  const pct = revenue > 0 ? Math.round((margin / revenue) * 100) : null;
+                  return (
+                    <span className="font-semibold text-ink">
+                      {' '}· {L('t10money.lineMarginLabel')}: {formatMoney(margin, currency)}
+                      {pct !== null ? ` (${pct}%)` : ''}
+                    </span>
+                  );
+                })()}
               </p>
               <button
                 type="button"

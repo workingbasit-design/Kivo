@@ -7,6 +7,7 @@ import { prisma } from '@/lib/prisma';
 import { Card } from '@/components/kit';
 import { localeMoneyTag } from '@/lib/utils';
 import { formatMoney, centsToDollars } from '@/lib/money';
+import { lineMargin, summarizeLineMargins } from '@/lib/line-margin';
 import MoneyText from '@/components/MoneyText';
 import DateTimeText from '@/components/DateTimeText';
 import { getTaxConfig, totalTaxRate } from '@/lib/tax';
@@ -194,6 +195,28 @@ export default async function QuoteDetailPage({
                       {' '}· <MoneyText dollars={round2(item.qty * centsToDollars(item.unitPriceCents))} locale={locale} />
                     </span>
                   </p>
+                  {(() => {
+                    // Slice 3: cost/margin line, pro-only page (SEE_PRICES
+                    // gate above) and never printed — the pro prints this
+                    // document for the customer.
+                    const m = lineMargin({
+                      qty: item.qty,
+                      unitPriceCents: item.unitPriceCents,
+                      unitCostCents: item.unitCostCents,
+                    });
+                    if (!m) return null;
+                    return (
+                      <p className="text-xs text-ink-2 mt-1 tabular-nums print:hidden">
+                        {L('t10money.costLabel')}:{' '}
+                        <MoneyText dollars={centsToDollars(m.costCents)} locale={locale} />
+                        {' '}· {L('t10money.lineMarginLabel')}:{' '}
+                        <span className="font-semibold text-ink">
+                          <MoneyText dollars={centsToDollars(m.marginCents)} locale={locale} />
+                          {m.marginPct !== null ? ` (${Math.round(m.marginPct)}%)` : ''}
+                        </span>
+                      </p>
+                    );
+                  })()}
                 </li>
               ))}
             </ul>
@@ -224,6 +247,40 @@ export default async function QuoteDetailPage({
             <dd className="font-bold"><MoneyText dollars={centsToDollars(quote.totalCents)} locale={locale} /></dd>
           </div>
         </dl>
+
+        {(() => {
+          // Slice 3 margin summary: costed lines only, never printed.
+          const summary = summarizeLineMargins(
+            quote.lineItems.map((item) => ({
+              qty: item.qty,
+              unitPriceCents: item.unitPriceCents,
+              unitCostCents: item.unitCostCents,
+            }))
+          );
+          if (summary.costedLines === 0) return null;
+          return (
+            <div className="border-t border-line pt-4 mt-4 space-y-1.5 text-sm tabular-nums print:hidden">
+              <div className="flex justify-between text-ink-2">
+                <span>{L('t10money.marginCostLabel')}</span>
+                <span className="font-semibold"><MoneyText dollars={centsToDollars(summary.costCents)} locale={locale} /></span>
+              </div>
+              <div className="flex justify-between text-ink-2">
+                <span>{L('t10money.lineMarginLabel')}</span>
+                <span className="font-semibold">
+                  <MoneyText dollars={centsToDollars(summary.marginCents)} locale={locale} />
+                  {summary.marginPct !== null ? ` (${Math.round(summary.marginPct)}%)` : ''}
+                </span>
+              </div>
+              {summary.costedLines < summary.totalLines && (
+                <p className="text-xs text-ink-2">
+                  {L('t10money.marginCoverage')
+                    .replace('{costed}', String(summary.costedLines))
+                    .replace('{total}', String(summary.totalLines))}
+                </p>
+              )}
+            </div>
+          );
+        })()}
 
         <MoneyExplainer
           title={L('explainer.title')}
@@ -269,6 +326,12 @@ export default async function QuoteDetailPage({
               desc: item.description,
               qty: String(item.qty),
               rate: String(centsToDollars(item.unitPriceCents)),
+              // Slice 3: null cost stays blank — centsToDollars(null) is 0,
+              // which would silently rewrite "unknown" as "free".
+              cost:
+                item.unitCostCents == null
+                  ? ''
+                  : String(centsToDollars(item.unitCostCents)),
             })),
             discountType:
               quote.discountType === 'PERCENT' || quote.discountType === 'AMOUNT'
