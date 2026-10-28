@@ -66,8 +66,17 @@ export default function DirectoryPromptCard({
         toast.error(L("directoryPromptError"));
         return;
       }
-      if (res.added) setAdded(true);
-      else setAlreadyListed(true);
+      // The action revalidates the job page, so this card unmounts on
+      // the next render (the service is now listed, the prompt's gates
+      // no longer hold). The toast is the feedback that survives that
+      // unmount — without it the tap would look like it did nothing.
+      if (res.added) {
+        setAdded(true);
+        toast.success(L("directoryPromptAdded"));
+      } else {
+        setAlreadyListed(true);
+        toast.success(L("directoryPromptAlreadyListed"));
+      }
     });
   };
 
