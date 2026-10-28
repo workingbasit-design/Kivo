@@ -15,6 +15,7 @@ import { invoiceSchema } from '@/lib/validations';
 import { calcTax, splitStoredTax } from '@/lib/tax';
 import { dollarsToCents, centsToDollars } from '@/lib/money';
 import { invoiceDueAt } from '@/lib/invoice-paid';
+import { parseDateInputInTimezone } from '@/lib/utils';
 import { nextDocumentNumber } from '@/lib/numbering';
 
 // Mirrors the server action's whitelist (src/app/actions/invoices.ts) so a
@@ -127,6 +128,17 @@ export async function POST(req: Request) {
   }).taxAmount;
   const total = round2(subtotal + taxAmount);
 
+  // Date-only value in the business timezone (same fix as the app's
+  // createInvoice path): server-local midnight misplaces the date in
+  // every tz-aware query and on the detail page. Looked up BEFORE the
+  // transaction (connection_limit=1 deadlock rule, lib/prisma.ts).
+  const apiBusiness = await prisma.business.findUnique({
+    where: { id: auth.key.businessId },
+    select: { timezone: true },
+  });
+  const apiTz = apiBusiness?.timezone ?? 'America/Toronto';
+  const apiDateValue = parseDateInputInTimezone(d.date, apiTz);
+
   const created = await prisma.$transaction(async (tx) => {
     // Number generated inside the same transaction as the insert (M4).
     const number = await nextDocumentNumber(tx, auth.key.businessId, 'INVOICE');
@@ -135,8 +147,8 @@ export async function POST(req: Request) {
         businessId: auth.key.businessId,
         customerId: customer.id,
         number,
-        date: new Date(`${d.date}T00:00:00`),
-        dueAt: invoiceDueAt(new Date(`${d.date}T00:00:00`)),
+        date: apiDateValue,
+        dueAt: invoiceDueAt(apiDateValue, apiTz),
         subtotalCents: dollarsToCents(subtotal) ?? BigInt(0),
         taxRate: d.taxRate,
         taxType,

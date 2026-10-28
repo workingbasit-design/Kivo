@@ -13,6 +13,8 @@
  * Lives in lib (not in the 'use server' action module) because server
  * action files may only export async functions.
  */
+import { parseDateInputInTimezone, toISODateInTimezone } from './utils.ts';
+
 export function invoicePaidUpdate(newStatus: string): { status: string; paidAt?: Date } {
   return newStatus === 'PAID'
     ? { status: newStatus, paidAt: new Date() }
@@ -20,10 +22,23 @@ export function invoicePaidUpdate(newStatus: string): { status: string; paidAt?:
 }
 
 /**
- * Due date for a newly issued invoice: issue date + 30 days (net-30).
- * M10 added Invoice.dueAt (nullable; null for drafts). Set at creation for
- * non-draft invoices and when a draft is sent.
+ * Due date for a newly issued invoice: issue date + 30 CALENDAR days in
+ * the business timezone (net-30).
+ *
+ * The old implementation added exactly 30×24h, which lands an hour
+ * early across a DST fallback and renders a day early (an Oct 26 issue
+ * showed "Due Nov 24" instead of Nov 25). Calendar-day addition in the
+ * business timezone keeps the due date on the date the owner expects.
+ * With no timezone given, the legacy fixed-24h addition is kept.
  */
-export function invoiceDueAt(fromDate: Date): Date {
-  return new Date(fromDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+export function invoiceDueAt(fromDate: Date, timeZone?: string | null): Date {
+  if (!timeZone) {
+    return new Date(fromDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+  }
+  const key = toISODateInTimezone(fromDate, timeZone);
+  const [y, m, d] = key.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d + 30));
+  const p = (v: number) => String(v).padStart(2, '0');
+  const dueKey = `${dt.getUTCFullYear()}-${p(dt.getUTCMonth() + 1)}-${p(dt.getUTCDate())}`;
+  return parseDateInputInTimezone(dueKey, timeZone);
 }

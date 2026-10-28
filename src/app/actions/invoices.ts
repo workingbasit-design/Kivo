@@ -226,10 +226,8 @@ export async function createInvoice(
   // Computed BEFORE the transaction: with connection_limit=1, awaiting
   // a global-client query inside the tx callback deadlocks the pool
   // (see the deadlock-safety note in lib/prisma.ts).
-  const dateValue = parseDateInputInTimezone(
-    parsed.data.date,
-    await businessTimeZone(businessId),
-  );
+  const tz = await businessTimeZone(businessId);
+  const dateValue = parseDateInputInTimezone(parsed.data.date, tz);
 
   const invoice = await prisma.$transaction(async (tx) => {
     // Number generated inside the same transaction as the insert (M4).
@@ -238,7 +236,7 @@ export async function createInvoice(
       data: {
         number,
         date: dateValue,
-        dueAt: invoiceDueAt(dateValue),
+        dueAt: invoiceDueAt(dateValue, tz),
         subtotalCents: dollarsToCents(subtotal) ?? BigInt(0),
         taxRate: parsed.data.taxRate,
         taxType,
@@ -991,7 +989,9 @@ export async function sendInvoiceEmail(
     data: {
       sentAt: new Date(),
       // M10: stamp the net-30 due date on send if it isn't set yet.
-      ...(invoice.dueAt ? {} : { dueAt: invoiceDueAt(new Date()) }),
+      ...(invoice.dueAt
+        ? {}
+        : { dueAt: invoiceDueAt(new Date(), await businessTimeZone(businessId)) }),
     },
   });
   revalidatePath('/invoices');

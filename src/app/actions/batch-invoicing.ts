@@ -152,7 +152,7 @@ export async function confirmBatchInvoices(
         data: {
           number,
           date: invoiceDate,
-          dueAt: invoiceDueAt(invoiceDate),
+          dueAt: invoiceDueAt(invoiceDate, business?.timezone ?? 'America/Toronto'),
           subtotalCents,
           taxRate,
           taxAmountCents: dollarsToCents(taxAmount) ?? BigInt(0),
@@ -251,7 +251,7 @@ export async function createMilestoneInvoice(
       data: {
         number,
         date: invoiceDate,
-        dueAt: invoiceDueAt(invoiceDate),
+        dueAt: invoiceDueAt(invoiceDate, business?.timezone ?? 'America/Toronto'),
         subtotalCents: dollarsToCents(subtotal) ?? BigInt(0),
         taxRate,
         taxAmountCents: dollarsToCents(taxAmount) ?? BigInt(0),
