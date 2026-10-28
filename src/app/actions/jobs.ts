@@ -158,6 +158,20 @@ export async function createJob(
     if (crew) crewId = crew.id;
   }
 
+  // Optional service-property link: tenant-scoped AND customer-scoped -
+  // the property must belong to this business AND to the job's customer,
+  // otherwise it is ignored rather than failing the whole job. The
+  // property's province becomes the tax jurisdiction in slice 2.
+  let propertyId: string | null = null;
+  const rawPropertyId = String(formData.get('propertyId') ?? '').trim();
+  if (rawPropertyId) {
+    const property = await prisma.customerProperty.findFirst({
+      where: { id: rawPropertyId, businessId, customerId: parsed.data.customerId },
+      select: { id: true },
+    });
+    if (property) propertyId = property.id;
+  }
+
   const tz = await businessTimeZone(businessId);
   const dateValue = parseDateInputInTimezone(parsed.data.date, tz);
   const timeNorm = normalizeJobTime(parsed.data.time);
@@ -185,6 +199,7 @@ export async function createJob(
       technician: parsed.data.technician || null,
       crewId,
       serviceId,
+      propertyId,
     },
   });
 
@@ -279,6 +294,23 @@ export async function updateJob(
     crewUpdate.crewId = crewId;
   }
 
+  // Optional service-property link: same tenant + customer scoping as
+  // create. Only touched when the form actually rendered the property
+  // select (formData.has).
+  const propertyUpdate: { propertyId?: string | null } = {};
+  if (formData.has('propertyId')) {
+    let propertyId: string | null = null;
+    const rawPropertyId = String(formData.get('propertyId') ?? '').trim();
+    if (rawPropertyId) {
+      const property = await prisma.customerProperty.findFirst({
+        where: { id: rawPropertyId, businessId, customerId: parsed.data.customerId },
+        select: { id: true },
+      });
+      if (property) propertyId = property.id;
+    }
+    propertyUpdate.propertyId = propertyId;
+  }
+
   const tz = await businessTimeZone(businessId);
   const dateValue = parseDateInputInTimezone(parsed.data.date, tz);
   const timeNorm = normalizeJobTime(parsed.data.time);
@@ -303,6 +335,7 @@ export async function updateJob(
       notes: parsed.data.notes || null,
       technician: parsed.data.technician || null,
       ...crewUpdate,
+      ...propertyUpdate,
     },
   });
 

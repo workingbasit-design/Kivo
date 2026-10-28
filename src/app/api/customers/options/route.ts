@@ -20,8 +20,15 @@ export async function GET() {
     select: { id: true, name: true },
     orderBy: { name: 'asc' },
   });
+  // Service properties for the job form's property picker: tenant-scoped,
+  // filtered client-side by the selected customer.
+  const properties = await prisma.customerProperty.findMany({
+    where: { businessId },
+    select: { id: true, customerId: true, label: true, address: true, province: true },
+    orderBy: [{ label: 'asc' }],
+  });
   return NextResponse.json(
-    { customers },
+    { customers, properties },
     { headers: { 'Cache-Control': 'no-store' } }
   );
 }

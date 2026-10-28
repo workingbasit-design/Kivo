@@ -63,7 +63,7 @@ async function loadCustomer(id: string, businessId: string) {
       },
       properties: {
         orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }],
-        select: { id: true, label: true, address: true, notes: true, isPrimary: true },
+        select: { id: true, label: true, address: true, notes: true, isPrimary: true, province: true },
       },
       fieldValues: {
         select: { fieldId: true, value: true },
@@ -399,6 +399,7 @@ export default async function CustomerDetailPage({
             address: p.address,
             notes: p.notes,
             isPrimary: p.isPrimary,
+            province: p.province,
           }))}
         />
       </Card>

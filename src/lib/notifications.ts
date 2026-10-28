@@ -39,6 +39,9 @@ export function fill(template: string, params: Record<string, string>): string {
   return template.replace(/\{(\w+)\}/g, (_, k: string) => params[k] ?? '');
 }
 
+/** Minimum gap between full notification-generation scans (see syncNotifications). */
+export const NOTIFICATION_SYNC_MINUTES = 15;
+
 export interface NotificationCandidate {
   type: NotificationType;
   dedupeKey: string;
@@ -282,11 +285,23 @@ const MAX_PER_TYPE = 50;
 export async function syncNotifications(businessId: string): Promise<number> {
   const business = await prisma.business.findUnique({
     where: { id: businessId },
-    select: { timezone: true, regionCode: true, notificationSettings: true },
+    select: { timezone: true, regionCode: true, notificationSettings: true, lastNotificationSyncAt: true },
   });
   if (!business) return 0;
   const settings = parseSettings(business.notificationSettings);
   const timeZone = business.timezone || 'America/Toronto';
+
+  // Throttle (2026-10-28): the layout calls this on EVERY navigation, and
+  // a full generation run is ~7 sequential queries plus a createMany.
+  // Through the connection_limit=1 pool that made every tap slow and,
+  // under burst taps, exhausted retries into the error boundary. The bell
+  // count is still read fresh per navigation (getUnreadCount); only the
+  // generation scan is throttled — notifications are best-effort, and a
+  // 15-minute delay on a "job tomorrow" nudge is immaterial.
+  const lastSync = business.lastNotificationSyncAt;
+  if (lastSync && Date.now() - lastSync.getTime() < NOTIFICATION_SYNC_MINUTES * 60 * 1000) {
+    return 0;
+  }
 
   // Disabled types: never generate, and clear their pending (unread) items so
   // the inbox immediately reflects the new preference.
@@ -462,7 +477,10 @@ export async function syncNotifications(businessId: string): Promise<number> {
     );
   }
 
-  if (candidates.length === 0) return 0;
+  if (candidates.length === 0) {
+    await stampSyncTime(businessId);
+    return 0;
+  }
   const res = await prisma.notification.createMany({
     data: candidates.map((c) => ({
       businessId,
@@ -473,7 +491,23 @@ export async function syncNotifications(businessId: string): Promise<number> {
     })),
     skipDuplicates: true,
   });
+  await stampSyncTime(businessId);
   return res.count;
+}
+
+/**
+ * Record that a generation scan completed. Best-effort: a stamp failure
+ * must never break the sync itself (the next navigation just re-runs it).
+ */
+async function stampSyncTime(businessId: string): Promise<void> {
+  try {
+    await prisma.business.update({
+      where: { id: businessId },
+      data: { lastNotificationSyncAt: new Date() },
+    });
+  } catch {
+    // Best-effort only.
+  }
 }
 
 export interface ListedNotification {

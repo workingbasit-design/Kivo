@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { clientIpFromHeaders } from '@/lib/client-ip';
+import { normalizeProvinceCode } from '@/lib/property-province';
 
 export type PropertyErrorCode =
   | 'tooMany'
@@ -14,6 +15,7 @@ export type PropertyErrorCode =
   | 'invalidLabel'
   | 'invalidAddress'
   | 'invalidNotes'
+  | 'invalidProvince'
   | 'saveFailed'
   | 'deleteFailed';
 
@@ -23,6 +25,7 @@ export type PropertyRow = {
   address: string;
   notes: string | null;
   isPrimary: boolean;
+  province: string | null;
 };
 
 export type PropertyResult =
@@ -64,14 +67,21 @@ function validatePropertyFields(input: {
   label: unknown;
   address: unknown;
   notes?: unknown;
-}): { label: string; address: string; notes: string | null } | { error: PropertyErrorCode } {
+  province?: unknown;
+}): { label: string; address: string; notes: string | null; province: string | null } | { error: PropertyErrorCode } {
   const label = String(input.label ?? '').trim();
   const address = String(input.address ?? '').trim();
   const notesRaw = String(input.notes ?? '').trim();
   if (!label || label.length > MAX_LABEL) return { error: 'invalidLabel' };
   if (!address || address.length > MAX_ADDRESS) return { error: 'invalidAddress' };
   if (notesRaw.length > MAX_NOTES) return { error: 'invalidNotes' };
-  return { label, address, notes: notesRaw ? notesRaw : null };
+  // A provided province must be a real CA code; blank means unknown.
+  // normalizeProvinceCode returns null for BOTH blank and junk, so
+  // distinguish them: non-blank input that normalizes to null is invalid.
+  const provinceRaw = typeof input.province === 'string' ? input.province.trim() : '';
+  const province = normalizeProvinceCode(provinceRaw);
+  if (provinceRaw !== '' && province === null) return { error: 'invalidProvince' };
+  return { label, address, notes: notesRaw ? notesRaw : null, province };
 }
 
 /** List a customer's properties (primary first), tenant-scoped. */
@@ -92,7 +102,7 @@ export async function listProperties(customerId: string): Promise<PropertyResult
   const properties = await prisma.customerProperty.findMany({
     where: { customerId, businessId },
     orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }],
-    select: { id: true, label: true, address: true, notes: true, isPrimary: true },
+    select: { id: true, label: true, address: true, notes: true, isPrimary: true, province: true },
   });
   return { ok: true, properties };
 }
@@ -100,7 +110,7 @@ export async function listProperties(customerId: string): Promise<PropertyResult
 /** Add a property. The customer's first property becomes the primary one. */
 export async function addProperty(
   customerId: string,
-  input: { label: string; address: string; notes?: string | null }
+  input: { label: string; address: string; notes?: string | null; province?: string | null }
 ): Promise<PropertyResult> {
   const limited = checkLimit(await clientKey('props:write'));
   if (limited) return { ok: false, error: limited };
@@ -129,9 +139,10 @@ export async function addProperty(
         label: valid.label,
         address: valid.address,
         notes: valid.notes,
+        province: valid.province,
         isPrimary: existing === 0,
       },
-      select: { id: true, label: true, address: true, notes: true, isPrimary: true },
+      select: { id: true, label: true, address: true, notes: true, isPrimary: true, province: true },
     });
     revalidatePath(`/customers/${customerId}`);
     return { ok: true, property };
@@ -143,7 +154,7 @@ export async function addProperty(
 /** Update a property's label/address/notes. Primary flag is set separately. */
 export async function updateProperty(
   id: string,
-  input: { label: string; address: string; notes?: string | null }
+  input: { label: string; address: string; notes?: string | null; province?: string | null }
 ): Promise<PropertyResult> {
   const limited = checkLimit(await clientKey('props:write'));
   if (limited) return { ok: false, error: limited };
@@ -164,7 +175,7 @@ export async function updateProperty(
   try {
     await prisma.customerProperty.update({
       where: { id, businessId },
-      data: { label: valid.label, address: valid.address, notes: valid.notes },
+      data: { label: valid.label, address: valid.address, notes: valid.notes, province: valid.province },
     });
     revalidatePath(`/customers/${existing.customerId}`);
     return { ok: true };

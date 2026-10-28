@@ -70,6 +70,13 @@ const fragment = {
       listEmptyDesc:
         'Raise a tax-ready invoice in under a minute. Tax math handled for you.',
       dueSuffix: '{amount} due',
+      paySummaryTitle: 'Payment history',
+      paySummaryBalance: 'Balance due',
+      paySummaryUnpaid: 'unpaid invoices',
+      paySummaryNone: 'No outstanding balance for this customer.',
+      paySummaryDue: 'due',
+      paySummaryLastPayment: 'Last payment',
+      paySummaryLoading: 'Loading payment info…',
     },
   },
   fr: {
@@ -137,6 +144,13 @@ const fragment = {
       listEmptyDesc:
         'Créez une facture prête pour les taxes en moins d’une minute. Le calcul des taxes est pris en charge.',
       dueSuffix: '{amount} dû',
+      paySummaryTitle: 'Historique de paiements',
+      paySummaryBalance: 'Solde dû',
+      paySummaryUnpaid: 'factures impayées',
+      paySummaryNone: 'Aucun solde impayé pour ce client.',
+      paySummaryDue: 'échéance',
+      paySummaryLastPayment: 'Dernier paiement',
+      paySummaryLoading: 'Chargement des infos de paiement…',
     },
   },
 } as const;

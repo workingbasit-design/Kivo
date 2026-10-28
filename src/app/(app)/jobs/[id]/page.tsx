@@ -80,6 +80,7 @@ export default async function JobDetailPage({
       customer: true,
       assignedTo: { select: { id: true, name: true } },
       jobAssignments: { select: { userId: true } },
+      property: { select: { id: true, label: true, address: true, province: true } },
       service: {
         select: { name: true, nameFr: true, category: true, iconKey: true },
       },
@@ -241,6 +242,13 @@ export default async function JobDetailPage({
     whenPrimary,
     whenSecondary,
     address: job.address?.trim() ? job.address.trim() : null,
+    property: job.property
+      ? {
+          label: job.property.label,
+          address: job.property.address,
+          province: job.property.province,
+        }
+      : null,
     notes: job.notes?.trim() ? job.notes.trim() : null,
     priceCents,
     taxLabel,

@@ -15,6 +15,14 @@ export interface JobFormCustomer {
   name: string;
 }
 
+export interface JobFormProperty {
+  id: string;
+  customerId: string;
+  label: string;
+  address: string;
+  province: string | null;
+}
+
 export interface JobFormInitial {
   id?: string;
   title?: string;
@@ -27,6 +35,8 @@ export interface JobFormInitial {
   notes?: string | null;
   technician?: string | null;
   crewId?: string | null;
+  /** Service property this job is performed at (create + edit). */
+  propertyId?: string | null;
   /** Price-book service this job was created from (create flow only). */
   serviceId?: string;
   /** Checklist template this job was created from (create flow only). */
@@ -56,6 +66,7 @@ function resolveLocale(prop?: Locale): Locale {
 export default function JobForm({
   customers,
   crews,
+  properties,
   initial,
   action,
   submitLabel,
@@ -65,6 +76,9 @@ export default function JobForm({
   customers: JobFormCustomer[];
   /** Optional crew options for the crew <select> (omitted when crews aren't loaded). */
   crews?: JobFormCrew[];
+  /** Optional server-provided service properties (edit page); otherwise
+   *  they arrive via the live /api/customers/options refresh. */
+  properties?: JobFormProperty[];
   initial?: JobFormInitial;
   action: (_prev: JobActionResult, formData: FormData) => Promise<JobActionResult>;
   submitLabel: string;
@@ -83,6 +97,10 @@ export default function JobForm({
   // reuses cached RSC). Refresh on mount so a customer created moments ago
   // always appears in the combobox.
   const [liveCustomers, setLiveCustomers] = useState<JobFormCustomer[]>(customers);
+  // Service properties arrive with the same refresh (tenant-scoped, and
+  // filtered below to the selected customer). The edit page's initial
+  // property is kept even before the refresh lands.
+  const [liveProperties, setLiveProperties] = useState<JobFormProperty[]>([]);
   const [priceValue, setPriceValue] = useState<string>(String(initial?.price ?? ''));
   const [noCharge, setNoCharge] = useState<boolean>(initial?.noCharge ?? false);
   const priceIsZero = (() => {
@@ -98,6 +116,9 @@ export default function JobForm({
         if (!cancelled && Array.isArray(data?.customers)) {
           setLiveCustomers(data.customers);
         }
+        if (!cancelled && Array.isArray(data?.properties)) {
+          setLiveProperties(data.properties);
+        }
       })
       .catch(() => {});
     return () => {
@@ -111,6 +132,25 @@ export default function JobForm({
     initial?.customerId ?? (customers[0]?.id ?? '__NEW__')
   );
   const showNewCustomer = customerChoice === '__NEW__';
+  // Service properties for the picker: server-provided on the edit page,
+  // otherwise the live refresh above. Filtered to the selected customer.
+  // The picker is uncontrolled (defaultValue) and remounts on customer
+  // change (key), so switching customers always clears the link — a
+  // property belongs to exactly one customer.
+  const effectiveProperties = (properties ?? liveProperties).filter(
+    (p) => p.customerId === customerChoice
+  );
+  const onPropertyChange = (value: string) => {
+    if (!value) return;
+    const prop = effectiveProperties.find((p) => p.id === value);
+    if (!prop) return;
+    // Prefill the address only when it is still empty — never overwrite
+    // a hand-typed address.
+    const addressInput = document.querySelector<HTMLInputElement>('input[name="address"]');
+    if (addressInput && addressInput.value.trim() === '') {
+      addressInput.value = prop.address;
+    }
+  };
 
   return (
     <form action={formAction} className="space-y-5">
@@ -142,6 +182,28 @@ export default function JobForm({
           { value: '__NEW__', label: T('formNewCustomerOption') },
         ]}
       />
+
+      {!showNewCustomer && (
+        <Select
+          key={customerChoice}
+          label={jobsL('serviceProperty')}
+          name="propertyId"
+          // Keep the saved link only while the original customer is still
+          // selected; any other customer starts with no property (the
+          // key remount above makes this a true reset, not a stale id).
+          defaultValue={
+            customerChoice === initial?.customerId ? (initial?.propertyId ?? '') : ''
+          }
+          onChange={(e) => onPropertyChange(e.target.value)}
+          options={[
+            { value: '', label: jobsL('noSpecificProperty') },
+            ...effectiveProperties.map((p) => ({
+              value: p.id,
+              label: `${p.label} — ${p.address}${p.province ? ` (${p.province})` : ''}`,
+            })),
+          ]}
+        />
+      )}
 
       {showNewCustomer && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-paper border border-smoke rounded-2xl">

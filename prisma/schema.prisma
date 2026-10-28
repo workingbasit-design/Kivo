@@ -167,6 +167,13 @@ model Business {
   directoryClaim       DirectoryClaim?
   googleConnection     GoogleConnection?
   notificationSettings String? // JSON: { job_tomorrow: bool, job_soon: bool, ... }; null = all types on
+  // Throttle for the layout's per-navigation notification sync (2026-10-28):
+  // generating notifications scans jobs/invoices/quotes/bookings/payments,
+  // and running that on EVERY tap through a connection_limit=1 pool is what
+  // made the app feel slow and occasionally tripped the error boundary.
+  // Sync runs at most once per NOTIFICATION_SYNC_MINUTES; the bell count
+  // itself is still read fresh on every navigation.
+  lastNotificationSyncAt DateTime?
   notifications        Notification[]
   messagingSettings    MessagingSettings?
   attachments          Attachment[]
@@ -295,6 +302,11 @@ model Job {
   customer       Customer           @relation(fields: [customerId], references: [id], onDelete: Cascade)
   businessId     String
   business       Business           @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  // Service property: which of the customer's addresses this job is
+  // performed at. Null = no specific property (job.address is the
+  // free-text fallback). Tenant + customer validated on write.
+  propertyId     String?
+  property       CustomerProperty?  @relation(fields: [propertyId], references: [id], onDelete: SetNull)
   recurringJobId String?
   recurringJob   RecurringJob?      @relation(fields: [recurringJobId], references: [id], onDelete: SetNull)
   serviceId      String? // optional link to the price-book service this job was created from
@@ -334,6 +346,7 @@ model Job {
   @@index([businessId, date])
   @@index([businessId, status, startAt]) // M12: schedule/status lists
   @@index([businessId, customerId, startAt]) // M12: customer job history
+  @@index([propertyId])
 }
 
 model Invoice {
@@ -1370,6 +1383,11 @@ model CustomerProperty {
   address    String
   notes      String?
   isPrimary  Boolean  @default(false)
+  // 2-letter CA province code (e.g. "ON"). Drives per-property tax
+  // jurisdiction (teardown slice 2): tax follows where the service is
+  // performed, not where the business is registered. Null = unknown.
+  province   String?
+  jobs       Job[]
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 

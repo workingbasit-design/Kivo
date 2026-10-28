@@ -4,7 +4,8 @@ import { useState, useTransition } from 'react';
 import { MapPin, Plus, Pencil, Trash2, Star, Loader2 } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
-import { Button, Card, Input, Textarea } from '@/components/kit';
+import { Button, Card, Input, Textarea, Select } from '@/components/kit';
+import { CA_PROVINCES } from '@/lib/tax';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import {
   listProperties,
@@ -35,6 +36,7 @@ export default function CustomerProperties({
   const [label, setLabel] = useState('');
   const [address, setAddress] = useState('');
   const [notes, setNotes] = useState('');
+  const [province, setProvince] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, startTransition] = useTransition();
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
@@ -59,6 +61,7 @@ export default function CustomerProperties({
     setLabel('');
     setAddress('');
     setNotes('');
+    setProvince('');
     setError(null);
   }
 
@@ -68,6 +71,7 @@ export default function CustomerProperties({
     setLabel(p.label);
     setAddress(p.address);
     setNotes(p.notes ?? '');
+    setProvince(p.province ?? '');
     setError(null);
   }
 
@@ -79,7 +83,7 @@ export default function CustomerProperties({
 
   async function save() {
     setError(null);
-    const payload = { label, address, notes };
+    const payload = { label, address, notes, province: province || null };
     const res =
       editingId != null
         ? await updateProperty(editingId, payload)
@@ -158,6 +162,15 @@ export default function CustomerProperties({
                 maxLength={500}
               />
             </div>
+            <Select
+              label={L('properties.province')}
+              value={province}
+              onChange={(e) => setProvince(e.target.value)}
+              options={[
+                { value: '', label: L('properties.provinceUnknown') },
+                ...CA_PROVINCES.map((p) => ({ value: p.code, label: `${p.code} — ${p.name}` })),
+              ]}
+            />
             <Textarea
               label={L('properties.notes')}
               value={notes}
@@ -196,6 +209,11 @@ export default function CustomerProperties({
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-ink flex items-center gap-2 flex-wrap">
                     {p.label}
+                    {p.province && (
+                      <span className="inline-flex items-center text-[10px] font-bold bg-surface-2 text-ink-2 rounded-full px-2 py-0.5">
+                        {p.province}
+                      </span>
+                    )}
                     {p.isPrimary && (
                       <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-warn-bg text-warn-text rounded-full px-2 py-0.5">
                         <Star size={10} /> {L('properties.primary')}

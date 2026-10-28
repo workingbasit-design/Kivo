@@ -243,6 +243,7 @@ export default function ImportsClient({
           <div className="rounded-xl border border-warn-line bg-warn-bg p-4">
             <p className="font-semibold text-warn-text">{t(locale, 'imports.notConnected')}</p>
             <p className="text-sm text-warn-text mt-1">{t(locale, 'imports.notConnectedDesc')}</p>
+            <p className="text-sm text-warn-text mt-2">{t(locale, 'imports.googleBlockedNote')}</p>
             <div className="mt-3 flex flex-wrap gap-2">
               <Button variant="primary" href="/api/google/connect">
                 {t(locale, 'imports.connectGoogle')}

@@ -52,6 +52,8 @@ export interface JobDetailVm {
   whenPrimary: string;
   whenSecondary: string;
   address: string | null;
+  /** Service property the job is performed at (null = free-text address only). */
+  property: { label: string; address: string; province: string | null } | null;
   notes: string | null;
   priceCents: number;
   taxLabel: string;
@@ -342,6 +344,12 @@ export default function JobDetailClient({ vm }: { vm: JobDetailVm }) {
           <p className="m-0 text-[16px] font-bold text-ink">
             {vm.address ?? '—'}
           </p>
+          {vm.property && (
+            <p className="m-0 text-[14px] text-ink-2">
+              {jobsL('serviceProperty')}: {vm.property.label}
+              {vm.property.province ? ` (${vm.property.province})` : ''}
+            </p>
+          )}
         </div>
         {directionsUrl && (
           <a

@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import { createInvoice, type ActionResult } from '@/app/actions/invoices';
 import LineItemsEditor from '@/components/LineItemsEditor';
+import CustomerPaymentSummary from '@/components/CustomerPaymentSummary';
 import {
   Button,
   Card,
@@ -69,6 +70,9 @@ export default function InvoiceForm({
   // createInvoice redirects to the new invoice on success; toast on failure only.
   useResultToast(state, {});
   const [subtotal, setSubtotal] = useState(0);
+  // Selected customer drives the auto-fetched payment summary below the
+  // select (2026-10-28): balance due, unpaid invoices, last payment.
+  const [customerId, setCustomerId] = useState<string>(jobContext?.customerId ?? '');
   const [taxSel, setTaxSel] = useState<TaxSelection>(() =>
     defaultTaxSelection(taxConfig)
   );
@@ -106,7 +110,8 @@ export default function InvoiceForm({
               label="Customer"
               name="customerId"
               required
-              defaultValue={jobContext?.customerId ?? ''}
+              value={customerId}
+              onChange={(e) => setCustomerId(e.target.value)}
               options={[
                 { value: '', label: 'Select a customer', disabled: true },
                 ...customers.map((c) => ({ value: c.id, label: c.name })),
@@ -126,6 +131,7 @@ export default function InvoiceForm({
                 ) : undefined
               }
             />
+            <CustomerPaymentSummary customerId={customerId} locale={locale} />
           </div>
           <div className="min-w-0">
             <DateField

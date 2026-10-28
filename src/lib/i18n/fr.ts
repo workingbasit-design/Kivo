@@ -83,6 +83,8 @@ const fr: Dictionary = {
     time: 'Heure',
     technician: 'Technicien',
     address: 'Adresse',
+    serviceProperty: 'Propriété de service',
+    noSpecificProperty: 'Aucune propriété précise',
     price: 'Prix',
     notes: 'Notes',
     status: 'Statut',

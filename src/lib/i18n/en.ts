@@ -84,6 +84,8 @@ const en: Dict = {
     time: 'Time',
     technician: 'Technician',
     address: 'Address',
+    serviceProperty: 'Service property',
+    noSpecificProperty: 'No specific property',
     price: 'Price',
     notes: 'Notes',
     status: 'Status',
