@@ -77,7 +77,7 @@ const fragment = {
       templates: {
         title: 'Quote templates',
         subtitle:
-          'Saved line packages — start a quote from one instead of retyping it.',
+          'Saved line packages, start a quote from one instead of retyping it.',
         newTemplate: 'New template',
         editTemplate: 'Edit template',
         nameLabel: 'Template name',
@@ -97,7 +97,7 @@ const fragment = {
         lineOne: '1 line',
         lineOther: '{count} lines',
         fromQuoteHint:
-          'Starting from quote {title} — edit the lines, then save as a new template.',
+          'Starting from quote {title}, edit the lines, then save as a new template.',
       },
       expiry: {
         validUntil: 'Valid until',
@@ -182,7 +182,7 @@ const fragment = {
       templates: {
         title: 'Modèles de devis',
         subtitle:
-          'Ensembles de lignes enregistrés — commencez un devis à partir d’un modèle au lieu de tout retaper.',
+          'Ensembles de lignes enregistrés, commencez un devis à partir d’un modèle au lieu de tout retaper.',
         newTemplate: 'Nouveau modèle',
         editTemplate: 'Modifier le modèle',
         nameLabel: 'Nom du modèle',
@@ -202,7 +202,7 @@ const fragment = {
         lineOne: '1 ligne',
         lineOther: '{count} lignes',
         fromQuoteHint:
-          'À partir du devis {title} — modifiez les lignes, puis enregistrez comme nouveau modèle.',
+          'À partir du devis {title}, modifiez les lignes, puis enregistrez comme nouveau modèle.',
       },
       expiry: {
         validUntil: 'Valide jusqu’au',

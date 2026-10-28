@@ -336,7 +336,7 @@ const fragment = {
         shareNotPublic:
           'Your card will be shareable once your directory listing is verified. Nothing is public yet.',
         shareNoPage:
-          'Save your public profile first — that creates your shareable card.',
+          'Save your public profile first, that creates your shareable card.',
         shareSave: 'Save',
       },
       demand: {
@@ -1024,7 +1024,7 @@ const fragment = {
         shareNotPublic:
           'Votre carte pourra être partagée une fois votre inscription à l’annuaire vérifiée. Rien n’est public pour le moment.',
         shareNoPage:
-          'Enregistrez d’abord votre profil public — cela créera votre carte partageable.',
+          'Enregistrez d’abord votre profil public, cela créera votre carte partageable.',
         shareSave: 'Enregistrer',
       },
       demand: {
