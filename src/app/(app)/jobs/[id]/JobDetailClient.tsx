@@ -29,6 +29,7 @@ import JobTimeEntryForm from '@/components/JobTimeEntryForm';
 import { JobNoteForm, JobNoteItem } from '@/components/JobNoteForm';
 import Attachments from '@/components/Attachments';
 import ReviewLinkButton from '@/components/ReviewLinkButton';
+import DirectoryPromptCard from '@/components/DirectoryPromptCard';
 
 import { updateJobStatus, deleteJob } from '@/app/actions/jobs';
 import { assignJobTechnician } from '@/app/actions/dispatch';
@@ -121,6 +122,13 @@ export interface JobDetailVm {
   /** Name used in the "on my way" customer message. */
   notifyTechName: string;
   reviewEligible: boolean;
+  /**
+   * Lesson 8: service offered for the directory-profile prompt, when
+   * the customer consented, a profile page exists, and the service is
+   * not already listed. The client shows it only once the LIVE status
+   * is COMPLETED/PAID. Null when any gate fails.
+   */
+  directoryPrompt: { service: string } | null;
   locale: Locale;
 }
 
@@ -777,6 +785,19 @@ export default function JobDetailClient({ vm }: { vm: JobDetailVm }) {
         secondaryLabel={secondaryLabel}
         onSecondary={onSecondary}
       />
+      {/* Lesson 8: offer the completed job's service for the public
+          directory profile. The server already gated on consent, an
+          existing profile page, and not-already-listed; the LIVE
+          status gate lives here so an in-session Mark complete
+          reveals the prompt without a reload. */}
+      {vm.directoryPrompt &&
+        (status === 'COMPLETED' || status === 'PAID') && (
+          <DirectoryPromptCard
+            jobId={vm.id}
+            service={vm.directoryPrompt.service}
+            locale={locale}
+          />
+        )}
       <BottomSheet
         open={moreOpen}
         onClose={() => setMoreOpen(false)}

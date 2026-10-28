@@ -17,6 +17,7 @@ import {
 } from '@/lib/utils';
 import { formatDisplayDate } from '@/lib/attention';
 import { getReviewEligibility } from '@/lib/review-eligibility';
+import { isServiceListed, readServiceAreas } from '@/lib/directory-prompt';
 import JobDetailClient, { type JobDetailVm } from './JobDetailClient';
 import RecordLastOpened from '@/components/RecordLastOpened';
 
@@ -108,7 +109,7 @@ export default async function JobDetailPage({
   });
   if (!job) notFound();
 
-  const [members, templates, customerJobCount, reviewEligibility] =
+  const [members, templates, customerJobCount, reviewEligibility, bookingPage] =
     await Promise.all([
       prisma.membership.findMany({
         where: { businessId, status: 'ACTIVE' },
@@ -122,7 +123,22 @@ export default async function JobDetailPage({
       }),
       prisma.job.count({ where: { businessId, customerId: job.customerId } }),
       getReviewEligibility(businessId, job.id),
+      prisma.bookingPage.findUnique({
+        where: { businessId },
+        select: { serviceAreas: true },
+      }),
     ]);
+
+  // Lesson 8 prompt facts (status is gated client-side on the LIVE
+  // status, so an in-session Mark complete reveals the prompt without
+  // a reload): consented customer + profile page exists + service not
+  // already listed. No customer data is passed — only the service name.
+  const directoryPrompt =
+    bookingPage &&
+    job.customer.messageConsent &&
+    !isServiceListed(readServiceAreas(bookingPage.serviceAreas), job.title)
+      ? { service: job.title.trim() }
+      : null;
 
   const now = new Date();
   const late = isJobLate(
@@ -319,6 +335,7 @@ export default async function JobDetailPage({
     regionCode: business?.regionCode ?? null,
     notifyTechName,
     reviewEligible: reviewEligibility.ok,
+    directoryPrompt,
     locale,
   };
 

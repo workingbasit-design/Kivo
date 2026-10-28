@@ -8,6 +8,7 @@ import { requireAuth } from '@/lib/auth';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { isDirectoryAdminEmail } from '@/lib/directory';
 import { serviceAreasToJson } from '@/lib/directory-claim';
+import { appendServiceArea, readServiceAreas } from '@/lib/directory-prompt';
 
 export type DirectoryProfileResult = { ok?: boolean; error?: string };
 
@@ -297,4 +298,70 @@ export async function rejectDirectoryClaim(
 
   revalidatePath('/directory-claims');
   return { ok: true };
+}
+
+/* ------------------------------------------------------------------ */
+/* Lesson 8: add a completed job's service to the directory profile     */
+/* ------------------------------------------------------------------ */
+
+export type AddJobServiceResult =
+  | { ok: true; added: boolean; service: string }
+  | { ok: false; error: string };
+
+/**
+ * One-tap add from the job detail prompt. Re-checks every gate the
+ * prompt itself checks, plus the done-status gate (the prompt's
+ * client-side status check is UX, not security): the job must be
+ * COMPLETED/PAID, tenant-scoped to the caller's business, its customer
+ * must have CASL consent, and a profile page must exist. Only the
+ * job's service name (title) is written — no customer data ever
+ * reaches the public profile. Idempotent: an already-listed service
+ * returns added:false, not an error.
+ */
+export async function addJobServiceToDirectoryProfile(
+  jobId: string,
+): Promise<AddJobServiceResult> {
+  const { businessId, user } = await requireAuth();
+  const limited = await checkLimit(user.id);
+  if (limited) return { ok: false, error: limited.error ?? 'Too many requests.' };
+
+  const job = await prisma.job.findFirst({
+    where: { id: jobId, businessId, archivedAt: null },
+    select: {
+      title: true,
+      status: true,
+      customer: { select: { messageConsent: true } },
+    },
+  });
+  if (!job) return { ok: false, error: 'Job not found.' };
+  if (job.status !== 'COMPLETED' && job.status !== 'PAID') {
+    return { ok: false, error: 'Only completed jobs can be added to the profile.' };
+  }
+  if (!job.customer.messageConsent) {
+    return { ok: false, error: 'This customer has not given consent.' };
+  }
+  const page = await prisma.bookingPage.findUnique({
+    where: { businessId },
+    select: { serviceAreas: true },
+  });
+  if (!page) return { ok: false, error: 'No directory profile yet.' };
+
+  const areas = readServiceAreas(page.serviceAreas);
+  const appended = appendServiceArea(areas, job.title);
+  if (!appended.ok) {
+    if (appended.reason === 'listed') {
+      return { ok: true, added: false, service: job.title.trim() };
+    }
+    if (appended.reason === 'full') {
+      return { ok: false, error: 'Your profile already lists 12 services.' };
+    }
+    return { ok: false, error: 'Nothing to add.' };
+  }
+  await prisma.bookingPage.update({
+    where: { businessId },
+    data: { serviceAreas: serviceAreasToJson(appended.areas.join('\n')) },
+  });
+  revalidatePath('/directory-profile');
+  revalidatePath(`/jobs/${jobId}`);
+  return { ok: true, added: true, service: job.title.trim() };
 }
