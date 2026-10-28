@@ -8,6 +8,7 @@ import { t, type Locale } from '@/lib/i18n';
 import { getActiveShareToken } from '@/lib/share';
 import { QUOTE_STATUSES } from '@/lib/validations';
 import { centsToDollars } from '@/lib/money';
+import { isQuoteExpired } from '@/lib/quote-expiry';
 import QuotesClient, { type QuoteListItem, type StaleQuoteItem } from './QuotesClient';
 import type { ExportColumn } from '@/components/ExportButtons';
 
@@ -80,6 +81,8 @@ export default async function QuotesPage({
     status: q.status,
     createdAt: q.createdAt.toISOString(),
     customer: { name: q.customer.name },
+    expiresAt: q.expiresAt ? q.expiresAt.toISOString() : null,
+    expired: isQuoteExpired({ status: q.status, expiresAt: q.expiresAt }),
   }));
 
   const staleQuotes: StaleQuoteItem[] = staleRows.map((q) => ({

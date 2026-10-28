@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { createQuote, type ActionResult } from '@/app/actions/quotes';
 import LineItemsEditor from '@/components/LineItemsEditor';
 import MorphSelect from '@/components/MorphSelect';
-import { Button, Card, Input, Select } from '@/components/kit';
+import { Button, Card, DateField, Input, Select } from '@/components/kit';
 import { TaxSelect, defaultTaxSelection, type TaxSelection } from '../../_components/TaxSelect';
 import { formatMoney } from '@/lib/money';
 import { calcTax, splitStoredTax, type TaxConfig } from '@/lib/tax';
@@ -61,6 +61,8 @@ export default function QuoteForm({
   // so a failed save (useActionState resets the form element) never
   // wipes it — the JobForm form-reset lesson.
   const [title, setTitle] = useState('');
+  // Slice 5: same treatment for the validity date.
+  const [validUntil, setValidUntil] = useState('');
   const [appliedId, setAppliedId] = useState('');
   const applied = templates.find((tpl) => tpl.id === appliedId) ?? null;
   const [taxSel, setTaxSel] = useState<TaxSelection>(() =>
@@ -112,6 +114,13 @@ export default function QuoteForm({
             </p>
           )}
         </div>
+        <DateField
+          label={t(locale, 'quotes.expiry.validUntil')}
+          name="validUntil"
+          value={validUntil}
+          onChange={(e) => setValidUntil(e.target.value)}
+          hint={t(locale, 'quotes.expiry.validUntilHint')}
+        />
       </Card>
 
       <Card className="p-6">

@@ -11,6 +11,7 @@ import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { getTaxConfig, totalTaxRate } from '@/lib/tax';
 import QuotePortalActions from '@/components/QuotePortalActions';
+import { isQuoteExpired } from '@/lib/quote-expiry';
 import PortalNotice from '@/components/PortalNotice';
 import PayDepositButton from '@/components/PayDepositButton';
 import { clientIpFromHeaders } from '@/lib/client-ip';
@@ -58,6 +59,7 @@ export default async function QuotePortalPage({
       title: true,
       totalCents: true,
       status: true,
+      expiresAt: true,
       depositAmountCents: true,
       createdAt: true,
       customer: { select: { name: true } },
@@ -78,6 +80,7 @@ export default async function QuotePortalPage({
           address: true,
           regionCode: true,
           taxRegion: true,
+          timezone: true,
           currency: true,
           stripeConnection: {
             select: { chargesEnabled: true, livemode: true, liveConfirmedAt: true },
@@ -166,6 +169,20 @@ export default async function QuotePortalPage({
               <p className="text-xs text-ink-2 mt-1">
                 {L('quotes.portal.issued')} {quote.createdAt.toLocaleDateString(dateLocale, { day: 'numeric', month: 'short', year: 'numeric' })}
               </p>
+              {/* Slice 5: validity, rendered in the BUSINESS timezone —
+                  expiresAt is end-of-day there, so a viewer-side format
+                  could shift the date. */}
+              {quote.expiresAt && (
+                <p className="text-xs text-ink-2 mt-1">
+                  {L('quotes.expiry.validUntil')}{' '}
+                  {quote.expiresAt.toLocaleDateString(dateLocale, {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                    timeZone: quote.business.timezone ?? 'America/Toronto',
+                  })}
+                </p>
+              )}
             </div>
             <StatusPill status={quote.status} locale={locale} />
           </div>
@@ -188,7 +205,16 @@ export default async function QuotePortalPage({
           </div>
         </Card>
 
-        {quote.status === 'SENT' ? (
+        {/* Slice 5: an expired SENT quote shows the expired notice
+            instead of the accept/decline actions (the server decision
+            action enforces the same gate). */}
+        {quote.status === 'SENT' && isQuoteExpired(quote) ? (
+          <Card className="p-6 text-center">
+            <XCircle size={32} className="mx-auto text-danger mb-2" />
+            <p className="text-sm font-semibold text-ink">{L('quotes.expiry.expired')}</p>
+            <p className="text-sm text-ink-2 mt-1">{L('quotes.expiry.expiredNote')}</p>
+          </Card>
+        ) : quote.status === 'SENT' ? (
           <Card className="p-6">
             <QuotePortalActions
               token={token}

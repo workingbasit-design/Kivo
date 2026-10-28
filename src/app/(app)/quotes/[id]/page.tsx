@@ -5,7 +5,7 @@ import { requireAuth } from '@/lib/auth';
 import { canSeePrices } from '@/lib/roles';
 import { prisma } from '@/lib/prisma';
 import { Button, Card } from '@/components/kit';
-import { localeMoneyTag } from '@/lib/utils';
+import { localeMoneyTag, toISODateInTimezone } from '@/lib/utils';
 import { formatMoney, centsToDollars } from '@/lib/money';
 import { lineMargin, summarizeLineMargins } from '@/lib/line-margin';
 import MoneyText from '@/components/MoneyText';
@@ -33,6 +33,8 @@ import WhatsAppButton from '@/components/WhatsAppButton';
 import SmsButton from '@/components/SmsButton';
 import QuoteDepositCard from '@/components/QuoteDepositCard';
 import QuoteItemsEditor from './QuoteItemsEditor';
+import QuoteExpiryEditor from './QuoteExpiryEditor';
+import { isQuoteExpired } from '@/lib/quote-expiry';
 import RecordDepositForm from '@/components/RecordDepositForm';
 import RecordLastOpened from '@/components/RecordLastOpened';
 import { StatusPill } from '../../_components/status-ui';
@@ -85,6 +87,11 @@ export default async function QuoteDetailPage({
   const locale = await getLocale();
   const moneyLocale = localeMoneyTag(locale);
   const L = (path: string) => t(locale, path);
+
+  // Slice 5: derived via the helper (react-hooks/purity forbids a direct
+  // Date.now() in render; a helper call like followupThreshold is the
+  // codebase's accepted shape for this).
+  const expired = isQuoteExpired(quote);
 
   const currency = 'CAD';
   const taxConfig = getTaxConfig(
@@ -152,6 +159,29 @@ export default async function QuoteDetailPage({
           {t(locale, 'quotes.templates.saveAsTemplate')}
         </Button>
       </div>
+
+      {/* Slice 5: validity display + editor (DRAFT/SENT only). Expiry is
+          derived: only a SENT quote with a past expiresAt is Expired. */}
+      {quote.expiresAt && (
+        <p className="text-sm text-ink-2">
+          {t(locale, 'quotes.expiry.validUntil')}{' '}
+          <DateTimeText date={quote.expiresAt} variant="short" timezone={quote.business.timezone ?? 'America/Toronto'} locale={locale} />
+          {quote.status === 'SENT' && expired && (
+            <span className="text-danger font-semibold"> · {t(locale, 'quotes.expiry.expired')}</span>
+          )}
+        </p>
+      )}
+      {(quote.status === 'DRAFT' || quote.status === 'SENT') && (
+        <QuoteExpiryEditor
+          quoteId={quote.id}
+          initialDateKey={
+            quote.expiresAt
+              ? toISODateInTimezone(quote.expiresAt, quote.business.timezone ?? 'America/Toronto')
+              : ''
+          }
+          locale={locale}
+        />
+      )}
 
       <Card className="p-6 space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">

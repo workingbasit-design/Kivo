@@ -12,6 +12,7 @@ import { dollarsToCents, centsToDollars, formatCents } from '@/lib/money';
 import { nextDocumentNumber } from '@/lib/numbering';
 import { getTaxConfig, splitStoredTax, type TaxConfig, type TaxLine } from '@/lib/tax';
 import { QUOTE_TRANSITIONS } from '@/lib/quote-status';
+import { expiryEndOfDay, isQuoteExpired, isValidDateKey } from '@/lib/quote-expiry';
 import { computeQuoteTotals, type DiscountType } from '@/lib/quote-totals';
 import { parseDepositAmount } from '@/lib/quote-deposit';
 import {
@@ -148,6 +149,15 @@ async function ownedQuote(businessId: string, id: string) {
   });
 }
 
+/** Business timezone, defaulting to Toronto (mirrors invoices.ts). */
+async function businessTimeZone(businessId: string): Promise<string> {
+  const business = await prisma.business.findUnique({
+    where: { id: businessId },
+    select: { timezone: true },
+  });
+  return business?.timezone || 'America/Toronto';
+}
+
 /**
  * Create a quote. Line items come in as JSON; the server recomputes the
  * subtotal and adds tax from the business's region settings (never trusts
@@ -180,7 +190,7 @@ export async function createQuote(
   // stored total is tax-inclusive on the discounted amount.
   const business = await prisma.business.findUnique({
     where: { id: businessId },
-    select: { regionCode: true, taxRegion: true },
+    select: { regionCode: true, taxRegion: true, timezone: true },
   });
   const taxConfig = getTaxConfig(business?.regionCode, business?.taxRegion);
   const totals = computeQuoteTotals(
@@ -189,6 +199,18 @@ export async function createQuote(
     quoteTaxesFromForm(formData, taxConfig)
   );
   const total = totals.total;
+
+  // Slice 5: optional validity date. Blank = no expiry. Stored as
+  // end-of-day in the business timezone ("valid until Nov 15" means
+  // THROUGH Nov 15).
+  let expiresAt: Date | null = null;
+  const validUntilRaw = String(formData.get('validUntil') ?? '').trim();
+  if (validUntilRaw) {
+    if (!isValidDateKey(validUntilRaw)) {
+      return { error: 'Invalid expiry date.' };
+    }
+    expiresAt = expiryEndOfDay(validUntilRaw, business?.timezone);
+  }
 
   // Optional deposit request - validated against the server-computed total.
   // Blank means no deposit (stored as null).
@@ -227,6 +249,7 @@ export async function createQuote(
         discountValueCents:
           discount.type === 'AMOUNT' ? dollarsToCents(discount.value) : null,
         depositAmountCents: dollarsToCents(deposit.amount),
+        expiresAt,
         status: 'DRAFT',
         customerId: customer.id,
         businessId,
@@ -555,6 +578,19 @@ export async function updateQuoteStatus(
     return { error: `Can't move quote from ${quote.status} to ${status}.` };
   }
 
+  // Slice 5: sending an already-expired quote is blocked — the pro picks
+  // a new valid-until date first. Other transitions don't care.
+  if (
+    status === 'SENT' &&
+    quote.expiresAt &&
+    quote.expiresAt.getTime() < Date.now()
+  ) {
+    return {
+      error:
+        'This quote has already expired. Pick a new valid-until date before sending.',
+    };
+  }
+
   await prisma.quote.update({ where: { id, businessId }, data: { status } });
 
   // F10: event-driven quote decision notification (flag + preferences checked inside).
@@ -581,6 +617,44 @@ export async function updateQuoteStatus(
 
   revalidatePath('/quotes');
   revalidatePath(`/quotes/${id}`);
+  return { ok: true };
+}
+
+export async function updateQuoteExpiry(
+  _prev: ActionResult,
+  formData: FormData
+): Promise<ActionResult> {
+  const limited = checkLimit(await clientKey('quote:expiry'));
+  if (limited) return limited;
+
+  let businessId: string;
+  try {
+    ({ businessId } = await requireAuth());
+  } catch {
+    return { error: 'Please log in again.' };
+  }
+
+  const id = String(formData.get('id') ?? '');
+  const quote = await ownedQuote(businessId, id);
+  if (!quote) return { error: 'Quote not found.' };
+  if (quote.status !== 'DRAFT' && quote.status !== 'SENT') {
+    return { error: 'Only draft or sent quotes can change expiry.' };
+  }
+
+  // Blank clears the expiry (no expiry). A past date is allowed — that
+  // is how the pro retracts a sent quote's validity.
+  const raw = String(formData.get('validUntil') ?? '').trim();
+  let expiresAt: Date | null = null;
+  if (raw) {
+    if (!isValidDateKey(raw)) {
+      return { error: 'Invalid expiry date.' };
+    }
+    expiresAt = expiryEndOfDay(raw, await businessTimeZone(businessId));
+  }
+
+  await prisma.quote.update({ where: { id, businessId }, data: { expiresAt } });
+  revalidatePath(`/quotes/${id}`);
+  revalidatePath('/quotes');
   return { ok: true };
 }
 
@@ -611,6 +685,19 @@ export async function sendQuoteEmail(
   if (!quote) return { error: 'Quote not found.' };
   if (quote.status !== 'DRAFT' && quote.status !== 'SENT') {
     return { error: 'Only draft or sent quotes can be emailed.' };
+  }
+
+  // Slice 5: emailing a DRAFT marks it SENT, so the send gate applies
+  // here too — an expired draft must not go out.
+  if (
+    quote.status === 'DRAFT' &&
+    quote.expiresAt &&
+    quote.expiresAt.getTime() < Date.now()
+  ) {
+    return {
+      error:
+        'This quote has already expired. Pick a new valid-until date before sending.',
+    };
   }
 
   const toEmail = (quote.customer.email ?? '').trim();
@@ -1100,7 +1187,7 @@ export async function portalQuoteDecisionByToken(
 
   const quote = await prisma.quote.findFirst({
     where: { id: quoteId, businessId: resolved.rec.businessId },
-    select: { id: true, status: true },
+    select: { id: true, status: true, expiresAt: true },
   });
   if (!quote) return { error: 'This link is invalid or has expired.' };
   if (quote.status === 'APPROVED' || quote.status === 'DECLINED') {
@@ -1108,6 +1195,12 @@ export async function portalQuoteDecisionByToken(
   }
   if (quote.status !== 'SENT') {
     return { error: 'This quote is not ready for approval yet.' };
+  }
+  // Slice 5: server gate — an expired quote cannot be accepted or
+  // declined, even via a crafted request. The portal UI hides the
+  // buttons too, but this is the enforcement.
+  if (isQuoteExpired(quote)) {
+    return { error: 'This quote has expired. Ask your pro for an updated quote.' };
   }
 
   // F1: E-signature required for approval — typed name + consent checkbox.

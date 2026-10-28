@@ -99,6 +99,15 @@ const fragment = {
         fromQuoteHint:
           'Starting from quote {title} — edit the lines, then save as a new template.',
       },
+      expiry: {
+        validUntil: 'Valid until',
+        validUntilHint: 'Leave blank for no expiry.',
+        expired: 'Expired',
+        expiredNote:
+          'This quote has expired. Ask your pro for an updated quote.',
+        saveExpiry: 'Save expiry',
+        expirySaved: 'Expiry saved.',
+      },
     },
   } as Dictionary,
   fr: {
@@ -194,6 +203,15 @@ const fragment = {
         lineOther: '{count} lignes',
         fromQuoteHint:
           'À partir du devis {title} — modifiez les lignes, puis enregistrez comme nouveau modèle.',
+      },
+      expiry: {
+        validUntil: 'Valide jusqu’au',
+        validUntilHint: 'Laissez vide pour aucune expiration.',
+        expired: 'Expiré',
+        expiredNote:
+          'Ce devis a expiré. Demandez à votre professionnel un devis mis à jour.',
+        saveExpiry: 'Enregistrer la validité',
+        expirySaved: 'Validité enregistrée.',
       },
     },
   } as Dictionary,

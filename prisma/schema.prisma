@@ -677,6 +677,7 @@ model Quote {
   addons            QuoteAddon[]
   lineItems         QuoteLineItem[]
   depositAmountCents BigInt? // cents (M8 cutover); null = not set
+  expiresAt          DateTime? // slice 5 (2026-10-28): validity end (business-tz end of day); null = no expiry
   discountType      String? // "PERCENT" | "AMOUNT"; null = no discount
   discountValue     Float? // percent (0-100) when discountType=PERCENT — not money, never in cents (M8 keeps this column)
   discountValueCents BigInt? // cents (M8 cutover); null = not set (always null for PERCENT)

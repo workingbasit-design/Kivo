@@ -28,6 +28,10 @@ export type QuoteListItem = {
   status: string;
   createdAt: string | Date;
   customer: { name: string };
+  /** Slice 5: ISO string or null (serialized across the server boundary). */
+  expiresAt: string | null;
+  /** Slice 5: computed server-side (Date.now() is impure in JSX). */
+  expired: boolean;
 };
 
 export type StaleQuoteItem = {
@@ -278,6 +282,13 @@ export default function QuotesClient({
                     </p>
                     <p className="text-xs text-ink-2 mt-1">
                       {q.customer.name} · <DateTimeText date={q.createdAt} variant="short" timezone={business?.timezone ?? 'America/Toronto'} locale={locale} />
+                      {q.expiresAt && q.status === 'SENT' && (
+                        q.expired ? (
+                          <span className="text-danger font-semibold"> · {t(locale, 'quotes.expiry.expired')}</span>
+                        ) : (
+                          <span> · {t(locale, 'quotes.expiry.validUntil')} <DateTimeText date={q.expiresAt} variant="short" timezone={business?.timezone ?? 'America/Toronto'} locale={locale} /></span>
+                        )
+                      )}
                     </p>
                   </div>
                   <div className="flex flex-col items-end gap-1.5 shrink-0">
