@@ -16,6 +16,7 @@ import {
   Textarea,
 } from '@/components/kit';
 import { TaxSelect, defaultTaxSelection, type TaxSelection } from '../../_components/TaxSelect';
+import { taxSelections } from '@/lib/tax-select';
 import { toISODateLocal } from '@/lib/utils';
 
 /**
@@ -60,6 +61,8 @@ export default function InvoiceForm({
     jobTitle: string;
     customerId: string;
     price: number;
+    /** Slice 2: the job's service property, when linked. */
+    property: { id: string; label: string; province: string | null } | null;
   } | null;
 }) {
   const [state, formAction, isPending] = useActionState<ActionResult, FormData>(
@@ -76,6 +79,79 @@ export default function InvoiceForm({
   const [taxSel, setTaxSel] = useState<TaxSelection>(() =>
     defaultTaxSelection(taxConfig)
   );
+
+  // Slice 2: the manual form gains the job form's optional property picker
+  // (same tenant-scoped /api/customers/options source). Picking a property
+  // sets the tax DEFAULT to that property's province — it never locks the
+  // TaxSelect, which stays freely overridable. The picker submits nothing:
+  // Invoice has no property link; the chosen taxType/taxRate carry the
+  // effect, and the issued invoice keeps its tax snapshot afterwards.
+  type FormProperty = { id: string; customerId: string; label: string; address: string; province: string | null };
+  const [liveProperties, setLiveProperties] = useState<FormProperty[]>([]);
+  const [propertyValue, setPropertyValue] = useState<string>(jobContext?.property?.id ?? '');
+  // True while the current tax selection came from a property pick (or the
+  // arriving job's property) rather than a manual TaxSelect change — the
+  // hint below only claims a property basis while this holds.
+  const [taxFromProperty, setTaxFromProperty] = useState<boolean>(
+    !!jobContext?.property?.province
+  );
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/customers/options', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!cancelled && Array.isArray(data?.properties)) {
+          setLiveProperties(data.properties);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  // Switching customers resets the property link (a property belongs to
+  // exactly one customer) — except when switching back to the arriving
+  // job's customer, which restores the job's property and its tax default
+  // (the same default the form opened with).
+  const onCustomerChange = (value: string) => {
+    setCustomerId(value);
+    if (value === jobContext?.customerId && jobContext?.property) {
+      setPropertyValue(jobContext.property.id);
+      const province = jobContext.property.province;
+      if (province) {
+        const sel = taxSelections(locale).find((s) => s.id === province.toUpperCase());
+        if (sel) setTaxSel(sel);
+        setTaxFromProperty(true);
+      } else {
+        setTaxFromProperty(false);
+      }
+    } else {
+      setPropertyValue('');
+      setTaxFromProperty(false);
+    }
+  };
+  const effectiveProperties = liveProperties.filter((p) => p.customerId === customerId);
+  const onPropertyChange = (value: string) => {
+    setPropertyValue(value);
+    if (!value) {
+      setTaxFromProperty(false);
+      return;
+    }
+    const prop = effectiveProperties.find((p) => p.id === value);
+    if (prop?.province) {
+      const sel = taxSelections(locale).find((s) => s.id === prop.province!.toUpperCase());
+      if (sel) {
+        setTaxSel(sel);
+        setTaxFromProperty(true);
+      }
+    }
+  };
+  // The property driving the hint: the live pick when available, else the
+  // arriving job's property before the options refresh lands.
+  const selectedProperty =
+    effectiveProperties.find((p) => p.id === propertyValue) ??
+    (jobContext?.property?.id === propertyValue ? jobContext.property : undefined);
+  const hintProvince = taxFromProperty ? (selectedProperty?.province ?? null) : null;
 
   // Breakdown preview through the shared tax engine - createInvoice
   // recomputes with the exact same call (splitStoredTax on the submitted
@@ -111,7 +187,7 @@ export default function InvoiceForm({
               name="customerId"
               required
               value={customerId}
-              onChange={(e) => setCustomerId(e.target.value)}
+              onChange={(e) => onCustomerChange(e.target.value)}
               options={[
                 { value: '', label: 'Select a customer', disabled: true },
                 ...customers.map((c) => ({ value: c.id, label: c.name })),
@@ -132,6 +208,23 @@ export default function InvoiceForm({
               }
             />
             <CustomerPaymentSummary customerId={customerId} locale={locale} />
+            {customerId !== '' && effectiveProperties.length > 0 && (
+              <div className="mt-4">
+                <Select
+                  label={t(locale, 'jobs.serviceProperty')}
+                  value={propertyValue}
+                  onChange={(e) => onPropertyChange(e.target.value)}
+                  options={[
+                    { value: '', label: t(locale, 'jobs.noSpecificProperty') },
+                    ...effectiveProperties.map((p) => ({
+                      value: p.id,
+                      label: `${p.label} — ${p.address}${p.province ? ` (${p.province})` : ''}`,
+                    })),
+                  ]}
+                  hint={t(locale, 'billing.taxPropertyPickerHint')}
+                />
+              </div>
+            )}
           </div>
           <div className="min-w-0">
             <DateField
@@ -181,8 +274,16 @@ export default function InvoiceForm({
             locale={locale}
             label={t(locale, 't10money.taxSelectLabel')}
             value={taxSel}
-            onChange={setTaxSel}
+            onChange={(sel) => {
+              setTaxSel(sel);
+              setTaxFromProperty(false);
+            }}
           />
+          {hintProvince && (
+            <p className="text-xs text-ink-2">
+              {t(locale, 'billing.taxPropertyHint').replace('{province}', hintProvince)}
+            </p>
+          )}
         </div>
 
         <dl className="border-t border-line pt-4 space-y-1.5 text-sm">

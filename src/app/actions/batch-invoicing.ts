@@ -11,6 +11,7 @@ import { nextDocumentNumber } from '@/lib/numbering';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
 import { getTaxConfig, totalTaxRate, calcTax, type TaxConfig } from '@/lib/tax';
+import { resolveTaxProvince } from '@/lib/property-tax';
 import {
   todayInTimezone,
   toISODateLocal,
@@ -41,13 +42,23 @@ function checkLimit(key: string, locale: Locale): ConfirmBatchResult | null {
   return null;
 }
 
-/** Load this business's tax config (region-aware defaults for new invoices). */
-async function businessTaxConfig(businessId: string): Promise<TaxConfig> {
-  const business = await prisma.business.findUnique({
-    where: { id: businessId },
-    select: { regionCode: true, taxRegion: true },
-  });
-  return getTaxConfig(business?.regionCode, business?.taxRegion);
+/**
+ * Slice 2 (2026-10-28): tax follows the job's service property province,
+ * falling back to the business region when the job has no property (or
+ * its province is unknown). Pure — safe to call inside a $transaction
+ * callback, where a global-client query would deadlock (connection_limit=1).
+ */
+function taxConfigForJob(
+  business: { regionCode?: string | null; taxRegion?: string | null } | null,
+  propertyProvince: string | null | undefined
+): TaxConfig {
+  return getTaxConfig(
+    business?.regionCode,
+    resolveTaxProvince({
+      propertyProvince,
+      businessTaxRegion: business?.taxRegion,
+    })
+  );
 }
 
 /**
@@ -66,13 +77,20 @@ export async function previewBatchInvoices(): Promise<BatchPreviewResult> {
     return { error: t(locale, 'billing.errors.loginAgain') };
   }
 
-  const jobs = await prisma.job.findMany({
-    where: { businessId, status: 'COMPLETED', invoices: { none: {} } },
-    include: { customer: { select: { name: true } } },
-    orderBy: { date: 'desc' },
-  });
-
-  const taxConfig = await businessTaxConfig(businessId);
+  const [jobs, business] = await Promise.all([
+    prisma.job.findMany({
+      where: { businessId, status: 'COMPLETED', invoices: { none: {} } },
+      include: {
+        customer: { select: { name: true } },
+        property: { select: { province: true } },
+      },
+      orderBy: { date: 'desc' },
+    }),
+    prisma.business.findUnique({
+      where: { id: businessId },
+      select: { regionCode: true, taxRegion: true },
+    }),
+  ]);
 
   return {
     rows: buildBatchPreview(
@@ -82,8 +100,8 @@ export async function previewBatchInvoices(): Promise<BatchPreviewResult> {
         price: centsToDollars(j.priceCents),
         customerName: j.customer.name,
         date: toISODateLocal(j.date),
-      })),
-      taxConfig.taxes
+        taxes: taxConfigForJob(business, j.property?.province).taxes,
+      }))
     ),
   };
 }
@@ -115,6 +133,7 @@ export async function confirmBatchInvoices(
     include: {
       customer: { select: { id: true, name: true } },
       invoices: { select: { id: true } },
+      property: { select: { province: true } },
     },
   });
 
@@ -125,10 +144,8 @@ export async function confirmBatchInvoices(
 
   const business = await prisma.business.findUnique({
     where: { id: businessId },
-    select: { timezone: true, regionCode: true },
+    select: { timezone: true, regionCode: true, taxRegion: true },
   });
-  const taxConfig = await businessTaxConfig(businessId);
-  const taxRate = totalTaxRate(taxConfig);
   const invoiceDate = localMidnight(
     todayInTimezone(business?.timezone, business?.regionCode)
   );
@@ -141,9 +158,13 @@ export async function confirmBatchInvoices(
       // Server-side money math - never trusts client values. Per-line tax
       // through the shared engine, identical to the batch preview.
       // job.priceCents is the pre-tax subtotal in cents; tax is computed on
-      // the dollar value and stored back as cents.
+      // the dollar value and stored back as cents. Slice 2: each job's tax
+      // follows its own service property province (pure computation, so
+      // it is safe inside this $transaction callback).
       const subtotalCents = job.priceCents;
       const subtotal = centsToDollars(subtotalCents);
+      const taxConfig = taxConfigForJob(business, job.property?.province);
+      const taxRate = totalTaxRate(taxConfig);
       const taxAmount = calcTax(subtotal, taxConfig).taxAmount;
       const total = round2(subtotal + taxAmount);
       const number = await nextDocumentNumber(tx, businessId, 'INVOICE');
@@ -219,7 +240,10 @@ export async function createMilestoneInvoice(
 
   const job = await prisma.job.findFirst({
     where: { id: jobId, businessId },
-    include: { customer: { select: { id: true } } },
+    include: {
+      customer: { select: { id: true } },
+      property: { select: { province: true } },
+    },
   });
   if (!job) return { error: t(locale, 'billing.errors.jobNotFound') };
   if (job.status === 'CANCELLED')
@@ -231,9 +255,10 @@ export async function createMilestoneInvoice(
 
   const business = await prisma.business.findUnique({
     where: { id: businessId },
-    select: { timezone: true, regionCode: true },
+    select: { timezone: true, regionCode: true, taxRegion: true },
   });
-  const taxConfig = await businessTaxConfig(businessId);
+  // Slice 2: a milestone invoice taxes where the job's service property is.
+  const taxConfig = taxConfigForJob(business, job.property?.province);
   const taxRate = totalTaxRate(taxConfig);
 
   const subtotal = round2(amount);

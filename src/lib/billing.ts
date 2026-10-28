@@ -12,6 +12,13 @@ export type BatchJobInput = {
   price: number;
   customerName: string;
   date: string; // YYYY-MM-DD display key
+  /**
+   * Slice 2 (2026-10-28): tax follows the job's service property province,
+   * so each row carries its own tax lines — one batch can mix provinces
+   * (a QC job and an ON job no longer share one business-region rate).
+   * The caller resolves these via resolveTaxProvince + getTaxConfig.
+   */
+  taxes: TaxLine[];
 };
 
 export type BatchPreviewRow = {
@@ -29,15 +36,14 @@ export type BatchPreviewRow = {
  * Build one preview row per job. Money math mirrors the server invoice path:
  * subtotal = price, tax per line through the shared tax engine (calcTax -
  * the same function the commit path uses), total = subtotal + tax. The
- * preview can never show a total the server won't store.
+ * preview can never show a total the server won't store. Each job carries
+ * its own tax lines (slice 2: property-driven tax), so mixed-province
+ * batches preview each row at its own rate.
  */
-export function buildBatchPreview(
-  jobs: BatchJobInput[],
-  taxes: TaxLine[]
-): BatchPreviewRow[] {
+export function buildBatchPreview(jobs: BatchJobInput[]): BatchPreviewRow[] {
   return jobs.map((j) => {
     const subtotal = round2(j.price);
-    const taxAmount = calcTax(subtotal, { taxes }).taxAmount;
+    const taxAmount = calcTax(subtotal, { taxes: j.taxes }).taxAmount;
     return {
       jobId: j.id,
       title: j.title,

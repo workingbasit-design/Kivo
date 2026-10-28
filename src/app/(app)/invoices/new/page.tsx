@@ -4,6 +4,7 @@ import { canSeePrices } from '@/lib/roles';
 import { prisma } from '@/lib/prisma';
 
 import { getTaxConfig } from '@/lib/tax';
+import { resolveTaxProvince } from '@/lib/property-tax';
 import { centsToDollars } from '@/lib/money';
 import InvoiceForm from './InvoiceForm';
 import { getLocale } from '@/lib/i18n/server';
@@ -39,8 +40,6 @@ export default async function NewInvoicePage({
     }),
   ]);
 
-  const taxConfig = getTaxConfig(business?.regionCode, business?.taxRegion);
-
   // D4 (2026-10-21): arriving from a job's "Create invoice" button
   // (?jobId=) prefills the form from that job — customer preselected,
   // first line item from the job — and the created invoice links back
@@ -51,11 +50,19 @@ export default async function NewInvoicePage({
     jobTitle: string;
     customerId: string;
     price: number;
+    /** Slice 2: the job's service property, when linked — drives the tax default. */
+    property: { id: string; label: string; province: string | null } | null;
   } | null = null;
   if (jobId) {
     const job = await prisma.job.findFirst({
       where: { id: jobId, businessId },
-      select: { id: true, title: true, customerId: true, priceCents: true },
+      select: {
+        id: true,
+        title: true,
+        customerId: true,
+        priceCents: true,
+        property: { select: { id: true, label: true, province: true } },
+      },
     });
     if (job) {
       jobContext = {
@@ -63,9 +70,21 @@ export default async function NewInvoicePage({
         jobTitle: job.title,
         customerId: job.customerId,
         price: centsToDollars(job.priceCents),
+        property: job.property,
       };
     }
   }
+
+  // Slice 2: the tax default follows the job's service property province
+  // when arriving from a job; otherwise the business region. The form's
+  // TaxSelect stays freely overridable — this is only the default.
+  const taxConfig = getTaxConfig(
+    business?.regionCode,
+    resolveTaxProvince({
+      propertyProvince: jobContext?.property?.province,
+      businessTaxRegion: business?.taxRegion,
+    })
+  );
 
   return (
     <div className="space-y-6">

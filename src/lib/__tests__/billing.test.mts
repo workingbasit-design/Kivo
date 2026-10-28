@@ -13,13 +13,10 @@ import {
 import fragment from '../i18n/fragments/billing.ts';
 
 test('buildBatchPreview computes per-row subtotal/tax/total', () => {
-  const rows = buildBatchPreview(
-    [
-      { id: 'j1', title: 'Furnace tune-up', price: 100, customerName: 'Alice', date: '2026-09-20' },
-      { id: 'j2', title: 'Drain clean', price: 33.333, customerName: 'Bob', date: '2026-09-21' },
-    ],
-    [{ name: 'HST', rate: 13 }]
-  );
+  const rows = buildBatchPreview([
+    { id: 'j1', title: 'Furnace tune-up', price: 100, customerName: 'Alice', date: '2026-09-20', taxes: [{ name: 'HST', rate: 13 }] },
+    { id: 'j2', title: 'Drain clean', price: 33.333, customerName: 'Bob', date: '2026-09-21', taxes: [{ name: 'HST', rate: 13 }] },
+  ]);
   assert.equal(rows.length, 2);
 
   assert.deepEqual(
@@ -38,10 +35,9 @@ test('buildBatchPreview computes per-row subtotal/tax/total', () => {
 });
 
 test('buildBatchPreview with zero tax keeps price as total', () => {
-  const [row] = buildBatchPreview(
-    [{ id: 'j1', title: 'Free visit', price: 50, customerName: 'Cara', date: '2026-09-22' }],
-    []
-  );
+  const [row] = buildBatchPreview([
+    { id: 'j1', title: 'Free visit', price: 50, customerName: 'Cara', date: '2026-09-22', taxes: [] },
+  ]);
   assert.equal(row.taxAmount, 0);
   assert.equal(row.total, 50);
 });
@@ -53,13 +49,23 @@ test('buildBatchPreview Quebec: per-line tax identical to the commit path', () =
     { name: 'GST', rate: 5 },
     { name: 'QST', rate: 9.975 },
   ];
-  const [row] = buildBatchPreview(
-    [{ id: 'j1', title: 'Leak fix', price: 33.35, customerName: 'Dan', date: '2026-09-23' }],
-    qcTaxes
-  );
+  const [row] = buildBatchPreview([
+    { id: 'j1', title: 'Leak fix', price: 33.35, customerName: 'Dan', date: '2026-09-23', taxes: qcTaxes },
+  ]);
   // GST 1.67 + QST 3.33 = 5.00 (was 4.99 under single-rounding)
   assert.equal(row.taxAmount, 5.0);
   assert.equal(row.total, 38.35);
+});
+
+test('buildBatchPreview slice 2: mixed-province batch taxes each row at its own rate', () => {
+  // One batch, two service provinces: the ON job totals at HST 13% and
+  // the QC job at GST 5% + QST 9.975% — never one shared business rate.
+  const rows = buildBatchPreview([
+    { id: 'j-on', title: 'Ottawa fix', price: 100, customerName: 'Alice', date: '2026-10-28', taxes: [{ name: 'HST', rate: 13 }] },
+    { id: 'j-qc', title: 'Montreal fix', price: 100, customerName: 'Bob', date: '2026-10-28', taxes: [{ name: 'GST', rate: 5 }, { name: 'QST', rate: 9.975 }] },
+  ]);
+  assert.equal(rows[0].total, 113);
+  assert.ok(rows[1].total === 114.97 || rows[1].total === 114.98, `QC total was ${rows[1].total}`);
 });
 
 test('validateMilestoneInput accepts valid input', () => {

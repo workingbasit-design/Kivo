@@ -77,6 +77,8 @@ const fragment = {
       paySummaryDue: 'due',
       paySummaryLastPayment: 'Last payment',
       paySummaryLoading: 'Loading payment info…',
+      taxPropertyHint: 'Tax based on service property: {province}',
+      taxPropertyPickerHint: 'Picking a property sets the tax default to that property’s province. You can still change the tax below.',
     },
   },
   fr: {
@@ -151,6 +153,8 @@ const fragment = {
       paySummaryDue: 'échéance',
       paySummaryLastPayment: 'Dernier paiement',
       paySummaryLoading: 'Chargement des infos de paiement…',
+      taxPropertyHint: 'Taxe selon la propriété de service : {province}',
+      taxPropertyPickerHint: 'Choisir une propriété règle la taxe par défaut sur la province de cette propriété. Vous pouvez toujours modifier la taxe ci-dessous.',
     },
   },
 } as const;
