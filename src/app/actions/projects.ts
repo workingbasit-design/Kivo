@@ -94,7 +94,7 @@ export async function updateProject(
   }
   if (input.budgetCents !== undefined) data.budgetCents = input.budgetCents;
 
-  await prisma.project.update({ where: { id: p.id }, data });
+  await prisma.project.updateMany({ where: { id, businessId }, data });
   revalidatePath('/projects');
   revalidatePath(`/projects/${id}`);
   return { ok: true };
@@ -111,7 +111,9 @@ export async function deleteProject(id: string): Promise<ProjectActionResult> {
 
   // Jobs keep their records; only the project link is cleared.
   await prisma.job.updateMany({ where: { projectId: id, businessId }, data: { projectId: null, projectPhaseId: null } });
-  await prisma.project.delete({ where: { id: p.id } });
+  // Tenant guard fails closed on delete() without a top-level businessId
+  // (same class as the 2026-10-29 crew Save/Delete crash).
+  await prisma.project.deleteMany({ where: { id, businessId } });
   revalidatePath('/projects');
   return { ok: true };
 }
@@ -205,8 +207,8 @@ export async function attachJobToProject(
     if (!ph) return { error: t(locale, 'track8.ruleNotFound') };
   }
 
-  await prisma.job.update({
-    where: { id: job.id },
+  await prisma.job.updateMany({
+    where: { id: job.id, businessId },
     data: { projectId: project.id, projectPhaseId: phaseId ?? null },
   });
   revalidatePath(`/projects/${projectId}`);
@@ -225,8 +227,8 @@ export async function detachJobFromProject(jobId: string): Promise<ProjectAction
   });
   if (!job) return { error: t(locale, 'track8.ruleNotFound') };
 
-  await prisma.job.update({
-    where: { id: job.id },
+  await prisma.job.updateMany({
+    where: { id: job.id, businessId },
     data: { projectId: null, projectPhaseId: null },
   });
   if (job.projectId) revalidatePath(`/projects/${job.projectId}`);

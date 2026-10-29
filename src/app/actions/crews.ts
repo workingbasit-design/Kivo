@@ -47,8 +47,11 @@ export async function updateCrew(id: string, name: string, color: string): Promi
   const crew = await prisma.crew.findFirst({ where: { id, businessId } });
   if (!crew) return { error: 'Crew not found.' };
 
-  await prisma.crew.update({
-    where: { id },
+  // Tenant guard fails closed on update() without a top-level businessId,
+  // so the write must carry the scope (2026-10-29 deep test: crew Save
+  // crashed the page with an error boundary via TenantScopeError).
+  await prisma.crew.updateMany({
+    where: { id, businessId },
     data: { name: cleanName, color: cleanColor },
   });
   revalidatePath('/crews');
@@ -64,7 +67,9 @@ export async function deleteCrew(id: string): Promise<CrewActionResult> {
   const crew = await prisma.crew.findFirst({ where: { id, businessId } });
   if (!crew) return { error: 'Crew not found.' };
 
-  await prisma.crew.delete({ where: { id } });
+  // Same tenant-guard rule as updateCrew: deleteMany carries businessId
+  // (2026-10-29 deep test: crew Delete crashed the page the same way).
+  await prisma.crew.deleteMany({ where: { id, businessId } });
   revalidatePath('/crews');
   return { ok: true };
 }
