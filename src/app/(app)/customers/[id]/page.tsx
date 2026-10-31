@@ -346,6 +346,7 @@ export default async function CustomerDetailPage({
           <DeleteCustomerButton
             customerId={customer.id}
             customerName={customerName}
+            archived={!!customer.archivedAt}
             locale={locale}
           />
         </div>

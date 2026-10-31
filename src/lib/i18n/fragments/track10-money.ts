@@ -182,6 +182,10 @@ const fragment = {
       // archived customers with zero linked records can be deleted.
       custDeleteMsg:
         'Delete {name}? Only archived customers with no jobs, invoices, or quotes can be deleted. Archive the customer first.',
+      // Deep-test 2026-10-31 (architect): the dialog above is misleading once
+      // the customer IS archived — it still tells the user to archive first.
+      custDeleteMsgArchived:
+        'Delete {name}? This permanently deletes the customer. They have no jobs, invoices, or quotes on file.',
       custDeleting: 'Deleting…',
       custArchive: 'Archive',
       custArchiving: 'Archiving…',
@@ -648,6 +652,8 @@ const fragment = {
       custDelete: 'Supprimer',
       custDeleteMsg:
         'Supprimer {name}? Seuls les clients archivés sans travaux, factures ni devis peuvent être supprimés. Archivez d’abord le client.',
+      custDeleteMsgArchived:
+        'Supprimer {name}? Cette action supprime définitivement le client. Il n’a aucun emploi, facture ou devis enregistré.',
       custDeleting: 'Suppression…',
       custArchive: 'Archiver',
       custArchiving: 'Archivage…',

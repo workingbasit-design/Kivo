@@ -169,10 +169,12 @@ export function EditCustomerForm({
 export function DeleteCustomerButton({
   customerId,
   customerName,
+  archived = false,
   locale = 'en',
 }: {
   customerId: string;
   customerName: string;
+  archived?: boolean;
   locale?: Locale;
 }) {
   const [confirming, setConfirming] = useState(false);
@@ -194,7 +196,10 @@ export function DeleteCustomerButton({
         open={confirming}
         locale={locale}
         title={t(locale, 't10money.custDelete')}
-        message={t(locale, 't10money.custDeleteMsg').replace('{name}', customerName)}
+        message={(archived
+          ? t(locale, 't10money.custDeleteMsgArchived')
+          : t(locale, 't10money.custDeleteMsg')
+        ).replace('{name}', customerName)}
         busy={isPending}
         error={state?.error ?? null}
         onConfirm={() => {
