@@ -285,7 +285,12 @@ export default function JobForm({
             inputMode="decimal"
             pattern="[0-9]*\.?[0-9]*"
             name="price"
-            required
+            // No-charge jobs submit with an empty price (the server coerces
+            // "" to 0 and requires the noCharge opt-in). A static `required`
+            // let native validation block the submit before the action ever
+            // ran, so a ticked "No charge" box could never save (found live
+            // 2026-11-02 deep test: submit silently stayed on /jobs/new).
+            required={!noCharge}
             value={priceValue}
             placeholder="0"
             className="input"
