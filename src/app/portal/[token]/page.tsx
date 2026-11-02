@@ -92,7 +92,12 @@ export default async function CustomerPortalPage({
       take: 10,
     }),
     prisma.invoice.findMany({
-      where: { customerId, businessId },
+      // Voided invoices are cancelled documents, not money owed: listing
+      // them showed a voided invoice as "$114.98 due" (and a voided-but-
+      // paid one as "Paid") in the customer portal (found live 2026-11-02
+      // deep test). The balance header already excludes voided payments;
+      // the invoice list must exclude voided invoices the same way.
+      where: { customerId, businessId, status: { not: 'VOID' } },
       select: {
         id: true,
         number: true,

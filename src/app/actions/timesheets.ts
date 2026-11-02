@@ -160,7 +160,12 @@ export async function createManualEntry(input: {
       clockIn: start,
       clockOut: end,
       notes: parsed.data.notes?.trim() || null,
-      userId: member.id,
+      // TimeEntry.userId references User.id (see schema), NOT the
+      // Membership id: the clock-in path uses user.id, and using
+      // member.id here violated the FK at runtime, so manual entries
+      // could never save and the job page errored on submit (found live
+      // 2026-11-02 deep test: "Something went wrong" after Log time).
+      userId: member.userId,
       businessId,
       jobId,
     },
