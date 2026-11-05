@@ -2,7 +2,7 @@ import React from 'react';
 import { requireAuth } from '@/lib/auth';
 import { isDatabaseUnavailable } from '@/lib/db-errors';
 import { prisma } from '@/lib/prisma';
-import { dayRange, toISODateLocal, todayInTimezone } from '@/lib/utils';
+import { dayRange, todayInTimezone } from '@/lib/utils';
 import { summarizeTodayJobs } from '@/lib/dashboard';
 import AppSidebar from '@/components/AppSidebar';
 import MobileNav from '@/components/MobileNav';
@@ -11,6 +11,7 @@ import DemoBanner from '@/components/DemoBanner';
 import LazyOverlays from '@/components/LazyOverlays';
 import PortalNotice from '@/components/PortalNotice';
 import { getLocale } from '@/lib/i18n/server';
+import { LocaleProvider } from '@/components/LanguageToggle';
 import { syncNotifications, getUnreadCount } from '@/lib/notifications';
 import { centsToDollars } from '@/lib/money';
 import { canSeePrices } from '@/lib/roles';
@@ -101,22 +102,30 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     /* Part B: concrete page background (light) / night (dark). */
-    <div className="min-h-screen bg-bg flex">
-      <AppSidebar
-        user={user}
-        locale={locale}
-        stats={{ bookedToday, jobsLeftToday, newLeads, currency: business?.currency }}
-        unreadCount={unreadCount}
-      />
-      <div className="flex-1 min-w-0 flex flex-col">
-        {business?.isDemo && <DemoBanner locale={locale} />}
-        <MobileNav locale={locale} unreadCount={unreadCount} />
-        <main id="main-content" className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-8 pb-[calc(12rem+env(safe-area-inset-bottom))] md:pb-8">
-          {children}
-        </main>
-        <BottomNav user={user} locale={locale} showMoney={canSeePrices(auth.role)} />
+    /* LocaleProvider carries the server-resolved locale (kivo-locale
+       cookie) into client components: without it useT() falls back to
+       'en' during SSR while useResolvedLocale reads 'fr' from the cookie
+       on the client, so every translated string mismatches on hydration
+       (React #418 on FR form pages, 2026-11-05). The (auth) layout
+       already wraps the same way. */
+    <LocaleProvider locale={locale}>
+      <div className="min-h-screen bg-bg flex">
+        <AppSidebar
+          user={user}
+          locale={locale}
+          stats={{ bookedToday, jobsLeftToday, newLeads, currency: business?.currency }}
+          unreadCount={unreadCount}
+        />
+        <div className="flex-1 min-w-0 flex flex-col">
+          {business?.isDemo && <DemoBanner locale={locale} />}
+          <MobileNav locale={locale} unreadCount={unreadCount} />
+          <main id="main-content" className="flex-1 w-full max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-8 pb-[calc(12rem+env(safe-area-inset-bottom))] md:pb-8">
+            {children}
+          </main>
+          <BottomNav user={user} locale={locale} showMoney={canSeePrices(auth.role)} />
+        </div>
+        <LazyOverlays currency={business?.currency} locale={locale} />
       </div>
-      <LazyOverlays currency={business?.currency} locale={locale} />
-    </div>
+    </LocaleProvider>
   );
 }

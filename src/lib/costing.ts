@@ -102,7 +102,10 @@ export function summarizeJobCost(input: CostInput): CostSummary {
       : 0;
   const totalCost = laborCost + exp.total + subcontractorCost;
   const profit = price - totalCost;
-  const marginPct = price > 0 ? (profit / price) * 100 : null;
+  // Round to 1 decimal at the source (same convention as insights-compute
+  // and reports-f9) so display sites never render a repeating float
+  // (e.g. 66.66666666666666%) — MarginBar prints marginPct verbatim.
+  const marginPct = price > 0 ? Math.round((profit / price) * 1000) / 10 : null;
   return {
     laborHours,
     laborCost,

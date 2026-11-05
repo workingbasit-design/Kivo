@@ -78,6 +78,17 @@ test('summarizeJobCost: profit and margin with labor + expenses', () => {
   assert.equal(s.marginPct, 52);
 });
 
+test('summarizeJobCost: margin rounds to 1 decimal (no repeating float)', () => {
+  const s = summarizeJobCost({
+    price: 150,
+    laborMinutes: 0,
+    hourlyRate: null,
+    expenses: [{ amount: 50, category: 'MATERIALS' }],
+  });
+  assert.equal(s.profit, 100);
+  assert.equal(s.marginPct, 66.7);
+});
+
 test('summarizeJobCost: subcontractor bucket reduces profit (slice 7)', () => {
   const s = summarizeJobCost({
     price: 500,
