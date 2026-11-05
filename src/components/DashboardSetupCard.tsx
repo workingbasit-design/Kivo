@@ -4,23 +4,15 @@ import React, { useState } from 'react';
 import { CheckCircle2, ArrowRight, ShieldCheck } from '@/components/icons';
 import FinishSetupModal from './FinishSetupModal';
 import { t, type Locale } from '@/lib/i18n';
+import { useResolvedLocale } from '@/hooks/useResolvedLocale';
 import { Button } from '@/components/kit';
-
-/** Locale for unmounted-but-shared client components: the `kivo-locale`
- *  cookie is the single source of truth (LanguageToggle writes it). */
-function useCookieLocale(): Locale {
-  const [locale] = useState<Locale>(() => {
-    if (typeof document === 'undefined') return 'en';
-    const m = document.cookie.match(/(?:^|;\s*)kivo-locale=(en|fr)/);
-    return m ? (m[1] as Locale) : 'en';
-  });
-  return locale;
-}
 
 export default function DashboardSetupCard({ initialCompleted = false }: { initialCompleted?: boolean }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCompleted, setIsCompleted] = useState(initialCompleted);
-  const locale = useCookieLocale();
+  // Locale: SSR-safe via useSyncExternalStore — the old lazy useState cookie
+  // read rendered 'en' during SSR and 'fr' on hydration (React #418, 2026-11-05).
+  const locale: Locale = useResolvedLocale();
   const T = (k: string) => t(locale, `t10work.${k}`);
 
   const steps = [

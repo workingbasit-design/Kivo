@@ -98,10 +98,10 @@ export default async function NewJobPage({
               You don&apos;t have any customers yet. Add the customer inline below -
               they&apos;ll be saved automatically.
             </div>
-            <JobForm customers={[]} crews={crews} initial={initial} action={createJobWithOfflineFallback} submitLabel="Create job" />
+            <JobForm customers={[]} crews={crews} initial={initial} action={createJobWithOfflineFallback} submitLabel="Create job" locale={locale} />
           </div>
         ) : (
-          <JobForm customers={customers} crews={crews} initial={initial} action={createJobWithOfflineFallback} submitLabel="Create job" />
+          <JobForm customers={customers} crews={crews} initial={initial} action={createJobWithOfflineFallback} submitLabel="Create job" locale={locale} />
         )}
       </Card>
 

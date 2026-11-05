@@ -108,3 +108,33 @@ test('resolved locale: no provider falls back to English deterministically', () 
   assert.match(html, /Add customer/);
   assert.doesNotMatch(html, /Ajouter un client/);
 });
+
+/**
+ * Defect 3 (same run, live-verified after Defect 2): the #418 on /jobs/new
+ * was NOT the hook — it was JobForm's own copy of the lazy-cookie pattern
+ * (`useState(() => resolveLocale(prop))` reading document.cookie), plus the
+ * same pattern in RecurringForm and DashboardSetupCard's useCookieLocale.
+ * The /jobs/new page also never passed its server-resolved locale down.
+ * All three components now resolve through the SSR-safe useResolvedLocale
+ * hook (useSyncExternalStore, server snapshot = context locale), and the
+ * /jobs/new + /recurring pages pass their server locale as a prop.
+ * This test pins the pattern so a future copy-paste of the cookie read
+ * cannot silently reintroduce the FR #418.
+ */
+test('resolved locale: forms use the SSR-safe hook, no lazy cookie read', () => {
+  const jobForm = readFileSync(path.join(SRC, 'components/JobForm.tsx'), 'utf8');
+  const recurringForm = readFileSync(path.join(SRC, 'components/RecurringForm.tsx'), 'utf8');
+  const setupCard = readFileSync(path.join(SRC, 'components/DashboardSetupCard.tsx'), 'utf8');
+  for (const [name, src] of [['JobForm', jobForm], ['RecurringForm', recurringForm], ['DashboardSetupCard', setupCard]]) {
+    assert.match(src, /useResolvedLocale/, `${name} must resolve locale via useResolvedLocale`);
+    assert.doesNotMatch(src, /useState<Locale>\(\(\) =>/, `${name} must not read the locale in a lazy useState initializer (SSR 'en' vs hydrated 'fr' = #418)`);
+    assert.doesNotMatch(src, /document\.cookie\.match/, `${name} must not read document.cookie for the locale at render time`);
+  }
+  assert.doesNotMatch(jobForm, /function resolveLocale/, 'JobForm must not keep its own cookie-based resolveLocale');
+  assert.doesNotMatch(recurringForm, /function resolveLocale/, 'RecurringForm must not keep its own cookie-based resolveLocale');
+  assert.doesNotMatch(setupCard, /useCookieLocale/, 'DashboardSetupCard must not keep useCookieLocale');
+  const jobsNew = readFileSync(path.join(SRC, 'app/(app)/jobs/new/page.tsx'), 'utf8');
+  assert.match(jobsNew, /<JobForm[^>]*locale=\{locale\}/, '/jobs/new must pass its server-resolved locale to JobForm');
+  const recurringNew = readFileSync(path.join(SRC, 'app/(app)/recurring/new/page.tsx'), 'utf8');
+  assert.match(recurringNew, /locale=\{locale\}/, '/recurring/new must pass its server-resolved locale to RecurringForm');
+});

@@ -65,6 +65,7 @@ export default async function NewRecurringPage() {
             }))}
             action={createRecurring}
             submitLabel="Create plan"
+            locale={locale}
             currency={currency}
           />
         )}

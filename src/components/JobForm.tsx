@@ -8,6 +8,7 @@ import AddressAutocomplete from '@/components/AddressAutocomplete';
 import { toISODateLocal } from '@/lib/utils';
 import { currencySymbol } from '@/lib/money';
 import { t, type Locale } from '@/lib/i18n';
+import { useResolvedLocale } from '@/hooks/useResolvedLocale';
 import type { JobActionResult } from '@/app/actions/jobs';
 
 export interface JobFormCustomer {
@@ -48,17 +49,6 @@ export interface JobFormCrew {
   name: string;
 }
 
-/** Resolve the app locale in a client component: an explicit prop wins,
- *  otherwise the `kivo-locale` cookie (LanguageToggle writes it). */
-function resolveLocale(prop?: Locale): Locale {
-  if (prop) return prop;
-  if (typeof document !== 'undefined') {
-    const m = document.cookie.match(/(?:^|;\s*)kivo-locale=(en|fr)/);
-    if (m) return m[1] as Locale;
-  }
-  return 'en';
-}
-
 /**
  * Shared create/edit job form. Quick-create stays minimal so a job
  * can be captured in under 20 seconds, even for a brand-new customer.
@@ -82,14 +72,19 @@ export default function JobForm({
   initial?: JobFormInitial;
   action: (_prev: JobActionResult, formData: FormData) => Promise<JobActionResult>;
   submitLabel: string;
-  /** Optional - falls back to the `kivo-locale` cookie so pages that don't
-   *  pass it (e.g. /jobs/new) still render in the user's language. */
+  /** Optional - falls back to the resolved locale (LocaleProvider /
+   *  `kivo-locale` cookie via useResolvedLocale) so pages that don't
+   *  pass it still render in the user's language. */
   locale?: Locale;
   /** Business currency code - drives the price label (e.g. CAD). */
   currency?: string;
 }) {
   const [state, formAction, isPending] = useActionState(action, {});
-  const [locale] = useState<Locale>(() => resolveLocale(localeProp));
+  // Locale: an explicit prop wins, otherwise the resolved locale (SSR-safe
+  // via useSyncExternalStore — the old lazy useState cookie read rendered
+  // 'en' during SSR and 'fr' on hydration, React #418 on /jobs/new, 2026-11-05).
+  const resolvedLocale = useResolvedLocale();
+  const locale = localeProp ?? resolvedLocale;
   const T = (k: string) => t(locale, `t10work.${k}`);
   const jobsL = (k: string) => t(locale, `jobs.${k}`);
   const crewsL = (k: string) => t(locale, `crews.${k}`);

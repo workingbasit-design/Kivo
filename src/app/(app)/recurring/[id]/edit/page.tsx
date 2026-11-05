@@ -61,6 +61,7 @@ export default async function EditRecurringPage({
           }))}
           action={updateRecurring}
           submitLabel="Save changes"
+          locale={locale}
           currency={currency}
           initial={{
             id: plan.id,

@@ -8,6 +8,7 @@ import { toISODateLocal } from '@/lib/utils';
 import { currencySymbol, formatMoney } from '@/lib/money';
 import { RECURRING_FREQUENCIES } from '@/lib/validations';
 import { t, type Locale } from '@/lib/i18n';
+import { useResolvedLocale } from '@/hooks/useResolvedLocale';
 import type { RecurringActionResult } from '@/app/actions/recurring';
 
 export interface RecurringFormCustomer {
@@ -35,17 +36,6 @@ export interface RecurringFormInitial {
   invoiceDayOfMonth?: number | null;
 }
 
-/** Resolve the app locale in a client component: an explicit prop wins,
- *  otherwise the `kivo-locale` cookie (LanguageToggle writes it). */
-function resolveLocale(prop?: Locale): Locale {
-  if (prop) return prop;
-  if (typeof document !== 'undefined') {
-    const m = document.cookie.match(/(?:^|;\s*)kivo-locale=(en|fr)/);
-    if (m) return m[1] as Locale;
-  }
-  return 'en';
-}
-
 /**
  * Shared create/edit form for a recurring job plan. Pick a customer, a
  * service from the price book (fills the price), how often it repeats,
@@ -66,12 +56,17 @@ export default function RecurringForm({
   action: (_prev: RecurringActionResult, formData: FormData) => Promise<RecurringActionResult>;
   submitLabel: string;
   currency?: string;
-  /** Optional - falls back to the `kivo-locale` cookie so pages that don't
+  /** Optional - falls back to the resolved locale (LocaleProvider /
+   *  `kivo-locale` cookie via useResolvedLocale) so pages that don't
    *  pass it still render in the user's language. */
   locale?: Locale;
 }) {
   const [state, formAction, isPending] = useActionState(action, {});
-  const [locale] = useState<Locale>(() => resolveLocale(localeProp));
+  // Locale: an explicit prop wins, otherwise the resolved locale (SSR-safe
+  // via useSyncExternalStore — the old lazy useState cookie read rendered
+  // 'en' during SSR and 'fr' on hydration, React #418, 2026-11-05).
+  const resolvedLocale = useResolvedLocale();
+  const locale = localeProp ?? resolvedLocale;
   const toastedFor = useRef<RecurringActionResult | null>(null);
   const T = (k: string) => t(locale, `t10work.${k}`);
   const jobsL = (k: string) => t(locale, `jobs.${k}`);
