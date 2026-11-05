@@ -129,23 +129,35 @@ export function formatDateLabel(
   });
 }
 
-/** Format a Date/string as "5 Jan 2026" */
+/**
+ * Format a Date/string as "5 Jan 2026".
+ * 2026-11-05: optional `timeZone` — without it, toLocaleDateString uses
+ * the SERVER timezone (UTC on Vercel), so a late-evening Toronto creation
+ * rendered as the next day ("Customer since Nov 5" for a Nov 4 evening
+ * signup). Pass the business timezone for any instant shown to the user.
+ */
 export function formatDateShort(
   dateInput: Date | string | null | undefined,
-  locale: string = 'en-CA'
+  locale: string = 'en-CA',
+  timeZone?: string | null
 ): string {
   if (!dateInput) return "-";
   let d: Date;
   if (typeof dateInput === "string" && /^\d{4}-\d{2}-\d{2}/.test(dateInput)) {
-    // Date-only strings: parse as LOCAL date, not UTC midnight (avoids
+    // Date-only strings: a calendar day, not an instant. With a timeZone,
+    // parse as midnight IN that timezone so formatting in the same zone
+    // returns the same day; without one, parse as LOCAL date (avoids
     // showing the previous day in timezones behind UTC).
     const [y, m, day] = dateInput.slice(0, 10).split("-").map(Number);
-    d = new Date(y, m - 1, day);
+    d = timeZone
+      ? parseDateInputInTimezone(dateInput.slice(0, 10), timeZone)
+      : new Date(y, m - 1, day);
   } else {
     d = new Date(dateInput);
   }
   if (Number.isNaN(d.getTime())) return "-";
   return d.toLocaleDateString(locale, {
+    ...(timeZone ? { timeZone } : {}),
     day: "numeric",
     month: "short",
     year: "numeric",

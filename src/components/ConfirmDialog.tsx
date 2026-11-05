@@ -20,6 +20,7 @@ export default function ConfirmDialog({
   confirmLabel,
   cancelLabel,
   busy = false,
+  confirmDisabled = false,
   danger = true,
   locale = 'en',
   onConfirm,
@@ -34,6 +35,14 @@ export default function ConfirmDialog({
   confirmLabel?: string;
   cancelLabel?: string;
   busy?: boolean;
+  /**
+   * Disables the confirm button without closing the dialog — for cases
+   * where the dialog must explain that the action CANNOT proceed (e.g. an
+   * archived customer with linked records that the server will refuse to
+   * delete). The dialog stays open so the user reads why, instead of
+   * offering a confirm that is guaranteed to fail.
+   */
+  confirmDisabled?: boolean;
   danger?: boolean;
   locale?: Locale;
   onConfirm: () => void;
@@ -115,7 +124,7 @@ export default function ConfirmDialog({
           <Button
             variant={danger ? 'danger' : 'secondary'}
             onClick={onConfirm}
-            disabled={busy}
+            disabled={busy || confirmDisabled}
             className="flex-1 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {busy ? t(locale, 't10misc.confirmDialog.working') : yes}

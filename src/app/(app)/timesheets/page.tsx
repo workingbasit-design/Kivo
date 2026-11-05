@@ -13,8 +13,12 @@ import {
   parseDateStart,
   parseDateEnd,
   toDateInputValue,
-  startOfDayDaysAgo,
+  addDaysToDateStr,
 } from '@/lib/timesheets';
+import {
+  dayRangeInTimezone,
+  todayInTimezone,
+} from '@/lib/utils';
 import { formatDateLabel, localeDateTag } from '@/lib/utils';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
@@ -68,8 +72,24 @@ export default async function TimesheetsPage({
 
   // Filters: members see only themselves; admins can filter the team.
   const memberFilter = isAdmin ? sp.member || '' : user.id;
-  const fromDate = parseDateStart(sp.from) ?? startOfDayDaysAgo(29);
-  const toDate = parseDateEnd(sp.to) ?? (() => { const d = new Date(); d.setHours(23, 59, 59, 999); return d; })();
+  // 2026-11-05: filter defaults anchor to the BUSINESS's today. The old
+  // server-local defaults (UTC on Vercel) showed "To 11/05" on the evening
+  // of Nov 4 in Toronto. Explicit ?from/?to keep working in the same
+  // timezone, so displayed values round-trip exactly.
+  const businessTz = (
+    await prisma.business.findUnique({
+      where: { id: businessId },
+      select: { timezone: true },
+    })
+  )?.timezone ?? 'America/Toronto';
+  const defaultToStr = todayInTimezone(businessTz);
+  const defaultFromStr = addDaysToDateStr(defaultToStr, -29);
+  const fromDate =
+    parseDateStart(sp.from, businessTz) ??
+    dayRangeInTimezone(defaultFromStr, businessTz).gte;
+  const toDate =
+    parseDateEnd(sp.to, businessTz) ??
+    dayRangeInTimezone(defaultToStr, businessTz).lte;
 
   const entries = await prisma.timeEntry.findMany({
     where: {
@@ -131,10 +151,10 @@ export default async function TimesheetsPage({
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <DateField label={T('tsFrom')} name="from" defaultValue={toDateInputValue(fromDate)} />
+            <DateField label={T('tsFrom')} name="from" defaultValue={toDateInputValue(fromDate, businessTz)} />
           </div>
           <div className="flex-1 min-w-0">
-            <DateField label={T('tsTo')} name="to" defaultValue={toDateInputValue(toDate)} />
+            <DateField label={T('tsTo')} name="to" defaultValue={toDateInputValue(toDate, businessTz)} />
           </div>
           <Button type="submit" variant="secondary" sm>
             <Filter size={14} /> {T('tsApply')}

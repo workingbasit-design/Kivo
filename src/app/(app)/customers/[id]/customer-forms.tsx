@@ -12,6 +12,7 @@ import {
   type ActionResult,
 } from '@/app/actions/customers';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import { formatRecordCounts } from '@/lib/record-counts';
 import AddressAutocomplete from '@/components/AddressAutocomplete';
 import { CA_PROVINCES } from '@/lib/tax';
 import { Button, Input, Select, Textarea } from '@/components/kit';
@@ -170,11 +171,22 @@ export function DeleteCustomerButton({
   customerId,
   customerName,
   archived = false,
+  recordCounts,
   locale = 'en',
 }: {
   customerId: string;
   customerName: string;
   archived?: boolean;
+  /**
+   * Real linked-record counts (Prisma _count) from the detail page.
+   * 2026-11-05: the dialog copy used to key ONLY on `archived`, so every
+   * archived customer got the "no jobs, invoices, or quotes on file"
+   * promise — then the server refused whenever voided/converted/expired
+   * records existed, and the failure looked like a broken button. The copy
+   * now keys on the counts, and the confirm is disabled when the server
+   * is guaranteed to refuse (the guard itself is unchanged).
+   */
+  recordCounts?: { jobs: number; invoices: number; quotes: number };
   locale?: Locale;
 }) {
   const [confirming, setConfirming] = useState(false);
@@ -187,6 +199,18 @@ export function DeleteCustomerButton({
     success: t(locale, 't10money.customerDeleted'),
   });
 
+  const totalRecords =
+    (recordCounts?.jobs ?? 0) + (recordCounts?.invoices ?? 0) + (recordCounts?.quotes ?? 0);
+  const blocked = archived && totalRecords > 0;
+  const message = blocked
+    ? t(locale, 't10money.custDeleteMsgBlocked')
+        .replace('{name}', customerName)
+        .replace('{counts}', formatRecordCounts(recordCounts ?? { jobs: 0, invoices: 0, quotes: 0 }, locale))
+    : (archived
+        ? t(locale, 't10money.custDeleteMsgArchived')
+        : t(locale, 't10money.custDeleteMsg')
+      ).replace('{name}', customerName);
+
   return (
     <>
       <Button variant="danger" sm onClick={() => setConfirming(true)}>
@@ -196,10 +220,8 @@ export function DeleteCustomerButton({
         open={confirming}
         locale={locale}
         title={t(locale, 't10money.custDelete')}
-        message={(archived
-          ? t(locale, 't10money.custDeleteMsgArchived')
-          : t(locale, 't10money.custDeleteMsg')
-        ).replace('{name}', customerName)}
+        message={message}
+        confirmDisabled={blocked}
         busy={isPending}
         error={state?.error ?? null}
         onConfirm={() => {

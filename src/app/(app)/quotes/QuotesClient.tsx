@@ -32,6 +32,12 @@ export type QuoteListItem = {
   expiresAt: string | null;
   /** Slice 5: computed server-side (Date.now() is impure in JSX). */
   expired: boolean;
+  /**
+   * 2026-11-05: true when a job already exists from this quote (derived
+   * server-side from the conversion marker on job notes). Converted quotes
+   * keep APPROVED by design but are NOT open pipeline.
+   */
+  converted: boolean;
 };
 
 export type StaleQuoteItem = {
@@ -78,10 +84,13 @@ export default function QuotesClient({
     [quotes, activeFilter]
   );
 
+  // 2026-11-05: converted quotes are realized work, not pipeline — a
+  // converted quote keeps APPROVED forever, so without the !converted
+  // filter every conversion inflated "open pipeline" permanently.
   const pipelineTotal = useMemo(
     () =>
       filtered
-        .filter((q) => q.status === 'SENT' || q.status === 'APPROVED')
+        .filter((q) => (q.status === 'SENT' || q.status === 'APPROVED') && !q.converted)
         .reduce((s, q) => s + q.total, 0),
     [filtered]
   );

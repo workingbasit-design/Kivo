@@ -76,6 +76,13 @@ export default function InvoiceForm({
   // Selected customer drives the auto-fetched payment summary below the
   // select (2026-10-28): balance due, unpaid invoices, last payment.
   const [customerId, setCustomerId] = useState<string>(jobContext?.customerId ?? '');
+  // 2026-11-05: submitting with no customer used to fail SILENTLY — the
+  // Select was `required`, so native constraint validation blocked the
+  // submit before the action ever ran (no toast, no inline error, and in
+  // automation not even a native bubble). The guard below surfaces an
+  // in-app error on the picker instead; the server still rejects an
+  // empty customer ("Customer is required") as backstop.
+  const [customerError, setCustomerError] = useState<string | null>(null);
   const [taxSel, setTaxSel] = useState<TaxSelection>(() =>
     defaultTaxSelection(taxConfig)
   );
@@ -115,6 +122,7 @@ export default function InvoiceForm({
   // (the same default the form opened with).
   const onCustomerChange = (value: string) => {
     setCustomerId(value);
+    if (value !== '') setCustomerError(null);
     if (value === jobContext?.customerId && jobContext?.property) {
       setPropertyValue(jobContext.property.id);
       const province = jobContext.property.province;
@@ -164,7 +172,17 @@ export default function InvoiceForm({
   const total = round2(subtotal + taxAmount);
 
   return (
-    <form action={formAction} className="space-y-6 max-w-2xl">
+    <form
+      action={formAction}
+      className="space-y-6 max-w-2xl"
+      onSubmit={(e) => {
+        if (customerId === '') {
+          e.preventDefault();
+          setCustomerError(t(locale, 't10money.invCustomerRequired'));
+          toast.error(t(locale, 't10money.invCustomerRequired'));
+        }
+      }}
+    >
       <input type="hidden" name="taxType" value={taxSel.taxType} />
       <input type="hidden" name="taxRate" value={taxSel.taxRate} />
       {jobContext && (
@@ -185,7 +203,6 @@ export default function InvoiceForm({
             <Select
               label="Customer"
               name="customerId"
-              required
               value={customerId}
               onChange={(e) => onCustomerChange(e.target.value)}
               options={[
@@ -207,6 +224,11 @@ export default function InvoiceForm({
                 ) : undefined
               }
             />
+            {customerError && (
+              <p role="alert" className="mt-2 text-sm font-medium text-danger">
+                {customerError}
+              </p>
+            )}
             <CustomerPaymentSummary customerId={customerId} locale={locale} />
             {customerId !== '' && effectiveProperties.length > 0 && (
               <div className="mt-4">

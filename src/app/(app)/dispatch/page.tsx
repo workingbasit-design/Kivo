@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { Card, EmptyState, Button } from '@/components/kit';
 import { PageTitle } from '../_components/PageTitle';
-import { dayRange, toISODateLocal, formatDateShort } from '@/lib/utils';
+import { dayRangeInTimezone, todayInTimezone, formatDateShort } from '@/lib/utils';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { CalendarDays } from '@/components/icons';
@@ -30,14 +30,20 @@ export default async function DispatchPage({
   const T = (k: string) => t(locale, `dispatch.${k}`);
 
   const { date } = await searchParams;
-  const dateStr =
-    date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : toISODateLocal(new Date());
-  const { gte, lte } = dayRange(dateStr);
 
   const business = await prisma.business.findUnique({
     where: { id: businessId },
     select: { currency: true, timezone: true, address: true },
   });
+
+  // 2026-11-05: "today" must mean the BUSINESS's today. toISODateLocal used
+  // server-local getters (UTC on Vercel), so after 19:00 EST the board
+  // defaulted to tomorrow. Job dates are stored as business-tz midnights,
+  // so the query window is anchored in the business timezone too.
+  const tz = business?.timezone ?? 'America/Toronto';
+  const dateStr =
+    date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : todayInTimezone(tz);
+  const { gte, lte } = dayRangeInTimezone(dateStr, tz);
 
   const jobs = await prisma.job.findMany({
     where: {

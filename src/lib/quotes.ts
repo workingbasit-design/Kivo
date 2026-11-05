@@ -52,6 +52,27 @@ export function convertedJobNotesPrefix(quoteNumber: string): string {
   return `Converted from quote ${quoteNumber}.`;
 }
 
+/**
+ * Quote numbers whose jobs already exist, derived from the conversion marker
+ * stamped on job notes (see convertedJobDetails). 2026-11-05: converted
+ * quotes keep APPROVED forever by design, so the quotes list computed its
+ * "open pipeline" total from SENT + APPROVED and counted every converted
+ * quote as still-open revenue. Reading the marker back (same semantics as
+ * the duplicate-conversion guard) lets the pipeline exclude converted
+ * quotes — including ones converted before any schema flag existed, so no
+ * migration or backfill is needed.
+ */
+export function convertedQuoteNumbers(jobNotes: (string | null | undefined)[]): Set<string> {
+  const marker = 'Converted from quote ';
+  const numbers = new Set<string>();
+  for (const notes of jobNotes) {
+    if (!notes || !notes.startsWith(marker)) continue;
+    const match = /^(\S+?)\./.exec(notes.slice(marker.length));
+    if (match) numbers.add(match[1]);
+  }
+  return numbers;
+}
+
 export function convertedJobDetails(
   quoteNumber: string,
   preTaxBase: number,

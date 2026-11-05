@@ -9,6 +9,7 @@ import { getActiveShareToken } from '@/lib/share';
 import { QUOTE_STATUSES } from '@/lib/validations';
 import { centsToDollars } from '@/lib/money';
 import { isQuoteExpired } from '@/lib/quote-expiry';
+import { convertedQuoteNumbers } from '@/lib/quotes';
 import QuotesClient, { type QuoteListItem, type StaleQuoteItem } from './QuotesClient';
 import type { ExportColumn } from '@/components/ExportButtons';
 
@@ -44,7 +45,7 @@ export default async function QuotesPage({
 
   // One fetch for everything: tab switching filters in memory on the client,
   // so switching tabs never hits the server.
-  const [business, quoteRows, staleRows] = await Promise.all([
+  const [business, quoteRows, convertedJobs, staleRows] = await Promise.all([
     prisma.business.findUnique({
       where: { id: businessId },
       select: { currency: true, name: true, regionCode: true, timezone: true },
@@ -53,6 +54,13 @@ export default async function QuotesPage({
       where: { businessId },
       include: { customer: { select: { name: true } } },
       orderBy: { createdAt: 'desc' },
+    }),
+    // 2026-11-05: jobs stamped with the conversion marker, so converted
+    // quotes can be excluded from the open-pipeline total (they keep
+    // APPROVED by design). Tenant-scoped like every other query here.
+    prisma.job.findMany({
+      where: { businessId, notes: { startsWith: 'Converted from quote ' } },
+      select: { notes: true },
     }),
     // Follow-up queue: SENT quotes waiting >3 days, longest-waiting first.
     prisma.quote.findMany({
@@ -73,6 +81,7 @@ export default async function QuotesPage({
     }),
   ]);
 
+  const convertedNumbers = convertedQuoteNumbers(convertedJobs.map((j) => j.notes));
   const quotes: QuoteListItem[] = quoteRows.map((q) => ({
     id: q.id,
     number: q.number,
@@ -83,6 +92,7 @@ export default async function QuotesPage({
     customer: { name: q.customer.name },
     expiresAt: q.expiresAt ? q.expiresAt.toISOString() : null,
     expired: isQuoteExpired({ status: q.status, expiresAt: q.expiresAt }),
+    converted: convertedNumbers.has(q.number),
   }));
 
   const staleQuotes: StaleQuoteItem[] = staleRows.map((q) => ({

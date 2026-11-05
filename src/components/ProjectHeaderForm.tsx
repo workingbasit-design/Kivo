@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { t, type Locale } from '@/lib/i18n';
 import { updateProject, deleteProject } from '@/app/actions/projects';
 import { Button, Input, Select, Textarea } from '@/components/kit';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import { Trash2 } from '@/components/icons';
 import { useRouter } from 'next/navigation';
 
@@ -40,6 +41,10 @@ export function ProjectHeaderForm({
   );
   const [msg, setMsg] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  // 2026-11-05: the native browser confirm dialog is auto-dismissed in
+  // automated browsers and some mobile webviews, making the button look
+  // dead — use the kit dialog like every other delete in the app.
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   const save = () => {
     setMsg(null);
@@ -59,7 +64,7 @@ export function ProjectHeaderForm({
   };
 
   const remove = () => {
-    if (!confirm(t(locale, 'projects.deleteConfirm'))) return;
+    setConfirmingDelete(false);
     startTransition(async () => {
       const r = await deleteProject(project.id);
       if (r.ok) router.push('/projects');
@@ -136,13 +141,21 @@ export function ProjectHeaderForm({
         <Button
           type="button"
           variant="danger"
-          onClick={remove}
+          onClick={() => setConfirmingDelete(true)}
           disabled={pending}
           aria-label={t(locale, 'projects.delete')}
         >
           <Trash2 size={16} aria-hidden />
         </Button>
       </div>
+      <ConfirmDialog
+        open={confirmingDelete}
+        locale={locale}
+        title={t(locale, 'projects.delete')}
+        message={t(locale, 'projects.deleteConfirm')}
+        onConfirm={remove}
+        onClose={() => !pending && setConfirmingDelete(false)}
+      />
     </div>
   );
 }

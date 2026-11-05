@@ -62,7 +62,9 @@ export default function CopilotDemo({ strings }: { strings: CopilotDemoStrings }
           </p>
         </Msg>
         <Msg side="bot" delay={950}>
-          <p className="bg-surface/10 text-ink-2 px-4 py-2.5 rounded-2xl rounded-bl-md">
+          {/* Dark-section bubble: ink-2 is a LIGHT-section token (dark gray),
+              unreadable on the asphalt background — use hero-ink instead. */}
+          <p className="bg-surface/10 text-hero-ink/70 px-4 py-2.5 rounded-2xl rounded-bl-md">
             {strings.msg2}
           </p>
         </Msg>
@@ -73,10 +75,13 @@ export default function CopilotDemo({ strings }: { strings: CopilotDemoStrings }
         </Msg>
         <Msg side="bot" delay={2350}>
           <div className="bg-ok/10 border border-ok/25 px-4 py-3 rounded-2xl rounded-bl-md">
-            <p className="text-ok font-semibold flex items-center gap-2 mb-1 text-[14px]">
+            {/* Same dark-section rule as above: ok/ink-2 are light-section
+                tokens (dark green/gray), unreadable on asphalt — lime and
+                hero-ink stay bright on the dark background. */}
+            <p className="text-lime font-semibold flex items-center gap-2 mb-1 text-[14px]">
               <Check size={15} /> {strings.msg4Title}
             </p>
-            <p className="text-ink-2 text-[13px]">{strings.msg4Detail}</p>
+            <p className="text-hero-ink/70 text-[13px]">{strings.msg4Detail}</p>
           </div>
         </Msg>
       </div>

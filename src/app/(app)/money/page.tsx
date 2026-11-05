@@ -159,7 +159,7 @@ export default async function MoneyPage() {
           {/* 1. Ready to invoice — completed jobs with no invoice yet. */}
           <section aria-labelledby="ready-to-invoice">
 <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-base font-bold text-ink">`${L('t10money.money.unbilledTitle')} (${unbilledJobs.length})`</h3>
+              <h3 className="text-base font-bold text-ink">{`${L('t10money.money.unbilledTitle')} (${unbilledJobs.length})`}</h3>
               {unbilledJobs.length > 0 ? (
                 <span className="num text-[20px] font-bold tabular-nums text-ink">
                   {formatMoney(readyTotal, 'CAD', locale)}
@@ -202,7 +202,7 @@ export default async function MoneyPage() {
           {/* 2. Awaiting payment — unpaid invoices, oldest first. */}
           <section aria-labelledby="awaiting-payment">
 <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-base font-bold text-ink">`${L('t10money.money.invoicesCardTitle')} (${unpaidInvoices.length})`</h3>
+              <h3 className="text-base font-bold text-ink">{`${L('t10money.money.invoicesCardTitle')} (${unpaidInvoices.length})`}</h3>
               {unpaidInvoices.length > 0 ? (
                 <span className="num text-[20px] font-bold tabular-nums text-ink">
                   {formatMoney(awaitingTotal, 'CAD', locale)}
@@ -250,7 +250,7 @@ export default async function MoneyPage() {
           {/* 3. Awaiting a decision — sent quotes waiting on the customer. */}
           <section aria-labelledby="awaiting-decision">
 <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-base font-bold text-ink">`${L('t10money.money.quotesCardTitle')} (${openQuotes.length})`</h3>
+              <h3 className="text-base font-bold text-ink">{`${L('t10money.money.quotesCardTitle')} (${openQuotes.length})`}</h3>
               {openQuotes.length > 0 ? (
                 <span className="num text-[20px] font-bold tabular-nums text-ink">
                   {formatMoney(decisionTotal, 'CAD', locale)}

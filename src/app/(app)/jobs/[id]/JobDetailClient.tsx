@@ -256,8 +256,12 @@ export default function JobDetailClient({ vm }: { vm: JobDetailVm }) {
   };
 
   /* ---- badges ---- */
+  // 2026-11-05: the badge TEXT must follow the live `status` state, not
+  // the server-rendered vm.statusLabel — after Mark complete the toast
+  // ("Status updated.") fired while the badge still read "In progress"
+  // until router.refresh() re-rendered. Tone already used live state.
   const badges: StatusBadgeProps[] = [
-    { tone: statusTone(status), children: vm.statusLabel },
+    { tone: statusTone(status), children: jobStatusLabel(status, locale) },
   ];
   if (vm.late && (status === 'NEW' || status === 'SCHEDULED')) {
     badges.push({ tone: 'late', children: jobsL('filterLate') });

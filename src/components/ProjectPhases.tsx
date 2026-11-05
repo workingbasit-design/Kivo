@@ -11,6 +11,7 @@ import {
   detachJobFromProject,
 } from '@/app/actions/projects';
 import { Button, Input, Select } from '@/components/kit';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import { Plus, Trash2, X, Check } from '@/components/icons';
 import Link from 'next/link';
 
@@ -56,13 +57,17 @@ export function PhaseCard({
 }) {
   const [pending, startTransition] = useTransition();
   const [attaching, setAttaching] = useState(false);
+  // 2026-11-05: same native-dialog removal as ProjectHeaderForm — the
+  // kit dialog works in automated browsers and mobile webviews where the
+  // browser dialog is auto-dismissed.
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   const cycle = () =>
     startTransition(async () => {
       await setPhaseStatus(phase.id, NEXT_STATUS[phase.status] ?? 'TODO');
     });
   const remove = () => {
-    if (!confirm(t(locale, 'projects.deleteConfirm'))) return;
+    setConfirmingDelete(false);
     startTransition(async () => {
       await deletePhase(phase.id);
     });
@@ -88,7 +93,7 @@ export function PhaseCard({
           </button>
           <button
             type="button"
-            onClick={remove}
+            onClick={() => setConfirmingDelete(true)}
             disabled={pending}
             className="p-2 rounded-lg text-ink-2 hover:text-danger hover:bg-danger-bg min-w-[44px] min-h-[44px] flex items-center justify-center"
             aria-label={t(locale, 'projects.delete')}
@@ -150,6 +155,14 @@ export function PhaseCard({
           <Plus size={14} aria-hidden /> {t(locale, 'projects.attachJob')}
         </button>
       )}
+      <ConfirmDialog
+        open={confirmingDelete}
+        locale={locale}
+        title={t(locale, 'projects.delete')}
+        message={t(locale, 'projects.deleteConfirm')}
+        onConfirm={remove}
+        onClose={() => !pending && setConfirmingDelete(false)}
+      />
     </div>
   );
 }

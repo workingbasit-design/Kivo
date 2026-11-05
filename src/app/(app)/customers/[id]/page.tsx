@@ -68,6 +68,13 @@ async function loadCustomer(id: string, businessId: string) {
       fieldValues: {
         select: { fieldId: true, value: true },
       },
+      // 2026-11-05: real linked-record counts for the delete dialog — the
+      // dialog copy keys on these, not on `archived` alone (see
+      // DeleteCustomerButton). Same relations the deleteCustomer guard
+      // counts, so dialog and server can never disagree.
+      _count: {
+        select: { jobs: true, invoices: true, quotes: true },
+      },
       equipment: {
         orderBy: { updatedAt: 'desc' },
         select: { id: true, name: true, brand: true, model: true, serial: true },
@@ -231,7 +238,7 @@ export default async function CustomerDetailPage({
               )}
             </h2>
             <p className="text-xs text-ej-muted mt-0.5">
-              {custL('customerSince').replace('{date}', formatDateShort(customer.createdAt))}
+              {custL('customerSince').replace('{date}', formatDateShort(customer.createdAt, undefined, tz))}
               {', '}
               {custL('lifetimeValue').replace('{amount}', formatMoney(totalRevenue, currency))}
             </p>
@@ -347,6 +354,7 @@ export default async function CustomerDetailPage({
             customerId={customer.id}
             customerName={customerName}
             archived={!!customer.archivedAt}
+            recordCounts={customer._count}
             locale={locale}
           />
         </div>
