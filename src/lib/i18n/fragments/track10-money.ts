@@ -187,11 +187,11 @@ const fragment = {
       custDeleteMsgArchived:
         'Delete {name}? This permanently deletes the customer. They have no jobs, invoices, or quotes on file.',
       // Deep-test 2026-11-05: an archived customer WITH linked records got
-      // the "no records" promise above, then the server refused — the dialog
+      // the no-records promise above, then the server refused, so the dialog
       // must never promise a deletion the guard will refuse. {counts} is the
       // "3 jobs, 2 invoices, 1 quote" summary from formatRecordCounts.
       custDeleteMsgBlocked:
-        'Delete {name}? This customer still has linked records on file — {counts}. Tax records must be kept for 6 years, so they cannot be deleted and will stay archived.',
+        'Delete {name}? This customer still has linked records on file: {counts}. Tax records must be kept for 6 years, so they cannot be deleted and will stay archived.',
       custDeleting: 'Deleting…',
       custArchive: 'Archive',
       custArchiving: 'Archiving…',
@@ -664,7 +664,7 @@ const fragment = {
       custDeleteMsgArchived:
         'Supprimer {name}? Cette action supprime définitivement le client. Il n’a aucun emploi, facture ou devis enregistré.',
       custDeleteMsgBlocked:
-        'Supprimer {name}? Ce client a encore des dossiers liés — {counts}. Les documents fiscaux doivent être conservés 6 ans, il ne peut donc pas être supprimé et restera archivé.',
+        'Supprimer {name}? Ce client a encore des dossiers liés : {counts}. Les documents fiscaux doivent être conservés 6 ans, il ne peut donc pas être supprimé et restera archivé.',
       custDeleting: 'Suppression…',
       custArchive: 'Archiver',
       custArchiving: 'Archivage…',
