@@ -19,7 +19,7 @@
 #441 — React issue number in comments (useActionState 500 refs):
   src/app/(app)/invoices/[id]/InvoiceActions.tsx:69,87,221,272,
   src/app/actions/invoices.ts:387
-#F2F3EF — src/components/PwaRegister.tsx:44 — theme-color fallback literal
+#FFFFFF — src/components/PwaRegister.tsx:44 — theme-color fallback literal
   (documented in scripts/check-design-tokens.mjs EXCEPTIONS)
 #
 # Decorative effects (not theme colours — same convention as the kit CSS

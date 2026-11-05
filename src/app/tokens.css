@@ -14,7 +14,7 @@
 @theme {
   /* --- Kit-owned colours: var() reference, no hex --- */
   --color-ink: var(--ink); /* kit --ink (also mapped in the @theme inline block below) */
-  --color-lime: var(--hivis); /* canonical lime is kit --hivis (#D4F24C) */
+  --color-lime: var(--hivis); /* canonical lime is kit --hivis (#C6F432) */
   --color-asphalt: var(--asphalt); /* text, the Collected panel, tab bar */
   --color-concrete: var(--bg); /* page background (light) */
   --color-hivis: var(--hivis); /* hi-vis lime: main action, active tab, money bars, now marker */
@@ -32,14 +32,14 @@
   --color-ej-accent: var(--hivis);
 
   /* --- Legacy tokens with no kit equivalent: values live here --- */
-  --color-paper: #fafaf7; /* page background */
+  --color-paper: #FFFFFF; /* page background */
   --color-smoke: #e8e8e3; /* borders, dividers */
   --color-graphite: #55554e; /* secondary text */
 
   /* DESIGN.md (Part C) - deliberate tokens. Use these on work screens:
      bg-ej-paper, text-ej-ink, text-ej-muted, border-ej-smoke, bg-ej-lime,
      text-ej-alert. Lime is a fill behind dark text, never text on white. */
-  --color-ej-ink: #14181a;
+  --color-ej-ink: #0B0B0C;
   --color-ej-smoke: #f2f4f3;
   --color-ej-muted: #5a6366;
   --color-ej-alert: #c0392b;
@@ -54,11 +54,11 @@
      Dark mode (Part B) is explicit: components opt in with `dark:` variants
      (see @custom-variant above). Semantic tokens stay single-valued so
      unmigrated screens never flip into an unreadable state. */
-  --color-ej-ink: #14181a;
+  --color-ej-ink: #0B0B0C;
   --color-ej-muted: #5a6366;
   --color-ej-secondary: #55554e;
   --color-ej-disabled: #71717a;
-  --color-ej-surface: #fafaf7;
+  --color-ej-surface: #FFFFFF;
   --color-ej-border: #e8e8e3;
   --color-ej-primary: #161616;
   --color-ej-on-primary: #ffffff;
@@ -90,9 +90,9 @@
 
   /* Dark-mode surfaces, sampled from the Part B mockup. Single-valued:
      mapping these to a flipping kit var would invert light-mode usage. */
-  --color-night: #131518; /* page background (dark) */
-  --color-coal: #1c1f23; /* cards, tab bar (dark) */
-  --color-soot: #22262b; /* Collected panel (dark) */
+  --color-night: #0B0B0C; /* page background (dark) */
+  --color-coal: #161618; /* cards, tab bar (dark) */
+  --color-soot: #1E1E21; /* Collected panel (dark) */
   /* Type: Barlow for interface text, Barlow Condensed for numbers and big
      figures (self-hosted woff2, OFL - see docs/LICENSES.md). */
   --font-sans: var(--font-barlow), -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -105,7 +105,7 @@
   color-scheme: light;
   /* DESIGN.md: paper white background, ink text. */
   --background: #ffffff;
-  --foreground: #14181a;
+  --foreground: #0B0B0C;
 }
 
 @theme inline {

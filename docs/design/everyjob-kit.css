@@ -14,20 +14,20 @@
    ===================================================================== */
 /* ===== Tokens: every colour in the app comes from here ===== */
 :root{
-  --bg:#F2F3EF; --surface:#FFFFFF; --surface-2:#F6F7F4; --line:#E2E4DF; --line-strong:#C9CDC6;
-  --ink:#1D2024; --ink-2:#5B6168;
-  --hivis:#D4F24C; --hivis-ink:#1D2024; --hivis-soft:#E9FA9F;
-  --asphalt:#1D2024; --reflect:#C7CCD1; --steel:#8B939B;
+  --bg:#FFFFFF; --surface:#FFFFFF; --surface-2:#F6F7F4; --line:#E2E4DF; --line-strong:#C9CDC6;
+  --ink:#0B0B0C; --ink-2:#5B6168;
+  --hivis:#C6F432; --hivis-ink:#0B0B0C; --hivis-soft:#E5FAA3;
+  --asphalt:#0B0B0C; --reflect:#C7CCD1; --steel:#8B939B;
   --warn:#E8590C; --warn-text:#B54708; --warn-bg:#FFF1E6; --warn-line:#F6C9A8;
   --danger:#C8322B; --danger-bg:#FDECEB;
   --ok:#1C7C45; --ok-bg:#E7F5EC;
   --info:#1D4ED8; --info-bg:#E8EFFE;
   --star:#C77700; --biz:#0E5E6F;
-  --hero:#1D2024; --hero-2:#2A2E33; --hero-ink:#F4F5F2; --hero-ink-2:#A9AFB6; --hero-line:#3A3F45;
-  --nav:#1D2024; --nav-ink:#A9AFB6; --nav-active:#F4F5F2;
-  --chart-a:#1D2024; --chart-b:#8B939B;
-  --toast-bg:#1D2024; --toast-ink:#F4F5F2;
-  --focus:#2563EB; --topbar:#F2F3EF;
+  --hero:#0B0B0C; --hero-2:#1A1A1E; --hero-ink:#F4F5F2; --hero-ink-2:#A9AFB6; --hero-line:#3A3F45;
+  --nav:#0B0B0C; --nav-ink:#A9AFB6; --nav-active:#F4F5F2;
+  --chart-a:#0B0B0C; --chart-b:#8B939B;
+  --toast-bg:#0B0B0C; --toast-ink:#F4F5F2;
+  --focus:#2563EB; --topbar:#FFFFFF;
   /* Type: system stack renders SF Pro on iPhone (the Weather-app feel the
      user asked for); light open sans everywhere else. */
   --font-display:-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, "Segoe UI", sans-serif;
@@ -38,34 +38,59 @@
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#131518; --surface:#1C1F23; --surface-2:#23272C; --line:#2E3338; --line-strong:#454B52;
+    --bg:#0B0B0C; --surface:#161618; --surface-2:#1E1E21; --line:#2A2A2E; --line-strong:#3D3D44;
     --ink:#EEF0F2; --ink-2:#A7AEB5;
     --warn-text:#FF9A5C; --warn-bg:#2E2117; --warn-line:#5A3A22;
     --danger:#F06A5F; --danger-bg:#331B1A;
     --ok:#5FD28C; --ok-bg:#16291E;
     --info:#8AB4FF; --info-bg:#1A2433;
     --star:#FBBF24; --biz:#2C8C9E;
-    --hero:#22262B; --hero-2:#2C3136; --hero-line:#3F454C;
-    --nav:#0E1012; --chart-a:#EEF0F2; --chart-b:#6E767E;
-    --toast-bg:#EEF0F2; --toast-ink:#1D2024;
-    --focus:#7AA2FF; --topbar:#131518;
+    --hero:#141416; --hero-2:#1E1E21; --hero-line:#2E2E33;
+    --nav:#0B0B0C; --chart-a:#EEF0F2; --chart-b:#6E767E;
+    --toast-bg:#EEF0F2; --toast-ink:#0B0B0C;
+    --focus:#7AA2FF; --topbar:#0B0B0C;
     color-scheme: dark;
   }
 }
+/* Light-lock: pages designed light-only (the public landing page) pin the
+   light token set on their own root so a visitor whose OS/app theme is dark
+   never gets dark-flipped text on a light page (2026-11-04: the landing
+   hero rendered near-white text on white in dark mode because text-ink
+   flips while the paper background does not). Scoped to the subtree, so
+   the app's real dark mode is untouched. Values mirror the light :root
+   block above — change them together. */
+.ej-light-lock{
+  --bg:#FFFFFF; --surface:#FFFFFF; --surface-2:#F6F7F4; --line:#E2E4DF; --line-strong:#C9CDC6;
+  --ink:#0B0B0C; --ink-2:#5B6168;
+  --hivis:#C6F432; --hivis-ink:#0B0B0C; --hivis-soft:#E5FAA3;
+  --asphalt:#0B0B0C; --reflect:#C7CCD1; --steel:#8B939B;
+  --warn:#E8590C; --warn-text:#B54708; --warn-bg:#FFF1E6; --warn-line:#F6C9A8;
+  --danger:#C8322B; --danger-bg:#FDECEB;
+  --ok:#1C7C45; --ok-bg:#E7F5EC;
+  --info:#1D4ED8; --info-bg:#E8EFFE;
+  --star:#C77700; --biz:#0E5E6F;
+  --hero:#0B0B0C; --hero-2:#1A1A1E; --hero-ink:#F4F5F2; --hero-ink-2:#A9AFB6; --hero-line:#3A3F45;
+  --nav:#0B0B0C; --nav-ink:#A9AFB6; --nav-active:#F4F5F2;
+  --chart-a:#0B0B0C; --chart-b:#8B939B;
+  --toast-bg:#0B0B0C; --toast-ink:#F4F5F2;
+  --focus:#2563EB; --topbar:#FFFFFF;
+  color-scheme: light;
+}
+
 /* The app toggles `.dark` on <html> (see the theme script in
    src/app/layout.tsx); honour it in addition to the data-theme attribute. */
 :root[data-theme="dark"], :root.dark{
-  --bg:#131518; --surface:#1C1F23; --surface-2:#23272C; --line:#2E3338; --line-strong:#454B52;
+  --bg:#0B0B0C; --surface:#161618; --surface-2:#1E1E21; --line:#2A2A2E; --line-strong:#3D3D44;
   --ink:#EEF0F2; --ink-2:#A7AEB5;
   --warn-text:#FF9A5C; --warn-bg:#2E2117; --warn-line:#5A3A22;
   --danger:#F06A5F; --danger-bg:#331B1A;
   --ok:#5FD28C; --ok-bg:#16291E;
   --info:#8AB4FF; --info-bg:#1A2433;
   --star:#FBBF24; --biz:#2C8C9E;
-  --hero:#22262B; --hero-2:#2C3136; --hero-line:#3F454C;
-  --nav:#0E1012; --chart-a:#EEF0F2; --chart-b:#6E767E;
-  --toast-bg:#EEF0F2; --toast-ink:#1D2024;
-  --focus:#7AA2FF; --topbar:#131518;
+  --hero:#141416; --hero-2:#1E1E21; --hero-line:#2E2E33;
+  --nav:#0B0B0C; --chart-a:#EEF0F2; --chart-b:#6E767E;
+  --toast-bg:#EEF0F2; --toast-ink:#0B0B0C;
+  --focus:#7AA2FF; --topbar:#0B0B0C;
   color-scheme: dark;
 }
 

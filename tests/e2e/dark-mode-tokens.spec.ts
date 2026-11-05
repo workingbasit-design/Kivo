@@ -7,22 +7,21 @@
  * regression test for the "half in dark mode" bug: hard-coded light colours
  * can never sneak back in, because CI runs this suite.
  *
- * Dark values are copied from the mockup (docs/design/app-mockup.html).
- * If you change a dark token in src/app/globals.css, update DARK_TOKENS here.
+ * Dark values are copied from the kit tokens (docs/design/everyjob-kit.css).
+ * If you change a dark token there, update DARK_TOKENS here.
  */
 import { test, expect, loginAs } from './fixtures';
 
 // Every background a kit component may legitimately have in dark mode.
 const DARK_TOKENS = new Set(
   [
-    '#131518', // bg
-    '#1c1f23', // surface
-    '#23272c', // surface-2
-    '#2e3338', // line
-    '#454b52', // line-strong
-    '#d4f24c', // hivis
-    '#e9fa9f', // hivis-soft
-    '#1d2024', // hivis-ink, asphalt (always-dark surfaces)
+    '#0b0b0c', // bg, nav, hivis-ink, asphalt (always-dark surfaces)
+    '#161618', // surface
+    '#1e1e21', // surface-2, hero-2
+    '#2a2a2e', // line
+    '#3d3d44', // line-strong
+    '#c6f432', // hivis
+    '#e5faa3', // hivis-soft
     '#e8590c', // warn
     '#2e2117', // warn-bg
     '#5a3a22', // warn-line
@@ -32,11 +31,9 @@ const DARK_TOKENS = new Set(
     '#5fd28c', // ok
     '#1a2433', // info-bg
     '#8ab4ff', // info
-    '#22262b', // hero
-    '#2c3136', // hero-2
+    '#141416', // hero
     '#f4f5f2', // hero-ink
-    '#3f454c', // hero-line
-    '#0e1012', // nav
+    '#2e2e33', // hero-line
     '#eef0f2', // toast-bg, chart-a
     '#6e767e', // chart-b
     '#2c8c9e', // biz

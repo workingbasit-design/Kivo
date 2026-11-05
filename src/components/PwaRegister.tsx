@@ -41,7 +41,7 @@ function ensureHeadTags() {
   link('apple-touch-icon', '/icons/apple-touch-icon.png');
   // theme-color follows the topbar token so the browser chrome matches the app.
   const topbar =
-    getComputedStyle(document.documentElement).getPropertyValue('--topbar').trim() || '#F2F3EF';
+    getComputedStyle(document.documentElement).getPropertyValue('--topbar').trim() || '#FFFFFF';
   meta('theme-color', topbar);
   meta('mobile-web-app-capable', 'yes');
   meta('apple-mobile-web-app-capable', 'yes');

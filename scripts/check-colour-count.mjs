@@ -46,7 +46,7 @@ let hits = lines.filter(
 );
 
 // (c) documented exceptions: in-page anchors (#ejl, #job, ...), invoice #1042,
-// #add anchor, React issue refs (#418, #441), theme-color fallback #F2F3EF,
+// #add anchor, React issue refs (#418, #441), theme-color fallback #FFFFFF,
 // decorative-effect hex in globals.css gradients, SVG artwork, user-data
 // colours, brand artwork, HTML email. See docs/design/colour-exceptions.txt
 // for the full list.

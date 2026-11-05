@@ -121,7 +121,7 @@ export default async function LandingPage() {
   const heroDelay = (ms: number) => ({ '--ej-delay': `${ms}ms` }) as CSSProperties;
 
   return (
-    <div className="landing-focus min-h-screen bg-paper text-ink antialiased">
+    <div className="landing-focus ej-light-lock min-h-screen bg-paper text-ink antialiased">
       {/* Sticky nav */}
       <header className="sticky top-0 z-50 bg-paper/80 backdrop-blur-xl border-b border-smoke">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
