@@ -18,6 +18,14 @@ type Entry = {
   smart?: boolean;
 };
 
+/** Record matches from GET /api/search (2026-11-06: palette finds records). */
+type SearchResults = {
+  customers: { id: string; name: string; phone: string | null }[];
+  jobs: { id: string; title: string; customerName: string }[];
+  quotes: { id: string; number: string; title: string; customerName: string }[];
+  invoices: { id: string; number: string; total: number; customerName: string }[];
+};
+
 const QUICK_ACTIONS: { key: string; href: string }[] = [
   { key: "nav.jobs", href: "/jobs/new" },
   { key: "nav.customers", href: "/customers/new" },
@@ -35,6 +43,8 @@ export default function CommandPalette({ locale = "en" }: { locale?: Locale }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
+  // Record matches from /api/search (customers, jobs, quotes, invoices).
+  const [recordEntries, setRecordEntries] = useState<Entry[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   // Reset the highlighted entry whenever the query changes or the palette
@@ -90,8 +100,70 @@ export default function CommandPalette({ locale = "en" }: { locale?: Locale }) {
         smart: true,
       });
     }
-    return base;
-  }, [entries, query, locale]);
+    // Record matches (customers, jobs, quotes, invoices) follow the nav
+    // matches - for a name query the nav list is usually empty anyway.
+    return [...base, ...recordEntries];
+  }, [entries, query, locale, recordEntries]);
+
+  // Debounced record search: 2+ chars, 200ms after the user stops typing.
+  // Best-effort - a failed lookup leaves the nav results in place.
+  useEffect(() => {
+    if (!open) return;
+    const q = query.trim();
+    let cancelled = false;
+    const id = window.setTimeout(async () => {
+      if (cancelled) return;
+      if (q.length < 2) {
+        setRecordEntries([]);
+        return;
+      }
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+        if (!res.ok || cancelled) return;
+        const json = (await res.json()) as SearchResults;
+        const out: Entry[] = [];
+        for (const c of json.customers ?? []) {
+          out.push({
+            id: `customer:${c.id}`,
+            label: c.name,
+            hint: `${t(locale, "cmdbar.resultCustomer")}${c.phone ? ` · ${c.phone}` : ""}`,
+            href: `/customers/${c.id}`,
+          });
+        }
+        for (const j of json.jobs ?? []) {
+          out.push({
+            id: `job:${j.id}`,
+            label: j.title,
+            hint: `${t(locale, "cmdbar.resultJob")} · ${j.customerName}`,
+            href: `/jobs/${j.id}`,
+          });
+        }
+        for (const quote of json.quotes ?? []) {
+          out.push({
+            id: `quote:${quote.id}`,
+            label: `${quote.number} · ${quote.title}`,
+            hint: `${t(locale, "cmdbar.resultQuote")} · ${quote.customerName}`,
+            href: `/quotes/${quote.id}`,
+          });
+        }
+        for (const inv of json.invoices ?? []) {
+          out.push({
+            id: `invoice:${inv.id}`,
+            label: `${inv.number} · ${inv.customerName}`,
+            hint: `${t(locale, "cmdbar.resultInvoice")}`,
+            href: `/invoices/${inv.id}`,
+          });
+        }
+        if (!cancelled) setRecordEntries(out);
+      } catch {
+        // Network or parse failure: keep the nav results, stay silent.
+      }
+    }, 200);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(id);
+    };
+  }, [open, query, locale]);
 
   // (Active-entry reset is handled by the render-phase adjustment above.)
 

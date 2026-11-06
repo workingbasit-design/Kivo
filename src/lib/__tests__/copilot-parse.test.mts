@@ -372,6 +372,31 @@ test('detectIntent: "add job for Sarah tomorrow" is still create_job', () => {
   assert.equal(detectIntent('add job for Sarah tomorrow'), 'create_job');
 });
 
+// --- Intent: bare "add a name" is a customer question, never a job (2026-11-06) ---
+test('detectIntent: "add a name" is create_customer, not create_job', () => {
+  assert.equal(detectIntent('add a name'), 'create_customer');
+});
+
+test('detectIntent: "add name" is create_customer', () => {
+  assert.equal(detectIntent('add name'), 'create_customer');
+});
+
+test('detectIntent: French "ajouter un nom" is create_customer', () => {
+  assert.equal(detectIntent('ajouter un nom'), 'create_customer');
+});
+
+test('detectIntent: "add a name for Sarah tomorrow" is still create_job', () => {
+  assert.equal(detectIntent('add a name for Sarah tomorrow'), 'create_job');
+});
+
+test('extractServiceTitle: "add a name" yields no service title', () => {
+  assert.equal(extractServiceTitle('add a name'), null);
+});
+
+test('extractServiceTitle: "book a name for Sarah tomorrow" yields no service title', () => {
+  assert.equal(extractServiceTitle('book a name for Sarah tomorrow'), null);
+});
+
 // --- Intent: certification advice (reported defect) ---
 test('detectIntent: plumber certification question is ask_certification', () => {
   assert.equal(

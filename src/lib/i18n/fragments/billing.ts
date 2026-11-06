@@ -66,6 +66,11 @@ const fragment = {
       statCollected: 'Collected',
       statPaymentsRecorded: 'payments recorded',
       filterLabel: 'Invoice status filter',
+      // 2026-11-06: invoices had no text search at all (status tabs only).
+      searchPlaceholder: 'Search number or customer',
+      searchLabel: 'Search invoices',
+      clearSearch: 'Clear search',
+      searchNoResults: 'No invoices match your search.',
       listEmptyTitle: 'No invoices yet',
       listEmptyDesc:
         'Raise a tax-ready invoice in under a minute. Tax math handled for you.',
@@ -142,6 +147,11 @@ const fragment = {
       statCollected: 'Encaissé',
       statPaymentsRecorded: 'paiements enregistrés',
       filterLabel: 'Filtrer par statut',
+      // 2026-11-06 : les factures n’avaient aucune recherche textuelle (onglets de statut seulement).
+      searchPlaceholder: 'Rechercher numéro ou client',
+      searchLabel: 'Rechercher des factures',
+      clearSearch: 'Effacer la recherche',
+      searchNoResults: 'Aucune facture ne correspond à votre recherche.',
       listEmptyTitle: 'Aucune facture pour le moment',
       listEmptyDesc:
         'Créez une facture prête pour les taxes en moins d’une minute. Le calcul des taxes est pris en charge.',

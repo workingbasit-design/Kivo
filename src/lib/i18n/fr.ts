@@ -119,7 +119,7 @@ const fr: Dictionary = {
     yesCancel: 'Oui, annuler le travail',
     yesDelete: 'Oui, supprimer définitivement',
     // All-modules redesign, Part 3 group 1 (Jobs list + Job detail).
-    searchPlaceholder: 'Rechercher travaux, clients ou adresses',
+    searchPlaceholder: 'Rechercher travaux, clients, adresses',
     clearSearch: 'Effacer la recherche',
     sortButton: 'Trier',
     filtersLabel: 'Filtrer les travaux',
@@ -239,7 +239,7 @@ const fr: Dictionary = {
     email: 'Courriel',
     address: 'Adresse',
     notes: 'Notes',
-    searchPlaceholder: 'Rechercher nom, téléphone, courriel ou adresse…',
+    searchPlaceholder: 'Rechercher nom, téléphone ou courriel',
     noResults: 'Aucun client ne correspond à votre recherche.',
     countOne: '{count} client',
     countOther: '{count} clients',
@@ -279,7 +279,7 @@ const fr: Dictionary = {
     sendLabel: 'Envoyer',
     greeting:
       'Bonjour ! Je suis EveryJob. Votre assistant IA.\n\nPour réserver un travail, consulter l’horaire ou suivre les paiements, écrivez simplement ici. Je réponds à partir des données réelles de votre entreprise, et un travail n’est réservé qu’après votre confirmation.',
-    inputPlaceholder: 'Ex. : Réserver la réparation de clim de Sarah demain à 15h…',
+    inputPlaceholder: 'Ex. : Réserver la clim de Sarah demain…',
     suggestedActions: 'Actions suggérées',
     errorRetry: 'Impossible de réserver le travail. Veuillez réessayer.',
     bookingCancelled: 'D’accord, le travail n’a pas été réservé. Dites-moi si vous avez besoin d’autre chose !',

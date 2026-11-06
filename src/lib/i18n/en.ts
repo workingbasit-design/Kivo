@@ -120,7 +120,7 @@ const en: Dict = {
     yesCancel: 'Yes, cancel job',
     yesDelete: 'Yes, delete permanently',
     // All-modules redesign, Part 3 group 1 (Jobs list + Job detail).
-    searchPlaceholder: 'Search jobs, customers or addresses',
+    searchPlaceholder: 'Search jobs, customers, addresses',
     clearSearch: 'Clear search',
     sortButton: 'Sort',    filtersLabel: 'Filter jobs',
     filterAll: 'All',
@@ -239,7 +239,7 @@ const en: Dict = {
     email: 'Email',
     address: 'Address',
     notes: 'Notes',
-    searchPlaceholder: 'Search name, phone, email or address…',
+    searchPlaceholder: 'Search name, phone or email',
     noResults: 'No customers match your search.',
     countOne: '{count} customer',
     countOther: '{count} customers',
@@ -279,7 +279,7 @@ const en: Dict = {
     sendLabel: 'Send',
     greeting:
       'Hi! I am EveryJob. Your AI assistant.\n\nNeed to book a job, check the schedule, or track payments. Just write here. I answer from your real business data, and a job is only booked after you confirm.',
-    inputPlaceholder: 'E.g.: Book Sarah’s AC repair tomorrow at 3pm…',
+    inputPlaceholder: 'E.g.: Book Sarah’s AC repair tomorrow…',
     suggestedActions: 'Suggested Actions',
     errorRetry: 'Could not book the job. Please try again.',
     bookingCancelled: 'Okay, the job was not booked. Let me know if you need anything else!',

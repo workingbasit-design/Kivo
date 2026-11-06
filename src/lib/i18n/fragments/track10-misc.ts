@@ -145,9 +145,6 @@ const fragment = {
         langEn: 'English (Canada)',
         langFr: 'Français (Canada)',
       },
-      trigger: {
-        defaultMessage: 'Hi! How can I help today?',
-      },
       auth: {
         loginTitle: 'Welcome back',
         loginSubtitle: 'Log in to run your field service business.',
@@ -832,9 +829,6 @@ const fragment = {
         language: 'Langue vocale',
         langEn: 'Anglais (Canada)',
         langFr: 'Français (Canada)',
-      },
-      trigger: {
-        defaultMessage: 'Salut! Comment puis-je vous aider?',
       },
       auth: {
         loginTitle: 'Bon retour',

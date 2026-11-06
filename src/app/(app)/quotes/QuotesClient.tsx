@@ -4,7 +4,7 @@ import { useMemo, useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import { Plus, ClipboardList, Clock } from '@/components/icons';
 import { fillTemplate, daysWaiting } from '@/lib/revenue';
-import { Card, Button } from '@/components/kit';
+import { Card, Button, SearchField } from '@/components/kit';
 import { formatDateShort, cn } from '@/lib/utils';
 import { formatMoney } from '@/lib/money';
 import MoneyText from '@/components/MoneyText';
@@ -75,14 +75,23 @@ export default function QuotesClient({
   initialFilter: Filter;
 }) {
   const [activeFilter, setActiveFilter] = useState<Filter>(initialFilter);
+  // 2026-11-06: quotes had no text search at all (status tabs only).
+  const [query, setQuery] = useState('');
 
-  const filtered = useMemo(
-    () =>
+  const filtered = useMemo(() => {
+    const byStatus =
       activeFilter === 'ALL'
         ? quotes
-        : quotes.filter((q) => q.status === activeFilter),
-    [quotes, activeFilter]
-  );
+        : quotes.filter((q) => q.status === activeFilter);
+    const q = query.trim().toLowerCase();
+    if (!q) return byStatus;
+    return byStatus.filter(
+      (quote) =>
+        quote.number.toLowerCase().includes(q) ||
+        quote.title.toLowerCase().includes(q) ||
+        quote.customer.name.toLowerCase().includes(q)
+    );
+  }, [quotes, activeFilter, query]);
 
   // 2026-11-05: converted quotes are realized work, not pipeline — a
   // converted quote keeps APPROVED forever, so without the !converted
@@ -149,6 +158,14 @@ export default function QuotesClient({
         />
       </div>
 
+      <SearchField
+        value={query}
+        onChange={setQuery}
+        placeholder={t(locale, 'quotes.list.searchPlaceholder')}
+        label={t(locale, 'quotes.list.searchLabel')}
+        clearLabel={t(locale, 'quotes.list.clearSearch')}
+      />
+
       <div className="flex gap-2 flex-wrap" role="tablist" aria-label={t(locale, 'quotes.list.title')}>
         {FILTERS.map((f) => (
           <button
@@ -171,7 +188,7 @@ export default function QuotesClient({
 
       {/* Quote follow-up queue - revenue recovery. Only the user sends
           anything: buttons open their own SMS/WhatsApp apps prefilled. */}
-      {staleQuotes.length > 0 && activeFilter === 'ALL' && (
+      {staleQuotes.length > 0 && activeFilter === 'ALL' && query.trim() === '' && (
         <Card className="!p-0 overflow-hidden">
           <div className="px-5 pt-5 pb-3">
             <div className="flex items-center gap-2.5">
@@ -263,14 +280,24 @@ export default function QuotesClient({
         <Card>
           <EmptyState
             icon={<ClipboardList />}
-            title={t(locale, 'quotes.list.emptyTitle')}
-            text={t(locale, 'quotes.list.emptyDesc')}
+            title={
+              query.trim() !== ''
+                ? t(locale, 'quotes.list.noSearchResults')
+                : t(locale, 'quotes.list.emptyTitle')
+            }
+            text={
+              query.trim() !== ''
+                ? ''
+                : t(locale, 'quotes.list.emptyDesc')
+            }
           />
+{query.trim() === '' && (
 <div className="flex justify-center pb-10 -mt-6">
             <Button href="/quotes/new" variant="primary">
               <Plus size={14} /> {t(locale, 'quotes.list.newQuote')}
             </Button>
           </div>
+)}
         </Card>
       ) : (
         <Card className="!p-0 overflow-hidden">

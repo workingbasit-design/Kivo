@@ -65,6 +65,11 @@ const fragment = {
         filterSent: 'Sent',
         filterApproved: 'Approved',
         filterDeclined: 'Declined',
+        // 2026-11-06: quotes had no text search at all (status tabs only).
+        searchPlaceholder: 'Search number, title or customer',
+        searchLabel: 'Search quotes',
+        clearSearch: 'Clear search',
+        noSearchResults: 'No quotes match your search.',
         emptyTitle: 'No quotes yet',
         emptyDesc:
           'Send your first quote in under a minute. Line items in, a clean total out.',
@@ -170,6 +175,11 @@ const fragment = {
         filterSent: 'Envoyé',
         filterApproved: 'Approuvé',
         filterDeclined: 'Refusé',
+        // 2026-11-06 : les devis n’avaient aucune recherche textuelle (onglets de statut seulement).
+        searchPlaceholder: 'Rechercher numéro, titre ou client',
+        searchLabel: 'Rechercher des devis',
+        clearSearch: 'Effacer la recherche',
+        noSearchResults: 'Aucun devis ne correspond à votre recherche.',
         emptyTitle: 'Aucun devis pour le moment',
         emptyDesc:
           'Envoyez votre premier devis en moins d\u2019une minute. Articles entrés, total clair en sortie.',

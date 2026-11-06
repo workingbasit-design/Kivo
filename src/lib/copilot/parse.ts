@@ -474,6 +474,12 @@ function extractCustomTitle(raw: string): string | null {
   text = text.replace(/\s+for\s+[A-Z][a-z]+(\s+[A-Z][a-z]+)?$/i, '');
   
   text = text.trim();
+
+  // Guard: a remainder that is only "a name" / "name" is not a service -
+  // "add a name" used to title-case into a booking for a service literally
+  // called "A Name" (2026-11-06 QA). Return null so the engine asks what
+  // the job is instead of inventing one.
+  if (/^(a\s+|an\s+|the\s+)?names?$/i.test(text)) return null;
   
   // Must be meaningful (2+ chars, not just stopwords)
   if (text.length < 2) return null;
@@ -788,6 +794,12 @@ const CREATE_CUSTOMER_RES = [
   /\bcreer\s+(?:un\s+)?clients?\b/,
   /\bnouveau\s+clients?\b/,
   /\bnouvelle\s+cliente\b/,
+  // Bare "add a name" / "ajouter un nom" - the user is talking about a
+  // name, not a service. Without this the phrase fell through to booking
+  // and became a job for a service literally called "A Name" (2026-11-06
+  // QA). Anchored to the whole message so longer requests are unaffected.
+  /^add\s+(?:(?:a|an|the|new)\s+)*names?$/,
+  /^ajouter\s+(?:(?:un|une|le|la|nouveau|nouvelle)\s+)*noms?$/,
 ];
 
 /** Words that mark a question as being about the business's own domain. */

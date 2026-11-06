@@ -12,7 +12,7 @@ import DateTimeText from '@/components/DateTimeText';
 import { t, type Locale } from '@/lib/i18n';
 import { INVOICE_STATUSES } from '@/lib/validations';
 import ExportButtons, { type ExportColumn, type ExportRow } from '@/components/ExportButtons';
-import { PageHeader, Button, EmptyState, Chip, Card, SummaryCard } from '@/components/kit';
+import { PageHeader, Button, EmptyState, Chip, Card, SummaryCard, SearchField } from '@/components/kit';
 import { StatusPill } from '../_components/status-ui';
 
 const FILTERS = ['ALL', ...INVOICE_STATUSES] as const;
@@ -55,17 +55,25 @@ export default function InvoicesClient({
   initialFilter: Filter;
 }) {
   const [activeFilter, setActiveFilter] = useState<Filter>(initialFilter);
+  // 2026-11-06: invoices had no text search at all (status tabs only).
+  const [query, setQuery] = useState('');
+
+  const filtered = useMemo(() => {
+    const byStatus =
+      activeFilter === 'ALL'
+        ? invoices
+        : invoices.filter((i) => i.status === activeFilter);
+    const q = query.trim().toLowerCase();
+    if (!q) return byStatus;
+    return byStatus.filter(
+      (inv) =>
+        inv.number.toLowerCase().includes(q) ||
+        inv.customer.name.toLowerCase().includes(q)
+    );
+  }, [invoices, activeFilter, query]);
   // Snapshot "now" once per mount for the overdue hint below (lazy
   // initializer keeps the impure Date.now() out of the render path).
   const [now] = useState(() => Date.now());
-
-  const filtered = useMemo(
-    () =>
-      activeFilter === 'ALL'
-        ? invoices
-        : invoices.filter((i) => i.status === activeFilter),
-    [invoices, activeFilter]
-  );
 
   const exportRows: ExportRow[] = useMemo(
     () =>
@@ -124,6 +132,14 @@ export default function InvoicesClient({
         ]}
       />
 
+      <SearchField
+        value={query}
+        onChange={setQuery}
+        placeholder={t(locale, 'billing.searchPlaceholder')}
+        label={t(locale, 'billing.searchLabel')}
+        clearLabel={t(locale, 'billing.clearSearch')}
+      />
+
       <div className="flex gap-2 flex-wrap" role="tablist" aria-label={t(locale, 'billing.filterLabel')}>
         {FILTERS.map((f) => (
           <button
@@ -148,14 +164,24 @@ export default function InvoicesClient({
         <Card className="mb-28 md:mb-0">
           <EmptyState
             icon={<FileText />}
-            title={t(locale, 'billing.listEmptyTitle')}
-            text={t(locale, 'billing.listEmptyDesc')}
+            title={
+              query.trim() !== ''
+                ? t(locale, 'billing.searchNoResults')
+                : t(locale, 'billing.listEmptyTitle')
+            }
+            text={
+              query.trim() !== ''
+                ? ''
+                : t(locale, 'billing.listEmptyDesc')
+            }
           />
+{query.trim() === '' && (
 <div className="flex justify-center pb-10 -mt-6">
             <Button href="/invoices/new" variant="primary">
               <Plus size={14} /> {t(locale, 'billing.newInvoice')}
             </Button>
           </div>
+)}
         </Card>
       ) : (
         <Card className="!p-0 overflow-hidden">

@@ -1,7 +1,6 @@
 "use client";
 
 import React from 'react';
-import { useResolvedT } from '@/hooks/useResolvedLocale';
 
 type Props = {
   className?: string;
@@ -13,11 +12,15 @@ type Props = {
 };
 
 export default function CopilotTriggerButton({ className, children, ariaLabel, message }: Props) {
-  const { t } = useResolvedT();
   const handleClick = () => {
+    // 2026-11-06: opening the copilot used to SEND the default greeting
+    // ("Hi! How can I help today?") as a user message - it rendered in the
+    // dark user bubble and the engine answered its own greeting (in FR with
+    // an out-of-scope refusal). The widget already greets as the assistant
+    // on open, so only send a message when one was explicitly passed.
     window.dispatchEvent(
       new CustomEvent('open-copilot', {
-        detail: { message: message ?? t('t10misc.trigger.defaultMessage') },
+        detail: { message: message ?? null },
       })
     );
   };

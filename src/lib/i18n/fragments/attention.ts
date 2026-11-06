@@ -205,9 +205,14 @@ const fragment = {
       micError: 'Microphone trouble. Try again, or use the buttons below instead.',
     },
     cmdbar: {
-      hint: 'Try “unpaid invoices”, “create quote for John Smith”…',
+      hint: 'Try “unpaid invoices” or a customer name…',
       noResults: 'No matches. Try a name, a section, or an action like “unpaid invoices”.',
       smartAction: 'Smart action',
+      // 2026-11-06: Quick search now finds business records, not just pages.
+      resultCustomer: 'Customer',
+      resultJob: 'Job',
+      resultQuote: 'Quote',
+      resultInvoice: 'Invoice',
     },
   },
   fr: {
@@ -412,9 +417,14 @@ const fragment = {
       micError: 'Problème de micro. Réessayez, ou utilisez les boutons ci-dessous.',
     },
     cmdbar: {
-      hint: 'Essayez « factures impayées », « créer une soumission pour Jean Tremblay »…',
+      hint: 'Essayez « factures impayées » ou un nom…',
       noResults: 'Aucun résultat. Essayez un nom, une section ou une action comme « factures impayées ».',
       smartAction: 'Action intelligente',
+      // 2026-11-06 : la recherche rapide trouve désormais des dossiers, pas seulement des pages.
+      resultCustomer: 'Client',
+      resultJob: 'Travail',
+      resultQuote: 'Devis',
+      resultInvoice: 'Facture',
     },
   },
 };

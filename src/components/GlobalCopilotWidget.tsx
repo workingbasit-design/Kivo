@@ -453,6 +453,17 @@ function CustomerPreviewCard({
     </div>
   );
 }
+
+/**
+ * Right-edge fade for horizontally scrolling chip rows (same treatment as
+ * kit FilterChips): the last chip fades instead of cutting mid-word.
+ * 2026-11-06: the copilot suggestion chips clipped hard at the edge.
+ */
+const CHIP_FADE_MASK = {
+  WebkitMaskImage: 'linear-gradient(to right, black calc(100% - 28px), transparent)',
+  maskImage: 'linear-gradient(to right, black calc(100% - 28px), transparent)',
+} as const;
+
 export default function GlobalCopilotWidget({
   currency,
   locale,
@@ -1295,7 +1306,7 @@ export default function GlobalCopilotWidget({
             <Send className="w-4 h-4 ml-0.5" />
           </button>
         </form>
-        <div className="flex gap-2 overflow-x-auto mt-2 pb-1">
+        <div className="flex gap-2 overflow-x-auto mt-2 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" style={CHIP_FADE_MASK}>
           {askExamples.map((q) => (
             <button
               key={q}
@@ -1392,7 +1403,7 @@ export default function GlobalCopilotWidget({
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="px-4 pt-2 pb-1 flex gap-2 overflow-x-auto shrink-0 bg-surface">
+      <div className="px-4 pt-2 pb-1 flex gap-2 overflow-x-auto shrink-0 bg-surface [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" style={CHIP_FADE_MASK}>
         {quickPrompts.map((q) => (
           <button
             key={q}
