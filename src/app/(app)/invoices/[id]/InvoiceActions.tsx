@@ -75,6 +75,16 @@ export default function InvoiceActions({
     recordPayment,
     {}
   );
+  // 2026-11-06 deep test: a rapid double-click on "Record payment" recorded
+  // the payment TWICE. disabled={payPending} alone does not stop it — both
+  // clicks land before React re-renders with pending=true. This ref is set
+  // synchronously in onSubmit, so the second submit in the same tick is
+  // dropped; it resets whenever the action resolves (success or error),
+  // so a failed attempt can still be retried.
+  const paySubmittingRef = useRef(false);
+  useEffect(() => {
+    paySubmittingRef.current = false;
+  }, [payState]);
   const [emailState, emailAction, emailPending] = useActionState<ActionResult, FormData>(
     sendInvoiceEmail,
     {}
@@ -118,7 +128,17 @@ export default function InvoiceActions({
       )}
 
       {remaining > 0 && (
-        <form action={payAction} className="bg-surface-2 border border-line/70 rounded-2xl p-4 space-y-3">
+        <form
+          action={payAction}
+          onSubmit={(e) => {
+            if (paySubmittingRef.current) {
+              e.preventDefault();
+              return;
+            }
+            paySubmittingRef.current = true;
+          }}
+          className="bg-surface-2 border border-line/70 rounded-2xl p-4 space-y-3"
+        >
           <h3 className="text-sm font-bold text-ink flex items-center gap-2">
             <Wallet size={14} /> {t(locale, 't10money.invRecordPayment')}
             <span className="text-xs font-semibold text-warn-text">

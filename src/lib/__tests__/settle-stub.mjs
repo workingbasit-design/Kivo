@@ -15,6 +15,7 @@ export function resetSettleStub() {
   calls.lineItemCreate.length = 0;
   calls.paymentCreate.length = 0;
   calls.invoiceUpdate.length = 0;
+  if (calls.jobUpdateMany) calls.jobUpdateMany.length = 0;
 }
 
 // Scenario data, swapped per test.
@@ -39,6 +40,14 @@ export function makeTx() {
         calls.jobUpdate = calls.jobUpdate || [];
         calls.jobUpdate.push(args);
         return { id: args.where.id };
+      },
+      // 2026-11-06 deep test: settleJobPaidTx marks the job invoiced via
+      // updateMany so businessId can ride in the where (tenant scope by
+      // convention inside $transaction, where the guard does not fire).
+      updateMany: async (args) => {
+        calls.jobUpdateMany = calls.jobUpdateMany || [];
+        calls.jobUpdateMany.push(args);
+        return { count: 1 };
       },
     },
     invoice: {

@@ -12,7 +12,9 @@
  * key-based rules from the audit scrubber conceptually, applied to free text.
  */
 import { createHash } from 'node:crypto';
+import type { PrismaClient } from '@prisma/client';
 import { prisma } from './prisma.ts';
+import { unsafeUnscoped } from './tenant-guard.ts';
 
 export type ErrorKind = 'error' | 'login_failure' | 'webhook_failure' | 'export_spike';
 
@@ -50,6 +52,72 @@ export interface ReportErrorInput {
 }
 
 /**
+ * Upsert one grouped error-log row. Shared by reportError (business-scoped
+ * when the business is known) and reportLoginFailure (platform-level, no
+ * business is known at login time).
+ *
+ * 2026-11-06 deep test (architect audit): ErrorLog is a guarded tenant
+ * model, so the unscoped findFirst/update/create threw TenantScopeError
+ * and — swallowed by the "logging must never throw" catch — NOTHING ever
+ * persisted. Failed-login records never landed, so brute-force alerting
+ * was blind. The fix: scope the dedup by businessId when one is known,
+ * and run platform-level rows (no business) through the audited escape
+ * hatch. ErrorLog is append-only telemetry keyed by fingerprint (a hash),
+ * never read back per-tenant — the cron alert reader is platform-wide by
+ * design — so the unscoped path cannot leak one business's data to
+ * another.
+ */
+async function persistErrorRow(
+  row: {
+    fingerprint: string;
+    kind: string;
+    message: string;
+    stack: string | null;
+    route?: string;
+    businessId?: string;
+    userId?: string;
+  },
+  businessId?: string
+): Promise<void> {
+  const write = async (db: PrismaClient) => {
+    const existing = await db.errorLog.findFirst({
+      where: {
+        fingerprint: row.fingerprint,
+        kind: row.kind,
+        ...(businessId ? { businessId } : {}),
+      },
+      select: { id: true },
+    });
+    if (existing) {
+      await db.errorLog.updateMany({
+        where: {
+          id: existing.id,
+          ...(businessId ? { businessId } : {}),
+        },
+        data: { count: { increment: 1 }, lastSeen: new Date() },
+      });
+      return;
+    }
+    await db.errorLog.create({
+      data: {
+        fingerprint: row.fingerprint,
+        kind: row.kind,
+        message: row.message,
+        stack: row.stack,
+        route: row.route,
+        businessId: businessId ?? null,
+        userId: row.userId,
+      },
+    });
+  };
+  if (businessId) {
+    await write(prisma);
+  } else {
+    await unsafeUnscoped('error-log:platform', write);
+  }
+}
+
+/**
  * Record an error (or security-relevant event). Never throws - logging must
  * not break the request it observes.
  */
@@ -58,32 +126,17 @@ export async function reportError(input: ReportErrorInput): Promise<void> {
     const message =
       input.error instanceof Error ? input.error.message : String(input.error ?? 'Unknown error');
     const stack = input.error instanceof Error ? input.error.stack : undefined;
-    const fingerprint = fingerprintFor(message, stack);
-    const kind = input.kind ?? 'error';
-    const cleanMessage = scrubText(message).slice(0, 1000);
-    const cleanStack = stack ? scrubText(stack).slice(0, 4000) : null;
-    const existing = await prisma.errorLog.findFirst({
-      where: { fingerprint, kind },
-      select: { id: true },
-    });
-    if (existing) {
-      await prisma.errorLog.update({
-        where: { id: existing.id },
-        data: { count: { increment: 1 }, lastSeen: new Date() },
-      });
-      return;
-    }
-    await prisma.errorLog.create({
-      data: {
-        fingerprint,
-        kind,
-        message: cleanMessage,
-        stack: cleanStack,
+    await persistErrorRow(
+      {
+        fingerprint: fingerprintFor(message, stack),
+        kind: input.kind ?? 'error',
+        message: scrubText(message).slice(0, 1000),
+        stack: stack ? scrubText(stack).slice(0, 4000) : null,
         route: input.route,
-        businessId: input.businessId,
         userId: input.userId,
       },
-    });
+      input.businessId
+    );
   } catch {
     // Logging must never throw.
   }
@@ -94,19 +147,12 @@ export async function reportLoginFailure(ip: string, email: string): Promise<voi
   // The email is hashed into the fingerprint only - never stored raw.
   const fp = createHash('sha256').update(`login:${ip}`, 'utf8').digest('hex').slice(0, 32);
   try {
-    const existing = await prisma.errorLog.findFirst({
-      where: { fingerprint: fp, kind: 'login_failure' },
-      select: { id: true },
-    });
-    if (existing) {
-      await prisma.errorLog.update({
-        where: { id: existing.id },
-        data: { count: { increment: 1 }, lastSeen: new Date() },
-      });
-      return;
-    }
-    await prisma.errorLog.create({
-      data: { fingerprint: fp, kind: 'login_failure', message: `Failed logins from ${ip}`, route: '/login' },
+    await persistErrorRow({
+      fingerprint: fp,
+      kind: 'login_failure',
+      message: `Failed logins from ${ip}`,
+      stack: null,
+      route: '/login',
     });
   } catch {
     // never throws

@@ -53,6 +53,8 @@ export default async function NewInvoicePage({
     /** Slice 2: the job's service property, when linked — drives the tax default. */
     property: { id: string; label: string; province: string | null } | null;
   } | null = null;
+  /** The job's customer province — tax fallback when the job has no property. */
+  let jobCustomerProvince: string | null = null;
   if (jobId) {
     const job = await prisma.job.findFirst({
       where: { id: jobId, businessId },
@@ -62,6 +64,7 @@ export default async function NewInvoicePage({
         customerId: true,
         priceCents: true,
         property: { select: { id: true, label: true, province: true } },
+        customer: { select: { province: true } },
       },
     });
     if (job) {
@@ -72,16 +75,19 @@ export default async function NewInvoicePage({
         price: centsToDollars(job.priceCents),
         property: job.property,
       };
+      jobCustomerProvince = job.customer?.province ?? null;
     }
   }
 
   // Slice 2: the tax default follows the job's service property province
-  // when arriving from a job; otherwise the business region. The form's
+  // when arriving from a job, falling back to the customer's province
+  // (2026-11-06 deep test), then the business region. The form's
   // TaxSelect stays freely overridable — this is only the default.
   const taxConfig = getTaxConfig(
     business?.regionCode,
     resolveTaxProvince({
       propertyProvince: jobContext?.property?.province,
+      customerProvince: jobCustomerProvince,
       businessTaxRegion: business?.taxRegion,
     })
   );

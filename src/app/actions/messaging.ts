@@ -5,6 +5,7 @@ import { headers } from 'next/headers';
 import { randomBytes, createHash } from 'node:crypto';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { unsafeUnscoped } from '@/lib/tenant-guard';
 import { encryptSecret } from '@/lib/messaging/crypto';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { sendPlatformEmail } from '@/lib/messaging/platform-email';
@@ -379,25 +380,37 @@ export async function sendBusinessEmailVerification(): Promise<ActionResult> {
 /**
  * Verify a business email token (called by the public /verify-email page).
  * Single-use: marks the token used and stamps emailVerifiedAt.
+ *
+ * 2026-11-06 deep test (architect audit): EmailVerificationToken is a
+ * guarded tenant model, so the unscoped findUnique/update threw
+ * TenantScopeError and the public verification flow hit the error boundary
+ * instead of verifying — emailVerifiedAt never stamped, which the messaging
+ * engine requires before sending customer emails. The unguessable token
+ * hash IS the authorization for this lookup (same pattern as the
+ * share-token pay routes), so the whole verify runs through the audited
+ * escape hatch; the row itself carries the businessId, which then scopes
+ * the messaging-connection update (compound key, guard-exempt).
  */
 export async function verifyBusinessEmailToken(
   token: string
 ): Promise<{ ok: boolean; error?: string }> {
-  const row = await prisma.emailVerificationToken.findUnique({
-    where: { tokenHash: hashVerifyToken(token) },
+  return unsafeUnscoped('messaging:verifyBusinessEmailToken', async (db) => {
+    const row = await db.emailVerificationToken.findUnique({
+      where: { tokenHash: hashVerifyToken(token) },
+    });
+    if (!row || row.usedAt || row.expiresAt < new Date()) {
+      return { ok: false, error: 'This verification link is invalid or has expired.' };
+    }
+    await db.$transaction([
+      db.emailVerificationToken.update({
+        where: { id: row.id },
+        data: { usedAt: new Date() },
+      }),
+      db.messagingConnection.update({
+        where: { businessId_channel: { businessId: row.businessId, channel: 'EMAIL' } },
+        data: { emailVerifiedAt: new Date() },
+      }),
+    ]);
+    return { ok: true };
   });
-  if (!row || row.usedAt || row.expiresAt < new Date()) {
-    return { ok: false, error: 'This verification link is invalid or has expired.' };
-  }
-  await prisma.$transaction([
-    prisma.emailVerificationToken.update({
-      where: { id: row.id },
-      data: { usedAt: new Date() },
-    }),
-    prisma.messagingConnection.update({
-      where: { businessId_channel: { businessId: row.businessId, channel: 'EMAIL' } },
-      data: { emailVerifiedAt: new Date() },
-    }),
-  ]);
-  return { ok: true };
 }

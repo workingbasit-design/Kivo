@@ -133,8 +133,15 @@ export async function withIdempotency<T>(
         });
 
         const { response, statusCode } = await fn(tx);
-        await tx.idempotencyKey.update({
-          where: { id: claimed.id },
+        // 2026-11-06 deep test: businessId rides in the where when the
+        // scope has one (same convention as deleteKeyRow in this file) —
+        // the guard does not fire inside $transaction callbacks, so the
+        // scope is carried by convention. updateMany (not update) so the
+        // extra filter is legal.
+        await tx.idempotencyKey.updateMany({
+          where: scope.businessId
+            ? { id: claimed.id, businessId: scope.businessId }
+            : { id: claimed.id },
           data: { responseJson: JSON.stringify(response), statusCode },
         });
         return { response, statusCode, replayed: false };

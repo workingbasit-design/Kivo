@@ -44,18 +44,23 @@ function checkLimit(key: string, locale: Locale): ConfirmBatchResult | null {
 
 /**
  * Slice 2 (2026-10-28): tax follows the job's service property province,
- * falling back to the business region when the job has no property (or
- * its province is unknown). Pure — safe to call inside a $transaction
- * callback, where a global-client query would deadlock (connection_limit=1).
+ * falling back to the customer's province (2026-11-06 deep test: without
+ * this, a job with no property taxed a Quebec customer at Ontario HST),
+ * then the business region when the job has no property and no customer
+ * province (or their provinces are unknown). Pure — safe to call inside a
+ * $transaction callback, where a global-client query would deadlock
+ * (connection_limit=1).
  */
 function taxConfigForJob(
   business: { regionCode?: string | null; taxRegion?: string | null } | null,
-  propertyProvince: string | null | undefined
+  propertyProvince: string | null | undefined,
+  customerProvince?: string | null
 ): TaxConfig {
   return getTaxConfig(
     business?.regionCode,
     resolveTaxProvince({
       propertyProvince,
+      customerProvince,
       businessTaxRegion: business?.taxRegion,
     })
   );
@@ -81,7 +86,7 @@ export async function previewBatchInvoices(): Promise<BatchPreviewResult> {
     prisma.job.findMany({
       where: { businessId, status: 'COMPLETED', invoices: { none: {} } },
       include: {
-        customer: { select: { name: true } },
+        customer: { select: { name: true, province: true } },
         property: { select: { province: true } },
       },
       orderBy: { date: 'desc' },
@@ -100,7 +105,7 @@ export async function previewBatchInvoices(): Promise<BatchPreviewResult> {
         price: centsToDollars(j.priceCents),
         customerName: j.customer.name,
         date: toISODateLocal(j.date),
-        taxes: taxConfigForJob(business, j.property?.province).taxes,
+        taxes: taxConfigForJob(business, j.property?.province, j.customer.province).taxes,
       }))
     ),
   };
@@ -131,7 +136,7 @@ export async function confirmBatchInvoices(
   const jobs = await prisma.job.findMany({
     where: { id: { in: ids }, businessId },
     include: {
-      customer: { select: { id: true, name: true } },
+      customer: { select: { id: true, name: true, province: true } },
       invoices: { select: { id: true } },
       property: { select: { province: true } },
     },
@@ -163,7 +168,7 @@ export async function confirmBatchInvoices(
       // it is safe inside this $transaction callback).
       const subtotalCents = job.priceCents;
       const subtotal = centsToDollars(subtotalCents);
-      const taxConfig = taxConfigForJob(business, job.property?.province);
+      const taxConfig = taxConfigForJob(business, job.property?.province, job.customer.province);
       const taxRate = totalTaxRate(taxConfig);
       const taxAmount = calcTax(subtotal, taxConfig).taxAmount;
       const total = round2(subtotal + taxAmount);
@@ -241,7 +246,7 @@ export async function createMilestoneInvoice(
   const job = await prisma.job.findFirst({
     where: { id: jobId, businessId },
     include: {
-      customer: { select: { id: true } },
+      customer: { select: { id: true, province: true } },
       property: { select: { province: true } },
     },
   });
@@ -257,8 +262,9 @@ export async function createMilestoneInvoice(
     where: { id: businessId },
     select: { timezone: true, regionCode: true, taxRegion: true },
   });
-  // Slice 2: a milestone invoice taxes where the job's service property is.
-  const taxConfig = taxConfigForJob(business, job.property?.province);
+  // Slice 2: a milestone invoice taxes where the job's service property is,
+  // falling back to the customer's province, then the business region.
+  const taxConfig = taxConfigForJob(business, job.property?.province, job.customer.province);
   const taxRate = totalTaxRate(taxConfig);
 
   const subtotal = round2(amount);

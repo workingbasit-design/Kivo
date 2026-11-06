@@ -98,6 +98,7 @@ export async function generatePerVisitInvoice(
         recurringJobId: true,
         invoicedAt: true,
         property: { select: { province: true } },
+        customer: { select: { province: true } },
       },
     });
     if (!job || job.status !== 'COMPLETED' || job.skippedAt || !job.recurringJobId) {
@@ -129,6 +130,7 @@ export async function generatePerVisitInvoice(
         ctx.regionCode,
         resolveTaxProvince({
           propertyProvince: job.property?.province,
+          customerProvince: job.customer?.province,
           businessTaxRegion: ctx.taxRegion,
         })
       );
@@ -322,9 +324,19 @@ async function generateMonthlyForSeries(
       BigInt(0)
     );
     const subtotal = centsToDollars(subtotalCents);
+    // Monthly series bill one customer: their province is the fallback
+    // when no visit carries a service property (2026-11-06 deep test).
+    const seriesCustomer = await tx.customer.findUnique({
+      where: { id: series.customerId, businessId },
+      select: { province: true },
+    });
     const taxConfig = getTaxConfig(
       ctx.regionCode,
-      resolveTaxProvince({ propertyProvince: null, businessTaxRegion: ctx.taxRegion })
+      resolveTaxProvince({
+        propertyProvince: null,
+        customerProvince: seriesCustomer?.province,
+        businessTaxRegion: ctx.taxRegion,
+      })
     );
     const taxRate = totalTaxRate(taxConfig);
     const taxAmount = calcTax(subtotal, taxConfig).taxAmount;

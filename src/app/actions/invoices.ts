@@ -585,12 +585,25 @@ export async function recordPayment(
   }
 
   // The balance read, the overpayment guard, the payment insert, and the
-  // status update run in ONE transaction. Without it, two concurrent
-  // submissions (double-tap, retried request) can both read the same
-  // remaining balance, both pass the overpayment guard, and double-record
-  // against the invoice. The transaction makes the read-check-write atomic
-  // from the application's point of view.
+  // status update run in ONE transaction — but a plain transaction does NOT
+  // serialize read-check-write under Postgres Read Committed: two concurrent
+  // submissions can both read the same remaining balance, both pass the
+  // overpayment guard, and double-record against the invoice (proven live
+  // 2026-11-06: a double-tap recorded two $10 payments). So the transaction
+  // FIRST takes a row write-lock on the invoice (updateMany on the same row
+  // blocks a concurrent caller until this transaction commits — the same
+  // lock-then-recheck idiom scheduled-invoices.ts uses for series rows).
+  // Only after the lock is held is the balance re-read, so the guard sees
+  // every payment committed before it. Note the lock alone cannot stop a
+  // duplicate PARTIAL payment (two $10 payments are individually valid) —
+  // the client-side submit guard in InvoiceActions covers that half.
   const recorded = await prisma.$transaction(async (tx) => {
+    const locked = await tx.invoice.updateMany({
+      where: { id: parsed.data.invoiceId, businessId },
+      data: { updatedAt: new Date() },
+    });
+    if (locked.count === 0) return { error: 'Invoice not found.' };
+
     const invoice = await tx.invoice.findFirst({
       where: { id: parsed.data.invoiceId, businessId },
       include: {
@@ -773,8 +786,11 @@ async function settleJobPaidTx(tx: PrismaTx, businessId: string, jobId: string):
       },
     });
     // Mark job as invoiced (A1: invoicedAt tracks when first invoice links)
-    await tx.job.update({
-      where: { id: job.id },
+    // 2026-11-06 deep test: businessId rides in the where (same as the
+    // createInvoice path above) so the write stays tenant-scoped by
+    // convention — the guard does not fire inside $transaction callbacks.
+    await tx.job.updateMany({
+      where: { id: job.id, businessId },
       data: { invoicedAt: new Date() },
     });
     await tx.payment.create({

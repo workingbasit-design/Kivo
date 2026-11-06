@@ -42,6 +42,11 @@ test('no invoice + priced job: creates a PAID invoice and a COMPLETED payment', 
   assert.equal(pay.status, 'COMPLETED');
   assert.equal(pay.provider, 'OTHER');
   assert.equal(pay.businessId, 'biz_1');
+
+  // 2026-11-06 deep test: the mark-invoiced write carries businessId.
+  assert.equal((stub.calls.jobUpdateMany ?? []).length, 1);
+  assert.equal(stub.calls.jobUpdateMany[0].where.id, 'job_1');
+  assert.equal(stub.calls.jobUpdateMany[0].where.businessId, 'biz_1');
 });
 
 test('open invoice: records payment for the outstanding balance and marks it PAID', async () => {

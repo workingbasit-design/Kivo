@@ -304,14 +304,31 @@ export async function removeTeamMember(id: string): Promise<SettingsResult> {
     }
   }
 
-  await prisma.membership.delete({ where: { id: target.id } });
+  // 2026-11-06 deep test (architect audit): Membership is a guarded tenant
+  // model, so delete({ where: { id } }) threw TenantScopeError and removing
+  // a team member was broken. deleteMany lets businessId ride in the where
+  // (the designations/expenses pattern); the count check proves it landed.
+  const deleted = await prisma.membership.deleteMany({
+    where: { id: target.id, businessId },
+  });
+  if (deleted.count === 0) {
+    return { error: 'Team member not found.' };
+  }
   // B7.5: removing a team member ends their sessions immediately - a
   // removed member must not keep using an existing session.
   const { invalidateUserSessions } = await import('@/lib/auth');
   await invalidateUserSessions(id);
   // Mirror the old full-removal semantics: if the user has no remaining
-  // memberships anywhere, delete the identity row too.
-  const remaining = await prisma.membership.count({ where: { userId: id } });
+  // memberships anywhere, delete the identity row too. This count is
+  // cross-business BY DESIGN — scoping it to this business would delete
+  // identities that still belong to other businesses — so it runs through
+  // the audited escape hatch; the result never leaves the server (it only
+  // gates the User delete, and User is the identity root, excluded from
+  // the guard by design).
+  const remaining = await unsafeUnscoped(
+    'settings:removeTeamMember:remainingMemberships',
+    (db) => db.membership.count({ where: { userId: id } })
+  );
   if (remaining === 0) {
     await prisma.user.delete({ where: { id } }).catch(() => {});
   }

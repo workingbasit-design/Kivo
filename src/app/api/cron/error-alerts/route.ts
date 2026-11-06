@@ -29,15 +29,25 @@ export async function GET(req: Request) {
   const tenMinAgo = new Date(now.getTime() - 10 * 60 * 1000);
   const dayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-  const errorsLast10Min = await prisma.errorLog.count({
-    where: { kind: 'error', lastSeen: { gte: tenMinAgo } },
-  });
-
-  // Login failures grouped by IP fingerprint (message holds the IP).
-  const loginRows = await prisma.errorLog.findMany({
-    where: { kind: 'login_failure', lastSeen: { gte: tenMinAgo } },
-    select: { message: true, count: true },
-  });
+  // 2026-11-06 deep test (architect audit): these platform-wide alert
+  // reads are unscoped by design (same as the export-volume block below)
+  // — ErrorLog is append-only telemetry, and the guard would throw
+  // TenantScopeError on a businessId-less count/findMany, failing the
+  // whole cron. Before this fix the write side was dead too (see
+  // error-log.ts), so brute-force alerting was blind end to end.
+  const { errorsLast10Min, loginRows } = await unsafeUnscoped(
+    'error-alerts:error-log-reads',
+    async (db) => ({
+      errorsLast10Min: await db.errorLog.count({
+        where: { kind: 'error', lastSeen: { gte: tenMinAgo } },
+      }),
+      // Login failures grouped by IP fingerprint (message holds the IP).
+      loginRows: await db.errorLog.findMany({
+        where: { kind: 'login_failure', lastSeen: { gte: tenMinAgo } },
+        select: { message: true, count: true },
+      }),
+    })
+  );
   const loginFailuresByIp = loginRows.map((r) => ({
     ip: r.message.replace('Failed logins from ', ''),
     count: r.count,
