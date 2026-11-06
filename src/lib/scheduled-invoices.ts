@@ -34,7 +34,7 @@
  */
 import { prisma } from './prisma.ts';
 import { dollarsToCents, centsToDollars } from './money.ts';
-import { getTaxConfig, totalTaxRate, calcTax } from './tax.ts';
+import { getTaxConfig, totalTaxRate, calcTax, defaultTaxType } from './tax.ts';
 import { resolveTaxProvince } from './property-tax.ts';
 import { nextDocumentNumber } from './numbering.ts';
 import {
@@ -147,6 +147,9 @@ export async function generatePerVisitInvoice(
           dueAt: null, // DRAFT: no due date until sent (M10)
           subtotalCents,
           taxRate,
+          // 2026-11-06 deep test: store the tax type so the detail page
+          // can split the rate into lines (see batch-invoicing.ts).
+          taxType: defaultTaxType(taxConfig),
           taxAmountCents: dollarsToCents(taxAmount) ?? BigInt(0),
           totalCents: dollarsToCents(total) ?? BigInt(0),
           status: 'DRAFT',
@@ -350,6 +353,9 @@ async function generateMonthlyForSeries(
         dueAt: null, // DRAFT: no due date until sent (M10)
         subtotalCents,
         taxRate,
+        // 2026-11-06 deep test: store the tax type so the detail page
+        // can split the rate into lines (see batch-invoicing.ts).
+        taxType: defaultTaxType(taxConfig),
         taxAmountCents: dollarsToCents(taxAmount) ?? BigInt(0),
         totalCents: dollarsToCents(total) ?? BigInt(0),
         status: 'DRAFT',

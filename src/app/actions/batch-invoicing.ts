@@ -10,7 +10,7 @@ import { invoiceDueAt } from '@/lib/invoice-paid';
 import { nextDocumentNumber } from '@/lib/numbering';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
-import { getTaxConfig, totalTaxRate, calcTax, type TaxConfig } from '@/lib/tax';
+import { getTaxConfig, totalTaxRate, calcTax, defaultTaxType, type TaxConfig } from '@/lib/tax';
 import { resolveTaxProvince } from '@/lib/property-tax';
 import {
   todayInTimezone,
@@ -181,6 +181,11 @@ export async function confirmBatchInvoices(
           dueAt: invoiceDueAt(invoiceDate, business?.timezone ?? 'America/Toronto'),
           subtotalCents,
           taxRate,
+          // 2026-11-06 deep test: without taxType the detail page cannot
+          // split the stored rate into lines and renders one bogus line
+          // ("GST 14.975%") for a Quebec invoice. defaultTaxType derives
+          // it from the same config that produced the rate.
+          taxType: defaultTaxType(taxConfig),
           taxAmountCents: dollarsToCents(taxAmount) ?? BigInt(0),
           totalCents: dollarsToCents(total) ?? BigInt(0),
           status: 'UNPAID',
@@ -285,6 +290,9 @@ export async function createMilestoneInvoice(
         dueAt: invoiceDueAt(invoiceDate, business?.timezone ?? 'America/Toronto'),
         subtotalCents: dollarsToCents(subtotal) ?? BigInt(0),
         taxRate,
+        // 2026-11-06 deep test: store the tax type so the detail page can
+        // split the rate into lines (see confirmBatchInvoices).
+        taxType: defaultTaxType(taxConfig),
         taxAmountCents: dollarsToCents(taxAmount) ?? BigInt(0),
         totalCents: dollarsToCents(total) ?? BigInt(0),
         status: 'UNPAID',
