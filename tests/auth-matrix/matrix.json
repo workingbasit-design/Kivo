@@ -755,6 +755,24 @@
     },
     {
       "type": "route",
+      "path": "/api/search",
+      "methods": [
+        "GET"
+      ],
+      "auth": "session",
+      "hint": "allow:business-personas",
+      "expected": {
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerA": "allow",
+        "adminA": "allow",
+        "dispatcherA": "allow",
+        "technicianA": "allow",
+        "ownerB": "deny"
+      }
+    },
+    {
+      "type": "route",
       "path": "/api/sign/[token]",
       "methods": [
         "POST"
