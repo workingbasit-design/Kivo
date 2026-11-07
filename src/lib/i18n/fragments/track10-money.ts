@@ -119,6 +119,10 @@ const fragment = {
       portalMgrYesRevoke: 'Yes, revoke',
       portalMgrKeep: 'Keep',
       portalMgrActive: 'A portal link is already active for this customer.',
+      portalMgrActiveNote:
+        'The link itself can’t be shown again — regenerate to create a fresh link to share.',
+      portalMgrShareNow:
+        'Share or copy this link now — for security, it won’t be shown again after you leave this page.',
       portalMgrRegenerate: 'Regenerate',
       portalMgrRegenConfirm: 'Old link stops working. Continue?',
       portalMgrWorking: 'Working…',
@@ -600,6 +604,10 @@ const fragment = {
       portalMgrYesRevoke: 'Oui, révoquer',
       portalMgrKeep: 'Garder',
       portalMgrActive: 'Un lien portail est déjà actif pour ce client.',
+      portalMgrActiveNote:
+        'Le lien lui-même ne peut pas être affiché de nouveau — régénérez-en un nouveau à partager.',
+      portalMgrShareNow:
+        'Partagez ou copiez ce lien maintenant — pour des raisons de sécurité, il ne sera plus affiché après avoir quitté cette page.',
       portalMgrRegenerate: 'Régénérer',
       portalMgrRegenConfirm: 'L’ancien lien cessera de fonctionner. Continuer?',
       portalMgrWorking: 'En cours…',

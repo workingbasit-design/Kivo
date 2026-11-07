@@ -11,7 +11,7 @@ import { register } from 'node:module';
 // Redirect @/lib/prisma to the stub BEFORE the engine is imported.
 register('./prisma-stub-loader.mjs', import.meta.url);
 
-const { runCopilot } = await import('../copilot/engine.ts');
+const { runCopilot, quoteSuggestionWords } = await import('../copilot/engine.ts');
 const { writeCalls, resetWriteCalls, setFixture, clearFixtures } = await import('./prisma-stub.mjs');
 
 function tomorrowISO(): string {
@@ -328,4 +328,41 @@ test('engine: "Create a quote for $200" drafts a quote with no fake customer or 
   assert.equal(res.preview?.customerName, '');
   assert.notEqual(res.preview?.title, 'A Quote For $200');
   assert.equal(res.preview?.price, 200);
+});
+
+// --- 2026-11-07 deep test: draft_quote price suggestion -------------------
+// The suggestion never fired live for "Deep clean kitchen": the canonical
+// service title is "Cleaning Service", whose words ("cleaning", "service")
+// match no real past quote title or line item. The fix matches stems
+// ("cleaning" -> "clean") against titles AND line-item descriptions.
+test('engine: quoteSuggestionWords stems -ing titles for history matching', () => {
+  const words = quoteSuggestionWords('Cleaning Service');
+  assert.ok(words.includes('cleaning'), `got ${words}`);
+  assert.ok(words.includes('clean'), `stem "clean" missing: ${words}`);
+  assert.ok(words.includes('service'), `got ${words}`);
+  // Over-stemmed fragments ("spring" -> "spr") must be dropped, not matched.
+  assert.ok(!quoteSuggestionWords('Spring cleaning').includes('spr'));
+});
+
+test('engine: draft_quote suggests the median of similar past quotes', async () => {
+  resetWriteCalls();
+  clearFixtures();
+  // Past quote titled "QATEST Deep Quote" with a "Deep clean kitchen" line
+  // item — the live 2026-11-07 case. The stub returns the fixture for any
+  // findMany; the where-clause (title OR line-item) is verified live.
+  setFixture('quote', 'findMany', [{ totalCents: 22995n }]);
+  const res = await runCopilot('biz-test', 'user-test', 'Draft a quote for Sarah for Deep clean kitchen', []);
+  assert.equal(writeCalls.length, 0, 'copilot must never write');
+  assert.equal(res.intent, 'draft_quote');
+  assert.equal(res.preview?.price, 229.95);
+  assert.equal(res.preview?.priceSource, 'history');
+  assert.match(res.reply, /Suggested from similar past quotes/);
+});
+
+test('engine: draft_quote with no similar past quotes sets no price', async () => {
+  const res = await convo('Draft a quote for Sarah for Deep clean kitchen');
+  assert.equal(res.intent, 'draft_quote');
+  assert.equal(res.preview?.price, null);
+  assert.equal(res.preview?.priceSource, 'none');
+  assert.match(res.reply, /No price set/);
 });

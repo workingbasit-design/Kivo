@@ -273,6 +273,31 @@ export default async function CustomerDetailPage({
           />
         </div>
 
+        {/* 2026-11-07 deep test: the Call/Text/Email buttons above never
+            showed the actual number or address as readable text, so the
+            owner could tap but not read, copy, or verify the contact
+            details. Render them as text (still tappable). */}
+        {(customer.phone || customer.email) && (
+          <div className="space-y-1.5 mb-4">
+            {customer.phone && (
+              <p className="text-sm text-ej-ink flex items-center gap-2 min-w-0">
+                <Phone size={14} className="text-ej-muted shrink-0" />
+                <a href={phoneHref} className="font-medium hover:underline break-all">
+                  {customer.phone}
+                </a>
+              </p>
+            )}
+            {customer.email && (
+              <p className="text-sm text-ej-ink flex items-center gap-2 min-w-0">
+                <Mail size={14} className="text-ej-muted shrink-0" />
+                <a href={emailHref} className="font-medium hover:underline break-all">
+                  {customer.email}
+                </a>
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Address with directions link */}
         {(customer.address || provinceLabel || customer.postalCode) && (
           <div className="flex items-start gap-2.5 mb-4">

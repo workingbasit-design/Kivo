@@ -194,6 +194,9 @@ export default function PortalLinkManager({
               </form>
             )}
           </div>
+          <p className="text-xs text-ink-2">
+            {t(locale, 't10money.portalMgrShareNow')}
+          </p>
         </>
       ) : (
         <form action={regenFormAction}>
@@ -201,6 +204,7 @@ export default function PortalLinkManager({
           {tokenId && confirming !== 'regen' ? (
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-xs text-ink-2">{t(locale, 't10money.portalMgrActive')}</p>
+              <p className="text-xs text-ink-2">{t(locale, 't10money.portalMgrActiveNote')}</p>
               <Button
                 variant="secondary"
                 sm

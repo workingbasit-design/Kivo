@@ -79,6 +79,23 @@ export interface RunCopilotOptions {
   locale?: string;
 }
 
+/**
+ * Words used to find similar past quotes for a draft_quote price suggestion.
+ * Includes -ing stems so a canonical service title still matches real past
+ * work: "Cleaning Service" -> "clean" finds a past quote titled (or with a
+ * line item) "Deep clean kitchen". 2026-11-07 deep test: without the stems
+ * and the line-item match, the suggestion never fired for natural phrasing.
+ */
+export function quoteSuggestionWords(serviceTitle: string): string[] {
+  const words = serviceTitle
+    .toLowerCase()
+    .split(/[^a-zàâäéèêëîïôöùûüç0-9]+/i)
+    .filter((w) => w.length > 3);
+  return [...new Set(words.flatMap((w) => [w, w.replace(/ing$/, '')]))].filter(
+    (w) => w.length > 3
+  );
+}
+
 function langOf(locale?: string): CopilotLang {
   return locale === 'fr' ? 'fr' : 'en';
 }
@@ -511,15 +528,15 @@ export async function runCopilot(
       let price: number | null = saidPrice;
       let priceSource: QuoteDraft['priceSource'] = saidPrice !== null ? 'said' : 'none';
       if (price === null && serviceTitle) {
-        const words = serviceTitle
-          .toLowerCase()
-          .split(/[^a-zàâäéèêëîïôöùûüç0-9]+/i)
-          .filter((w) => w.length > 3);
+        const words = quoteSuggestionWords(serviceTitle);
         if (words.length > 0) {
           const past = await prisma.quote.findMany({
             where: {
               businessId,
-              OR: words.map((w) => ({ title: { contains: w, mode: 'insensitive' } })),
+              OR: words.flatMap((w) => [
+                { title: { contains: w, mode: 'insensitive' } },
+                { lineItems: { some: { description: { contains: w, mode: 'insensitive' } } } },
+              ]),
             },
             select: { totalCents: true },
             take: 20,
