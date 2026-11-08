@@ -11,6 +11,9 @@ import { buildConfirmReply } from '@/lib/copilot/confirm-reply';
 import { findCustomerNameCandidates, exactNameMatch } from '@/lib/copilot/match-customer';
 import { formatDateShort } from '@/lib/utils';
 import { formatMoney, centsToDollars, dollarsToCents } from '@/lib/money';
+import { getTaxConfig } from '@/lib/tax';
+import { computeQuoteTotals } from '@/lib/quote-totals';
+import { nextDocumentNumber } from '@/lib/numbering';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 import { getLocale } from '@/lib/i18n/server';
 
@@ -123,6 +126,25 @@ const customerConfirmSchema = z.object({
   idempotencyKey: z.string().trim().min(8).max(128).optional(),
 });
 
+/**
+ * Confirming a previewed QUOTE draft. There was no quote-confirm path at
+ * all before 2026-11-08: the widget coerced previewKind 'quote' to 'job'
+ * and rendered the job card, whose confirm is permanently disabled without
+ * a date - so a drafted quote could never be created (2026-11-08 deep test).
+ * A quote needs an EXISTING customer (never auto-created from a draft) and
+ * a price (the preview card requires one before confirming).
+ */
+const quoteConfirmSchema = z.object({
+  confirm: z.literal(true),
+  previewType: z.literal('quote'),
+  preview: z.object({
+    title: z.string().min(1).max(120),
+    customerName: z.string().min(1).max(80),
+    price: z.number().int().min(0).max(10000000).nullable().optional(),
+  }),
+  idempotencyKey: z.string().trim().min(8).max(128).optional(),
+});
+
 const messageSchema = z.object({
   message: z.string().min(1).max(2000),
   // Recent conversation turns for pronoun follow-ups ("move it to tomorrow").
@@ -230,6 +252,29 @@ export async function POST(req: Request) {
       businessId,
       asConfirm.data.preview,
       asConfirm.data.idempotencyKey,
+      fr
+    );
+  }
+
+  // Quote confirm carries previewType: 'quote'. The three confirm schemas
+  // are disjoint by their previewType literal, so a quote payload can never
+  // be mistaken for a job confirm (the job schema requires literal 'job').
+  const asQuoteConfirm = quoteConfirmSchema.safeParse(body);
+  if (asQuoteConfirm.success) {
+    const rlConfirm = rateLimit(`copilot-confirm:${session.user.id}`, {
+      limit: 10,
+      windowMs: 60_000,
+    });
+    if (!rlConfirm.ok) {
+      return NextResponse.json(
+        { error: tr('Too many confirm requests - please wait a moment and try again.', 'Trop de confirmations - attendez un moment et réessayez.') },
+        { status: 429 }
+      );
+    }
+    return handleQuoteConfirm(
+      businessId,
+      asQuoteConfirm.data.preview,
+      asQuoteConfirm.data.idempotencyKey,
       fr
     );
   }
@@ -380,13 +425,13 @@ function getConfirmEntry(key: string): ConfirmEntry | null {
   return entry;
 }
 
-function confirmResponse(outcome: ConfirmOutcome, key: string) {
+function confirmResponse(outcome: ConfirmOutcome, key: string, intent: 'create_job' | 'create_quote' = 'create_job') {
   if (!outcome.ok) {
     return NextResponse.json({ error: outcome.error }, { status: outcome.status });
   }
   return NextResponse.json({
     reply: outcome.reply,
-    intent: 'create_job',
+    intent,
     created: true,
     jobId: outcome.jobId,
     duplicate: outcome.duplicate,
@@ -554,6 +599,165 @@ async function runCustomerConfirm(
     reply: tr(
       `Customer added ✓\n\n${customer.name}${draft.phone ? ` - ${draft.phone}` : ''}\n\nYou’ll find them on the Customers page.`,
       `Client ajouté ✓\n\n${customer.name}${draft.phone ? ` - ${draft.phone}` : ''}\n\nVous le trouverez sur la page Clients.`
+    ),
+    duplicate: false,
+  };
+}
+
+/** Confirm a previewed quote draft - same idempotency guarantees as jobs. */
+async function handleQuoteConfirm(
+  businessId: string,
+  draft: z.infer<typeof quoteConfirmSchema>['preview'],
+  clientKey: string | undefined,
+  fr: boolean
+) {
+  const canonical = [
+    'quote',
+    businessId,
+    draft.title.trim().toLowerCase(),
+    draft.customerName.trim().toLowerCase(),
+    String(draft.price ?? ''),
+  ].join('|');
+  const key = clientKey?.trim()
+    ? `cli:${clientKey.trim()}`
+    : `det:${crypto.createHash('sha256').update(canonical).digest('hex')}`;
+
+  const existing = getConfirmEntry(key);
+  if (existing?.promise) {
+    return confirmResponse(await existing.promise, key, 'create_quote');
+  }
+  if (existing?.outcome?.ok) {
+    return confirmResponse({ ...existing.outcome, duplicate: true }, key, 'create_quote');
+  }
+  if (existing?.outcome && !existing.outcome.ok) {
+    confirmStore.delete(key);
+  }
+
+  let resolveOutcome!: (o: ConfirmOutcome) => void;
+  const promise = new Promise<ConfirmOutcome>((resolve) => {
+    resolveOutcome = resolve;
+  });
+  confirmStore.set(key, {
+    promise,
+    outcome: null,
+    expiresAt: Date.now() + CONFIRM_RESULT_TTL_MS,
+  });
+
+  const outcome = await runQuoteConfirm(businessId, draft, fr);
+  if (outcome.ok) {
+    confirmStore.set(key, { promise: null, outcome, expiresAt: Date.now() + CONFIRM_RESULT_TTL_MS });
+  } else {
+    confirmStore.delete(key);
+  }
+  resolveOutcome(outcome);
+  return confirmResponse(outcome, key, 'create_quote');
+}
+
+async function runQuoteConfirm(
+  businessId: string,
+  draft: z.infer<typeof quoteConfirmSchema>['preview'],
+  fr: boolean
+): Promise<ConfirmOutcome> {
+  const tr = (en: string, frText: string) => (fr ? frText : en);
+  const title = draft.title.trim();
+  const price = draft.price ?? null;
+  if (price === null) {
+    return { ok: false, status: 400, error: tr('Add a price to the quote first.', 'Ajoutez un prix au devis d’abord.') };
+  }
+
+  // A quote needs an EXISTING customer - never auto-create one from a draft
+  // (a quote is a priced offer; inventing its recipient would be worse
+  // than refusing). Exact name match only, same as job confirms.
+  const candidates = await findCustomerNameCandidates(prisma, businessId, draft.customerName);
+  const customer = exactNameMatch(candidates, draft.customerName);
+  if (!customer) {
+    return {
+      ok: false,
+      status: 400,
+      error: tr(
+        `"${draft.customerName.trim()}" isn't in your customers yet - add them first, then confirm the quote.`,
+        `« ${draft.customerName.trim()} » ne figure pas encore dans vos clients - ajoutez-le d’abord, puis confirmez le devis.`
+      ),
+    };
+  }
+
+  // Server-side money math - same tax engine as the quote form: one line
+  // item at the draft price, tax from the business's region settings.
+  const business = await prisma.business.findUnique({
+    where: { id: businessId },
+    select: { regionCode: true, taxRegion: true },
+  });
+  const taxConfig = getTaxConfig(business?.regionCode, business?.taxRegion);
+  const totals = computeQuoteTotals(
+    [{ qty: 1, unitPrice: price }],
+    { type: null, value: null },
+    taxConfig.taxes
+  );
+
+  // Idempotency DB fallback: an identical copilot quote created moments ago
+  // resolves to the original - never a duplicate.
+  const recent = await prisma.quote.findFirst({
+    where: {
+      businessId,
+      customerId: customer.id,
+      title,
+      totalCents: dollarsToCents(totals.total) ?? BigInt(0),
+      status: 'DRAFT',
+      createdAt: { gte: new Date(Date.now() - DUPLICATE_WINDOW_MS) },
+    },
+    orderBy: { createdAt: 'desc' },
+    select: { id: true, number: true },
+  });
+  if (recent) {
+    return {
+      ok: true,
+      jobId: recent.id,
+      reply: tr(
+        `Quote ${recent.number} already created ✓\n\n${title} - ${customer.name} - ${formatMoney(totals.total, 'CAD')}\n\nYou'll find it on the Quotes page.`,
+        `Devis ${recent.number} déjà créé ✓\n\n${title} - ${customer.name} - ${formatMoney(totals.total, 'CAD')}\n\nVous le trouverez sur la page Devis.`
+      ),
+      duplicate: true,
+    };
+  }
+
+  const quote = await prisma.$transaction(async (tx) => {
+    const number = await nextDocumentNumber(tx, businessId, 'QUOTE');
+    const q = await tx.quote.create({
+      data: {
+        number,
+        title,
+        totalCents: dollarsToCents(totals.total) ?? BigInt(0),
+        discountType: null,
+        discountValue: null,
+        discountValueCents: null,
+        depositAmountCents: null,
+        expiresAt: null,
+        status: 'DRAFT',
+        customerId: customer.id,
+        businessId,
+      },
+    });
+    await tx.quoteLineItem.createMany({
+      data: [
+        {
+          quoteId: q.id,
+          description: title,
+          qty: 1,
+          unitPriceCents: dollarsToCents(price) ?? BigInt(0),
+          unitCostCents: null,
+          position: 0,
+        },
+      ],
+    });
+    return q;
+  });
+
+  return {
+    ok: true,
+    jobId: quote.id,
+    reply: tr(
+      `Quote created ✓\n\n${quote.number} - ${title} - ${customer.name} - ${formatMoney(totals.total, 'CAD')}\n\nYou'll find it on the Quotes page.`,
+      `Devis créé ✓\n\n${quote.number} - ${title} - ${customer.name} - ${formatMoney(totals.total, 'CAD')}\n\nVous le trouverez sur la page Devis.`
     ),
     duplicate: false,
   };

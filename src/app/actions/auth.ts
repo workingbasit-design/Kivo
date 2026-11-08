@@ -120,6 +120,18 @@ export async function register(
     },
   });
 
+  // A fresh business's booking page must exist from day one: without a
+  // BookingPage record, /book/<slug> 404s even though the booking settings
+  // form defaults the toggle ON (2026-11-08 deep test). Best-effort - a
+  // failure here must never fail signup; the settings page creates the
+  // record on the next name change or booking-settings save.
+  try {
+    const { ensureBookingPage } = await import('@/lib/booking-page');
+    await ensureBookingPage(business.id, businessName);
+  } catch {
+    // ignore - the account is already created and the user is signed in
+  }
+
   await createSession(owner.id);
 
   // Best-effort welcome email (platform Resend key, free tier). A missing

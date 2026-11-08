@@ -15,6 +15,7 @@ import {
   extractDate,
   extractMoney,
   extractPhone,
+  extractServiceKeywordTokens,
   extractServiceTitle,
   extractTime,
   resolveFollowUpName,
@@ -85,6 +86,21 @@ test('extractServiceTitle: "plumbing" maps to Plumbing Work', () => {
 
 test('extractServiceTitle: "plomberie" maps to Plumbing Work', () => {
   assert.equal(extractServiceTitle('plomberie pour Sarah demain'), 'Plumbing Work');
+});
+
+// --- 2026-11-08 deep test: raw keyword tokens for the quote price suggestion ---
+// The canonical title ("HVAC Service") shares no words with real past work
+// ("Furnace tune-up"), so the suggestion must also match on these tokens.
+test('extractServiceKeywordTokens: "furnace tune-up" returns ["furnace"]', () => {
+  assert.deepEqual(extractServiceKeywordTokens('Create a quote for Sarah for furnace tune-up'), ['furnace']);
+});
+
+test('extractServiceKeywordTokens: multi-word key splits into tokens', () => {
+  assert.deepEqual(extractServiceKeywordTokens('heat pump repair for Sarah'), ['heat', 'pump']);
+});
+
+test('extractServiceKeywordTokens: no service keyword returns []', () => {
+  assert.deepEqual(extractServiceKeywordTokens('Draft a quote for Sarah for E2E3 custom work'), []);
 });
 
 test('extractPhone: NANP 10-digit number', () => {

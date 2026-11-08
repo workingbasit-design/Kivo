@@ -84,6 +84,12 @@ const fragment = {
       paySummaryLoading: 'Loading payment info…',
       taxPropertyHint: 'Tax based on service property: {province}',
       taxPropertyPickerHint: 'Picking a property sets the tax default to that property’s province. You can still change the tax below.',
+      // 2026-11-08 deep test: a standalone invoice had no way to link to
+      // a job, so batch invoicing billed the same work twice (the batch
+      // list only excludes jobs with a LINKED invoice).
+      linkJobLabel: 'Link to job (optional)',
+      linkJobHint: 'Links this invoice to a completed job, so batch invoicing won’t bill the same work twice.',
+      linkJobNone: 'No specific job',
     },
   },
   fr: {
@@ -165,6 +171,12 @@ const fragment = {
       paySummaryLoading: 'Chargement des infos de paiement…',
       taxPropertyHint: 'Taxe selon la propriété de service : {province}',
       taxPropertyPickerHint: 'Choisir une propriété règle la taxe par défaut sur la province de cette propriété. Vous pouvez toujours modifier la taxe ci-dessous.',
+      // 2026-11-08 : test approfondi — une facture créée seule ne pouvait
+      // pas être liée à un travail, donc la facturation par lot facturait
+      // le même travail deux fois.
+      linkJobLabel: 'Lier à un travail (facultatif)',
+      linkJobHint: 'Lie cette facture à un travail terminé, pour que la facturation par lot ne facture pas le même travail deux fois.',
+      linkJobNone: 'Aucun travail précis',
     },
   },
 } as const;

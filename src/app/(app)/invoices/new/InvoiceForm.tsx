@@ -95,6 +95,11 @@ export default function InvoiceForm({
   // effect, and the issued invoice keeps its tax snapshot afterwards.
   type FormProperty = { id: string; customerId: string; label: string; address: string; province: string | null };
   const [liveProperties, setLiveProperties] = useState<FormProperty[]>([]);
+  // 2026-11-08 deep test: linkable jobs for the "Link to job" picker
+  // (same /api/customers/options source as the properties above).
+  type FormJob = { id: string; customerId: string; title: string; date: string };
+  const [liveJobs, setLiveJobs] = useState<FormJob[]>([]);
+  const [jobLinkValue, setJobLinkValue] = useState<string>('');
   const [propertyValue, setPropertyValue] = useState<string>(jobContext?.property?.id ?? '');
   // True while the current tax selection came from a property pick (or the
   // arriving job's property) rather than a manual TaxSelect change — the
@@ -110,6 +115,9 @@ export default function InvoiceForm({
         if (!cancelled && Array.isArray(data?.properties)) {
           setLiveProperties(data.properties);
         }
+        if (!cancelled && Array.isArray(data?.jobs)) {
+          setLiveJobs(data.jobs);
+        }
       })
       .catch(() => {});
     return () => {
@@ -123,6 +131,8 @@ export default function InvoiceForm({
   const onCustomerChange = (value: string) => {
     setCustomerId(value);
     if (value !== '') setCustomerError(null);
+    // The job link belongs to exactly one customer too.
+    setJobLinkValue('');
     if (value === jobContext?.customerId && jobContext?.property) {
       setPropertyValue(jobContext.property.id);
       const province = jobContext.property.province;
@@ -139,6 +149,10 @@ export default function InvoiceForm({
     }
   };
   const effectiveProperties = liveProperties.filter((p) => p.customerId === customerId);
+  // Completed jobs of the selected customer with no linked invoice yet —
+  // the "Link to job" options. A job picked here is submitted as jobId
+  // and linked by createInvoice (same-customer + tenant checks server-side).
+  const effectiveJobs = liveJobs.filter((j) => j.customerId === customerId);
   const onPropertyChange = (value: string) => {
     setPropertyValue(value);
     if (!value) {
@@ -230,6 +244,24 @@ export default function InvoiceForm({
               </p>
             )}
             <CustomerPaymentSummary customerId={customerId} locale={locale} />
+            {customerId !== '' && !jobContext && effectiveJobs.length > 0 && (
+              <div className="mt-4">
+                <Select
+                  label={t(locale, 'billing.linkJobLabel')}
+                  name="jobId"
+                  value={jobLinkValue}
+                  onChange={(e) => setJobLinkValue(e.target.value)}
+                  options={[
+                    { value: '', label: t(locale, 'billing.linkJobNone') },
+                    ...effectiveJobs.map((j) => ({
+                      value: j.id,
+                      label: `${j.title} — ${new Date(j.date).toLocaleDateString(locale === 'fr' ? 'fr-CA' : 'en-CA')}`,
+                    })),
+                  ]}
+                  hint={t(locale, 'billing.linkJobHint')}
+                />
+              </div>
+            )}
             {customerId !== '' && effectiveProperties.length > 0 && (
               <div className="mt-4">
                 <Select

@@ -12,7 +12,7 @@ import { register } from 'node:module';
 register('./prisma-stub-loader.mjs', import.meta.url);
 
 const { runCopilot, quoteSuggestionWords } = await import('../copilot/engine.ts');
-const { writeCalls, resetWriteCalls, setFixture, clearFixtures } = await import('./prisma-stub.mjs');
+const { writeCalls, resetWriteCalls, setFixture, clearFixtures, readCalls, resetReadCalls } = await import('./prisma-stub.mjs');
 
 function tomorrowISO(): string {
   const d = new Date();
@@ -25,6 +25,7 @@ function tomorrowISO(): string {
 
 async function convo(message: string, locale?: string) {
   resetWriteCalls();
+  resetReadCalls();
   clearFixtures();
   const res = await runCopilot('biz-test', 'user-test', message, [], locale ? { locale } : {});
   assert.equal(writeCalls.length, 0, `copilot WROTE to db for "${message}": ${JSON.stringify(writeCalls)}`);
@@ -365,4 +366,26 @@ test('engine: draft_quote with no similar past quotes sets no price', async () =
   assert.equal(res.preview?.price, null);
   assert.equal(res.preview?.priceSource, 'none');
   assert.match(res.reply, /No price set/);
+});
+
+// --- 2026-11-08 deep test: the suggestion never fired live for furnace work ---
+// "furnace tune-up" canonicalises to "HVAC Service", whose words ("hvac",
+// "service") match no past quote title or line item. The query must also
+// match on the raw keyword token ("furnace") so a past "Furnace tune-up"
+// line item is found.
+test('engine: draft_quote suggestion query matches the raw "furnace" keyword', async () => {
+  resetWriteCalls();
+  resetReadCalls();
+  clearFixtures();
+  setFixture('quote', 'findMany', [{ totalCents: 22600n }]);
+  const res = await runCopilot('biz-test', 'user-test', 'Create a quote for Sarah for furnace tune-up', []);
+  assert.equal(writeCalls.length, 0, 'copilot must never write');
+  assert.equal(res.intent, 'draft_quote');
+  const quoteReads = readCalls.filter((c) => c.model === 'quote' && c.method === 'findMany');
+  assert.ok(quoteReads.length > 0, 'expected a past-quote lookup');
+  const whereJson = JSON.stringify(quoteReads[0].args?.where ?? {});
+  assert.match(whereJson, /furnace/, `quote lookup must match "furnace": ${whereJson}`);
+  assert.equal(res.preview?.price, 226);
+  assert.equal(res.preview?.priceSource, 'history');
+  assert.match(res.reply, /Suggested from similar past quotes/);
 });

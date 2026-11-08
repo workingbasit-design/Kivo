@@ -5,6 +5,13 @@
  */
 export const writeCalls = [];
 
+/** Reads are recorded (never executed) so tests can assert query clauses. */
+export const readCalls = [];
+
+export function resetReadCalls() {
+  readCalls.length = 0;
+}
+
 /** Per-model fixture overrides, e.g. setFixture('invoice', 'findMany', [...]) */
 const fixtures = new Map();
 
@@ -28,13 +35,24 @@ function delegate(model) {
         const key = `${model}.${String(method)}`;
         if (fixtures.has(key)) {
           const v = fixtures.get(key);
-          return async () => v;
+          return async (args) => {
+            if (method === 'findMany' || method === 'findFirst' || method === 'findUnique') {
+              readCalls.push({ model, method: String(method), args });
+            }
+            return v;
+          };
         }
         if (method === 'findFirst' || method === 'findUnique') {
-          return async () => null;
+          return async (args) => {
+            readCalls.push({ model, method: String(method), args });
+            return null;
+          };
         }
         if (method === 'findMany') {
-          return async () => [];
+          return async (args) => {
+            readCalls.push({ model, method: String(method), args });
+            return [];
+          };
         }
         if (method === 'count') {
           return async () => 0;

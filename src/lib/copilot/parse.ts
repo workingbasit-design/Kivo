@@ -371,6 +371,30 @@ export function extractServiceTitle(raw: string): string | null {
   return extractCustomTitle(raw);
 }
 
+/**
+ * The raw service keyword(s) the user's message matched, as tokens.
+ * "furnace tune-up" -> ["furnace"]; "heat pump repair" -> ["heat", "pump"].
+ * The canonical title ("HVAC Service") shares no words with real past work
+ * ("Furnace tune-up"), so the draft_quote price suggestion must also match
+ * on these raw tokens or it never fires for that trade (2026-11-08 deep
+ * test: the Nov 7 -ing-stem fix only covered trades whose canonical title
+ * stems into the past line item, e.g. Cleaning -> clean).
+ */
+export function extractServiceKeywordTokens(raw: string): string[] {
+  const text = norm(raw);
+  for (const s of SERVICE_KEYWORDS) {
+    for (const k of s.keys) {
+      if (k.length <= 2) {
+        // Short keys ("ac", "tv") must match whole words.
+        if (new RegExp(`\\b${k}\\b`).test(text)) return k.split(/\s+/);
+      } else if (text.includes(k)) {
+        return k.split(/\s+/);
+      }
+    }
+  }
+  return [];
+}
+
 const NAME_STOPWORDS = new Set([
   // English fillers
   'job', 'repair', 'service', 'work', 'appointment', 'booking',

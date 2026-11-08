@@ -5,14 +5,14 @@ import {
   Bot, X, Send, User, Briefcase, Calendar, CalendarDays, Clock,
   MapPin, Phone, Wallet, Check, PencilLine, Sparkles, ArrowLeft,
   UserPlus, TrendingUp, MessageSquare, Search, RotateCcw,
-  CheckCircle2, ChevronRight,
+  CheckCircle2, ChevronRight, FileText,
 } from '@/components/icons';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { currencySymbol } from '@/lib/money';
 import { formatDateShort, toISODateLocal } from '@/lib/utils';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
-import type { JobDraft, CustomerDraft } from '@/lib/copilot/engine';
+import type { JobDraft, CustomerDraft, QuoteDraft } from '@/lib/copilot/engine';
 import VoiceInputButton from '@/components/copilot/VoiceInputButton';
 import { TimeField } from '@/components/TimeField';
 import ThinkingOrb from '@/components/ThinkingOrb';
@@ -22,9 +22,9 @@ type Message = {
   id: string;
   role: 'user' | 'assistant';
   content: string;
-  preview?: (JobDraft | CustomerDraft) | null;
+  preview?: (JobDraft | CustomerDraft | QuoteDraft) | null;
   /** Which kind of record the preview would create. */
-  previewKind?: 'job' | 'customer' | null;
+  previewKind?: 'job' | 'customer' | 'quote' | null;
   created?: boolean;
   /** Client-generated idempotency key for this preview - replayed confirms collapse onto one record. */
   idempotencyKey?: string | null;
@@ -455,6 +455,102 @@ function CustomerPreviewCard({
 }
 
 /**
+ * Preview card for a drafted quote - explicit confirm, never silent.
+ * (2026-11-08 deep test: no quote card existed at all. The widget coerced
+ * previewKind 'quote' to 'job' and rendered the job card, whose confirm
+ * needs a date the quote draft never has - so the button was permanently
+ * disabled and a quote could never be created from Copilot.)
+ */
+function QuotePreviewCard({
+  preview,
+  onConfirm,
+  onDiscard,
+  confirming,
+  currency,
+  locale,
+}: {
+  preview: QuoteDraft;
+  onConfirm: (draft: QuoteDraft) => void;
+  onDiscard: () => void;
+  confirming: boolean;
+  currency?: string;
+  locale: Locale;
+}) {
+  const [draft, setDraft] = useState<QuoteDraft>(preview);
+  const set = (patch: Partial<QuoteDraft>) => setDraft((d) => ({ ...d, ...patch }));
+
+  const priceOk = draft.price == null || (Number.isFinite(draft.price) && draft.price >= 0);
+  // A quote cannot be created without a price: the engine may leave it
+  // unset when no similar past quote exists, so the user fills it here.
+  const canConfirm = !confirming && draft.customerName.trim().length > 0 && draft.price != null && priceOk;
+  const innerField =
+    'w-full bg-surface-2 border border-line rounded-lg px-2.5 py-2 min-h-[44px] text-sm text-ink font-medium focus:outline-none focus:ring-2 focus:ring-ink/30';
+
+  return (
+    <div className="mt-2 bg-surface border border-line rounded-2xl overflow-hidden shadow-sm">
+      <div className="bg-asphalt/5 border-b border-smoke px-4 py-3 flex items-center gap-2 text-ink font-semibold text-sm">
+        <div className="w-6 h-6 rounded-full bg-asphalt/10 flex items-center justify-center">
+          <FileText size={14} />
+        </div>
+        {t(locale, 't10misc.copilot.quotePreviewTitle')}
+      </div>
+      <div className="p-4 space-y-2.5 text-sm">
+        <Row icon={<FileText size={15} />} label={t(locale, 'copilot.fieldService')} value={preview.title} />
+        <EditRow icon={<User size={15} />} label={t(locale, 'copilot.fieldCustomer')}>
+          <input
+            value={draft.customerName}
+            onChange={(e) => set({ customerName: e.target.value })}
+            placeholder={t(locale, 'copilot.namePlaceholder')}
+            aria-label={t(locale, 'copilot.fieldCustomer')}
+            className={innerField}
+          />
+        </EditRow>
+        <EditRow icon={<Wallet size={15} />} label={t(locale, 'copilot.fieldPrice')}>
+          <input
+            inputMode="numeric"
+            value={draft.price ?? ''}
+            onChange={(e) => {
+              const v = e.target.value.replace(/[^\d]/g, '');
+              set({ price: v === '' ? null : Number(v), priceSource: 'said' });
+            }}
+            placeholder={`amount (${currencySymbol(currency)})`}
+            aria-label={t(locale, 'copilot.fieldPrice')}
+            className={`${innerField} ${priceOk ? '' : '!border-danger'}`}
+          />
+        </EditRow>
+        {draft.priceSource === 'history' && draft.price != null && (
+          <p className="text-[11px] text-ink-2">{t(locale, 't10misc.copilot.priceSuggested')}</p>
+        )}
+      </div>
+      <div className="px-4 pb-4 flex gap-2">
+        <button
+          onClick={() => onConfirm({ ...draft, customerName: draft.customerName.trim() })}
+          disabled={!canConfirm}
+          className="flex-1 min-h-[44px] bg-asphalt hover:bg-graphite disabled:opacity-50 text-hero-ink text-xs font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-colors"
+        >
+          <Check size={14} />
+          {confirming ? t(locale, 't10misc.copilot.creatingQuote') : t(locale, 't10misc.copilot.confirmQuote')}
+        </button>
+        <button
+          onClick={() => onDiscard()}
+          disabled={confirming}
+          className="flex-1 min-h-[44px] bg-surface-2 hover:bg-line disabled:opacity-50 text-ink text-xs font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-colors"
+        >
+          <PencilLine size={14} />
+          {t(locale, 't10misc.copilot.discard')}
+        </button>
+      </div>
+      {!draft.customerName.trim() && (
+        <p className="px-4 pb-3 text-[11px] text-warn-text">{t(locale, 'copilot.nameRequired')}</p>
+      )}
+      {draft.customerName.trim() && draft.price == null && (
+        <p className="px-4 pb-3 text-[11px] text-warn-text">{t(locale, 't10misc.copilot.priceRequired')}</p>
+      )}
+    </div>
+  );
+}
+
+/**
  * Right-edge fade for horizontally scrolling chip rows (same treatment as
  * kit FilterChips): the last chip fades instead of cutting mid-word.
  * 2026-11-06: the copilot suggestion chips clipped hard at the edge.
@@ -552,8 +648,17 @@ export default function GlobalCopilotWidget({
       pushMessage({
         role: 'assistant',
         content: json.reply as string,
-        preview: json.needsConfirm ? ((json.preview as JobDraft | CustomerDraft) ?? null) : null,
-        previewKind: json.needsConfirm ? ((json.previewKind as string) === 'customer' ? 'customer' : 'job') : null,
+        preview: json.needsConfirm ? ((json.preview as JobDraft | CustomerDraft | QuoteDraft) ?? null) : null,
+        // The engine returns 'quote' for draft_quote: pass it through so a
+        // quote draft renders the quote card, never the job card (2026-11-08
+        // deep test: the old coercion to 'job' left the confirm disabled).
+        previewKind: json.needsConfirm
+          ? (json.previewKind as string) === 'customer'
+            ? 'customer'
+            : (json.previewKind as string) === 'quote'
+              ? 'quote'
+              : 'job'
+          : null,
         created: !!json.created,
         idempotencyKey: json.needsConfirm ? crypto.randomUUID() : null,
       });
@@ -574,7 +679,7 @@ export default function GlobalCopilotWidget({
 
   const confirmingRef = useRef<string | null>(null);
 
-  const handleConfirm = async (msgId: string, preview: JobDraft | CustomerDraft, kind: 'job' | 'customer' = 'job') => {
+  const handleConfirm = async (msgId: string, preview: JobDraft | CustomerDraft | QuoteDraft, kind: 'job' | 'customer' | 'quote' = 'job') => {
     if (confirmingRef.current === msgId) return;
     confirmingRef.current = msgId;
     setConfirmingId(msgId);
@@ -594,11 +699,18 @@ export default function GlobalCopilotWidget({
       if (!res.ok) throw new Error(json.error || 'Confirm failed');
       setMessages((prev) => prev.map((m) => (m.id === msgId ? { ...m, preview: null } : m)));
       pushMessage({ role: 'assistant', content: json.reply as string, created: true });
-      setChatFollowups([
-        { label: t(lang, 't10misc.copilot.bookAnother'), run: () => startBooking() },
-        { label: t(lang, 't10misc.copilot.viewJobs'), run: () => { router.push('/jobs'); } },
-        { label: t(lang, 't10misc.copilot.backToStart'), run: () => goHome() },
-      ]);
+      setChatFollowups(
+        kind === 'quote'
+          ? [
+              { label: t(lang, 't10misc.copilot.viewQuotes'), run: () => { router.push('/quotes'); } },
+              { label: t(lang, 't10misc.copilot.backToStart'), run: () => goHome() },
+            ]
+          : [
+              { label: t(lang, 't10misc.copilot.bookAnother'), run: () => startBooking() },
+              { label: t(lang, 't10misc.copilot.viewJobs'), run: () => { router.push('/jobs'); } },
+              { label: t(lang, 't10misc.copilot.backToStart'), run: () => goHome() },
+            ]
+      );
     } catch {
       const msg = t(lang, 't10misc.copilot.confirmError');
       pushMessage({ role: 'assistant', content: msg });
@@ -609,11 +721,11 @@ export default function GlobalCopilotWidget({
     }
   };
 
-  const handleDiscard = (msgId: string, kind: 'job' | 'customer' = 'job') => {
+  const handleDiscard = (msgId: string, kind: 'job' | 'customer' | 'quote' = 'job') => {
     const msg = messagesRef.current.find((m) => m.id === msgId);
     if (!msg?.preview) return;
     setMessages((prev) => prev.map((m) => (m.id === msgId ? { ...m, preview: null } : m)));
-    pushMessage({ role: 'assistant', content: kind === 'customer' ? t(lang, 't10misc.copilot.customerCancelled') : t(lang, 'copilot.bookingCancelled') });
+    pushMessage({ role: 'assistant', content: kind === 'customer' ? t(lang, 't10misc.copilot.customerCancelled') : kind === 'quote' ? t(lang, 't10misc.copilot.quoteCancelled') : t(lang, 'copilot.bookingCancelled') });
   };
 
   const handleSend = async (e: React.FormEvent) => {
@@ -1364,6 +1476,13 @@ export default function GlobalCopilotWidget({
                       onConfirm={(draft) => handleConfirm(msg.id, draft, 'customer')}
                       // eslint-disable-next-line react-hooks/refs -- safe: handleDiscard reads refs only inside the tap handler (never during render).
                       onDiscard={() => handleDiscard(msg.id, 'customer')}
+                    />
+                  ) : msg.previewKind === 'quote' ? (
+                    <QuotePreviewCard locale={lang} currency={currency}
+                      preview={msg.preview as QuoteDraft}
+                      confirming={confirmingId === msg.id}
+                      onConfirm={(draft) => handleConfirm(msg.id, draft, 'quote')}
+                      onDiscard={() => handleDiscard(msg.id, 'quote')}
                     />
                   ) : (
                     <PreviewCard locale={lang} currency={currency}

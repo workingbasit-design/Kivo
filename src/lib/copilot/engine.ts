@@ -32,6 +32,7 @@ import {
   extractInvalidDate,
   extractMoney,
   extractPhone,
+  extractServiceKeywordTokens,
   extractServiceTitle,
   extractTime,
   hasAny,
@@ -61,6 +62,7 @@ export {
   extractInvalidDate,
   extractMoney,
   extractPhone,
+  extractServiceKeywordTokens,
   extractServiceTitle,
   extractTime,
   resolveFollowUpName,
@@ -528,7 +530,12 @@ export async function runCopilot(
       let price: number | null = saidPrice;
       let priceSource: QuoteDraft['priceSource'] = saidPrice !== null ? 'said' : 'none';
       if (price === null && serviceTitle) {
-        const words = quoteSuggestionWords(serviceTitle);
+        // Match on the canonical title's words AND the raw keyword the
+        // message matched ("furnace"): the canonical title alone shares no
+        // words with real past work for several trades (2026-11-08 deep test).
+        const words = quoteSuggestionWords(
+          [serviceTitle, ...extractServiceKeywordTokens(message)].join(' ')
+        );
         if (words.length > 0) {
           const past = await prisma.quote.findMany({
             where: {

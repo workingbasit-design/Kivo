@@ -54,8 +54,12 @@ export default function CustomerConsentCard({
 
   return (
     <Card className="p-6 md:p-8 border-l-4 border-l-hivis">
-      <div className="flex items-center justify-between gap-3 mb-1">
-        <h2 className="text-sm font-bold text-ink flex items-center gap-2">
+      {/* 2026-11-08 deep test: the header must wrap — the opt-out badge
+          ("Not opted in. No automated messages", whitespace-nowrap by
+          design) is ~268px wide, so title + badge overflowed 390px
+          screens (scrollWidth 425) instead of stacking. */}
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-1">
+        <h2 className="text-sm font-bold text-ink flex items-center gap-2 min-w-0">
           <BellRing size={14} className="text-ink-2" />
           {t(locale, 'messaging.consentTitle')}
         </h2>

@@ -28,7 +28,7 @@ export default async function MyDayPage() {
         gte: today,
         lt: tomorrow,
       },
-      status: { in: ['SCHEDULED', 'IN_PROGRESS'] },
+      status: { in: ['SCHEDULED', 'IN PROGRESS'] },
     },
     include: {
       customer: {
@@ -79,7 +79,7 @@ export default async function MyDayPage() {
                   <div className="text-sm text-ink-2">{job.title}</div>
                 </div>
                 <span className={`px-2 py-1 rounded text-xs ${
-                  job.status === 'IN_PROGRESS' ? 'bg-info-bg text-info' : 'bg-surface-2 text-ink'
+                  job.status === 'IN PROGRESS' ? 'bg-info-bg text-info' : 'bg-surface-2 text-ink'
                 }`}>
                   {job.status}
                 </span>
