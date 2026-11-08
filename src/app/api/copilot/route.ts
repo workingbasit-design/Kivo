@@ -351,7 +351,15 @@ export async function POST(req: Request) {
   return NextResponse.json({
     reply,
     intent: result.intent,
-    needsConfirm: (result.intent === 'create_job' || result.intent === 'create_customer') && !!result.preview,
+    // draft_quote carries a preview too: the widget only renders the
+    // preview card when needsConfirm is true, and omitting draft_quote
+    // here silently dropped every quote draft (2026-11-08 deep test: the
+    // reply suggested a price but no card ever rendered).
+    needsConfirm:
+      (result.intent === 'create_job' ||
+        result.intent === 'create_customer' ||
+        result.intent === 'draft_quote') &&
+      !!result.preview,
     previewKind: result.previewKind ?? (result.intent === 'create_job' ? 'job' : null),
     preview: result.preview ?? null,
   });
