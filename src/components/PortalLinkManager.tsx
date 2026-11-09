@@ -207,6 +207,29 @@ export default function PortalLinkManager({
             {t(locale, 't10money.portalMgrShareNow')}
           </p>
         </>
+      ) : tokenId && confirming === 'revoke' ? (
+        <form action={revokeFormAction} className="flex flex-wrap items-center gap-2 bg-danger-bg border border-danger/25 rounded-xl px-3 py-2">
+          <input type="hidden" name="tokenId" value={tokenId ?? ''} />
+          <input type="hidden" name="customerId" value={customerId} />
+          <span className="text-xs text-danger font-medium">{t(locale, 't10money.portalMgrRevokeConfirm')}</span>
+          <Button
+            variant="danger"
+            sm
+            type="submit"
+            disabled={revokePending}
+            className="disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {revokePending ? t(locale, 't10money.portalMgrRevoking') : t(locale, 't10money.portalMgrYesRevoke')}
+          </Button>
+          <Button
+            variant="ghost"
+            sm
+            onClick={() => setConfirming(null)}
+            className="hover:text-ink"
+          >
+            {t(locale, 't10money.portalMgrKeep')}
+          </Button>
+        </form>
       ) : (
         <form action={regenFormAction}>
           <input type="hidden" name="customerId" value={customerId} />
@@ -220,6 +243,14 @@ export default function PortalLinkManager({
                 onClick={() => setConfirming('regen')}
               >
                 <RefreshCw size={13} /> {t(locale, 't10money.portalMgrRegenerate')}
+              </Button>
+              <Button
+                variant="ghost"
+                sm
+                onClick={() => setConfirming('revoke')}
+                className="text-danger"
+              >
+                <ShieldOff size={13} /> {t(locale, 't10money.portalMgrRevoke')}
               </Button>
             </div>
           ) : confirming === 'regen' ? (
