@@ -214,7 +214,7 @@ export default async function InvoiceDetailPage({
                   key={item.id}
                   className="rounded-xl border border-line bg-surface-2/40 px-3 py-2.5 print:bg-transparent"
                 >
-                  <p className="text-sm font-semibold text-ink">{item.description}</p>
+                  <p className="text-sm font-semibold text-ink break-words">{item.description}</p>
                   <p className="text-xs text-ink-2 mt-1 tabular-nums">
                     {item.qty} × <MoneyText dollars={centsToDollars(item.unitPriceCents)} locale={locale} />
                     <span className="font-bold text-ink">

@@ -50,9 +50,9 @@ export function LineItems({
             className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 py-[11px] border-t border-line first:border-t-0 items-start"
           >
             <div className="min-w-0">
-              <b className="block font-semibold text-ink">{line.title}</b>
+              <b className="block break-words font-semibold text-ink">{line.title}</b>
               {line.detail && (
-                <span className="block text-[14px] text-ink-2">
+                <span className="block break-words text-[14px] text-ink-2">
                   {line.detail}
                 </span>
               )}
