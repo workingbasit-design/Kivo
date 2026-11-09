@@ -63,48 +63,57 @@ export function TimeField({
   // production (16px system font): the longest hour label "12 AM" is 47.2px
   // and the longest minute label "59" is 18.3px, so the hour select needs
   // >= 106px and the minute select >= 77px or the value clips mid-character
-  // (the digest briefing form showed 6px of text space). flex-1 lets them
-  // grow when the container is wider; the min-width is the floor that keeps
-  // them readable everywhere TimeField is used (digest settings, working
+  // (the digest briefing form showed 6px of text space; /settings working
+  // hours showed 0px).
+  //
+  // The min-width lives on a plain wrapper span, NOT on the kit Select's
+  // label: the kit `.field` rule sets min-width:0 in unlayered CSS, which
+  // beats the layered Tailwind min-w utility (computed 0px on production
+  // when the class sat on the label). A plain wrapper has no competing
+  // rule, so the floor applies. flex-1 lets the selects grow when the
+  // container is wider; the min-width is the floor that keeps them
+  // readable everywhere TimeField is used (digest settings, working
   // hours, copilot).
   return (
     <span className="flex items-center gap-2">
       {name ? <input type="hidden" name={name} value={value} /> : null}
-      <Select
-        label={
-          <span className="sr-only">{ariaLabel ?? (locale === 'fr' ? 'Heure' : 'Hour')}</span>
-        }
-        value={hour}
-        onChange={(e) => setHour(e.target.value === '' ? '' : Number(e.target.value))}
-        disabled={disabled}
-        className="min-w-[108px] flex-1"
-        options={[
-          { value: '', label: '—' },
-          ...Array.from({ length: 24 }, (_, h) => ({
-            value: String(h),
-            label: hourLabel(h),
-          })),
-        ]}
-      />
+      <span className="min-w-[108px] flex-1">
+        <Select
+          label={
+            <span className="sr-only">{ariaLabel ?? (locale === 'fr' ? 'Heure' : 'Hour')}</span>
+          }
+          value={hour}
+          onChange={(e) => setHour(e.target.value === '' ? '' : Number(e.target.value))}
+          disabled={disabled}
+          options={[
+            { value: '', label: '—' },
+            ...Array.from({ length: 24 }, (_, h) => ({
+              value: String(h),
+              label: hourLabel(h),
+            })),
+          ]}
+        />
+      </span>
       <span aria-hidden className="text-ink-2 font-bold">
         :
       </span>
-      <Select
-        label={
-          <span className="sr-only">{ariaLabel ?? (locale === 'fr' ? 'Minute' : 'Minute')}</span>
-        }
-        value={minute}
-        onChange={(e) => setMinute(e.target.value === '' ? '' : Number(e.target.value))}
-        disabled={disabled}
-        className="min-w-[80px] flex-1"
-        options={[
-          { value: '', label: '—' },
-          ...Array.from({ length: 60 }, (_, m) => ({
-            value: String(m),
-            label: String(m).padStart(2, '0'),
-          })),
-        ]}
-      />
+      <span className="min-w-[80px] flex-1">
+        <Select
+          label={
+            <span className="sr-only">{ariaLabel ?? (locale === 'fr' ? 'Minute' : 'Minute')}</span>
+          }
+          value={minute}
+          onChange={(e) => setMinute(e.target.value === '' ? '' : Number(e.target.value))}
+          disabled={disabled}
+          options={[
+            { value: '', label: '—' },
+            ...Array.from({ length: 60 }, (_, m) => ({
+              value: String(m),
+              label: String(m).padStart(2, '0'),
+            })),
+          ]}
+        />
+      </span>
     </span>
   );
 }

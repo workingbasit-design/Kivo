@@ -102,6 +102,26 @@ describe('TimeField select widths', () => {
     assert.ok(minute >= MINUTE_MIN, `minute min-width ${minute}px < ${MINUTE_MIN}px needed`);
   });
 
+  it('min-widths sit on plain wrapper spans, not on the kit Select label', () => {
+    const src = read('src/components/TimeField.tsx');
+    // The kit .field label sets min-width:0 in unlayered CSS, which beats
+    // the layered Tailwind utility — with the class on the label the
+    // computed min-width was 0px on production (2026-11-09) and the
+    // /settings working-hours selects still clipped at 91px wide.
+    // Every min-w line must be a plain <span> wrapper, never a Select prop.
+    const lines = src.split('\n').filter((l) => l.includes('min-w-['));
+    assert.equal(lines.length, 2, `expected two min-width lines, found ${lines.length}`);
+    for (const line of lines) {
+      assert.match(line, /<span className="min-w-\[\d+px\] flex-1">/);
+    }
+    const wrappers = [...src.matchAll(/<span className="min-w-\[(\d+)px\] flex-1">/g)].map(
+      (m) => Number(m[1]),
+    );
+    assert.equal(wrappers.length, 2, `expected two min-width wrappers, found ${wrappers}`);
+    assert.ok(wrappers[0] >= HOUR_MIN, `hour wrapper ${wrappers[0]}px < ${HOUR_MIN}px needed`);
+    assert.ok(wrappers[1] >= MINUTE_MIN, `minute wrapper ${wrappers[1]}px < ${MINUTE_MIN}px needed`);
+  });
+
   it('digest briefing settings stack to one column on phones', () => {
     const src = read('src/components/DigestSettingsForm.tsx');
     assert.match(src, /grid-cols-1/);
