@@ -92,7 +92,11 @@ function WorkingHoursEditor({
               </button>
             </div>
             {open ? (
-              <div className="flex items-center gap-2 mt-1.5">
+              // flex-wrap: two TimeFields need ~204px each; a day card on a
+              // phone is ~282px wide, so without wrapping the close time
+              // would overflow (or, before the TimeField min-widths, clip).
+              // On wider screens both stay on one line.
+              <div className="flex flex-wrap items-center gap-2 mt-1.5">
                 <TimeField
                   value={state.open}
                   onChange={(v) => setDay(d.key, { open: v, close: state.close })}

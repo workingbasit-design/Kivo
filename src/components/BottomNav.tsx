@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { List, LogOut, ChevronDown, SlidersHorizontal } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { navSections, bottomTabs, advancedNavItems, type NavItem } from '@/components/nav-sections';
-import { visibleBottomTabs } from '@/components/nav-logic';
+import { isTabActive, visibleBottomTabs } from '@/components/nav-logic';
 import { NavIconView } from '@/components/animated-icons/nav-icon';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { logout } from '@/app/actions/auth';
@@ -44,7 +44,8 @@ export default function BottomNav({
   const pathname = usePathname();
   const tabs = visibleBottomTabs(bottomTabs, showMoney);
 
-  const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
+  // Shared with nav-logic so /digest reads as the Today tab (isTabActive).
+  const isActive = (href: string) => isTabActive(pathname, href);
   const anyPrimaryActive = tabs.some((tab) => isActive(tab.href));
   const advancedActive = advancedNavItems.some((item) => isActive(item.href));
 

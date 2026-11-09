@@ -47,7 +47,10 @@ export function DigestSettingsForm({
         />
       </label>
 
-      <div className="grid grid-cols-2 gap-3">
+      {/* One column on phones: the "Deliver at" TimeField needs ~204px
+          (hour 108px + minute 80px + gaps) and the two-column layout gave
+          it ~153px, clipping "7 AM" / "00" mid-character. */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-3">
         <label className="block">
           <span className="text-xs font-semibold text-ink-2 block mb-1">
             {t(locale, 'digest.sendTime')}

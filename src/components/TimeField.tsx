@@ -58,6 +58,15 @@ export function TimeField({
     return `${h - 12} PM`;
   };
 
+  // Select widths: the kit select reserves 14px left + 44px right (chevron)
+  // padding, so the text area is the select width minus 58px. Measured on
+  // production (16px system font): the longest hour label "12 AM" is 47.2px
+  // and the longest minute label "59" is 18.3px, so the hour select needs
+  // >= 106px and the minute select >= 77px or the value clips mid-character
+  // (the digest briefing form showed 6px of text space). flex-1 lets them
+  // grow when the container is wider; the min-width is the floor that keeps
+  // them readable everywhere TimeField is used (digest settings, working
+  // hours, copilot).
   return (
     <span className="flex items-center gap-2">
       {name ? <input type="hidden" name={name} value={value} /> : null}
@@ -68,7 +77,7 @@ export function TimeField({
         value={hour}
         onChange={(e) => setHour(e.target.value === '' ? '' : Number(e.target.value))}
         disabled={disabled}
-        className="flex-1"
+        className="min-w-[108px] flex-1"
         options={[
           { value: '', label: '—' },
           ...Array.from({ length: 24 }, (_, h) => ({
@@ -87,7 +96,7 @@ export function TimeField({
         value={minute}
         onChange={(e) => setMinute(e.target.value === '' ? '' : Number(e.target.value))}
         disabled={disabled}
-        className="flex-1"
+        className="min-w-[80px] flex-1"
         options={[
           { value: '', label: '—' },
           ...Array.from({ length: 60 }, (_, m) => ({
