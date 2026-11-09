@@ -64,7 +64,9 @@ export function TimeField({
   // and the longest minute label "59" is 18.3px, so the hour select needs
   // >= 106px and the minute select >= 77px or the value clips mid-character
   // (the digest briefing form showed 6px of text space; /settings working
-  // hours showed 0px).
+  // hours showed 0px). The wrappers carry 112px/84px: a few px above the
+  // bare requirement, because the rendered select measures ~2px narrower
+  // than its wrapper and real-device fonts vary a little.
   //
   // The min-width lives on a plain wrapper span, NOT on the kit Select's
   // label: the kit `.field` rule sets min-width:0 in unlayered CSS, which
@@ -77,7 +79,7 @@ export function TimeField({
   return (
     <span className="flex items-center gap-2">
       {name ? <input type="hidden" name={name} value={value} /> : null}
-      <span className="min-w-[108px] flex-1">
+      <span className="min-w-[112px] flex-1">
         <Select
           label={
             <span className="sr-only">{ariaLabel ?? (locale === 'fr' ? 'Heure' : 'Hour')}</span>
@@ -97,7 +99,7 @@ export function TimeField({
       <span aria-hidden className="text-ink-2 font-bold">
         :
       </span>
-      <span className="min-w-[80px] flex-1">
+      <span className="min-w-[84px] flex-1">
         <Select
           label={
             <span className="sr-only">{ariaLabel ?? (locale === 'fr' ? 'Minute' : 'Minute')}</span>

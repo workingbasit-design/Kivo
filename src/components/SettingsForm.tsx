@@ -92,7 +92,7 @@ function WorkingHoursEditor({
               </button>
             </div>
             {open ? (
-              // flex-wrap: two TimeFields need ~204px each; a day card on a
+              // flex-wrap: two TimeFields need ~212px each; a day card on a
               // phone is ~282px wide, so without wrapping the close time
               // would overflow (or, before the TimeField min-widths, clip).
               // On wider screens both stay on one line.
