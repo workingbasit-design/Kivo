@@ -205,9 +205,7 @@ export default function InvoiceForm({
 
       {jobContext && (
         <p className="text-sm text-ink-2 bg-surface-2 border border-line rounded-xl px-4 py-3">
-          Invoice for job <strong className="text-ink">{jobContext.jobTitle}</strong> —
-          the customer and first line item are filled in from the job, and
-          the invoice will be linked to it. Edit anything before creating.
+          {t(locale, 'invoices.forJobNote').replace('{title}', jobContext.jobTitle)}
         </p>
       )}
 
@@ -215,23 +213,23 @@ export default function InvoiceForm({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="min-w-0">
             <Select
-              label="Customer"
+              label={t(locale, 'invoices.customerLabel')}
               name="customerId"
               value={customerId}
               onChange={(e) => onCustomerChange(e.target.value)}
               options={[
-                { value: '', label: 'Select a customer', disabled: true },
+                { value: '', label: t(locale, 'invoices.selectCustomer'), disabled: true },
                 ...customers.map((c) => ({ value: c.id, label: c.name })),
               ]}
               hint={
                 customers.length === 0 ? (
                   <span>
-                    No customers yet -{' '}
+                    {t(locale, 'invoices.noCustomersYet')} -{' '}
                     <Link
                       href="/customers/new"
                       className="text-ink font-semibold hover:underline"
                     >
-                      add one first
+                      {t(locale, 'invoices.addOneFirst')}
                     </Link>
                     .
                   </span>
@@ -282,7 +280,7 @@ export default function InvoiceForm({
           </div>
           <div className="min-w-0">
             <DateField
-              label="Invoice date"
+              label={t(locale, 'invoices.dateLabel')}
               name="date"
               required
               defaultValue={toISODateLocal(new Date())}
@@ -290,17 +288,17 @@ export default function InvoiceForm({
           </div>
         </div>
         <Textarea
-          label="Notes (optional)"
-          hint="Shown on the invoice."
+          label={t(locale, 'invoices.notesOptional')}
+          hint={t(locale, 'invoices.notesHint')}
           name="notes"
           rows={2}
           maxLength={2000}
-          placeholder="e.g. Payment due within 7 days"
+          placeholder={t(locale, 'invoices.notesPlaceholder')}
         />
       </Card>
 
       <Card className="p-6">
-        <h2 className="text-sm font-bold text-ink mb-3">Line items</h2>
+        <h2 className="text-sm font-bold text-ink mb-3">{t(locale, 'invoices.lineItems')}</h2>
         <LineItemsEditor
           onSubtotal={setSubtotal}
           currency={taxConfig.currency}

@@ -26,6 +26,19 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 const G = (locale: Locale, key: string) => t(locale, `googleReviews.${key}`);
 
 function SetupChecklist({ locale }: { locale: Locale }) {
+  // 2026-11-09 deep test (F2): read the origin AFTER mount. Rendering
+  // window.location.origin inline made the first client render differ
+  // from SSR (relative URL) — React #418. Empty until the mount effect
+  // sets it, so the first client render matches SSR exactly.
+  const [origin, setOrigin] = useState('');
+  /* eslint-disable react-hooks/set-state-in-effect -- window.location
+     can only be read client-side after hydration (the server-rendered
+     markup must match first paint), so the origin is synced in this
+     mount effect, not during render. */
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
   const steps = [
     G(locale, 'setupStep1'),
     G(locale, 'setupStep2'),
@@ -42,7 +55,7 @@ function SetupChecklist({ locale }: { locale: Locale }) {
         <li>
           {steps[2]}
           <code className="block mt-1 bg-surface-2 rounded-lg px-2 py-1.5 font-mono text-[11px] text-ink break-all">
-            {typeof window !== 'undefined' ? `${window.location.origin}/api/google/callback` : '/api/google/callback'}
+            {`${origin}/api/google/callback`}
           </code>
         </li>
         <li>{steps[3]}</li>

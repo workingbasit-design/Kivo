@@ -103,11 +103,20 @@ export default function QuickBooksCard({
   const [syncing, setSyncing] = useState(false);
   const [result, setResult] = useState<SyncResult | null>(null);
   const [confirming, setConfirming] = useState(false);
-  const [callbackUri] = useState(() =>
-    typeof window === 'undefined'
-      ? ''
-      : `${window.location.origin}/api/integrations/quickbooks/callback`
-  );
+  // 2026-11-09 deep test (F2): read the origin AFTER mount. A useState
+  // lazy initializer runs on the client during hydration too, so it
+  // produced a full URL on first client render while SSR rendered the
+  // relative one — React #418. Empty until the mount effect sets it, so
+  // the first client render matches SSR exactly.
+  const [callbackUri, setCallbackUri] = useState('');
+  /* eslint-disable react-hooks/set-state-in-effect -- window.location
+     can only be read client-side after hydration (the server-rendered
+     markup must match first paint), so the callback URI is synced in
+     this mount effect, not during render. */
+  useEffect(() => {
+    setCallbackUri(`${window.location.origin}/api/integrations/quickbooks/callback`);
+  }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Clean the OAuth callback query param once (pure side effect, no state).
   useEffect(() => {

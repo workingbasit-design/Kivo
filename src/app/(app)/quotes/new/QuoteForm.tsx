@@ -87,18 +87,18 @@ export default function QuoteForm({
 
       <Card className="p-6 space-y-4">
         <Input
-          label="Title"
+          label={t(locale, 'quotes.titleLabel')}
           name="title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
           maxLength={200}
-          placeholder="e.g. Full house wiring repair"
+          placeholder={t(locale, 'quotes.titlePlaceholder')}
         />
         <div>
           <MorphSelect
             id="quote-customer"
-            label="Customer"
+            label={t(locale, 'quotes.customerLabel')}
             options={customers.map((c) => ({ value: c.id, label: c.name }))}
             value={customerId}
             onChange={setCustomerId}
@@ -106,9 +106,9 @@ export default function QuoteForm({
           <input type="hidden" name="customerId" value={customerId} required />
           {customers.length === 0 && (
             <p className="text-[11px] text-ink-2 mt-1">
-              No customers yet -{' '}
+              {t(locale, 'quotes.noCustomersYet')} -{' '}
               <Link href="/customers/new" className="text-ink font-semibold hover:underline">
-                add one first
+                {t(locale, 'quotes.addOneFirst')}
               </Link>
               .
             </p>
@@ -124,7 +124,7 @@ export default function QuoteForm({
       </Card>
 
       <Card className="p-6">
-        <h2 className="text-sm font-bold text-ink mb-3">Line items</h2>
+        <h2 className="text-sm font-bold text-ink mb-3">{t(locale, 'quotes.lineItems')}</h2>
         {templates.length > 0 && (
           <div className="mb-4">
             <Select

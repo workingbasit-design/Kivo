@@ -178,9 +178,9 @@ export default async function InvoiceDetailPage({
       <Card className="p-6 md:p-8 print:shadow-none print:border-line-strong" >
         <div className="flex flex-col md:flex-row justify-between gap-4 pb-6 border-b border-line">
           <div>
-            <p className="text-lg font-bold text-ink">{invoice.business.name}</p>
+            <p className="text-lg font-bold text-ink break-words">{invoice.business.name}</p>
             {invoice.business.address && (
-              <p className="text-xs text-ink-2 mt-1 max-w-xs">{invoice.business.address}</p>
+              <p className="text-xs text-ink-2 mt-1 max-w-xs break-words">{invoice.business.address}</p>
             )}
             {invoice.business.phone && (
               <p className="text-xs text-ink-2">{invoice.business.phone}</p>
@@ -194,14 +194,14 @@ export default async function InvoiceDetailPage({
           </div>
           <div className="md:text-right">
             <p className="text-xs font-bold text-ink-2">{L('invoices.billTo')}</p>
-            <p className="text-sm font-bold text-ink mt-1 flex items-center gap-1.5 md:justify-end">
-              <User size={14} className="text-ink-2" /> {invoice.customer.name}
+            <p className="text-sm font-bold text-ink mt-1 flex items-center gap-1.5 md:justify-end min-w-0 break-words">
+              <User size={14} className="text-ink-2 shrink-0" /> <span className="min-w-0 break-words">{invoice.customer.name}</span>
             </p>
             {invoice.customer.phone && (
               <p className="text-xs text-ink-2">{invoice.customer.phone}</p>
             )}
             {invoice.customer.address && (
-              <p className="text-xs text-ink-2 max-w-xs md:ml-auto">{invoice.customer.address}</p>
+              <p className="text-xs text-ink-2 max-w-xs md:ml-auto break-words">{invoice.customer.address}</p>
             )}
           </div>
         </div>
@@ -403,6 +403,7 @@ export default async function InvoiceDetailPage({
           regenerateAction={regenerateInvoiceShareLink}
           revokeAction={revokeInvoiceShareLink}
           setExpiryAction={setInvoiceShareLinkExpiry}
+          locale={locale}
         />
       </Card>
 

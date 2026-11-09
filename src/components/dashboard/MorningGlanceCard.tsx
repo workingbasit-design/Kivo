@@ -151,7 +151,7 @@ export default function MorningGlanceCard({
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <Link
           href={ctaHref}
-          className="rounded-full bg-hivis px-4 py-2 text-[13px] font-bold text-ink"
+          className="rounded-full bg-hivis px-4 py-2 text-[13px] font-bold text-hivis-ink"
         >
           {ctaLabel}
         </Link>

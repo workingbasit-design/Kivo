@@ -100,11 +100,20 @@ export default function PortalLinkManager({
     success: t(locale, 't10money.portalLinkRevoked'),
   });
 
-  // Read after mount so SSR and the first client render agree (avoids
-  // hydration mismatch): lazy initializer runs on the client only.
-  const [origin] = useState(() =>
-    typeof window === 'undefined' ? '' : window.location.origin
-  );
+  // 2026-11-09 deep test (F2): read the origin AFTER mount. A useState
+  // lazy initializer runs on the client during hydration too, so it
+  // produced a full URL on first client render while SSR rendered the
+  // relative one — React #418 whenever a portal link exists. Empty until
+  // the mount effect sets it, so the first client render matches SSR.
+  const [origin, setOrigin] = useState('');
+  /* eslint-disable react-hooks/set-state-in-effect -- window.location
+     can only be read client-side after hydration (the server-rendered
+     markup must match first paint), so the origin is synced in this
+     mount effect, not during render. */
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
   const url = token ? `${origin}/portal/${token}` : null;
 
   const error = regenState?.error || revokeState?.error;

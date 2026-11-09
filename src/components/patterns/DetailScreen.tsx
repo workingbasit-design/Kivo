@@ -85,11 +85,11 @@ export function DetailScreen({
           <span aria-hidden="true" className="inline-flex [&_svg]:size-7">{icon}</span>
         </span>
         <div className="min-w-0">
-          <h1 className="m-0 text-[26px] font-bold leading-[1.1] tracking-tight text-ink">
+          <h1 className="m-0 break-words text-[26px] font-bold leading-[1.1] tracking-tight text-ink">
             {title}
           </h1>
           {subtitle && (
-            <p className="mb-0 mt-[3px] text-[15px] text-ink-2">{subtitle}</p>
+            <p className="mb-0 mt-[3px] break-words text-[15px] text-ink-2">{subtitle}</p>
           )}
         </div>
       </div>

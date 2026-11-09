@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useActionState, useState } from 'react';
+import React, { useActionState, useEffect, useState } from 'react';
 import { AlertCircle, CalendarClock, Link2, RefreshCw, ShieldOff } from '@/components/icons';
 import CopyButton from '@/components/CopyButton';
 import { Button, DateField } from '@/components/kit';
+import { t, type Locale } from '@/lib/i18n';
 import type { ActionResult } from '@/app/actions/invoices';
 
 type ShareState = {
@@ -26,6 +27,7 @@ export default function ShareTokenManager({
   regenerateAction,
   revokeAction,
   setExpiryAction,
+  locale = 'en',
 }: {
   kind: 'invoice' | 'quote';
   docId: string;
@@ -42,7 +44,9 @@ export default function ShareTokenManager({
     prev: ActionResult,
     formData: FormData
   ) => Promise<ActionResult>;
+  locale?: Locale;
 }) {
+  const S = (key: string) => t(locale, `share.${key}`);
   const [token, setToken] = useState<string | null>(initial?.token ?? null);
   const [tokenId, setTokenId] = useState<string | null>(initial?.id ?? null);
   const [expiresAt, setExpiresAt] = useState<string>(initial?.expiresAt ?? '');
@@ -85,26 +89,35 @@ export default function ShareTokenManager({
 
   const error = regenState?.error || revokeState?.error || expiryState?.error;
   const okMsg =
-    (regenState?.ok && 'New share link created - the old one no longer works.') ||
-    (revokeState?.ok && 'Share link revoked.') ||
-    (expiryState?.ok && 'Expiry updated.') ||
+    (regenState?.ok && S('created')) ||
+    (revokeState?.ok && S('revoked')) ||
+    (expiryState?.ok && S('expiryUpdated')) ||
     null;
 
-  // Read after mount so SSR and the first client render agree (avoids
-  // hydration mismatch): lazy initializer runs on the client only.
-  const [origin] = useState(() =>
-    typeof window === 'undefined' ? '' : window.location.origin
-  );
+  // 2026-11-09 deep test (F2): read the origin AFTER mount. A useState
+  // lazy initializer runs on the client during hydration too, so it
+  // produced a full URL on first client render while SSR rendered the
+  // relative one — React #418 whenever a share link exists. Empty until
+  // the mount effect sets it, so the first client render matches SSR.
+  const [origin, setOrigin] = useState('');
+  /* eslint-disable react-hooks/set-state-in-effect -- window.location
+     can only be read client-side after hydration (the server-rendered
+     markup must match first paint), so the origin is synced in this
+     mount effect, not during render. */
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
   const url = token ? `${origin}/${kind === 'invoice' ? 'i' : 'q'}/${token}` : null;
   const field = kind === 'invoice' ? 'invoiceId' : 'quoteId';
 
   return (
     <div className="space-y-3">
       <h3 className="text-sm font-bold text-ink flex items-center gap-2">
-        <Link2 size={14} /> Public share link
+        <Link2 size={14} /> {S('title')}
       </h3>
       <p className="text-xs text-ink-2">
-        Anyone with this link can view the {kind}. Revoke it anytime to cut off access.
+        {kind === 'invoice' ? S('viewInvoice') : S('viewQuote')}
       </p>
 
       {error && (
@@ -132,7 +145,7 @@ export default function ShareTokenManager({
             <input type="hidden" name="tokenId" value={tokenId ?? ''} />
             <div className="flex-1 min-w-[160px]">
               <DateField
-                label="Link expires (optional)"
+                label={S('expiresLabel')}
                 name="expiresAt"
                 value={expiresAt}
                 onChange={(e) => setExpiresAt(e.target.value)}
@@ -141,12 +154,12 @@ export default function ShareTokenManager({
             </div>
             <Button type="submit" variant="secondary" disabled={expiryPending} className="mb-[18px]">
               <CalendarClock size={13} />
-              {expiryPending ? 'Saving…' : expiresAt ? 'Set expiry' : 'Clear expiry'}
+              {expiryPending ? S('saving') : expiresAt ? S('setExpiry') : S('clearExpiry')}
             </Button>
           </form>
           {expiresAt && (
             <p className="text-[11px] text-ink-2">
-              This link stops working after {expiresAt}.
+              {S('stopsAfter').replace('{date}', expiresAt)}
             </p>
           )}
 
@@ -157,19 +170,19 @@ export default function ShareTokenManager({
                 variant="secondary"
                 onClick={() => setConfirming('regen')}
               >
-                <RefreshCw size={13} /> Regenerate link
+                <RefreshCw size={13} /> {S('regenerate')}
               </Button>
             ) : (
               <form action={regenFormAction} className="flex items-center gap-2 bg-warn-bg border border-warn-line rounded-xl px-3 py-2">
                 <input type="hidden" name={field} value={docId} />
-                <span className="text-xs text-warn-text font-medium">Old link stops working. Continue?</span>
+                <span className="text-xs text-warn-text font-medium">{S('regenConfirm')}</span>
                 <Button
                   type="submit"
                   variant="danger"
                   sm
                   disabled={regenPending}
                 >
-                  {regenPending ? 'Working…' : 'Yes, regenerate'}
+                  {regenPending ? S('working') : S('yesRegenerate')}
                 </Button>
                 <Button
                   type="button"
@@ -177,7 +190,7 @@ export default function ShareTokenManager({
                   sm
                   onClick={() => setConfirming(null)}
                 >
-                  Keep
+                  {S('keep')}
                 </Button>
               </form>
             )}
@@ -188,19 +201,19 @@ export default function ShareTokenManager({
                 onClick={() => setConfirming('revoke')}
                 className="text-xs font-semibold text-danger hover:text-danger inline-flex items-center gap-1.5 px-2 py-2"
               >
-                <ShieldOff size={13} /> Revoke link
+                <ShieldOff size={13} /> {S('revoke')}
               </button>
             ) : (
               <form action={revokeFormAction} className="flex items-center gap-2 bg-danger-bg border border-line rounded-xl px-3 py-2">
                 <input type="hidden" name={field} value={docId} />
-                <span className="text-xs text-danger font-medium">Revoke this link?</span>
+                <span className="text-xs text-danger font-medium">{S('revokeConfirm')}</span>
                 <Button
                   type="submit"
                   variant="danger"
                   sm
                   disabled={revokePending}
                 >
-                  {revokePending ? 'Revoking…' : 'Yes, revoke'}
+                  {revokePending ? S('revoking') : S('yesRevoke')}
                 </Button>
                 <Button
                   type="button"
@@ -208,7 +221,7 @@ export default function ShareTokenManager({
                   sm
                   onClick={() => setConfirming(null)}
                 >
-                  Keep
+                  {S('keep')}
                 </Button>
               </form>
             )}
@@ -219,7 +232,7 @@ export default function ShareTokenManager({
           <input type="hidden" name={field} value={docId} />
           <Button type="submit" variant="secondary" disabled={regenPending}>
             <Link2 size={13} />
-            {regenPending ? 'Creating…' : 'Create share link'}
+            {regenPending ? S('creating') : S('createLink')}
           </Button>
         </form>
       )}

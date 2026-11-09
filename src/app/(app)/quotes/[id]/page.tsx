@@ -436,6 +436,7 @@ export default async function QuoteDetailPage({
           regenerateAction={regenerateQuoteShareLink}
           revokeAction={revokeQuoteShareLink}
           setExpiryAction={setQuoteShareLinkExpiry}
+          locale={locale}
         />
       </Card>
 

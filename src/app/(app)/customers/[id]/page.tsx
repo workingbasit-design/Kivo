@@ -231,7 +231,7 @@ export default async function CustomerDetailPage({
             {initial}
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-lg font-bold text-ej-ink flex items-center gap-2 flex-wrap">
+            <h2 className="text-lg font-bold text-ej-ink flex items-center gap-2 flex-wrap min-w-0 break-words">
               {customerName}
               {customer.archivedAt && (
                 <Chip>{t(locale, 't10money.custArchivedBadge')}</Chip>
