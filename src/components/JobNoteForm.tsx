@@ -94,7 +94,7 @@ export function JobNoteItem({
   return (
     <div className="flex items-start justify-between gap-3 py-3 border-b border-line last:border-0">
       <div className="min-w-0">
-        <p className="text-sm text-ink whitespace-pre-wrap">{content}</p>
+        <p className="text-sm text-ink whitespace-pre-wrap break-words">{content}</p>
         <p className="text-[11px] text-ink-2 mt-1">
           {authorName} · {createdAt}
         </p>

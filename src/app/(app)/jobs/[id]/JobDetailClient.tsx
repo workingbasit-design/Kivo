@@ -634,7 +634,7 @@ export default function JobDetailClient({ vm }: { vm: JobDetailVm }) {
       <>
         <Card className="px-3.5 py-3">
           {vm.notes && (
-            <p className="m-0 whitespace-pre-wrap pb-3 text-[15px] text-ink">
+            <p className="m-0 whitespace-pre-wrap break-words pb-3 text-[15px] text-ink">
               {vm.notes}
             </p>
           )}

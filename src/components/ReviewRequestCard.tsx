@@ -92,7 +92,7 @@ export default function ReviewRequestCard({
             <p className="text-[11px] font-bold text-ink-2 mb-1.5">
               {t(locale, 'jobops.notify.preview')}
             </p>
-            <p className="text-sm text-ink bg-surface-2 border border-line rounded-xl px-3 py-2.5 whitespace-pre-wrap">
+            <p className="text-sm text-ink bg-surface-2 border border-line rounded-xl px-3 py-2.5 whitespace-pre-wrap break-words">
               {message}
             </p>
           </div>

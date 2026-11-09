@@ -73,7 +73,7 @@ export default function JobTimeEntryForm({
             className={cn('text-ink transition-transform', open && 'rotate-45')}
           />
         </button>
-        <p className="text-[11px] text-graphite mt-1">
+        <p className="text-[11px] text-graphite mt-1 break-words">
           {jobTitle}
         </p>
 
