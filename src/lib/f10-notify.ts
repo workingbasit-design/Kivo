@@ -17,15 +17,19 @@
  */
 import { prisma } from '@/lib/prisma';
 import { parseSettings } from './notification-prefs.ts';
-import { parseFlags, isFlagOn } from './feature-flags.ts';
+import { parseFlags, isFlagOn, FLAG_NOTIFICATIONS } from './feature-flags.ts';
 import { t, type Locale } from '@/lib/i18n/index';
+
+// Re-exported so callers that already import the flag from here keep working.
+export { FLAG_NOTIFICATIONS } from './feature-flags.ts';
 
 /**
  * F10 feature-flag key (per-business, stored on Business.featureFlags).
  * Gates: event-driven notifications (notifyEvent) + global record search.
  * The pre-existing sync-based notification center is NOT gated.
+ * The constant lives in ./feature-flags.ts (single source of truth);
+ * it is re-exported above for existing import sites.
  */
-export const FLAG_NOTIFICATIONS = 'notifications';
 
 /** F10 event types (subset of the notification type registry). */
 export const F10_EVENT_TYPES = [

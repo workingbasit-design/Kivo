@@ -13,6 +13,7 @@ import { t } from '@/lib/i18n';
 import NotificationSettingsForm from '@/components/NotificationSettingsForm';
 import PushSettingsCard from '@/components/PushSettingsCard';
 import { parseSettings } from '@/lib/notifications';
+import { parseFlags, isFlagOn, FLAG_NOTIFICATIONS } from '@/lib/feature-flags';
 import { EXPORT_TYPES } from '@/lib/export';
 import SettingsSearch from '@/components/SettingsSearch';
 import DemoSwitchCard from '@/components/DemoSwitchCard';
@@ -53,6 +54,7 @@ export default async function SettingsPage() {
       directoryOptIn: true,
       directoryHideAddress: true,
       notificationSettings: true,
+      featureFlags: true,
       trade: true,
       yearsInBusiness: true,
       specialties: true,
@@ -250,6 +252,7 @@ export default async function SettingsPage() {
         </Card>
         <NotificationSettingsForm
           initial={parseSettings(business.notificationSettings)}
+          instantOn={isFlagOn(parseFlags(business.featureFlags), FLAG_NOTIFICATIONS)}
           locale={locale}
           savedMessage={t(locale, 'notifications.settingsSaved')}
         />

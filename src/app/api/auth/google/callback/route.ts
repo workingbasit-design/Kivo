@@ -13,6 +13,7 @@ import {
 } from '@/lib/google-auth';
 import { rateLimit, AUTH_LIMIT } from '@/lib/rate-limit';
 import { clientIpFromHeaders } from '@/lib/client-ip';
+import { defaultFeatureFlags } from '@/lib/feature-flags';
 
 const STATE_COOKIE = 'google_oauth_state';
 
@@ -116,6 +117,9 @@ export async function GET(req: Request) {
       regionCode: 'CA',
       currency: 'CAD',
       timezone: 'America/Toronto',
+      // Instant (event-driven) notifications ON from day one — see
+      // defaultFeatureFlags(): without it the F10 event stream never fires.
+      featureFlags: defaultFeatureFlags(),
       // Zero-config defaults: Mon-Fri 8am-6pm. Changeable in settings.
       workingHours: JSON.stringify({
         mon: ['08:00', '18:00'],

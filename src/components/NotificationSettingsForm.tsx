@@ -19,14 +19,18 @@ import { saveNotificationSettingsAction } from '@/app/actions/notifications';
  */
 export default function NotificationSettingsForm({
   initial,
+  instantOn = true,
   locale = 'en',
   savedMessage,
 }: {
   initial: NotificationSettings;
+  /** Master switch for the F10 instant (event-driven) notification stream. */
+  instantOn?: boolean;
   locale?: Locale;
   savedMessage: string;
 }) {
   const [values, setValues] = useState<NotificationSettings>(initial);
+  const [instant, setInstant] = useState(instantOn);
   const [saved, setSaved] = useState(false);
 
   const toggle = (key: NotificationType) =>
@@ -46,6 +50,26 @@ export default function NotificationSettingsForm({
         }}
         className="space-y-1"
       >
+        {/* Master switch for the instant (event-driven) stream: bookings,
+            leads and quote decisions as they happen. Off keeps only the
+            daily-summary builders (job tomorrow, overdue, ...). */}
+        <label className="flex items-start gap-3 rounded-xl px-3 py-3 min-h-[52px] cursor-pointer hover:bg-surface-2 transition-colors border-b border-line/60 mb-1">
+          <input
+            type="checkbox"
+            name="notify_instant"
+            checked={instant}
+            onChange={() => setInstant((v) => !v)}
+            className="mt-1 h-5 w-5 shrink-0 rounded accent-ink"
+          />
+          <span>
+            <span className="block text-[14px] font-semibold text-ink">
+              {t(locale, 'notifications.instantTitle')}
+            </span>
+            <span className="block text-xs text-ink-2">
+              {t(locale, 'notifications.instantHint')}
+            </span>
+          </span>
+        </label>
         {NOTIFICATION_TYPES.map((key) => (
           <label
             key={key}

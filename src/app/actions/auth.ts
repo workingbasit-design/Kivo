@@ -13,6 +13,7 @@ import { sendPlatformEmail } from '@/lib/messaging/platform-email';
 import { welcomeEmail } from '@/lib/messaging/email-templates';
 import { validateCanadianPhone } from '@/lib/google-auth';
 import { getActiveMembershipForUser } from '@/lib/membership';
+import { defaultFeatureFlags } from '@/lib/feature-flags';
 import { revalidatePath } from 'next/cache';
 
 export type AuthResult = {
@@ -94,6 +95,9 @@ export async function register(
       // Canada-only defaults.
       currency: 'CAD',
       timezone: 'America/Toronto',
+      // Instant (event-driven) notifications ON from day one — see
+      // defaultFeatureFlags(): without it the F10 event stream never fires.
+      featureFlags: defaultFeatureFlags(),
       // Zero-config defaults: a new plumber/tech can start working immediately
       // without touching settings. Everything here is changeable later.
       // Standard trade hours: Mon-Fri 8am-6pm.

@@ -6,6 +6,7 @@ import {
   markAllNotificationsRead as markAllRead,
   markNotificationRead as markOneRead,
   saveNotificationSettings,
+  setNotificationsFlag,
   parseSettings,
   NOTIFICATION_TYPES,
   type NotificationSettings,
@@ -30,6 +31,11 @@ export async function markNotificationRead(id: string): Promise<void> {
  * Save per-type notification preferences. Unchecked boxes submit nothing, so
  * every type is read explicitly (missing = off). Unknown keys are ignored -
  * only the six known types can ever be stored.
+ *
+ * Also saves the master instant-notifications switch (notify_instant): the
+ * F10 event stream (booking/lead/quote events as they happen) is gated on
+ * the per-business `notifications` flag, and this is the switch that flips
+ * it — new businesses get it ON at registration.
  */
 export async function saveNotificationSettingsAction(
   formData: FormData
@@ -42,6 +48,7 @@ export async function saveNotificationSettingsAction(
     next[key] = formData.get(`notify_${key}`) === 'on';
   }
   await saveNotificationSettings(businessId, next);
+  await setNotificationsFlag(businessId, formData.get('notify_instant') === 'on');
   revalidatePath('/settings');
   revalidatePath('/notifications');
   return { ok: true };

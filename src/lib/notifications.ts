@@ -14,6 +14,7 @@ import {
 } from './notification-prefs.ts';
 import type { NotificationType, NotificationSettings } from './notification-prefs.ts';
 import { centsToDollars } from './money.ts';
+import { withFlag, FLAG_NOTIFICATIONS } from './feature-flags.ts';
 export {
   NOTIFICATION_TYPES,
   defaultSettings,
@@ -575,5 +576,30 @@ export async function saveNotificationSettings(
   await prisma.business.update({
     where: { id: businessId },
     data: { notificationSettings: serializeSettings(settings) },
+  });
+}
+
+/**
+ * Toggle the F10 instant-notifications flag for one business. Tenant-scoped
+ * (the update's where carries the businessId, and the current flags are read
+ * for that business only, so other flags on the row are preserved).
+ *
+ * This is the enablement path the flag never had (2026-11-10 deep test):
+ * new businesses get it ON at registration, and any business can flip it
+ * in Settings > Notifications. Turning it off stops event-driven rows
+ * (booking_new, lead_new, quote_accepted/declined, ...) at creation time;
+ * the periodic sync builders keep working either way.
+ */
+export async function setNotificationsFlag(
+  businessId: string,
+  on: boolean
+): Promise<void> {
+  const business = await prisma.business.findUnique({
+    where: { id: businessId },
+    select: { featureFlags: true },
+  });
+  await prisma.business.update({
+    where: { id: businessId },
+    data: { featureFlags: withFlag(business?.featureFlags ?? null, FLAG_NOTIFICATIONS, on) },
   });
 }

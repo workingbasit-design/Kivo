@@ -15,6 +15,23 @@ export const FLAG_PRICEBOOK_V2 = 'pricebookV2';
 /** F9: six financial/operational reports behind a per-business flag. */
 export const FLAG_REPORTS = 'reports';
 
+/** F10: event-driven notifications + global record search. */
+export const FLAG_NOTIFICATIONS = 'notifications';
+
+/**
+ * Flags a brand-new business gets at registration. Instant (event-driven)
+ * notifications are ON from day one: the notification preferences already
+ * default every type ON, so a new business expects booking/lead/quote events
+ * to appear in its notification center. The flag stays toggleable in
+ * Settings > Notifications, so any business can turn the event stream off
+ * again. (2026-11-10 deep test: the flag defaulted off with no enablement
+ * path anywhere — notifyEvent() silently dropped every event for every
+ * business — so the event stream was dead on arrival.)
+ */
+export function defaultFeatureFlags(): string {
+  return serializeFlags({ [FLAG_NOTIFICATIONS]: true });
+}
+
 /** F4: team roles, dispatch, my-day, clock in/out behind a per-business flag. */
 export const FLAG_TEAM_DISPATCH = 'teamDispatch';
 

@@ -26,7 +26,7 @@ function job(id, businessId, dateOffsetDays, status, time = '10:00', notes = nul
 
 const FIXTURES = {
   business: {
-    'biz-test': { timezone: 'America/Toronto', regionCode: 'CA', notificationSettings: null },
+    'biz-test': { timezone: 'America/Toronto', regionCode: 'CA', notificationSettings: null, featureFlags: '{"reports":true}' },
   },
   jobs: [
     job('jt1', 'biz-test', 1, 'SCHEDULED'), // tomorrow -> job_tomorrow

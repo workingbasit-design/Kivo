@@ -12,7 +12,7 @@ import { register } from 'node:module';
 
 register('./notifications-stub-loader.mjs', import.meta.url);
 
-const { syncNotifications } = await import('../notifications.ts');
+const { syncNotifications, setNotificationsFlag } = await import('../notifications.ts');
 const stub = await import('./notifications-stub.mjs');
 
 function bizCalls(name: string) {
@@ -88,4 +88,27 @@ test('sync for an unknown business does nothing', async () => {
   const count = await syncNotifications('biz-nope');
   assert.equal(count, 0);
   assert.equal(stub.created.length, 0);
+});
+
+test('setNotificationsFlag turns the instant stream on, preserving other flags (2026-11-10)', async () => {
+  stub.resetNotificationStub();
+  await setNotificationsFlag('biz-test', true);
+  const updates = bizCalls('business.update');
+  assert.equal(updates.length, 1, 'expected exactly one business.update');
+  const [, where, data] = updates[0];
+  assert.equal(where.id, 'biz-test', 'update must be tenant-scoped to the business');
+  const flags = JSON.parse(data.featureFlags as string) as Record<string, boolean>;
+  assert.equal(flags.notifications, true, 'notifications flag must be on');
+  assert.equal(flags.reports, true, 'unrelated flags must be preserved');
+});
+
+test('setNotificationsFlag off removes only the notifications flag (2026-11-10)', async () => {
+  stub.resetNotificationStub();
+  await setNotificationsFlag('biz-test', false);
+  const updates = bizCalls('business.update');
+  assert.equal(updates.length, 1);
+  const [, , data] = updates[0];
+  const flags = JSON.parse(data.featureFlags as string) as Record<string, boolean>;
+  assert.equal(flags.notifications, undefined, 'notifications flag must be removed');
+  assert.equal(flags.reports, true, 'unrelated flags must be preserved');
 });
