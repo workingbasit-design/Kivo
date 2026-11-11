@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { isPublicPath, isMapPath } from '@/lib/public-paths';
+import { customerSessionCookieName, sessionCookieName } from '@/lib/session-cookie';
 
 // Next.js 16: `proxy.ts` replaces the deprecated `middleware.ts`.
 // Lightweight route guard based on the session cookie. Full session
@@ -74,8 +75,8 @@ function nextWithNonce(request: NextRequest, nonce: string): NextResponse {
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const sessionCookie = request.cookies.get('kivo_session');
-  const customerCookie = request.cookies.get('kivo_customer_session');
+  const sessionCookie = request.cookies.get(sessionCookieName());
+  const customerCookie = request.cookies.get(customerSessionCookieName());
 
   const isPublic = isPublicPath(pathname);
   const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
@@ -107,7 +108,7 @@ export function proxy(request: NextRequest) {
   }
 
   // NOTE (2026-09-26): there used to be a redirect here sending anyone
-  // WITH a kivo_session cookie from /login or /register to /dashboard.
+  // WITH a session cookie from /login or /register to /dashboard.
   // It keyed off the mere PRESENCE of the cookie without validating the
   // session, so a stale/invalid cookie caused an unbreakable loop:
   // /login -> /dashboard (proxy) -> /login ((app) layout, session invalid).

@@ -18,6 +18,24 @@ const API_BASE = 'https://api.stripe.com/v1';
 const CONNECT_AUTHORIZE_URL = 'https://connect.stripe.com/oauth/authorize';
 const CONNECT_TOKEN_URL = 'https://connect.stripe.com/oauth/token';
 
+/**
+ * F2 (security audit 2026-11-11): the platform key must be a TEST key
+ * unless live mode is explicitly allowed. Test mode is currently
+ * enforced only by which key the owner pasted into Vercel env vars —
+ * a pasted `sk_live_…` key would silently enable live charges. This
+ * converts that mistake into a loud failure at the first Stripe call.
+ * The word "forbidden" in the message matters: `withRetry` treats it
+ * as non-retryable, so a live key fails fast instead of retrying 3x.
+ */
+export function assertPlatformKeyTestMode(secret: string): void {
+  if (secret.startsWith('sk_live_') && process.env.ALLOW_STRIPE_LIVE !== 'true') {
+    throw new Error(
+      'Refusing live Stripe platform key: live mode is forbidden unless ALLOW_STRIPE_LIVE=true is set. ' +
+        'Stripe stays in test mode until the owner explicitly approves live.'
+    );
+  }
+}
+
 /* ------------------------------------------------------------------ */
 /* Stripe Connect OAuth                                                  */
 /* ------------------------------------------------------------------ */
@@ -54,6 +72,7 @@ export async function exchangeConnectCode(
   platformSecret: string,
   fetchFn: FetchFn = fetch
 ): Promise<ConnectTokenResult> {
+  assertPlatformKeyTestMode(platformSecret);
   let res: Response;
   try {
     res = await fetchFn(CONNECT_TOKEN_URL, {
@@ -102,6 +121,7 @@ export async function getConnectAccountStatus(
   stripeAccountId: string,
   fetchFn: FetchFn = fetch
 ): Promise<ConnectAccountStatus> {
+  assertPlatformKeyTestMode(platformSecret);
   let res: Response;
   try {
     res = await fetchFn(
@@ -174,6 +194,7 @@ export async function createCheckoutSession(
   opts: CheckoutSessionOptions,
   fetchFn: FetchFn = fetch
 ): Promise<CheckoutSessionResult> {
+  assertPlatformKeyTestMode(opts.platformSecret);
   const form = new URLSearchParams();
   form.set('mode', 'payment');
   form.set('success_url', opts.successUrl);
@@ -241,6 +262,7 @@ export async function retrieveCompletedPayment(
   sessionId: string,
   fetchFn: FetchFn = fetch
 ): Promise<CompletedPaymentInfo> {
+  assertPlatformKeyTestMode(platformSecret);
   const url =
     `${API_BASE}/checkout/sessions/${encodeURIComponent(sessionId)}` +
     `?expand[]=payment_intent.charges`;

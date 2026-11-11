@@ -16,6 +16,7 @@ import { formatCents } from '@/lib/money';
 import { formatWorkingHoursSummary } from '@/lib/working-hours';
 import { getLocale } from '@/lib/i18n/server';
 import { getCspNonce } from '@/lib/csp-nonce';
+import { safeJsonLd } from '@/lib/jsonld';
 import { t } from '@/lib/i18n';
 import {
   localityFromAddress,
@@ -207,7 +208,7 @@ export default async function PublicProfilePage({
       <script
         type="application/ld+json"
         nonce={await getCspNonce()}
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
       />
       <header className="bg-asphalt text-hero-ink">
         <div className="max-w-2xl mx-auto px-4 py-8">

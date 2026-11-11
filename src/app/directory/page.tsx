@@ -7,6 +7,7 @@ import { getLocale } from '@/lib/i18n/server';
 import { getCspNonce } from '@/lib/csp-nonce';
 import { t } from '@/lib/i18n';
 import { getCustomerSession } from '@/lib/customer-auth';
+import { safeJsonLd } from '@/lib/jsonld';
 import DirectoryRatingFilter from '@/components/DirectoryRatingFilter';
 import {
   matchesCity,
@@ -118,7 +119,7 @@ export default async function DirectoryPage({
       <script
         type="application/ld+json"
         nonce={await getCspNonce()}
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
       />
       <header className="bg-asphalt text-hero-ink">
         <div className="max-w-4xl mx-auto px-4 py-10">

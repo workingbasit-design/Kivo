@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
-import { prisma } from '@/lib/prisma';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { createCheckoutSession, type CheckoutSessionResult } from '@/lib/stripe';
+import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 import { withRetry, newIdempotencyKey } from '@/lib/retry';
 import { clientIpFromHeaders } from '@/lib/client-ip';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
@@ -21,6 +21,11 @@ async function rateLimited(): Promise<boolean> {
  * Stripe's page - card data never touches our servers.
  */
 export async function POST(req: Request) {
+  // F8 (security audit 2026-11-11): defense-in-depth origin check, like
+  // every other mutating API route. The share token is still the
+  // authorization; this only rejects cross-origin browser posts.
+  const originCheck = checkSameOrigin(req);
+  if (!originCheck.ok) return originForbidden(originCheck.reason);
   const limited = await rateLimited();
   if (limited) {
     return NextResponse.json({ error: 'Too many requests. Try again shortly.' }, { status: 429 });

@@ -2,9 +2,10 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { prisma } from './prisma';
 import { DatabaseUnavailableError } from './db-errors';
+import { customerSessionCookieName, newSessionId } from './session-cookie.ts';
 import crypto from 'crypto';
 
-const COOKIE_NAME = 'kivo_customer_session';
+const COOKIE_NAME = customerSessionCookieName();
 const SESSION_DAYS = 30;
 
 function hashPassword(password: string): string {
@@ -29,7 +30,9 @@ export async function createCustomerSession(customerId: string) {
 
   const expiresAt = new Date(Date.now() + SESSION_DAYS * 24 * 60 * 60 * 1000);
   const session = await prisma.customerSession.create({
-    data: { customerId, expiresAt },
+    // F1 (security audit 2026-11-11): explicit 256-bit id, same as the
+    // business session — never let a session id come from cuid().
+    data: { id: newSessionId(), customerId, expiresAt },
   });
 
   const cookieStore = await cookies();

@@ -3,7 +3,9 @@ import { redirect } from 'next/navigation';
 import { prisma } from './prisma.ts';
 import { DatabaseUnavailableError } from './db-errors.ts';
 import { getActiveMembershipForUser } from './membership.ts';
-import crypto from 'crypto';
+import { newSessionId, sessionCookieName } from './session-cookie.ts';
+
+const SESSION_COOKIE = sessionCookieName();
 
 export async function createSession(userId: string) {
   // B7.5 session rotation on login: invalidate ALL of this user's prior
@@ -15,13 +17,17 @@ export async function createSession(userId: string) {
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
   const session = await prisma.session.create({
     data: {
+      // F1 (security audit 2026-11-11): explicit 256-bit id. The schema
+      // default is cuid() (~41 bits of unknown entropy, timestamp
+      // embedded in the id) — never let a session id come from it.
+      id: newSessionId(),
       userId,
       expiresAt,
     },
   });
 
   const cookieStore = await cookies();
-  cookieStore.set('kivo_session', session.id, {
+  cookieStore.set(SESSION_COOKIE, session.id, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     expires: expiresAt,
@@ -34,7 +40,7 @@ export async function createSession(userId: string) {
 
 export async function getSession() {
   const cookieStore = await cookies();
-  const sessionId = cookieStore.get('kivo_session')?.value;
+  const sessionId = cookieStore.get(SESSION_COOKIE)?.value;
   if (!sessionId) return null;
 
   let session;
@@ -110,9 +116,9 @@ export async function invalidateUserSessions(userId: string): Promise<void> {
 
 export async function destroySession() {
   const cookieStore = await cookies();
-  const sessionId = cookieStore.get('kivo_session')?.value;
+  const sessionId = cookieStore.get(SESSION_COOKIE)?.value;
   if (sessionId) {
     await prisma.session.delete({ where: { id: sessionId } }).catch(() => {});
   }
-  cookieStore.delete('kivo_session');
+  cookieStore.delete(SESSION_COOKIE);
 }

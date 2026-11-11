@@ -181,7 +181,10 @@ export async function login(
 
   // Always hash-compare to keep timing consistent-ish, even for unknown emails.
   const user = await prisma.user.findUnique({ where: { email } });
-  const hash = user?.passwordHash ?? (await bcrypt.hash('dummy', 4));
+  // F5 (security audit 2026-11-11): the dummy hash must cost the same as
+  // a real one (cost 12, ~250ms). Cost 4 (~1-2ms) left a ~100x timing gap
+  // between "email exists" and "email doesn't exist".
+  const hash = user?.passwordHash ?? (await bcrypt.hash('dummy', 12));
   const ok = await bcrypt.compare(password, hash);
 
   if (!user || !ok) {
