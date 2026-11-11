@@ -83,7 +83,7 @@ export default function DirectoryPromptCard({
   return (
     <section
       aria-label={L("directoryPromptTitle")}
-      className="mx-4 mt-6 rounded-[24px] border border-line/70 bg-surface p-5 dark:border-hero-ink/10 dark:bg-coal"
+      className="mx-4 mt-6 rounded-[24px] border border-line bg-surface p-5"
     >
       {added || alreadyListed ? (
         <>
@@ -115,7 +115,7 @@ export default function DirectoryPromptCard({
             <button
               type="button"
               onClick={dismiss}
-              className="min-h-[44px] rounded-full border border-line px-4 text-[13px] font-semibold text-ink-2 dark:border-hero-ink/20"
+              className="min-h-[44px] rounded-full border border-line px-4 text-[13px] font-semibold text-ink-2"
             >
               {L("directoryPromptDismiss")}
             </button>

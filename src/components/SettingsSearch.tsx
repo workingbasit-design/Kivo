@@ -38,7 +38,7 @@ export default function SettingsSearch({ locale }: { locale: Locale }) {
   };
 
   return (
-    <div ref={wrapRef} className="sticky top-0 z-10 bg-ej-bg/95 py-2">
+    <div ref={wrapRef} className="sticky top-0 z-10 bg-surface/95 py-2">
       <SearchField
         label={t(locale, 't10misc.settingsMain.searchLabel')}
         value={query}

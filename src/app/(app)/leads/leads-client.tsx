@@ -194,14 +194,14 @@ function DeclineButton({ lead, locale }: { lead: LeadItem; locale: Locale }) {
           <input type="hidden" name="id" value={lead.id} />
           <input type="hidden" name="status" value="DECLINED" />
           <input type="hidden" name="declineReason" value={declineReasonText()} />
-          <p className="text-sm font-semibold text-ej-ink mb-3">
+          <p className="text-sm font-semibold text-ink mb-3">
             {t(locale, 't10money.leadDeclineWhy')}
           </p>
           <div className="space-y-2 mb-4" role="radiogroup" aria-label={t(locale, 't10money.leadDeclineWhy')}>
             {DECLINE_REASONS.map((r) => (
               <label
                 key={r.value}
-                className="flex items-center gap-3 min-h-[48px] px-3 rounded-xl bg-ej-surface cursor-pointer"
+                className="flex items-center gap-3 min-h-[48px] px-3 rounded-xl bg-surface cursor-pointer"
               >
                 <input
                   type="radio"
@@ -209,13 +209,13 @@ function DeclineButton({ lead, locale }: { lead: LeadItem; locale: Locale }) {
                   value={r.value}
                   checked={reason === r.value}
                   onChange={() => setReason(r.value)}
-                  className="w-4 h-4 accent-black"
+                  className="w-4 h-4 accent-ink"
                 />
-                <span className="text-sm text-ej-ink">{t(locale, r.labelKey)}</span>
+                <span className="text-sm text-ink">{t(locale, r.labelKey)}</span>
               </label>
             ))}
           </div>
-          <label className="block text-sm font-semibold text-ej-ink mb-1.5">
+          <label className="block text-sm font-semibold text-ink mb-1.5">
             {t(locale, 't10money.leadDeclineNotes')}
           </label>
           <textarea
@@ -223,25 +223,25 @@ function DeclineButton({ lead, locale }: { lead: LeadItem; locale: Locale }) {
             onChange={(e) => setNotes(e.target.value)}
             placeholder={t(locale, 't10money.leadDeclineNotesPlaceholder')}
             rows={2}
-            className="w-full rounded-xl border border-ej-border bg-ej-bg px-3 py-2.5 text-base text-ej-ink placeholder:text-ej-muted mb-4"
+            className="w-full rounded-xl border border-line bg-surface px-3 py-2.5 text-base text-ink placeholder:text-ink-2 mb-4"
           />
           <div className="flex gap-2">
             <button
               type="submit"
               disabled={isPending}
-              className="flex-1 min-h-[48px] rounded-xl bg-ej-primary text-ej-on-primary text-sm font-bold disabled:opacity-50"
+              className="flex-1 min-h-[48px] rounded-xl bg-asphalt text-hero-ink text-sm font-bold disabled:opacity-50"
             >
               {isPending ? t(locale, 't10money.leadDeclining') : t(locale, 't10money.leadDeclineConfirm')}
             </button>
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="min-h-[48px] px-4 rounded-xl bg-ej-surface text-sm font-semibold text-ej-ink"
+              className="min-h-[48px] px-4 rounded-xl bg-surface text-sm font-semibold text-ink"
             >
               {t(locale, 't10money.leadCancel')}
             </button>
           </div>
-          {state?.error && <p className="text-xs text-ej-danger mt-2">{state.error}</p>}
+          {state?.error && <p className="text-xs text-danger mt-2">{state.error}</p>}
         </form>
       </BottomSheet>
     </>

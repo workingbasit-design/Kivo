@@ -34,7 +34,7 @@ function PaymentCards({
   return (
     <ul className="space-y-2.5 md:hidden">
       {rows.map((p) => (
-        <li key={p.id} className="rounded-xl border border-line/70 bg-surface p-3.5 text-xs">
+        <li key={p.id} className="rounded-xl border border-line bg-surface p-3.5 text-xs">
           <div className="flex items-start justify-between gap-2">
             <p className="font-bold text-ink truncate">{p.customerName}</p>
             <p className="font-bold text-ink shrink-0">{formatMoney(p.amount, 'CAD', locale)}</p>

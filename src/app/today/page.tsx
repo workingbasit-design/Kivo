@@ -170,7 +170,7 @@ export default async function TodayPage() {
             <article
               key={job.id}
               data-job-id={job.id}
-              className="snap-start snap-always min-h-full flex flex-col px-5 py-6 border-b border-line/70 last:border-b-0"
+              className="snap-start snap-always min-h-full flex flex-col px-5 py-6 border-b border-line last:border-b-0"
             >
               <div className="flex items-start justify-between gap-3">
                 <p className="font-condensed font-semibold text-[44px] leading-none text-ink">

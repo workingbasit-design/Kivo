@@ -42,7 +42,7 @@ function Msg({
  */
 export default function CopilotDemo({ strings }: { strings: CopilotDemoStrings }) {
   return (
-    <div className="bg-surface/[0.05] rounded-[24px] border border-hero-ink/10 p-6 md:p-8">
+    <div className="bg-surface/[0.05] rounded-[24px] border border-hero-line p-6 md:p-8">
       <div
         className="ej-chat-msg flex items-center gap-2.5 mb-6"
         style={{ '--msg-delay': '0ms' } as CSSProperties}
@@ -51,7 +51,7 @@ export default function CopilotDemo({ strings }: { strings: CopilotDemoStrings }
           <Bot size={16} className="text-hero-ink" />
         </span>
         <span className="font-semibold text-[15px]">{strings.chatTitle}</span>
-        <span className="ml-auto text-[11px] font-mediumst text-hero-ink/40">
+        <span className="ml-auto text-[11px] font-mediumst text-hero-ink-2">
           {strings.langBadge}
         </span>
       </div>
@@ -64,7 +64,7 @@ export default function CopilotDemo({ strings }: { strings: CopilotDemoStrings }
         <Msg side="bot" delay={950}>
           {/* Dark-section bubble: ink-2 is a LIGHT-section token (dark gray),
               unreadable on the asphalt background — use hero-ink instead. */}
-          <p className="bg-surface/10 text-hero-ink/70 px-4 py-2.5 rounded-2xl rounded-bl-md">
+          <p className="bg-hero-2 text-hero-ink-2 px-4 py-2.5 rounded-2xl rounded-bl-md">
             {strings.msg2}
           </p>
         </Msg>
@@ -81,17 +81,17 @@ export default function CopilotDemo({ strings }: { strings: CopilotDemoStrings }
             <p className="text-lime font-semibold flex items-center gap-2 mb-1 text-[14px]">
               <Check size={15} /> {strings.msg4Title}
             </p>
-            <p className="text-hero-ink/70 text-[13px]">{strings.msg4Detail}</p>
+            <p className="text-hero-ink-2 text-[13px]">{strings.msg4Detail}</p>
           </div>
         </Msg>
       </div>
       <div
-        className="ej-chat-msg mt-6 bg-surface/5 border border-hero-ink/10 rounded-full px-5 py-3 flex items-center gap-3"
+        className="ej-chat-msg mt-6 bg-hero-2 border border-hero-line rounded-full px-5 py-3 flex items-center gap-3"
         style={{ '--msg-delay': '2900ms' } as CSSProperties}
       >
         <span className="text-lime text-[13px] font-medium">{strings.inputLabel}</span>
-        <span className="w-px h-4 bg-surface/15" />
-        <span className="text-hero-ink/30 text-[14px]">{strings.inputHint}</span>
+        <span className="w-px h-4 bg-hero-2" />
+        <span className="text-hero-ink-2 text-[14px]">{strings.inputHint}</span>
       </div>
     </div>
   );

@@ -46,12 +46,12 @@ export default async function CustomerProfilePage() {
         <Card className="overflow-hidden">
           <div className="bg-asphalt px-5 pt-6 pb-8">
             <div className="flex items-center gap-4">
-              <div className="ej-anim-scale-in w-16 h-16 rounded-2xl bg-surface/10 border border-hero-ink/15 flex items-center justify-center shadow-lg">
+              <div className="ej-anim-scale-in w-16 h-16 rounded-2xl bg-hero-2 border border-hero-line flex items-center justify-center shadow-lg">
                 <span className="text-2xl font-bold text-hero-ink">{initial}</span>
               </div>
               <div className="min-w-0">
                 <p className="font-bold text-hero-ink text-lg truncate">{customer.name}</p>
-                <p className="text-hero-ink/60 text-xs truncate">{customer.email}</p>
+                <p className="text-hero-ink-2 text-xs truncate">{customer.email}</p>
               </div>
             </div>
           </div>

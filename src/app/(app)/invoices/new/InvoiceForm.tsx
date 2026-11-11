@@ -49,10 +49,15 @@ export default function InvoiceForm({
   taxConfig,
   locale = 'en',
   jobContext = null,
+  gstHstRegistered = false,
 }: {
   customers: { id: string; name: string }[];
   taxConfig: TaxConfig;
   locale?: Locale;
+  /** M2: when false the business may not charge GST/HST, so the builder
+   *  shows no tax control and posts a zero rate. The server enforces it
+   *  again regardless of what this form submits. */
+  gstHstRegistered?: boolean;
   /** D4: set when the form was opened from a job's "Create invoice"
    *  button — prefills the customer + first line item and links the
    *  created invoice back to the job (hidden jobId field). */
@@ -83,8 +88,15 @@ export default function InvoiceForm({
   // in-app error on the picker instead; the server still rejects an
   // empty customer ("Customer is required") as backstop.
   const [customerError, setCustomerError] = useState<string | null>(null);
+  // M2: an unregistered business starts (and stays) on the no-tax selection.
+  const NO_TAX: TaxSelection = {
+    id: 'NONE',
+    taxType: 'GST',
+    taxRate: 0,
+    label: t(locale, 't10money.taxNoTax'),
+  };
   const [taxSel, setTaxSel] = useState<TaxSelection>(() =>
-    defaultTaxSelection(taxConfig)
+    gstHstRegistered ? defaultTaxSelection(taxConfig) : NO_TAX
   );
 
   // Slice 2: the manual form gains the job form's optional property picker
@@ -322,18 +334,28 @@ export default function InvoiceForm({
           {t(locale, 't10money.taxSelectLabel')}
         </h2>
         <div className="min-w-0">
-          <TaxSelect
-            locale={locale}
-            label={t(locale, 't10money.taxSelectLabel')}
-            value={taxSel}
-            onChange={(sel) => {
-              setTaxSel(sel);
-              setTaxFromProperty(false);
-            }}
-          />
-          {hintProvince && (
+          {gstHstRegistered ? (
+            <>
+              <TaxSelect
+                locale={locale}
+                label={t(locale, 't10money.taxSelectLabel')}
+                value={taxSel}
+                onChange={(sel) => {
+                  setTaxSel(sel);
+                  setTaxFromProperty(false);
+                }}
+              />
+              {hintProvince && (
+                <p className="text-xs text-ink-2">
+                  {t(locale, 'billing.taxPropertyHint').replace('{province}', hintProvince)}
+                </p>
+              )}
+            </>
+          ) : (
+            /* M2: not registered to collect GST/HST, so there is no rate to
+               pick. Say why rather than showing a dead control. */
             <p className="text-xs text-ink-2">
-              {t(locale, 'billing.taxPropertyHint').replace('{province}', hintProvince)}
+              {t(locale, 't10misc.booking.gstNotRegisteredNote')}
             </p>
           )}
         </div>

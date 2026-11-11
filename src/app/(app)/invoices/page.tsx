@@ -6,16 +6,17 @@ import { t } from '@/lib/i18n';
 import { prisma } from '@/lib/prisma';
 import { INVOICE_STATUSES } from '@/lib/validations';
 import { centsToDollars } from '@/lib/money';
-import { sumMoneyPayments } from '@/lib/invoice-status';
 import InvoicesClient, { type InvoiceListItem } from './InvoicesClient';
 import type { ExportColumn } from '@/components/ExportButtons';
+import { parseListLimit, takeWithProbe, sliceListPage } from '@/lib/list-page';
+import { ListMore } from '../_components/ListMore';
 
 const FILTERS = ['ALL', ...INVOICE_STATUSES] as const;
 
 export default async function InvoicesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; limit?: string }>;
 }) {
   const { businessId, role } = await requireAuth();
 
@@ -26,33 +27,57 @@ export default async function InvoicesPage({
     redirect('/dashboard');
   }
 
-  const { status } = await searchParams;
+  const { status, limit: limitParam } = await searchParams;
+  const limit = parseListLimit(limitParam);
   const initialFilter = FILTERS.includes(status as (typeof FILTERS)[number])
     ? (status as (typeof FILTERS)[number])
     : 'ALL';
   const locale = await getLocale();
 
-  // One fetch for everything: tab switching filters in memory on the client,
-  // so switching tabs never hits the server.
-  const [business, invoiceRows, aggregates] = await Promise.all([
-    prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } }),
-    prisma.invoice.findMany({
-      where: { businessId },
-      include: {
-        customer: { select: { name: true } },
-        payments: { select: { amountCents: true, status: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-    }),
-    prisma.invoice.findMany({
-      where: { businessId, voidedAt: null },
-      select: {
-        totalCents: true,
-        status: true,
-        payments: { select: { amountCents: true, status: true } },
-      },
-    }),
-  ]);
+  // M3: the rows are a bounded page (newest first), and tab switching still
+  // filters that page in memory on the client. The headline money figures are
+  // NOT derived from the page - they are summed by the database over every
+  // matching row, so they stay exact no matter how few invoices are on
+  // screen. (The old code fetched the whole table TWICE: once with every
+  // invoice's payments for the list, and again for the totals.)
+  const [business, fetchedRows, totalCount, unpaidTotals, collectedAgg, outstandingPaid] =
+    await Promise.all([
+      prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } }),
+      prisma.invoice.findMany({
+        where: { businessId },
+        include: {
+          customer: { select: { name: true } },
+          payments: { select: { amountCents: true, status: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: takeWithProbe(limit),
+      }),
+      prisma.invoice.count({ where: { businessId } }),
+      // Outstanding = sum of non-PAID invoice totals minus the money already
+      // taken against them. Matches the previous arithmetic exactly (it had
+      // no per-invoice clamp here).
+      prisma.invoice.aggregate({
+        where: { businessId, voidedAt: null, status: { not: 'PAID' } },
+        _sum: { totalCents: true },
+      }),
+      prisma.payment.aggregate({
+        where: {
+          status: 'COMPLETED',
+          invoice: { businessId, voidedAt: null },
+        },
+        _sum: { amountCents: true },
+      }),
+      prisma.payment.aggregate({
+        where: {
+          status: 'COMPLETED',
+          invoice: { businessId, voidedAt: null, status: { not: 'PAID' } },
+        },
+        _sum: { amountCents: true },
+      }),
+    ]);
+
+  const page = sliceListPage(fetchedRows, limit);
+  const invoiceRows = page.rows;
 
   const invoices: InvoiceListItem[] = invoiceRows.map((inv) => ({
     id: inv.id,
@@ -67,19 +92,10 @@ export default async function InvoicesPage({
     })),
   }));
 
-  const outstanding = aggregates
-    .filter((i) => i.status !== 'PAID')
-    .reduce(
-      (s, i) =>
-        s +
-        (centsToDollars(i.totalCents) -
-          centsToDollars(sumMoneyPayments(i.payments))),
-      0
-    );
-  const collected = aggregates.reduce(
-    (s, i) => s + centsToDollars(sumMoneyPayments(i.payments)),
-    0
-  );
+  const outstanding =
+    centsToDollars(unpaidTotals._sum.totalCents ?? 0) -
+    centsToDollars(outstandingPaid._sum.amountCents ?? 0);
+  const collected = centsToDollars(collectedAgg._sum.amountCents ?? 0);
 
   const exportColumns: ExportColumn[] = [
     { key: 'number', label: t(locale, 'exports.colNumber') },
@@ -91,6 +107,7 @@ export default async function InvoicesPage({
   const exportFileBase = `everyjob-invoices-${new Date().toISOString().slice(0, 10)}`;
 
   return (
+    <>
     <InvoicesClient
       invoices={invoices}
       outstanding={outstanding}
@@ -101,5 +118,14 @@ export default async function InvoicesPage({
       exportFileBase={exportFileBase}
       initialFilter={initialFilter}
     />
+      <ListMore
+        shown={invoices.length}
+        total={totalCount}
+        nextLimit={page.nextLimit}
+        locale={locale}
+        basePath="/invoices"
+        params={{ status }}
+      />
+    </>
   );
 }

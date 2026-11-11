@@ -11,6 +11,8 @@ import {
 } from '@/lib/jobs-list';
 import { toISODateInTimezone } from '@/lib/utils';
 import JobsListClient from './JobsListClient';
+import { parseListLimit, takeWithProbe, sliceListPage } from '@/lib/list-page';
+import { ListMore } from '../_components/ListMore';
 
 /** Monday (week start) of the week containing `todayKey`. */
 function mondayOfWeek(todayKey: string): string {
@@ -19,8 +21,13 @@ function mondayOfWeek(todayKey: string): string {
   return addDaysKey(todayKey, -((dow + 6) % 7));
 }
 
-export default async function JobsPage() {
+export default async function JobsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ limit?: string }>;
+}) {
   const { businessId } = await requireAuth();
+  const limit = parseListLimit((await searchParams)?.limit);
   const locale: Locale = await getLocale();
   const business = await prisma.business.findUnique({
     where: { id: businessId },
@@ -30,7 +37,15 @@ export default async function JobsPage() {
 
   // One source of truth with Dashboard / Schedule / Money: the shared list
   // query, classified by the pure jobs-list helpers.
-  const jobs = await getJobsForList(businessId);
+  // M3: bounded read plus an exact total from the database, so the "N of M"
+  // footer is right even though only a page of rows is on screen.
+  const [fetched, totalJobs] = await Promise.all([
+    getJobsForList(businessId, prisma, { take: takeWithProbe(limit) }),
+    prisma.job.count({ where: { businessId } }),
+  ]);
+  const page = sliceListPage(fetched, limit);
+  // Back into ascending date order for the day grouping in the client.
+  const jobs = [...page.rows].reverse();
   const now = new Date();
   const rows = jobs.map((j) =>
     classifyJobRow(j as JobListInput, now, timezone),
@@ -46,13 +61,22 @@ export default async function JobsPage() {
   const summary = tp(locale, 'jobs.summaryWeekNext', weekNextCount);
 
   return (
-    <JobsListClient
-      rows={rows}
-      locale={locale}
-      timezone={timezone}
-      summary={summary}
-      todayKey={todayKey}
-      tomorrowKey={tomorrowKey}
-    />
+    <>
+      <JobsListClient
+        rows={rows}
+        locale={locale}
+        timezone={timezone}
+        summary={summary}
+        todayKey={todayKey}
+        tomorrowKey={tomorrowKey}
+      />
+      <ListMore
+        shown={rows.length}
+        total={totalJobs}
+        nextLimit={page.nextLimit}
+        locale={locale}
+        basePath="/jobs"
+      />
+    </>
   );
 }

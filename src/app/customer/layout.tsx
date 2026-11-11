@@ -17,7 +17,7 @@ export default async function CustomerLayout({ children }: { children: React.Rea
   // login/signup pages handle their own redirect when already logged in
   return (
     <div className="min-h-dvh bg-surface-2 flex flex-col">
-      <header className="sticky top-0 z-30 bg-surface/95 backdrop-blur border-b border-line/70">
+      <header className="sticky top-0 z-30 bg-surface/95 backdrop-blur border-b border-line">
         <div className="max-w-lg md:max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link href="/customer" className="inline-flex items-center gap-2 group">
             <span className="transition-transform duration-300 group-hover:scale-105 group-active:scale-95">

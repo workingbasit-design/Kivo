@@ -90,12 +90,12 @@ export default function CollectedCard({
         total: formatMoney(period.total, null, locale),
         period: mode === "week" ? labels.thisWeek : labels.thisMonth,
       })}
-      className="overflow-hidden rounded-[24px] bg-asphalt text-hero-ink dark:bg-soot"
+      className="overflow-hidden rounded-[24px] bg-hero text-hero-ink"
     >
       <div className="ej-reflective-stripe h-2.5" aria-hidden />
       <div className="p-5">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-[15px] font-semibold text-ink-2">{labels.collected}</h2>
+          <h2 className="text-[15px] font-semibold text-hero-ink-2">{labels.collected}</h2>
           {/*
             FIX-NOW S2: proper segmented control — no sliding-pill overlay.
             Both labels are rendered as full, always-visible buttons (equal
@@ -106,7 +106,7 @@ export default function CollectedCard({
           <div
             role="radiogroup"
             aria-label={labels.collected}
-            className="flex min-w-0 flex-1 gap-1 rounded-[14px] border border-hero-ink/15 bg-surface/5 p-1 sm:max-w-[280px]"
+            className="flex min-w-0 flex-1 gap-1 rounded-[14px] border border-hero-line bg-hero-2 p-1 sm:max-w-[280px]"
           >
             {(["week", "month"] as Mode[]).map((m) => {
               const selected = mode === m;
@@ -120,8 +120,8 @@ export default function CollectedCard({
                   className={cn(
                     "min-h-[44px] min-w-0 flex-1 whitespace-nowrap rounded-[10px] px-4 text-[13px] font-semibold transition-colors",
                     selected
-                      ? "bg-hivis text-asphalt"
-                      : "text-ink-2 hover:bg-surface/10 hover:text-hero-ink"
+                      ? "bg-hivis text-hivis-ink"
+                      : "text-hero-ink-2 hover:bg-hero-2 hover:text-hero-ink"
                   )}
                 >
                   {m === "week" ? labels.thisWeek : labels.thisMonth}
@@ -165,7 +165,7 @@ export default function CollectedCard({
                   )}
                   style={{ height: `${height}px` }}
                 />
-                <span className="text-[11px] font-semibold text-ink-2">
+                <span className="text-[11px] font-semibold text-hero-ink-2">
                   {mode === "week"
                     ? weekdayLabel(bar.weekday)
                     : period.barMonths[i]
@@ -177,15 +177,15 @@ export default function CollectedCard({
           })}
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-3 border-t border-hero-ink/10 pt-4">
+        <div className="mt-4 grid grid-cols-2 gap-3 border-t border-hero-line pt-4">
           <div>
-            <p className="text-[13px] text-ink-2">{labels.invoiced}</p>
+            <p className="text-[13px] text-hero-ink-2">{labels.invoiced}</p>
             <p className="ej-figure text-[26px] font-bold tabular-nums">
               {formatMoney(period.invoiced, null, locale)}
             </p>
           </div>
           <div>
-            <p className="text-[13px] text-ink-2">{labels.jobsDone}</p>
+            <p className="text-[13px] text-hero-ink-2">{labels.jobsDone}</p>
             <p className="ej-figure text-[26px] font-bold tabular-nums">
               {fill(labels.jobsDoneOfTemplate, { done: period.jobsDone, total: period.jobsTotal })}
             </p>
@@ -198,14 +198,14 @@ export default function CollectedCard({
             type="button"
             aria-expanded={numbersOpen}
             onClick={() => setNumbersOpen((o) => !o)}
-            className="inline-flex min-h-[44px] items-center px-1 text-[14px] font-semibold text-ink-2 underline underline-offset-2"
+            className="inline-flex min-h-[44px] items-center px-1 text-[14px] font-semibold text-hero-ink-2 underline underline-offset-2"
           >
             {numbersOpen ? labels.hideNumbers : labels.showNumbers}
           </button>
           {numbersOpen && (
             <table className="mt-1 w-full text-left text-[13px]">
               <thead>
-                <tr className="border-b border-hero-ink/10 text-ink-2">
+                <tr className="border-b border-hero-line text-hero-ink-2">
                   <th scope="col" className="py-2 pr-2 font-medium">
                     {labels.periodLabel}
                   </th>
@@ -216,7 +216,7 @@ export default function CollectedCard({
               </thead>
               <tbody>
                 {period.bars.map((bar, i) => (
-                  <tr key={bar.key} className="border-b border-hero-ink/5 last:border-0">
+                  <tr key={bar.key} className="border-b border-hero-line last:border-0">
                     <th scope="row" className="py-2 pr-2 font-medium text-hero-ink">
                       {mode === "week"
                         ? weekdayLabel(bar.weekday)
@@ -224,7 +224,7 @@ export default function CollectedCard({
                           ? monthLabel(period.barMonths[i])
                           : ""}
                     </th>
-                    <td className="py-2 text-right tabular-nums text-ink-2">
+                    <td className="py-2 text-right tabular-nums text-hero-ink-2">
                       {formatMoney(bar.amount, null, locale)}
                     </td>
                   </tr>

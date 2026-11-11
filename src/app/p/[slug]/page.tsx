@@ -212,30 +212,30 @@ export default async function PublicProfilePage({
       />
       <header className="bg-asphalt text-hero-ink">
         <div className="max-w-2xl mx-auto px-4 py-8">
-          <Link href="/directory" className="min-h-[44px] inline-flex items-center text-xs text-hero-ink/60 hover:text-hero-ink">
+          <Link href="/directory" className="min-h-[44px] inline-flex items-center text-xs text-hero-ink-2 hover:text-hero-ink">
             {L('t10money.profileBack')}
           </Link>
           <div className="flex items-start justify-between gap-3 mt-3">
             <div className="flex items-center gap-3">
               {b.logoUrl ? (
-                <img src={b.logoUrl} alt="" className="w-14 h-14 rounded-2xl object-contain bg-surface border border-hero-ink/20 shrink-0" />
+                <img src={b.logoUrl} alt="" className="w-14 h-14 rounded-2xl object-contain bg-surface border border-hero-line shrink-0" />
               ) : null}
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{b.name}</h1>
-                {headline && <p className="text-hero-ink/60 mt-1 text-sm">{headline}</p>}
+                {headline && <p className="text-hero-ink-2 mt-1 text-sm">{headline}</p>}
               </div>
             </div>
             {verified && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-lime border border-hero-ink/20 rounded-full px-2.5 py-1 shrink-0">
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-lime border border-hero-line rounded-full px-2.5 py-1 shrink-0">
                 <BadgeCheck size={12} /> {L('t10money.profilePhoneVerified')}
               </span>
             )}
           </div>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-3 text-xs text-hero-ink/60">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-3 text-xs text-hero-ink-2">
             {avg !== null ? (
               <span className="inline-flex items-center gap-1.5 text-hero-ink font-semibold">
                 <Star size={13} className="fill-star text-star" />
-                {avg} <span className="font-normal text-hero-ink/60">({count} {L(count === 1 ? 't10money.profileReviewsOne' : 't10money.profileReviewsMany')})</span>
+                {avg} <span className="font-normal text-hero-ink-2">({count} {L(count === 1 ? 't10money.profileReviewsOne' : 't10money.profileReviewsMany')})</span>
               </span>
             ) : (
               <span>{L('t10money.profileNoReviewsCta')}</span>
@@ -271,7 +271,7 @@ export default async function PublicProfilePage({
             {showContact && b.phone && (
               <a
                 href={`tel:${b.phone.replace(/\s/g, '')}`}
-                className="min-h-[44px] inline-flex items-center gap-1.5 rounded-xl border border-hero-ink/25 hover:border-hero-ink/60 text-hero-ink text-sm font-bold px-5 py-2.5 transition-colors"
+                className="min-h-[44px] inline-flex items-center gap-1.5 rounded-xl border border-hero-line hover:border-hero-line text-hero-ink text-sm font-bold px-5 py-2.5 transition-colors"
               >
                 <Phone size={15} /> {L('t10money.profileCall')}
               </a>

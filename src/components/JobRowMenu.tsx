@@ -95,14 +95,14 @@ export default function JobRowMenu({ jobId, jobTitle, status, locale }: JobRowMe
         aria-haspopup="menu"
         disabled={busy}
         onClick={() => setOpen((v) => !v)}
-        className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-lg text-ej-secondary hover:bg-ej-surface focus-visible:outline-2 focus-visible:outline-ej-focus disabled:opacity-50"
+        className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-lg text-ink-2 hover:bg-surface focus-visible:outline-2 focus-visible:outline-focus disabled:opacity-50"
       >
         <MoreVertical size={18} aria-hidden="true" />
       </button>
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-full mt-1 z-30 min-w-[200px] bg-ej-raised border border-ej-border rounded-xl shadow-lg py-1.5"
+          className="absolute right-0 top-full mt-1 z-30 min-w-[200px] bg-surface border border-line rounded-xl shadow-lg py-1.5"
         >
           {menuItems.map((item, i) =>
             item.href ? (
@@ -111,9 +111,9 @@ export default function JobRowMenu({ jobId, jobTitle, status, locale }: JobRowMe
                 href={item.href}
                 role="menuitem"
                 onClick={() => setOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-ej-ink hover:bg-ej-surface min-h-[44px]"
+                className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-ink hover:bg-surface min-h-[44px]"
               >
-                <span className="text-ej-secondary">{item.icon}</span>
+                <span className="text-ink-2">{item.icon}</span>
                 {item.label}
               </Link>
             ) : (
@@ -122,9 +122,9 @@ export default function JobRowMenu({ jobId, jobTitle, status, locale }: JobRowMe
                 type="button"
                 role="menuitem"
                 onClick={item.onClick}
-                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-ej-ink hover:bg-ej-surface min-h-[44px] text-left"
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-ink hover:bg-surface min-h-[44px] text-left"
               >
-                <span className="text-ej-secondary">{item.icon}</span>
+                <span className="text-ink-2">{item.icon}</span>
                 {item.label}
               </button>
             )

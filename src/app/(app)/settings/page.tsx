@@ -51,6 +51,7 @@ export default async function SettingsPage() {
       timezone: true,
       currency: true,
       taxRegion: true,
+      gstHstRegistered: true,
       directoryOptIn: true,
       directoryHideAddress: true,
       notificationSettings: true,
@@ -154,6 +155,7 @@ export default async function SettingsPage() {
             timezone: business.timezone ?? '',
             currency: 'CAD',
             taxRegion: business.taxRegion ?? '',
+            gstHstRegistered: business.gstHstRegistered,
             directoryOptIn: business.directoryOptIn,
             directoryHideAddress: business.directoryHideAddress,
           }}

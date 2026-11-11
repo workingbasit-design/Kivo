@@ -42,19 +42,24 @@ function contrast(hexA: string, hexB: string): number {
 describe('digest hero dark mode', () => {
   const page = read('src/app/(app)/digest/page.tsx');
 
-  it('greeting h1 flips to the mode-aware ink token in dark mode', () => {
+  it('greeting h1 uses the mode-aware ink token (no frozen ink, no dark: patch)', () => {
     const h1 = page.match(/<h1 className="([^"]*)"/);
     assert.ok(h1, 'h1 not found in digest page');
-    assert.match(h1[1], /dark:text-ink\b/);
+    // 2026-11-11: --color-ej-ink is no longer a frozen hex — it aliases the
+    // kit --ink, which flips. The hero therefore needs text-ink and NO dark:
+    // override. Guard the outcome: a mode-aware ink token must be present and
+    // no frozen single-valued ink token may be used here.
+    assert.match(h1[1], /\btext-ink\b/, 'greeting must use the mode-aware ink token');
+    assert.ok(!/\btext-asphalt\b/.test(h1[1]), 'greeting must not use the non-flipping asphalt token');
   });
 
-  it('hero date and body text flip to the mode-aware muted token', () => {
-    const matches = page.match(/text-ej-muted dark:text-ink-2/g) ?? [];
+  it('hero date and body text use the mode-aware muted token', () => {
+    const matches = page.match(/\btext-ink-2\b/g) ?? [];
     assert.ok(matches.length >= 2, `expected date + body muted text, found ${matches.length}`);
   });
 
-  it('hero border uses the mode-aware line token in dark mode', () => {
-    assert.match(page, /border-ej-smoke dark:border-line/);
+  it('hero border uses the mode-aware line token', () => {
+    assert.match(page, /\bborder-line\b/);
   });
 
   it('sun chip is solid lime with a dark glyph (not translucent lime)', () => {
@@ -72,17 +77,25 @@ describe('digest hero dark mode', () => {
       contrast(darkInk, darkSurface) >= 4.5,
       `dark ink #${darkInk} on dark surface #${darkSurface} is ${contrast(darkInk, darkSurface).toFixed(2)}:1`,
     );
-    // The bug class: the fixed --color-ej-ink token is near-black, so a
-    // hero that uses it without a dark: override is invisible in dark mode.
+    // The bug class this guards against: --color-ej-ink used to be a frozen
+    // near-black hex, so any hero using it without a dark: override went
+    // invisible in dark mode. D8 removed the whole ej-* palette rather than
+    // aliasing it, so the token must not exist at all - and must never be
+    // reintroduced as a hex.
     const tokens = read('src/app/tokens.css');
-    const fixedInk = tokens.match(/--color-ej-ink:\s*#([0-9A-Fa-f]{6})/)?.[1];
-    assert.ok(fixedInk, 'fixed ej-ink token not found');
     assert.ok(
-      contrast(fixedInk, darkSurface) < 4.5,
-      `fixed ink #${fixedInk} on dark surface should fail contrast (got ${contrast(fixedInk, darkSurface).toFixed(2)}:1)`,
+      !/--color-ej-ink:/.test(tokens),
+      'the ej-* palette is retired; call sites use the kit tokens directly',
     );
-    // And the light hero stays fine: fixed ink on white.
-    assert.ok(contrast(fixedInk, 'FFFFFF') >= 4.5);
+    assert.ok(
+      !/--color-ej-[a-z-]+:\s*#[0-9A-Fa-f]{3,8}/.test(tokens),
+      'no ej-* token may be reintroduced as a frozen hex',
+    );
+    // The light side stays fine: the kit's light --ink on white.
+    const lightInk = kit.slice(0, kit.indexOf('@media (prefers-color-scheme: dark)'))
+      .match(/--ink:#([0-9A-Fa-f]{6})/)?.[1];
+    assert.ok(lightInk, 'light ink token not found in kit css');
+    assert.ok(contrast(lightInk, 'FFFFFF') >= 4.5);
   });
 });
 

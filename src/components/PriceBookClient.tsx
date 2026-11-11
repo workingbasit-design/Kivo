@@ -153,7 +153,7 @@ export default function PriceBookClient({
   return (
     <div className="space-y-6">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface p-6 rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)]">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface p-6 rounded-[20px] border border-line shadow-kit-card">
         <div>
           <h1 className="text-3xl font-bold text-ink tracking-tight">
             {tr('t10misc.pricebook.title')}
@@ -195,7 +195,7 @@ export default function PriceBookClient({
           </button>
         </div>
       )}
-      <div className="bg-surface rounded-2xl shadow-sm border border-line/60 p-6">
+      <div className="bg-surface rounded-2xl shadow-sm border border-line p-6">
         {/* Search Bar */}
         <div className="relative max-w-md mb-6">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-2" size={16} />

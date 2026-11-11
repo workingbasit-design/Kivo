@@ -34,7 +34,7 @@ function InvalidState({
 }) {
   const L = (path: string) => t(locale, path);
   return (
-    <div className="bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-8 text-center">
+    <div className="bg-surface rounded-[20px] border border-line shadow-kit-card p-8 text-center">
       <div className="w-12 h-12 rounded-2xl bg-surface-2 text-ink-2 flex items-center justify-center mx-auto mb-4">
         <Link2Off size={24} />
       </div>

@@ -53,7 +53,7 @@ function NotificationRow({
       className={`flex items-start gap-3 rounded-2xl border p-4 transition-colors ${
         unread
           ? 'border-asphalt/20 bg-surface shadow-[0_8px_24px_-16px_rgba(22,22,22,0.4)]'
-          : 'border-smoke bg-surface/60'
+          : 'border-smoke bg-surface'
       }`}
     >
       <span

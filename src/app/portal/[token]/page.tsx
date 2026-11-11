@@ -133,11 +133,11 @@ export default async function CustomerPortalPage({
           <div className="mb-4">
             <Logo tone="onDark" size={28} />
           </div>
-          <p className="text-[11px] font-semibold text-hero-ink/60 mb-1">
+          <p className="text-[11px] font-semibold text-hero-ink-2 mb-1">
             {customer.business.name}
           </p>
           <h1 className="text-2xl font-bold tracking-tight">{L('portal.hiName').replace('{name}', customer.name)}</h1>
-          <p className="text-hero-ink/60 mt-1 text-sm">
+          <p className="text-hero-ink-2 mt-1 text-sm">
             {L('portal.tagline')}
           </p>
         </div>

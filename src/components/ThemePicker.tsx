@@ -70,7 +70,7 @@ export default function ThemePicker({
               'flex min-h-[56px] flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2 text-xs font-semibold transition-colors',
               active
                 ? 'border-asphalt bg-asphalt text-hero-ink dark:border-hivis dark:bg-hivis dark:text-asphalt'
-                : 'border-line bg-surface text-ink-2 hover:bg-surface-2 dark:border-hero-ink/10 dark:bg-coal dark:text-ink-2 dark:hover:bg-surface/5'
+                : 'border-line bg-surface text-ink-2 hover:bg-surface-2'
             )}
           >
             <Icon size={18} aria-hidden />

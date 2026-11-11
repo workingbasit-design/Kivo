@@ -178,7 +178,7 @@ export default function MessagingSettingsClient({
           {t(locale, 'messaging.whatsappTitle')}
         </h2>
         <p className="text-xs text-ink-2 mb-2">{t(locale, 'messaging.whatsappDesc')}</p>
-        <p className="text-xs text-ink-2 mb-4 rounded-lg bg-surface-2 border border-line/60 px-3 py-2">
+        <p className="text-xs text-ink-2 mb-4 rounded-lg bg-surface-2 border border-line px-3 py-2">
           {t(locale, 'messaging.whatsappFreeNote')}
         </p>
         {dash.whatsapp.connected ? (
@@ -326,7 +326,7 @@ export default function MessagingSettingsClient({
             {TOGGLES.map((key) => (
               <label
                 key={key}
-                className="flex items-start gap-3 rounded-xl border border-line/70 bg-surface px-3 py-2.5 cursor-pointer hover:border-line-strong"
+                className="flex items-start gap-3 rounded-xl border border-line bg-surface px-3 py-2.5 cursor-pointer hover:border-line-strong"
               >
                 <input
                   type="checkbox"
@@ -347,7 +347,7 @@ export default function MessagingSettingsClient({
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 pt-2">
-            <div className="rounded-xl border border-line/70 px-3 py-2.5">
+            <div className="rounded-xl border border-line px-3 py-2.5">
               <p className="text-xs font-bold text-ink flex items-center gap-1.5 mb-1">
                 <Clock size={13} className="text-ink-2" /> {t(locale, 'messaging.quietTitle')}
               </p>
@@ -437,7 +437,7 @@ export default function MessagingSettingsClient({
         <p className="text-[11px] text-ink-2 mb-3">{t(locale, 'messaging.runNowNote')}</p>
         {running && <p className="text-xs text-ink-2">…</p>}
         {report && reportKind && (
-          <div className="rounded-xl border border-line/70 bg-surface-2/60 p-3 text-xs">
+          <div className="rounded-xl border border-line bg-surface-2/60 p-3 text-xs">
             <p className="font-bold text-ink mb-2">
               {reportKind === 'preview' ? t(locale, 'messaging.previewButton') : t(locale, 'messaging.runNowButton')}:
               {' '}{report.evaluated} · {report.sent} {t(locale, 'messaging.reportSent')} · {report.failed} {t(locale, 'messaging.reportFailed')} ·{' '}
@@ -506,7 +506,7 @@ export default function MessagingSettingsClient({
               {dash.log.map((row) => (
                 <li
                   key={row.id}
-                  className="rounded-xl border border-line/70 bg-surface p-3.5 text-xs"
+                  className="rounded-xl border border-line bg-surface p-3.5 text-xs"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <p className="font-bold text-ink truncate">

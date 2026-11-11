@@ -28,7 +28,7 @@ export default async function AppForbidden() {
         </p>
         <Link
           href="/dashboard"
-          className="inline-flex items-center justify-center mt-5 bg-asphalt text-hero-ink px-6 py-2.5 rounded-full text-[15px] font-medium hover:bg-graphite transition active:scale-95"
+          className="inline-flex items-center justify-center mt-5 bg-asphalt text-hero-ink px-6 py-2.5 rounded-full text-[15px] font-medium hover:bg-hero-2 transition active:scale-95"
         >
           {fr ? '← Tableau de bord' : '← Dashboard'}
         </Link>

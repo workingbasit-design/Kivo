@@ -120,7 +120,7 @@ export default function LineItemsEditor({
         {rows.map((row, i) => (
           <div
             key={i}
-            className="rounded-2xl border border-line/70 bg-surface-2/50 p-3.5 space-y-3"
+            className="rounded-2xl border border-line bg-surface-2/50 p-3.5 space-y-3"
           >
             <Input
               label={`${L('t10money.lineItemLabel')} ${i + 1}`}

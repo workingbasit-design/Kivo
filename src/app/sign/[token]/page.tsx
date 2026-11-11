@@ -114,7 +114,7 @@ export default async function SignPage({
           <div className="mb-4">
             <Logo tone="onDark" size={28} />
           </div>
-          <p className="mb-1 text-[11px] font-semibold text-hero-ink/60">
+          <p className="mb-1 text-[11px] font-semibold text-hero-ink-2">
             {business.name}
           </p>
           <h1 className="text-2xl font-bold tracking-tight">{L('esign.signTitle')}</h1>

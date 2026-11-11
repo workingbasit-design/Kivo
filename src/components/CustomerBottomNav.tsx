@@ -27,7 +27,7 @@ export default function CustomerBottomNav({ locale }: { locale: Locale }) {
   return (
     <nav
       aria-label="Customer navigation"
-      className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-surface/95 backdrop-blur border-t border-line/70 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]"
+      className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-surface/95 backdrop-blur border-t border-line shadow-[0_-4px_20px_rgba(0,0,0,0.06)]"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <div className="grid grid-cols-5 px-2">

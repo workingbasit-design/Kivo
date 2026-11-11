@@ -37,7 +37,7 @@ export default function ProCard({
 }) {
   const tr = (path: string) => t(locale, path as never);
   return (
-    <article className="group bg-surface rounded-3xl border border-line/80 p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all duration-300 hover:shadow-[0_12px_32px] hover:shadow-hivis/10 hover:border-line hover:-translate-y-0.5">
+    <article className="group bg-surface rounded-3xl border border-line p-4 shadow-kit-card transition-all duration-300 hover:shadow-[0_12px_32px] hover:shadow-hivis/10 hover:border-line hover:-translate-y-0.5">
       <div className="flex items-start gap-3">
         <div className="relative shrink-0">
           <div className="w-14 h-14 rounded-2xl bg-info-bg border border-line flex items-center justify-center overflow-hidden transition-transform duration-300 group-hover:scale-105">

@@ -166,7 +166,7 @@ export function NewProjectForm({
         <legend className="block text-sm font-semibold text-ink mb-1.5">
           {t(locale, 'projects.phasesLabel')}
         </legend>
-        <p className="text-sm text-ej-muted mb-3">{t(locale, 'projects.phasesHint')}</p>
+        <p className="text-sm text-ink-2 mb-3">{t(locale, 'projects.phasesHint')}</p>
 
         <p className="text-sm font-semibold text-ink mb-2">
           {t(locale, 'projects.phasesTemplateLabel')}
@@ -238,7 +238,7 @@ export function NewProjectForm({
       </fieldset>
 
       {error && (
-        <p className="text-sm text-ej-danger font-medium" role="alert">
+        <p className="text-sm text-danger font-medium" role="alert">
           {error}
         </p>
       )}

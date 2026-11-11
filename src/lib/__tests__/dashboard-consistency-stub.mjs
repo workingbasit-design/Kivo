@@ -213,7 +213,16 @@ function cmpVal(rowVal, cond) {
 
 function matches(row, where) {
   if (!where) return true;
-  return Object.entries(where).every(([k, cond]) => cmpVal(row[k], cond));
+  return Object.entries(where).every(([k, cond]) => {
+    // M3: the aggregate queries use boolean combinators (the "late" filter
+    // is OR[ startAt<now, AND[startAt null, date<todayStart] ]), so the
+    // matcher has to understand them rather than look for a column called
+    // "OR".
+    if (k === 'OR') return cond.some((c) => matches(row, c));
+    if (k === 'AND') return cond.every((c) => matches(row, c));
+    if (k === 'NOT') return !matches(row, cond);
+    return cmpVal(row[k], cond);
+  });
 }
 
 function applyArgs(rows, args = {}) {
@@ -230,8 +239,22 @@ function applyArgs(rows, args = {}) {
       return 0;
     });
   }
+  if (args.skip != null) out = out.slice(args.skip);
   if (args.take != null) out = out.slice(0, args.take);
   return out;
+}
+
+/** Sum a numeric/BigInt column over rows, matching Prisma's _sum shape. */
+function sumBy(rows, field) {
+  let total = 0n;
+  let seen = false;
+  for (const r of rows) {
+    const v = r[field];
+    if (v == null) continue;
+    seen = true;
+    total += typeof v === 'bigint' ? v : BigInt(Math.round(Number(v)));
+  }
+  return seen ? total : null;
 }
 
 const model = (rows) => ({
@@ -239,6 +262,38 @@ const model = (rows) => ({
   findFirst: async (args) => applyArgs(typeof rows === 'function' ? rows() : rows, args)[0] ?? null,
   findUnique: async () => null,
   count: async (args) => applyArgs(typeof rows === 'function' ? rows() : rows, args).length,
+  // M3: the dashboard counts/sums are computed by the database now, so the
+  // stub has to answer groupBy/aggregate as well as findMany.
+  groupBy: async (args) => {
+    const out = applyArgs(typeof rows === 'function' ? rows() : rows, { where: args.where });
+    const by = Array.isArray(args.by) ? args.by : [args.by];
+    const buckets = new Map();
+    for (const r of out) {
+      const key = by.map((k) => String(r[k])).join('\u0000');
+      if (!buckets.has(key)) buckets.set(key, []);
+      buckets.get(key).push(r);
+    }
+    return [...buckets.values()].map((group) => {
+      const row = {};
+      for (const k of by) row[k] = group[0][k];
+      if (args._count) row._count = { _all: group.length };
+      if (args._sum) {
+        row._sum = {};
+        for (const f of Object.keys(args._sum)) row._sum[f] = sumBy(group, f);
+      }
+      return row;
+    });
+  },
+  aggregate: async (args) => {
+    const out = applyArgs(typeof rows === 'function' ? rows() : rows, { where: args.where });
+    const res = {};
+    if (args._count) res._count = { _all: out.length };
+    if (args._sum) {
+      res._sum = {};
+      for (const f of Object.keys(args._sum)) res._sum[f] = sumBy(out, f);
+    }
+    return res;
+  },
 });
 
 export const prisma = {

@@ -115,7 +115,7 @@ export default function QuotePortalActions({
                   <label
                     className={`flex items-center justify-between gap-3 border rounded-xl px-3.5 py-3 cursor-pointer transition-colors ${
                       checked
-                        ? 'border-asphalt bg-asphalt/5'
+                        ? 'border-asphalt bg-surface-2'
                         : 'border-smoke hover:border-graphite/50'
                     }`}
                   >
@@ -196,7 +196,7 @@ export default function QuotePortalActions({
           type="button"
           disabled={pending}
           onClick={() => decide('APPROVED')}
-          className="bg-asphalt hover:bg-asphalt/90 text-hero-ink justify-center px-4 py-3 rounded-xl font-semibold text-sm transition-colors inline-flex items-center gap-2 shadow-sm disabled:opacity-60"
+          className="bg-asphalt hover:bg-hero-2 text-hero-ink justify-center px-4 py-3 rounded-xl font-semibold text-sm transition-colors inline-flex items-center gap-2 shadow-sm disabled:opacity-60"
         >
           <Check size={16} /> {pending ? strings.waitLabel : strings.approveLabel}
         </button>

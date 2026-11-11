@@ -158,7 +158,7 @@ export default function CustomerHomeClient({
                 key={key}
                 onClick={() => searchCategory(key)}
                 style={{ animationDelay: `${200 + i * 40}ms` }}
-                className="ej-anim-scale-in group flex flex-col items-center gap-1.5 py-3.5 px-1 rounded-2xl bg-surface border border-line/80 shadow-sm transition-all duration-300 hover:border-line-strong hover:shadow-md hover:-translate-y-1 active:translate-y-0 active:scale-[0.96] min-h-[44px]"
+                className="ej-anim-scale-in group flex flex-col items-center gap-1.5 py-3.5 px-1 rounded-2xl bg-surface border border-line shadow-sm transition-all duration-300 hover:border-line-strong hover:shadow-md hover:-translate-y-1 active:translate-y-0 active:scale-[0.96] min-h-[44px]"
               >
                 <span className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-active:scale-95`}>
                   <Icon className={`w-5 h-5 ${text}`} />
@@ -204,7 +204,7 @@ export default function CustomerHomeClient({
         </div>
 
         {results.length === 0 ? (
-          <div className="ej-anim-fade-up bg-surface rounded-3xl border border-line/80 p-10 text-center shadow-sm">
+          <div className="ej-anim-fade-up bg-surface rounded-3xl border border-line p-10 text-center shadow-sm">
             <div className="ej-anim-scale-in w-14 h-14 rounded-2xl bg-info-bg flex items-center justify-center mx-auto mb-4">
               <SearchX className="w-7 h-7 text-info" />
             </div>

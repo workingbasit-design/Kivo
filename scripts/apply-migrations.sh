@@ -1,8 +1,14 @@
 #!/bin/sh
-# Applies the ordered migrations (m1..m13, m22, m23) to the database pointed at
+# Applies the ordered migrations (m1..m13, m22, m23, m31, m32) to the database pointed at
 # by DATABASE_URL. Used by the Vercel build BEFORE `prisma db push`, because
 # db push cannot add NOT NULL columns / drop columns on tables that already
 # have production data - the migration files do the backfills first.
+#
+# m31/m32 (2026-11-11, Claude design+DB series) are pure backfills with no
+# schema change: m31 seeds BookableService rows so existing /book pages do
+# not go blank when the page starts reading the curated list, and m32 flips
+# gstHstRegistered false -> true for businesses with registration evidence
+# so they keep charging GST/HST. Both are idempotent, so a re-run is a no-op.
 #
 # Skips 20261014154131_init on purpose: it is a CREATE TABLE baseline of the
 # schema production already has (verified: no schema diff between the last
@@ -37,6 +43,8 @@ for m in \
   20261014190000_m13_totp \
   20261016090000_m22_template_overrides \
   20261016100000_m23_stripe_bank_first \
+  20261111120000_m31_backfill_bookable_services \
+  20261111130000_m32_backfill_gst_registered \
 ; do
   echo "==> Applying migration ${m}..."
   prisma db execute --file "prisma/migrations/${m}/migration.sql" --schema prisma/schema.prisma

@@ -14,8 +14,8 @@ import { t, type Locale } from '@/lib/i18n';
  */
 export default function MobileNav({ locale = 'en', unreadCount = 0 }: { locale?: Locale; unreadCount?: number }) {
   return (
-    <header className="md:hidden sticky top-0 z-40 text-ej-ink dark:text-hero-ink">
-      <div className="bg-ej-paper dark:bg-coal border-b border-ej-smoke dark:border-hero-ink/10 pt-[env(safe-area-inset-top)]">
+    <header className="md:hidden sticky top-0 z-40 text-ink">
+      <div className="bg-surface border-b border-line pt-[env(safe-area-inset-top)]">
       <div className="flex items-center justify-between px-4 py-3">
         <Link href="/dashboard" className="flex items-center gap-2 min-h-[44px]">
           <EveryJobLogo size={28} />
@@ -24,7 +24,7 @@ export default function MobileNav({ locale = 'en', unreadCount = 0 }: { locale?:
         <div className="flex items-center gap-2">
           <CopilotTriggerButton
             ariaLabel={t(locale, 'copilot.openLabel')}
-            className="p-2.5 rounded-xl hover:bg-surface-2 dark:hover:bg-surface/10 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ej-ink/70"
+            className="p-2.5 rounded-xl hover:bg-surface-2 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink/70"
           >
             <Sparkles size={20} />
           </CopilotTriggerButton>
@@ -36,13 +36,13 @@ export default function MobileNav({ locale = 'en', unreadCount = 0 }: { locale?:
                 ? `${t(locale, 'notifications.title')} (${unreadCount} ${t(locale, 'notifications.unread')})`
                 : t(locale, 'notifications.title')
             }
-            className="relative p-2.5 rounded-xl hover:bg-surface-2 dark:hover:bg-surface/10 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ej-ink/70"
+            className="relative p-2.5 rounded-xl hover:bg-surface-2 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink/70"
           >
             <Bell size={20} />
             {unreadCount > 0 && (
               <span
                 aria-hidden
-                className="absolute top-1 right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-signal px-1 text-[9px] font-bold text-hero-ink"
+                className="absolute top-1 right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-signal px-1 text-[9px] font-bold text-surface"
               >
                 {unreadCount > 99 ? '99+' : unreadCount}
               </span>

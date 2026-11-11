@@ -323,7 +323,7 @@ export default function VoiceModeClient({
               aria-pressed={listening}
               className={cn(
                 "ej-spring mx-auto flex h-24 w-24 items-center justify-center rounded-full text-hero-ink shadow-lg transition-colors min-h-[96px] min-w-[96px]",
-                listening ? "bg-danger" : "bg-asphalt hover:bg-graphite"
+                listening ? "bg-danger" : "bg-asphalt hover:bg-hero-2"
               )}
             >
               {listening ? (

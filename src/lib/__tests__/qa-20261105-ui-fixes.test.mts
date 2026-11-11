@@ -31,7 +31,11 @@ test('#1 CopilotDemo uses no light-section text tokens in the dark section', () 
   const f = src('components/home/CopilotDemo.tsx');
   assert.ok(!/\btext-ink-2\b/.test(f), 'text-ink-2 is unreadable on asphalt');
   assert.ok(!/\btext-ok\b/.test(f), 'text-ok is unreadable on asphalt');
-  assert.ok(f.includes('text-hero-ink/70'), 'bot bubbles should use hero-ink');
+  // 2026-11-11: the bubbles now use the --hero-ink-2 token rather than an
+  // opacity-diluted text-hero-ink/70. Same intent — the hero-ink family,
+  // never a light-section token — so assert the family, not the dilution.
+  assert.match(f, /\btext-hero-ink(-2)?\b/, 'bot bubbles should use the hero-ink family');
+  assert.ok(!/text-hero-ink\/[0-9]+/.test(f), 'hero ink must come from a token, not an opacity dilution');
   assert.ok(f.includes('text-lime'), 'success title should use lime');
 });
 

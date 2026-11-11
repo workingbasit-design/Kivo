@@ -65,7 +65,7 @@ export default function LogoUploadCard({
           {logoUrl ? (
             <img src={logoUrl} alt="" className="h-full w-full object-contain" />
           ) : (
-            <ImagePlus size={28} className="text-line-strong" />
+            <ImagePlus size={28} className="text-ink-2" />
           )}
         </div>
         <div className="flex flex-wrap items-center gap-2">

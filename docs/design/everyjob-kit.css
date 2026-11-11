@@ -127,7 +127,7 @@ svg.i{ width:24px; height:24px; flex:none; }
 .backbtn{ display:inline-flex; align-items:center; gap:2px; min-height:44px; padding:0 12px 0 0; margin-left:-6px; color:var(--ink); text-decoration:none; font-weight:600; font-size:17px; border-radius:12px; }
 .backbtn svg{ width:22px; height:22px; }
 .iconbtn{ width:44px; height:44px; border:0; border-radius:12px; background:transparent; color:var(--ink); display:grid; place-items:center; position:relative; cursor:pointer; text-decoration:none; }
-.badge{ position:absolute; top:5px; right:4px; min-width:19px; height:19px; padding:0 5px; border-radius:10px; background:var(--danger); color:#fff; font-size:12px; font-weight:700; display:grid; place-items:center; border:2px solid var(--topbar); }
+.badge{ position:absolute; top:5px; right:4px; min-width:19px; height:19px; padding:0 5px; border-radius:10px; background:var(--danger); color:var(--surface); /* D4: #fff was 2.76:1 on the dark-mode --danger salmon; --surface flips to near-black there (6.0:1) */ font-size:12px; font-weight:700; display:grid; place-items:center; border:2px solid var(--topbar); }
 
 /* ===== Page header ===== */
 .pagehead{ display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:12px 16px; padding:10px 0 20px; }

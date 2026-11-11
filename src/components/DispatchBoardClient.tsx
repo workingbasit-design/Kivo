@@ -111,7 +111,7 @@ export default function DispatchBoardClient({
       {COLUMNS.map((col) => {
         const colJobs = jobs.filter((j) => j.status === col.status);
         return (
-          <div key={col.status} className="rounded-2xl border border-line/70 bg-surface-2/50 p-3">
+          <div key={col.status} className="rounded-2xl border border-line bg-surface-2/50 p-3">
             <div className="flex items-center justify-between px-1 pb-3">
               <h2 className="text-sm font-bold text-ink flex items-center gap-2">
                 <StatusBadge tone={columnTone(col.status)}>
@@ -127,7 +127,7 @@ export default function DispatchBoardClient({
                 colJobs.map((job) => (
                   <div
                     key={job.id}
-                    className="bg-surface rounded-xl border border-line/70 shadow-sm p-4 space-y-2.5"
+                    className="bg-surface rounded-xl border border-line shadow-sm p-4 space-y-2.5"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
@@ -181,7 +181,7 @@ export default function DispatchBoardClient({
                           type="button"
                           onClick={() => advance(job, col.next!)}
                           disabled={pending}
-                          className="flex-1 inline-flex items-center justify-center gap-1 rounded-xl bg-asphalt px-3 py-2 text-xs font-semibold text-hero-ink hover:bg-graphite disabled:opacity-50 min-h-[40px] transition-colors"
+                          className="flex-1 inline-flex items-center justify-center gap-1 rounded-xl bg-asphalt px-3 py-2 text-xs font-semibold text-hero-ink hover:bg-hero-2 disabled:opacity-50 min-h-[40px] transition-colors"
                         >
                           {col.next === 'IN PROGRESS' ? T('startJob') : T('completeJob')}
                         </button>

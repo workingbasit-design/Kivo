@@ -11,20 +11,29 @@ import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { centsToDollars } from '@/lib/money';
 import { PageHeader} from '@/components/kit';
+import { parseListLimit, takeWithProbe, sliceListPage } from '@/lib/list-page';
+import { ListMore } from '../_components/ListMore';
 
 /**
  * Customers list - defensive by design (production incident 2026-09-23:
  * /customers 500'd deterministically). Minimal selects, null-safe mapping,
  * and a DB failure renders an inline error card instead of a 500 page.
  */
-export default async function CustomersPage() {
+export default async function CustomersPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ limit?: string }>;
+}) {
   const { businessId, user } = await requireAuth();
   const locale = await getLocale();
   const custL = (k: string) => t(locale, 'customers.' + k);
+  const limit = parseListLimit((await searchParams)?.limit);
 
   let customers: CustomerRow[] = [];
   let currency: string | undefined;
   let loadError: string | null = null;
+  let totalCustomers = 0;
+  let nextLimit: number | null = null;
 
   try {
     const business = await prisma.business.findUnique({
@@ -33,20 +42,46 @@ export default async function CustomersPage() {
     });
     currency = business?.currency ?? undefined;
 
-    const rows = await prisma.customer.findMany({
-      where: { businessId, archivedAt: null },
-      select: {
-        id: true,
-        name: true,
-        phone: true,
-        email: true,
-        address: true,
-        tags: true,
-        _count: { select: { jobs: true } },
-        jobs: { select: { priceCents: true } },
-      },
-      orderBy: { name: 'asc' },
-    });
+    // M3: bounded read. This used to fetch every customer AND every one of
+    // their job rows (`jobs: { select: { priceCents: true } }`) purely to sum
+    // revenue per customer - so the payload grew with jobs x customers. The
+    // page is now capped, and revenue is summed BY THE DATABASE for just the
+    // customers on screen.
+    const [fetched, total] = await Promise.all([
+      prisma.customer.findMany({
+        where: { businessId, archivedAt: null },
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+          email: true,
+          address: true,
+          tags: true,
+          _count: { select: { jobs: true } },
+        },
+        orderBy: { name: 'asc' },
+        take: takeWithProbe(limit),
+      }),
+      prisma.customer.count({ where: { businessId, archivedAt: null } }),
+    ]);
+    const page = sliceListPage(fetched, limit);
+    const rows = page.rows;
+    totalCustomers = total;
+    nextLimit = page.nextLimit;
+
+    const revenueByCustomer = new Map<string, number>();
+    if (rows.length > 0) {
+      const grouped = await prisma.job.groupBy({
+        by: ['customerId'],
+        where: { businessId, customerId: { in: rows.map((r) => r.id) } },
+        _sum: { priceCents: true },
+      });
+      for (const g of grouped) {
+        if (g.customerId) {
+          revenueByCustomer.set(g.customerId, centsToDollars(g._sum.priceCents ?? 0));
+        }
+      }
+    }
 
     // PIPEDA accountability: log PII list access (fire-and-forget).
     logPiiAccess({
@@ -67,19 +102,17 @@ export default async function CustomersPage() {
       address: c.address ?? null,
       tags: (c.tags ?? '').split(',').map((t) => t.trim()).filter(Boolean),
       jobCount: c._count?.jobs ?? 0,
-      revenue: (c.jobs ?? []).reduce(
-        (s, j) => s + centsToDollars(j?.priceCents),
-        0
-      ),
+      revenue: revenueByCustomer.get(c.id ?? '') ?? 0,
     }));
   } catch (e) {
     console.error('[customers] failed to load customer list:', e);
     loadError = custL('loadErrorBody');
   }
 
-  const countLabel = custL(customers.length === 1 ? 'countOne' : 'countOther').replace(
+  // The header count is the real total from the database, not the page size.
+  const countLabel = custL(totalCustomers === 1 ? 'countOne' : 'countOther').replace(
     '{count}',
-    String(customers.length)
+    String(totalCustomers)
   );
 
   return (
@@ -111,11 +144,20 @@ export default async function CustomersPage() {
           </div>
         </Card>
       ) : (
-        <CustomersClient
-          customers={customers}
-          currency={currency}
-          locale={locale}
-        />
+        <>
+          <CustomersClient
+            customers={customers}
+            currency={currency}
+            locale={locale}
+          />
+          <ListMore
+            shown={customers.length}
+            total={totalCustomers}
+            nextLimit={nextLimit}
+            locale={locale}
+            basePath="/customers"
+          />
+        </>
       )}
     </div>
   );

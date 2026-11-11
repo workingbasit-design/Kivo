@@ -21,24 +21,26 @@ function PhIcon({
   size = 24,
   className,
   weight = 'regular',
-  strokeWidth,
+  strokeWidth: _strokeWidth,
   children,
   duotoneFill,
   ...rest
 }: IconProps & { children: React.ReactNode; duotoneFill?: React.ReactNode }) {
-  // Phosphor's native regular stroke is 16 on the 256 grid. A lucide-style
-  // strokeWidth prop (24-grid) is scaled up so explicit widths keep working.
-  const sw = strokeWidth != null ? (Number(strokeWidth) * 256) / 24 : 16;
+  // Phosphor is a FILL-based family: each path already describes the stroked
+  // outline as a filled shape, so it is painted with fill, never stroked.
+  // Stroking it as well (the old `fill="none" stroke="currentColor"
+  // strokeWidth={16}`) painted a 16-unit line along BOTH edges of an
+  // already-16-unit-thick outline — roughly tripling the weight and filling
+  // in interior detail, which is why icons read as heavy blobs instead of the
+  // light, airy line work the kit asks for. `strokeWidth` is still accepted
+  // for lucide call-site compatibility but is deliberately ignored: weight in
+  // Phosphor comes from the path data, not from a stroke.
   return (
     <svg
       width={size}
       height={size}
       viewBox="0 0 256 256"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={sw}
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      fill="currentColor"
       className={className}
       aria-hidden={(rest['aria-hidden'] as boolean | 'true' | 'false' | undefined) ?? true}
       {...rest}

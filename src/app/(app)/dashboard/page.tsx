@@ -129,7 +129,7 @@ export default async function DashboardPage() {
         <Section errorMessage={errorMessage} retryLabel={retryLabel}>
           <CollectedSection businessId={businessId} timezone={timezone} regionCode={regionCode} />
         </Section>
-        <p className="text-center text-sm text-ink-2 dark:text-ink-2">
+        <p className="text-center text-sm text-ink-2">
           {L("dashboard.firstPaymentHere")}
         </p>
       </div>

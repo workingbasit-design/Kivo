@@ -57,7 +57,7 @@ function StageHint({ stage, locale }: { stage: PipelineStage; locale: Locale }) 
     case "approved": {
       const text = tp(locale, "dashboard.stageApprovedHint", stage.count);
       return stage.count > 0 ? (
-        <span className="font-semibold text-safety-ink dark:text-safety">{text}</span>
+        <span className="font-semibold text-safety-ink">{text}</span>
       ) : (
         <>{text}</>
       );
@@ -66,7 +66,7 @@ function StageHint({ stage, locale }: { stage: PipelineStage; locale: Locale }) 
       return <>{tp(locale, "dashboard.stageScheduledHint", stage.count)}</>;
     case "done":
       return (
-        <span className="font-semibold text-safety-ink dark:text-safety">
+        <span className="font-semibold text-safety-ink">
           {tp(locale, "dashboard.stageDoneHint", stage.count)}
         </span>
       );
@@ -89,7 +89,7 @@ function FixButton({ stage, locale }: { stage: PipelineStage; locale: Locale }) 
     return (
       <Link
         href="/schedule"
-        className="mt-2 inline-flex min-h-[44px] items-center rounded-full border border-safety px-4 py-2 text-[13px] font-bold text-safety-ink dark:text-safety"
+        className="mt-2 inline-flex min-h-[44px] items-center rounded-full border border-safety px-4 py-2 text-[13px] font-bold text-safety-ink"
       >
         {tp(locale, "dashboard.scheduleJobs", stage.count)}
       </Link>
@@ -99,7 +99,7 @@ function FixButton({ stage, locale }: { stage: PipelineStage; locale: Locale }) 
     return (
       <Link
         href="/invoices/new"
-        className="mt-2 inline-flex min-h-[44px] items-center rounded-full border border-safety px-4 py-2 text-[13px] font-bold text-safety-ink dark:text-safety"
+        className="mt-2 inline-flex min-h-[44px] items-center rounded-full border border-safety px-4 py-2 text-[13px] font-bold text-safety-ink"
       >
         {tp(locale, "dashboard.invoiceJobs", stage.count)}
       </Link>
@@ -127,19 +127,19 @@ export default async function MoneyPipeline({ businessId }: { businessId: string
   return (
     <section
       aria-label={t(locale, "dashboard.moneyPipeline")}
-      className="rounded-[24px] border border-line/70 bg-surface p-5 dark:border-hero-ink/10 dark:bg-coal"
+      className="rounded-[24px] border border-line bg-surface p-5"
     >
-      <h2 className="text-[17px] font-bold text-asphalt dark:text-hero-ink">
+      <h2 className="text-[17px] font-bold text-ink">
         {t(locale, "dashboard.moneyPipeline")}
       </h2>
-      <p className="mt-1 text-[15px] text-ink-2 dark:text-ink-2">
-        <strong className="ej-figure font-bold text-asphalt tabular-nums dark:text-hero-ink">
+      <p className="mt-1 text-[15px] text-ink-2">
+        <strong className="ej-figure font-bold text-ink tabular-nums">
           {formatWholeCAD(pipeline.totalInProgress, locale)}
         </strong>{" "}
         {t(locale, "dashboard.inProgressNow")}
       </p>
       {hidden.length > 0 && (
-        <p className="mt-2 text-[13px] text-ink-2 dark:text-ink-2">
+        <p className="mt-2 text-[13px] text-ink-2">
           {t(locale, "dashboard.pipelineEmptyStages").replace(
             "{stages}",
             joinNames(
@@ -151,22 +151,22 @@ export default async function MoneyPipeline({ businessId }: { businessId: string
       )}
       {visible.length > 0 && (
         <ol className="relative mt-4 space-y-5">
-          <span aria-hidden className="absolute bottom-2 left-[5px] top-2 w-px bg-line dark:bg-surface/10" />
+          <span aria-hidden className="absolute bottom-2 left-[5px] top-2 w-px bg-line" />
           {visible.map((stage) => (
             <li key={stage.key} className="relative flex items-start gap-3 pl-0">
               <span
                 aria-hidden
                 className={cn(
                   "relative z-10 mt-1.5 h-[11px] w-[11px] shrink-0 rounded-full",
-                  stage.leak ? "bg-safety ring-4 ring-safety/20" : "bg-asphalt dark:bg-line"
+                  stage.leak ? "bg-safety ring-4 ring-safety/20" : "bg-ink"
                 )}
               />
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline justify-between gap-2">
-                  <p className="text-[15px] font-semibold text-asphalt dark:text-hero-ink">
+                  <p className="text-[15px] font-semibold text-ink">
                     {t(locale, STAGE_TITLES[stage.key])}
                   </p>
-                  <p className="ej-figure shrink-0 text-[17px] font-bold tabular-nums text-asphalt dark:text-hero-ink">
+                  <p className="ej-figure shrink-0 text-[17px] font-bold tabular-nums text-ink">
                     {stage.amount == null ? (
                       <span className="text-[15px]">{stage.count}</span>
                     ) : (
@@ -174,7 +174,7 @@ export default async function MoneyPipeline({ businessId }: { businessId: string
                     )}
                   </p>
                 </div>
-                <p className="text-[13px] text-ink-2 dark:text-ink-2">
+                <p className="text-[13px] text-ink-2">
                   <StageHint stage={stage} locale={locale} />
                 </p>
                 <FixButton stage={stage} locale={locale} />

@@ -36,7 +36,7 @@ export default async function NewInvoicePage({
     }),
     prisma.business.findUnique({
       where: { id: businessId },
-      select: { regionCode: true, taxRegion: true },
+      select: { regionCode: true, taxRegion: true, gstHstRegistered: true },
     }),
   ]);
 
@@ -100,6 +100,7 @@ export default async function NewInvoicePage({
         taxConfig={taxConfig}
         locale={locale}
         jobContext={jobContext}
+        gstHstRegistered={business?.gstHstRegistered ?? false}
       />
     </div>
   );

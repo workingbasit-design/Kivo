@@ -86,7 +86,7 @@ export default async function ShareCardSection({
       <p className="text-xs text-ink-2 mt-1">{tr('t10misc.profile.shareDesc')}</p>
 
       {/* Preview — exactly the text a recipient gets. */}
-      <div className="mt-3 rounded-[24px] border border-line/70 bg-surface dark:bg-coal p-4">
+      <div className="mt-3 rounded-[24px] border border-line bg-surface p-4">
         {text.split('\n').map((line, i) => (
           <p key={i} className="text-sm text-ink first:font-bold">
             {line}
@@ -121,7 +121,7 @@ export default async function ShareCardSection({
           </p>
           <button
             type="submit"
-            className="min-h-[44px] inline-flex items-center bg-asphalt hover:bg-graphite text-hero-ink px-4 py-2.5 rounded-xl font-bold text-xs"
+            className="min-h-[44px] inline-flex items-center bg-asphalt hover:bg-hero-2 text-hero-ink px-4 py-2.5 rounded-xl font-bold text-xs"
           >
             {tr('t10misc.profile.shareSave')}
           </button>

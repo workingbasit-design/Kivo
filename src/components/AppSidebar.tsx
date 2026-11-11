@@ -64,7 +64,7 @@ export default function AppSidebar({
         className={`ej-icon-hover flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-ink/70 ${
           active
             ? 'bg-hivis text-asphalt shadow-sm'
-            : 'text-hero-ink/75 hover:bg-surface/10 hover:text-hero-ink'
+            : 'text-hero-ink-2 hover:bg-hero-2 hover:text-hero-ink'
         }`}
       >
         <div className="flex items-center gap-3">
@@ -72,7 +72,7 @@ export default function AppSidebar({
             className={`ej-liquid flex items-center justify-center w-8 h-8 rounded-[10px] backdrop-blur-md saturate-150 ring-1 ring-inset transition-all duration-200 ${
               active
                 ? 'bg-asphalt/10 ring-ink/15 text-ink shadow-[0_2px_8px_rgba(22,22,22,0.18),inset_0_1px_0_rgba(255,255,255,0.35)]'
-                : 'bg-surface/10 ring-hero-ink/15 text-hero-ink/85 group-hover:text-hero-ink group-hover:bg-surface/[0.14] shadow-[0_2px_8px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)]'
+                : 'bg-hero-2 ring-hero-ink/15 text-hero-ink group-hover:text-hero-ink group-hover:bg-surface/[0.14] shadow-[0_2px_8px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)]'
             }`}
           >
             <NavIconView icon={item.icon} size={16} />
@@ -103,7 +103,7 @@ export default function AppSidebar({
           <div className="flex items-center gap-1">
             <CopilotTriggerButton
               ariaLabel={t(locale, 'copilot.openLabel')}
-              className="ej-icon-hover rounded-xl p-2.5 text-hero-ink/85 hover:bg-surface/10 hover:text-hero-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-ink/70"
+              className="ej-icon-hover rounded-xl p-2.5 text-hero-ink hover:bg-hero-2 hover:text-hero-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-ink/70"
             >
               <Sparkles size={19} />
             </CopilotTriggerButton>
@@ -114,13 +114,13 @@ export default function AppSidebar({
                 ? `${t(locale, 'notifications.title')} (${unreadCount} ${t(locale, 'notifications.unread')})`
                 : t(locale, 'notifications.title')
             }
-            className="ej-icon-hover relative rounded-xl p-2.5 text-hero-ink/85 hover:bg-surface/10 hover:text-hero-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-ink/70"
+            className="ej-icon-hover relative rounded-xl p-2.5 text-hero-ink hover:bg-hero-2 hover:text-hero-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-ink/70"
           >
             <Bell size={19} />
             {unreadCount > 0 && (
               <span
                 aria-hidden
-                className="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-signal px-1 text-[10px] font-bold text-hero-ink"
+                className="absolute -top-0.5 -right-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-signal px-1 text-[10px] font-bold text-surface"
               >
                 {unreadCount > 99 ? '99+' : unreadCount}
               </span>
@@ -130,13 +130,13 @@ export default function AppSidebar({
         </div>
 
         <div className="mb-4">
-          <p className="text-[10px] text-hero-ink/75 font-semibold mb-1">
+          <p className="text-[10px] text-hero-ink-2 font-semibold mb-1">
             {t(locale, 'nav.todayView')}
           </p>
           <div className="text-2xl font-bold text-hero-ink tracking-tight">
             {formatMoney(stats.bookedToday, stats.currency, locale === 'fr' ? 'fr' : 'en')}
           </div>
-          <p className="text-xs text-hero-ink/75 mt-1">
+          <p className="text-xs text-hero-ink-2 mt-1">
             {t(locale, 'nav.bookedToday')} ·{' '}
             {tp(locale, 'nav.jobsLeft', stats.jobsLeftToday)}
           </p>
@@ -154,7 +154,7 @@ export default function AppSidebar({
           if (items.length === 0) return null;
           return (
             <div key={section.labelKey}>
-              <p className="px-3 mb-1 text-[10px] font-semibold tracking-[0.12em] text-hero-ink/60">
+              <p className="px-3 mb-1 text-[10px] font-semibold tracking-[0.12em] text-hero-ink-2">
                 {t(locale, section.labelKey)}
               </p>
               <div className="space-y-1">{items.map(navLink)}</div>
@@ -173,10 +173,10 @@ export default function AppSidebar({
                 ? t(locale, 'nav.collapseAdvanced')
                 : t(locale, 'nav.expandAdvanced')
             }
-            className="ej-icon-hover w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-hero-ink/75 hover:bg-surface/10 hover:text-hero-ink transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-ink/70"
+            className="ej-icon-hover w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-hero-ink-2 hover:bg-hero-2 hover:text-hero-ink transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-ink/70"
           >
             <span className="flex items-center gap-3">
-              <SlidersHorizontal size={18} className="text-hero-ink/75" aria-hidden />
+              <SlidersHorizontal size={18} className="text-hero-ink-2" aria-hidden />
               <span className="text-[13px] font-medium">{t(locale, 'nav.advanced')}</span>
             </span>
             <ChevronDown
@@ -195,15 +195,15 @@ export default function AppSidebar({
 
       {/* User profile / Logout. Language lives in Settings (profile
           settings) and in the mobile More menu - not in the sidebar. */}
-      <div className="p-4 border-t border-hero-ink/10 mt-auto space-y-3">
+      <div className="p-4 border-t border-hero-line mt-auto space-y-3">
         <form action={logout}>
-          <button className="ej-icon-hover flex items-center gap-3 px-3 py-2.5 text-hero-ink/75 hover:bg-surface/10 hover:text-hero-ink transition-colors rounded-xl w-full text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-ink/70">
+          <button className="ej-icon-hover flex items-center gap-3 px-3 py-2.5 text-hero-ink-2 hover:bg-hero-2 hover:text-hero-ink transition-colors rounded-xl w-full text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-ink/70">
             <div className="w-9 h-9 rounded-full bg-hivis text-asphalt flex items-center justify-center text-sm font-bold shrink-0">
               {(user.name || user.email).charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold text-hero-ink truncate">{user.name || user.email}</p>
-              <p className="text-[10px] text-hero-ink/75 truncate flex items-center gap-1">
+              <p className="text-[10px] text-hero-ink-2 truncate flex items-center gap-1">
                 <LogOut size={10} /> {t(locale, 'nav.logout')}
               </p>
             </div>

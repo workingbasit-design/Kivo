@@ -125,17 +125,17 @@ export default function MorningGlanceCard({
   return (
     <section
       aria-label={title}
-      className="rounded-[24px] border border-line/70 bg-surface p-5 dark:border-hero-ink/10 dark:bg-coal"
+      className="rounded-[24px] border border-line bg-surface p-5"
     >
       <div className="flex items-start justify-between gap-3">
-        <p className="text-[13px] font-semibold text-ink-2 dark:text-ink-2">
+        <p className="text-[13px] font-semibold text-ink-2">
           {title}
         </p>
         <button
           type="button"
           onClick={dismiss}
           aria-label={dismissLabel}
-          className="shrink-0 text-[13px] font-semibold text-ink-2 underline-offset-2 hover:underline dark:text-ink-2"
+          className="shrink-0 text-[13px] font-semibold text-ink-2 underline-offset-2 hover:underline"
         >
           {dismissLabel}
         </button>
@@ -143,7 +143,7 @@ export default function MorningGlanceCard({
       {lines.map((line) => (
         <p
           key={line}
-          className="mt-1 text-[15px] font-bold leading-snug text-asphalt dark:text-hero-ink"
+          className="mt-1 text-[15px] font-bold leading-snug text-ink"
         >
           {line}
         </p>
@@ -159,7 +159,7 @@ export default function MorningGlanceCard({
           type="button"
           onClick={toggleReminder}
           disabled={blocked}
-          className="rounded-full border border-line px-4 py-2 text-[13px] font-semibold text-ink-2 disabled:opacity-50 dark:border-hero-ink/20 dark:text-ink-2"
+          className="rounded-full border border-line px-4 py-2 text-[13px] font-semibold text-ink-2 disabled:opacity-50"
         >
           {blocked ? remindBlockedLabel : reminder ? remindOffLabel : remindOnLabel}
         </button>

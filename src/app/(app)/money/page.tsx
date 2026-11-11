@@ -172,7 +172,7 @@ export default async function MoneyPage() {
               </p>
             ) : (
               <Card className="!p-0 overflow-hidden">
-                <ul className="divide-y divide-ej-border">
+                <ul className="divide-y divide-line">
                   {unbilledJobs.map((j) => (
                     <ListRow
                       key={j.id}
@@ -215,7 +215,7 @@ export default async function MoneyPage() {
               </p>
             ) : (
               <Card className="!p-0 overflow-hidden">
-                <ul className="divide-y divide-ej-border">
+                <ul className="divide-y divide-line">
                   {unpaidInvoices.map((inv) => {
                     // Voided payments are not money: the row balance
                     // counts only COMPLETED payments, exactly like the
@@ -263,7 +263,7 @@ export default async function MoneyPage() {
               </p>
             ) : (
               <Card className="!p-0 overflow-hidden">
-                <ul className="divide-y divide-ej-border">
+                <ul className="divide-y divide-line">
                   {openQuotes.map((q) => {
                     const daysWaiting = Math.max(
                       0,

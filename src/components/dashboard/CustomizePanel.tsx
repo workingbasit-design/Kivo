@@ -90,7 +90,7 @@ export default function CustomizePanel({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-[20px] border-2 border-dashed border-line-strong text-[15px] font-semibold text-asphalt transition-colors hover:border-line-strong dark:border-hero-ink/20 dark:text-hero-ink"
+        className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-[20px] border-2 border-dashed border-line-strong text-[15px] font-semibold text-ink transition-colors hover:border-line-strong"
       >
         <SlidersHorizontal size={18} aria-hidden /> {labels.customize}
       </button>
@@ -100,14 +100,14 @@ export default function CustomizePanel({
   return (
     <section
       aria-label={labels.title}
-      className="rounded-[24px] border border-line/70 bg-surface p-5 dark:border-hero-ink/10 dark:bg-coal"
+      className="rounded-[24px] border border-line bg-surface p-5"
     >
       <div className="flex items-center justify-between">
-        <h2 className="text-[17px] font-bold text-asphalt dark:text-hero-ink">{labels.title}</h2>
+        <h2 className="text-[17px] font-bold text-ink">{labels.title}</h2>
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="inline-flex min-h-[44px] items-center px-3 text-[14px] font-semibold text-asphalt dark:text-ink-2"
+          className="inline-flex min-h-[44px] items-center px-3 text-[14px] font-semibold text-ink"
         >
           {labels.done}
         </button>
@@ -117,7 +117,7 @@ export default function CustomizePanel({
           {error}
         </p>
       )}
-      <ul className="mt-2 divide-y divide-line dark:divide-white/10">
+      <ul className="mt-2 divide-y divide-line">
         {sections.map((s, i) => (
           <li key={s.key} className="flex items-center gap-2 py-2">
             <button
@@ -128,7 +128,7 @@ export default function CustomizePanel({
               onClick={() => toggle(i)}
               className={cn(
                 "relative h-7 w-12 shrink-0 rounded-full transition-colors",
-                s.visible ? "bg-pine" : "bg-line dark:bg-surface/20"
+                s.visible ? "bg-pine" : "bg-line"
               )}
             >
               <span
@@ -142,7 +142,7 @@ export default function CustomizePanel({
             <span
               className={cn(
                 "flex-1 text-[15px]",
-                s.visible ? "text-asphalt dark:text-hero-ink" : "text-ink-2 dark:text-ink-2"
+                s.visible ? "text-ink" : "text-ink-2"
               )}
             >
               {labels.sectionNames[s.key]}
@@ -152,7 +152,7 @@ export default function CustomizePanel({
               aria-label={`${labels.moveUp}: ${labels.sectionNames[s.key]}`}
               disabled={i === 0 || pending}
               onClick={() => move(i, -1)}
-              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-ink-2 disabled:opacity-30 dark:text-ink-2"
+              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-ink-2 disabled:opacity-30"
             >
               <ArrowUp size={18} aria-hidden />
             </button>
@@ -161,7 +161,7 @@ export default function CustomizePanel({
               aria-label={`${labels.moveDown}: ${labels.sectionNames[s.key]}`}
               disabled={i === sections.length - 1 || pending}
               onClick={() => move(i, 1)}
-              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-ink-2 disabled:opacity-30 dark:text-ink-2"
+              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl text-ink-2 disabled:opacity-30"
             >
               <ArrowDown size={18} aria-hidden />
             </button>
@@ -172,7 +172,7 @@ export default function CustomizePanel({
         <button
           type="button"
           onClick={() => persist(initial)}
-          className="inline-flex min-h-[44px] items-center px-2 text-[13px] font-semibold text-ink-2 underline underline-offset-2 dark:text-ink-2"
+          className="inline-flex min-h-[44px] items-center px-2 text-[13px] font-semibold text-ink-2 underline underline-offset-2"
         >
           {labels.reset}
         </button>

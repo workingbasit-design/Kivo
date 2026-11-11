@@ -24,6 +24,8 @@ export type BusinessFormData = {
   taxRegion: string;
   directoryOptIn: boolean;
   directoryHideAddress: boolean;
+  /** M2: registered with the CRA to collect GST/HST. */
+  gstHstRegistered: boolean;
 };
 
 /** Curated IANA timezones - the business's "today" for schedule + dashboard. */
@@ -176,6 +178,25 @@ export default function SettingsForm({ business }: { business: BusinessFormData 
               placeholder="123456789RT0001"
             />
           </div>
+          {/* M2: the switch that decides whether invoices and quotes carry
+              tax lines at all. A small supplier under the CRA threshold must
+              not charge GST/HST, so this defaults to off. */}
+          <label className="flex items-start gap-3 cursor-pointer mt-4 min-h-[44px]">
+            <input
+              type="checkbox"
+              name="gstHstRegistered"
+              defaultChecked={business.gstHstRegistered}
+              className="mt-1 w-5 h-5 rounded-md border-line-strong accent-ink shrink-0"
+            />
+            <span>
+              <span className="block text-sm font-semibold text-ink">
+                {t('t10misc.booking.gstRegisteredLabel')}
+              </span>
+              <span className="block text-xs text-ink-2 mt-0.5">
+                {t('t10misc.booking.gstRegisteredHint')}
+              </span>
+            </span>
+          </label>
         </div>
 
         <div className="grid sm:grid-cols-2 gap-4">

@@ -445,7 +445,7 @@ export default async function ReportsPage({
                 </div>
                 <Link
                   href="/invoices"
-                  className="bg-asphalt hover:bg-graphite text-hero-ink px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm shrink-0"
+                  className="bg-asphalt hover:bg-hero-2 text-hero-ink px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm shrink-0"
                 >
                   {r.reviewInvoices} <ChevronRight size={13} />
                 </Link>

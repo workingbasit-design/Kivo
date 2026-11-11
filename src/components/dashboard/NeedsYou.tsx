@@ -18,7 +18,7 @@ import type { AttentionItem, AttentionSeverity } from "@/lib/attention";
 
 const SEVERITY_ICON: Record<AttentionSeverity, { icon: React.ReactNode }> = {
   critical: { icon: <AlertTriangle size={18} className="text-signal" /> },
-  attention: { icon: <BellRing size={18} className="text-safety-ink dark:text-safety" /> },
+  attention: { icon: <BellRing size={18} className="text-safety-ink" /> },
   info: { icon: <Info size={18} className="text-steel" /> },
   positive: { icon: <CheckCircle2 size={18} className="text-pine" /> },
 };
@@ -46,10 +46,10 @@ function NeedsRow({
         {SEVERITY_ICON[item.severity].icon}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-[15px] font-semibold leading-snug text-asphalt dark:text-hero-ink">
+        <p className="text-[15px] font-semibold leading-snug text-ink">
           {renderLine("title", item.titleKey, item.titleParams)}
         </p>
-        <p className="mt-0.5 text-[13px] text-ink-2 dark:text-ink-2">
+        <p className="mt-0.5 text-[13px] text-ink-2">
           {renderLine("detail", item.detailKey, item.detailParams)}
           {item.amount != null && item.amount > 0 && (
             <> · <span className="font-semibold tabular-nums">{formatMoney(item.amount, null, moneyLocale)}</span></>
@@ -58,7 +58,7 @@ function NeedsRow({
       </div>
       <Link
         href={item.href}
-        className="shrink-0 rounded-full border border-line-strong px-4 py-2 text-[13px] font-semibold text-asphalt transition-colors hover:bg-surface-2 active:bg-surface-2 dark:border-hero-ink/20 dark:text-hero-ink dark:hover:bg-surface/5 min-h-[40px] inline-flex items-center"
+        className="shrink-0 rounded-full border border-line-strong px-4 py-2 text-[13px] font-semibold text-ink transition-colors hover:bg-surface-2 active:bg-surface-2 min-h-[40px] inline-flex items-center"
       >
         {t(locale, `attention.${item.ctaKey}`)}
       </Link>
@@ -75,10 +75,10 @@ export default async function NeedsYou({ businessId }: { businessId: string }) {
   return (
     <section
       aria-label={t(locale, "dashboard.needsYou")}
-      className="rounded-[24px] border border-line/70 bg-surface dark:border-hero-ink/10 dark:bg-coal"
+      className="rounded-[24px] border border-line bg-surface"
     >
       <div className="flex items-center justify-between px-5 pt-4 pb-1">
-        <h2 className="flex items-center gap-2 text-[17px] font-bold text-asphalt dark:text-hero-ink">
+        <h2 className="flex items-center gap-2 text-[17px] font-bold text-ink">
           {t(locale, "dashboard.needsYou")}
           <span
             aria-label={fillTemplate(t(locale, "dashboard.needsYouCount"), { count: total })}
@@ -89,12 +89,12 @@ export default async function NeedsYou({ businessId }: { businessId: string }) {
         </h2>
         <Link
           href="/attention"
-          className="inline-flex min-h-[44px] items-center px-2 text-[13px] font-semibold text-asphalt underline underline-offset-2 dark:text-ink-2"
+          className="inline-flex min-h-[44px] items-center px-2 text-[13px] font-semibold text-ink underline underline-offset-2"
         >
           {t(locale, "dashboard.seeAll")}
         </Link>
       </div>
-      <div className="divide-y divide-line pb-2 dark:divide-white/10">
+      <div className="divide-y divide-line pb-2">
         {items.map((item) => (
           <NeedsRow key={item.id} item={item} locale={locale} moneyLocale={moneyLocale} />
         ))}

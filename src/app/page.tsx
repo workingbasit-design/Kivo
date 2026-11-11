@@ -149,7 +149,7 @@ export default async function LandingPage() {
               </Link>
               <Link
                 href="/register"
-                className="bg-asphalt text-hero-ink px-5 py-2.5 rounded-full text-[15px] font-medium hover:bg-graphite transition active:scale-95 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.4)]"
+                className="bg-asphalt text-hero-ink px-5 py-2.5 rounded-full text-[15px] font-medium hover:bg-hero-2 transition active:scale-95 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.4)]"
               >
                 {h('nav.signUp')}
               </Link>
@@ -194,7 +194,7 @@ export default async function LandingPage() {
             >
               <Link
                 href="/register"
-                className="group inline-flex items-center justify-center gap-2 bg-asphalt text-hero-ink px-8 py-3.5 rounded-full text-[17px] font-medium hover:bg-graphite transition active:scale-95 shadow-[0_16px_40px_-12px_rgba(22,22,22,0.5)]"
+                className="group inline-flex items-center justify-center gap-2 bg-asphalt text-hero-ink px-8 py-3.5 rounded-full text-[17px] font-medium hover:bg-hero-2 transition active:scale-95 shadow-[0_16px_40px_-12px_rgba(22,22,22,0.5)]"
               >
                 {h('hero.ctaStart')}
                 <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
@@ -312,13 +312,13 @@ export default async function LandingPage() {
                     <br />
                     {h('copilot.title2')}
                   </h2>
-                  <p className="text-lg md:text-[19px] text-hero-ink/55 mb-8 leading-relaxed max-w-lg">
+                  <p className="text-lg md:text-[19px] text-hero-ink-2 mb-8 leading-relaxed max-w-lg">
                     {h('copilot.subtitle')}
                   </p>
                 </Reveal>
                 <ul className="space-y-4 mb-10">
                   {[1, 2, 3].map((n) => (
-                    <Reveal as="li" key={n} delay={n * 90} className="flex items-start gap-3 text-hero-ink/75 text-[15px]">
+                    <Reveal as="li" key={n} delay={n * 90} className="flex items-start gap-3 text-hero-ink-2 text-[15px]">
                       <span className="w-5 h-5 rounded-full bg-lime flex items-center justify-center shrink-0 mt-0.5">
                         <Check size={12} className="text-ink" />
                       </span>
@@ -370,7 +370,7 @@ export default async function LandingPage() {
             <Reveal className="text-center mt-14">
               <Link
                 href="/register"
-                className="group inline-flex items-center justify-center gap-2 bg-asphalt text-hero-ink px-8 py-3.5 rounded-full text-[17px] font-medium hover:bg-graphite transition active:scale-95 shadow-[0_12px_32px_-12px_rgba(0,0,0,0.45)]"
+                className="group inline-flex items-center justify-center gap-2 bg-asphalt text-hero-ink px-8 py-3.5 rounded-full text-[17px] font-medium hover:bg-hero-2 transition active:scale-95 shadow-[0_12px_32px_-12px_rgba(0,0,0,0.45)]"
               >
                 {h('stats.cta')}
                 <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
@@ -397,7 +397,7 @@ export default async function LandingPage() {
                   delay={i * 110}
                   className="relative bg-surface rounded-[24px] border border-smoke p-8 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_24px_56px_-20px_rgba(0,0,0,0.18)] hover:border-line-strong"
                 >
-                  <span className="absolute top-6 right-7 text-[64px] leading-none font-bold text-smoke select-none">
+                  <span className="absolute top-6 right-7 text-[64px] leading-none font-bold text-steel select-none">
                     {s.n}
                   </span>
                   <div className="w-12 h-12 rounded-2xl bg-asphalt text-hero-ink flex items-center justify-center mb-5">
@@ -477,7 +477,7 @@ export default async function LandingPage() {
                   <div className="flex flex-col sm:flex-row gap-3">
                     <Link
                       href="/directory"
-                      className="group inline-flex items-center justify-center gap-2 bg-asphalt text-hero-ink px-6 py-3 rounded-full text-[15px] font-medium hover:bg-graphite transition active:scale-95"
+                      className="group inline-flex items-center justify-center gap-2 bg-asphalt text-hero-ink px-6 py-3 rounded-full text-[15px] font-medium hover:bg-hero-2 transition active:scale-95"
                     >
                       {h('directory.ctaExplore')}
                       <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
@@ -578,7 +578,7 @@ export default async function LandingPage() {
               </h2>
               <Link
                 href="/register"
-                className="group inline-flex items-center justify-center gap-2 bg-asphalt text-hero-ink px-9 py-4 rounded-full text-[17px] font-medium hover:bg-graphite transition active:scale-95 shadow-[0_16px_40px_-12px_rgba(22,22,22,0.5)]"
+                className="group inline-flex items-center justify-center gap-2 bg-asphalt text-hero-ink px-9 py-4 rounded-full text-[17px] font-medium hover:bg-hero-2 transition active:scale-95 shadow-[0_16px_40px_-12px_rgba(22,22,22,0.5)]"
               >
                 {h('finalCta.cta')}
                 <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />

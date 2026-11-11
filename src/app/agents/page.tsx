@@ -50,7 +50,7 @@ export default async function AgentsPage() {
 
   return (
     <div className="min-h-dvh bg-surface">
-      <header className="border-b border-line/70 bg-surface/95 backdrop-blur">
+      <header className="border-b border-line bg-surface/95 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-3xl items-center px-4">
           <Link href="/" aria-label="EveryJob home">
             <Logo size={26} />

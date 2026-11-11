@@ -137,7 +137,7 @@ export default function InvoiceActions({
             }
             paySubmittingRef.current = true;
           }}
-          className="bg-surface-2 border border-line/70 rounded-2xl p-4 space-y-3"
+          className="bg-surface-2 border border-line rounded-2xl p-4 space-y-3"
         >
           <h3 className="text-sm font-bold text-ink flex items-center gap-2">
             <Wallet size={14} /> {t(locale, 't10money.invRecordPayment')}

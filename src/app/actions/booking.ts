@@ -70,7 +70,7 @@ export async function saveBookingSettings(
     return { error: 'This booking link is already taken. Try another one.' };
   }
 
-  await prisma.bookingPage.upsert({
+  const bookingPage = await prisma.bookingPage.upsert({
     where: { businessId },
     create: {
       businessId,
@@ -86,6 +86,35 @@ export async function saveBookingSettings(
       intro: intro || null,
     },
   });
+
+  // M1: sync the curated bookable-service list. The public page reads
+  // BookableService, not every Service row, so this is what decides what a
+  // customer can actually book.
+  const requestedIds = formData.getAll('bookableServiceIds').map(String).filter(Boolean);
+  // Only this business's own services may be listed - never trust ids from
+  // the form. Anything else is dropped silently rather than erroring, so a
+  // stale tab cannot wedge the whole save.
+  const ownServices = await prisma.service.findMany({
+    where: { businessId, id: { in: requestedIds.length ? requestedIds : ['__none__'] } },
+    select: { id: true },
+  });
+  const selectedIds = ownServices.map((x) => x.id);
+
+  await prisma.$transaction([
+    // Unticked services are removed outright rather than left active: the
+    // unique([bookingPageId, serviceId]) key means a re-tick just recreates
+    // the row, and keeping dead rows around would make `active` ambiguous.
+    prisma.bookableService.deleteMany({
+      where: { bookingPageId: bookingPage.id, serviceId: { notIn: selectedIds.length ? selectedIds : ['__none__'] } },
+    }),
+    ...selectedIds.map((serviceId, position) =>
+      prisma.bookableService.upsert({
+        where: { bookingPageId_serviceId: { bookingPageId: bookingPage.id, serviceId } },
+        create: { bookingPageId: bookingPage.id, serviceId, businessId, position, active: true },
+        update: { position, active: true },
+      })
+    ),
+  ]);
 
   revalidatePath('/settings/booking');
   revalidatePath(`/book/${slug}`);

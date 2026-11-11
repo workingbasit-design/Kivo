@@ -47,7 +47,15 @@ const QUOTE_TAX_TYPES = [
  * recomputes all money through calcTax either way - client math is never
  * trusted for the stored total.
  */
-function quoteTaxesFromForm(formData: FormData, taxConfig: TaxConfig): TaxLine[] {
+function quoteTaxesFromForm(
+  formData: FormData,
+  taxConfig: TaxConfig,
+  registered: boolean
+): TaxLine[] {
+  // M2: a business that is not registered to collect GST/HST quotes no tax,
+  // whatever the form posts. Enforced here rather than only in the builder
+  // so a stale tab or hand-crafted POST cannot add tax lines.
+  if (!registered) return [];
   const taxTypeRaw = String(formData.get('taxType') ?? '').toUpperCase();
   const taxRateRaw = formData.get('taxRate');
   const taxRate =
@@ -190,13 +198,13 @@ export async function createQuote(
   // stored total is tax-inclusive on the discounted amount.
   const business = await prisma.business.findUnique({
     where: { id: businessId },
-    select: { regionCode: true, taxRegion: true, timezone: true },
+    select: { regionCode: true, taxRegion: true, timezone: true, gstHstRegistered: true },
   });
   const taxConfig = getTaxConfig(business?.regionCode, business?.taxRegion);
   const totals = computeQuoteTotals(
     items.map((i) => ({ qty: i.qty, unitPrice: i.rate })),
     discount,
-    quoteTaxesFromForm(formData, taxConfig)
+    quoteTaxesFromForm(formData, taxConfig, business?.gstHstRegistered ?? false)
   );
   const total = totals.total;
 
@@ -309,13 +317,13 @@ export async function updateQuoteItems(
 
   const business = await prisma.business.findUnique({
     where: { id: businessId },
-    select: { regionCode: true, taxRegion: true },
+    select: { regionCode: true, taxRegion: true, gstHstRegistered: true },
   });
   const taxConfig = getTaxConfig(business?.regionCode, business?.taxRegion);
   const totals = computeQuoteTotals(
     items.map((i) => ({ qty: i.qty, unitPrice: i.rate })),
     discount,
-    quoteTaxesFromForm(formData, taxConfig)
+    quoteTaxesFromForm(formData, taxConfig, business?.gstHstRegistered ?? false)
   );
 
   await prisma.$transaction([

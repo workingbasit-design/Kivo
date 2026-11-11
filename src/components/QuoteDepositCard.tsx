@@ -92,7 +92,7 @@ export default function QuoteDepositCard({
       <p className="text-xs text-ink-2 mb-4">{t(locale, 'payments.depositOwnerHint')}</p>
 
       {target > 0 && (
-        <div className="mb-4 rounded-xl bg-surface-2 border border-line/70 px-3 py-2.5 text-xs">
+        <div className="mb-4 rounded-xl bg-surface-2 border border-line px-3 py-2.5 text-xs">
           {/* Deposit-collection progress (kit has no generic bar; token
               track + fill keep the old ProgressBar's look). */}
           <div
@@ -170,7 +170,7 @@ export default function QuoteDepositCard({
           <Plus size={13} /> {t(locale, 'payments.recordManualDeposit')}
         </Button>
       ) : (
-        <form action={recAction} className="space-y-3 rounded-xl border border-line/70 bg-surface-2/60 p-3">
+        <form action={recAction} className="space-y-3 rounded-xl border border-line bg-surface-2/60 p-3">
           <input type="hidden" name="quoteId" value={quoteId} />
           <div className="grid grid-cols-2 gap-3">
             <Input

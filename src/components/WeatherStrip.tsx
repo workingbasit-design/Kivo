@@ -58,7 +58,7 @@ export default function WeatherStrip({
             <div
               key={d.dateISO}
               title={w ? `${d.label}: ${weatherLabel(w.code)}, ${w.lowC}-${w.highC}°C, ${w.precipProb}% rain` : d.label}
-              className="flex flex-col items-center rounded-xl bg-surface/70 border border-line px-1 py-2"
+              className="flex flex-col items-center rounded-xl bg-surface border border-line px-1 py-2"
             >
               <span className="text-[10px] font-bold text-ink-2">{d.label}</span>
               <Icon

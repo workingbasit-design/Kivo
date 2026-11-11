@@ -53,7 +53,7 @@ export default function NotificationSettingsForm({
         {/* Master switch for the instant (event-driven) stream: bookings,
             leads and quote decisions as they happen. Off keeps only the
             daily-summary builders (job tomorrow, overdue, ...). */}
-        <label className="flex items-start gap-3 rounded-xl px-3 py-3 min-h-[52px] cursor-pointer hover:bg-surface-2 transition-colors border-b border-line/60 mb-1">
+        <label className="flex items-start gap-3 rounded-xl px-3 py-3 min-h-[52px] cursor-pointer hover:bg-surface-2 transition-colors border-b border-line mb-1">
           <input
             type="checkbox"
             name="notify_instant"

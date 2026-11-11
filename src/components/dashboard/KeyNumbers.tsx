@@ -19,12 +19,12 @@ import { localeMoneyTag } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
 const TILE =
-  "rounded-[24px] border border-line/70 bg-surface p-4 flex flex-col gap-1 min-h-[148px] transition-transform active:scale-[0.98] dark:border-hero-ink/10 dark:bg-coal";
+  "rounded-[24px] border border-line bg-surface p-4 flex flex-col gap-1 min-h-[148px] transition-transform active:scale-[0.98]";
 
 function TileHead({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <p className="flex items-center gap-1.5 text-[13px] font-medium text-ink-2 dark:text-ink-2">
-      <span aria-hidden className="text-ink-2 dark:text-ink-2">{icon}</span>
+    <p className="flex items-center gap-1.5 text-[13px] font-medium text-ink-2">
+      <span aria-hidden className="text-ink-2">{icon}</span>
       {label}
     </p>
   );
@@ -59,7 +59,7 @@ function QuoteBar({ count, expiringSoon }: { count: number; expiringSoon: number
   return (
     <div className="mt-auto flex h-2 w-full gap-1" aria-hidden>
       {Array.from({ length: n }).map((_, i) => (
-        <span key={i} className={cn("h-full flex-1 rounded-full", i < orange ? "bg-safety" : "bg-line dark:bg-surface/15")} />
+        <span key={i} className={cn("h-full flex-1 rounded-full", i < orange ? "bg-safety" : "bg-line")} />
       ))}
     </div>
   );
@@ -90,7 +90,7 @@ export default async function KeyNumbers({
       {/* Owed to you */}
       <Link href="/invoices" className={TILE} aria-label={t(locale, "dashboard.owedToYou")}>
         <TileHead icon={<ReceiptText size={15} />} label={t(locale, "dashboard.owedToYou")} />
-        <p className="ej-figure text-[30px] font-bold leading-none text-asphalt tabular-nums dark:text-hero-ink">
+        <p className="ej-figure text-[30px] font-bold leading-none text-ink tabular-nums">
           {formatMoney(k.owed.total, null, moneyLocale)}
         </p>
         {k.owed.overdue > 0 ? (
@@ -100,7 +100,7 @@ export default async function KeyNumbers({
             })}
           </p>
         ) : (
-          <p className="text-[13px] text-ink-2 dark:text-ink-2">{t(locale, "dashboard.nothingOverdue")}</p>
+          <p className="text-[13px] text-ink-2">{t(locale, "dashboard.nothingOverdue")}</p>
         )}
         <AgingBar aging={k.owed.aging} total={k.owed.total} />
       </Link>
@@ -108,10 +108,10 @@ export default async function KeyNumbers({
       {/* Ready to invoice */}
       <Link href="/invoices/new" className={TILE} aria-label={t(locale, "dashboard.readyToInvoice")}>
         <TileHead icon={<CheckCircle2 size={15} />} label={t(locale, "dashboard.readyToInvoice")} />
-        <p className="ej-figure text-[30px] font-bold leading-none text-asphalt tabular-nums dark:text-hero-ink">
+        <p className="ej-figure text-[30px] font-bold leading-none text-ink tabular-nums">
           {formatMoney(k.readyToInvoice.amount, null, moneyLocale)}
         </p>
-        <p className="text-[13px] text-ink-2 dark:text-ink-2">
+        <p className="text-[13px] text-ink-2">
           {tp(locale, "dashboard.finishedJobs", k.readyToInvoice.jobs)}
         </p>
         {k.readyToInvoice.customerInitials.length > 0 && (
@@ -119,7 +119,7 @@ export default async function KeyNumbers({
             {k.readyToInvoice.customerInitials.map((init) => (
               <span
                 key={init}
-                className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-surface-2 text-[11px] font-bold text-ink-2 dark:bg-surface/10 dark:text-ink-2"
+                className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-surface-2 text-[11px] font-bold text-ink-2"
               >
                 {init}
               </span>
@@ -131,10 +131,10 @@ export default async function KeyNumbers({
       {/* Quotes waiting */}
       <Link href="/quotes" className={TILE} aria-label={t(locale, "dashboard.quotesWaiting")}>
         <TileHead icon={<FileText size={15} />} label={t(locale, "dashboard.quotesWaiting")} />
-        <p className="ej-figure text-[30px] font-bold leading-none text-asphalt tabular-nums dark:text-hero-ink">
+        <p className="ej-figure text-[30px] font-bold leading-none text-ink tabular-nums">
           {formatMoney(k.quotesWaiting.amount, null, moneyLocale)}
         </p>
-        <p className={cn("text-[13px] font-semibold", k.quotesWaiting.expiringSoon > 0 ? "text-safety-ink dark:text-safety" : "text-ink-2 dark:text-ink-2")}>
+        <p className={cn("text-[13px] font-semibold", k.quotesWaiting.expiringSoon > 0 ? "text-safety-ink" : "text-ink-2")}>
           {tp(locale, "dashboard.quotesWaitingDetail", k.quotesWaiting.count, {
             expiring: k.quotesWaiting.expiringSoon,
           })}
@@ -145,10 +145,10 @@ export default async function KeyNumbers({
       {/* New leads */}
       <Link href="/leads" className={TILE} aria-label={t(locale, "dashboard.newLeads")}>
         <TileHead icon={<UserPlus size={15} />} label={t(locale, "dashboard.newLeads")} />
-        <p className="ej-figure text-[30px] font-bold leading-none text-asphalt tabular-nums dark:text-hero-ink">
+        <p className="ej-figure text-[30px] font-bold leading-none text-ink tabular-nums">
           {k.newLeads.waiting}
         </p>
-        <p className="text-[13px] text-ink-2 dark:text-ink-2">
+        <p className="text-[13px] text-ink-2">
           {k.newLeads.avgFirstReplyMin != null
             ? fillTemplate(t(locale, "dashboard.avgFirstReply"), {
                 duration: formatDuration(k.newLeads.avgFirstReplyMin, locale),
@@ -156,7 +156,7 @@ export default async function KeyNumbers({
             : t(locale, "dashboard.noRepliesYet")}
         </p>
         {k.newLeads.oldestWaitingMin != null && (
-          <p className="mt-auto flex items-center gap-1 text-[13px] font-semibold text-safety-ink dark:text-safety">
+          <p className="mt-auto flex items-center gap-1 text-[13px] font-semibold text-safety-ink">
             <Clock size={13} aria-hidden />
             {fillTemplate(t(locale, "dashboard.oldestWaiting"), {
               duration: formatDuration(k.newLeads.oldestWaitingMin, locale),

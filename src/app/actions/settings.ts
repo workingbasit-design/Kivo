@@ -53,6 +53,9 @@ const businessSettingsSchema = z.object({
     .default(''),
   directoryOptIn: z.coerce.boolean().default(true),
   directoryHideAddress: z.coerce.boolean().default(true),
+  // M2: whether the CRA has registered this business to collect GST/HST.
+  // Invoices and quotes add tax lines only when this is true.
+  gstHstRegistered: z.coerce.boolean().default(false),
   // taxRegion stores the Canadian province code ("ON").
   // Stored in the existing taxRegion column - no schema change needed.
   taxRegion: z.string().trim().max(10).optional().default(''),
@@ -121,6 +124,7 @@ export async function updateBusinessSettings(
     phone: formData.get('phone'),
     address: formData.get('address'),
     taxId: formData.get('taxId'),
+    gstHstRegistered: formData.get('gstHstRegistered') === 'on',
     interacEmail: formData.get('interacEmail'),
     timezone: formData.get('timezone'),
     whatsappNumber: formData.get('whatsappNumber'),
@@ -133,7 +137,7 @@ export async function updateBusinessSettings(
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? 'Invalid business details.' };
   }
-  const { name, phone, address, taxId, interacEmail, timezone, whatsappNumber, directoryOptIn, directoryHideAddress } = parsed.data;
+  const { name, phone, address, taxId, interacEmail, timezone, whatsappNumber, directoryOptIn, directoryHideAddress, gstHstRegistered } = parsed.data;
 
   // Per-day working hours from the wh_<day>_open / wh_<day>_close inputs.
   // A day with both fields empty is closed; any half-filled or invalid day
@@ -158,6 +162,7 @@ export async function updateBusinessSettings(
       phone: phone || null,
       address: address || null,
       taxId: taxId ? taxId.toUpperCase() : null,
+      gstHstRegistered,
       interacEmail: interacEmail ? interacEmail.toLowerCase() : null,
       timezone: timezone || 'America/Toronto', // NOT NULL since M9; empty input falls back to the Canada default
       whatsappNumber: whatsappNumber || null,

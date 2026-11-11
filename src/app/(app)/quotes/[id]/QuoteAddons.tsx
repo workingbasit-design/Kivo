@@ -308,7 +308,7 @@ export default function QuoteAddons({
                 <button
                   type="submit"
                   disabled={createPending}
-                  className="min-h-[44px] inline-flex items-center gap-1.5 bg-asphalt hover:bg-asphalt/90 disabled:opacity-60 text-hero-ink px-4 rounded-xl font-semibold text-xs transition-colors"
+                  className="min-h-[44px] inline-flex items-center gap-1.5 bg-asphalt hover:bg-hero-2 disabled:opacity-60 text-hero-ink px-4 rounded-xl font-semibold text-xs transition-colors"
                 >
                   <Plus size={13} /> {createPending ? '…' : s.add}
                 </button>

@@ -134,7 +134,7 @@ export default function NotificationBell({
         className={`absolute flex items-center justify-center rounded-full px-1 font-bold ${
           tone === 'dark'
             ? '-top-0.5 -right-0.5 h-5 min-w-5 text-[10px] bg-lime text-ink'
-            : 'top-1 right-1 h-4 min-w-4 text-[9px] bg-ej-lime text-ej-ink'
+            : 'top-1 right-1 h-4 min-w-4 text-[9px] bg-hivis text-ink'
         }`}
       >
         {unread > 99 ? '99+' : unread}
@@ -156,8 +156,8 @@ export default function NotificationBell({
         aria-haspopup="true"
         className={
           tone === 'dark'
-            ? 'ej-icon-hover relative rounded-xl p-2.5 text-hero-ink/85 hover:bg-surface/10 hover:text-hero-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-ink/70'
-            : 'relative p-2.5 rounded-xl hover:bg-surface-2 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ej-ink/70'
+            ? 'ej-icon-hover relative rounded-xl p-2.5 text-hero-ink hover:bg-hero-2 hover:text-hero-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-ink/70'
+            : 'relative p-2.5 rounded-xl hover:bg-surface-2 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink/70'
         }
       >
         <Bell size={tone === 'dark' ? 19 : 20} />
@@ -169,7 +169,7 @@ export default function NotificationBell({
           ref={panelRef}
           role="dialog"
           aria-label={t(locale, 'notifications.title')}
-          className="absolute right-0 top-full z-[80] mt-2 w-[340px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-smoke bg-surface shadow-[0_24px_64px_-16px_rgba(22,22,22,0.35)]"
+          className="absolute right-0 top-full z-[80] mt-2 w-[340px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-smoke bg-surface shadow-kit-pop"
         >
           <div className="flex items-center justify-between gap-2 border-b border-smoke px-4 py-3">
             <p className="text-sm font-bold text-ink">{t(locale, 'notifications.title')}</p>

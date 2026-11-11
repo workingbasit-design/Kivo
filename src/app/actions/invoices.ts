@@ -76,6 +76,27 @@ async function businessTaxConfig(businessId: string): Promise<TaxConfig> {
 }
 
 /**
+ * M2: is this business registered with the CRA to collect GST/HST?
+ *
+ * Business.gstHstRegistered existed (and its schema comment already promised
+ * "invoices show tax lines only when true") but nothing ever read it, so
+ * every invoice carried tax whether or not the business was allowed to
+ * charge it. A small supplier under the CRA threshold must NOT charge
+ * GST/HST, and billing it is a real liability.
+ *
+ * Enforced on the server, not just hidden in the form: the builder posts
+ * taxType/taxRate, so a stale tab or a hand-crafted POST could otherwise
+ * still add tax to an unregistered business's invoice.
+ */
+async function isGstHstRegistered(businessId: string): Promise<boolean> {
+  const business = await prisma.business.findUnique({
+    where: { id: businessId },
+    select: { gstHstRegistered: true },
+  });
+  return business?.gstHstRegistered ?? false;
+}
+
+/**
  * Business timezone for date storage (mirrors jobs.ts). Invoice dates are
  * date-only values picked in the business's timezone, so they must be
  * stored as that timezone's midnight — the same convention jobs use.
@@ -165,10 +186,13 @@ export async function createInvoice(
 
   // Tax defaults come from the business's region settings; an explicit,
   // valid form value still wins (backwards compatible).
-  const taxConfig = await businessTaxConfig(businessId);
+  const [taxConfig, registered] = await Promise.all([
+    businessTaxConfig(businessId),
+    isGstHstRegistered(businessId),
+  ]);
 
   const taxTypeRaw = String(formData.get('taxType') ?? '').toUpperCase();
-  const taxType = (TAX_TYPES as readonly string[]).includes(taxTypeRaw)
+  const submittedTaxType = (TAX_TYPES as readonly string[]).includes(taxTypeRaw)
     ? taxTypeRaw
     : defaultTaxType(taxConfig);
 
@@ -178,11 +202,18 @@ export async function createInvoice(
       ? null
       : Number(taxRateRaw);
 
+  // M2: an unregistered business charges no tax, whatever the form says.
+  // The rate is forced to 0 AND the type to the single 'GST' route, because
+  // splitStoredTax() derives the provincial share of a composite as
+  // (total - 5): 'GST+QST' at rate 0 would split into GST 5% / QST -5%.
+  const taxType = registered ? submittedTaxType : 'GST';
+  const taxRate = registered ? (taxRateFromForm ?? totalTaxRate(taxConfig)) : 0;
+
   const parsed = invoiceSchema.safeParse({
     customerId: formData.get('customerId'),
     date: formData.get('date'),
     subtotal: 0, // recomputed below
-    taxRate: taxRateFromForm ?? totalTaxRate(taxConfig),
+    taxRate,
     taxType,
     notes: formData.get('notes'),
   });

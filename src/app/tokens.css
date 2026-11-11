@@ -12,64 +12,27 @@
    deliberate accessibility remaps, dark-mode-only surfaces, third-party
    brand colours) keep their values here, in the tokens section. */
 @theme {
-  /* --- Kit-owned colours: var() reference, no hex --- */
-  --color-ink: var(--ink); /* kit --ink (also mapped in the @theme inline block below) */
+  /* --- Kit-owned colours that do NOT flip between light and dark ---
+     These stay in the plain @theme block: the kit defines a single value for
+     them in both modes, and globals.css references some of them directly as
+     var(--color-*), which only works for tokens emitted onto :root.
+     Every kit colour that DOES flip is declared in the @theme inline block
+     at the bottom of this file — see the note there for why. */
   --color-lime: var(--hivis); /* canonical lime is kit --hivis (#C6F432) */
   --color-asphalt: var(--asphalt); /* text, the Collected panel, tab bar */
-  --color-concrete: var(--bg); /* page background (light) */
   --color-hivis: var(--hivis); /* hi-vis lime: main action, active tab, money bars, now marker */
   --color-reflective: var(--reflect); /* the stripe motif */
   --color-safety: var(--warn); /* needs attention */
-  --color-safety-ink: var(--warn-text); /* safety-orange text on light surfaces */
-  --color-signal: var(--danger); /* late, overdue */
-  --color-pine: var(--ok); /* done */
   --color-steel: var(--steel); /* charts on white (3:1+), secondary marks */
-  --color-ej-info: var(--info);
-  --color-ej-paper: var(--surface);
-  --color-ej-bg: var(--surface);
-  --color-ej-raised: var(--surface);
-  --color-ej-lime: var(--hivis);
-  --color-ej-accent: var(--hivis);
-
-  /* --- Legacy tokens with no kit equivalent: values live here --- */
-  --color-paper: #FFFFFF; /* page background */
-  --color-smoke: #e8e8e3; /* borders, dividers */
-  --color-graphite: #55554e; /* secondary text */
-
-  /* DESIGN.md (Part C) - deliberate tokens. Use these on work screens:
-     bg-ej-paper, text-ej-ink, text-ej-muted, border-ej-smoke, bg-ej-lime,
-     text-ej-alert. Lime is a fill behind dark text, never text on white. */
-  --color-ej-ink: #0B0B0C;
-  --color-ej-smoke: #f2f4f3;
-  --color-ej-muted: #5a6366;
-  --color-ej-alert: #c0392b;
-  /* 2026-10-01 accessibility: zinc-400 (#a1a1aa) is ~2.3:1 on paper -
-     unreadable for secondary text. Remapped to the zinc-500 value (#71717a,
-     ~4.8:1, passes WCAG 2.1 AA) so all 300+ muted-text usages stay legible. */
-  --color-zinc-400: #71717a;
 
   /* ---------- Part B design tokens (docs/DESIGN.md) ----------
-     Full semantic palette. All text pairs measured >= 4.5:1 (2026-10-17).
-     Use bg-ej-*, text-ej-*, border-ej-* utilities.
-     Dark mode (Part B) is explicit: components opt in with `dark:` variants
-     (see @custom-variant above). Semantic tokens stay single-valued so
-     unmigrated screens never flip into an unreadable state. */
-  --color-ej-ink: #0B0B0C;
-  --color-ej-muted: #5a6366;
-  --color-ej-secondary: #55554e;
-  --color-ej-disabled: #71717a;
-  --color-ej-surface: #FFFFFF;
-  --color-ej-border: #e8e8e3;
-  --color-ej-primary: #161616;
-  --color-ej-on-primary: #ffffff;
-  --color-ej-focus: #161616;
-  --color-ej-success: #047857;
-  --color-ej-success-bg: #ecfdf5;
-  --color-ej-warning: #b45309;
-  --color-ej-warning-bg: #fffbeb;
-  --color-ej-danger: #c0392b;
-  --color-ej-danger-bg: #fef2f2;
-  --color-ej-info-bg: #eff6ff;
+     The Part B semantic palette used to be single-valued hex, so every
+     bg-ej-*, text-ej-*, border-ej-* usage stayed frozen at its light value
+     when the app flipped to dark — light-grey borders and near-black text on
+     near-black surfaces. The palette now aliases the kit's dual-valued
+     tokens (see the @theme inline block at the bottom), so those utilities
+     flip with everything else and there is one shared token set.
+     Radius, motion and type tokens have no kit equivalent and stay here. */
   /* Radius by hierarchy */
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -86,13 +49,11 @@
      for the WhatsApp brand surfaces. */
   --color-wa: #25d366;
   --color-wa-dark: #1fb857;
-  --color-wa-deep: #128c4a;
+  --color-wa-deep: #0E7A3E; /* D6: was #128c4a, too light for white text on the WhatsApp CTA */
 
-  /* Dark-mode surfaces, sampled from the Part B mockup. Single-valued:
-     mapping these to a flipping kit var would invert light-mode usage. */
-  --color-night: #0B0B0C; /* page background (dark) */
-  --color-coal: #161618; /* cards, tab bar (dark) */
-  --color-soot: #1E1E21; /* Collected panel (dark) */
+  /* Dark-mode surface aliases (night/coal/soot) are declared in the
+     @theme inline block: their values are exactly the kit's dark --bg,
+     --surface and --surface-2, so they alias those rather than repeat them. */
   /* Type: Barlow for interface text, Barlow Condensed for numbers and big
      figures (self-hosted woff2, OFL - see docs/LICENSES.md). */
   --font-sans: var(--font-barlow), -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -160,6 +121,43 @@
   --color-toast-ink: var(--toast-ink);
   --color-focus: var(--focus);
   --color-topbar: var(--topbar);
+
+  /* ---------- Kit aliases for the legacy / Part B / Part C palettes --------
+     Why these live in @theme INLINE and not in the plain @theme block above:
+     a plain @theme token is emitted once onto :root, so `bg-paper` compiles
+     to `var(--color-paper)` and resolves against the ROOT value. Anything
+     that re-declares a kit token further down the tree — notably
+     `.ej-light-lock`, which pins the light palette on the public landing
+     page — would then be ignored, which is the exact failure the light-lock
+     was added to prevent. An @theme inline token is substituted into the
+     utility itself, so `bg-paper` compiles to `var(--bg)` and resolves
+     per element: it follows dark mode AND the light lock.
+     One shared token set: no hex below, only kit variables. */
+  --color-paper: var(--bg); /* page background */
+  --color-smoke: var(--line); /* borders, dividers */
+  --color-graphite: var(--ink-2); /* secondary text */
+  --color-concrete: var(--bg);
+  --color-ink: var(--ink);
+  /* zinc-400 was remapped for contrast in 2026-10; it is just muted text. */
+  --color-zinc-400: var(--ink-2);
+  /* D8: the whole ej-* palette (Part B + Part C) is GONE, not aliased.
+     Aliasing it to the kit vars fixed the dark-mode defect, but it left a
+     second vocabulary for the same colours sitting there for the next person
+     to reach for. Every call site now spells the kit token directly
+     (text-ej-muted -> text-ink-2, bg-ej-paper -> bg-surface, and the rest),
+     so these definitions have no users and are deleted. The parallel system
+     cannot come back by accident, because the utility names no longer
+     resolve to anything. */
+  /* Status colours used by the work screens. */
+  --color-safety-ink: var(--warn-text);
+  --color-signal: var(--danger);
+  --color-pine: var(--ok);
+  /* Dark-surface aliases: identical to the kit's dark --bg / --surface /
+     --surface-2, so they alias those instead of freezing a second copy. */
+  --color-night: var(--bg);
+  --color-coal: var(--surface);
+  --color-soot: var(--surface-2);
+
   /* Elevation tokens (the tokens file is the one place raw colours live). */
   --shadow-kit-card: 0 1px 2px rgba(0, 0, 0, 0.06);
   --shadow-kit-pop: 0 8px 24px rgba(0, 0, 0, 0.14);

@@ -36,7 +36,7 @@ export default function TokenReviewForm({
 
   if (state?.ok) {
     return (
-      <div className="bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-8 text-center">
+      <div className="bg-surface rounded-[20px] border border-line shadow-kit-card p-8 text-center">
         <div className="w-12 h-12 rounded-2xl bg-ok-bg text-ok flex items-center justify-center mx-auto mb-4">
           <CheckCircle2 size={24} />
         </div>
@@ -53,7 +53,7 @@ export default function TokenReviewForm({
   return (
     <form
       action={formAction}
-      className="bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-6 md:p-8 space-y-5"
+      className="bg-surface rounded-[20px] border border-line shadow-kit-card p-6 md:p-8 space-y-5"
     >
       <input type="hidden" name="token" value={token} />
       <input type="hidden" name="rating" value={rating} />

@@ -15,18 +15,36 @@ export default async function BookingSettingsPage() {
   const locale = await getLocale();
   const tr = (path: string) => t(locale, path);
 
-  const [page, business] = await Promise.all([
+  const [page, business, allServices] = await Promise.all([
     prisma.bookingPage.findUnique({
       where: { businessId },
-      select: { enabled: true, slug: true, headline: true, intro: true },
+      select: { id: true, enabled: true, slug: true, headline: true, intro: true },
     }),
     prisma.business.findUnique({
       where: { id: businessId },
       select: { name: true, workingHours: true },
     }),
+    // M1: the price book, so the owner can pick which services are bookable.
+    prisma.service.findMany({
+      where: { businessId },
+      select: { id: true, name: true },
+      orderBy: { name: 'asc' },
+    }),
   ]);
 
   if (!business) throw new Error('Business not found.');
+
+  // Which of them currently have a BookableService row.
+  const bookableIds = page
+    ? new Set(
+        (
+          await prisma.bookableService.findMany({
+            where: { bookingPageId: page.id, active: true },
+            select: { serviceId: true },
+          })
+        ).map((b) => b.serviceId)
+      )
+    : new Set<string>();
 
   const hoursSummary = formatWorkingHoursSummary(business.workingHours);
 
@@ -48,6 +66,11 @@ export default async function BookingSettingsPage() {
             : null
         }
         suggestedSlug={slugify(business.name)}
+        services={allServices.map((svc) => ({
+          id: svc.id,
+          name: svc.name,
+          selected: bookableIds.has(svc.id),
+        }))}
       />
       <Card className="p-5 md:p-6 max-w-2xl">
         <h2 className="text-sm font-bold text-ink mb-1">{tr('t10misc.booking.hoursTitle')}</h2>

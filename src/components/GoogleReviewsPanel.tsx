@@ -204,7 +204,7 @@ export default function GoogleReviewsPanel({
           <p className="text-xs text-ink-2">{G(locale, 'connectDesc')}</p>
           <a
             href="/api/google/connect"
-            className="min-h-[44px] inline-flex items-center gap-2 bg-asphalt hover:bg-graphite text-hero-ink px-4 rounded-xl font-bold text-xs"
+            className="min-h-[44px] inline-flex items-center gap-2 bg-asphalt hover:bg-hero-2 text-hero-ink px-4 rounded-xl font-bold text-xs"
           >
             <ExternalLink size={13} /> {G(locale, 'connectButton')}
           </a>
@@ -217,7 +217,7 @@ export default function GoogleReviewsPanel({
           {locations && locations.length > 0 && (
             <div className="space-y-2">
               {locations.map((l) => (
-                <form key={l.locationId} action={doSelectLocation} className="flex items-center justify-between gap-2 bg-surface border border-line/60 rounded-xl px-3 py-2.5">
+                <form key={l.locationId} action={doSelectLocation} className="flex items-center justify-between gap-2 bg-surface border border-line rounded-xl px-3 py-2.5">
                   <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink min-w-0">
                     <MapPin size={13} className="text-ink-2 shrink-0" />
                     <span className="truncate">{l.title}</span>
@@ -259,7 +259,7 @@ export default function GoogleReviewsPanel({
             <button
               onClick={doSync}
               disabled={syncing}
-              className="min-h-[44px] inline-flex items-center gap-1.5 bg-asphalt hover:bg-graphite text-hero-ink px-4 rounded-xl font-bold text-xs disabled:opacity-60"
+              className="min-h-[44px] inline-flex items-center gap-1.5 bg-asphalt hover:bg-hero-2 text-hero-ink px-4 rounded-xl font-bold text-xs disabled:opacity-60"
             >
               <RefreshCw size={13} className={syncing ? 'animate-spin' : ''} />
               {syncing ? G(locale, 'syncing') : G(locale, 'syncNow')}

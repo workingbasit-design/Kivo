@@ -22,8 +22,14 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 // hard-coded colours. rgba()/hsla() are allowed — the kit CSS itself uses
 // rgba() for shadows, shines, and glass effects (documented convention);
 // flagging them would be noise, not signal.
+// 2026-11-11: the utility list used to stop at (bg|text|border|ring|fill|
+// stroke|from|to|via), so palette colours reached through any OTHER utility
+// slipped past the gate — `dark:divide-white/10` and `accent-black` were both
+// live in src while this check reported a clean 0. Keep this list in sync with
+// the Tailwind colour utilities the app actually uses.
 const PATTERN =
-  "#[0-9a-fA-F]{3,8}\\b|\\b(bg|text|border|ring|fill|stroke|from|to|via)-" +
+  "#[0-9a-fA-F]{3,8}\\b|\\b(bg|text|border|ring|fill|stroke|from|to|via|divide|" +
+  "placeholder|accent|caret|outline|decoration|shadow)-" +
   "(white|black|(gray|slate|zinc|neutral|stone|red|orange|amber|yellow|lime|green|" +
   "emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-[0-9]{2,3})\\b";
 

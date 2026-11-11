@@ -106,7 +106,7 @@ function ActionCard({
       onClick={onClick}
       className="min-h-[64px] text-left bg-surface border border-line rounded-2xl px-4 py-3 shadow-sm hover:border-asphalt/40 hover:shadow active:scale-[0.98] transition-all flex items-center gap-3"
     >
-      <span className="w-10 h-10 rounded-xl bg-asphalt/10 flex items-center justify-center shrink-0 text-ink">
+      <span className="w-10 h-10 rounded-xl bg-surface-2 flex items-center justify-center shrink-0 text-ink">
         {icon}
       </span>
       <span className="min-w-0">
@@ -158,7 +158,7 @@ function PrimaryButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="w-full min-h-[52px] bg-asphalt hover:bg-graphite disabled:opacity-40 disabled:cursor-not-allowed text-hero-ink text-sm font-bold py-3 rounded-2xl flex items-center justify-center gap-2 transition-colors"
+      className="w-full min-h-[52px] bg-asphalt hover:bg-hero-2 disabled:opacity-40 disabled:cursor-not-allowed text-hero-ink text-sm font-bold py-3 rounded-2xl flex items-center justify-center gap-2 transition-colors"
     >
       {children}
     </button>
@@ -285,8 +285,8 @@ function PreviewCard({
 
   return (
     <div className="mt-2 bg-surface border border-line rounded-2xl overflow-hidden shadow-sm">
-      <div className="bg-asphalt/5 border-b border-smoke px-4 py-3 flex items-center gap-2 text-ink font-semibold text-sm">
-        <div className="w-6 h-6 rounded-full bg-asphalt/10 flex items-center justify-center">
+      <div className="bg-surface-2 border-b border-smoke px-4 py-3 flex items-center gap-2 text-ink font-semibold text-sm">
+        <div className="w-6 h-6 rounded-full bg-surface-2 flex items-center justify-center">
           <Briefcase size={14} />
         </div>
         {t(locale, 't10misc.copilot.previewTitle')}
@@ -348,7 +348,7 @@ function PreviewCard({
         <button
           onClick={() => onConfirm({ ...draft, customerName: draft.customerName.trim(), phone: phoneDigits || null })}
           disabled={!canConfirm}
-          className="flex-1 min-h-[44px] bg-asphalt hover:bg-graphite disabled:opacity-50 text-hero-ink text-xs font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-colors"
+          className="flex-1 min-h-[44px] bg-asphalt hover:bg-hero-2 disabled:opacity-50 text-hero-ink text-xs font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-colors"
         >
           <Check size={14} />
           {confirming ? t(locale, 't10misc.copilot.booking') : t(locale, 't10misc.copilot.confirmBook')}
@@ -394,8 +394,8 @@ function CustomerPreviewCard({
 
   return (
     <div className="mt-2 bg-surface border border-line rounded-2xl overflow-hidden shadow-sm">
-      <div className="bg-asphalt/5 border-b border-smoke px-4 py-3 flex items-center gap-2 text-ink font-semibold text-sm">
-        <div className="w-6 h-6 rounded-full bg-asphalt/10 flex items-center justify-center">
+      <div className="bg-surface-2 border-b border-smoke px-4 py-3 flex items-center gap-2 text-ink font-semibold text-sm">
+        <div className="w-6 h-6 rounded-full bg-surface-2 flex items-center justify-center">
           <User size={14} />
         </div>
         {t(locale, 't10misc.copilot.customerPreviewTitle')}
@@ -433,7 +433,7 @@ function CustomerPreviewCard({
         <button
           onClick={() => onConfirm({ ...draft, name: draft.name.trim(), phone: phoneDigits || null })}
           disabled={!canConfirm}
-          className="flex-1 min-h-[44px] bg-asphalt hover:bg-graphite disabled:opacity-50 text-hero-ink text-xs font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-colors"
+          className="flex-1 min-h-[44px] bg-asphalt hover:bg-hero-2 disabled:opacity-50 text-hero-ink text-xs font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-colors"
         >
           <Check size={14} />
           {confirming ? t(locale, 't10misc.copilot.adding') : t(locale, 't10misc.copilot.confirmAdd')}
@@ -488,8 +488,8 @@ function QuotePreviewCard({
 
   return (
     <div className="mt-2 bg-surface border border-line rounded-2xl overflow-hidden shadow-sm">
-      <div className="bg-asphalt/5 border-b border-smoke px-4 py-3 flex items-center gap-2 text-ink font-semibold text-sm">
-        <div className="w-6 h-6 rounded-full bg-asphalt/10 flex items-center justify-center">
+      <div className="bg-surface-2 border-b border-smoke px-4 py-3 flex items-center gap-2 text-ink font-semibold text-sm">
+        <div className="w-6 h-6 rounded-full bg-surface-2 flex items-center justify-center">
           <FileText size={14} />
         </div>
         {t(locale, 't10misc.copilot.quotePreviewTitle')}
@@ -526,7 +526,7 @@ function QuotePreviewCard({
         <button
           onClick={() => onConfirm({ ...draft, customerName: draft.customerName.trim() })}
           disabled={!canConfirm}
-          className="flex-1 min-h-[44px] bg-asphalt hover:bg-graphite disabled:opacity-50 text-hero-ink text-xs font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-colors"
+          className="flex-1 min-h-[44px] bg-asphalt hover:bg-hero-2 disabled:opacity-50 text-hero-ink text-xs font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-colors"
         >
           <Check size={14} />
           {confirming ? t(locale, 't10misc.copilot.creatingQuote') : t(locale, 't10misc.copilot.confirmQuote')}
@@ -955,7 +955,7 @@ export default function GlobalCopilotWidget({
                     onClick={() => advance({ customerName: c.name, customerPhone: c.phone, customerAddress: c.address })}
                     className="w-full min-h-[56px] text-left bg-surface border border-line rounded-2xl px-4 py-3 hover:border-asphalt/40 active:scale-[0.99] transition-all flex items-center gap-3"
                   >
-                    <span className="w-9 h-9 rounded-full bg-asphalt/10 flex items-center justify-center shrink-0">
+                    <span className="w-9 h-9 rounded-full bg-surface-2 flex items-center justify-center shrink-0">
                       <User size={16} className="text-ink" />
                     </span>
                     <span className="min-w-0">
@@ -1412,7 +1412,7 @@ export default function GlobalCopilotWidget({
           <button
             type="submit"
             disabled={!homeAsk.trim()}
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 w-11 h-11 rounded-xl bg-asphalt hover:bg-graphite disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-hero-ink transition-colors"
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 w-11 h-11 rounded-xl bg-asphalt hover:bg-hero-2 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-hero-ink transition-colors"
             aria-label={lang === 'fr' ? 'Envoyer la question' : 'Send question'}
           >
             <Send className="w-4 h-4 ml-0.5" />
@@ -1424,7 +1424,7 @@ export default function GlobalCopilotWidget({
               key={q}
               type="button"
               onClick={() => askQuestion(q)}
-              className="shrink-0 min-h-[44px] text-[11px] font-medium text-ink bg-asphalt/5 border border-smoke rounded-full px-3 py-1.5 hover:bg-asphalt/10 active:scale-[0.98] transition-all"
+              className="shrink-0 min-h-[44px] text-[11px] font-medium text-ink bg-surface-2 border border-smoke rounded-full px-3 py-1.5 hover:bg-surface-2 active:scale-[0.98] transition-all"
             >
               {q}
             </button>
@@ -1447,7 +1447,7 @@ export default function GlobalCopilotWidget({
             <div className={`max-w-[88%] ${msg.role === 'user' ? '' : 'w-full'}`}>
               <div className="flex gap-2">
                 {msg.role === 'assistant' && (
-                  <div className="w-6 h-6 shrink-0 rounded-full bg-asphalt/10 flex items-center justify-center border border-smoke mt-1">
+                  <div className="w-6 h-6 shrink-0 rounded-full bg-surface-2 flex items-center justify-center border border-smoke mt-1">
                     <Bot className="w-3 h-3 text-ink" />
                   </div>
                 )}
@@ -1501,7 +1501,7 @@ export default function GlobalCopilotWidget({
         {isTyping && (
           <div className="flex justify-start" role="status" aria-label={t(lang, 't10misc.copilot.onlineBadge')}>
             <div className="flex gap-2">
-              <div className="w-6 h-6 rounded-full bg-asphalt/10 flex items-center justify-center border border-smoke mt-1">
+              <div className="w-6 h-6 rounded-full bg-surface-2 flex items-center justify-center border border-smoke mt-1">
                 <Bot className="w-3 h-3 text-ink" />
               </div>
               <div className="px-4 py-3 rounded-2xl rounded-tl-sm bg-surface border border-line shadow-sm flex items-center h-[42px]">
@@ -1529,7 +1529,7 @@ export default function GlobalCopilotWidget({
             // eslint-disable-next-line react-hooks/refs -- safe: sendMessage reads refs only inside the tap handler (never during render); the sync ref guard prevents double-sends on double-tap.
             onClick={() => sendMessage(q)}
             disabled={isTyping}
-            className="shrink-0 min-h-[44px] text-[11px] font-medium text-ink bg-asphalt/5 border border-smoke rounded-full px-3 py-1.5 hover:bg-asphalt/10 disabled:opacity-50 transition-colors"
+            className="shrink-0 min-h-[44px] text-[11px] font-medium text-ink bg-surface-2 border border-smoke rounded-full px-3 py-1.5 hover:bg-surface-2 disabled:opacity-50 transition-colors"
           >
             {q}
           </button>
@@ -1557,7 +1557,7 @@ export default function GlobalCopilotWidget({
           <button
             type="submit"
             disabled={!input.trim() || isTyping}
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 w-11 h-11 rounded-xl bg-asphalt hover:bg-graphite disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-hero-ink transition-colors"
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 w-11 h-11 rounded-xl bg-asphalt hover:bg-hero-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-hero-ink transition-colors"
             aria-label={t(lang, 'copilot.sendLabel')}
           >
             <Send className="w-4 h-4 ml-0.5" />

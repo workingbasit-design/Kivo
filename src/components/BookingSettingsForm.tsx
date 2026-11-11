@@ -12,12 +12,22 @@ const initialState = { error: undefined as string | undefined, ok: undefined as 
 
 export { slugify };
 
+export interface BookableServiceOption {
+  id: string;
+  name: string;
+  /** Ticked = customers can book it (a BookableService row exists). */
+  selected: boolean;
+}
+
 export default function BookingSettingsForm({
   initial,
   suggestedSlug,
+  services = [],
 }: {
   initial: { enabled: boolean; slug: string; headline: string; intro: string } | null;
   suggestedSlug: string;
+  /** M1: the business's services, with the currently bookable ones ticked. */
+  services?: BookableServiceOption[];
 }) {
   const { t } = useResolvedT();
   const [state, formAction, pending] = useActionState(saveBookingSettings, initialState);
@@ -109,6 +119,38 @@ export default function BookingSettingsForm({
             placeholder={t('t10misc.booking.introPlaceholder')}
           />
 
+          {/* M1: the public page lists only the services ticked here. */}
+          <fieldset className="border-t border-line pt-5">
+            <legend className="sr-only">{t('t10misc.booking.servicesTitle')}</legend>
+            <span className="block text-sm font-semibold text-ink">
+              {t('t10misc.booking.servicesTitle')}
+            </span>
+            <span className="block text-xs text-ink-2 mt-0.5">
+              {t('t10misc.booking.servicesDesc')}
+            </span>
+            {services.length === 0 ? (
+              <p className="text-xs text-ink-2 mt-3">{t('t10misc.booking.servicesEmpty')}</p>
+            ) : (
+              <div className="mt-3 space-y-1">
+                {services.map((svc) => (
+                  <label
+                    key={svc.id}
+                    className="flex items-start gap-3 cursor-pointer min-h-[44px] py-2"
+                  >
+                    <input
+                      type="checkbox"
+                      name="bookableServiceIds"
+                      value={svc.id}
+                      defaultChecked={svc.selected}
+                      className="mt-0.5 w-5 h-5 rounded-md border-line-strong accent-ink shrink-0"
+                    />
+                    <span className="text-sm text-ink">{svc.name}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </fieldset>
+
           {state.error && (
             <div role="alert" className="flex items-start gap-2 bg-danger-bg border border-danger/30 text-danger text-xs font-medium rounded-xl px-3 py-2.5">
               <AlertCircle size={14} className="mt-0.5 shrink-0" />
@@ -156,7 +198,7 @@ export default function BookingSettingsForm({
                   href={publicUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="min-h-[44px] shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2.5 rounded-xl bg-asphalt text-hero-ink hover:bg-graphite"
+                  className="min-h-[44px] shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-2.5 rounded-xl bg-asphalt text-hero-ink hover:bg-hero-2"
                 >
                   <ExternalLink size={14} /> {t('t10misc.booking.open')}
                 </a>

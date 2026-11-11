@@ -12,6 +12,8 @@ import { isQuoteExpired } from '@/lib/quote-expiry';
 import { convertedQuoteNumbers } from '@/lib/quotes';
 import QuotesClient, { type QuoteListItem, type StaleQuoteItem } from './QuotesClient';
 import type { ExportColumn } from '@/components/ExportButtons';
+import { parseListLimit, takeWithProbe, sliceListPage } from '@/lib/list-page';
+import { ListMore } from '../_components/ListMore';
 
 const FILTERS = ['ALL', ...QUOTE_STATUSES] as const;
 
@@ -26,7 +28,7 @@ function followupThreshold(): Date {
 export default async function QuotesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; limit?: string }>;
 }) {
   const { businessId, role } = await requireAuth();
 
@@ -37,15 +39,17 @@ export default async function QuotesPage({
     redirect('/dashboard');
   }
 
-  const { status } = await searchParams;
+  const { status, limit: limitParam } = await searchParams;
+  const limit = parseListLimit(limitParam);
   const initialFilter = FILTERS.includes(status as (typeof FILTERS)[number])
     ? (status as (typeof FILTERS)[number])
     : 'ALL';
   const locale: Locale = await getLocale();
 
-  // One fetch for everything: tab switching filters in memory on the client,
-  // so switching tabs never hits the server.
-  const [business, quoteRows, convertedJobs, staleRows] = await Promise.all([
+  // M3: the quote list is a bounded page (newest first); tab switching still
+  // filters that page in memory on the client. `totalQuotes` is an exact
+  // database count so the footer can say how much is not on screen.
+  const [business, fetchedQuotes, totalQuotes, convertedJobs, staleRows] = await Promise.all([
     prisma.business.findUnique({
       where: { id: businessId },
       select: { currency: true, name: true, regionCode: true, timezone: true },
@@ -54,7 +58,9 @@ export default async function QuotesPage({
       where: { businessId },
       include: { customer: { select: { name: true } } },
       orderBy: { createdAt: 'desc' },
+      take: takeWithProbe(limit),
     }),
+    prisma.quote.count({ where: { businessId } }),
     // 2026-11-05: jobs stamped with the conversion marker, so converted
     // quotes can be excluded from the open-pipeline total (they keep
     // APPROVED by design). Tenant-scoped like every other query here.
@@ -80,6 +86,9 @@ export default async function QuotesPage({
       take: 5,
     }),
   ]);
+
+  const quotePage = sliceListPage(fetchedQuotes, limit);
+  const quoteRows = quotePage.rows;
 
   const convertedNumbers = convertedQuoteNumbers(convertedJobs.map((j) => j.notes));
   const quotes: QuoteListItem[] = quoteRows.map((q) => ({
@@ -134,6 +143,7 @@ export default async function QuotesPage({
   } as Record<(typeof FILTERS)[number], string>;
 
   return (
+    <>
     <QuotesClient
       quotes={quotes}
       staleQuotes={staleQuotes}
@@ -145,5 +155,14 @@ export default async function QuotesPage({
       filterLabels={filterLabels}
       initialFilter={initialFilter}
     />
+      <ListMore
+        shown={quotes.length}
+        total={totalQuotes}
+        nextLimit={quotePage.nextLimit}
+        locale={locale}
+        basePath="/quotes"
+        params={{ status }}
+      />
+    </>
   );
 }

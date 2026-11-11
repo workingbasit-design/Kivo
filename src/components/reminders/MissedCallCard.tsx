@@ -139,8 +139,8 @@ export default function MissedCallCard({
               <CopyButton text={text} label={ui.copy} />
             </div>
           </div>
-          <p className="text-sm text-hero-ink/85 whitespace-pre-wrap">{text}</p>
-          <p className="text-[11px] text-hero-ink/60 mt-2">{ui.neverSendsNote}</p>
+          <p className="text-sm text-hero-ink whitespace-pre-wrap">{text}</p>
+          <p className="text-[11px] text-hero-ink-2 mt-2">{ui.neverSendsNote}</p>
         </div>
       )}
     </div>

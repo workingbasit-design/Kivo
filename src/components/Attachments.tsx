@@ -194,7 +194,7 @@ export default function Attachments({
                     onClick={() => setPendingDelete(row)}
                     disabled={deletingId === row.id}
                     aria-label={t(locale, 'attachments.deleteLabel')}
-                    className="absolute top-1.5 right-1.5 rounded-lg bg-surface/90 border border-line min-w-[36px] min-h-[36px] p-2 text-ink-2 hover:text-danger hover:border-danger/30 shadow-sm disabled:opacity-50 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger/60"
+                    className="absolute top-1.5 right-1.5 rounded-lg bg-surface border border-line min-w-[36px] min-h-[36px] p-2 text-ink-2 hover:text-danger hover:border-danger/30 shadow-sm disabled:opacity-50 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger/60"
                   >
                     {deletingId === row.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
                   </button>

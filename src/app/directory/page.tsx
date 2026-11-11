@@ -125,12 +125,12 @@ export default async function DirectoryPage({
         <div className="max-w-4xl mx-auto px-4 py-10">
           <div className="ej-anim-fade-up flex items-center gap-3 mb-4">
             <Logo tone="onDark" size={30} />
-            <span className="text-sm font-semibold text-hero-ink/60">{tr('t10misc.directory.title')}</span>
+            <span className="text-sm font-semibold text-hero-ink-2">{tr('t10misc.directory.title')}</span>
             <div className="ml-auto">
               {customerSession ? (
                 <Link
                   href="/customer"
-                  className="inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-full bg-surface/10 border border-hero-ink/20 text-sm font-semibold whitespace-nowrap shrink-0 transition-all hover:bg-surface/20 hover:-translate-y-px active:translate-y-0 active:scale-[0.97]"
+                  className="inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-full bg-hero-2 border border-hero-line text-sm font-semibold whitespace-nowrap shrink-0 transition-all hover:bg-hero-2 hover:-translate-y-px active:translate-y-0 active:scale-[0.97]"
                 >
                   <User size={14} />
                   My account
@@ -150,7 +150,7 @@ export default async function DirectoryPage({
           <h1 className="ej-anim-fade-up text-3xl md:text-4xl font-bold tracking-tight" style={{ animationDelay: '80ms' }}>
             {tr('t10misc.directory.title')}
           </h1>
-          <p className="ej-anim-fade-up text-hero-ink/60 mt-2 text-[15px] max-w-xl" style={{ animationDelay: '140ms' }}>{tr('t10misc.directory.subtitle')}</p>
+          <p className="ej-anim-fade-up text-hero-ink-2 mt-2 text-[15px] max-w-xl" style={{ animationDelay: '140ms' }}>{tr('t10misc.directory.subtitle')}</p>
 
           <form action="/directory" method="get" className="ej-anim-fade-up mt-6 grid sm:grid-cols-[1fr_1fr_auto] gap-2" style={{ animationDelay: '200ms' }}>
             <label className="relative block group">
@@ -193,7 +193,7 @@ export default async function DirectoryPage({
             />
             <Link
               href="/directory/request"
-              className="sm:ml-auto inline-flex items-center gap-1.5 min-h-[44px] text-hero-ink font-semibold py-2 px-3 rounded-full bg-surface/10 border border-hero-ink/20 whitespace-nowrap shrink-0 transition-all hover:bg-surface/20 hover:-translate-y-px active:translate-y-0 active:scale-[0.97]"
+              className="sm:ml-auto inline-flex items-center gap-1.5 min-h-[44px] text-hero-ink font-semibold py-2 px-3 rounded-full bg-hero-2 border border-hero-line whitespace-nowrap shrink-0 transition-all hover:bg-hero-2 hover:-translate-y-px active:translate-y-0 active:scale-[0.97]"
             >
               <MessageSquareQuote size={14} /> {tr('t10misc.directory.requestQuotes')}
             </Link>
@@ -226,7 +226,7 @@ export default async function DirectoryPage({
             {!searching && (
               <Link
                 href="/register"
-                className="inline-flex items-center justify-center mt-4 rounded-xl min-h-[44px] bg-asphalt hover:bg-graphite text-hero-ink text-sm font-bold px-6 py-2.5 transition-colors"
+                className="inline-flex items-center justify-center mt-4 rounded-xl min-h-[44px] bg-asphalt hover:bg-hero-2 text-hero-ink text-sm font-bold px-6 py-2.5 transition-colors"
               >
                 {tr('t10misc.directory.listBusiness')}
               </Link>

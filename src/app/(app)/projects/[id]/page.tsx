@@ -109,7 +109,7 @@ export default async function ProjectDetailPage({
     <div className="space-y-6">
       <Link
         href="/projects"
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-ej-secondary hover:text-ej-ink min-h-[44px]"
+        className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink-2 hover:text-ink min-h-[44px]"
       >
         <ArrowLeft size={16} aria-hidden /> {t(locale, "projects.back")}
       </Link>
@@ -127,38 +127,38 @@ export default async function ProjectDetailPage({
           }}
           moneyLocale={moneyLocale}
         />
-        <section aria-label={t(locale, 'projects.contractPrice')} className="mt-4 rounded-lg border border-ej-border bg-ej-surface p-4">
+        <section aria-label={t(locale, 'projects.contractPrice')} className="mt-4 rounded-lg border border-line bg-surface p-4">
           <dl className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-5">
             <div>
-              <dt className="text-sm text-ej-secondary">{t(locale, 'projects.contractPrice')}</dt>
-              <dd className="text-base font-bold text-ej-ink tabular-nums">
+              <dt className="text-sm text-ink-2">{t(locale, 'projects.contractPrice')}</dt>
+              <dd className="text-base font-bold text-ink tabular-nums">
                 {project.budgetCents != null
                   ? formatMoney(project.budgetCents / 100, 'CAD', moneyLocale)
                   : '—'}
               </dd>
             </div>
             <div>
-              <dt className="text-sm text-ej-secondary">{t(locale, 'projects.moneyInvoiced')}</dt>
-              <dd className="text-base font-bold text-ej-ink tabular-nums">
+              <dt className="text-sm text-ink-2">{t(locale, 'projects.moneyInvoiced')}</dt>
+              <dd className="text-base font-bold text-ink tabular-nums">
                 {formatMoney(centsToDollars(invoicedCents), 'CAD', moneyLocale)}
               </dd>
             </div>
             <div>
-              <dt className="text-sm text-ej-secondary">{t(locale, 'projects.moneyPaid')}</dt>
-              <dd className="text-base font-bold text-ej-success tabular-nums">
+              <dt className="text-sm text-ink-2">{t(locale, 'projects.moneyPaid')}</dt>
+              <dd className="text-base font-bold text-ok tabular-nums">
                 {formatMoney(centsToDollars(paidCents), 'CAD', moneyLocale)}
               </dd>
             </div>
             <div>
-              <dt className="text-sm text-ej-secondary">{t(locale, 'projects.moneyRemaining')}</dt>
-              <dd className="text-base font-bold text-ej-ink tabular-nums">
+              <dt className="text-sm text-ink-2">{t(locale, 'projects.moneyRemaining')}</dt>
+              <dd className="text-base font-bold text-ink tabular-nums">
                 {formatMoney(centsToDollars(remainingCents), 'CAD', moneyLocale)}
               </dd>
             </div>
             {leftToInvoiceCents > BigInt(0) && (
               <div>
-                <dt className="text-sm text-ej-secondary">{t(locale, 'projects.moneyLeftToInvoice')}</dt>
-                <dd className="text-base font-bold text-ej-warning tabular-nums">
+                <dt className="text-sm text-ink-2">{t(locale, 'projects.moneyLeftToInvoice')}</dt>
+                <dd className="text-base font-bold text-warn-text tabular-nums">
                   {formatMoney(centsToDollars(leftToInvoiceCents), 'CAD', moneyLocale)}
                 </dd>
               </div>
@@ -167,13 +167,13 @@ export default async function ProjectDetailPage({
         </section>
         {phases.length > 0 && (
           <>
-            <p className="text-sm text-ej-secondary mt-4">
+            <p className="text-sm text-ink-2 mt-4">
               {t(locale, "projects.progress")
                 .replace("{done}", String(donePhases))
                 .replace("{total}", String(phases.length))}
             </p>
             <div
-              className="h-2 rounded-full bg-ej-border mt-2 overflow-hidden"
+              className="h-2 rounded-full bg-line mt-2 overflow-hidden"
               role="progressbar"
               aria-valuenow={donePhases}
               aria-valuemin={0}
@@ -183,7 +183,7 @@ export default async function ProjectDetailPage({
                 .replace("{total}", String(phases.length))}
             >
               <div
-                className="h-full rounded-full bg-ej-ink"
+                className="h-full rounded-full bg-ink"
                 style={{ width: `${Math.round((donePhases / phases.length) * 100)}%` }}
               />
             </div>

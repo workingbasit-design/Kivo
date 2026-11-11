@@ -29,7 +29,7 @@ export default function QuoteRequestForm() {
   // Matched: request landed in provider inboxes.
   if (state?.ok && !state.unmatched) {
     return (
-      <div className="bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-6 md:p-8 text-center">
+      <div className="bg-surface rounded-[20px] border border-line shadow-kit-card p-6 md:p-8 text-center">
         <div className="w-12 h-12 rounded-2xl bg-ok-bg flex items-center justify-center mx-auto mb-4">
           <CheckCircle2 className="w-6 h-6 text-ok" />
         </div>
@@ -56,7 +56,7 @@ export default function QuoteRequestForm() {
   // Unmatched: request saved as an open lead draft - nothing was dropped.
   if (state?.ok && state.unmatched) {
     return (
-      <div className="bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-6 md:p-8 text-center">
+      <div className="bg-surface rounded-[20px] border border-line shadow-kit-card p-6 md:p-8 text-center">
         <div className="w-12 h-12 rounded-2xl bg-warn-bg flex items-center justify-center mx-auto mb-4">
           <Clock className="w-6 h-6 text-warn-text" />
         </div>
@@ -86,7 +86,7 @@ export default function QuoteRequestForm() {
     <form
       key={state?.values ? 'retry' : 'fresh'}
       action={formAction}
-      className="bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-6 md:p-8 space-y-4"
+      className="bg-surface rounded-[20px] border border-line shadow-kit-card p-6 md:p-8 space-y-4"
     >
       {/* Honeypot: invisible to humans (off-screen + aria-hidden); bots that
           fill it are rejected server-side. */}
@@ -224,7 +224,7 @@ export default function QuoteRequestForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="w-full min-h-[48px] inline-flex items-center justify-center gap-2 rounded-xl bg-asphalt hover:bg-graphite text-hero-ink text-sm font-bold px-5 py-3 transition-colors disabled:opacity-60"
+        className="w-full min-h-[48px] inline-flex items-center justify-center gap-2 rounded-xl bg-asphalt hover:bg-hero-2 text-hero-ink text-sm font-bold px-5 py-3 transition-colors disabled:opacity-60"
       >
         <Send size={15} /> {isPending ? t('t10misc.directory.qrSending') : t('t10misc.directory.qrSubmit')}
       </button>

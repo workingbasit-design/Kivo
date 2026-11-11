@@ -36,37 +36,37 @@ function VisitTimelineRow({ visit, locale }: { visit: VisitRow; locale: Locale }
         aria-hidden
         className={cn(
           "absolute left-[47px] top-2 h-3 w-3 rounded-full border-2",
-          visit.done ? "border-pine bg-pine" : "border-line-strong bg-surface dark:border-line-strong dark:bg-coal"
+          visit.done ? "border-pine bg-pine" : "border-line-strong bg-surface"
         )}
       />
       <div className="w-11 shrink-0 pt-0.5 text-right">
-        <p className="ej-figure text-[17px] font-bold leading-none text-asphalt tabular-nums dark:text-hero-ink">
+        <p className="ej-figure text-[17px] font-bold leading-none text-ink tabular-nums">
           {main || "–"}
         </p>
         {suffix && (
-          <p className="text-[11px] text-ink-2 dark:text-ink-2">{suffix}</p>
+          <p className="text-[11px] text-ink-2">{suffix}</p>
         )}
       </div>
       <Link
         href={`/jobs/${visit.id}`}
-        className="flex min-w-0 flex-1 items-start gap-2.5 rounded-xl py-1 pr-1 transition-colors hover:bg-surface-2 dark:hover:bg-surface/5"
+        className="flex min-w-0 flex-1 items-start gap-2.5 rounded-xl py-1 pr-1 transition-colors hover:bg-surface-2"
       >
         <span aria-hidden className="mt-0.5 shrink-0 text-ink dark:text-ink-2">
           <TradeIcon name={visit.tradeIcon} size={20} />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-[15px] font-semibold leading-snug text-asphalt dark:text-hero-ink">
+          <span className="block text-[15px] font-semibold leading-snug text-ink">
             {visit.title}
           </span>
-          <span className="block truncate text-[13px] text-ink-2 dark:text-ink-2">
+          <span className="block truncate text-[13px] text-ink-2">
             {visit.customerName}
             {visit.area ? `, ${visit.area}` : ""}
           </span>
           {visit.assigneeName && (
-            <span className="mt-1 flex items-center gap-1.5 text-[13px] text-ink-2 dark:text-ink-2">
+            <span className="mt-1 flex items-center gap-1.5 text-[13px] text-ink-2">
               <span
                 aria-hidden
-                className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-surface-2 text-[10px] font-bold text-ink-2 dark:bg-surface/10 dark:text-ink-2"
+                className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-surface-2 text-[10px] font-bold text-ink-2"
               >
                 {visit.assigneeInitials}
               </span>
@@ -80,11 +80,11 @@ function VisitTimelineRow({ visit, locale }: { visit: VisitRow; locale: Locale }
               {t(locale, "dashboard.done")}
             </span>
           ) : visit.unassigned ? (
-            <span className="inline-flex min-h-[40px] items-center rounded-full bg-safety/10 px-4 py-1.5 text-[13px] font-bold text-safety-ink dark:text-safety">
+            <span className="inline-flex min-h-[40px] items-center rounded-full bg-safety/10 px-4 py-1.5 text-[13px] font-bold text-safety-ink">
               {t(locale, "dashboard.assign")}
             </span>
           ) : (
-            <span className="inline-flex items-center rounded-full border border-line px-3 py-1.5 text-[13px] font-medium text-ink-2 dark:border-hero-ink/15 dark:text-ink-2">
+            <span className="inline-flex items-center rounded-full border border-line px-3 py-1.5 text-[13px] font-medium text-ink-2">
               {t(locale, "dashboard.scheduled")}
             </span>
           )}
@@ -140,27 +140,27 @@ export default async function TodaysVisits({
   return (
     <section
       aria-label={t(locale, "dashboard.todaysVisits")}
-      className="rounded-[24px] border border-line/70 bg-surface p-5 dark:border-hero-ink/10 dark:bg-coal"
+      className="rounded-[24px] border border-line bg-surface p-5"
     >
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-[17px] font-bold text-asphalt dark:text-hero-ink">
+        <h2 className="text-[17px] font-bold text-ink">
           {t(locale, "dashboard.todaysVisits")}
         </h2>
         <Link
           href="/schedule"
-          className="inline-flex min-h-[44px] items-center gap-0.5 px-2 text-[13px] font-semibold text-asphalt underline underline-offset-2 dark:text-ink-2"
+          className="inline-flex min-h-[44px] items-center gap-0.5 px-2 text-[13px] font-semibold text-ink underline underline-offset-2"
         >
           {t(locale, "dashboard.schedule")} <ChevronRight size={14} />
         </Link>
       </div>
       {visits.length === 0 ? (
-        <p className="py-4 text-center text-sm text-ink-2 dark:text-ink-2">
+        <p className="py-4 text-center text-sm text-ink-2">
           {t(locale, "dashboard.noVisitsToday")}
         </p>
       ) : (
         <ul className="relative space-y-4">
           {/* the vertical timeline */}
-          <span aria-hidden className="absolute bottom-2 left-[52px] top-2 w-px bg-line dark:bg-surface/10" />
+          <span aria-hidden className="absolute bottom-2 left-[52px] top-2 w-px bg-line" />
           {visits.map((v, i) => (
             <React.Fragment key={v.id}>
               {i === markerAt && <NowMarker label={nowLabel} nowLabel={t(locale, "dashboard.now")} />}

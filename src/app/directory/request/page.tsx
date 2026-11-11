@@ -25,13 +25,13 @@ export default async function QuoteRequestPage() {
         <div className="max-w-2xl mx-auto px-4 py-8">
           <Link
             href="/directory"
-            className="inline-flex items-center min-h-[44px] text-xs text-hero-ink/60 hover:text-hero-ink"
+            className="inline-flex items-center min-h-[44px] text-xs text-hero-ink-2 hover:text-hero-ink"
           >
             ← {tr('t10misc.directory.backToDirectory')}
           </Link>
           <div className="flex items-center gap-3 mt-3">
             <Logo tone="onDark" size={30} />
-            <span className="text-sm font-semibold text-hero-ink/60">{tr('t10misc.directory.title')}</span>
+            <span className="text-sm font-semibold text-hero-ink-2">{tr('t10misc.directory.title')}</span>
           </div>
         </div>
       </header>

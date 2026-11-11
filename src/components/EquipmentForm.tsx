@@ -135,7 +135,7 @@ export default function EquipmentForm({
       <button
         type="submit"
         disabled={pending}
-        className="w-full inline-flex items-center justify-center rounded-xl bg-asphalt px-4 py-3 text-sm font-semibold text-hero-ink hover:bg-graphite disabled:opacity-50 min-h-[48px]"
+        className="w-full inline-flex items-center justify-center rounded-xl bg-asphalt px-4 py-3 text-sm font-semibold text-hero-ink hover:bg-hero-2 disabled:opacity-50 min-h-[48px]"
       >
         {pending ? '…' : mode === 'create' ? T('save') : T('update')}
       </button>

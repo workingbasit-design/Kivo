@@ -35,50 +35,140 @@ const JOBS = [
   { id: 'j-nodate', status: 'NEW', date: null, price: 50, priceCents: 5000n, invoices: [] },
 ];
 
-function makeDb(over: Record<string, unknown> = {}): JobQueriesDb {
+/* ------------------------------------------------------------------ */
+/* Generic row-backed Prisma stub.                                        */
+/*                                                                        */
+/* M3 moved the counts and sums into the database (groupBy / aggregate /  */
+/* count) instead of fetching rows, so a stub that only answered          */
+/* findMany could no longer serve them. Rather than hand-mimic each new   */
+/* query, this evaluates `where` generically and derives findMany, count, */
+/* aggregate and groupBy from the same seeded rows - so the assertions    */
+/* below still describe BEHAVIOUR, not query shape.                       */
+/* ------------------------------------------------------------------ */
+
+type Row = Record<string, unknown>;
+
+function matchCond(value: unknown, cond: unknown): boolean {
+  if (cond === null) return value == null;
+  if (cond instanceof Date) return value instanceof Date && value.getTime() === cond.getTime();
+  if (cond !== null && typeof cond === 'object') {
+    const c = cond as Record<string, unknown>;
+    if ('in' in c) return (c.in as unknown[]).includes(value);
+    if ('notIn' in c) return !(c.notIn as unknown[]).includes(value);
+    if ('not' in c) return !matchCond(value, c.not);
+    if ('none' in c) return Array.isArray(value) && value.length === 0;
+    if ('some' in c) return Array.isArray(value) && value.some((r) => matchWhere(r as Row, c.some as Row));
+    if ('gte' in c || 'lte' in c || 'gt' in c || 'lt' in c) {
+      if (value == null) return false;
+      const t = value instanceof Date ? value.getTime() : Number(value);
+      const n = (v: unknown) => (v instanceof Date ? v.getTime() : Number(v));
+      if ('gte' in c && !(t >= n(c.gte))) return false;
+      if ('lte' in c && !(t <= n(c.lte))) return false;
+      if ('gt' in c && !(t > n(c.gt))) return false;
+      if ('lt' in c && !(t < n(c.lt))) return false;
+      return true;
+    }
+    if (value !== null && typeof value === 'object') return matchWhere(value as Row, c);
+    return false;
+  }
+  return value === cond;
+}
+
+function matchWhere(row: Row, where?: Row): boolean {
+  if (!where) return true;
+  return Object.entries(where).every(([k, cond]) => {
+    if (k === 'OR') return (cond as Row[]).some((c) => matchWhere(row, c));
+    if (k === 'AND') return (cond as Row[]).every((c) => matchWhere(row, c));
+    if (k === 'NOT') return !matchWhere(row, cond as Row);
+    // businessId is not on the seeded rows; every query is tenant-scoped.
+    if (k === 'businessId') return true;
+    return matchCond(row[k], cond);
+  });
+}
+
+function select(rows: Row[], args: Row = {}): Row[] {
+  let out = rows.filter((r) => matchWhere(r, args.where as Row | undefined));
+  const orderBy = args.orderBy as Row | Row[] | undefined;
+  if (orderBy) {
+    const specs = Array.isArray(orderBy) ? orderBy : [orderBy];
+    out = [...out].sort((a, b) => {
+      for (const spec of specs) {
+        const [k, dir] = Object.entries(spec)[0];
+        const d = dir === 'desc' ? -1 : 1;
+        const av = a[k] as never;
+        const bv = b[k] as never;
+        if (av < bv) return -d;
+        if (av > bv) return d;
+      }
+      return 0;
+    });
+  }
+  if (typeof args.skip === 'number') out = out.slice(args.skip);
+  if (typeof args.take === 'number') out = out.slice(0, args.take);
+  return out;
+}
+
+function sumField(rows: Row[], field: string): bigint | null {
+  let total = 0n;
+  let seen = false;
+  for (const r of rows) {
+    const v = r[field];
+    if (v == null) continue;
+    seen = true;
+    total += typeof v === 'bigint' ? v : BigInt(Math.round(Number(v)));
+  }
+  return seen ? total : null;
+}
+
+function model(rows: Row[]) {
   return {
-    job: {
-      findMany: async (args: { where?: Record<string, unknown> }) => {
-        // Evaluate the where clause like Prisma would (subset of operators
-        // used by the shared queries): date gte/lte/gt/lt, status string or
-        // { in: [] }, invoices { none: {} }.
-        const where = (args?.where ?? {}) as {
-          date?: { gte?: Date; lte?: Date; gt?: Date; lt?: Date };
-          status?: string | { in?: string[] };
-          invoices?: { none?: object };
-        };
-        let rows = [...JOBS];
-        if (where.date) {
-          const { gte, lte, gt, lt } = where.date;
-          rows = rows.filter((j) => {
-            if (!j.date) return false;
-            if (gte && j.date < (gte as Date)) return false;
-            if (lte && j.date > (lte as Date)) return false;
-            if (gt && j.date <= (gt as Date)) return false;
-            if (lt && j.date >= (lt as Date)) return false;
-            return true;
-          });
-        }
-        if (where.status) {
-          if (typeof where.status === 'string') {
-            rows = rows.filter((j) => j.status === where.status);
-          } else if (where.status.in) {
-            rows = rows.filter((j) => (where.status as { in: string[] }).in.includes(j.status));
-          }
-        }
-        if (where.invoices?.none) {
-          rows = rows.filter((j) => j.invoices.length === 0);
-        }
-        return rows;
-      },
+    findMany: async (args: Row = {}) => select(rows, args),
+    findFirst: async (args: Row = {}) => select(rows, args)[0] ?? null,
+    findUnique: async () => null,
+    count: async (args: Row = {}) => select(rows, args).length,
+    aggregate: async (args: Row = {}) => {
+      const out = select(rows, { where: args.where });
+      const res: Row = {};
+      if (args._count) res._count = { _all: out.length };
+      if (args._sum) {
+        const sums: Row = {};
+        for (const f of Object.keys(args._sum as Row)) sums[f] = sumField(out, f);
+        res._sum = sums;
+      }
+      return res;
     },
-    invoice: {
-      findMany: async () => [],
+    groupBy: async (args: Row = {}) => {
+      const out = select(rows, { where: args.where });
+      const by = (Array.isArray(args.by) ? args.by : [args.by]) as string[];
+      const buckets = new Map<string, Row[]>();
+      for (const r of out) {
+        const key = by.map((k) => String(r[k])).join('\u0000');
+        if (!buckets.has(key)) buckets.set(key, []);
+        buckets.get(key)!.push(r);
+      }
+      return [...buckets.values()].map((group) => {
+        const row: Row = {};
+        for (const k of by) row[k] = group[0][k];
+        if (args._count) row._count = { _all: group.length };
+        if (args._sum) {
+          const sums: Row = {};
+          for (const f of Object.keys(args._sum as Row)) sums[f] = sumField(group, f);
+          row._sum = sums;
+        }
+        return row;
+      });
     },
-    quote: {
-      count: async () => 0,
-    },
-    ...over,
+  };
+}
+
+function makeDb(
+  data: { jobs?: Row[]; invoices?: Row[]; quotes?: Row[] } = {}
+): JobQueriesDb {
+  return {
+    job: model(data.jobs ?? JOBS),
+    invoice: model(data.invoices ?? []),
+    quote: model(data.quotes ?? []),
+    payment: model([]),
   } as unknown as JobQueriesDb;
 }
 
@@ -103,9 +193,7 @@ test('getJobCounts: completed job without invoice counts as uninvoiced', async (
     { id: 'j-done', status: 'COMPLETED', date: D('2026-10-12T16:00:00Z'), price: 150, priceCents: 15000n, invoices: [] },
     { id: 'j-billed', status: 'COMPLETED', date: D('2026-10-11T16:00:00Z'), price: 250, priceCents: 25000n, invoices: [{ id: 'inv-1' }] },
   ];
-  const db = makeDb({
-    job: { findMany: async () => jobs },
-  });
+  const db = makeDb({ jobs });
   const counts = await getJobCounts('biz-1', { now: NOW, timezone: 'America/Toronto', db });
   assert.equal(counts.completed, 2);
   assert.equal(counts.uninvoiced, 1);
@@ -127,17 +215,7 @@ test('getMoneySummary: ready-to-invoice sums uninvoiced COMPLETED jobs', async (
     { id: 'j-billed', status: 'COMPLETED', date: D('2026-10-11T16:00:00Z'), price: 250, priceCents: 25000n, invoices: [{ id: 'inv-1' }] },
     { id: 'j-open', status: 'SCHEDULED', date: D('2026-10-13T16:00:00Z'), price: 999, priceCents: 99900n, invoices: [] },
   ];
-  const db = makeDb({
-    job: {
-      findMany: async (args: { where?: { status?: string; invoices?: { none?: object } } }) => {
-        // Mimic the real where: COMPLETED + invoices none.
-        if (args?.where?.status === 'COMPLETED' && args?.where?.invoices?.none) {
-          return jobs.filter((j) => j.status === 'COMPLETED' && j.invoices.length === 0);
-        }
-        return jobs;
-      },
-    },
-  });
+  const db = makeDb({ jobs });
   const summary = await getMoneySummary('biz-1', { db });
   assert.equal(summary.readyToInvoice, 150); // only j-done; j-billed has invoice, j-open not completed
   assert.equal(summary.outstanding, 0);
@@ -146,31 +224,28 @@ test('getMoneySummary: ready-to-invoice sums uninvoiced COMPLETED jobs', async (
 
 test('getMoneySummary: outstanding = UNPAID total + PARTIALLY PAID balance', async () => {
   const invoices = [
-    { total: 500, totalCents: 50000n, status: 'UNPAID', payments: [] },
+    { id: 'i1', total: 500, totalCents: 50000n, status: 'UNPAID', voidedAt: null, payments: [] },
     {
+      id: 'i2',
       total: 400,
       totalCents: 40000n,
       status: 'PARTIALLY PAID',
+      voidedAt: null,
       payments: [{ amount: 150, amountCents: 15000n, status: 'COMPLETED' }],
     },
     {
+      id: 'i3',
       total: 300,
       totalCents: 30000n,
       status: 'PARTIALLY PAID',
+      voidedAt: null,
       payments: [{ amount: 100, amountCents: 10000n, status: 'PENDING' }], // pending does not reduce balance
     },
   ];
   const db = makeDb({
-    job: {
-      findMany: async (args: { where?: { status?: string; invoices?: { none?: object } } }) => {
-        if (args?.where?.status === 'COMPLETED' && args?.where?.invoices?.none) {
-          return [];
-        }
-        return [];
-      },
-    },
-    invoice: { findMany: async () => invoices },
-    quote: { count: async () => 2 },
+    jobs: [],
+    invoices,
+    quotes: [{ id: 'q1', status: 'DRAFT' }, { id: 'q2', status: 'SENT' }],
   });
   const summary = await getMoneySummary('biz-1', { db });
   assert.equal(summary.outstanding, 500 + 250 + 300);
@@ -186,20 +261,10 @@ test('getJobCounts: byStatus groups counts per status', async () => {
 
 test('getMoneySummary: voided invoices excluded from outstanding', async () => {
   const invoices = [
-    { total: 500, totalCents: 50000n, status: 'UNPAID', voidedAt: null, payments: [] },
-    { total: 700, totalCents: 70000n, status: 'UNPAID', voidedAt: new Date(), payments: [] },
+    { id: 'i1', total: 500, totalCents: 50000n, status: 'UNPAID', voidedAt: null, payments: [] },
+    { id: 'i2', total: 700, totalCents: 70000n, status: 'UNPAID', voidedAt: new Date(), payments: [] },
   ];
-  const db = makeDb({
-    invoice: {
-      findMany: async (args: { where?: { voidedAt?: unknown } }) => {
-        // Mimic the real where: voidedAt null.
-        if (args?.where?.voidedAt === null) return invoices.filter((i) => i.voidedAt === null);
-        return invoices;
-      },
-    },
-    job: { findMany: async () => [] },
-    quote: { count: async () => 0 },
-  });
+  const db = makeDb({ invoices, jobs: [] });
   const summary = await getMoneySummary('biz-1', { db });
   assert.equal(summary.outstanding, 500);
   assert.equal(summary.outstandingCount, 1);

@@ -74,23 +74,24 @@ export default async function DigestPage() {
 
   return (
     <div className="space-y-6">
-      {/* Hero: mode-aware ink tokens so the greeting stays readable in dark
-          mode (the fixed --color-ej-ink token is near-black on the dark
-          surface; the established pattern is text-ej-ink dark:text-ink). */}
-      <div className="rounded-[24px] p-6 bg-surface border border-ej-smoke dark:border-line">
+      {/* Hero: kit tokens only. --ink / --ink-2 / --line flip with the
+          theme, so the greeting stays readable in dark mode without any
+          dark: override (2026-11-11: the frozen --color-ej-ink hex that
+          made this hero near-black on the dark surface is gone). */}
+      <div className="rounded-[24px] p-6 bg-surface border border-line">
         <div className="flex items-center gap-3 mb-1">
           <span className="w-10 h-10 rounded-2xl bg-hivis text-hivis-ink flex items-center justify-center">
             <Sunrise size={20} aria-hidden />
           </span>
-          <p className="text-xs font-bold text-ej-muted dark:text-ink-2">
+          <p className="text-xs font-bold text-ink-2">
             {dateLabel}
           </p>
         </div>
-        <h1 className="text-2xl font-bold tracking-tight mt-2 text-ej-ink dark:text-ink">
+        <h1 className="text-2xl font-bold tracking-tight mt-2 text-ink">
           {t(locale, greetingKey(data.dayPart))}
           {data.greeting ? `, ${data.greeting}` : ''} 👋
         </h1>
-        <p className="text-sm text-ej-muted dark:text-ink-2 mt-1">
+        <p className="text-sm text-ink-2 mt-1">
           {data.todayJobs.length === 0
             ? t(locale, 'digest.noJobsToday')
             : t(locale, 'digest.jobCount').replace('{count}', String(data.todayJobs.length)) +

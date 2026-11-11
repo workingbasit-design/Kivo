@@ -40,9 +40,14 @@ export default function QuoteForm({
   taxConfig,
   templates = [],
   locale = 'en',
+  gstHstRegistered = false,
 }: {
   customers: { id: string; name: string }[];
   taxConfig: TaxConfig;
+  /** M2: when false the business may not charge GST/HST, so the builder
+   *  shows no tax control and posts a zero rate. The server enforces it
+   *  again regardless of what this form submits. */
+  gstHstRegistered?: boolean;
   /** Slice 4: templates for the "start from template" picker. */
   templates?: {
     id: string;
@@ -65,8 +70,15 @@ export default function QuoteForm({
   const [validUntil, setValidUntil] = useState('');
   const [appliedId, setAppliedId] = useState('');
   const applied = templates.find((tpl) => tpl.id === appliedId) ?? null;
+  // M2: an unregistered business starts (and stays) on the no-tax selection.
+  const NO_TAX: TaxSelection = {
+    id: 'NONE',
+    taxType: 'GST',
+    taxRate: 0,
+    label: t(locale, 't10money.taxNoTax'),
+  };
   const [taxSel, setTaxSel] = useState<TaxSelection>(() =>
-    defaultTaxSelection(taxConfig)
+    gstHstRegistered ? defaultTaxSelection(taxConfig) : NO_TAX
   );
 
   // createQuote redirects to the new quote page on success; toast on failure only.
@@ -162,12 +174,19 @@ export default function QuoteForm({
           {t(locale, 't10money.taxSelectLabel')}
         </h2>
         <div className="min-w-0">
-          <TaxSelect
-            locale={locale}
-            label={t(locale, 't10money.taxSelectLabel')}
-            value={taxSel}
-            onChange={setTaxSel}
-          />
+          {gstHstRegistered ? (
+            <TaxSelect
+              locale={locale}
+              label={t(locale, 't10money.taxSelectLabel')}
+              value={taxSel}
+              onChange={setTaxSel}
+            />
+          ) : (
+            /* M2: not registered to collect GST/HST — no rate to pick. */
+            <p className="text-xs text-ink-2">
+              {t(locale, 't10misc.booking.gstNotRegisteredNote')}
+            </p>
+          )}
         </div>
         <dl className="space-y-1.5 text-sm border-t border-line pt-4">
           <div className="flex justify-between text-ink-2">

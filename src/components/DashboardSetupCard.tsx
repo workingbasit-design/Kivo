@@ -66,7 +66,7 @@ export default function DashboardSetupCard({ initialCompleted = false }: { initi
         </ul>
 
         {isCompleted ? (
-          <div className="bg-surface/80 p-3.5 rounded-xl border border-ok/30 text-xs font-semibold text-ok flex items-center gap-2">
+          <div className="bg-surface p-3.5 rounded-xl border border-ok/30 text-xs font-semibold text-ok flex items-center gap-2">
             <ShieldCheck size={16} className="text-ok shrink-0" />
             <span>{T('setupOperational')}</span>
           </div>

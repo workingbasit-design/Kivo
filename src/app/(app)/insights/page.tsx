@@ -353,7 +353,7 @@ export default async function InsightsPage() {
                   {ins.seasonalDemand.map((s) => (
                     <div key={s.month} className="flex-1 flex flex-col items-center gap-1 min-w-0">
                       <div
-                        className="w-full bg-asphalt/85 rounded-t-md"
+                        className="w-full bg-chart-a rounded-t-md"
                         style={{ height: `${Math.max(4, (s.jobs / maxSeason) * 104)}px` }}
                         title={`${s.month}: ${s.jobs}`}
                       />

@@ -124,17 +124,17 @@ export default async function NextActionSection({
   return (
     <section
       aria-label={heading}
-      className="rounded-[24px] border border-line/70 bg-surface p-5 dark:border-hero-ink/10 dark:bg-coal"
+      className="rounded-[24px] border border-line bg-surface p-5"
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <p className="text-[13px] font-semibold text-ink-2 dark:text-ink-2">
+          <p className="text-[13px] font-semibold text-ink-2">
             {heading}
           </p>
-          <p className="mt-0.5 truncate text-[17px] font-bold leading-snug text-asphalt dark:text-hero-ink">
+          <p className="mt-0.5 truncate text-[17px] font-bold leading-snug text-ink">
             {display.title}
           </p>
-          <p className="mt-0.5 truncate text-[13px] text-ink-2 dark:text-ink-2">
+          <p className="mt-0.5 truncate text-[13px] text-ink-2">
             {display.subtitle}
             {display.meta ? ` · ${display.meta}` : ""}
           </p>

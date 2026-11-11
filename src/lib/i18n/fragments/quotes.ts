@@ -78,6 +78,9 @@ const fragment = {
         title: 'New quote',
         subtitle:
           'Line items in, total out. {taxLabel} is added automatically from your region settings.',
+        // M2: shown instead when the business is not registered to collect
+        // GST/HST, so the page does not promise a tax it will not add.
+        subtitleNoTax: 'Line items in, total out. No tax is added, because your business is not registered to collect GST/HST.',
       },
       templates: {
         title: 'Quote templates',
@@ -188,6 +191,7 @@ const fragment = {
         title: 'Nouveau devis',
         subtitle:
           'Articles entrés, total en sortie. {taxLabel} est ajouté automatiquement selon vos paramètres régionaux.',
+        subtitleNoTax: 'Postes en entrée, total en sortie. Aucune taxe n’est ajoutée, car votre entreprise n’est pas inscrite pour percevoir la TPS/TVH.',
       },
       templates: {
         title: 'Modèles de devis',

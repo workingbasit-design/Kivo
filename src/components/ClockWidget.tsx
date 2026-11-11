@@ -92,7 +92,7 @@ export default function ClockWidget({
             disabled={isPending}
             className={cn(
               'inline-flex items-center justify-center gap-2 min-h-[44px] px-[14px] rounded-[12px] font-bold text-[15px]',
-              'bg-asphalt text-hero-ink shadow-[inset_0_0_0_1.5px_var(--hero-line)] hover:bg-graphite shrink-0',
+              'bg-asphalt text-hero-ink shadow-[inset_0_0_0_1.5px_var(--hero-line)] hover:bg-hero-2 shrink-0',
               'disabled:opacity-60 disabled:cursor-not-allowed',
               'focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2'
             )}

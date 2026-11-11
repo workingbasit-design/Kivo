@@ -107,7 +107,7 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
           <button
             onClick={onClose}
             aria-label={t('t10misc.confirmDialog.close')}
-            className="min-w-[44px] min-h-[44px] rounded-full bg-surface/10 hover:bg-surface/20 text-hero-ink flex items-center justify-center transition-colors relative z-10"
+            className="min-w-[44px] min-h-[44px] rounded-full bg-hero-2 hover:bg-hero-2 text-hero-ink flex items-center justify-center transition-colors relative z-10"
           >
             <X size={16} />
           </button>
@@ -126,7 +126,7 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
               </p>
               <button
                 onClick={onClose}
-                className="w-full min-h-[52px] bg-asphalt hover:bg-graphite text-hero-ink font-bold py-3.5 rounded-2xl transition-all shadow-md shadow-ink/30 flex items-center justify-center gap-2 text-sm"
+                className="w-full min-h-[52px] bg-asphalt hover:bg-hero-2 text-hero-ink font-bold py-3.5 rounded-2xl transition-all shadow-md shadow-ink/30 flex items-center justify-center gap-2 text-sm"
               >
                 {L('backToDash')} <ArrowRight size={16} />
               </button>
@@ -134,7 +134,7 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
           ) : (
             <>
               {/* Item 1: WhatsApp Auto-Reply */}
-              <div className="bg-surface-2 p-4 rounded-2xl border border-line/80 space-y-3">
+              <div className="bg-surface-2 p-4 rounded-2xl border border-line space-y-3">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div className="w-8 h-8 rounded-xl bg-ok-bg text-ok flex items-center justify-center shrink-0">
@@ -159,7 +159,7 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
                 </div>
 
                 {whatsappEnabled && (
-                  <div className="text-xs bg-surface p-3 rounded-xl border border-line/60 text-ink-2 space-y-2">
+                  <div className="text-xs bg-surface p-3 rounded-xl border border-line text-ink-2 space-y-2">
                     <p>{L('waSample')}</p>
                     <div>
                       <label className="block text-[10px] font-bold text-ink-2 mb-1">
@@ -182,7 +182,7 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
               </div>
 
               {/* Item 2: Team Availability */}
-              <div className="bg-surface-2 p-4 rounded-2xl border border-line/80 space-y-3">
+              <div className="bg-surface-2 p-4 rounded-2xl border border-line space-y-3">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-xl bg-smoke text-ink flex items-center justify-center shrink-0">
                     <Clock size={16} />
@@ -235,7 +235,7 @@ export default function FinishSetupModal({ isOpen, onClose, onCompleted }: Props
                 <button
                   onClick={handleSaveSetup}
                   disabled={isPending}
-                  className="w-full min-h-[52px] bg-asphalt hover:bg-graphite text-hero-ink font-bold py-3.5 rounded-2xl transition-all shadow-md shadow-ink/30 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer text-sm"
+                  className="w-full min-h-[52px] bg-asphalt hover:bg-hero-2 text-hero-ink font-bold py-3.5 rounded-2xl transition-all shadow-md shadow-ink/30 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer text-sm"
                 >
                   <ShieldCheck size={16} />
                   {isPending ? L('saving') : L('complete')}

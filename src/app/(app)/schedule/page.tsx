@@ -191,7 +191,7 @@ export default async function SchedulePage({
             title={`${T('schedOverdueTitle')} (${overdueJobs.length})`}
             text={T('schedOverdueDesc')}
           />
-          <ul className="mt-3 bg-ej-bg border border-ej-border rounded-xl overflow-hidden divide-y divide-ej-border">
+          <ul className="mt-3 bg-surface border border-line rounded-xl overflow-hidden divide-y divide-line">
             {overdueJobs.map((j) => (
               <li key={j.id}>
                 <Link
@@ -199,15 +199,15 @@ export default async function SchedulePage({
                   className="flex items-center justify-between gap-3 px-4 py-3 min-h-[56px]"
                 >
                   <span className="min-w-0">
-                    <span className="block text-sm font-semibold text-ej-ink dark:text-ink truncate">
+                    <span className="block text-sm font-semibold text-ink truncate">
                       {j.title}
                     </span>
-                    <span className="block text-xs text-ej-secondary dark:text-ink-2 truncate">{j.customer.name}</span>
-                    <span className="block text-xs text-ej-muted dark:text-ink-2 truncate">
+                    <span className="block text-xs text-ink-2 dark:text-ink-2 truncate">{j.customer.name}</span>
+                    <span className="block text-xs text-ink-2 dark:text-ink-2 truncate">
                       {formatDisplayDate(j.date, business?.timezone, locale)}
                     </span>
                   </span>
-                  <span className="shrink-0 inline-flex items-center gap-1 text-xs font-bold text-ej-warning bg-ej-warning-bg px-2 py-1 rounded-full">
+                  <span className="shrink-0 inline-flex items-center gap-1 text-xs font-bold text-warn-text bg-warn-bg px-2 py-1 rounded-full">
                     <AlertTriangle size={12} aria-hidden="true" />
                     {T('schedOverdueBadge')}
                   </span>

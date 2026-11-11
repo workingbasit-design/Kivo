@@ -52,7 +52,7 @@ export default function WelcomeClient({
         <button
           type="submit"
           disabled={isPending}
-          className="w-full bg-asphalt hover:bg-graphite disabled:opacity-60 text-hero-ink font-semibold text-sm py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+          className="w-full bg-asphalt hover:bg-hero-2 disabled:opacity-60 text-hero-ink font-semibold text-sm py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
         >
           <Phone size={16} />
           {isPending ? '…' : t(locale, 'googleAuth.saveAndContinue')}

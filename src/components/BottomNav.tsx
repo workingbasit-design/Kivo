@@ -66,10 +66,10 @@ export default function BottomNav({
         aria-current={active ? 'page' : undefined}
         className={cn(
           'flex items-center gap-3 px-3 min-h-[48px] rounded-xl text-sm font-medium',
-          active ? 'bg-ej-ink text-ej-lime' : 'text-ink hover:bg-surface-2'
+          active ? 'bg-ink text-hivis' : 'text-ink hover:bg-surface-2'
         )}
       >
-        <NavIconView icon={item.icon} size={18} className={active ? 'text-ej-lime' : 'text-ink-2'} filled={active} />
+        <NavIconView icon={item.icon} size={18} className={active ? 'text-hivis' : 'text-ink-2'} filled={active} />
         {t(locale, item.nameKey)}
       </Link>
     );
@@ -80,7 +80,7 @@ export default function BottomNav({
       'flex flex-col items-center justify-center gap-1 min-h-[60px] py-2 text-[10px]',
       'focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-hivis',
       'transition-colors',
-      active ? 'text-hivis font-bold' : 'text-hero-ink/60 font-semibold hover:text-hero-ink'
+      active ? 'text-hivis font-bold' : 'text-nav-ink font-semibold hover:text-nav-active'
     );
 
   const renderTabIcon = (active: boolean, icon: NavItem['icon'], href: string) => (
@@ -97,7 +97,7 @@ export default function BottomNav({
         // mockup), never the plain outline - it must not read as a gear.
         filled={active || href === '/dashboard'}
         aria-hidden
-        className={active ? 'text-asphalt' : undefined}
+        className={active ? 'text-hivis-ink' : undefined}
       />
     </span>
   );
@@ -112,8 +112,8 @@ export default function BottomNav({
         <div
           className={cn(
             tabs.length >= 4 ? 'grid grid-cols-5' : 'grid grid-cols-4',
-            'bg-asphalt dark:bg-coal',
-            'border-t border-hero-ink/10',
+            'bg-nav',
+            'border-t border-hero-line',
             'pb-[env(safe-area-inset-bottom)]'
           )}
         >

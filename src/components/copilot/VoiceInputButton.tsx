@@ -78,7 +78,7 @@ export default function VoiceInputButton({
       } ${
         listening
           ? 'bg-danger text-hero-ink shadow-lg shadow-danger/30 scale-105'
-          : 'bg-asphalt/10 text-ink hover:bg-smoke'
+          : 'bg-surface-2 text-ink hover:bg-line'
       }`}
     >
       {listening ? <Square size={15} /> : <Mic size={17} />}

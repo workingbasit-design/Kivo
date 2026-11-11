@@ -30,7 +30,7 @@ export default async function NewQuotePage() {
     }),
     prisma.business.findUnique({
       where: { id: businessId },
-      select: { regionCode: true, taxRegion: true },
+      select: { regionCode: true, taxRegion: true, gstHstRegistered: true },
     }),
     // Slice 4: templates for the "start from template" picker.
     prisma.quoteTemplate.findMany({
@@ -46,7 +46,11 @@ export default async function NewQuotePage() {
     <div className="space-y-6">
       <PageTitle
         title={t(locale, 'quotes.new.title')}
-        summary={t(locale, 'quotes.new.subtitle').replace('{taxLabel}', taxConfig.label)}
+        summary={
+          business?.gstHstRegistered
+            ? t(locale, 'quotes.new.subtitle').replace('{taxLabel}', taxConfig.label)
+            : t(locale, 'quotes.new.subtitleNoTax')
+        }
       />
       <QuoteForm
         customers={customers}
@@ -65,6 +69,7 @@ export default async function NewQuotePage() {
           })),
         }))}
         locale={locale}
+        gstHstRegistered={business?.gstHstRegistered ?? false}
       />
     </div>
   );

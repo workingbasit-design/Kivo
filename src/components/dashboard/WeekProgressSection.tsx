@@ -71,12 +71,12 @@ export default async function WeekProgressSection({
   return (
     <section
       aria-label={heading}
-      className="rounded-[24px] border border-line/70 bg-surface p-5 dark:border-hero-ink/10 dark:bg-coal"
+      className="rounded-[24px] border border-line bg-surface p-5"
     >
-      <p className="text-[13px] font-semibold text-ink-2 dark:text-ink-2">
+      <p className="text-[13px] font-semibold text-ink-2">
         {heading}
       </p>
-      <p className="mt-1 text-[15px] font-bold leading-snug text-asphalt dark:text-hero-ink">
+      <p className="mt-1 text-[15px] font-bold leading-snug text-ink">
         {summary}
       </p>
       <div className="mt-4 flex justify-between" aria-hidden="true">
@@ -98,7 +98,7 @@ export default async function WeekProgressSection({
                   isToday ? "ring-2 ring-line" : "",
                 ].join(" ")}
               />
-              <span className="text-[10px] font-bold text-ink-2 dark:text-ink-2">
+              <span className="text-[10px] font-bold text-ink-2">
                 {letter}
               </span>
             </div>

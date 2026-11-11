@@ -45,6 +45,7 @@ export default async function PublicBookingPage({
     db.bookingPage.findUnique({
       where: { slug },
       select: {
+        id: true,
         enabled: true,
         headline: true,
         intro: true,
@@ -56,11 +57,24 @@ export default async function PublicBookingPage({
 
   if (!page || !page.enabled) notFound();
 
-  const services = await prisma.service.findMany({
-    where: { businessId: page.businessId },
-    select: { id: true, name: true, priceCents: true },
-    orderBy: { name: 'asc' },
+  // M1: only the services the business has explicitly made bookable.
+  // This page used to list every Service row for the business, which meant
+  // internal/price-book-only services (callout minimums, parts, subcontract
+  // lines) were publicly bookable and any new service appeared on the public
+  // page the moment it was created. BookableService is the curated list; it
+  // carries the display order and an active flag.
+  const bookable = await prisma.bookableService.findMany({
+    // businessId is required by the tenant guard and is a real scope here
+    // (defence in depth): the slug already pinned us to one business, and a
+    // BookableService row can only ever belong to that same business.
+    where: { businessId: page.businessId, bookingPageId: page.id, active: true },
+    select: {
+      position: true,
+      service: { select: { id: true, name: true, priceCents: true } },
+    },
+    orderBy: [{ position: 'asc' }],
   });
+  const services = bookable.map((b) => b.service);
 
   const { business } = page;
 
@@ -83,14 +97,14 @@ export default async function PublicBookingPage({
           </div>
           <h1 className="text-2xl font-bold tracking-tight">{business.name}</h1>
           {page.headline && (
-            <p className="text-hero-ink/70 mt-1 text-sm">{page.headline}</p>
+            <p className="text-hero-ink-2 mt-1 text-sm">{page.headline}</p>
           )}
         </div>
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-6 space-y-5">
         {page.intro && (
-          <p className="text-sm text-ink-2 bg-surface rounded-[20px] border border-line/70 shadow-[0_1px_3px_rgba(22,22,22,0.06)] p-5">
+          <p className="text-sm text-ink-2 bg-surface rounded-[20px] border border-line shadow-kit-card p-5">
             {page.intro}
           </p>
         )}

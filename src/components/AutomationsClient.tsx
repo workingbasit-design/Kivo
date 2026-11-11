@@ -268,7 +268,7 @@ export default function AutomationsClient({
             type="button"
             disabled={pending}
             onClick={runNow}
-            className="min-h-[44px] w-full sm:w-auto inline-flex items-center justify-center bg-asphalt hover:bg-graphite disabled:opacity-60 text-hero-ink font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors"
+            className="min-h-[44px] w-full sm:w-auto inline-flex items-center justify-center bg-asphalt hover:bg-hero-2 disabled:opacity-60 text-hero-ink font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors"
           >
             {pending ? '…' : t(locale, 'track8.runNow')}
           </button>

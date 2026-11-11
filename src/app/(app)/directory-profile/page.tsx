@@ -122,7 +122,7 @@ export default async function DirectoryProfilePage() {
                 <form action={requestDirectoryClaim} className="mt-3">
                   <button
                     type="submit"
-                    className="min-h-[44px] inline-flex items-center bg-asphalt hover:bg-graphite text-hero-ink px-4 py-2.5 rounded-xl font-bold text-xs"
+                    className="min-h-[44px] inline-flex items-center bg-asphalt hover:bg-hero-2 text-hero-ink px-4 py-2.5 rounded-xl font-bold text-xs"
                   >
                     {tr('t10misc.profile.requestButton')}
                   </button>

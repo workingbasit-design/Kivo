@@ -61,7 +61,7 @@ export default function MorphChips<T extends string | number>({
             {!selected && (
               <span
                 className={`absolute inset-0 rounded-full border ${
-                  dark ? 'border-hero-ink/30 bg-surface/10' : 'border-line bg-surface'
+                  dark ? 'border-hero-line bg-hero-2' : 'border-line bg-surface'
                 }`}
               />
             )}
@@ -82,7 +82,7 @@ export default function MorphChips<T extends string | number>({
         );
       })}
       {hidden.length > 0 && (
-        <span className={`text-xs font-semibold px-2 ${dark ? 'text-hero-ink/60' : 'text-ink-2'}`}>
+        <span className={`text-xs font-semibold px-2 ${dark ? 'text-hero-ink-2' : 'text-ink-2'}`}>
           +{hidden.length} more{hiddenSelected ? ' (selected)' : ''}
         </span>
       )}

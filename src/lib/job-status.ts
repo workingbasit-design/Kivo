@@ -72,7 +72,9 @@ export const JOB_STATUSES: readonly JobStatus[] = ALL_JOB_STATUSES;
  *  past-due work as Late; the standing rule is now: Late = not started AND
  *  the start time has passed. In-progress work past its end time is
  *  "Running over" (see isRunningOver). */
-const LATE_ELIGIBLE_STATUSES: readonly string[] = ['NEW', 'SCHEDULED'];
+/** Statuses a job can be "late" in. Exported so the SQL-side late filter in
+ *  job-queries.ts cannot drift from isJobLate() below. */
+export const LATE_ELIGIBLE_STATUSES: readonly string[] = ['NEW', 'SCHEDULED'];
 
 const JOB_STATUS_LABELS_EN: Record<string, string> = {
   NEW: 'New',

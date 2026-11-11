@@ -20,7 +20,7 @@ export default async function VerifyEmailPage({
     : { ok: false as const, error: 'Missing verification token.' };
   return (
     <div className="min-h-screen flex items-center justify-center bg-paper px-4">
-      <div className="bg-surface rounded-3xl border border-line/70 shadow-xl p-8 max-w-md w-full text-center">
+      <div className="bg-surface rounded-3xl border border-line shadow-xl p-8 max-w-md w-full text-center">
         <h1 className="text-xl font-bold text-ink">
           {result.ok ? t(locale, 'security.emailVerifiedTitle') : t(locale, 'security.emailVerifiedFailedTitle')}
         </h1>

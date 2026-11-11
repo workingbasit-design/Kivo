@@ -50,10 +50,10 @@ export default async function DashboardHeader({
 
   return (
     <header>
-      <h1 className="font-condensed text-[32px] leading-tight font-bold text-asphalt dark:text-hero-ink">
+      <h1 className="font-condensed text-[32px] leading-tight font-bold text-ink">
         <DateTimeText date={new Date()} variant="dateline" timezone={timezone ?? undefined} locale={locale} />
       </h1>
-      <p className="mt-1 text-[15px] text-ink-2 dark:text-ink-2">{sentence}</p>
+      <p className="mt-1 text-[15px] text-ink-2">{sentence}</p>
     </header>
   );
 }

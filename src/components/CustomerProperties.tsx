@@ -147,7 +147,7 @@ export default function CustomerProperties({
         )}
 
         {showForm && (
-          <div className="space-y-3 rounded-xl border border-line/70 bg-surface-2/60 p-4 mb-4">
+          <div className="space-y-3 rounded-xl border border-line bg-surface-2/60 p-4 mb-4">
             <div className="grid sm:grid-cols-2 gap-3">
               <Input
                 label={L('properties.label')}
@@ -202,7 +202,7 @@ export default function CustomerProperties({
                 properties have no detail page. Only when editing (a new
                 property has no id yet). */}
             {editingId != null && (
-              <div className="pt-3 border-t border-line/70">
+              <div className="pt-3 border-t border-line">
                 <PropertyCustomFields
                   propertyId={editingId}
                   locale={locale}

@@ -97,7 +97,7 @@ function ContactAction({
 }) {
   if (disabled) {
     return (
-      <span className="flex-1 min-w-0 flex flex-col items-center gap-1 py-3 rounded-xl bg-ej-surface text-ej-disabled cursor-not-allowed">
+      <span className="flex-1 min-w-0 flex flex-col items-center gap-1 py-3 rounded-xl bg-surface text-ink-2 cursor-not-allowed">
         {icon}
         <span className="text-xs font-semibold">{label}</span>
       </span>
@@ -106,7 +106,7 @@ function ContactAction({
   return (
     <a
       href={href}
-      className="flex-1 min-w-0 flex flex-col items-center gap-1 py-3 rounded-xl bg-ej-surface text-ej-ink hover:bg-ej-border/50 active:bg-ej-border transition-colors min-h-[48px] justify-center"
+      className="flex-1 min-w-0 flex flex-col items-center gap-1 py-3 rounded-xl bg-surface text-ink hover:bg-line/50 active:bg-line transition-colors min-h-[48px] justify-center"
     >
       {icon}
       <span className="text-xs font-semibold">{label}</span>
@@ -227,17 +227,17 @@ export default async function CustomerDetailPage({
       {/* E5: Identity + quick contact actions */}
       <Card className="p-6 md:p-8">
         <div className="flex items-start gap-4 mb-6">
-          <div className="w-14 h-14 rounded-2xl bg-ej-surface text-ej-ink flex items-center justify-center font-bold text-xl shrink-0">
+          <div className="w-14 h-14 rounded-2xl bg-surface text-ink flex items-center justify-center font-bold text-xl shrink-0">
             {initial}
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-lg font-bold text-ej-ink flex items-center gap-2 flex-wrap min-w-0 break-words">
+            <h2 className="text-lg font-bold text-ink flex items-center gap-2 flex-wrap min-w-0 break-words">
               {customerName}
               {customer.archivedAt && (
                 <Chip>{t(locale, 't10money.custArchivedBadge')}</Chip>
               )}
             </h2>
-            <p className="text-xs text-ej-muted mt-0.5">
+            <p className="text-xs text-ink-2 mt-0.5">
               {custL('customerSince').replace('{date}', formatDateShort(customer.createdAt, undefined, tz))}
               {', '}
               {custL('lifetimeValue').replace('{amount}', formatMoney(totalRevenue, currency))}
@@ -280,16 +280,16 @@ export default async function CustomerDetailPage({
         {(customer.phone || customer.email) && (
           <div className="space-y-1.5 mb-4">
             {customer.phone && (
-              <p className="text-sm text-ej-ink flex items-center gap-2 min-w-0">
-                <Phone size={14} className="text-ej-muted shrink-0" />
+              <p className="text-sm text-ink flex items-center gap-2 min-w-0">
+                <Phone size={14} className="text-ink-2 shrink-0" />
                 <a href={phoneHref} className="font-medium hover:underline break-all">
                   {customer.phone}
                 </a>
               </p>
             )}
             {customer.email && (
-              <p className="text-sm text-ej-ink flex items-center gap-2 min-w-0">
-                <Mail size={14} className="text-ej-muted shrink-0" />
+              <p className="text-sm text-ink flex items-center gap-2 min-w-0">
+                <Mail size={14} className="text-ink-2 shrink-0" />
                 <a href={emailHref} className="font-medium hover:underline break-all">
                   {customer.email}
                 </a>
@@ -301,11 +301,11 @@ export default async function CustomerDetailPage({
         {/* Address with directions link */}
         {(customer.address || provinceLabel || customer.postalCode) && (
           <div className="flex items-start gap-2.5 mb-4">
-            <MapPin size={15} className="text-ej-muted mt-0.5 shrink-0" />
+            <MapPin size={15} className="text-ink-2 mt-0.5 shrink-0" />
             <div className="min-w-0">
-              <p className="text-sm text-ej-ink whitespace-pre-line">{customer.address}</p>
+              <p className="text-sm text-ink whitespace-pre-line">{customer.address}</p>
               {(provinceLabel || customer.postalCode) && (
-                <p className="text-xs text-ej-muted mt-0.5">
+                <p className="text-xs text-ink-2 mt-0.5">
                   {[provinceLabel, customer.postalCode].filter(Boolean).join(', ')}
                 </p>
               )}
@@ -314,7 +314,7 @@ export default async function CustomerDetailPage({
                   href={mapHref}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm font-semibold text-ej-ink underline underline-offset-2 mt-1 inline-block min-h-[44px] py-2"
+                  className="text-sm font-semibold text-ink underline underline-offset-2 mt-1 inline-block min-h-[44px] py-2"
                 >
                   {custL('getDirections')}
                 </a>
@@ -325,8 +325,8 @@ export default async function CustomerDetailPage({
 
         {customer.notes && (
           <div className="mb-4">
-            <p className="text-xs font-semibold text-ej-muted mb-1">Notes</p>
-            <p className="text-sm text-ej-ink whitespace-pre-line">{customer.notes}</p>
+            <p className="text-xs font-semibold text-ink-2 mb-1">Notes</p>
+            <p className="text-sm text-ink whitespace-pre-line">{customer.notes}</p>
           </div>
         )}
 
@@ -334,7 +334,7 @@ export default async function CustomerDetailPage({
           <div className="mb-6">
             <div className="flex flex-wrap gap-1.5">
               {customer.tags.split(',').filter(Boolean).map((tag) => (
-                <span key={tag} className="text-xs font-semibold bg-ej-surface text-ej-secondary rounded-full px-2.5 py-1">
+                <span key={tag} className="text-xs font-semibold bg-surface text-ink-2 rounded-full px-2.5 py-1">
                   {tag.trim()}
                 </span>
               ))}
@@ -343,7 +343,7 @@ export default async function CustomerDetailPage({
         )}
 
         {/* Secondary actions */}
-        <div className="flex flex-wrap gap-2 pt-4 border-t border-ej-border">
+        <div className="flex flex-wrap gap-2 pt-4 border-t border-line">
           <WhatsAppButton
             phone={customer.phone}
             regionCode={regionCode}
@@ -458,17 +458,17 @@ export default async function CustomerDetailPage({
             <h3 className="text-base font-bold text-ink">Equipment</h3>
             <Link
               href={`/equipment/new?customerId=${customer.id}`}
-              className="text-sm font-semibold text-ej-ink underline underline-offset-2 min-h-[44px] inline-flex items-center"
+              className="text-sm font-semibold text-ink underline underline-offset-2 min-h-[44px] inline-flex items-center"
             >
               Add equipment
             </Link>
           </div>
-          <ul className="divide-y divide-ej-border">
+          <ul className="divide-y divide-line">
             {(customer.equipment ?? []).map((eq) => (
               <li key={eq.id} className="py-3">
                 <Link href={`/equipment/${eq.id}`} className="block">
-                  <p className="text-sm font-semibold text-ej-ink">{eq.name}</p>
-                  <p className="text-xs text-ej-muted mt-0.5">
+                  <p className="text-sm font-semibold text-ink">{eq.name}</p>
+                  <p className="text-xs text-ink-2 mt-0.5">
                     {[eq.brand, eq.model].filter(Boolean).join(', ')}
                     {eq.serial ? `, S/N ${eq.serial}` : ''}
                   </p>

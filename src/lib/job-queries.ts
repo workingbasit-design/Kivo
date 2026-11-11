@@ -19,7 +19,8 @@
  * - getJobs: Jobs page list, optional status filter.
  */
 import { prisma as defaultPrisma } from '@/lib/prisma';
-import { isJobLate } from './job-status.ts';
+import { isJobLate, LATE_ELIGIBLE_STATUSES } from './job-status.ts';
+import { dayRangeInTimezone, toISODateInTimezone } from './utils.ts';
 import { centsToDollars } from './money.ts';
 
 type Db = typeof defaultPrisma;
@@ -66,36 +67,61 @@ export async function getJobsInRange(
   });
 }
 
+/**
+ * M3: counts are computed BY THE DATABASE, not by loading rows.
+ *
+ * This used to findMany() every job row for the business - with each job's
+ * invoice ids attached - purely to produce six numbers, on every dashboard,
+ * jobs and schedule render. At a few thousand jobs that is megabytes over
+ * the wire per page view, and it grows forever.
+ *
+ * Note this is deliberately NOT "add a limit": capping the fetch would make
+ * the totals silently WRONG, which is worse than slow. Aggregating in SQL
+ * keeps every number exact while transferring a handful of rows.
+ *
+ * The late filter mirrors isJobLate() exactly:
+ *   - only NEW/SCHEDULED are late-eligible (shared constant), and
+ *   - a job with a startAt is late once that instant has passed, otherwise
+ *     a dated job is late when its date falls before today in the business
+ *     timezone. Job.date stores that timezone's midnight, so comparing
+ *     against today's midnight in the same zone is the same comparison the
+ *     day-key string compare was doing.
+ */
 export async function getJobCounts(
   businessId: string,
   opts: { timezone?: string; now?: Date; db?: Db } = {},
 ): Promise<JobCounts> {
   const { timezone = 'America/Toronto', now = new Date(), db = defaultPrisma } = opts;
-  const jobs = await db.job.findMany({
-    where: { businessId },
-    select: {
-      id: true,
-      status: true,
-      date: true,
-      startAt: true,
-      invoices: { select: { id: true } },
-    },
-  });
-  let scheduled = 0;
-  let late = 0;
-  let completed = 0;
-  let uninvoiced = 0;
+  const { gte: todayStart } = dayRangeInTimezone(toISODateInTimezone(now, timezone), timezone);
+
+  const [grouped, uninvoiced, late] = await Promise.all([
+    db.job.groupBy({
+      by: ['status'],
+      where: { businessId },
+      _count: { _all: true },
+    }),
+    db.job.count({
+      where: { businessId, status: 'COMPLETED', invoices: { none: {} } },
+    }),
+    db.job.count({
+      where: {
+        businessId,
+        status: { in: [...LATE_ELIGIBLE_STATUSES] },
+        OR: [
+          { startAt: { lt: now } },
+          { AND: [{ startAt: null }, { date: { lt: todayStart } }] },
+        ],
+      },
+    }),
+  ]);
+
   const byStatus: Record<string, number> = {};
-  for (const j of jobs) {
-    byStatus[j.status] = (byStatus[j.status] ?? 0) + 1;
-    if (j.status === 'NEW' || j.status === 'SCHEDULED') scheduled++;
-    if (j.status === 'COMPLETED') {
-      completed++;
-      if (j.invoices.length === 0) uninvoiced++;
-    }
-    if (isJobLate(j, now, timezone)) late++;
-  }
-  return { total: jobs.length, scheduled, late, completed, uninvoiced, byStatus };
+  for (const g of grouped) byStatus[g.status] = g._count._all;
+  const total = Object.values(byStatus).reduce((a, b) => a + b, 0);
+  const scheduled = (byStatus.NEW ?? 0) + (byStatus.SCHEDULED ?? 0);
+  const completed = byStatus.COMPLETED ?? 0;
+
+  return { total, scheduled, late, completed, uninvoiced, byStatus };
 }
 
 export async function getMoneySummary(
@@ -104,22 +130,55 @@ export async function getMoneySummary(
 ): Promise<MoneySummary> {
   const { db = defaultPrisma } = opts;
 
-  // Voided invoices are excluded from reports (Part A7).
-  const invoices = await db.invoice.findMany({
-    where: { businessId, status: { in: ['UNPAID', 'PARTIALLY PAID'] }, voidedAt: null },
-    select: {
-      totalCents: true,
-      status: true,
-      payments: { select: { amountCents: true, status: true } },
-    },
-  });
-  let outstanding = 0;
-  for (const inv of invoices) {
-    const total = centsToDollars(inv.totalCents);
-    if (inv.status === 'UNPAID') {
-      outstanding += total;
-    } else {
-      // PARTIALLY PAID: subtract COMPLETED payments only.
+  // M3: this used to load EVERY unpaid invoice with all of its payments, and
+  // every completed-uninvoiced job, just to produce three totals.
+  //
+  // UNPAID invoices need no payment data at all (the whole total is
+  // outstanding), so they are summed by the database.
+  //
+  // PARTIALLY PAID invoices do need their payments, because the balance is
+  // clamped PER INVOICE: Math.max(0, total - paid). An overpaid invoice must
+  // contribute 0, never a negative that silently cancels out someone else's
+  // balance - so a single global SUM(total) - SUM(paid) would be a different,
+  // wrong number. Those are therefore still walked, but in bounded pages so
+  // memory stays flat however many there are, and the arithmetic is
+  // unchanged.
+  const PAGE = 500;
+
+  const [unpaidAgg, partialCount, readyAgg, openQuotes] = await Promise.all([
+    db.invoice.aggregate({
+      where: { businessId, status: 'UNPAID', voidedAt: null },
+      _sum: { totalCents: true },
+      _count: { _all: true },
+    }),
+    db.invoice.count({
+      where: { businessId, status: 'PARTIALLY PAID', voidedAt: null },
+    }),
+    db.job.aggregate({
+      where: { businessId, status: 'COMPLETED', invoices: { none: {} } },
+      _sum: { priceCents: true },
+    }),
+    db.quote.count({
+      where: { businessId, status: { in: ['DRAFT', 'SENT'] } },
+    }),
+  ]);
+
+  let outstanding = centsToDollars(unpaidAgg._sum.totalCents ?? 0);
+
+  for (let skip = 0; skip < partialCount; skip += PAGE) {
+    const page = await db.invoice.findMany({
+      where: { businessId, status: 'PARTIALLY PAID', voidedAt: null },
+      select: {
+        totalCents: true,
+        payments: { select: { amountCents: true, status: true } },
+      },
+      orderBy: { id: 'asc' },
+      skip,
+      take: PAGE,
+    });
+    if (page.length === 0) break;
+    for (const inv of page) {
+      const total = centsToDollars(inv.totalCents);
       let paid = 0;
       for (const p of inv.payments) {
         if (p.status !== 'COMPLETED') continue;
@@ -129,20 +188,14 @@ export async function getMoneySummary(
     }
   }
 
-  const readyJobs = await db.job.findMany({
-    where: { businessId, status: 'COMPLETED', invoices: { none: {} } },
-    select: { priceCents: true },
-  });
-  let readyToInvoice = 0;
-  for (const j of readyJobs) {
-    readyToInvoice += centsToDollars(j.priceCents);
-  }
+  const readyToInvoice = centsToDollars(readyAgg._sum.priceCents ?? 0);
 
-  const openQuotes = await db.quote.count({
-    where: { businessId, status: { in: ['DRAFT', 'SENT'] } },
-  });
-
-  return { outstanding, outstandingCount: invoices.length, readyToInvoice, openQuotes };
+  return {
+    outstanding,
+    outstandingCount: unpaidAgg._count._all + partialCount,
+    readyToInvoice,
+    openQuotes,
+  };
 }
 
 /** Schedule week view: jobs in [weekStart, weekEnd) with customer + assignee,
@@ -273,7 +326,11 @@ export async function getJobs(
  * the start/end instants the Late / Running-over rules need. One source of
  * truth with getJobCounts and the Dashboard / Schedule screens.
  */
-export async function getJobsForList(businessId: string, db: Db = defaultPrisma) {
+export async function getJobsForList(
+  businessId: string,
+  db: Db = defaultPrisma,
+  opts: { take?: number } = {},
+) {
   return db.job.findMany({
     where: { businessId },
     select: {
@@ -296,7 +353,12 @@ export async function getJobsForList(businessId: string, db: Db = defaultPrisma)
       assignedTo: { select: { id: true, name: true } },
       invoices: { select: { id: true, status: true } },
     },
-    orderBy: [{ date: 'asc' }, { createdAt: 'asc' }],
+    // M3: bounded. The window is the most recent rows by date (descending),
+    // because an ascending take would hand back the business's OLDEST jobs
+    // and never reach today. The caller sorts back into ascending order for
+    // display, so the rendered grouping is unchanged.
+    orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
+    ...(opts.take != null ? { take: opts.take } : {}),
   });
 }
 
