@@ -164,7 +164,7 @@ export default function PortalLinkManager({
               href={waHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="min-h-[44px] inline-flex items-center gap-1.5 px-3 rounded-xl text-xs font-semibold transition-colors border bg-wa/10 border-wa/30 text-wa-deep hover:bg-wa/20"
+              className="min-h-[44px] inline-flex items-center gap-1.5 px-3 rounded-xl text-xs font-semibold transition-colors border bg-wa/10 border-wa/30 text-wa-deep dark:text-wa hover:bg-wa/20"
               title={t(locale, 't10money.portalMgrWaTitle')}
             >
               <MessageCircle size={13} /> {t(locale, 't10money.portalMgrWaShare')}

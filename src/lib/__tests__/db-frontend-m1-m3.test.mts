@@ -42,9 +42,21 @@ describe('M1 - only curated services are bookable', () => {
   it('saving booking settings syncs the list and trusts no id from the form', () => {
     const code = readCode('src/app/actions/booking.ts');
     assert.match(code, /bookableServiceIds/, 'must read the submitted selection');
-    assert.match(code, /bookableService\.(deleteMany|upsert)/, 'must sync rows');
+    assert.match(code, /bookableService\.deleteMany/, 'must sync rows');
     // Ids are filtered through the business's own services before use.
     assert.match(code, /service\.findMany\(\{[\s\S]*?businessId[\s\S]*?id: \{ in:/);
+  });
+
+  it('the settings page and the save both scope BookableService by businessId', () => {
+    // 2026-11-11 evening: the unscoped findMany crashed /settings/booking
+    // on every load (tenant guard fails closed), and the upsert in the
+    // save could not carry a businessId at all (its unique key has none).
+    const page = readCode('src/app/(app)/settings/booking/page.tsx');
+    assert.match(page, /bookableService\.findMany\(\{[\s\S]*?businessId/);
+    const action = readCode('src/app/actions/booking.ts');
+    assert.match(action, /bookableService\.deleteMany\(\{[\s\S]*?businessId/);
+    assert.match(action, /bookableService\.updateMany\(\{[\s\S]*?businessId/);
+    assert.ok(!/bookableService\.upsert/.test(action), 'upsert cannot scope by businessId here');
   });
 
   it('a backfill migration seeds existing pages so none goes blank', () => {
@@ -213,5 +225,44 @@ describe('M3 - bounded reads', () => {
   it('nextLimit never exceeds the ceiling', () => {
     const at = sliceListPage(new Array(LIST_MAX_SIZE + 1).fill(0), LIST_MAX_SIZE);
     assert.equal(at.nextLimit, LIST_MAX_SIZE);
+  });
+});
+
+describe('M3 follow-on - the invoices list aggregates scope by businessId', () => {
+  it('both payment aggregates carry a top-level businessId', () => {
+    // 2026-11-11 evening: the relation-only scope crashed /invoices on
+    // every load (Payment is a tenant model; the guard fails closed).
+    const code = readCode('src/app/(app)/invoices/page.tsx');
+    const aggregates = [...code.matchAll(/payment\.aggregate\(\{[\s\S]*?_sum/g)].map((m) => m[0]);
+    assert.equal(aggregates.length, 2, 'expected two payment aggregates');
+    for (const agg of aggregates) {
+      assert.match(agg, /businessId,/, 'aggregate must scope by businessId at the top level');
+    }
+  });
+});
+
+describe('M2 follow-on - no zero tax line when no tax is charged', () => {
+  it('invoice and quote previews hide the breakdown while tax is zero', () => {
+    for (const rel of [
+      'src/app/(app)/invoices/new/InvoiceForm.tsx',
+      'src/app/(app)/quotes/new/QuoteForm.tsx',
+    ]) {
+      assert.match(readCode(rel), /taxAmount > 0 && (lines|breakdown)\.map/);
+    }
+  });
+
+  it('the saved invoice detail hides the breakdown while tax is zero', () => {
+    const code = readCode('src/app/(app)/invoices/[id]/page.tsx');
+    assert.match(code, /taxAmountDollars > 0 && taxLines\.map/);
+  });
+});
+
+describe('D6 follow-on - WhatsApp tint button in dark mode', () => {
+  it('the tint buttons use the bright brand green as dark-mode text', () => {
+    // #0E7A3E on the 10% tint is 5.04:1 in light mode but 2.81–3.16:1 in
+    // dark mode; #25D366 on the same dark backdrops is 7.69–8.64:1.
+    for (const rel of ['src/components/WhatsAppButton.tsx', 'src/components/PortalLinkManager.tsx']) {
+      assert.match(readCode(rel), /text-wa-deep dark:text-wa/);
+    }
   });
 });

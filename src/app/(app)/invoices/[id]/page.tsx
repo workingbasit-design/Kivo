@@ -254,7 +254,9 @@ export default async function InvoiceDetailPage({
             <dt>{L('invoices.subtotal')}</dt>
             <dd className="font-semibold"><MoneyText dollars={centsToDollars(invoice.subtotalCents)} locale={locale} /></dd>
           </div>
-          {taxLines.map((l) => (
+          {/* No tax lines at all when no tax was charged (M2: an unregistered
+              business must not see a "GST 0% — $0.00" line). */}
+          {taxAmountDollars > 0 && taxLines.map((l) => (
             <div key={l.name} className="flex justify-between text-ink-2">
               <dt>
                 {l.name} {l.rate}%

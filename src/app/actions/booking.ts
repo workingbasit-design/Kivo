@@ -100,21 +100,32 @@ export async function saveBookingSettings(
   });
   const selectedIds = ownServices.map((x) => x.id);
 
-  await prisma.$transaction([
-    // Unticked services are removed outright rather than left active: the
-    // unique([bookingPageId, serviceId]) key means a re-tick just recreates
-    // the row, and keeping dead rows around would make `active` ambiguous.
-    prisma.bookableService.deleteMany({
-      where: { bookingPageId: bookingPage.id, serviceId: { notIn: selectedIds.length ? selectedIds : ['__none__'] } },
-    }),
-    ...selectedIds.map((serviceId, position) =>
-      prisma.bookableService.upsert({
-        where: { bookingPageId_serviceId: { bookingPageId: bookingPage.id, serviceId } },
-        create: { bookingPageId: bookingPage.id, serviceId, businessId, position, active: true },
-        update: { position, active: true },
-      })
-    ),
-  ]);
+  // The sync cannot use upsert: BookableService's unique key is
+  // (bookingPageId, serviceId) with no businessId, and the tenant guard
+  // rejects upsert/deleteMany without a top-level where.businessId
+  // (2026-11-11: both the unscoped deleteMany and the upsert crashed the
+  // save). So: scoped deleteMany, then a scoped updateMany per selected
+  // service, creating the row when it does not exist yet.
+  await prisma.$transaction(async (tx) => {
+    await tx.bookableService.deleteMany({
+      where: {
+        businessId,
+        bookingPageId: bookingPage.id,
+        serviceId: { notIn: selectedIds.length ? selectedIds : ['__none__'] },
+      },
+    });
+    for (const [position, serviceId] of selectedIds.entries()) {
+      const updated = await tx.bookableService.updateMany({
+        where: { businessId, bookingPageId: bookingPage.id, serviceId },
+        data: { position, active: true },
+      });
+      if (updated.count === 0) {
+        await tx.bookableService.create({
+          data: { bookingPageId: bookingPage.id, serviceId, businessId, position, active: true },
+        });
+      }
+    }
+  });
 
   revalidatePath('/settings/booking');
   revalidatePath(`/book/${slug}`);

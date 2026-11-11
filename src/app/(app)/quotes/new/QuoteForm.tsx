@@ -193,7 +193,9 @@ export default function QuoteForm({
             <dt>{t(locale, 't10money.subtotalLabel')}</dt>
             <dd className="font-semibold">{formatMoney(subtotal, taxConfig.currency)}</dd>
           </div>
-          {breakdown.map((b) => (
+          {/* No tax lines at all when no tax is charged (M2: an unregistered
+              business must not see a "GST 0% — $0.00" line). */}
+          {taxAmount > 0 && breakdown.map((b) => (
             <div key={b.name} className="flex justify-between text-ink-2">
               <dt>
                 {b.name} {b.rate}%

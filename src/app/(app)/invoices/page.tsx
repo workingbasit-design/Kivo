@@ -62,6 +62,10 @@ export default async function InvoicesPage({
       }),
       prisma.payment.aggregate({
         where: {
+          // Tenant guard: Payment is a tenant model, so the aggregate
+          // needs a top-level businessId (2026-11-11: the relation-only
+          // scope crashed /invoices on every load).
+          businessId,
           status: 'COMPLETED',
           invoice: { businessId, voidedAt: null },
         },
@@ -69,6 +73,7 @@ export default async function InvoicesPage({
       }),
       prisma.payment.aggregate({
         where: {
+          businessId,
           status: 'COMPLETED',
           invoice: { businessId, voidedAt: null, status: { not: 'PAID' } },
         },

@@ -39,7 +39,10 @@ export default async function BookingSettingsPage() {
     ? new Set(
         (
           await prisma.bookableService.findMany({
-            where: { bookingPageId: page.id, active: true },
+            // Tenant guard: BookableService is a tenant model, so the
+            // query must carry a top-level businessId (2026-11-11: the
+            // unscoped version crashed /settings/booking on every load).
+            where: { businessId, bookingPageId: page.id, active: true },
             select: { serviceId: true },
           })
         ).map((b) => b.serviceId)

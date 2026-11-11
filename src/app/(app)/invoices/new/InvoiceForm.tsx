@@ -365,7 +365,9 @@ export default function InvoiceForm({
             <dt>{t(locale, 't10money.subtotalLabel')}</dt>
             <dd className="font-semibold">{formatMoney(subtotal, taxConfig.currency)}</dd>
           </div>
-          {lines.map((l) => (
+          {/* No tax lines at all when no tax is charged (M2: an unregistered
+              business must not see a "GST 0% — $0.00" line). */}
+          {taxAmount > 0 && lines.map((l) => (
             <div key={l.name} className="flex justify-between text-ink-2">
               <dt>
                 {l.name} {l.rate}%
