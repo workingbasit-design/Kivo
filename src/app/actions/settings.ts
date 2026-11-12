@@ -7,7 +7,7 @@ import { prisma } from '@/lib/prisma';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
 import { requireAuth } from '@/lib/auth';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
-import { CA_PROVINCES, DEFAULT_CA_PROVINCE } from '@/lib/tax';
+import { CA_PROVINCES, DEFAULT_CA_PROVINCE, isValidQstNumber } from '@/lib/tax';
 import {
   INVITABLE_ROLES,
   DEFAULT_INVITE_ROLE,
@@ -31,6 +31,16 @@ const businessSettingsSchema = z.object({
     .trim()
     .max(15, 'GST/HST number is 15 characters (e.g. 123456789RT0001)')
     .refine((v) => v === '' || /^[0-9]{9}RT[0-9]{4}$/i.test(v), 'Enter a valid GST/HST number (e.g. 123456789RT0001)')
+    .optional()
+    .default(''),
+  // m1 (2026-11-11 DB audit): the QST number column existed and invoices
+  // already display it, but no UI ever wrote it. Revenu Québec format:
+  // 10 digits + TQ + 4 digits (e.g. 1234567890TQ0001).
+  qstNumber: z
+    .string()
+    .trim()
+    .max(16, 'QST number is 16 characters (e.g. 1234567890TQ0001)')
+    .refine((v) => v === '' || isValidQstNumber(v), 'Enter a valid QST number (e.g. 1234567890TQ0001)')
     .optional()
     .default(''),
   interacEmail: z
@@ -110,7 +120,7 @@ function parseWorkingHoursForm(formData: FormData): string | null | 'invalid' {
   return any ? serializeWorkingHours(hours) : null;
 }
 
-/** Update business profile: name, phone, address, GST/HST number, Interac email, timezone, region + tax settings. */
+/** Update business profile: name, phone, address, GST/HST + QST numbers, Interac email, timezone, region + tax settings. */
 export async function updateBusinessSettings(
   _prev: SettingsResult,
   formData: FormData
@@ -124,6 +134,7 @@ export async function updateBusinessSettings(
     phone: formData.get('phone'),
     address: formData.get('address'),
     taxId: formData.get('taxId'),
+    qstNumber: formData.get('qstNumber'),
     gstHstRegistered: formData.get('gstHstRegistered') === 'on',
     interacEmail: formData.get('interacEmail'),
     timezone: formData.get('timezone'),
@@ -137,7 +148,7 @@ export async function updateBusinessSettings(
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? 'Invalid business details.' };
   }
-  const { name, phone, address, taxId, interacEmail, timezone, whatsappNumber, directoryOptIn, directoryHideAddress, gstHstRegistered } = parsed.data;
+  const { name, phone, address, taxId, qstNumber, interacEmail, timezone, whatsappNumber, directoryOptIn, directoryHideAddress, gstHstRegistered } = parsed.data;
 
   // Per-day working hours from the wh_<day>_open / wh_<day>_close inputs.
   // A day with both fields empty is closed; any half-filled or invalid day
@@ -162,6 +173,7 @@ export async function updateBusinessSettings(
       phone: phone || null,
       address: address || null,
       taxId: taxId ? taxId.toUpperCase() : null,
+      qstNumber: qstNumber ? qstNumber.toUpperCase() : null,
       gstHstRegistered,
       interacEmail: interacEmail ? interacEmail.toLowerCase() : null,
       timezone: timezone || 'America/Toronto', // NOT NULL since M9; empty input falls back to the Canada default

@@ -57,7 +57,7 @@ export async function GET(req: Request) {
 
   if (parsed.data.type === 'services') {
     const services = await prisma.service.findMany({
-      where: { businessId },
+      where: { businessId, active: true },
       select: { id: true, name: true, priceCents: true },
       orderBy: { name: 'asc' },
       take: 12,

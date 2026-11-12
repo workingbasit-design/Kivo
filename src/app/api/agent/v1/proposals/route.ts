@@ -171,19 +171,23 @@ export async function POST(req: Request) {
   const existing = await unsafeUnscoped('agent:proposal:dedupe', (db) =>
     db.agentProposal.findUnique({
       where: { idempotencyKey },
-      select: { id: true, status: true, expiresAt: true, confirmToken: true, service: true },
+      select: { id: true, status: true, expiresAt: true, service: true },
     })
   );
   if (existing) {
     if (!isProposalExpired(existing.expiresAt)) {
+      // m5 (2026-11-11 DB audit): a replay must NOT hand the confirmToken
+      // back to an unauthenticated caller — the key alone would be enough
+      // to steal the confirmation link. Return only the proposal's public
+      // state; the confirmationUrl was already returned in the original
+      // 201 response to whoever created it.
       return NextResponse.json({
         protocol: 'everyjob-agent',
         version: AGENT_PROTOCOL_VERSION,
         deduplicated: true,
         proposal: proposalPayload({ ...existing, businessName: business.name }),
-        confirmationUrl: `${origin}/a/${existing.confirmToken}`,
-        token: existing.confirmToken,
-        message: 'A proposal with this idempotency key already exists. Nothing was duplicated.',
+        message:
+          'A proposal with this idempotency key already exists. Nothing was duplicated. The confirmation link was returned in the original creation response.',
       });
     }
     // The key was seen before but that proposal is over (expired or

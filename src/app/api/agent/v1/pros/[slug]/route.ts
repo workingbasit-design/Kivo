@@ -63,7 +63,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
   const [services, reviews] = await Promise.all([
     unsafeUnscoped('agent:proServices', (db) =>
       db.service.findMany({
-        where: { businessId: b.id },
+        where: { businessId: b.id, active: true },
         select: { name: true, priceCents: true },
         orderBy: { name: 'asc' },
         take: 25,

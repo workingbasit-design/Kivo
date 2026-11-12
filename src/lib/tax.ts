@@ -185,6 +185,18 @@ export function taxIdLabelForRegion(
 }
 
 /**
+ * m1 (2026-11-11 DB audit): Revenu Québec QST registration number —
+ * 10 digits + "TQ" + 4 digits (e.g. 1234567890TQ0001). The column existed
+ * and invoices already display it, but no UI ever wrote it. Validated
+ * here (pure, unit-tested) so Settings can accept it next to the GST/HST
+ * number.
+ */
+export const QST_NUMBER_RE = /^[0-9]{10}TQ[0-9]{4}$/i;
+export function isValidQstNumber(v: string): boolean {
+  return QST_NUMBER_RE.test(v.trim());
+}
+
+/**
  * Default `taxType` value to store on a new invoice for this config.
  * Single-tax regions use the tax name ("HST", "GST"); dual-tax provinces
  * use the composite ("GST+QST", "GST+PST").

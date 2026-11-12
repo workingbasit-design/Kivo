@@ -55,7 +55,7 @@ export async function GET(req: Request) {
         regionCode: true,
         directoryHideAddress: true,
         bookingPage: { select: { slug: true, showPhone: true } },
-        services: { select: { name: true, priceCents: true }, orderBy: { name: 'asc' }, take: 12 },
+        services: { select: { name: true, priceCents: true }, where: { active: true }, orderBy: { name: 'asc' }, take: 12 },
         reviews: { select: { rating: true } },
       },
       orderBy: { name: 'asc' },

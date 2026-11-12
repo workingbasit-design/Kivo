@@ -16,6 +16,8 @@ export type BusinessFormData = {
   phone: string;
   address: string;
   taxId: string;
+  /** m1: Revenu Québec QST number, shown on invoices when set. */
+  qstNumber: string;
   interacEmail: string;
   timezone: string;
   whatsappNumber: string;
@@ -176,6 +178,15 @@ export default function SettingsForm({ business }: { business: BusinessFormData 
               defaultValue={business.taxId}
               maxLength={15}
               placeholder="123456789RT0001"
+            />
+            <Input
+              label={t('t10misc.settings.qstLabel')}
+              hint={t('t10misc.settings.qstHint')}
+              name="qstNumber"
+              type="text"
+              defaultValue={business.qstNumber}
+              maxLength={16}
+              placeholder="1234567890TQ0001"
             />
           </div>
           {/* M2: the switch that decides whether invoices and quotes carry

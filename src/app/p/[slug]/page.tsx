@@ -72,7 +72,7 @@ async function getProfile(slug: string) {
   const businessId = page.business.id;
   const [services, reviews, designations] = await Promise.all([
     prisma.service.findMany({
-      where: { businessId },
+      where: { businessId, active: true },
       select: { name: true, priceCents: true },
       orderBy: { name: 'asc' },
     }),
@@ -167,7 +167,7 @@ export default async function PublicProfilePage({
         name: true,
         address: true,
         bookingPage: { select: { slug: true } },
-        services: { select: { name: true }, take: 6 },
+        services: { select: { name: true }, where: { active: true }, take: 6 },
         reviews: { select: { rating: true } },
       },
       take: 100,
