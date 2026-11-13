@@ -4,7 +4,7 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { computeQuoteTotals } from '../quote-totals.ts';
+import { computeQuoteTotals, quoteDisplayTax } from '../quote-totals.ts';
 
 const noDiscount = { type: null as null, value: null };
 
@@ -131,4 +131,49 @@ test('Quebec with discount: tax applies per-line to the discounted amount', () =
   // GST: 90 x 5% = 4.50; QST: 90 x 9.975% = 8.9775 -> 8.98
   assert.equal(r.taxAmount, 13.48);
   assert.equal(r.total, 103.48);
+});
+
+test('quoteDisplayTax: unregistered business shows NO tax lines (2026-11-13 deep test)', () => {
+  // The $150 ON quote from an unregistered business used to display a
+  // fictional "HST 13% $17.26" line backed out of the total from region
+  // settings alone; createQuote stores no tax for unregistered businesses
+  // (M2), so the display must not invent one.
+  const r = quoteDisplayTax(150, [{ name: 'HST', rate: 13 }], false);
+  assert.equal(r.rate, 0);
+  assert.equal(r.taxAmount, 0);
+  assert.equal(r.taxable, 150);
+  assert.deepEqual(r.taxLines, []);
+});
+
+test('quoteDisplayTax: registered ON business backs out HST exactly', () => {
+  // Stored total $169.50 = $150 + 13% HST.
+  const r = quoteDisplayTax(169.5, [{ name: 'HST', rate: 13 }], true);
+  assert.equal(r.rate, 13);
+  assert.equal(r.taxAmount, 19.5);
+  assert.equal(r.taxable, 150);
+  assert.deepEqual(r.taxLines, [{ name: 'HST', rate: 13, amount: 19.5 }]);
+});
+
+test('quoteDisplayTax: registered QC business splits GST + QST, lines sum to tax', () => {
+  // Stored total $172.46 = $150 + GST 5% ($7.50) + QST 9.975% ($14.96).
+  const qcTaxes = [
+    { name: 'GST', rate: 5 },
+    { name: 'QST', rate: 9.975 },
+  ];
+  const r = quoteDisplayTax(172.46, qcTaxes, true);
+  assert.equal(r.taxAmount, 22.46);
+  assert.equal(r.taxable, 150);
+  assert.equal(r.taxLines[0].amount, 7.5);
+  assert.equal(r.taxLines[1].amount, 14.96);
+  assert.equal(
+    r.taxLines.reduce((s, l) => s + l.amount, 0),
+    r.taxAmount
+  );
+});
+
+test('quoteDisplayTax: zero total shows no tax even when registered', () => {
+  const r = quoteDisplayTax(0, [{ name: 'HST', rate: 13 }], true);
+  assert.equal(r.taxAmount, 0);
+  assert.equal(r.taxable, 0);
+  assert.deepEqual(r.taxLines, [{ name: 'HST', rate: 13, amount: 0 }]);
 });

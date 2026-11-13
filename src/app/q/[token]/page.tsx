@@ -9,7 +9,8 @@ import { StatusPill } from '@/app/(app)/_components/status-ui';
 import { formatCents, centsToDollars } from '@/lib/money';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
-import { getTaxConfig, totalTaxRate } from '@/lib/tax';
+import { getTaxConfig } from '@/lib/tax';
+import { quoteDisplayTax } from '@/lib/quote-totals';
 import QuotePortalActions from '@/components/QuotePortalActions';
 import { isQuoteExpired } from '@/lib/quote-expiry';
 import PortalNotice from '@/components/PortalNotice';
@@ -82,6 +83,7 @@ export default async function QuotePortalPage({
           taxRegion: true,
           timezone: true,
           currency: true,
+          gstHstRegistered: true,
           stripeConnection: {
             select: { chargesEnabled: true, livemode: true, liveConfirmedAt: true },
           },
@@ -97,18 +99,18 @@ export default async function QuotePortalPage({
   const moneyLocale = locale === 'fr' ? 'fr' : 'en';
   const dateLocale = locale === 'fr' ? 'fr-CA' : 'en-CA';
 
-  // E8: Tax breakdown — same math as the owner-side quote page.
-  // The stored total is tax-inclusive; back out the tax lines so they sum exactly.
-  const round2 = (n: number) => Math.round(n * 100) / 100;
+  // E8: Tax breakdown — same display rule as the owner-side quote page.
+  // The stored total is tax-inclusive only when the business is GST/HST
+  // registered (M2); an unregistered business shows no tax lines, so the
+  // customer never sees phantom tax backed out of the total (2026-11-13
+  // deep test: $150 ON quote showed a fictional "HST 13% $17.26").
   const taxConfig = getTaxConfig(quote.business.regionCode, quote.business.taxRegion);
-  const taxRate = totalTaxRate(taxConfig);
   const totalDollars = centsToDollars(quote.totalCents);
-  const taxAmount = taxRate > 0 ? round2((totalDollars * taxRate) / (100 + taxRate)) : 0;
-  const subtotal = round2(totalDollars - taxAmount);
-  const taxLines = taxConfig.taxes.map((tx) => ({
-    ...tx,
-    amount: taxConfig.taxes.length === 1 ? taxAmount : round2((subtotal * tx.rate) / 100),
-  }));
+  const { taxable: subtotal, taxLines } = quoteDisplayTax(
+    totalDollars,
+    taxConfig.taxes,
+    quote.business.gstHstRegistered
+  );
 
   const selectedAddons = quote.addons.filter((a) => a.selected);
   // Live client total: base quote total (cents) + prices of selected add-ons.

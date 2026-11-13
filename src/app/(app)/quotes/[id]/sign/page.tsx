@@ -4,15 +4,14 @@ import { ArrowLeft } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { Card } from '@/components/kit';
-import { getTaxConfig, totalTaxRate } from '@/lib/tax';
+import { getTaxConfig } from '@/lib/tax';
+import { quoteDisplayTax } from '@/lib/quote-totals';
 import { formatMoney, centsToDollars } from '@/lib/money';
 import { formatDateShort } from '@/lib/utils';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import SignPrepareClient from './SignPrepareClient';
 import { PageTitle } from '../../../_components/PageTitle';
-
-const round2 = (n: number) => Math.round(n * 100) / 100;
 
 /** Owner-side: place signature/date/initials fields on the quote document. */
 export default async function SignPreparePage({
@@ -31,35 +30,25 @@ export default async function SignPreparePage({
     include: {
       customer: { select: { name: true, phone: true } },
       business: {
-        select: { name: true, regionCode: true, taxRegion: true },
+        select: { name: true, regionCode: true, taxRegion: true, gstHstRegistered: true },
       },
     },
   });
   if (!quote) notFound();
 
-  // Same tax math as the quote detail page: the stored total is
-  // tax-inclusive, so back out the tax lines to sum exactly to the total.
+  // Same display-tax rule as the quote detail page: the stored total is
+  // tax-inclusive only when the business is GST/HST registered (M2), so
+  // an unregistered business shows no tax lines (2026-11-13 deep test).
   const taxConfig = getTaxConfig(
     quote.business.regionCode,
     quote.business.taxRegion
   );
-  const rate = totalTaxRate(taxConfig);
   const totalDollars = centsToDollars(quote.totalCents);
-  const taxAmount = rate > 0 ? round2((totalDollars * rate) / (100 + rate)) : 0;
-  const subtotal = round2(totalDollars - taxAmount);
-  const taxLines = taxConfig.taxes.map((tx) => ({
-    ...tx,
-    amount:
-      taxConfig.taxes.length === 1
-        ? taxAmount
-        : round2((subtotal * tx.rate) / 100),
-  }));
-  if (taxLines.length > 1) {
-    const sum = round2(taxLines.reduce((s, l) => s + l.amount, 0));
-    taxLines[taxLines.length - 1].amount = round2(
-      taxLines[taxLines.length - 1].amount + (taxAmount - sum)
-    );
-  }
+  const { taxable: subtotal, taxLines } = quoteDisplayTax(
+    totalDollars,
+    taxConfig.taxes,
+    quote.business.gstHstRegistered
+  );
 
   return (
     <div className="space-y-6 max-w-3xl">

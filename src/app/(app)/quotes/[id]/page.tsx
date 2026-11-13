@@ -10,7 +10,8 @@ import { formatMoney, centsToDollars } from '@/lib/money';
 import { lineMargin, summarizeLineMargins } from '@/lib/line-margin';
 import MoneyText from '@/components/MoneyText';
 import DateTimeText from '@/components/DateTimeText';
-import { getTaxConfig, totalTaxRate } from '@/lib/tax';
+import { getTaxConfig } from '@/lib/tax';
+import { quoteDisplayTax } from '@/lib/quote-totals';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
 import MoneyExplainer from '@/components/MoneyExplainer';
@@ -61,7 +62,7 @@ export default async function QuoteDetailPage({
     where: { id, businessId },
     include: {
       customer: true,
-      business: { select: { regionCode: true, taxRegion: true, currency: true, name: true, timezone: true } },
+      business: { select: { regionCode: true, taxRegion: true, currency: true, name: true, timezone: true, gstHstRegistered: true } },
       addons: { orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }] },
       lineItems: { orderBy: { position: 'asc' } },
       deposits: { orderBy: { createdAt: 'desc' } },
@@ -98,13 +99,17 @@ export default async function QuoteDetailPage({
     quote.business.regionCode,
     quote.business.taxRegion
   );
-  const rate = totalTaxRate(taxConfig);
-
-  // The stored total is tax-inclusive (see createQuote). Back out the tax
-  // lines so they sum exactly to the total.
+  // Display tax lines from the stored total — tax-inclusive ONLY when the
+  // business is GST/HST registered (M2: createQuote stores no tax for
+  // unregistered businesses, so backing tax out of the total from region
+  // settings alone invented a phantom "HST 13% $17.26" line — 2026-11-13
+  // deep test). Unregistered: taxLines is empty, taxable == total.
   const totalDollars = centsToDollars(quote.totalCents);
-  const taxAmount = rate > 0 ? round2((totalDollars * rate) / (100 + rate)) : 0;
-  const taxable = round2(totalDollars - taxAmount);
+  const { taxable, taxLines } = quoteDisplayTax(
+    totalDollars,
+    taxConfig.taxes,
+    quote.business.gstHstRegistered
+  );
   // Track 8D quotes persist their line items; older quotes only have a total.
   const hasLineItems = quote.lineItems.length > 0;
   const itemsSubtotal = round2(
@@ -121,20 +126,6 @@ export default async function QuoteDetailPage({
     (quote.discountType === 'PERCENT' && quote.discountValue != null
       ? ` (${quote.discountValue}%)`
       : '');
-  const taxLines = taxConfig.taxes.map((t) => ({
-    ...t,
-    amount:
-      taxConfig.taxes.length === 1
-        ? taxAmount
-        : round2((taxable * t.rate) / 100),
-  }));
-  // Fix rounding drift on multi-tax configs so lines sum to taxAmount.
-  if (taxLines.length > 1) {
-    const sum = round2(taxLines.reduce((s, l) => s + l.amount, 0));
-    taxLines[taxLines.length - 1].amount = round2(
-      taxLines[taxLines.length - 1].amount + (taxAmount - sum)
-    );
-  }
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -440,10 +431,12 @@ export default async function QuoteDetailPage({
         />
       </Card>
 
-      <p className="text-[11px] text-ink-2">
-        {taxConfig.label} is included in this quote, based on your region settings
-        (Settings → Region & tax).
-      </p>
+      {quote.business.gstHstRegistered && (
+        <p className="text-[11px] text-ink-2">
+          {taxConfig.label} is included in this quote, based on your region settings
+          (Settings → Region & tax).
+        </p>
+      )}
     </div>
   );
 }
