@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { CA_PROVINCES } from "./tax.ts";
+import { PRICEBOOK_KINDS, PRICEBOOK_TAX_CATEGORIES, PRICEBOOK_UNITS } from "./pricebook.ts";
 
 export const JOB_STATUSES = [
   "NEW",
@@ -60,6 +61,34 @@ export const serviceSchema = z.object({
     .min(0, "Price can't be negative")
     .max(10_000_000)
     .transform((n) => Number(n.toFixed(2))),
+  // DB-audit m2 (2026-11-11): the Service columns below existed in the
+  // schema but no form ever wrote them, so the job-detail picker reads
+  // (nameFr/category) always returned null. Blank text stays '' here and
+  // is stored as null by the action; blank selects fall back to defaults.
+  nameFr: z.string().trim().max(200).optional().default(""),
+  descriptionFr: z.string().trim().max(500).optional().default(""),
+  category: z.string().trim().max(100).optional().default(""),
+  unit: z.preprocess(
+    (v) => (String(v ?? "").trim() === "" ? undefined : v),
+    z.enum(PRICEBOOK_UNITS).optional().default("each")
+  ),
+  kind: z.preprocess(
+    (v) => (String(v ?? "").trim() === "" ? undefined : v),
+    z.enum(PRICEBOOK_KINDS).optional().default("SERVICE")
+  ),
+  taxCategory: z.preprocess(
+    (v) => (String(v ?? "").trim() === "" ? undefined : v),
+    z.enum(PRICEBOOK_TAX_CATEGORIES).optional().default("TAXABLE_GST_HST")
+  ),
+  cost: z.preprocess(
+    (v) => (String(v ?? "").trim() === "" ? undefined : v),
+    z.coerce
+      .number()
+      .min(0, "Cost can't be negative")
+      .max(10_000_000)
+      .transform((n) => Number(n.toFixed(2)))
+      .optional()
+  ),
 });
 
 export const quoteSchema = z.object({

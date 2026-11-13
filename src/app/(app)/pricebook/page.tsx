@@ -15,7 +15,22 @@ export default async function PriceBookPage() {
   const services = await prisma.service.findMany({
     where: { businessId },
     orderBy: { name: 'asc' },
-    select: { id: true, name: true, priceCents: true, durationMin: true, description: true, iconKey: true },
+    select: {
+      id: true,
+      name: true,
+      priceCents: true,
+      durationMin: true,
+      description: true,
+      iconKey: true,
+      // DB-audit m2: the form now writes these; the client renders them.
+      nameFr: true,
+      descriptionFr: true,
+      category: true,
+      unit: true,
+      kind: true,
+      taxCategory: true,
+      costCents: true,
+    },
   });
 
   const initialServices = services.map((s) => ({
@@ -25,6 +40,13 @@ export default async function PriceBookPage() {
     durationMin: s.durationMin,
     description: s.description,
     iconKey: s.iconKey,
+    nameFr: s.nameFr,
+    descriptionFr: s.descriptionFr,
+    category: s.category,
+    unit: s.unit,
+    kind: s.kind,
+    taxCategory: s.taxCategory,
+    cost: s.costCents == null ? null : centsToDollars(s.costCents),
   }));
 
   return <PriceBookClient initialServices={initialServices} currency={currency} locale={locale} />;

@@ -69,6 +69,14 @@ export async function createService(formData: FormData): Promise<ServiceResult> 
     durationMin: formData.get('durationMin'),
     description: formData.get('description'),
     iconKey: formData.get('iconKey'),
+    // DB-audit m2: price-book columns the form never wrote.
+    nameFr: formData.get('nameFr'),
+    descriptionFr: formData.get('descriptionFr'),
+    category: formData.get('category'),
+    unit: formData.get('unit'),
+    kind: formData.get('kind'),
+    taxCategory: formData.get('taxCategory'),
+    cost: formData.get('cost'),
   });
   if (error || !data) return { error: error ?? 'Invalid service details.' };
 
@@ -90,6 +98,13 @@ export async function createService(formData: FormData): Promise<ServiceResult> 
       durationMin: data.durationMin ?? null,
       description: nullIfBlank(data.description),
       iconKey: data.iconKey ?? null,
+      nameFr: nullIfBlank(data.nameFr),
+      descriptionFr: nullIfBlank(data.descriptionFr),
+      category: nullIfBlank(data.category),
+      unit: data.unit,
+      kind: data.kind,
+      taxCategory: data.taxCategory,
+      costCents: data.cost === undefined ? null : (dollarsToCents(data.cost) ?? null),
       businessId,
     },
   });
@@ -112,6 +127,14 @@ export async function updateService(id: string, formData: FormData): Promise<Ser
     durationMin: formData.get('durationMin'),
     description: formData.get('description'),
     iconKey: formData.get('iconKey'),
+    // DB-audit m2: price-book columns the form never wrote.
+    nameFr: formData.get('nameFr'),
+    descriptionFr: formData.get('descriptionFr'),
+    category: formData.get('category'),
+    unit: formData.get('unit'),
+    kind: formData.get('kind'),
+    taxCategory: formData.get('taxCategory'),
+    cost: formData.get('cost'),
   });
   if (error || !data) return { error: error ?? 'Invalid service details.' };
 
@@ -123,6 +146,13 @@ export async function updateService(id: string, formData: FormData): Promise<Ser
       durationMin: data.durationMin ?? null,
       description: nullIfBlank(data.description),
       iconKey: data.iconKey ?? null,
+      nameFr: nullIfBlank(data.nameFr),
+      descriptionFr: nullIfBlank(data.descriptionFr),
+      category: nullIfBlank(data.category),
+      unit: data.unit,
+      kind: data.kind,
+      taxCategory: data.taxCategory,
+      costCents: data.cost === undefined ? null : (dollarsToCents(data.cost) ?? null),
     },
   });
   revalidatePath('/pricebook');

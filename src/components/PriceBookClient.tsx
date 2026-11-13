@@ -7,7 +7,8 @@ import { toast } from 'sonner';
 import { createService, updateService, deleteService, seedDefaultServices } from '@/app/actions/services';
 import { currencySymbol, formatMoney } from '@/lib/money';
 import { t, type Locale } from '@/lib/i18n';
-import { BottomSheet, Button, Input, Textarea } from '@/components/kit';
+import { BottomSheet, Button, Input, Select, Textarea } from '@/components/kit';
+import { calcMargin, displayDescription, displayName, PRICEBOOK_KINDS, PRICEBOOK_TAX_CATEGORIES, PRICEBOOK_UNITS } from '@/lib/pricebook';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import TradeIcon from '@/components/TradeIcon';
 import { TRADE_KEYS, tradeKeyForService, type TradeKey } from '@/lib/trade-icons';
@@ -19,6 +20,14 @@ type Service = {
   durationMin: number | null;
   description: string | null;
   iconKey: string | null;
+  // DB-audit m2: schema columns the form never wrote; now read + written.
+  nameFr: string | null;
+  descriptionFr: string | null;
+  category: string | null;
+  unit: string;
+  kind: string;
+  taxCategory: string;
+  cost: number | null;
 };
 
 /** i18n key per trade for the icon picker labels. */
@@ -54,6 +63,14 @@ export default function PriceBookClient({
   const [durationMin, setDurationMin] = useState('');
   const [description, setDescription] = useState('');
   const [iconKey, setIconKey] = useState(''); // '' = auto-detect from name
+  // DB-audit m2: price-book fields the form never wrote.
+  const [nameFr, setNameFr] = useState('');
+  const [descriptionFr, setDescriptionFr] = useState('');
+  const [category, setCategory] = useState('');
+  const [unit, setUnit] = useState('each');
+  const [kind, setKind] = useState('SERVICE');
+  const [taxCategory, setTaxCategory] = useState('TAXABLE_GST_HST');
+  const [cost, setCost] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
@@ -62,7 +79,8 @@ export default function PriceBookClient({
   const filteredServices = initialServices.filter(
     (s) =>
       s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (s.description ?? '').toLowerCase().includes(searchQuery.toLowerCase())
+      (s.description ?? '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (s.category ?? '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const openAdd = () => {
@@ -72,6 +90,13 @@ export default function PriceBookClient({
     setDurationMin('');
     setDescription('');
     setIconKey('');
+    setNameFr('');
+    setDescriptionFr('');
+    setCategory('');
+    setUnit('each');
+    setKind('SERVICE');
+    setTaxCategory('TAXABLE_GST_HST');
+    setCost('');
     setError(null);
     setIsModalOpen(true);
   };
@@ -83,6 +108,13 @@ export default function PriceBookClient({
     setDurationMin(service.durationMin != null ? String(service.durationMin) : '');
     setDescription(service.description ?? '');
     setIconKey(service.iconKey ?? '');
+    setNameFr(service.nameFr ?? '');
+    setDescriptionFr(service.descriptionFr ?? '');
+    setCategory(service.category ?? '');
+    setUnit(service.unit || 'each');
+    setKind(service.kind || 'SERVICE');
+    setTaxCategory(service.taxCategory || 'TAXABLE_GST_HST');
+    setCost(service.cost != null ? String(service.cost) : '');
     setError(null);
     setIsModalOpen(true);
   };
@@ -97,6 +129,14 @@ export default function PriceBookClient({
     fd.append('durationMin', durationMin);
     fd.append('description', description);
     fd.append('iconKey', iconKey);
+    // DB-audit m2: price-book fields the form never wrote.
+    fd.append('nameFr', nameFr);
+    fd.append('descriptionFr', descriptionFr);
+    fd.append('category', category);
+    fd.append('unit', unit);
+    fd.append('kind', kind);
+    fd.append('taxCategory', taxCategory);
+    fd.append('cost', cost);
 
     startTransition(async () => {
       setError(null);
@@ -113,6 +153,13 @@ export default function PriceBookClient({
       setDurationMin('');
       setDescription('');
       setIconKey('');
+      setNameFr('');
+      setDescriptionFr('');
+      setCategory('');
+      setUnit('each');
+      setKind('SERVICE');
+      setTaxCategory('TAXABLE_GST_HST');
+      setCost('');
       setEditingId(null);
       setIsModalOpen(false);
       toast.success(tr(editingId ? 't10misc.pricebook.updated' : 't10misc.pricebook.added'));
@@ -242,12 +289,45 @@ export default function PriceBookClient({
                 </div>
               </div>
 
-              <h3 className="font-bold text-base text-ink mb-1">{service.name}</h3>
-              {service.description ? (
-                <p className="text-xs text-ink-2 line-clamp-2 mb-2">{service.description}</p>
-              ) : (
-                <p className="text-xs text-ink-2 mb-2">{tr('t10misc.pricebook.standardFlat')}</p>
-              )}
+              {/* DB-audit m2: French name/description with fallback, category, margin. */}
+              {(() => {
+                const shown = displayName(service, loc);
+                const shownDesc = displayDescription(service, loc);
+                const margin =
+                  service.cost != null
+                    ? calcMargin(Math.round(service.price * 100), Math.round(service.cost * 100))
+                    : null;
+                return (
+                  <>
+                    <h3 className="font-bold text-base text-ink mb-1">
+                      {shown.text}
+                      {shown.needsTranslation && (
+                        <span className="ml-2 align-middle text-[10px] font-semibold text-ink-2 bg-surface-2 rounded-lg px-2 py-0.5">
+                          {tr('pricebook.needsTranslation')}
+                        </span>
+                      )}
+                    </h3>
+                    {shownDesc ? (
+                      <p className="text-xs text-ink-2 line-clamp-2 mb-2">{shownDesc}</p>
+                    ) : (
+                      <p className="text-xs text-ink-2 mb-2">{tr('t10misc.pricebook.standardFlat')}</p>
+                    )}
+                    <div className="flex items-center flex-wrap gap-1.5 mb-2">
+                      {service.category && (
+                        <span className="text-[11px] font-semibold text-ink-2 bg-surface-2 rounded-lg px-2 py-1">
+                          {service.category}
+                        </span>
+                      )}
+                      {margin && (
+                        <span className="text-[11px] font-semibold text-ink-2 bg-surface-2 rounded-lg px-2 py-1">
+                          {formatMoney(margin.amountCents / 100, currency)} ·{' '}
+                          {Math.round(margin.percent)}% {tr('pricebook.marginLabel')}
+                        </span>
+                      )}
+                    </div>
+                  </>
+                );
+              })()}
               <div className="flex items-center justify-between gap-2 mt-1">
                 {service.durationMin != null ? (
                   <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-ink-2 bg-surface-2 rounded-lg px-2 py-1">
@@ -364,6 +444,98 @@ export default function PriceBookClient({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
+
+          {/* DB-audit m2: schema fields the form never wrote (F6). */}
+          <Input
+            label={tr('pricebook.nameFrLabel')}
+            hint={tr('pricebook.nameFrHint')}
+            type="text"
+            placeholder={tr('pricebook.nameFrPlaceholder')}
+            maxLength={200}
+            value={nameFr}
+            onChange={(e) => setNameFr(e.target.value)}
+          />
+
+          <Textarea
+            label={tr('pricebook.descriptionFrLabel')}
+            placeholder={tr('t10misc.pricebook.descriptionHint')}
+            rows={2}
+            maxLength={500}
+            value={descriptionFr}
+            onChange={(e) => setDescriptionFr(e.target.value)}
+          />
+
+          <Input
+            label={tr('pricebook.categoryLabel')}
+            hint={tr('pricebook.categoryHint')}
+            type="text"
+            placeholder={tr('pricebook.categoryPlaceholder')}
+            maxLength={100}
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          />
+
+          <div className="grid grid-cols-2 gap-4">
+            <Select
+              label={tr('pricebook.kindLabel')}
+              name="kind"
+              value={kind}
+              onChange={(e) => setKind(e.target.value)}
+              options={PRICEBOOK_KINDS.map((k) => ({
+                value: k,
+                label: tr(k === 'SERVICE' ? 'pricebook.kindService' : 'pricebook.kindProduct'),
+              }))}
+            />
+            <Select
+              label={tr('pricebook.unitLabel')}
+              name="unit"
+              value={unit}
+              onChange={(e) => setUnit(e.target.value)}
+              options={PRICEBOOK_UNITS.map((u) => ({
+                value: u,
+                label: tr(
+                  u === 'each'
+                    ? 'pricebook.unitEach'
+                    : u === 'hour'
+                      ? 'pricebook.unitHour'
+                      : u === 'job'
+                        ? 'pricebook.unitJob'
+                        : 'pricebook.unitSqft'
+                ),
+              }))}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Select
+              label={tr('pricebook.taxCategoryLabel')}
+              name="taxCategory"
+              value={taxCategory}
+              onChange={(e) => setTaxCategory(e.target.value)}
+              options={PRICEBOOK_TAX_CATEGORIES.map((c) => ({
+                value: c,
+                label: tr(
+                  c === 'TAXABLE_GST_HST'
+                    ? 'pricebook.taxGstHst'
+                    : c === 'TAXABLE_PST'
+                      ? 'pricebook.taxPst'
+                      : c === 'TAXABLE_QST'
+                        ? 'pricebook.taxQst'
+                        : 'pricebook.taxExempt'
+                ),
+              }))}
+            />
+            <Input
+              label={tr('pricebook.costLabel')}
+              hint={tr('pricebook.costHint')}
+              type="text"
+              inputMode="decimal"
+              pattern="[0-9]*\.?[0-9]*"
+              placeholder="e.g. 56"
+              value={cost}
+              onChange={(e) => setCost(e.target.value)}
+            />
+          </div>
 
           {/* Part B: trade icon picker. Auto (blank) detects from the name. */}
           <div>
