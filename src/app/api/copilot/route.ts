@@ -97,6 +97,24 @@ const strictDate = z
     return dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d;
   }, 'Invalid date');
 
+/**
+ * Prices are dollars with at most 2 decimal places. The quote median
+ * suggestion comes from past quote TOTALS (tax-inclusive), so it routinely
+ * carries cents (e.g. $169.50) — z.number().int() rejected every such
+ * confirm with a 400 (2026-11-14 deep test: the Copilot quote preview
+ * showed a valid draft, the button was enabled, and confirming always
+ * failed). dollarsToCents rounds to the cent downstream, so 2dp is the
+ * exact bound. Applies to job confirms too: the same wall would hit any
+ * cents price typed in chat.
+ */
+const priceDollars = z
+  .number()
+  .min(0)
+  .max(10000000)
+  .refine((n) => Math.abs(n * 100 - Math.round(n * 100)) < 1e-9, {
+    message: 'Price must have at most 2 decimal places.',
+  });
+
 const confirmSchema = z.object({
   confirm: z.literal(true),
   previewType: z.literal('job').optional(), // default for older clients
@@ -107,7 +125,7 @@ const confirmSchema = z.object({
     customerName: z.string().min(1).max(80),
     phone: z.string().regex(/^[2-9]\d{9}$/).nullable().optional(), // NANP 10-digit
     address: z.string().max(200).nullable().optional(),
-    price: z.number().int().min(0).max(10000000).nullable().optional(),
+    price: priceDollars.nullable().optional(),
   }),
   // Client-generated idempotency key (one per booking preview). Optional -
   // when absent the server derives a deterministic key from the draft.
@@ -140,7 +158,7 @@ const quoteConfirmSchema = z.object({
   preview: z.object({
     title: z.string().min(1).max(120),
     customerName: z.string().min(1).max(80),
-    price: z.number().int().min(0).max(10000000).nullable().optional(),
+    price: priceDollars.nullable().optional(),
   }),
   idempotencyKey: z.string().trim().min(8).max(128).optional(),
 });

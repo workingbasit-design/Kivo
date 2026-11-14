@@ -79,6 +79,14 @@ export const prisma = new Proxy(
         // inside are recorded like any other write.
         return async (fn) => fn(prisma);
       }
+      if (model === '$queryRaw') {
+        // nextDocumentNumber's counter read (quote confirm path, 2026-11-14).
+        return async () => [{ nextNumber: 7, prefix: 'Q-', padding: 4 }];
+      }
+      if (model === '$executeRaw') {
+        // nextDocumentNumber's counter insert/bump (quote confirm path).
+        return async () => 1;
+      }
       return delegate(String(model));
     },
   }

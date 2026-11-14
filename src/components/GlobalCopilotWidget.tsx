@@ -711,8 +711,17 @@ export default function GlobalCopilotWidget({
               { label: t(lang, 't10misc.copilot.backToStart'), run: () => goHome() },
             ]
       );
-    } catch {
-      const msg = t(lang, 't10misc.copilot.confirmError');
+    } catch (err) {
+      // Surface the server's actual error (e.g. the customer-not-found or
+      // validation message) instead of the generic booking message: a quote
+      // confirm that fails for a known reason used to report "The job could
+      // not be booked", which sent users debugging the wrong thing
+      // (2026-11-14 deep test).
+      const serverMsg = err instanceof Error ? err.message : '';
+      const msg =
+        serverMsg && serverMsg !== 'Confirm failed'
+          ? serverMsg
+          : t(lang, 't10misc.copilot.confirmError');
       pushMessage({ role: 'assistant', content: msg });
       toast.error(msg);
     } finally {
