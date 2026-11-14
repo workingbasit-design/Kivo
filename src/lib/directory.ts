@@ -1,4 +1,5 @@
 import { headers } from 'next/headers';
+import type { Prisma } from '@prisma/client';
 import { validatePhone } from './phone.ts';
 import { clientIpFromHeaders } from './client-ip.ts';
 
@@ -86,6 +87,43 @@ export function matchesCity(city: string, address: string | null | undefined): b
   const c = norm(city);
   if (!c) return true;
   return norm(address).includes(c);
+}
+
+/**
+ * DB-side where clause for the public agent search (m7 — the old route
+ * loaded up to 200 businesses + all reviews and filtered in JS).
+ *
+ * Semantics match matchesServiceKeyword/matchesCity exactly: every
+ * whitespace-separated service word must appear (case-insensitive) in the
+ * business name or in one of its ACTIVE service names, and the city must
+ * appear in the address. `norm()` is lowercase+trim only (no accent
+ * folding), so Postgres `contains` + `mode: 'insensitive'` is equivalent.
+ * A word can never match across the name/service boundary: words contain
+ * no spaces, so a contiguous match cannot span one.
+ */
+export function buildAgentSearchWhere(service: string, city: string): Prisma.BusinessWhereInput {
+  const where: Prisma.BusinessWhereInput = {
+    directoryOptIn: true,
+    directoryVerifiedAt: { not: null },
+    bookingPage: { is: { enabled: true } },
+  };
+  const conditions: Prisma.BusinessWhereInput[] = [];
+  for (const w of norm(service).split(/\s+/).filter(Boolean)) {
+    conditions.push({
+      OR: [
+        { name: { contains: w, mode: 'insensitive' } },
+        {
+          services: {
+            some: { name: { contains: w, mode: 'insensitive' }, active: true },
+          },
+        },
+      ],
+    });
+  }
+  const c = norm(city);
+  if (c) conditions.push({ address: { contains: c, mode: 'insensitive' } });
+  if (conditions.length > 0) where.AND = conditions;
+  return where;
 }
 
 export type DirectoryBusiness = {

@@ -15,9 +15,8 @@ import {
   gateAgentContact,
 } from '@/lib/agent-protocol';
 import {
+  buildAgentSearchWhere,
   localityFromAddress,
-  matchesCity,
-  matchesServiceKeyword,
   publicClientIp,
   ratingSummary,
 } from '@/lib/directory';
@@ -44,9 +43,13 @@ export async function GET(req: Request) {
   const { service, city, limit } = parsed.data;
   const origin = url.origin;
 
+  // DB-side filtering + bounded take (m7): the old code loaded up to 200
+  // businesses with all reviews and filtered in JS. The where clause keeps
+  // the exact matchesServiceKeyword/matchesCity semantics; `take: limit`
+  // (schema max 25) bounds the read, and reviews stay per matched business.
   const businesses = await unsafeUnscoped('agent:search', (db) =>
     db.business.findMany({
-      where: { directoryOptIn: true, directoryVerifiedAt: { not: null }, bookingPage: { is: { enabled: true } } },
+      where: buildAgentSearchWhere(service, city),
       select: {
         name: true,
         phone: true,
@@ -59,35 +62,28 @@ export async function GET(req: Request) {
         reviews: { select: { rating: true } },
       },
       orderBy: { name: 'asc' },
-      take: 200,
+      take: limit,
     })
   );
 
-  const results = businesses
-    .filter(
-      (b) =>
-        matchesServiceKeyword(service, b.name, b.services.map((s) => s.name)) &&
-        matchesCity(city, b.address)
-    )
-    .slice(0, limit)
-    .map((b) => {
-      const { count, avg } = ratingSummary(b.reviews);
-      const slug = b.bookingPage!.slug;
-      return {
-        slug,
-        name: b.name,
-        locality: b.directoryHideAddress ? localityFromAddress(b.address) : b.address,
-        // Respect the business's public-profile choice: a pro that hid its
-        // number on the booking page must not have it (or WhatsApp, which
-        // routes to the same number) exposed to anonymous agent callers.
-        ...gateAgentContact(b.bookingPage!.showPhone, b.phone, b.whatsappNumber),
-        regionCode: b.regionCode,
-        rating: avg,
-        reviewCount: count,
-        services: b.services.map((s) => ({ name: s.name, priceCents: s.priceCents.toString() })),
-        profileUrl: `${origin}/p/${slug}`,
-      };
-    });
+  const results = businesses.map((b) => {
+    const { count, avg } = ratingSummary(b.reviews);
+    const slug = b.bookingPage!.slug;
+    return {
+      slug,
+      name: b.name,
+      locality: b.directoryHideAddress ? localityFromAddress(b.address) : b.address,
+      // Respect the business's public-profile choice: a pro that hid its
+      // number on the booking page must not have it (or WhatsApp, which
+      // routes to the same number) exposed to anonymous agent callers.
+      ...gateAgentContact(b.bookingPage!.showPhone, b.phone, b.whatsappNumber),
+      regionCode: b.regionCode,
+      rating: avg,
+      reviewCount: count,
+      services: b.services.map((s) => ({ name: s.name, priceCents: s.priceCents.toString() })),
+      profileUrl: `${origin}/p/${slug}`,
+    };
+  });
 
   return NextResponse.json({
     protocol: 'everyjob-agent',
