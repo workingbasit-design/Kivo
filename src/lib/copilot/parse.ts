@@ -230,14 +230,17 @@ export function extractMoney(raw: string): number | null {
     const m = text.match(p);
     if (m) {
       const v = Number(m[1]);
-      if (v > 0 && v < 10000000) return Math.round(v);
+      // Round to CENTS, not whole dollars: "$89.50" must stay 89.5, not
+      // become 90 (2026-11-15 deep test: copilot draft_quote rounded a
+      // user-stated $89.50 to a $90.00 quote line).
+      if (v > 0 && v < 10000000) return Math.round(v * 100) / 100;
     }
   }
   // "2 thousand" - spoken English.
   const mK = text.match(/(\d+(?:\.\d+)?)\s*(?:thousand|k)\b/i);
   if (mK) {
     const v = Number(mK[1]) * 1000;
-    if (v > 0 && v < 10000000) return Math.round(v);
+    if (v > 0 && v < 10000000) return Math.round(v * 100) / 100;
   }
   // Bare 3-5 digit number in a booking context is a price ("plumbing for
   // Sarah tomorrow 800"). 1-2 digit numbers are dates, 10-digit numbers

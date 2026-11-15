@@ -80,6 +80,29 @@ test('extractMoney: bare "800" in booking context is a price', () => {
   assert.equal(extractMoney('plumbing for Sarah tomorrow 800'), 800);
 });
 
+// --- 2026-11-15 deep test: cents prices must survive parsing ---
+// extractMoney used to Math.round() to whole dollars, so a user-stated
+// $89.50 became a $90.00 quote line. Cents are money; keep them.
+test('extractMoney: "$89.50" stays 89.5', () => {
+  assert.equal(extractMoney('Draft a quote for QC for drain cleaning at $89.50'), 89.5);
+});
+
+test('extractMoney: "$149.99" stays 149.99', () => {
+  assert.equal(extractMoney('Draft a quote for ON for furnace tune-up at $149.99'), 149.99);
+});
+
+test('extractMoney: "89.50$" stays 89.5', () => {
+  assert.equal(extractMoney('plomberie demain 89.50$'), 89.5);
+});
+
+test('extractMoney: "$1,234.56" stays 1234.56', () => {
+  assert.equal(extractMoney('AC repair for Sarah tomorrow $1,234.56'), 1234.56);
+});
+
+test('extractMoney: "2.5 thousand" stays 2500', () => {
+  assert.equal(extractMoney('AC repair for Sarah tomorrow 2.5 thousand'), 2500);
+});
+
 test('extractServiceTitle: "plumbing" maps to Plumbing Work', () => {
   assert.equal(extractServiceTitle('plumbing for Sarah tomorrow 800'), 'Plumbing Work');
 });
