@@ -12,14 +12,14 @@ import type { Page } from '@playwright/test';
 const PERF_EMAIL = 'perf-owner@test.ca';
 const PERF_PASSWORD = 'SeedPass123!';
 
-async function loginPerf(page: Page) {
+async function loginPerf(page: Page, timeoutMs = 60_000) {
   await page.goto('/login');
   await page.fill('input[type="email"]', PERF_EMAIL);
   await page.fill('input[type="password"]', PERF_PASSWORD);
   // Do NOT swallow the timeout: a failed login must fail fast.
   // CI is slow (cold starts); allow 60s.
   await Promise.all([
-    page.waitForURL(/dashboard/, { timeout: 60_000 }),
+    page.waitForURL(/dashboard/, { timeout: timeoutMs }),
     page.locator('button[type="submit"]').first().click(),
   ]);
 }
@@ -27,8 +27,11 @@ async function loginPerf(page: Page) {
 async function hasPerfData(page: Page): Promise<boolean> {
   // Probe: the perf business exists iff login succeeds.
   // loginPerf throws on failure; catch it to return false for graceful skip.
+  // Short probe timeout: the perf seed is not run in CI, so the login
+  // fails (stays on /login) and a full 60s wait would blow the test's
+  // own 60s timeout before the vacuous pass can return.
   try {
-    await loginPerf(page);
+    await loginPerf(page, 15_000);
   } catch {
     return false;
   }

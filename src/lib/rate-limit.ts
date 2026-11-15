@@ -30,6 +30,20 @@ export function rateLimit(
   key: string,
   opts: { limit: number; windowMs: number }
 ): { ok: boolean; remaining: number; retryAfterMs: number } {
+  // E2E TEST SERVERS ONLY — never set on Vercel or any production host.
+  // The Playwright suite logs in hundreds of times from a single IP
+  // (127.0.0.1, no forwarding headers, so every login shares one
+  // `login:unknown` bucket capped at 8/10 min). Without this the suite
+  // collapses: the 9th login returns "Too many attempts", loginAs waits
+  // the full 60s for /dashboard, whole files' beforeAll hooks die and
+  // hundreds of tests never run (CI run 43729091950: 39 failed,
+  // 376 did not run). The e2e server only ever serves a local test
+  // database (playwright.config refuses vercel.app URLs), so disabling
+  // the limiter there cannot weaken production.
+  if (process.env.E2E_DISABLE_RATE_LIMIT === '1') {
+    return { ok: true, remaining: opts.limit, retryAfterMs: 0 };
+  }
+
   const now = Date.now();
   const bucket = buckets.get(key);
 

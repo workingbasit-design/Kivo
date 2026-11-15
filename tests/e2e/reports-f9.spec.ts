@@ -78,10 +78,15 @@ test.describe('F9 reports', () => {
     expect(Math.round(csvTotal * 100)).toBe(screenCents);
   });
 
-  test('F9-007: technician gets 403 on /reports', async ({ page }) => {
+  test('F9-007: technician is bounced off /reports to the dashboard', async ({ page }) => {
+    // SEE_PRICES denial for money pages is the redirect, not a 403
+    // (pinned by the money-gates unit spec): technicians cannot see
+    // prices, so /reports bounces them to /dashboard before any stats
+    // load. The 403 denial (F9-007b) applies to dispatchers, who CAN see
+    // prices but are not Owner/Admin when the F9 flag is on.
     await loginAs(page, 'technicianA');
-    const resp = await page.goto('/reports');
-    expect(resp?.status()).toBe(403);
+    await page.goto('/reports');
+    await expect(page).toHaveURL(/dashboard/, { timeout: 15000 });
   });
 
   test('F9-007b: dispatcher gets 403 on /reports', async ({ page }) => {

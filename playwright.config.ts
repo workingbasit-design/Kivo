@@ -43,6 +43,11 @@ export default defineConfig({
     env: {
       // The app under test must use the test database. CI sets DATABASE_URL.
       DATABASE_URL: process.env.DATABASE_URL ?? '',
+      // E2E only: disable the in-memory rate limiter for the test server.
+      // The suite logs in hundreds of times from 127.0.0.1, which would
+      // otherwise share one `login:unknown` bucket (8/10 min) and collapse
+      // into 60s login timeouts. Never set on Vercel/production.
+      E2E_DISABLE_RATE_LIMIT: '1',
     },
   },
   projects: [

@@ -40,3 +40,26 @@ test('keys are isolated from each other', () => {
   assert.equal(rateLimit(a, { limit: 1, windowMs: 60_000 }).ok, false);
   assert.equal(rateLimit(b, { limit: 1, windowMs: 60_000 }).ok, true);
 });
+
+test('E2E_DISABLE_RATE_LIMIT=1 bypasses the limiter without consuming the bucket', () => {
+  // CI e2e regression (run 43729091950): every login from 127.0.0.1 shares
+  // one `login:unknown` bucket (8/10 min); the 9th login was throttled and
+  // the suite collapsed into 60s login timeouts. The e2e server sets this
+  // flag; production never does.
+  const key = `test-e2e-bypass-${Date.now()}`;
+  const prev = process.env.E2E_DISABLE_RATE_LIMIT;
+  process.env.E2E_DISABLE_RATE_LIMIT = '1';
+  try {
+    for (let i = 0; i < 5; i++) {
+      assert.equal(rateLimit(key, { limit: 2, windowMs: 60_000 }).ok, true);
+    }
+  } finally {
+    if (prev === undefined) delete process.env.E2E_DISABLE_RATE_LIMIT;
+    else process.env.E2E_DISABLE_RATE_LIMIT = prev;
+  }
+  // Bypassed calls did not consume the bucket: with the flag off, the
+  // first 2 calls pass and the 3rd is blocked, exactly as configured.
+  assert.equal(rateLimit(key, { limit: 2, windowMs: 60_000 }).ok, true);
+  assert.equal(rateLimit(key, { limit: 2, windowMs: 60_000 }).ok, true);
+  assert.equal(rateLimit(key, { limit: 2, windowMs: 60_000 }).ok, false);
+});

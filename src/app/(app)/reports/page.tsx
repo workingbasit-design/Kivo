@@ -452,6 +452,20 @@ export default async function ReportsPage({
               </div>
             </Card>
           )}
+
+          {/* F9: the six flag-gated reports (Owner/Admin only — enforced
+              above via forbidden() when the flag is on). The render call
+              was missing since the F9 feature commit (2026-10-16): the
+              component was built and gated but never mounted, so the
+              sections, CSV export and drill-down links never existed. */}
+          {f9On && (
+            <F9Reports
+              businessId={businessId}
+              year={f9Year}
+              locale={moneyLocale}
+              currency={currency}
+            />
+          )}
         </>
       )}
     </div>

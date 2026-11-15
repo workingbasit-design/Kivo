@@ -2,7 +2,7 @@
  * P4-E-001…012 — Anonymous visitor journeys.
  */
 import { test, expect } from '@playwright/test';
-import { interceptEmail } from './fixtures';
+import { interceptEmail, loginAs } from './fixtures';
 
 test.describe('P4-E anonymous visitor', () => {
   test('P4-E-001: home page loads with nav, footer, pricing', async ({ page }) => {
@@ -88,7 +88,16 @@ test.describe('P4-E anonymous visitor', () => {
     }
   });
 
-  test('P4-E-009: 404 page exists', async ({ page }) => {
+  test('P4-E-009: unknown path bounces anonymous visitors to login', async ({ page }) => {
+    // No route enumeration for strangers: like every other non-public path
+    // (P4-E-011), an unknown path redirects anonymous visitors to /login.
+    // The 404 page itself is covered by P4-E-009b below, authenticated.
+    await page.goto('/this-page-does-not-exist-12345');
+    await expect(page).toHaveURL(/login/, { timeout: 15000 });
+  });
+
+  test('P4-E-009b: 404 page exists for authenticated users', async ({ page }) => {
+    await loginAs(page, 'ownerA');
     const res = await page.goto('/this-page-does-not-exist-12345');
     expect(res?.status()).toBe(404);
   });

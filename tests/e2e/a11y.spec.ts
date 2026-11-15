@@ -108,8 +108,10 @@ test.describe('P4-AX keyboard', () => {
     const css = await page.evaluate(() => {
       const els = document.querySelectorAll('*');
       let bad = 0;
-      // Spot-check: computed outline on focused input.
-      const input = document.querySelector('input');
+      // Spot-check: computed outline on focused input. Skip hidden inputs
+      // (e.g. the TOTP challenge field): they are never focusable, so a
+      // 'none' outline on them is not a focus-visibility defect.
+      const input = document.querySelector('input:not([type="hidden"])');
       if (input) {
         (input as HTMLElement).focus();
         const o = getComputedStyle(input).outlineStyle;

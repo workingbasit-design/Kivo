@@ -9,6 +9,7 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
   agingBucketFor,
   daysPastDue,
@@ -195,4 +196,19 @@ test('toCsv quotes commas, quotes and newlines; CRLF line endings', () => {
 test('centsToCsvDollars formats 2dp dollars', () => {
   assert.equal(centsToCsvDollars(123456), '1234.56');
   assert.equal(centsToCsvDollars(5), '0.05');
+});
+
+// --- F9 render wiring --------------------------------------------------------
+// Regression (2026-11-15): the F9 feature commit wired the flag gate and
+// forbidden() but never mounted <F9Reports> on the page — the six sections,
+// CSV export and drill-down links did not exist for anyone. Pin the mount.
+
+test('F9: /reports mounts <F9Reports> when the flag is on', () => {
+  const src = readFileSync(
+    new URL('../../app/(app)/reports/page.tsx', import.meta.url),
+    'utf8',
+  );
+  assert.match(src, /import \{ F9Reports \} from "\.\/f9-reports";/);
+  assert.match(src, /\{f9On && \(\s*<F9Reports/);
+  assert.match(src, /<F9Reports\s+businessId=\{businessId\}\s+year=\{f9Year\}/);
 });
