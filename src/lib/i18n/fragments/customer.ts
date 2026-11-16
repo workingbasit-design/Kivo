@@ -42,7 +42,7 @@ const fragment = {
         heroLine1: 'Find the right pro.',
         heroLine2: 'Get it done.',
         heroSub:
-          'Discover trusted local professionals for your home. Request quotes, message pros, and get your project moving — all in one place.',
+          'Discover trusted local professionals for your home. Request quotes, message pros, and get your project moving, all in one place.',
         heroChip: 'Every job. One place.',
         servicesEyebrow: 'START WITH A SERVICE',
         servicesTitle: 'What can we help with?',
@@ -236,7 +236,7 @@ const fragment = {
         heroLine1: 'Trouvez le bon pro.',
         heroLine2: 'C’est fait.',
         heroSub:
-          'Découvrez des professionnels locaux de confiance pour votre maison. Demandez des devis, écrivez aux pros et lancez votre projet — tout au même endroit.',
+          'Découvrez des professionnels locaux de confiance pour votre maison. Demandez des devis, écrivez aux pros et lancez votre projet, tout au même endroit.',
         heroChip: 'Every job. One place.',
         servicesEyebrow: 'COMMENCEZ PAR UN SERVICE',
         servicesTitle: 'Que pouvons-nous faire pour vous?',
