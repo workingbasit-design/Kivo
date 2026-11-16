@@ -1,53 +1,75 @@
 "use client";
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Search,
   MapPin,
   Wrench,
-  Zap,
-  Sparkles,
+  PlugZap,
+  Broom,
   Snowflake,
-  Check,
-  SearchX,
+  Hammer,
+  PaintRoller,
+  Drop,
+  Tree,
+  House,
+  Bug,
+  Sparkles,
+  ShieldCheck,
+  HandCoins,
+  MessageSquare,
   ArrowRight,
+  Plus,
+  Store,
+  Bell,
 } from '@/components/icons';
 import { toggleSavePro } from '@/app/actions/customer-pros';
 import { t, type Locale } from '@/lib/i18n';
 import ProCard, { type ProCardData } from '@/components/ProCard';
 
 /**
- * Customer home — mockup rebuild (2026-11-16): hero with lime swash and
- * house photo, single search bar, four service cards, lime "Tell us what
- * needs doing" banner, and pro cards. Real directory data only: the pros
- * shown are the verified, consent-based listings from the server. When
- * not searching, the top 3 by rating show with a "View directory" link;
- * when searching, all matches show.
+ * Signed-in customer home - ChatGPT customer-home redesign, adapted to the
+ * real /customer data flow (2026-11-16). Same reference design as the
+ * public homepage: the local hero photo (never the old Unsplash
+ * placeholder), pill search, six service cards with the same treatment as
+ * the public homepage (bare green icon, name, chevron — the HVAC detail
+ * line only, like /), pros section with a real minimum-rating filter, the
+ * public empty state, and the trust strip. All data is real directory
+ * data; the empty state shows only when the real query returns nothing.
+ * The signed-in header (lime mark, pill nav, real "Hi {firstName}") lives
+ * in CustomerHeader and is unchanged, as is the bottom tab bar on mobile.
  *
- * Icon rule: service icons sit directly on the card (no coloured tiles);
- * the highlighted card uses the theme-flipping --tint-lime; the empty
- * state uses the neutral .ej-icon tile.
+ * Theme parity with / (2026-11-16): every shared component — search bar
+ * and deep-green primary action, service cards, rating chips, trust strip,
+ * headings — copies the public homepage's values token for token. The
+ * hero note is a real link to the directory (not a dead card), and "Change
+ * location" scrolls to and focuses the search bar's location field.
  */
 const SERVICES = [
-  { key: 'Plumbing', icon: Wrench, hintKey: 'customer.home.serviceHintPlumbing' },
-  { key: 'Electrical', icon: Zap, hintKey: 'customer.home.serviceHintElectrical' },
-  { key: 'Cleaning', icon: Sparkles, hintKey: 'customer.home.serviceHintCleaning' },
-  { key: 'HVAC', icon: Snowflake, hintKey: 'customer.home.serviceHintHvac' },
+  { key: 'Plumbing', icon: Wrench },
+  { key: 'Electrical', icon: PlugZap },
+  { key: 'Cleaning', icon: Broom },
+  { key: 'HVAC', icon: Snowflake },
+  { key: 'Handyman', icon: Hammer },
+  { key: 'Painting', icon: PaintRoller },
+  { key: 'Bathroom', icon: Drop },
+  { key: 'Landscaping', icon: Tree },
+  { key: 'Home comfort', icon: House },
+  { key: 'Pest Control', icon: Bug },
+  { key: 'Home projects', icon: Sparkles },
 ] as const;
 
-// PLACEHOLDER hero photo (Unsplash, modern house exterior) — swap for a
-// real EveryJob photo before release. Deliberately an <img>, not
-// next/image, so no remote-pattern config change is needed.
-const HERO_PHOTO_URL =
-  'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=80';
+const RATING_OPTIONS = ['', '4', '4.5'] as const;
 
 export default function CustomerHomeClient({
   results,
   searching,
   initialQ,
   initialCity,
+  initialMinRating,
   savedIds,
   locale,
 }: {
@@ -55,6 +77,7 @@ export default function CustomerHomeClient({
   searching: boolean;
   initialQ: string;
   initialCity: string;
+  initialMinRating: string;
   savedIds: string[];
   locale: Locale;
 }) {
@@ -62,14 +85,30 @@ export default function CustomerHomeClient({
   const tr = (path: string) => t(locale, path as never);
   const [q, setQ] = useState(initialQ);
   const [city, setCity] = useState(initialCity);
+  const [minRating, setMinRating] = useState(initialMinRating);
   const [saved, setSaved] = useState<Set<string>>(new Set(savedIds));
+  const [showAllServices, setShowAllServices] = useState(false);
+  const cityInputRef = useRef<HTMLInputElement>(null);
+
+  const buildParams = (next: { q?: string; city?: string; minRating?: string }) => {
+    const params = new URLSearchParams();
+    const nq = next.q ?? q;
+    const nc = next.city ?? city;
+    const nr = next.minRating ?? minRating;
+    if (nq.trim()) params.set('q', nq.trim());
+    if (nc.trim()) params.set('city', nc.trim());
+    if (nr) params.set('minRating', nr);
+    return params;
+  };
+
+  const navigate = (next: { q?: string; city?: string; minRating?: string }) => {
+    const params = buildParams(next);
+    router.push(`/customer${params.toString() ? `?${params}` : ''}`);
+  };
 
   const doSearch = (e?: React.FormEvent) => {
     e?.preventDefault();
-    const params = new URLSearchParams();
-    if (q.trim()) params.set('q', q.trim());
-    if (city.trim()) params.set('city', city.trim());
-    router.push(`/customer${params.toString() ? `?${params}` : ''}`);
+    navigate({});
   };
 
   const toggleSave = async (businessId: string) => {
@@ -82,151 +121,175 @@ export default function CustomerHomeClient({
 
   const searchCategory = (cat: string) => {
     setQ(cat);
-    const params = new URLSearchParams();
-    params.set('q', cat);
-    if (city.trim()) params.set('city', city.trim());
-    router.push(`/customer?${params}`);
+    navigate({ q: cat });
   };
 
-  // Highlighted service card: the searched category, else Plumbing (the
-  // mockup's default).
-  const highlighted =
-    SERVICES.find((s) => s.key.toLowerCase() === q.trim().toLowerCase())?.key ?? 'Plumbing';
-  const chipParts = tr('customer.home.heroChip').split('. ');
+  const setRating = (value: string) => {
+    setMinRating(value);
+    navigate({ minRating: value });
+  };
+
+  const clearSearch = () => {
+    setQ('');
+    setMinRating('');
+    navigate({ q: '', minRating: '' });
+  };
+
+  const focusLocation = () => {
+    document
+      .getElementById('professional-search')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    cityInputRef.current?.focus({ preventScroll: true });
+  };
+
+  const shownServices = showAllServices ? SERVICES : SERVICES.slice(0, 6);
   const visiblePros = searching ? results : results.slice(0, 3);
+  const displayCity = initialCity.trim() || 'Etobicoke';
+  const citySuffix = displayCity.toLowerCase() === 'etobicoke' ? ', Toronto' : '';
+  const prosHeading = searching
+    ? tr('customer.home.prosFound')
+        .replace('{count}', String(results.length))
+        .replaceAll('{s}', results.length === 1 ? '' : 's')
+    : `${tr('customer.publicHome.prosIn')} ${displayCity}${citySuffix}`;
+  const year = new Date().getFullYear();
 
   return (
-    <div className="space-y-10 md:space-y-12">
+    <div>
       {/* Hero */}
-      <div className="grid items-center gap-8 lg:grid-cols-2">
-        <div className="ej-anim-fade-up">
+      <section className="ej-cust-hero" aria-labelledby="ej-cust-title">
+        <div className="ej-cust-hero-copy ej-anim-fade-up">
           <p className="ej-eyebrow">{tr('customer.home.heroEyebrow')}</p>
-          <h1 className="mt-3 text-[44px] font-light leading-[1.04] tracking-tight text-ink sm:text-[56px]">
+          <h1 id="ej-cust-title" className="ej-cust-hero-title">
             {tr('customer.home.heroLine1')}
             <br />
-            <span className="font-bold">
-              <span className="ej-swash">{tr('customer.home.heroLine2')}</span>
-            </span>
+            <span className="ej-cust-highlight">{tr('customer.home.heroLine2')}</span>
           </h1>
-          <p className="mt-4 max-w-md text-[16px] leading-relaxed text-ink-2">
-            {tr('customer.home.heroSub')}
-          </p>
-        </div>
-
-        <div className="ej-anim-fade-up relative" style={{ animationDelay: '80ms' }}>
-          <div
-            className="absolute inset-0 rotate-[2deg] rounded-[28px] border border-line bg-surface"
-            aria-hidden="true"
-          />
-          <div className="relative rotate-[-2deg] overflow-hidden rounded-[28px] border border-line shadow-kit-pop">
-            <img
-              src={HERO_PHOTO_URL}
-              alt=""
-              className="aspect-[4/3] w-full object-cover"
-              loading="eager"
-            />
-            <div className="absolute bottom-4 left-4 flex items-center gap-2.5 rounded-full bg-asphalt py-2 pl-2 pr-4 shadow-kit-pop">
-              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-hivis">
-                <Check className="h-4 w-4 text-hivis-ink" strokeWidth={3} />
-              </span>
-              <span className="text-[13px] font-bold leading-tight text-hero-ink">
-                <span className="block">{chipParts[0]}.</span>
-                <span className="block">{chipParts[1] ?? ''}</span>
-              </span>
-            </div>
+          <p className="ej-cust-hero-sub">{tr('customer.home.heroSub')}</p>
+          <div className="ej-cust-hero-proof">
+            <span>
+              <i aria-hidden="true" />
+              {tr('customer.home.heroProofFree')}
+            </span>
+            <span>
+              <i aria-hidden="true" />
+              {tr('customer.home.heroProofLocal')}
+            </span>
           </div>
         </div>
-      </div>
+
+        <div className="ej-cust-hero-visual ej-anim-fade-up" style={{ animationDelay: '80ms' }}>
+          <div className="ej-cust-hero-backplate" aria-hidden="true" />
+          <div className="ej-cust-hero-frame">
+            <Image
+              src="/images/everyjob-customer-home-hero.jpg"
+              alt=""
+              fill
+              priority
+              sizes="(max-width: 700px) 100vw, 50vw"
+            />
+          </div>
+          <Link href="/directory" className="ej-cust-hero-note">
+            <span className="ej-cust-note-icon">
+              <Sparkles size={14} />
+            </span>
+            <span>
+              <b>{tr('customer.home.heroNoteTitle')}</b>
+              <small>{tr('customer.home.heroNoteSub')}</small>
+            </span>
+            <ArrowRight size={16} className="ej-cust-note-arrow" />
+          </Link>
+        </div>
+      </section>
 
       {/* Search bar */}
-      <form onSubmit={doSearch} className="ej-anim-fade-up" style={{ animationDelay: '120ms' }}>
-        <div className="flex flex-col gap-2 rounded-[24px] border border-line bg-surface p-2 shadow-kit-card focus-within:shadow-[0_0_0_3px_var(--focus)] md:flex-row md:items-center md:gap-0 md:rounded-full">
-          <label className="relative flex min-w-0 flex-1 items-center">
-            <Search
-              size={18}
-              className="pointer-events-none absolute left-4 z-10 text-ink-2"
-            />
+      <form
+        id="professional-search"
+        onSubmit={doSearch}
+        className="ej-anim-fade-up"
+        style={{ animationDelay: '120ms' }}
+      >
+        <div className="ej-cust-search">
+          <label className="ej-cust-search-field ej-cust-search-query">
+            <Search size={19} />
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder={tr('customer.home.whatPlaceholder')}
               maxLength={100}
               aria-label={tr('customer.home.whatPlaceholder')}
-              className="h-[52px] w-full min-w-0 rounded-full bg-transparent pl-11 pr-4 text-[16px] text-ink outline-none placeholder:text-ink-2"
             />
           </label>
-          <span className="hidden h-8 w-px shrink-0 bg-line md:block" aria-hidden="true" />
-          <label className="relative flex min-w-0 flex-1 items-center">
-            <MapPin
-              size={18}
-              className="pointer-events-none absolute left-4 z-10 text-ink-2"
-            />
+          <span className="ej-cust-search-divider" aria-hidden="true" />
+          <label className="ej-cust-search-field ej-cust-search-location">
+            <MapPin size={18} />
             <input
+              ref={cityInputRef}
               value={city}
               onChange={(e) => setCity(e.target.value)}
               placeholder={tr('customer.home.cityPlaceholder')}
               maxLength={100}
               aria-label={tr('customer.home.cityPlaceholder')}
-              className="h-[52px] w-full min-w-0 rounded-full bg-transparent pl-11 pr-4 text-[16px] text-ink outline-none placeholder:text-ink-2"
             />
           </label>
-          <button type="submit" className="ej-button ej-button-primary w-full md:w-auto md:rounded-full">
+          <button type="submit" className="ej-cust-search-submit">
             {tr('customer.home.searchProfessionals')}
-            <ArrowRight className="h-4 w-4" />
+            <ArrowRight size={16} />
           </button>
         </div>
       </form>
 
       {/* Services */}
-      <section className="ej-anim-fade-up" style={{ animationDelay: '160ms' }}>
-        <div className="mb-5 flex items-end justify-between gap-4">
+      <section
+        className="ej-cust-services ej-anim-fade-up"
+        style={{ animationDelay: '160ms' }}
+        aria-labelledby="ej-cust-services-title"
+      >
+        <div className="ej-cust-services-heading">
           <div>
             <p className="ej-eyebrow">{tr('customer.home.servicesEyebrow')}</p>
-            <h2 className="mt-2 text-[28px] font-medium leading-tight tracking-tight text-ink">
+            <h2 id="ej-cust-services-title" className="ej-cust-section-heading">
               {tr('customer.home.servicesTitle')}
             </h2>
           </div>
-          <Link
-            href="/directory"
-            className="hidden shrink-0 items-center gap-1.5 text-sm font-semibold text-ink underline underline-offset-4 sm:inline-flex"
+          <button
+            type="button"
+            className="ej-cust-explore-link"
+            onClick={() => setShowAllServices((v) => !v)}
+            aria-expanded={showAllServices}
           >
-            {tr('customer.home.exploreAll')}
-            <ArrowRight className="h-4 w-4" />
-          </Link>
+            {showAllServices
+              ? tr('customer.home.showPopularServices')
+              : tr('customer.home.exploreAll')}
+            <ArrowRight size={15} />
+          </button>
         </div>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          {SERVICES.map(({ key, icon: Icon, hintKey }) => (
+        <div className="ej-cust-service-grid">
+          {shownServices.map(({ key, icon: Icon }) => (
             <button
               key={key}
+              type="button"
               onClick={() => searchCategory(key)}
-              className={
-                'group rounded-[20px] border border-line bg-surface p-5 text-left shadow-kit-card transition-all duration-300 hover:-translate-y-0.5 hover:border-line-strong hover:shadow-kit-pop active:translate-y-0 active:scale-[0.98] ' +
-                (highlighted === key ? 'ej-svc-tint' : '')
-              }
+              className="ej-cust-service-card"
             >
-              <Icon className="h-7 w-7 text-ink transition-transform duration-300 group-hover:scale-110" />
-              <span className="mt-4 block text-[16px] font-bold text-ink">
-                {tr(`customer.categories.${key}`)}
+              <span className="ej-cust-service-icon">
+                <Icon size={25} strokeWidth={1.8} />
               </span>
-              <span className="mt-0.5 block text-[13px] leading-snug text-ink-2">
-                {tr(hintKey)}
+              <span className="ej-cust-service-text">
+                <b>{tr(`customer.categories.${key}`)}</b>
+                {key === 'HVAC' ? (
+                  <small>{tr('customer.publicHome.serviceHvacDetail')}</small>
+                ) : null}
               </span>
+              <ArrowRight size={15} className="ej-cust-service-arrow" />
             </button>
           ))}
         </div>
-        <Link
-          href="/directory"
-          className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-ink underline underline-offset-4 sm:hidden"
-        >
-          {tr('customer.home.exploreAll')}
-          <ArrowRight className="h-4 w-4" />
-        </Link>
       </section>
 
-      {/* Get it done for me — lime banner */}
+      {/* Get it done for me - lime banner (real feature, kept from the old home) */}
       <Link
         href="/customer/concierge"
-        className="ej-anim-fade-up group flex flex-col gap-5 rounded-[24px] bg-hivis p-6 shadow-kit-card transition-all hover:shadow-kit-pop active:scale-[0.99] sm:flex-row sm:items-center sm:p-7"
+        className="ej-anim-fade-up group mb-11 flex flex-col gap-5 rounded-[24px] bg-hivis p-6 shadow-kit-card transition-all hover:shadow-kit-pop active:scale-[0.99] sm:flex-row sm:items-center sm:p-7"
         style={{ animationDelay: '200ms' }}
       >
         <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-asphalt transition-transform group-active:scale-95">
@@ -250,16 +313,15 @@ export default function CustomerHomeClient({
       </Link>
 
       {/* Pros */}
-      <section>
-        <div className="mb-5 flex items-end justify-between gap-4">
+      <section className="ej-cust-pros" aria-labelledby="ej-cust-pros-title">
+        <div className="ej-cust-pros-topline">
           <div>
-            {!searching && <p className="ej-eyebrow">{tr('customer.home.prosEyebrow')}</p>}
-            <h2 className="mt-2 text-[28px] font-medium leading-tight tracking-tight text-ink">
-              {searching
-                ? tr('customer.home.prosFound')
-                    .replace('{count}', String(results.length))
-                    .replaceAll('{s}', results.length === 1 ? '' : locale === 'fr' ? 's' : 's')
-                : tr('customer.home.prosTitle')}
+            <p className="ej-eyebrow">
+              <span className="ej-cust-pin-dot" aria-hidden="true" />
+              {tr('customer.home.heroProofLocal')}
+            </p>
+            <h2 id="ej-cust-pros-title" className="ej-cust-pros-heading">
+              {prosHeading}
               {searching && initialQ && (
                 <span className="font-medium text-ink-2">
                   {' '}
@@ -268,20 +330,45 @@ export default function CustomerHomeClient({
               )}
             </h2>
           </div>
+          <button type="button" className="ej-cust-change-location" onClick={focusLocation}>
+            <MapPin size={15} />
+            {tr('customer.publicHome.changeLocation')}
+          </button>
+        </div>
+        <div className="ej-cust-filter-row">
+          <span className="ej-cust-filter-label">{tr('customer.publicHome.minRating')}</span>
+          {RATING_OPTIONS.map((value) => (
+            <button
+              key={value || 'any'}
+              type="button"
+              className={'ej-cust-filter-chip' + (minRating === value ? ' selected' : '')}
+              onClick={() => setRating(value)}
+              aria-pressed={minRating === value}
+            >
+              {value === ''
+                ? tr('customer.publicHome.ratingAny')
+                : value === '4'
+                  ? tr('customer.publicHome.rating4')
+                  : tr('customer.publicHome.rating45')}
+            </button>
+          ))}
+          {initialQ && (
+            <span className="ej-cust-active-search">
+              {tr('customer.home.showingLabel').replace('{service}', initialQ)}
+            </span>
+          )}
           {searching ? (
             <button
-              onClick={() => {
-                setQ('');
-                router.push('/customer');
-              }}
-              className="min-h-[44px] shrink-0 text-xs font-semibold text-ink underline underline-offset-2"
+              type="button"
+              onClick={clearSearch}
+              className="ml-auto min-h-[44px] shrink-0 text-xs font-semibold text-ink underline underline-offset-2"
             >
               {tr('customer.home.clear')}
             </button>
           ) : (
             <Link
               href="/directory"
-              className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-ink underline underline-offset-4"
+              className="ml-auto inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-ink underline underline-offset-4"
             >
               {tr('customer.home.viewDirectory')}
               <ArrowRight className="h-4 w-4" />
@@ -290,16 +377,46 @@ export default function CustomerHomeClient({
         </div>
 
         {results.length === 0 ? (
-          <div className="ej-anim-fade-up rounded-3xl border border-line bg-surface p-10 text-center shadow-sm">
-            <div className="ej-icon mx-auto mb-4">
-              <SearchX className="h-6 w-6" />
+          <div className="ej-home-empty ej-anim-fade-up">
+            <div className="ej-home-empty-art">
+              <Image
+                src="/images/everyjob-customer-home-empty-state.jpg"
+                alt=""
+                fill
+                sizes="(max-width: 760px) 100vw, 30vw"
+              />
             </div>
-            <p className="font-bold text-ink">
-              {searching ? tr('customer.home.noProsFound') : tr('customer.home.noProsYet')}
-            </p>
-            <p className="mx-auto mt-1 max-w-xs text-sm text-ink-2">
-              {searching ? tr('customer.home.noProsFoundHint') : tr('customer.home.noProsYetHint')}
-            </p>
+            <div className="ej-home-empty-content">
+              <h3>{tr('customer.publicHome.emptyTitle')}</h3>
+              <p>{tr('customer.publicHome.emptyText').replace('{city}', displayCity)}</p>
+              <div className="ej-home-empty-actions">
+                <Link
+                  href={`/customer${city.trim() ? `?city=${encodeURIComponent(city.trim())}` : ''}`}
+                  className="ej-home-broaden"
+                >
+                  <Search size={19} />
+                  {tr('customer.publicHome.broadenSearch')}
+                </Link>
+                <Link href="/register" className="ej-home-invite">
+                  <Plus size={20} />
+                  {tr('customer.publicHome.invitePro')}
+                </Link>
+              </div>
+              <div className="ej-home-empty-tips">
+                <div>
+                  <MapPin size={22} />
+                  <span>{tr('customer.publicHome.tipNearby')}</span>
+                </div>
+                <div>
+                  <Store size={22} />
+                  <span>{tr('customer.publicHome.tipGeneral')}</span>
+                </div>
+                <div>
+                  <Bell size={22} />
+                  <span>{tr('customer.publicHome.tipFirst')}</span>
+                </div>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -320,6 +437,45 @@ export default function CustomerHomeClient({
           </div>
         )}
       </section>
+
+      {/* Trust strip */}
+      <section className="ej-cust-trust" aria-label="Why EveryJob">
+        <div className="ej-cust-trust-item">
+          <span className="ej-cust-trust-icon">
+            <ShieldCheck size={31} />
+          </span>
+          <span>
+            <b>{tr('customer.publicHome.trustFreeTitle')}</b>
+            <small>{tr('customer.publicHome.trustFreeText')}</small>
+          </span>
+        </div>
+        <div className="ej-cust-trust-item">
+          <span className="ej-cust-trust-icon">
+            <HandCoins size={31} />
+          </span>
+          <span>
+            <b>{tr('customer.publicHome.trustNoCommissionTitle')}</b>
+            <small>{tr('customer.publicHome.trustNoCommissionText')}</small>
+          </span>
+        </div>
+        <div className="ej-cust-trust-item">
+          <span className="ej-cust-trust-icon">
+            <MessageSquare size={31} />
+          </span>
+          <span>
+            <b>{tr('customer.publicHome.trustDirectTitle')}</b>
+            <small>{tr('customer.publicHome.trustDirectText')}</small>
+          </span>
+        </div>
+      </section>
+
+      <footer className="ej-cust-footer">
+        <span>
+          EVERYJOB<span className="ej-cust-footer-dot">.</span>
+        </span>
+        <span>{tr('customer.home.footerTagline')}</span>
+        <span>© {year} EveryJob</span>
+      </footer>
     </div>
   );
 }
