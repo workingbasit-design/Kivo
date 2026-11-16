@@ -1,630 +1,122 @@
+// src/app/page.tsx — public customer home (exact reference build).
+//
+// The root route is the homeowner-facing home page: "The right pro.
+// Without the runaround." (Design Smart Home App chat, "EveryJob – Exact
+// Reference Build"). The previous pro landing page is superseded by this
+// design; its content remains in git history. Pros still enter via
+// /login and /register, and /start still offers the chooser.
+//
+// Real data wiring (foundation, kept): the pros section is a server-side
+// query over verified, consent-based directory listings for the default
+// city (Etobicoke, Toronto) — the same tenant-safe query as /directory.
+// The exact empty state shows only when that real query returns nothing;
+// no listing is ever invented. Search is a native GET form to /directory.
+
 import type { Metadata } from 'next';
-import type { CSSProperties } from 'react';
-import Link from 'next/link';
-import Logo from '@/components/Logo';
+import { prisma } from '@/lib/prisma';
 import { getLocale } from '@/lib/i18n/server';
 import { getCspNonce } from '@/lib/csp-nonce';
-import { t } from '@/lib/i18n';
-import Reveal from '@/components/home/Reveal';
-import TradesMarquee from '@/components/home/TradesMarquee';
-import HeroVisual from '@/components/home/HeroVisual';
-import HeroBackdrop from '@/components/home/HeroBackdrop';
-import SectionWave from '@/components/home/SectionWave';
-import CopilotDemo from '@/components/home/CopilotDemo';
+import { getCustomerSession } from '@/lib/customer-auth';
+import { safeJsonLd } from '@/lib/jsonld';
 import {
-  ArrowRight,
-  Bell,
-  Bot,
-  Briefcase,
-  Calendar,
-  CalendarClock,
-  Check,
-  FileText,
-  Globe2,
-  Languages,
-  MapPin,
-  PieChart,
-  ReceiptText,
-  Search,
-  Share2,
-  Tag,
-  UserCog,
-  Users,
-  Wallet,
-} from '@/components/icons';
+  matchesCity,
+  localityFromAddress,
+  isPhoneVerified,
+  ratingSummary,
+} from '@/lib/directory';
+import { CustomerHomePage } from '@/components/public/CustomerHomePage';
 
-export const metadata: Metadata = {
-  title: 'EveryJob - Every job. One place.',
-  description:
-    'EveryJob is free field-service software for Canadian home-service businesses: jobs, schedule, customers, quotes, invoices, payment records and a bilingual English-French AI assistant - all in one place. No credit card required.',
-};
+const SITE_URL = 'https://kivo-nine-silk.vercel.app';
+const DEFAULT_CITY = 'Etobicoke, Toronto';
 
-export default async function LandingPage() {
+export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
-  const h = (path: string) => t(locale, `home.${path}`);
-  const hh = (path: string) => t(locale, `homehero.${path}`);
-  const hf = (path: string) => t(locale, `homefaq.${path}`);
+  const en = locale === 'en';
+  return {
+    title: en ? 'Find trusted local pros | EveryJob' : 'Trouvez un pro local de confiance | EveryJob',
+    description: en
+      ? 'Find trusted local home-service professionals in Canada. Get free quotes, no commission, and contact them directly.'
+      : 'Trouvez des professionnels locaux de confiance au Canada. Obtenez des devis gratuits, sans commission, et contactez-les directement.',
+  };
+}
 
-  const FAQS = [1, 2, 3, 4, 5, 6, 7].map((n) => ({
-    q: hf(`q${n}`),
-    a: hf(`a${n}`),
-  }));
+export default async function HomePage() {
+  const locale = await getLocale();
 
-  const faqJsonLd = {
+  // Real verified directory listings for the default city. Same
+  // tenant-safe filter as /directory: opt-in + verified + booking page
+  // enabled, public-safe fields only.
+  const businesses = await prisma.business.findMany({
+    where: { directoryOptIn: true, directoryVerifiedAt: { not: null }, bookingPage: { is: { enabled: true } } },
+    select: {
+      id: true,
+      name: true,
+      logoUrl: true,
+      address: true,
+      phone: true,
+      whatsappNumber: true,
+      regionCode: true,
+      directoryHideAddress: true,
+      bookingPage: { select: { slug: true } },
+      services: { select: { name: true }, orderBy: { name: 'asc' }, take: 8 },
+      reviews: { select: { rating: true } },
+    },
+    orderBy: { name: 'asc' },
+    take: 200,
+  });
+
+  const results = businesses
+    .map((b) => {
+      const { count, avg } = ratingSummary(b.reviews);
+      return {
+        id: b.id,
+        name: b.name,
+        logoUrl: b.logoUrl,
+        slug: b.bookingPage!.slug,
+        locality: localityFromAddress(b.address),
+        address: b.address,
+        services: b.services.map((s) => s.name),
+        verified: isPhoneVerified(b.phone, b.whatsappNumber, b.regionCode),
+        count,
+        avg,
+      };
+    })
+    .filter((b) => matchesCity(DEFAULT_CITY, b.address))
+    .sort((a, b) => (b.avg ?? -1) - (a.avg ?? -1) || b.count - a.count);
+
+  // Save hearts show only for signed-in customers (same as /directory).
+  const customerSession = await getCustomerSession().catch(() => null);
+  const savedIds: string[] = [];
+  if (customerSession) {
+    const saved = await prisma.savedPro
+      .findMany({ where: { customerId: customerSession.customer.id }, select: { businessId: true } })
+      .catch(() => []);
+    for (const s of saved) savedIds.push(s.businessId);
+  }
+
+  const jsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: FAQS.map((f) => ({
-      '@type': 'Question',
-      name: f.q,
-      acceptedAnswer: { '@type': 'Answer', text: f.a },
-    })),
+    '@type': 'WebSite',
+    name: 'EveryJob',
+    url: SITE_URL,
+    description:
+      'Find trusted local home-service professionals in Canada. Get free quotes, no commission, and contact them directly.',
+    inLanguage: ['en-CA', 'fr-CA'],
   };
 
-  const NAV_LINKS = [
-    { label: h('nav.features'), href: '#features' },
-    { label: h('nav.aiCopilot'), href: '#copilot' },
-    { label: h('nav.faq'), href: '#faq' },
-    { label: h('nav.directory'), href: '/directory' },
-  ];
-
-  const TRADES = [
-    h('trades.plumbers'),
-    h('trades.electricians'),
-    h('trades.acHeating'),
-    h('trades.salons'),
-    h('trades.pestControl'),
-    h('trades.carpenters'),
-    h('trades.painters'),
-    h('trades.applianceRepair'),
-  ];
-
-  /** The 12 modules - icon + name grid, Apple-style hairline dividers. */
-  const FEATURE_GRID = [
-    { icon: Bot, key: 'copilot' },
-    { icon: CalendarClock, key: 'schedule' },
-    { icon: Briefcase, key: 'jobs' },
-    { icon: Users, key: 'customers' },
-    { icon: ReceiptText, key: 'quotes' },
-    { icon: FileText, key: 'invoices' },
-    { icon: Wallet, key: 'payments' },
-    { icon: Share2, key: 'sharing' },
-    { icon: Tag, key: 'priceBook' },
-    { icon: Bell, key: 'reminders' },
-    { icon: PieChart, key: 'reports' },
-    { icon: UserCog, key: 'team' },
-  ];
-
-  /** Honest stats only - every number here is verifiably true. */
-  const STATS = [
-    { key: 'cost', value: h('stats.costValue') },
-    { key: 'modules', value: h('stats.modulesValue') },
-    { key: 'regions', value: h('stats.regionsValue') },
-    { key: 'langs', value: h('stats.langsValue') },
-  ];
-
-  /** Local where it matters - built for Canada, province by province. */
-  const CANADA_POINTS = [
-    h('canada.point1'),
-    h('canada.point2'),
-    h('canada.point3'),
-    h('canada.point4'),
-    h('canada.point5'),
-    h('canada.point6'),
-  ];
-
-  const STEPS = [
-    { n: '1', icon: Users, key: 'step1' },
-    { n: '2', icon: Calendar, key: 'step2' },
-    { n: '3', icon: FileText, key: 'step3' },
-  ];
-
-  const heroDelay = (ms: number) => ({ '--ej-delay': `${ms}ms` }) as CSSProperties;
-
   return (
-    <div className="landing-focus ej-light-lock min-h-screen bg-paper text-ink antialiased">
-      {/* Sticky nav */}
-      <header className="sticky top-0 z-50 bg-paper/80 backdrop-blur-xl border-b border-smoke">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-[68px]">
-            <Link href="/" aria-label="EveryJob home" className="rounded-lg">
-              <Logo />
-            </Link>
-            <nav className="hidden md:flex items-center gap-8" aria-label="Primary">
-              {NAV_LINKS.map((l) => (
-                <Link
-                  key={l.label}
-                  href={l.href}
-                  className="text-[15px] text-graphite hover:text-ink transition-colors rounded"
-                >
-                  {l.label}
-                </Link>
-              ))}
-            </nav>
-            <div className="flex items-center gap-2">
-              <Link
-                href="/start"
-                className="text-[15px] text-graphite hover:text-ink transition-colors px-4 py-2.5 min-h-[44px] inline-flex items-center rounded-full"
-              >
-                {h('nav.login')}
-              </Link>
-              <Link
-                href="/register"
-                className="bg-asphalt text-hero-ink px-5 py-2.5 rounded-full text-[15px] font-medium hover:bg-hero-2 transition active:scale-95 shadow-[0_8px_24px_-8px_rgba(0,0,0,0.4)]"
-              >
-                {h('nav.signUp')}
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main>
-        {/* Hero - editorial scattered-work headline, staggered entrance */}
-        <section className="relative overflow-hidden">
-          <HeroBackdrop />
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-12 md:pt-28 md:pb-16 text-center">
-            <p
-              className="ej-hero-anim inline-flex items-center gap-2 text-[13px] font-medium text-graphite border border-smoke bg-surface/70 backdrop-blur rounded-full px-4 py-1.5 mb-8"
-              style={heroDelay(0)}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-lime" aria-hidden />
-              {hh('eyebrow')}
-            </p>
-            <h1
-              className="ej-hero-anim text-[32px] leading-[1.04] sm:text-5xl md:text-6xl lg:text-[68px] font-bold tracking-[-0.03em] mb-6"
-              style={heroDelay(110)}
-            >
-              {hh('title1')}
-              <br />
-              {hh('title2')}
-              <br />
-              <span className="text-graphite">
-                {hh('title3')}
-              </span>
-            </h1>
-            <p
-              className="ej-hero-anim text-lg md:text-[21px] leading-relaxed text-graphite mb-10 max-w-3xl mx-auto"
-              style={heroDelay(220)}
-            >
-              {hh('subtitle')}
-            </p>
-            <div
-              className="ej-hero-anim flex flex-col sm:flex-row gap-3 justify-center mb-6"
-              style={heroDelay(320)}
-            >
-              <Link
-                href="/register"
-                className="group inline-flex items-center justify-center gap-2 bg-asphalt text-hero-ink px-8 py-3.5 rounded-full text-[17px] font-medium hover:bg-hero-2 transition active:scale-95 shadow-[0_16px_40px_-12px_rgba(22,22,22,0.5)]"
-              >
-                {h('hero.ctaStart')}
-                <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
-              </Link>
-              <Link
-                href="#features"
-                className="inline-flex items-center justify-center gap-2 text-ink px-8 py-3.5 rounded-full text-[17px] font-medium hover:underline underline-offset-4"
-              >
-                {h('hero.ctaSee')}
-              </Link>
-            </div>
-            <p className="ej-hero-anim text-[13px] text-ink-2" style={heroDelay(420)}>
-              {h('hero.reassure')}
-            </p>
-          </div>
-
-          {/* Scattered-context visual - wavy timeline + floating work chips converging to EveryJob */}
-          <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 md:pb-28">
-            <HeroVisual
-              strings={{
-                visualLabel: hh('visualLabel'),
-                pillInvoice: hh('pillInvoice'),
-                chipMessage: hh('chipMessage'),
-                chipCalendar: hh('chipCalendar'),
-                chipQuote: hh('chipQuote'),
-                onePlace: hh('onePlace'),
-              }}
-            />
-          </div>
-        </section>
-
-        {/* Trades marquee */}
-        <section className="border-y border-smoke py-7">
-          <TradesMarquee trades={TRADES} label={h('trades.label')} />
-        </section>
-
-        {/* Feature grid - hairline dividers, Apple style */}
-        <section id="features" className="py-16 md:py-28 scroll-mt-16">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <Reveal className="text-center max-w-2xl mx-auto mb-12">
-              <h2 className="text-4xl md:text-[56px] leading-[1.05] font-bold tracking-[-0.025em] mb-4">
-                {h('features.title1')}
-                <br />
-                <span className="text-ink-2">{h('features.title2')}</span>
-              </h2>
-              <p className="text-lg md:text-[19px] text-graphite">{h('features.subtitle')}</p>
-            </Reveal>
-            <Reveal delay={120}>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-px bg-smoke border border-smoke rounded-[28px] overflow-hidden">
-                {FEATURE_GRID.map((f) => (
-                  <div
-                    key={f.key}
-                    className="group bg-surface p-6 md:p-7 flex flex-col items-center text-center gap-3 hover:bg-smoke transition-colors"
-                  >
-                    <f.icon
-                      size={26}
-                      strokeWidth={1.5}
-                      className="text-ink transition-all duration-300 group-hover:text-ink group-hover:scale-110"
-                    />
-                    <span className="text-[13px] font-medium text-graphite group-hover:text-ink transition-colors">
-                      {h(`features.${f.key}`)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </Reveal>
-          </div>
-        </section>
-
-        {/* AI Copilot - dark premium section with aurora glow */}
-        <SectionWave fillClass="text-asphalt" label="Wave divider into the AI copilot section" />
-        <section id="copilot" className="relative py-16 md:py-28 bg-asphalt text-hero-ink scroll-mt-16 overflow-hidden">
-          <div aria-hidden className="pointer-events-none absolute inset-0">
-            <div
-              className="ej-aurora-blob absolute -top-40 left-[8%] h-[420px] w-[560px] rounded-full bg-lime/[0.13] blur-[100px]"
-              style={{ animationDuration: '30s' }}
-            />
-            <div
-              className="ej-aurora-blob absolute top-1/3 right-[-6rem] h-[380px] w-[420px] rounded-full bg-info/[0.12] blur-[100px]"
-              style={{ animationDuration: '24s', animationDelay: '-11s' }}
-            />
-            <div
-              className="ej-aurora-blob absolute bottom-[-8rem] left-[38%] h-[300px] w-[480px] rounded-full bg-biz/[0.14] blur-[100px]"
-              style={{ animationDuration: '34s', animationDelay: '-19s' }}
-            />
-          </div>
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-              {/* Chat mock - messages stagger in on scroll */}
-              <div className="order-2 lg:order-1">
-                <Reveal>
-                  <CopilotDemo
-                    strings={{
-                      chatTitle: h('copilot.chatTitle'),
-                      langBadge: h('copilot.langBadge'),
-                      msg1: h('copilot.msg1'),
-                      msg2: h('copilot.msg2'),
-                      msg3: h('copilot.msg3'),
-                      msg4Title: h('copilot.msg4Title'),
-                      msg4Detail: h('copilot.msg4Detail'),
-                      inputLabel: h('copilot.inputLabel'),
-                      inputHint: h('copilot.inputHint'),
-                    }}
-                  />
-                </Reveal>
-              </div>
-              {/* Copy */}
-              <div className="order-1 lg:order-2">
-                <Reveal>
-                  <p className="text-[13px] font-semibold text-lime mb-5">
-                    {h('copilot.eyebrow')}
-                  </p>
-                  <h2 className="text-4xl md:text-[56px] leading-[1.05] font-bold tracking-[-0.025em] mb-6">
-                    {h('copilot.title1')}
-                    <br />
-                    {h('copilot.title2')}
-                  </h2>
-                  <p className="text-lg md:text-[19px] text-hero-ink-2 mb-8 leading-relaxed max-w-lg">
-                    {h('copilot.subtitle')}
-                  </p>
-                </Reveal>
-                <ul className="space-y-4 mb-10">
-                  {[1, 2, 3].map((n) => (
-                    <Reveal as="li" key={n} delay={n * 90} className="flex items-start gap-3 text-hero-ink-2 text-[15px]">
-                      <span className="w-5 h-5 rounded-full bg-lime flex items-center justify-center shrink-0 mt-0.5">
-                        <Check size={12} className="text-hivis-ink" />
-                      </span>
-                      {h(`copilot.bullet${n}`)}
-                    </Reveal>
-                  ))}
-                </ul>
-                <Reveal delay={300}>
-                  <Link
-                    href="/register"
-                    className="group inline-flex items-center gap-2 text-lime font-medium text-[17px] hover:text-hero-ink transition-colors"
-                  >
-                    {h('copilot.cta')}
-                    <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
-                  </Link>
-                </Reveal>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <div className="bg-asphalt">
-          <SectionWave fillClass="text-paper" flip label="Wave divider out of the AI copilot section" />
-        </div>
-
-        {/* Honest stats - Apple rhythm, true numbers only */}
-        <section className="py-16 md:py-28">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <Reveal className="text-center mb-14">
-              <h2 className="text-4xl md:text-[56px] leading-[1.05] font-bold tracking-[-0.025em]">
-                {h('stats.title1')}
-                <br />
-                <span className="text-ink-2">{h('stats.title2')}</span>
-              </h2>
-            </Reveal>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-10 md:gap-8">
-              {STATS.map((s, i) => (
-                <Reveal key={s.key} delay={i * 90} className="text-center lg:text-left">
-                  <p className="text-[12px] font-semibold text-ink mb-2">
-                    {h(`stats.${s.key}Label`)}
-                  </p>
-                  <p className="text-5xl md:text-6xl font-bold tracking-[-0.03em] mb-3">{s.value}</p>
-                  <p className="text-[14px] text-graphite leading-relaxed max-w-[220px] mx-auto lg:mx-0">
-                    {h(`stats.${s.key}Desc`)}
-                  </p>
-                </Reveal>
-              ))}
-            </div>
-            <Reveal className="text-center mt-14">
-              <Link
-                href="/register"
-                className="group inline-flex items-center justify-center gap-2 bg-asphalt text-hero-ink px-8 py-3.5 rounded-full text-[17px] font-medium hover:bg-hero-2 transition active:scale-95 shadow-[0_12px_32px_-12px_rgba(0,0,0,0.45)]"
-              >
-                {h('stats.cta')}
-                <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
-              </Link>
-            </Reveal>
-          </div>
-        </section>
-
-        {/* How it works */}
-        <section id="how-it-works" className="py-16 md:py-28 bg-paper border-y border-smoke scroll-mt-16">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <Reveal className="text-center max-w-2xl mx-auto mb-14">
-              <h2 className="text-4xl md:text-[52px] leading-[1.05] font-bold tracking-[-0.025em] mb-4">
-                {h('steps.title1')}
-                <br />
-                <span className="text-ink-2">{h('steps.title2')}</span>
-              </h2>
-              <p className="text-lg text-graphite">{h('steps.subtitle')}</p>
-            </Reveal>
-            <div className="grid md:grid-cols-3 gap-5">
-              {STEPS.map((s, i) => (
-                <Reveal
-                  key={s.n}
-                  delay={i * 110}
-                  className="relative bg-surface rounded-[24px] border border-smoke p-8 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_24px_56px_-20px_rgba(0,0,0,0.18)] hover:border-line-strong"
-                >
-                  <span className="absolute top-6 right-7 text-[64px] leading-none font-bold text-steel select-none">
-                    {s.n}
-                  </span>
-                  <div className="w-12 h-12 rounded-2xl bg-asphalt text-hero-ink flex items-center justify-center mb-5">
-                    <s.icon size={22} strokeWidth={1.6} />
-                  </div>
-                  <h3 className="text-[19px] font-semibold tracking-tight text-ink mb-2">
-                    {h(`steps.${s.key}Title`)}
-                  </h3>
-                  <p className="text-[15px] text-graphite leading-relaxed">{h(`steps.${s.key}Desc`)}</p>
-                </Reveal>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Local where it matters - built for Canada */}
-        <section id="regions" className="py-16 md:py-28 scroll-mt-16">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <Reveal className="text-center max-w-2xl mx-auto mb-14">
-              <p className="text-[13px] font-semibold text-ink mb-5 flex items-center justify-center gap-2">
-                <Globe2 size={15} /> {h('canada.eyebrow')}
-              </p>
-              <h2 className="text-4xl md:text-[52px] leading-[1.05] font-bold tracking-[-0.025em] mb-4">
-                {h('canada.title1')}
-                <br />
-                <span className="text-ink-2">{h('canada.title2')}</span>
-              </h2>
-              <p className="text-lg text-graphite">{h('canada.subtitle')}</p>
-            </Reveal>
-            <div className="max-w-4xl mx-auto">
-              <Reveal delay={120}>
-                <div className="bg-surface rounded-[24px] border border-smoke p-8 transition-shadow duration-300 hover:shadow-[0_16px_48px_-16px_rgba(0,0,0,0.12)]">
-                  <div className="flex items-center gap-3 mb-5">
-                    <div className="w-11 h-11 rounded-2xl bg-smoke text-ink flex items-center justify-center">
-                      <MapPin size={22} strokeWidth={1.6} />
-                    </div>
-                    <h3 className="text-[22px] font-semibold tracking-tight text-ink">
-                      {h('canada.cardTitle')}
-                    </h3>
-                  </div>
-                  <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-3">
-                    {CANADA_POINTS.map((p) => (
-                      <li key={p} className="flex items-start gap-3 text-[15px] text-graphite">
-                        <span className="w-5 h-5 rounded-full bg-ok-bg flex items-center justify-center shrink-0 mt-0.5">
-                          <Check size={12} className="text-ok" />
-                        </span>
-                        {p}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </Reveal>
-            </div>
-            <Reveal delay={200}>
-              <p className="text-center text-[14px] text-ink-2 mt-10 flex items-center justify-center gap-2">
-                <Languages size={15} /> {h('canada.footnote')}
-              </p>
-            </Reveal>
-          </div>
-        </section>
-
-        {/* Directory teaser */}
-        <section id="directory" className="pb-16 md:pb-28 scroll-mt-16">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <Reveal>
-              <div className="grid lg:grid-cols-2 gap-10 items-center bg-paper rounded-[32px] border border-smoke p-8 md:p-14">
-                <div>
-                  <p className="text-[13px] font-semibold text-ink mb-5">
-                    {h('directory.eyebrow')}
-                  </p>
-                  <h2 className="text-3xl md:text-[40px] leading-[1.08] font-bold tracking-[-0.02em] mb-4">
-                    {h('directory.title')}
-                  </h2>
-                  <p className="text-[17px] text-graphite mb-8 leading-relaxed">
-                    {h('directory.subtitle')}
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <Link
-                      href="/directory"
-                      className="group inline-flex items-center justify-center gap-2 bg-asphalt text-hero-ink px-6 py-3 rounded-full text-[15px] font-medium hover:bg-hero-2 transition active:scale-95"
-                    >
-                      {h('directory.ctaExplore')}
-                      <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-                    </Link>
-                    <Link
-                      href="/register"
-                      className="inline-flex items-center justify-center gap-2 text-ink px-6 py-3 rounded-full text-[15px] font-medium hover:underline underline-offset-4"
-                    >
-                      {h('directory.ctaList')}
-                    </Link>
-                  </div>
-                </div>
-                <div className="bg-surface rounded-[24px] border border-smoke p-6">
-                  <p className="text-[12px] font-semibold tracking-[0.14em] text-ink-2 mb-4">
-                    {h('directory.cardTitle')}
-                  </p>
-                  <div className="space-y-3 text-[14px]">
-                    <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-paper border border-smoke">
-                      <Search size={18} className="text-ink shrink-0" />
-                      <p className="text-graphite">
-                        {h('directory.card1Pre')}
-                        <span className="font-semibold text-ink">{h('directory.card1Bold')}</span>
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-paper border border-smoke">
-                      <Users size={18} className="text-ink shrink-0" />
-                      <p className="text-graphite">
-                        {h('directory.card2Pre')}
-                        <span className="font-semibold text-ink">{h('directory.card2Bold')}</span>
-                        {h('directory.card2Post')}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-smoke border border-smoke">
-                      <Bell size={18} className="text-ink shrink-0" />
-                      <p className="text-graphite">
-                        {h('directory.card3Pre')}
-                        <span className="font-semibold text-ink">{h('directory.card3Bold')}</span>
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Reveal>
-          </div>
-        </section>
-
-        {/* FAQ */}
-        <section id="faq" className="py-16 md:py-28 bg-paper border-y border-smoke scroll-mt-16">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6">
-            <Reveal>
-              <p className="text-[13px] font-semibold tracking-[0.14em] text-graphite mb-4">
-                {hf('eyebrow')}
-              </p>
-              <h2 className="text-4xl md:text-[52px] leading-[1.05] font-bold tracking-[-0.025em] mb-4">
-                {hf('title')}
-              </h2>
-              <p className="text-[17px] text-graphite mb-10">{hf('subtitle')}</p>
-            </Reveal>
-            <div className="space-y-3">
-              {FAQS.map((f, i) => (
-                <Reveal key={i} delay={i * 40}>
-                  <details className="group rounded-2xl border border-smoke bg-surface/70 px-6 py-1 open:shadow-[0_12px_32px_-16px_rgba(22,22,22,0.25)] transition-shadow">
-                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-[17px] font-semibold tracking-[-0.01em] [&::-webkit-details-marker]:hidden">
-                      {f.q}
-                      <span
-                        aria-hidden
-                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-asphalt text-[18px] font-light text-lime transition-transform duration-300 group-open:rotate-45"
-                      >
-                        +
-                      </span>
-                    </summary>
-                    <p className="pb-6 text-[15.5px] leading-relaxed text-graphite">{f.a}</p>
-                  </details>
-                </Reveal>
-              ))}
-            </div>
-          </div>
-        </section>
-        <script
-          type="application/ld+json"
-          nonce={await getCspNonce()}
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
-        />
-
-        {/* Final CTA */}
-        <section className="relative pb-24 md:pb-32 overflow-hidden">
-          <div aria-hidden className="pointer-events-none absolute inset-0">
-            <div className="ej-blob absolute bottom-[-6rem] left-1/2 ml-[-360px] h-[320px] w-[720px] bg-lime/[0.28] blur-3xl" />
-          </div>
-          <div className="relative max-w-3xl mx-auto px-4 sm:px-6 text-center">
-            <Reveal>
-              <h2 className="text-4xl md:text-[52px] leading-[1.05] font-bold tracking-[-0.025em] mb-6">
-                {h('finalCta.title1')}
-                <br />
-                <span className="text-graphite">
-                  {h('finalCta.title2')}
-                </span>
-              </h2>
-              <Link
-                href="/register"
-                className="group inline-flex items-center justify-center gap-2 bg-asphalt text-hero-ink px-9 py-4 rounded-full text-[17px] font-medium hover:bg-hero-2 transition active:scale-95 shadow-[0_16px_40px_-12px_rgba(22,22,22,0.5)]"
-              >
-                {h('finalCta.cta')}
-                <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
-              </Link>
-              <p className="text-[13px] text-ink-2 mt-5">{h('finalCta.note')}</p>
-            </Reveal>
-          </div>
-        </section>
-      </main>
-
-      {/* Footer */}
-      <footer className="border-t border-smoke bg-paper">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <Link href="/" aria-label="EveryJob home" className="rounded-lg">
-              <Logo />
-            </Link>
-            <nav className="flex flex-wrap justify-center gap-x-8 gap-y-3" aria-label="Footer">
-              <Link href="/start" className="text-[14px] text-graphite hover:text-ink transition-colors">
-                {h('footer.login')}
-              </Link>
-              <Link href="/register" className="text-[14px] text-graphite hover:text-ink transition-colors">
-                {h('footer.createAccount')}
-              </Link>
-              <Link href="/directory" className="text-[14px] text-graphite hover:text-ink transition-colors">
-                {h('footer.directory')}
-              </Link>
-              <Link href="/privacy" className="text-[14px] text-graphite hover:text-ink transition-colors">
-                {h('footer.privacy')}
-              </Link>
-              <Link href="/terms" className="text-[14px] text-graphite hover:text-ink transition-colors">
-                {h('footer.terms')}
-              </Link>
-              <Link href="/copyright" className="text-[14px] text-graphite hover:text-ink transition-colors">
-                {h('footer.copyright')}
-              </Link>
-            </nav>
-          </div>
-          <div className="mt-8 pt-8 border-t border-smoke text-center">
-            <p className="text-[14px] text-graphite">
-              &copy; {new Date().getFullYear()} {h('footer.rightsSuffix')}
-            </p>
-            <p className="text-[13px] text-ink-2 mt-1">{h('footer.madeFor')}</p>
-          </div>
-        </div>
-      </footer>
-    </div>
+    <>
+      <script
+        type="application/ld+json"
+        nonce={await getCspNonce()}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
+      />
+      <CustomerHomePage
+        results={results}
+        savedIds={savedIds}
+        showSave={customerSession !== null}
+        locale={locale}
+      />
+    </>
   );
 }

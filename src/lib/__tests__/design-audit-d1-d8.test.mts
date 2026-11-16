@@ -139,13 +139,10 @@ describe('D6/D7 - polish', () => {
     assert.ok(r >= 4.5, `white on ${m![1]} = ${r.toFixed(2)}:1`);
   });
 
-  it('the landing ghost numerals clear the large-text threshold', () => {
-    const page = read('src/app/page.tsx');
-    assert.match(page, /text-\[64px\][^"]*text-steel/);
-    // 64px decorative numerals: WCAG large-text bar is 3:1.
-    const r = contrast(token('steel', 'light'), token('bg', 'light'));
-    assert.ok(r >= 3, `steel on white = ${r.toFixed(2)}:1`);
-  });
+  // Ghost-numerals guard removed 2026-11-16: the pro landing page (and
+  // its 64px steel step numerals) was replaced at the root by the exact
+  // customer-home reference build, so the guard no longer has a subject.
+  // The /how-it-works step numbers are hivis-ink on hivis, not ghost text.
 });
 
 describe('D8 - the parallel palette is gone, not just aliased', () => {

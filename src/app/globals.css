@@ -6,6 +6,7 @@
    docs/design/everyjob-kit.css — this file must not redefine them. */
 @import "../../docs/design/everyjob-kit.css";
 @import "./tokens.css";
+@import "./customer-home.css";
 
 /* Part B (dashboard rebuild): class-based dark mode. `dark:` variants apply
    under `.dark` anywhere in the tree (the theme script in app/layout.tsx

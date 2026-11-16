@@ -50,8 +50,11 @@ for (const locale of ['en', 'fr'] as const) {
   });
 }
 
-test('homepage renders a visible FAQ section and FAQPage JSON-LD', () => {
-  const src = read('src/app/page.tsx');
+// The FAQ lived on the root landing page until 2026-11-16, when the root
+// became the exact customer-home reference build. It moved to /faq so the
+// visible Q&A and its FAQPage JSON-LD stay wired together.
+test('faq page renders a visible FAQ section and FAQPage JSON-LD', () => {
+  const src = read('src/app/faq/page.tsx');
   assert.ok(src.includes('id="faq"'), 'no #faq section anchor');
   assert.ok(src.includes('FAQPage'), 'no FAQPage JSON-LD');
   assert.ok(src.includes('mainEntity'), 'FAQPage missing mainEntity');
