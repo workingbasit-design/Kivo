@@ -69,15 +69,19 @@ function parseLastOpened(raw: string | null): LastOpenedRecord | null {
 export default function ContinueCard({
   serverDisplay,
   serverPriority,
+  liveIds,
   labels,
 }: {
   serverDisplay: ContinueDisplay | null;
   serverPriority: 1 | 2 | 3 | 4 | 5 | 6 | null;
+  /** `${kind}:${id}` keys for records that still exist (server-validated). */
+  liveIds: string[];
   labels: ContinueCardLabels;
 }) {
   const raw = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const lastOpened = useMemo(() => parseLastOpened(raw), [raw]);
-  const display = resolveContinueDisplay(serverDisplay, serverPriority, lastOpened, labels);
+  const live = useMemo(() => new Set(liveIds), [liveIds]);
+  const display = resolveContinueDisplay(serverDisplay, serverPriority, lastOpened, labels, live);
   if (!display) return null;
 
   return (

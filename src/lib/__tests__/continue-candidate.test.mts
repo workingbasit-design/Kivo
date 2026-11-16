@@ -252,3 +252,62 @@ test('clearLastOpenedRecord removes only the matching entry', () => {
     else (globalThis as Record<string, unknown>).window = prevWindow;
   }
 });
+
+// 2026-11-16 deep test: a quote deleted from another browser left a stale
+// last-opened entry in localStorage, and the dashboard card linked at a 404.
+// The server-validated liveIds set must drop such entries.
+test('resolveDisplay: stale last-opened (not in liveIds) falls back to server', () => {
+  const out = resolveContinueDisplay(
+    SERVER,
+    5,
+    { kind: 'quote', id: 'deleted-q', title: 'Deleted quote', subtitle: 'Bob' },
+    LABELS,
+    new Set(['job:srv'])
+  );
+  assert.equal(out?.id, 'srv');
+});
+
+test('resolveDisplay: stale last-opened with no server renders nothing', () => {
+  const out = resolveContinueDisplay(
+    null,
+    null,
+    { kind: 'quote', id: 'deleted-q', title: 'Deleted quote', subtitle: 'Bob' },
+    LABELS,
+    new Set(['job:srv'])
+  );
+  assert.equal(out, null);
+});
+
+test('resolveDisplay: live last-opened still beats upcoming/admin server candidate', () => {
+  const out = resolveContinueDisplay(
+    SERVER,
+    5,
+    { kind: 'quote', id: 'q1', title: 'Old quote', subtitle: 'Bob' },
+    LABELS,
+    new Set(['job:srv', 'quote:q1'])
+  );
+  assert.equal(out?.id, 'q1');
+  assert.equal(out?.meta, 'Where you left off');
+});
+
+test('resolveDisplay: urgent server candidate is unaffected by liveIds', () => {
+  const out = resolveContinueDisplay(
+    SERVER,
+    2,
+    { kind: 'quote', id: 'deleted-q', title: 'Deleted quote', subtitle: 'Bob' },
+    LABELS,
+    new Set(['job:srv'])
+  );
+  assert.equal(out?.id, 'srv');
+});
+
+test('resolveDisplay: without liveIds the old behaviour is preserved', () => {
+  const out = resolveContinueDisplay(
+    null,
+    null,
+    { kind: 'job', id: 'j1', title: 'Last job', subtitle: 'Alice' },
+    LABELS
+  );
+  assert.equal(out?.id, 'j1');
+});
+

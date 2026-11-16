@@ -278,20 +278,36 @@ export interface ContinueDisplay {
   actionLabel: string;
 }
 
+/** Live-record key: `${kind}:${id}`. The dashboard server passes the set
+ * of records that still exist so the client card never links at a record
+ * deleted from another browser/device (localStorage survives there —
+ * clearLastOpenedRecord only runs in the browser that deleted it). */
+export function continueKey(kind: ContinueKind, id: string): string {
+  return `${kind}:${id}`;
+}
+
 /**
  * Resolve what the Continue card shows. Server candidate priorities 1–3
  * (in-progress / late / today) always win; a last-opened record wins over
  * upcoming/admin candidates (4–6); otherwise the server candidate, if any.
+ *
+ * When `liveIds` is given, a last-opened record whose key is NOT in the
+ * set is treated as if it was never opened: the card falls back to the
+ * server candidate (or renders nothing). A deleted record must never
+ * surface as a "Where you left off" card that lands on a 404.
  */
 export function resolveContinueDisplay(
   server: ContinueDisplay | null,
   serverPriority: 1 | 2 | 3 | 4 | 5 | 6 | null,
   lastOpened: LastOpenedRecord | null,
-  labels: { lastOpened: string; viewJob: string; viewQuote: string; viewInvoice: string }
+  labels: { lastOpened: string; viewJob: string; viewQuote: string; viewInvoice: string },
+  liveIds?: ReadonlySet<string>
 ): ContinueDisplay | null {
   if (server && serverPriority !== null && serverPriority <= 3) return server;
   if (lastOpened && server && lastOpened.id === server.id) return server;
-  if (lastOpened) {
+  const lastOpenedLive =
+    !lastOpened || !liveIds || liveIds.has(continueKey(lastOpened.kind, lastOpened.id));
+  if (lastOpenedLive && lastOpened) {
     const actionLabel =
       lastOpened.kind === "job"
         ? labels.viewJob

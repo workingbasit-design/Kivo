@@ -6,7 +6,7 @@
  * to the client card. The client card only adds the last-opened record
  * from localStorage — it never formats money, dates, or times itself.
  */
-import { getContinueCandidate } from "@/lib/dashboard-sections";
+import { getContinueCandidate, getContinueLiveIds } from "@/lib/dashboard-sections";
 import { getLocale } from "@/lib/i18n/server";
 import { t, type Locale } from "@/lib/i18n";
 import { formatJobTime } from "@/lib/utils";
@@ -100,15 +100,19 @@ export default async function ContinueSection({
   technicianUserId?: string | null;
 }) {
   const locale: Locale = await getLocale();
-  const candidate = await getContinueCandidate(businessId, {
-    timezone,
-    regionCode,
-    technicianUserId,
-  });
+  const [candidate, liveIds] = await Promise.all([
+    getContinueCandidate(businessId, {
+      timezone,
+      regionCode,
+      technicianUserId,
+    }),
+    getContinueLiveIds(businessId, { technicianUserId }),
+  ]);
   return (
     <ContinueCard
       serverDisplay={candidate ? toDisplay(candidate, locale, timezone ?? "America/Toronto") : null}
       serverPriority={candidate ? candidate.priority : null}
+      liveIds={[...liveIds]}
       labels={{
         title: t(locale, "dashboard.continueTitle"),
         lastOpened: t(locale, "dashboard.continueLastOpened"),

@@ -17,6 +17,7 @@ import { tradeKeyForService, TRADE_ICON_COMPONENTS, type TradeKey } from "./trad
 import { getAttentionItems, type AttentionItem } from "./attention.ts";
 import {
   selectContinueCandidate,
+  continueKey,
   type ContinueCandidate,
   type ContinueJobRow,
   type ContinueQuoteRow,
@@ -863,6 +864,62 @@ export async function getContinueCandidate(
     { jobs: jobRows, quotes: quoteRows, invoices: invoiceRows },
     { todayKey, timezone, now: new Date() }
   );
+}
+
+/**
+ * Scroll lesson 1 — live ids for the Continue card's last-opened check.
+ *
+ * The card's last-opened record lives in the browser's localStorage, so a
+ * delete from another browser/device leaves a stale entry that would link
+ * at a 404. The server hands the client the set of records that still
+ * exist (id-only selects, tenant-scoped by businessId) so the card can
+ * drop a stale entry instead of rendering it. Universes match what the
+ * detail pages serve: unarchived jobs of any status, quotes of any
+ * status, invoices including voided ones (their detail page renders).
+ * Technicians mirror getContinueCandidate: their jobs only, no
+ * quotes/invoices.
+ */
+export async function getContinueLiveIds(
+  businessId: string,
+  opts?: {
+    /** When set, only visits assigned to this user (technician "My day"). */
+    technicianUserId?: string | null;
+  }
+): Promise<Set<string>> {
+  const techFilter = opts?.technicianUserId
+    ? {
+        OR: [
+          { assignedToId: opts.technicianUserId },
+          { jobAssignments: { some: { userId: opts.technicianUserId } } },
+        ],
+      }
+    : {};
+  const isTech = !!opts?.technicianUserId;
+
+  const [jobs, quotes, invoices] = await Promise.all([
+    prisma.job.findMany({
+      where: { businessId, archivedAt: null, ...techFilter },
+      select: { id: true },
+    }),
+    isTech
+      ? Promise.resolve([])
+      : prisma.quote.findMany({
+          where: { businessId },
+          select: { id: true },
+        }),
+    isTech
+      ? Promise.resolve([])
+      : prisma.invoice.findMany({
+          where: { businessId },
+          select: { id: true },
+        }),
+  ]);
+
+  const live = new Set<string>();
+  for (const j of jobs) live.add(continueKey("job", j.id));
+  for (const q of quotes) live.add(continueKey("quote", q.id));
+  for (const inv of invoices) live.add(continueKey("invoice", inv.id));
+  return live;
 }
 
 /**
