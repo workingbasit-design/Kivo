@@ -9,6 +9,7 @@
  * ring so the pro can orient at a glance. Technicians see the jobs-only
  * variant (money rows skipped by the fetcher).
  */
+import Link from "next/link";
 import { getWeekProgress } from "@/lib/dashboard-sections";
 import { getLocale } from "@/lib/i18n/server";
 import { t, type Locale } from "@/lib/i18n";
@@ -71,48 +72,49 @@ export default async function WeekProgressSection({
   return (
     <section
       aria-label={heading}
-      className="ej-dashboard-card ej-dashboard-card--week rounded-[24px] p-5"
+      className="ej-week-card"
     >
-      <p className="ej-dashboard-card-label">
+      <h2>
         {heading}
-      </p>
-      <p className="mt-1.5 text-[15px] font-semibold leading-relaxed text-ink">
+      </h2>
+      <p className="ej-week-summary">
         {summary}
       </p>
-      <div className="ej-week-days mt-5 grid grid-cols-7 gap-2" aria-hidden="true">
+      <div className="ej-week-days">
         {progress.weekKeys.map((key, i) => {
           const letter = new Intl.DateTimeFormat(dateTag, {
             timeZone: tz,
             weekday: "narrow",
           }).format(new Date(`${key}T12:00:00Z`));
+          const fullDate = new Intl.DateTimeFormat(dateTag, {
+            timeZone: tz,
+            weekday: "long",
+            month: "long",
+            day: "numeric",
+          }).format(new Date(`${key}T12:00:00Z`));
           const filled = progress.active[i];
           const future = progress.future[i];
           const isToday = key === progress.todayKey;
           return (
-            <div
+            <Link
               key={key}
+              href={`/schedule?day=${key}`}
+              aria-label={fullDate}
               className={[
-                "flex min-w-0 flex-col items-center gap-2 rounded-xl px-1.5 py-2",
-                isToday ? "bg-surface-2 ring-1 ring-line-strong" : "bg-transparent",
-                future ? "opacity-50" : "",
+                "ej-week-day",
+                filled ? "ej-week-day--active" : "",
+                future ? "ej-week-day--future" : "",
+                isToday ? "ej-week-day--today" : "",
               ].join(" ")}
             >
               <span
-                className={[
-                  "block h-3.5 w-3.5 rounded-full",
-                  filled
-                    ? "bg-hivis shadow-[0_0_0_3px_rgba(198,244,50,0.16)]"
-                    : "border-2 border-line bg-transparent",
-                  isToday ? "ring-2 ring-hivis ring-offset-2 ring-offset-surface-2" : "",
-                ].join(" ")}
+                className="ej-week-day-dot"
+                aria-hidden="true"
               />
-              <span className={[
-                "text-[11px] font-bold leading-none",
-                isToday ? "text-ink" : "text-ink-2",
-              ].join(" ")}>
+              <span className="ej-week-day-label" aria-hidden="true">
                 {letter}
               </span>
-            </div>
+            </Link>
           );
         })}
       </div>

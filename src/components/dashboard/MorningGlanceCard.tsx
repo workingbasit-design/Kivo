@@ -125,17 +125,17 @@ export default function MorningGlanceCard({
   return (
     <section
       aria-label={title}
-      className="ej-dashboard-card ej-dashboard-card--glance rounded-[24px] p-5"
+      className="ej-glance-card"
     >
       <div className="flex items-start justify-between gap-3">
-        <p className="ej-dashboard-card-label">
+        <h2>
           {title}
-        </p>
+        </h2>
         <button
           type="button"
           onClick={dismiss}
           aria-label={dismissLabel}
-          className="shrink-0 rounded-full px-2.5 py-1 text-[12px] font-semibold text-ink-2 underline-offset-2 hover:bg-surface-2 hover:underline"
+          className="ej-glance-dismiss"
         >
           {dismissLabel}
         </button>
@@ -143,15 +143,15 @@ export default function MorningGlanceCard({
       {lines.map((line) => (
         <p
           key={line}
-          className="mt-2 text-[15px] font-semibold leading-relaxed text-ink"
+          className="mt-2"
         >
           {line}
         </p>
       ))}
-      <div className="mt-4 flex flex-wrap items-center gap-2.5">
+      <div className="ej-glance-card-actions">
         <Link
           href={ctaHref}
-          className="inline-flex min-h-10 items-center justify-center rounded-full bg-hivis px-4 py-2 text-[13px] font-bold text-hivis-ink shadow-sm transition-transform hover:-translate-y-0.5"
+          className="ej-lime-pill"
         >
           {ctaLabel}
         </Link>
@@ -159,7 +159,7 @@ export default function MorningGlanceCard({
           type="button"
           onClick={toggleReminder}
           disabled={blocked}
-          className="inline-flex min-h-10 items-center justify-center rounded-full border border-line bg-surface/70 px-4 py-2 text-[13px] font-semibold text-ink-2 transition-colors hover:bg-surface-2 disabled:opacity-50"
+          className="ej-glance-btn-secondary"
         >
           {blocked ? remindBlockedLabel : reminder ? remindOffLabel : remindOnLabel}
         </button>

@@ -6,7 +6,7 @@
  * title, subtitle + meta, lime action pill) so the two sit as a pair.
  */
 import Link from "next/link";
-import { ChevronRight } from "@/components/icons";
+import { ChevronRight, CalendarDays } from "@/components/icons";
 import { getNextAction } from "@/lib/dashboard-sections";
 import { getLocale } from "@/lib/i18n/server";
 import { t, type Locale } from "@/lib/i18n";
@@ -124,24 +124,27 @@ export default async function NextActionSection({
   return (
     <section
       aria-label={heading}
-      className="ej-dashboard-card ej-dashboard-card--action rounded-[24px] p-5"
+      className="ej-next-card"
     >
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0">
-          <p className="ej-dashboard-card-label">
+      <div className="ej-next-card-row">
+        <span className="ej-next-card-icon" aria-hidden="true">
+          <CalendarDays size={22} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="ej-card-eyebrow">
             {heading}
           </p>
-          <p className="mt-1 truncate text-[18px] font-bold leading-snug tracking-[-0.02em] text-ink">
+          <h3 className="truncate">
             {display.title}
-          </p>
-          <p className="mt-1 truncate text-[13px] leading-relaxed text-ink-2">
+          </h3>
+          <p className="ej-next-card-meta truncate">
             {display.subtitle}
             {display.meta ? ` · ${display.meta}` : ""}
           </p>
         </div>
         <Link
           href={action.href}
-          className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full border border-transparent bg-hivis px-5 py-2 text-[13px] font-bold text-asphalt shadow-sm transition-transform hover:-translate-y-0.5"
+          className="ej-lime-pill shrink-0"
         >
           {display.actionLabel} <ChevronRight size={16} />
         </Link>

@@ -36,15 +36,15 @@ export default function PaletteTrigger({
       type="button"
       onClick={openPalette}
       className={cn(
-        "w-full flex items-center gap-3 rounded-xl px-3 py-2.5 mb-2",
-        "bg-hero-2 hover:bg-hero-2 border border-hero-line",
-        "text-hero-ink-2 hover:text-hero-ink transition-colors text-sm",
-        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-ink/70"
+        "w-full flex items-center gap-3 rounded-[10px] px-3 py-2.5 mb-2",
+        "bg-surface hover:bg-surface-2 border border-line",
+        "text-ink-2 hover:text-ink transition-colors text-sm",
+        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink/70"
       )}
     >
       <Search size={16} className="shrink-0" />
       <span className="flex-1 text-left">{label}</span>
-      <kbd className="rounded-md bg-hero-2 px-1.5 py-0.5 text-[10px] font-semibold text-hero-ink-2">
+      <kbd className="rounded-md bg-surface-2 px-1.5 py-0.5 text-[10px] font-semibold text-ink-2">
         ⌘K
       </kbd>
     </button>

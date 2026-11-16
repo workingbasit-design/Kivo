@@ -61,23 +61,16 @@ export default function AppSidebar({
         key={item.nameKey}
         href={item.href}
         aria-current={active ? 'page' : undefined}
-        className={`ej-icon-hover ej-sidebar-link relative flex min-h-10 items-center justify-between gap-2 rounded-xl px-2.5 py-2 transition-all duration-200 group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-ink/70 ${
-          active
-            ? 'bg-hivis text-asphalt shadow-sm'
-            : 'text-hero-ink-2 hover:bg-hero-2 hover:text-hero-ink'
-        }`}
+        className="ej-icon-hover ej-side-link focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink/70"
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <span
-            className={`ej-sidebar-icon ej-liquid flex h-7 w-7 shrink-0 items-center justify-center rounded-[9px] ring-1 ring-inset transition-all duration-200 ${
-              active
-                ? 'bg-asphalt/10 ring-ink/15 text-ink shadow-[0_2px_8px_rgba(22,22,22,0.18),inset_0_1px_0_rgba(255,255,255,0.35)]'
-                : 'bg-hero-2 ring-hero-ink/15 text-hero-ink group-hover:text-hero-ink group-hover:bg-surface/[0.14] shadow-[0_2px_8px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)]'
-            }`}
+            className="ej-side-icon"
+            aria-hidden="true"
           >
-            <NavIconView icon={item.icon} size={15} />
+            <NavIconView icon={item.icon} size={17} />
           </span>
-          <span className={`min-w-0 text-[12px] leading-5 font-medium ${active ? 'font-semibold' : ''}`}>
+          <span className="min-w-0">
             {label}
           </span>
         </div>
@@ -92,20 +85,20 @@ export default function AppSidebar({
   };
 
   return (
-    <aside className="ej-sidebar hidden md:flex w-[15.5rem] shrink-0 sticky top-0 min-h-screen flex-col font-sans text-hero-ink ej-glass-dark-solid">
+    <aside className="ej-sidebar hidden md:flex w-[16.5rem] shrink-0 sticky top-0 min-h-screen flex-col font-sans">
       {/* Header / Logo */}
       <div className="px-5 pb-3 pt-5">
         <div className="mb-6 flex items-center justify-between gap-2">
           <Link href="/dashboard" className="flex items-center gap-3">
             <EveryJobLogo size={32} />
-            <span className="text-xl font-bold tracking-tight text-hero-ink">EveryJob</span>
+            <span className="text-xl font-bold tracking-tight text-ink">EveryJob</span>
           </Link>
           <div className="flex items-center gap-1">
             <CopilotTriggerButton
               ariaLabel={t(locale, 'copilot.openLabel')}
-              className="ej-icon-hover rounded-xl p-2.5 text-hero-ink hover:bg-hero-2 hover:text-hero-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-ink/70"
+              className="ej-icon-hover ej-side-icon-btn focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink/70"
             >
-              <Sparkles size={19} />
+              <Sparkles size={18} />
             </CopilotTriggerButton>
             <Link
               href="/notifications"
@@ -114,9 +107,9 @@ export default function AppSidebar({
                 ? `${t(locale, 'notifications.title')} (${unreadCount} ${t(locale, 'notifications.unread')})`
                 : t(locale, 'notifications.title')
             }
-            className="ej-icon-hover relative rounded-xl p-2.5 text-hero-ink hover:bg-hero-2 hover:text-hero-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-ink/70"
+            className="ej-icon-hover ej-side-icon-btn relative focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink/70"
           >
-            <Bell size={19} />
+            <Bell size={18} />
             {unreadCount > 0 && (
               <span
                 aria-hidden
@@ -129,14 +122,14 @@ export default function AppSidebar({
           </div>
         </div>
 
-        <div className="mb-3 rounded-2xl border border-hero-line/70 bg-asphalt/15 px-3.5 py-3">
-          <p className="text-[10px] text-hero-ink-2 font-semibold mb-1">
+        <div className="ej-side-summary">
+          <p className="ej-side-summary-eyebrow">
             {t(locale, 'nav.todayView')}
           </p>
-          <div className="text-2xl font-bold text-hero-ink tracking-tight">
+          <div className="ej-side-summary-amount">
             {formatMoney(stats.bookedToday, stats.currency, locale === 'fr' ? 'fr' : 'en')}
           </div>
-          <p className="text-xs text-hero-ink-2 mt-1">
+          <p className="ej-side-summary-sub">
             {t(locale, 'nav.bookedToday')} ·{' '}
             {tp(locale, 'nav.jobsLeft', stats.jobsLeftToday)}
           </p>
@@ -144,7 +137,7 @@ export default function AppSidebar({
       </div>
 
       {/* Navigation */}
-      <nav className="ej-sidebar-nav flex-1 space-y-3 overflow-y-auto px-3 pb-5">
+      <nav className="flex-1 space-y-3 overflow-y-auto px-3 pb-5">
         <div className="px-0">
           <PaletteTrigger locale={locale} />
         </div>
@@ -154,7 +147,7 @@ export default function AppSidebar({
           if (items.length === 0) return null;
           return (
             <div key={section.labelKey}>
-              <p className="mb-1.5 px-3 text-[9px] font-bold uppercase tracking-[0.16em] text-hero-ink-2/90">
+              <p className="ej-nav-label">
                 {t(locale, section.labelKey)}
               </p>
               <div className="space-y-0.5">{items.map(navLink)}</div>
@@ -173,11 +166,11 @@ export default function AppSidebar({
                 ? t(locale, 'nav.collapseAdvanced')
                 : t(locale, 'nav.expandAdvanced')
             }
-            className="ej-icon-hover flex min-h-10 w-full items-center justify-between gap-2 rounded-xl px-2.5 py-2 text-hero-ink-2 transition-colors hover:bg-hero-2 hover:text-hero-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-ink/70"
+            className="ej-icon-hover ej-side-link focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink/70"
           >
             <span className="flex min-w-0 items-center gap-2.5">
-              <SlidersHorizontal size={16} className="shrink-0 text-hero-ink-2" aria-hidden />
-              <span className="text-[12px] font-medium">{t(locale, 'nav.advanced')}</span>
+              <SlidersHorizontal size={16} className="shrink-0" aria-hidden />
+              <span>{t(locale, 'nav.advanced')}</span>
             </span>
             <ChevronDown
               size={16}
@@ -195,15 +188,15 @@ export default function AppSidebar({
 
       {/* User profile / Logout. Language lives in Settings (profile
           settings) and in the mobile More menu - not in the sidebar. */}
-      <div className="mt-auto space-y-3 border-t border-hero-line px-3 py-3">
+      <div className="ej-sidebar-bottom mt-auto space-y-3">
         <form action={logout}>
-          <button className="ej-icon-hover flex items-center gap-3 px-3 py-2.5 text-hero-ink-2 hover:bg-hero-2 hover:text-hero-ink transition-colors rounded-xl w-full text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-ink/70">
+          <button className="ej-icon-hover ej-side-profile focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink/70">
             <div className="w-9 h-9 rounded-full bg-hivis text-asphalt flex items-center justify-center text-sm font-bold shrink-0">
               {(user.name || user.email).charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-hero-ink truncate">{user.name || user.email}</p>
-              <p className="text-[10px] text-hero-ink-2 truncate flex items-center gap-1">
+              <p className="text-xs font-semibold text-ink truncate">{user.name || user.email}</p>
+              <p className="text-[10px] text-ink-2 truncate flex items-center gap-1">
                 <LogOut size={10} /> {t(locale, 'nav.logout')}
               </p>
             </div>

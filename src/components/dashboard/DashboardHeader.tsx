@@ -49,11 +49,11 @@ export default async function DashboardHeader({
       });
 
   return (
-    <header className="ej-dashboard-header">
-      <h1 className="ej-dashboard-title font-condensed">
+    <header className="ej-dashboard-page-heading">
+      <h1>
         <DateTimeText date={new Date()} variant="dateline" timezone={timezone ?? undefined} locale={locale} />
       </h1>
-      <p className="ej-dashboard-summary">{sentence}</p>
+      <p className="ej-dashboard-subheading">{sentence}</p>
     </header>
   );
 }
