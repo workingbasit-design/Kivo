@@ -6,6 +6,7 @@ import { t } from '@/lib/i18n';
 import { Inbox, ChevronRight, Clock } from '@/components/icons';
 import { Button, Card, Chip, EmptyState, StatusBadge } from '@/components/kit';
 import type { StatusBadgeTone } from '@/components/kit';
+import { withdrawOpenLead } from '@/app/actions/customer-requests';
 
 function timeAgo(date: Date): string {
   const mins = Math.floor((Date.now() - date.getTime()) / 60000);
@@ -31,16 +32,35 @@ export default async function CustomerRequestsPage() {
   const locale = await getLocale();
   const tr = (path: string) => t(locale, path as never);
 
-  const requests = await prisma.quoteRequest.findMany({
-    where: { customerId: session.customer.id },
-    include: {
-      business: { select: { name: true, logoUrl: true } },
-      messages: { orderBy: { createdAt: 'desc' }, take: 1 },
-    },
-    orderBy: { updatedAt: 'desc' },
-  });
+  const [requests, openLeads] = await Promise.all([
+    prisma.quoteRequest.findMany({
+      where: { customerId: session.customer.id },
+      include: {
+        business: { select: { name: true, logoUrl: true } },
+        messages: { orderBy: { createdAt: 'desc' }, take: 1 },
+      },
+      orderBy: { updatedAt: 'desc' },
+    }),
+    // Unmatched public requests the customer filed (2026-11-16 deep test,
+    // Defect 1): saved as OPEN directoryRequest drafts with no pro attached.
+    // They are the customer's own open leads and belong on this page.
+    prisma.directoryRequest.findMany({
+      where: { customerId: session.customer.id, status: 'OPEN' },
+      select: {
+        id: true,
+        serviceNeed: true,
+        city: true,
+        area: true,
+        details: true,
+        updatedAt: true,
+      },
+      orderBy: { updatedAt: 'desc' },
+    }),
+  ]);
 
-  const activeCount = requests.filter((r) => r.status === 'sent' || r.status === 'replied').length;
+  const activeCount =
+    requests.filter((r) => r.status === 'sent' || r.status === 'replied').length +
+    openLeads.length;
 
   return (
     <div className="space-y-4">
@@ -53,7 +73,7 @@ export default async function CustomerRequestsPage() {
         )}
       </div>
 
-      {requests.length === 0 ? (
+      {requests.length === 0 && openLeads.length === 0 ? (
         <>
           <EmptyState
             icon={<Inbox />}
@@ -68,6 +88,53 @@ export default async function CustomerRequestsPage() {
         </>
       ) : (
         <div className="space-y-3">
+          {openLeads.map((lead) => (
+            <div key={`lead-${lead.id}`} className="ej-anim-fade-up">
+              <Card className="p-4">
+                <div className="flex items-center gap-3">
+                  <span
+                    aria-hidden="true"
+                    className="grid w-[42px] h-[42px] place-items-center rounded-full bg-surface-2 ring-1 ring-inset ring-line font-bold text-ink text-[15px] flex-none"
+                  >
+                    {lead.serviceNeed.charAt(0).toUpperCase()}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-bold text-[15px] text-ink truncate">
+                        {lead.serviceNeed}
+                      </h3>
+                      <StatusBadge tone="info">
+                        {tr('customer.requests.openLead')}
+                      </StatusBadge>
+                    </div>
+                    <p className="text-xs font-medium text-ink truncate mt-0.5">
+                      {lead.city}
+                      {lead.area ? ` (${lead.area})` : ''}
+                    </p>
+                    <p className="text-xs text-ink-2 truncate mt-1">
+                      {tr('customer.requests.openLeadHint').replace('{city}', lead.city)}
+                    </p>
+                    <p className="text-[11px] text-ink-2 mt-1 inline-flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {timeAgo(lead.updatedAt)}
+                    </p>
+                  </div>
+                  <form
+                    action={async (fd: FormData) => {
+                      'use server';
+                      await withdrawOpenLead(fd);
+                    }}
+                    className="shrink-0"
+                  >
+                    <input type="hidden" name="id" value={lead.id} />
+                    <Button type="submit" variant="secondary" sm>
+                      {tr('customer.requests.withdraw')}
+                    </Button>
+                  </form>
+                </div>
+              </Card>
+            </div>
+          ))}
           {requests.map((req, i) => (
             <div
               key={req.id}

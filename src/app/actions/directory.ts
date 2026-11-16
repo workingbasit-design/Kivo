@@ -17,6 +17,7 @@ import { interpretServiceNeed, serviceHintKeywords } from '@/lib/concierge';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { botCheckFailed } from '@/lib/bot-check';
+import { getCustomerSession } from '@/lib/customer-auth';
 
 export type DirectoryActionResult = {
   ok?: boolean;
@@ -174,6 +175,11 @@ export async function submitQuoteRequest(
       // No providers matched - save the request as an OPEN lead draft instead
       // of dropping it. It becomes visible in the admin demand queue, and the
       // requester gets a clear "saved" confirmation (never an ambiguous error).
+      // When the requester is a signed-in customer, link the draft to their
+      // account so it also appears in /customer/requests as an open lead
+      // draft (2026-11-16 deep test, Defect 1). Anonymous submissions stay
+      // unlinked (customerId null) exactly as before.
+      const customerSession = await getCustomerSession().catch(() => null);
       await prisma.directoryRequest.create({
         data: {
           serviceNeed,
@@ -184,6 +190,7 @@ export async function submitQuoteRequest(
           phoneNorm: phoneCheck.digits,
           details: details || null,
           status: 'OPEN',
+          customerId: customerSession?.customer.id ?? null,
         },
       });
       return { ok: true, unmatched: true, city };

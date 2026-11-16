@@ -20,6 +20,8 @@ export const PUBLIC_PATHS = [
   '/terms',
   '/privacy',
   '/agents',
+  '/how-it-works',
+  '/faq',
   '/.well-known/everyjob.json',
 ];
 
@@ -77,9 +79,14 @@ export function isPublicPath(pathname: string): boolean {
  * Regression (2026-10-06): /skills/<name>/SKILL.md - the Agent Protocol
  * skill files advertised in the public manifest - bounced anonymous agents
  * to /login for the same reason. They are static files under public/skills/.
+ * Regression (2026-11-16): /images/<name>.jpg - the customer-home hero
+ * photo and empty-state illustration - bounced anonymous browsers to
+ * /login, so the public homepage rendered with blank image areas and the
+ * /_next/image optimizer failed on the same redirect. Public imagery under
+ * public/images/ must never be guarded by the auth proxy.
  */
 export const PROXY_STATIC_BYPASS =
-  '_next/static|_next/image|favicon.ico|favicon.svg|sitemap.xml|robots.txt|manifest.webmanifest|sw.js|og/|icons/|apple-touch-icon.png|skills/';
+  '_next/static|_next/image|favicon.ico|favicon.svg|sitemap.xml|robots.txt|manifest.webmanifest|sw.js|og/|icons/|apple-touch-icon.png|skills/|images/';
 
 /** Pathname the proxy matcher skips entirely (no session check). */
 export function isProxyBypassed(pathname: string): boolean {

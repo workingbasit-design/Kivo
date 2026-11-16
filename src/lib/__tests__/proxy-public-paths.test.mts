@@ -39,6 +39,18 @@ test('public paths: customer token links stay public', () => {
   assert.equal(isPublicPath('/directory/request'), true);
 });
 
+test('public paths: customer-home public pages are reachable without a session', () => {
+  // Regression (2026-11-16): the exact customer-home build links How It
+  // Works and the FAQ from the public header, but both routes bounced
+  // anonymous users to /login because they were missing from the proxy's
+  // public table. The header links were dead for every logged-out visitor.
+  assert.equal(isPublicPath('/how-it-works'), true);
+  assert.equal(isPublicPath('/faq'), true);
+  // Exact-match traps: lookalikes stay guarded.
+  assert.equal(isPublicPath('/how-it-worksx'), false);
+  assert.equal(isPublicPath('/faqx'), false);
+});
+
 test('public paths: app pages still require a session', () => {
   for (const p of ['/dashboard', '/jobs', '/schedule', '/customers', '/settings', '/invoices', '/quotes']) {
     assert.equal(isPublicPath(p), false, p);
@@ -82,6 +94,11 @@ test('public paths: static PWA assets bypass the proxy without a session', () =>
     '/manifest.webmanifest',
     '/og/og-home.png',
     '/sw.js',
+    // Regression (2026-11-16): the customer-home hero photo and
+    // empty-state illustration under /images/ bounced anonymous browsers
+    // to /login, so the public homepage rendered with blank image areas.
+    '/images/everyjob-customer-home-hero.jpg',
+    '/images/everyjob-customer-home-empty-state.jpg',
   ]) {
     assert.equal(isProxyBypassed(p), true, p);
   }
@@ -89,6 +106,8 @@ test('public paths: static PWA assets bypass the proxy without a session', () =>
   for (const p of ['/dashboard', '/jobs', '/login']) {
     assert.equal(isProxyBypassed(p), false, p);
   }
+  // Lookalike: /imagesx is not /images/.
+  assert.equal(isProxyBypassed('/imagesx'), false);
 });
 
 test('public paths: proxy matcher literal stays in sync with PROXY_STATIC_BYPASS', () => {

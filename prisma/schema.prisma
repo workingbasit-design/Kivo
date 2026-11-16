@@ -992,11 +992,19 @@ model DirectoryRequest {
   phoneNorm   String?
   details     String?
   status      String   @default("OPEN") // OPEN, FULFILLED, DISMISSED
+  // Signed-in customer who filed the request, when known. Anonymous
+  // public submissions stay null. Lets the customer see (and withdraw)
+  // their unmatched request in /customer/requests — the unmatched path
+  // otherwise creates a record the requester can never find again
+  // (2026-11-16 deep test, Defect 1).
+  customerId  String?
+  customer    CustomerUser? @relation(fields: [customerId], references: [id], onDelete: SetNull)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@index([status])
   @@index([city])
+  @@index([customerId])
 }
 
 // Directory claim / verification (Track 4A). A business with an EveryJob app
@@ -1939,6 +1947,7 @@ model CustomerUser {
   sessions      CustomerSession[]
   savedPros     SavedPro[]
   quoteRequests QuoteRequest[]
+  directoryRequests DirectoryRequest[]
   agentKeys     CustomerAgentKey[]
   customerLinks CustomerLink[]
   createdAt     DateTime    @default(now())

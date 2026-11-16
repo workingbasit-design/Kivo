@@ -128,12 +128,13 @@ export const config = {
      * - _next/static, _next/image (static files)
      * - favicon.ico, favicon.svg, sitemap.xml, robots.txt (metadata)
      * - manifest.webmanifest, sw.js (PWA: browsers fetch these without a session)
-     * - og/, icons/, apple-touch-icon.png (public share/PWA assets: social
-     *   crawlers fetch og:image with no session; guarding them breaks previews)
+     * - og/, icons/, images/, apple-touch-icon.png (public share/PWA assets: social
+     *   crawlers fetch og:image with no session; guarding them breaks previews;
+     *   the customer-home hero/empty-state images live under images/)
      * - skills/ (Agent Protocol skill files under public/skills, one
      *   SKILL.md per skill: advertised in the public manifest, fetched by
      *   agents with no session)
      */
-    '/((?!_next/static|_next/image|favicon.ico|favicon.svg|sitemap.xml|robots.txt|manifest.webmanifest|sw.js|og/|icons/|apple-touch-icon.png|skills/).*)',
+    '/((?!_next/static|_next/image|favicon.ico|favicon.svg|sitemap.xml|robots.txt|manifest.webmanifest|sw.js|og/|icons/|images/|apple-touch-icon.png|skills/).*)',
   ],
 };

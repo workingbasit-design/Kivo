@@ -1,8 +1,12 @@
 #!/bin/sh
-# Applies the ordered migrations (m1..m13, m22, m23, m31, m32) to the database pointed at
+# Applies the ordered migrations (m1..m13, m22, m23, m31, m32, m33) to the database pointed at
 # by DATABASE_URL. Used by the Vercel build BEFORE `prisma db push`, because
 # db push cannot add NOT NULL columns / drop columns on tables that already
 # have production data - the migration files do the backfills first.
+#
+# m33 (2026-11-16) adds the optional DirectoryRequest.customerId link (plus
+# FK + index) so a signed-in customer's unmatched request can be shown in
+# /customer/requests. Pure additive, no rows touched.
 #
 # m31/m32 (2026-11-11, Claude design+DB series) are pure backfills with no
 # schema change: m31 seeds BookableService rows so existing /book pages do
@@ -45,6 +49,7 @@ for m in \
   20261016100000_m23_stripe_bank_first \
   20261111120000_m31_backfill_bookable_services \
   20261111130000_m32_backfill_gst_registered \
+  20261116120000_m33_directory_request_customer \
 ; do
   echo "==> Applying migration ${m}..."
   prisma db execute --file "prisma/migrations/${m}/migration.sql" --schema prisma/schema.prisma

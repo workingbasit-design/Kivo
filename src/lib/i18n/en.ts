@@ -222,6 +222,7 @@ const en: Dict = {
     interacReference: 'Put this reference in the message',
     interacDisclaimer: 'Pay from your own banking app. EveryJob never processes payments.',
     backToInvoices: 'Back to invoices',
+    print: 'Print',
     taxIdLabel: 'GST/HST number',
     customerLabel: 'Customer',
     selectCustomer: 'Select a customer',

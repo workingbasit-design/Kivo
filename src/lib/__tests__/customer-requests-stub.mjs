@@ -4,10 +4,11 @@
  * - @/lib/prisma (business.findFirst, quoteRequest.findFirst/create, lead.create, $transaction)
  * - @/lib/customer-auth (getCustomerSession)
  * - next/navigation (redirect)
+ * - next/cache (revalidatePath)
  * - @/lib/rate-limit (real one is used - in-memory, fine)
  * - @/lib/lead-expiry (real one - pure date math)
  */
-export const calls = { quoteRequests: [], leads: [] };
+export const calls = { quoteRequests: [], leads: [], revalidated: [], dismissed: [] };
 
 // Seeded businesses: one verified+opted-in, one opted-out, one unverified.
 export const businesses = new Map([
@@ -19,7 +20,21 @@ export const businesses = new Map([
 export function resetCalls() {
   calls.quoteRequests.length = 0;
   calls.leads.length = 0;
+  calls.revalidated.length = 0;
+  calls.dismissed.length = 0;
+  resetDirectoryRequests();
 }
+
+// Open-lead drafts for the withdraw tests: one OPEN owned by the signed-in
+// customer, one OPEN owned by someone else, one already DISMISSED.
+export const directoryRequests = new Map();
+export function resetDirectoryRequests() {
+  directoryRequests.clear();
+  directoryRequests.set('dr_open_mine', { id: 'dr_open_mine', customerId: 'cust_1', status: 'OPEN' });
+  directoryRequests.set('dr_open_other', { id: 'dr_open_other', customerId: 'cust_2', status: 'OPEN' });
+  directoryRequests.set('dr_done_mine', { id: 'dr_done_mine', customerId: 'cust_1', status: 'DISMISSED' });
+}
+resetDirectoryRequests();
 
 function txStub() {
   return {
@@ -56,10 +71,24 @@ export const prisma = {
   quoteRequest: {
     findFirst: async () => null, // no recent duplicate in these tests
   },
+  directoryRequest: {
+    // Faithful emulation of updateMany: only a row matching id +
+    // customerId + status is touched; anything else is a silent no-op.
+    updateMany: async ({ where, data }) => {
+      const row = directoryRequests.get(where.id);
+      if (!row) return { count: 0 };
+      if (row.customerId !== where.customerId) return { count: 0 };
+      if (row.status !== where.status) return { count: 0 };
+      row.status = data.status;
+      calls.dismissed.push(row.id);
+      return { count: 1 };
+    },
+  },
   $transaction: async (fn) => fn(txStub()),
 };
 
 export function getCustomerSession() {
+  if (currentCustomerId == null) return null;
   return {
     customer: {
       id: currentCustomerId,
@@ -69,6 +98,10 @@ export function getCustomerSession() {
       city: 'Toronto',
     },
   };
+}
+
+export function revalidatePath(path) {
+  calls.revalidated.push(path);
 }
 
 let currentCustomerId = 'cust_1';

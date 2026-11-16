@@ -149,7 +149,7 @@ export default async function InvoiceDetailPage({
             message={`Hi ${invoice.customer.name}! Here is invoice ${invoice.number} from ${invoice.business.name} (${formatMoney(centsToDollars(invoice.totalCents), currency, moneyLocale)}).`}
             label="SMS"
           />
-          <PrintButton />
+          <PrintButton label={L('invoices.print')} />
         </div>
       </div>
 

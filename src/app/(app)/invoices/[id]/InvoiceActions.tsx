@@ -142,7 +142,7 @@ export default function InvoiceActions({
           <h3 className="text-sm font-bold text-ink flex items-center gap-2">
             <Wallet size={14} /> {t(locale, 't10money.invRecordPayment')}
             <span className="text-xs font-semibold text-warn-text">
-              ({formatMoney(remaining, currency)} {t(locale, 't10money.invDue')})
+              ({formatMoney(remaining, currency, locale)} {t(locale, 't10money.invDue')})
             </span>
           </h3>
           <input type="hidden" name="invoiceId" value={id} />
@@ -256,7 +256,7 @@ export default function InvoiceActions({
                   className="flex items-center justify-between text-sm"
                 >
                   <span className="font-semibold tabular-nums text-ink">
-                    {formatMoney(centsToDollars(p.amountCents), currency)}
+                    {formatMoney(centsToDollars(p.amountCents), currency, locale)}
                   </span>
                   <button
                     type="button"

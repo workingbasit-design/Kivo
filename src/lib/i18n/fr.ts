@@ -222,6 +222,7 @@ const fr: Dictionary = {
     interacReference: 'Indiquez cette référence dans le message',
     interacDisclaimer: 'Payez depuis votre propre application bancaire. EveryJob ne traite jamais les paiements.',
     backToInvoices: 'Retour aux factures',
+    print: 'Imprimer',
     taxIdLabel: 'N° TPS/TVQ',
     customerLabel: 'Client',
     selectCustomer: 'Sélectionner un client',

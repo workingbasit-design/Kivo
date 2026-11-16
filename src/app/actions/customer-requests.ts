@@ -1,6 +1,7 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { revalidatePath } from 'next/cache';
 import { getCustomerSession } from '@/lib/customer-auth';
 import { prisma } from '@/lib/prisma';
 import { rateLimit, QUOTE_REQUEST_LIMIT } from '@/lib/rate-limit';
@@ -89,6 +90,31 @@ export async function sendQuoteRequest(_prev: unknown, formData: FormData) {
   });
 
   redirect(`/customer/requests/${quoteRequest.id}`);
+}
+
+/**
+ * Withdraw an unmatched open-lead draft (2026-11-16 deep test, Defect 1).
+ * Only the customer who filed it can withdraw it, and only while it is
+ * still OPEN — the update is scoped by id + customerId + status in a
+ * single updateMany, so a tampered id or another customer's draft is a
+ * silent no-op (count 0), never an error that leaks existence. Withdrawing
+ * sets DISMISSED, which also removes it from the admin demand queue.
+ */
+export async function withdrawOpenLead(formData: FormData) {
+  const session = await getCustomerSession();
+  if (!session) redirect('/customer/login');
+
+  const id = String(formData.get('id') || '');
+  if (!id) return { error: 'Request not found.' };
+
+  const res = await prisma.directoryRequest.updateMany({
+    where: { id, customerId: session.customer.id, status: 'OPEN' },
+    data: { status: 'DISMISSED' },
+  });
+  if (res.count === 0) return { error: 'Request not found.' };
+
+  revalidatePath('/customer/requests');
+  return { ok: true };
 }
 
 export async function sendCustomerMessage(formData: FormData) {
