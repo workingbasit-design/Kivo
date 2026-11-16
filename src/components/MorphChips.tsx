@@ -45,7 +45,7 @@ export default function MorphChips<T extends string | number>({
             onClick={() => onChange(opt)}
             className={`relative min-h-[44px] px-4 rounded-full text-sm font-semibold transition-colors duration-200 ${
               selected
-                ? 'text-ink'
+                ? 'text-hivis-ink'
                 : dark
                   ? 'text-hero-ink hover:text-hero-ink'
                   : 'text-ink-2 hover:text-ink'

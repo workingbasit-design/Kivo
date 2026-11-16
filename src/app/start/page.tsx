@@ -35,7 +35,7 @@ export default async function StartPage() {
           className="group bg-asphalt text-hero-ink rounded-[24px] p-7 border border-hero-line shadow-[0_16px_40px_rgba(22,22,22,0.25)] hover:shadow-[0_20px_50px_rgba(22,22,22,0.35)] transition-shadow"
         >
           <div className="w-12 h-12 rounded-2xl bg-lime flex items-center justify-center mb-5">
-            <Search size={24} className="text-ink" />
+            <Search size={24} className="text-hivis-ink" />
           </div>
           <h2 className="text-xl font-bold mb-1.5">
             {t(locale, 'start.customerTitle') ?? 'Find a pro'}

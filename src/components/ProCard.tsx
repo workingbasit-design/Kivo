@@ -19,8 +19,10 @@ export type ProCardData = {
 
 /**
  * Shared pro card for the customer experience - used on search results
- * and the saved pros page. Clean EveryJob theme: white card, indigo
- * accents, refined hover and press micro-interactions.
+ * and the saved pros page. Mockup styling (2026-11-16): white card, plain
+ * star rating, neutral service tags. Icon rule: the avatar tile is
+ * neutral --surface-2 with a dark initial; the verified check is the
+ * --ok status colour. No coloured tiles.
  */
 export default function ProCard({
   pro,
@@ -40,18 +42,18 @@ export default function ProCard({
     <article className="group bg-surface rounded-3xl border border-line p-4 shadow-kit-card transition-all duration-300 hover:shadow-[0_12px_32px] hover:shadow-hivis/10 hover:border-line hover:-translate-y-0.5">
       <div className="flex items-start gap-3">
         <div className="relative shrink-0">
-          <div className="w-14 h-14 rounded-2xl bg-info-bg border border-line flex items-center justify-center overflow-hidden transition-transform duration-300 group-hover:scale-105">
+          <div className="w-14 h-14 rounded-2xl bg-surface-2 border border-line flex items-center justify-center overflow-hidden transition-transform duration-300 group-hover:scale-105">
             {pro.logoUrl ? (
               <img src={pro.logoUrl} alt="" className="w-full h-full object-cover" />
             ) : (
-              <span className="text-xl font-bold text-info">
+              <span className="text-xl font-bold text-ink">
                 {pro.name.charAt(0).toUpperCase()}
               </span>
             )}
           </div>
           {pro.verified && (
             <span className="absolute -bottom-1 -right-1 bg-surface rounded-full p-0.5 shadow-sm transition-transform duration-300 group-hover:scale-110">
-              <BadgeCheck className="w-5 h-5 text-info fill-info-bg" aria-label={tr('customer.proCard.verified')} />
+              <BadgeCheck className="w-5 h-5 text-ok fill-ok-bg" aria-label={tr('customer.proCard.verified')} />
             </span>
           )}
         </div>
@@ -62,7 +64,7 @@ export default function ProCard({
           </h3>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
             {pro.avg != null ? (
-              <span className="inline-flex items-center gap-1 text-xs font-bold text-ink bg-warn-bg border border-warn-line/70 rounded-full px-2 py-0.5">
+              <span className="inline-flex items-center gap-1 text-xs font-bold text-ink">
                 <Star className="w-3.5 h-3.5 fill-star text-star" />
                 {pro.avg.toFixed(1)}
                 <span className="font-medium text-ink-2">({pro.count})</span>
@@ -84,7 +86,7 @@ export default function ProCard({
               {pro.services.slice(0, 3).map((s) => (
                 <span
                   key={s}
-                  className="text-[11px] font-medium bg-info-bg text-info rounded-full px-2 py-0.5"
+                  className="text-[11px] font-medium bg-surface-2 text-ink-2 rounded-full px-2 py-0.5"
                 >
                   {s}
                 </span>

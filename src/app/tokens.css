@@ -163,4 +163,15 @@
   --shadow-kit-pop: 0 8px 24px rgba(0, 0, 0, 0.14);
   --shadow-kit-sheet: 0 -12px 40px rgba(0, 0, 0, 0.25);
   --shadow-kit-toast: 0 10px 30px rgba(0, 0, 0, 0.25);
+
+  /* EveryJob Precision scale (2026-11-16): Tailwind utilities for the new
+     kit scale. Only names that do not collide with Tailwind v4 defaults
+     are mapped here — --text-display, --shadow-card/raised/overlay are new
+     utility names; --text-*/--tracking-*/--leading-*/--radius-* are NOT
+     mapped because the kit's --ej-* vars deliberately avoid those theme
+     keys (a :root redefinition would restyle every Tailwind utility). */
+  --text-display: var(--ej-text-display);
+  --shadow-card: var(--shadow-card);
+  --shadow-raised: var(--shadow-raised);
+  --shadow-overlay: var(--shadow-overlay);
 }

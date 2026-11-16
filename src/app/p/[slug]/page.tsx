@@ -254,7 +254,7 @@ export default async function PublicProfilePage({
           <div className="flex flex-wrap gap-2 mt-5">
             <Link
               href={`/book/${slug}`}
-              className="min-h-[44px] inline-flex items-center gap-1.5 rounded-xl bg-lime hover:bg-lime/85 text-ink text-sm font-bold px-5 py-2.5 transition-colors"
+              className="min-h-[44px] inline-flex items-center gap-1.5 rounded-xl bg-lime hover:bg-lime/85 text-hivis-ink text-sm font-bold px-5 py-2.5 transition-colors"
             >
               <CalendarCheck size={15} /> {L('t10money.profileBookNow')}
             </Link>

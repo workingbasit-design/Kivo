@@ -9,11 +9,14 @@ export default function DirectoryRatingFilter({
   anyLabel,
   starsUp,
   minRatingLabel,
+  tone = 'light',
 }: {
   options: readonly string[];
   anyLabel: string;
   starsUp: string;
   minRatingLabel: string;
+  /** 'light' for light backgrounds, 'dark' for dark backgrounds */
+  tone?: 'light' | 'dark';
 }) {
   const router = useRouter();
   const params = useSearchParams();
@@ -28,13 +31,13 @@ export default function DirectoryRatingFilter({
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="text-hero-ink-2 font-medium text-xs">{minRatingLabel}</span>
+      <span className={`font-medium text-xs ${tone === 'dark' ? 'text-hero-ink-2' : 'text-ink-2'}`}>{minRatingLabel}</span>
       <MorphChips
         options={options}
         value={current}
         onChange={onChange}
         groupId="directory-rating"
-        tone="dark"
+        tone={tone}
         format={(v) => (v === '' ? anyLabel : starsUp.replace('{v}', v))}
       />
     </div>

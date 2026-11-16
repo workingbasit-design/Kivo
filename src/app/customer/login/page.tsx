@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { getCustomerSession } from '@/lib/customer-auth';
 import { getLocale } from '@/lib/i18n/server';
 import { safeNext } from '@/lib/redirect';
+import CustomerAuthShell from '@/components/CustomerAuthShell';
 import CustomerLoginForm from './form';
 
 export default async function CustomerLoginPage({
@@ -14,5 +15,9 @@ export default async function CustomerLoginPage({
   const session = await getCustomerSession();
   if (session) redirect(dest ?? '/customer');
   const locale = await getLocale();
-  return <CustomerLoginForm locale={locale} next={dest} />;
+  return (
+    <CustomerAuthShell locale={locale}>
+      <CustomerLoginForm locale={locale} next={dest} />
+    </CustomerAuthShell>
+  );
 }

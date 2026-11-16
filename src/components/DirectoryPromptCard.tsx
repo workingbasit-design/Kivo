@@ -92,7 +92,7 @@ export default function DirectoryPromptCard({
           </p>
           <Link
             href="/directory-profile"
-            className="mt-3 inline-flex min-h-[44px] items-center rounded-full bg-hivis px-4 text-[13px] font-bold text-ink"
+            className="mt-3 inline-flex min-h-[44px] items-center rounded-full bg-hivis px-4 text-[13px] font-bold text-hivis-ink"
           >
             {L("directoryPromptViewProfile")}
           </Link>
@@ -108,7 +108,7 @@ export default function DirectoryPromptCard({
               type="button"
               onClick={add}
               disabled={isPending}
-              className="min-h-[44px] rounded-full bg-hivis px-4 text-[13px] font-bold text-ink disabled:opacity-50"
+              className="min-h-[44px] rounded-full bg-hivis px-4 text-[13px] font-bold text-hivis-ink disabled:opacity-50"
             >
               {L("directoryPromptAdd")}
             </button>

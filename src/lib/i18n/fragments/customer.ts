@@ -9,6 +9,8 @@ const fragment = {
   en: {
     customer: {
       nav: {
+        home: 'Home',
+        findPro: 'Find a pro',
         search: 'Search',
         requests: 'Requests',
         saved: 'Saved',
@@ -35,6 +37,27 @@ const fragment = {
         noProsYetHint: 'Check back soon. Verified pros are joining every day.',
         getItDone: 'Get it done for me',
         getItDoneHint: 'Describe the job. We’ll find the right pros and send your request.',
+        // Mockup hero (2026-11-16 redesign).
+        heroEyebrow: 'LOCAL EXPERTS. LESS HASSLE.',
+        heroLine1: 'Find the right pro.',
+        heroLine2: 'Get it done.',
+        heroSub:
+          'Discover trusted local professionals for your home. Request quotes, message pros, and get your project moving — all in one place.',
+        heroChip: 'Every job. One place.',
+        servicesEyebrow: 'START WITH A SERVICE',
+        servicesTitle: 'What can we help with?',
+        exploreAll: 'Explore all services',
+        serviceHintPlumbing: 'Leaks, repairs, installs',
+        serviceHintElectrical: 'Panel, wiring, lighting',
+        serviceHintCleaning: 'Homes, move-in, deep clean',
+        serviceHintHvac: 'Heating, cooling, maintenance',
+        bannerEyebrow: 'Not sure where to start?',
+        bannerTitle: 'Tell us what needs doing.',
+        bannerHint: 'Describe your project. We’ll help you find the right professionals.',
+        prosEyebrow: 'A GOOD PLACE TO BEGIN',
+        prosTitle: 'Professionals to explore',
+        viewDirectory: 'View directory',
+        searchProfessionals: 'Search professionals',
       },
       concierge: {
         title: 'Get it done for me',
@@ -144,6 +167,18 @@ const fragment = {
         areYouPro: 'Are you a pro?',
         joinAsBusiness: 'Join as a business',
         businessLogin: 'Business login',
+        // Mockup auth split card (2026-11-16 redesign).
+        welcomePanelEyebrow: 'WELCOME TO EVERYJOB',
+        welcomePanelTitle1: 'Good work.',
+        welcomePanelTitle2: 'Good people.',
+        welcomePanelTitle3: 'One place.',
+        welcomePanelHint:
+          'Find local professionals, keep your projects organised, and make home services simpler.',
+        accountEyebrow: 'YOUR EVERYJOB ACCOUNT',
+        loginSub: 'Sign in to pick up where you left off.',
+        signIn: 'Sign in',
+        showPassword: 'Show password',
+        hidePassword: 'Hide password',
       },
       quote: {
         backToSearch: 'Back to search',
@@ -168,6 +203,8 @@ const fragment = {
   fr: {
     customer: {
       nav: {
+        home: 'Accueil',
+        findPro: 'Trouver un pro',
         search: 'Recherche',
         requests: 'Demandes',
         saved: 'Sauvegardés',
@@ -194,6 +231,27 @@ const fragment = {
         noProsYetHint: 'Revenez bientôt. Des pros vérifiés s’inscrivent chaque jour.',
         getItDone: 'Faites-le pour moi',
         getItDoneHint: 'Décrivez le travail. Nous trouverons les bons pros et enverrons votre demande.',
+        // Mockup hero (2026-11-16 redesign).
+        heroEyebrow: 'EXPERTS LOCAUX. MOINS DE SOUCIS.',
+        heroLine1: 'Trouvez le bon pro.',
+        heroLine2: 'C’est fait.',
+        heroSub:
+          'Découvrez des professionnels locaux de confiance pour votre maison. Demandez des devis, écrivez aux pros et lancez votre projet — tout au même endroit.',
+        heroChip: 'Every job. One place.',
+        servicesEyebrow: 'COMMENCEZ PAR UN SERVICE',
+        servicesTitle: 'Que pouvons-nous faire pour vous?',
+        exploreAll: 'Explorer tous les services',
+        serviceHintPlumbing: 'Fuites, réparations, installations',
+        serviceHintElectrical: 'Panneau, câblage, éclairage',
+        serviceHintCleaning: 'Maisons, emménagement, grand ménage',
+        serviceHintHvac: 'Chauffage, climatisation, entretien',
+        bannerEyebrow: 'Vous ne savez pas par où commencer?',
+        bannerTitle: 'Dites-nous ce qu’il faut faire.',
+        bannerHint: 'Décrivez votre projet. Nous vous aiderons à trouver les bons professionnels.',
+        prosEyebrow: 'UN BON POINT DE DÉPART',
+        prosTitle: 'Professionnels à découvrir',
+        viewDirectory: 'Voir le répertoire',
+        searchProfessionals: 'Rechercher des professionnels',
       },
       concierge: {
         title: 'Faites-le pour moi',
@@ -303,6 +361,18 @@ const fragment = {
         areYouPro: 'Vous êtes un pro?',
         joinAsBusiness: 'Joindre comme entreprise',
         businessLogin: 'Connexion entreprise',
+        // Mockup auth split card (2026-11-16 redesign).
+        welcomePanelEyebrow: 'BIENVENUE CHEZ EVERYJOB',
+        welcomePanelTitle1: 'Du bon travail.',
+        welcomePanelTitle2: 'De bonnes personnes.',
+        welcomePanelTitle3: 'Un seul endroit.',
+        welcomePanelHint:
+          'Trouvez des professionnels locaux, gardez vos projets organisés et simplifiez vos services à domicile.',
+        accountEyebrow: 'VOTRE COMPTE EVERYJOB',
+        loginSub: 'Connectez-vous pour reprendre où vous vous étiez arrêté.',
+        signIn: 'Se connecter',
+        showPassword: 'Afficher le mot de passe',
+        hidePassword: 'Masquer le mot de passe',
       },
       quote: {
         backToSearch: 'Retour à la recherche',

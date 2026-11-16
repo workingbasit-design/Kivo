@@ -85,7 +85,6 @@ export default async function CustomerHomePage({
       initialQ={q}
       initialCity={effectiveCity}
       savedIds={Array.from(savedIds)}
-      customerName={session.customer.name?.split(' ')[0] || 'there'}
       locale={locale}
     />
   );

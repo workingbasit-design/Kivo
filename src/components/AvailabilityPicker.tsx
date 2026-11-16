@@ -53,7 +53,7 @@ export default function AvailabilityPicker({
               disabled={!hasSlots}
               onClick={() => pickDay(day.date)}
               className={`relative min-w-[64px] min-h-[72px] rounded-2xl flex flex-col items-center justify-center gap-0.5 shrink-0 transition-colors ${
-                selected ? 'text-ink' : hasSlots ? 'text-ink hover:bg-surface-2' : 'text-ink-2'
+                selected ? 'text-hivis-ink' : hasSlots ? 'text-ink hover:bg-surface-2' : 'text-ink-2'
               }`}
               aria-pressed={selected}
             >
@@ -101,7 +101,7 @@ export default function AvailabilityPicker({
                       aria-checked={selected}
                       onClick={() => onSelect(selectedDay.date, slot)}
                       className={`relative min-h-[44px] rounded-xl text-sm font-semibold transition-colors ${
-                        selected ? 'text-ink' : 'text-ink bg-surface border border-line hover:border-line-strong'
+                        selected ? 'text-hivis-ink' : 'text-ink bg-surface border border-line hover:border-line-strong'
                       }`}
                     >
                       {selected && (

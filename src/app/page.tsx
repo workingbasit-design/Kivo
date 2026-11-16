@@ -320,7 +320,7 @@ export default async function LandingPage() {
                   {[1, 2, 3].map((n) => (
                     <Reveal as="li" key={n} delay={n * 90} className="flex items-start gap-3 text-hero-ink-2 text-[15px]">
                       <span className="w-5 h-5 rounded-full bg-lime flex items-center justify-center shrink-0 mt-0.5">
-                        <Check size={12} className="text-ink" />
+                        <Check size={12} className="text-hivis-ink" />
                       </span>
                       {h(`copilot.bullet${n}`)}
                     </Reveal>

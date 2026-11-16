@@ -133,8 +133,8 @@ export default function NotificationBell({
         aria-hidden
         className={`absolute flex items-center justify-center rounded-full px-1 font-bold ${
           tone === 'dark'
-            ? '-top-0.5 -right-0.5 h-5 min-w-5 text-[10px] bg-lime text-ink'
-            : 'top-1 right-1 h-4 min-w-4 text-[9px] bg-hivis text-ink'
+            ? '-top-0.5 -right-0.5 h-5 min-w-5 text-[10px] bg-lime text-hivis-ink'
+            : 'top-1 right-1 h-4 min-w-4 text-[9px] bg-hivis text-hivis-ink'
         }`}
       >
         {unread > 99 ? '99+' : unread}

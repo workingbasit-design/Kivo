@@ -13,10 +13,23 @@
    reads light and airy there); Barlow Condensed is retired from numbers.
    ===================================================================== */
 /* ===== Tokens: every colour in the app comes from here ===== */
-:root{
+/* The light palette is declared ONCE on `:root, .ej-light-lock` — the
+   light-lock (pages designed light-only, e.g. the public landing page)
+   pins the same light token set on its own root so a visitor whose OS/app
+   theme is dark never gets dark-flipped text on a light page (2026-11-04:
+   the landing hero rendered near-white text on white in dark mode because
+   text-ink flips while the paper background does not). Scoped to the
+   subtree, so the app's real dark mode is untouched. One definition, two
+   selectors — change the values here and both stay in sync. */
+:root, .ej-light-lock{
   --bg:#FFFFFF; --surface:#FFFFFF; --surface-2:#F6F7F4; --line:#E2E4DF; --line-strong:#C9CDC6;
   --ink:#0B0B0C; --ink-2:#5B6168;
   --hivis:#C6F432; --hivis-ink:#0B0B0C; --hivis-soft:#E5FAA3;
+  /* Lime tint that FLIPS with the theme (unlike --hivis-soft, which is a
+     single pale value paired with non-flipping dark text elsewhere):
+     pale lime on light, deep olive on dark — always paired with the
+     flipping --ink text. Used for the highlighted service card. */
+  --tint-lime:#E5FAA3;
   --asphalt:#0B0B0C; --reflect:#C7CCD1; --steel:#8B939B;
   --warn:#E8590C; --warn-text:#B54708; --warn-bg:#FFF1E6; --warn-line:#F6C9A8;
   --danger:#C8322B; --danger-bg:#FDECEB;
@@ -28,18 +41,56 @@
   --chart-a:#0B0B0C; --chart-b:#8B939B;
   --toast-bg:#0B0B0C; --toast-ink:#F4F5F2;
   --focus:#2563EB; --topbar:#FFFFFF;
+  /* Semantic overlay/shadow tokens: component styles reference these, so
+     no component hard-codes a translucent colour. --asphalt never flips,
+     so scrim/switch shadows are identical in both modes; --surface/--ink
+     flip, so inset/segment shadows adapt to the theme. */
+  --overlay-scrim:color-mix(in srgb, var(--asphalt) 45%, transparent);
+  --shadow-switch:0 1px 3px color-mix(in srgb, var(--asphalt) 30%, transparent);
+  --shadow-inset:inset 0 0 0 1px color-mix(in srgb, var(--surface) 8%, transparent);
+  --shadow-inset-light:inset 0 0 0 1px color-mix(in srgb, #FFFFFF 8%, transparent);
+  --shadow-segment:0 1px 2px color-mix(in srgb, var(--ink) 8%, transparent);
+  --shadow-toast:0 10px 30px color-mix(in srgb, var(--asphalt) 25%, transparent);
+  --shadow-sheet:0 -12px 40px color-mix(in srgb, var(--asphalt) 25%, transparent);
+  --switch-knob:#FFFFFF;
+  /* EveryJob Precision scale (2026-11-16). Plain CSS vars, NOT Tailwind
+     theme keys: --ej-text-*, --ej-tracking-*, --ej-leading-* and
+     --ej-radius-* carry the --ej- prefix so they can never collide with
+     Tailwind v4's --text-*/--tracking-*/--leading-*/--radius-* theme keys
+     (a :root redefinition would silently restyle every Tailwind utility
+     that reads them). --space-* is not a Tailwind namespace. */
+  --ej-text-display:clamp(2.75rem, 7vw, 5rem);
+  --ej-text-4xl:3rem; --ej-text-3xl:2.25rem; --ej-text-2xl:1.75rem; --ej-text-xl:1.375rem;
+  --weight-light:300; --weight-regular:400; --weight-medium:500; --weight-semibold:600; --weight-bold:700;
+  --ej-tracking-tight:-0.045em; --ej-tracking-normal:0; --ej-tracking-open:0.035em;
+  --ej-leading-tight:1.08; --ej-leading-heading:1.18; --ej-leading-body:1.5; --ej-leading-relaxed:1.65;
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:20px; --space-6:24px;
+  --space-8:32px; --space-10:40px; --space-12:48px; --space-16:64px; --space-20:80px; --space-24:96px;
+  --ej-radius-xl:24px; --ej-radius-2xl:32px;
+  --content-width:1200px; --content-wide:1440px; --sidebar-width:248px; --mobile-header-height:64px;
+  --shadow-card:0 1px 2px color-mix(in srgb, var(--ink) 5%, transparent);
+  --shadow-raised:0 8px 24px color-mix(in srgb, var(--ink) 7%, transparent);
+  --shadow-overlay:0 20px 60px color-mix(in srgb, var(--ink) 16%, transparent);
+  --ej-transition-fast:140ms ease; --ej-transition-normal:220ms ease;
+  --focus-ring:0 0 0 3px var(--focus);
   /* Type: system stack renders SF Pro on iPhone (the Weather-app feel the
      user asked for); light open sans everywhere else. */
   --font-display:-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, "Segoe UI", sans-serif;
+}
+:root{
   color-scheme: light;
   box-sizing: border-box;
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
+.ej-light-lock{
+  color-scheme: light;
+}
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --bg:#0B0B0C; --surface:#161618; --surface-2:#1E1E21; --line:#2A2A2E; --line-strong:#3D3D44;
     --ink:#EEF0F2; --ink-2:#A7AEB5;
+    --tint-lime:#232B0E;
     --warn-text:#FF9A5C; --warn-bg:#2E2117; --warn-line:#5A3A22;
     --danger:#F06A5F; --danger-bg:#331B1A;
     --ok:#5FD28C; --ok-bg:#16291E;
@@ -57,31 +108,16 @@
    never gets dark-flipped text on a light page (2026-11-04: the landing
    hero rendered near-white text on white in dark mode because text-ink
    flips while the paper background does not). Scoped to the subtree, so
-   the app's real dark mode is untouched. Values mirror the light :root
-   block above — change them together. */
-.ej-light-lock{
-  --bg:#FFFFFF; --surface:#FFFFFF; --surface-2:#F6F7F4; --line:#E2E4DF; --line-strong:#C9CDC6;
-  --ink:#0B0B0C; --ink-2:#5B6168;
-  --hivis:#C6F432; --hivis-ink:#0B0B0C; --hivis-soft:#E5FAA3;
-  --asphalt:#0B0B0C; --reflect:#C7CCD1; --steel:#8B939B;
-  --warn:#E8590C; --warn-text:#B54708; --warn-bg:#FFF1E6; --warn-line:#F6C9A8;
-  --danger:#C8322B; --danger-bg:#FDECEB;
-  --ok:#1C7C45; --ok-bg:#E7F5EC;
-  --info:#1D4ED8; --info-bg:#E8EFFE;
-  --star:#C77700; --biz:#0E5E6F;
-  --hero:#0B0B0C; --hero-2:#1A1A1E; --hero-ink:#F4F5F2; --hero-ink-2:#A9AFB6; --hero-line:#3A3F45;
-  --nav:#0B0B0C; --nav-ink:#A9AFB6; --nav-active:#F4F5F2;
-  --chart-a:#0B0B0C; --chart-b:#8B939B;
-  --toast-bg:#0B0B0C; --toast-ink:#F4F5F2;
-  --focus:#2563EB; --topbar:#FFFFFF;
-  color-scheme: light;
-}
+   the app's real dark mode is untouched. The palette itself lives in the
+   merged `:root, .ej-light-lock` block above — this rule only pins the
+   colour scheme. */
 
 /* The app toggles `.dark` on <html> (see the theme script in
    src/app/layout.tsx); honour it in addition to the data-theme attribute. */
 :root[data-theme="dark"], :root.dark{
   --bg:#0B0B0C; --surface:#161618; --surface-2:#1E1E21; --line:#2A2A2E; --line-strong:#3D3D44;
   --ink:#EEF0F2; --ink-2:#A7AEB5;
+  --tint-lime:#232B0E;
   --warn-text:#FF9A5C; --warn-bg:#2E2117; --warn-line:#5A3A22;
   --danger:#F06A5F; --danger-bg:#331B1A;
   --ok:#5FD28C; --ok-bg:#16291E;
@@ -122,7 +158,7 @@ svg.i{ width:24px; height:24px; flex:none; }
 .topbar-in{ max-width:480px; margin:0 auto; display:flex; align-items:center; gap:4px; min-height:64px; padding:10px 10px 10px 18px; }
 .tb-spacer{ flex:1; }
 .brand{ display:flex; align-items:center; gap:10px; font-weight:600; font-size:21px; letter-spacing:.01em; }
-.logo{ width:34px; height:34px; border-radius:10px; background:var(--asphalt); display:grid; place-items:center; box-shadow:inset 0 0 0 1px rgba(255,255,255,.08); }
+.logo{ width:34px; height:34px; border-radius:10px; background:var(--asphalt); display:grid; place-items:center; box-shadow:var(--shadow-inset-light); }
 .logo svg{ width:22px; height:22px; }
 .backbtn{ display:inline-flex; align-items:center; gap:2px; min-height:44px; padding:0 12px 0 0; margin-left:-6px; color:var(--ink); text-decoration:none; font-weight:600; font-size:17px; border-radius:12px; }
 .backbtn svg{ width:22px; height:22px; }
@@ -207,7 +243,7 @@ a.row:active, button.row:active{ background:var(--surface-2); }
 /* ===== Segmented controls ===== */
 .segl{ display:grid; grid-auto-flow:column; grid-auto-columns:minmax(0,1fr); background:var(--surface-2); border-radius:14px; padding:4px; box-shadow:inset 0 0 0 1px var(--line); margin-bottom:18px; }
 .segl button{ min-height:44px; border:0; border-radius:11px; background:transparent; color:var(--ink-2); font-weight:600; font-size:15px; cursor:pointer; }
-.segl button[aria-selected="true"]{ background:var(--surface); color:var(--ink); box-shadow:0 1px 2px rgba(0,0,0,.08), inset 0 0 0 1px var(--line); }
+.segl button[aria-selected="true"]{ background:var(--surface); color:var(--ink); box-shadow:var(--shadow-segment), inset 0 0 0 1px var(--line); }
 .seg2{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); background:var(--surface-2); border-radius:13px; padding:4px; box-shadow:inset 0 0 0 1px var(--line); margin-bottom:18px; }
 .seg2 button{ min-height:44px; border:0; border-radius:10px; background:transparent; color:var(--ink-2); font-weight:600; font-size:15px; cursor:pointer; }
 .seg2 button[aria-pressed="true"]{ background:var(--ink); color:var(--surface); }
@@ -555,10 +591,10 @@ details.dt thead th{ color:var(--ink-2); font-weight:600; border-top:0; }
 .tab[aria-current="page"] .tw{ background:var(--hivis); color:var(--asphalt); }
 
 /* ===== Toast and sheets ===== */
-.toast{ position:fixed; left:50%; bottom:calc(84px + env(safe-area-inset-bottom, 0px)); transform:translate(-50%, 16px); width:min(448px, calc(100% - 32px)); background:var(--toast-bg); color:var(--toast-ink); padding:15px 18px; border-radius:14px; font-size:15px; line-height:1.5; box-shadow:0 10px 30px rgba(0,0,0,.25); opacity:0; pointer-events:none; transition:opacity .18s ease, transform .18s ease; z-index:60; }
+.toast{ position:fixed; left:50%; bottom:calc(84px + env(safe-area-inset-bottom, 0px)); transform:translate(-50%, 16px); width:min(448px, calc(100% - 32px)); background:var(--toast-bg); color:var(--toast-ink); padding:15px 18px; border-radius:14px; font-size:15px; line-height:1.5; box-shadow:var(--shadow-toast); opacity:0; pointer-events:none; transition:opacity .18s ease, transform .18s ease; z-index:60; }
 .toast.show{ opacity:1; transform:translate(-50%, 0); }
-.scrim{ position:fixed; inset:0; background:rgba(10,12,14,.45); z-index:50; }
-.sheet{ position:fixed; left:0; right:0; bottom:0; z-index:51; max-width:480px; margin:0 auto; background:var(--surface); color:var(--ink); border-radius:22px 22px 0 0; padding:14px 22px calc(22px + env(safe-area-inset-bottom, 0px)); max-height:88%; overflow:auto; box-shadow:0 -12px 40px rgba(0,0,0,.25); }
+.scrim{ position:fixed; inset:0; background:var(--overlay-scrim); z-index:50; }
+.sheet{ position:fixed; left:0; right:0; bottom:0; z-index:51; max-width:480px; margin:0 auto; background:var(--surface); color:var(--ink); border-radius:22px 22px 0 0; padding:14px 22px calc(22px + env(safe-area-inset-bottom, 0px)); max-height:88%; overflow:auto; box-shadow:var(--shadow-sheet); }
 .grab{ width:40px; height:5px; border-radius:3px; background:var(--line); margin:0 auto 12px; }
 .sheet h2{ margin:0; font-size:22px; font-weight:600; letter-spacing:.005em; line-height:1.25; }
 .sheet-sub{ margin:6px 0 16px; color:var(--ink-2); font-size:15px; line-height:1.5; }
@@ -574,7 +610,7 @@ details.dt thead th{ color:var(--ink-2); font-weight:600; border-top:0; }
 .toggles li:first-child{ border-top:0; }
 .toggles label{ font-weight:600; font-size:16px; flex:1; min-height:52px; display:flex; align-items:center; cursor:pointer; }
 .switch{ appearance:none; -webkit-appearance:none; width:52px; height:32px; border-radius:16px; background:var(--line-strong); position:relative; cursor:pointer; margin:0; flex:none; transition:background .15s ease; }
-.switch::after{ content:""; position:absolute; top:3px; left:3px; width:26px; height:26px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.3); transition:transform .15s ease; }
+.switch::after{ content:""; position:absolute; top:3px; left:3px; width:26px; height:26px; border-radius:50%; background:var(--switch-knob); box-shadow:var(--shadow-switch); transition:transform .15s ease; }
 .switch:checked{ background:var(--ok); }
 .switch:checked::after{ transform:translateX(20px); }
 .appear{ margin:18px 0 8px; }
@@ -593,3 +629,105 @@ details.dt thead th{ color:var(--ink-2); font-weight:600; border-top:0; }
 .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 
 @media (prefers-reduced-motion: reduce){ *{ transition:none !important; animation:none !important; } }
+
+/* =====================================================================
+   EveryJob Precision — shared component system (2026-11-16)
+   One visual language for every screen: typography creates hierarchy,
+   lime is an action colour (never a random icon tile), each screen has
+   one dominant purpose, mobile and desktop share the system but not the
+   layout. All values come from the tokens above; no hard-coded colours.
+   ===================================================================== */
+
+/* Global layout */
+.ej-container{ width:min(calc(100% - 48px), var(--content-width)); margin-inline:auto; }
+.ej-section{ margin-block:var(--space-12); }
+.ej-eyebrow{ font-size:0.75rem; font-weight:var(--weight-semibold); letter-spacing:var(--ej-tracking-open); text-transform:uppercase; color:var(--ink-2); }
+/* Eyebrow on a dark panel: the hero's secondary ink, not the page's. */
+.ej-eyebrow-light{ color:var(--hero-ink-2); }
+.ej-display{ font-size:var(--ej-text-display); font-weight:var(--weight-light); letter-spacing:var(--ej-tracking-tight); line-height:var(--ej-leading-tight); font-variant-numeric:tabular-nums; }
+.ej-heading{ font-size:var(--ej-text-3xl); font-weight:var(--weight-medium); letter-spacing:var(--ej-tracking-tight); line-height:var(--ej-leading-heading); }
+.ej-subheading{ font-size:var(--ej-text-xl); font-weight:var(--weight-medium); letter-spacing:-0.02em; }
+
+/* Shared page shell — wide content (1200px) for the redesigned customer
+   home and directory; the mobile bottom tab bar needs bottom clearance. */
+.ej-shell{ min-height:100dvh; background:var(--bg); color:var(--ink); }
+.ej-main{ min-width:0; width:100%; max-width:var(--content-width); margin-inline:auto; padding:var(--space-6) var(--space-4) calc(var(--space-8) + 76px); }
+@media (min-width: 768px){
+  .ej-main{ padding:var(--space-12) var(--space-8); }
+}
+
+/* Shared header — one brand, one nav, one right-side slot. */
+.ej-header{ position:sticky; top:env(safe-area-inset-top, 0px); z-index:30; background:var(--topbar); border-bottom:1px solid var(--line); }
+.ej-header-in{ max-width:var(--content-width); margin:0 auto; min-height:var(--mobile-header-height); display:flex; align-items:center; justify-content:space-between; gap:var(--space-4); padding:10px 16px; }
+.ej-brand{ display:inline-flex; align-items:center; gap:var(--space-3); color:var(--ink); text-decoration:none; font-size:1.375rem; font-weight:var(--weight-semibold); letter-spacing:-0.025em; }
+.ej-header-nav{ display:flex; align-items:center; gap:var(--space-2); }
+
+/* Shared cards */
+.ej-card{ min-width:0; padding:var(--space-6); background:var(--surface); border:1px solid var(--line); border-radius:var(--ej-radius-xl); box-shadow:var(--shadow-card); }
+.ej-card-quiet{ background:var(--surface-2); border:0; box-shadow:none; }
+.ej-card-dark{ background:var(--hero); color:var(--hero-ink); border:0; }
+
+/* Icon treatment — ONE rule for the whole app (fixes the get-started and
+   customer-home tile mismatches): normal and empty-state icons sit on a
+   neutral tile with a dark icon; primary-action icons sit on a lime tile
+   with a dark icon. Never a white icon on lime: --hivis-ink is the
+   non-flipping dark ink, so the pairing holds in dark mode too. */
+.ej-icon{ width:44px; height:44px; flex:none; display:grid; place-items:center; border-radius:12px; background:var(--surface-2); color:var(--ink); }
+.ej-icon-primary{ background:var(--hivis); color:var(--hivis-ink); }
+
+/* Buttons — one primary, one secondary, one dark. */
+.ej-button{ min-height:52px; display:inline-flex; justify-content:center; align-items:center; gap:var(--space-2); padding-inline:var(--space-6); border:0; border-radius:12px; font:inherit; font-weight:var(--weight-semibold); text-decoration:none; cursor:pointer; transition:transform var(--ej-transition-fast), opacity var(--ej-transition-fast); }
+.ej-button:active{ transform:scale(.98); }
+.ej-button-primary{ background:var(--hivis); color:var(--hivis-ink); }
+.ej-button-secondary{ background:var(--surface); color:var(--ink); box-shadow:inset 0 0 0 1px var(--line-strong); }
+.ej-button-dark{ background:var(--asphalt); color:var(--hero-ink); }
+
+/* Page headings */
+.ej-page-heading{ display:flex; align-items:flex-end; justify-content:space-between; gap:var(--space-6); margin-bottom:var(--space-10); }
+.ej-page-heading h1{ margin:0; font-size:var(--ej-text-4xl); font-weight:var(--weight-light); letter-spacing:var(--ej-tracking-tight); line-height:var(--ej-leading-heading); }
+
+/* Metric layout */
+.ej-metrics{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:var(--space-4); }
+.ej-metric{ padding:var(--space-6); border-radius:var(--ej-radius-xl); background:var(--surface-2); }
+.ej-metric-value{ display:block; margin-top:var(--space-3); font-size:var(--ej-text-3xl); font-weight:var(--weight-light); letter-spacing:var(--ej-tracking-tight); font-variant-numeric:tabular-nums; }
+
+/* Lists — refined rows, not a wall of floating cards. */
+.ej-list{ border-top:1px solid var(--line); }
+.ej-list-item{ min-height:76px; display:flex; align-items:center; justify-content:space-between; gap:var(--space-4); padding-block:var(--space-4); border-bottom:1px solid var(--line); color:inherit; text-decoration:none; }
+.ej-list-item:hover{ background:var(--surface-2); }
+
+/* Accessibility */
+.ej-button:focus-visible, .ej-header a:focus-visible, .ej-list-item:focus-visible{ outline:3px solid var(--focus); outline-offset:3px; }
+
+/* Responsive */
+@media (min-width: 1024px){
+  .ej-metrics{ grid-template-columns:repeat(4, minmax(0, 1fr)); }
+}
+@media (max-width: 640px){
+  .ej-container{ width:calc(100% - 32px); }
+  .ej-page-heading{ align-items:flex-start; flex-direction:column; margin-bottom:var(--space-8); }
+  .ej-page-heading h1{ font-size:var(--ej-text-3xl); }
+  .ej-card{ padding:var(--space-4); border-radius:16px; }
+  .ej-header-nav{ display:none; }
+}
+@media (prefers-reduced-motion: reduce){
+  .ej-button{ transition:none; }
+}
+
+/* =====================================================================
+   Mockup treatments (2026-11-16) — the approved EveryJob redesign.
+   ===================================================================== */
+
+/* Lime marker swash behind a headline phrase ("Get it done.",
+   "close to home."). The swash is always lime and the words on it are
+   always the non-flipping dark ink, so the pairing reads in both modes. */
+.ej-swash{ background:var(--hivis); color:var(--hivis-ink); padding:0 .14em .03em; border-radius:.18em; box-decoration-break:clone; -webkit-box-decoration-break:clone; }
+
+/* Highlighted service card — the theme-flipping lime tint. */
+.ej-svc-tint{ background:var(--tint-lime); border-color:transparent; }
+
+/* Auth split-card black panel: lime arc glowing in from the bottom-right,
+   echoing the mockup's crescent. Token-based, no hard-coded colours. */
+.ej-auth-panel{ position:relative; overflow:hidden; background:var(--hero); color:var(--hero-ink); }
+.ej-auth-panel::after{ content:""; position:absolute; right:-30%; bottom:-38%; width:130%; aspect-ratio:1; border-radius:50%; background:radial-gradient(closest-side, color-mix(in srgb, var(--hivis) 32%, transparent), transparent 72%); pointer-events:none; }
+.ej-auth-panel > *{ position:relative; z-index:1; }

@@ -90,7 +90,7 @@ export default function PwaInstallPrompt({ locale = 'en' }: { locale?: Locale })
       className="fixed bottom-4 inset-x-4 sm:inset-x-auto sm:right-6 sm:max-w-sm z-50 rounded-2xl bg-asphalt text-hero-ink p-4 shadow-2xl"
     >
       <div className="flex items-start gap-3">
-        <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-lime text-ink">
+        <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-lime text-hivis-ink">
           <Download size={20} />
         </span>
         <div className="min-w-0 flex-1">
