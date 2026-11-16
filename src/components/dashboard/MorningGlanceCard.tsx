@@ -125,17 +125,17 @@ export default function MorningGlanceCard({
   return (
     <section
       aria-label={title}
-      className="rounded-[24px] border border-line bg-surface p-5"
+      className="ej-dashboard-card ej-dashboard-card--glance rounded-[24px] p-5"
     >
       <div className="flex items-start justify-between gap-3">
-        <p className="text-[13px] font-semibold text-ink-2">
+        <p className="ej-dashboard-card-label">
           {title}
         </p>
         <button
           type="button"
           onClick={dismiss}
           aria-label={dismissLabel}
-          className="shrink-0 text-[13px] font-semibold text-ink-2 underline-offset-2 hover:underline"
+          className="shrink-0 rounded-full px-2.5 py-1 text-[12px] font-semibold text-ink-2 underline-offset-2 hover:bg-surface-2 hover:underline"
         >
           {dismissLabel}
         </button>
@@ -143,15 +143,15 @@ export default function MorningGlanceCard({
       {lines.map((line) => (
         <p
           key={line}
-          className="mt-1 text-[15px] font-bold leading-snug text-ink"
+          className="mt-2 text-[15px] font-semibold leading-relaxed text-ink"
         >
           {line}
         </p>
       ))}
-      <div className="mt-3 flex flex-wrap items-center gap-2">
+      <div className="mt-4 flex flex-wrap items-center gap-2.5">
         <Link
           href={ctaHref}
-          className="rounded-full bg-hivis px-4 py-2 text-[13px] font-bold text-hivis-ink"
+          className="inline-flex min-h-10 items-center justify-center rounded-full bg-hivis px-4 py-2 text-[13px] font-bold text-hivis-ink shadow-sm transition-transform hover:-translate-y-0.5"
         >
           {ctaLabel}
         </Link>
@@ -159,7 +159,7 @@ export default function MorningGlanceCard({
           type="button"
           onClick={toggleReminder}
           disabled={blocked}
-          className="rounded-full border border-line px-4 py-2 text-[13px] font-semibold text-ink-2 disabled:opacity-50"
+          className="inline-flex min-h-10 items-center justify-center rounded-full border border-line bg-surface/70 px-4 py-2 text-[13px] font-semibold text-ink-2 transition-colors hover:bg-surface-2 disabled:opacity-50"
         >
           {blocked ? remindBlockedLabel : reminder ? remindOffLabel : remindOnLabel}
         </button>

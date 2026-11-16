@@ -61,7 +61,7 @@ export default function AppSidebar({
         key={item.nameKey}
         href={item.href}
         aria-current={active ? 'page' : undefined}
-        className={`ej-icon-hover flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-ink/70 ${
+        className={`ej-icon-hover ej-sidebar-link relative flex min-h-10 items-center justify-between gap-2 rounded-xl px-2.5 py-2 transition-all duration-200 group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-ink/70 ${
           active
             ? 'bg-hivis text-asphalt shadow-sm'
             : 'text-hero-ink-2 hover:bg-hero-2 hover:text-hero-ink'
@@ -69,21 +69,21 @@ export default function AppSidebar({
       >
         <div className="flex items-center gap-3">
           <span
-            className={`ej-liquid flex items-center justify-center w-8 h-8 rounded-[10px] backdrop-blur-md saturate-150 ring-1 ring-inset transition-all duration-200 ${
+            className={`ej-sidebar-icon ej-liquid flex h-7 w-7 shrink-0 items-center justify-center rounded-[9px] ring-1 ring-inset transition-all duration-200 ${
               active
                 ? 'bg-asphalt/10 ring-ink/15 text-ink shadow-[0_2px_8px_rgba(22,22,22,0.18),inset_0_1px_0_rgba(255,255,255,0.35)]'
                 : 'bg-hero-2 ring-hero-ink/15 text-hero-ink group-hover:text-hero-ink group-hover:bg-surface/[0.14] shadow-[0_2px_8px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)]'
             }`}
           >
-            <NavIconView icon={item.icon} size={16} />
+            <NavIconView icon={item.icon} size={15} />
           </span>
-          <span className={`text-[13px] font-medium ${active ? 'font-semibold' : ''}`}>
+          <span className={`min-w-0 text-[12px] leading-5 font-medium ${active ? 'font-semibold' : ''}`}>
             {label}
           </span>
         </div>
 
         {badge !== null && (
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-warn text-ink">
+          <span className="shrink-0 rounded-full bg-warn px-2 py-0.5 text-[10px] font-bold leading-4 text-ink">
             {badge}
           </span>
         )}
@@ -92,10 +92,10 @@ export default function AppSidebar({
   };
 
   return (
-    <aside className="hidden md:flex flex-col w-64 ej-glass-dark-solid text-hero-ink min-h-screen sticky top-0 font-sans shrink-0">
+    <aside className="ej-sidebar hidden md:flex w-[15.5rem] shrink-0 sticky top-0 min-h-screen flex-col font-sans text-hero-ink ej-glass-dark-solid">
       {/* Header / Logo */}
-      <div className="p-6 pb-2">
-        <div className="flex items-center justify-between mb-8">
+      <div className="px-5 pb-3 pt-5">
+        <div className="mb-6 flex items-center justify-between gap-2">
           <Link href="/dashboard" className="flex items-center gap-3">
             <EveryJobLogo size={32} />
             <span className="text-xl font-bold tracking-tight text-hero-ink">EveryJob</span>
@@ -129,7 +129,7 @@ export default function AppSidebar({
           </div>
         </div>
 
-        <div className="mb-4">
+        <div className="mb-3 rounded-2xl border border-hero-line/70 bg-asphalt/15 px-3.5 py-3">
           <p className="text-[10px] text-hero-ink-2 font-semibold mb-1">
             {t(locale, 'nav.todayView')}
           </p>
@@ -144,7 +144,7 @@ export default function AppSidebar({
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 space-y-4 overflow-y-auto pb-6">
+      <nav className="ej-sidebar-nav flex-1 space-y-3 overflow-y-auto px-3 pb-5">
         <div className="px-0">
           <PaletteTrigger locale={locale} />
         </div>
@@ -154,10 +154,10 @@ export default function AppSidebar({
           if (items.length === 0) return null;
           return (
             <div key={section.labelKey}>
-              <p className="px-3 mb-1 text-[10px] font-semibold tracking-[0.12em] text-hero-ink-2">
+              <p className="mb-1.5 px-3 text-[9px] font-bold uppercase tracking-[0.16em] text-hero-ink-2/90">
                 {t(locale, section.labelKey)}
               </p>
-              <div className="space-y-1">{items.map(navLink)}</div>
+              <div className="space-y-0.5">{items.map(navLink)}</div>
             </div>
           );
         })}
@@ -173,11 +173,11 @@ export default function AppSidebar({
                 ? t(locale, 'nav.collapseAdvanced')
                 : t(locale, 'nav.expandAdvanced')
             }
-            className="ej-icon-hover w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-hero-ink-2 hover:bg-hero-2 hover:text-hero-ink transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-ink/70"
+            className="ej-icon-hover flex min-h-10 w-full items-center justify-between gap-2 rounded-xl px-2.5 py-2 text-hero-ink-2 transition-colors hover:bg-hero-2 hover:text-hero-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-ink/70"
           >
-            <span className="flex items-center gap-3">
-              <SlidersHorizontal size={18} className="text-hero-ink-2" aria-hidden />
-              <span className="text-[13px] font-medium">{t(locale, 'nav.advanced')}</span>
+            <span className="flex min-w-0 items-center gap-2.5">
+              <SlidersHorizontal size={16} className="shrink-0 text-hero-ink-2" aria-hidden />
+              <span className="text-[12px] font-medium">{t(locale, 'nav.advanced')}</span>
             </span>
             <ChevronDown
               size={16}
@@ -186,7 +186,7 @@ export default function AppSidebar({
             />
           </button>
           {advancedOpen && (
-            <div id="sidebar-advanced-items" className="space-y-1 mt-1">
+            <div id="sidebar-advanced-items" className="mt-1 space-y-0.5 pl-1">
               {advancedNavItems.map(navLink)}
             </div>
           )}
@@ -195,7 +195,7 @@ export default function AppSidebar({
 
       {/* User profile / Logout. Language lives in Settings (profile
           settings) and in the mobile More menu - not in the sidebar. */}
-      <div className="p-4 border-t border-hero-line mt-auto space-y-3">
+      <div className="mt-auto space-y-3 border-t border-hero-line px-3 py-3">
         <form action={logout}>
           <button className="ej-icon-hover flex items-center gap-3 px-3 py-2.5 text-hero-ink-2 hover:bg-hero-2 hover:text-hero-ink transition-colors rounded-xl w-full text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hero-ink/70">
             <div className="w-9 h-9 rounded-full bg-hivis text-asphalt flex items-center justify-center text-sm font-bold shrink-0">

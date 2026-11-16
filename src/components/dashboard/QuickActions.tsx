@@ -13,7 +13,7 @@ import { Button } from "@/components/kit/Button";
 import { cn } from "@/lib/utils";
 
 const TILE =
-  "flex flex-col items-start justify-between gap-2 rounded-[20px] border border-line bg-surface p-4 min-h-[104px] text-left transition-transform active:scale-[0.98]";
+  "ej-quick-action group flex min-h-[112px] flex-col items-start justify-between gap-3 rounded-[20px] border border-line bg-surface p-4 text-left text-ink transition-all duration-200 hover:-translate-y-0.5 hover:border-line hover:shadow-sm active:scale-[0.98]";
 
 export default async function QuickActions() {
   const locale: Locale = await getLocale();
@@ -23,15 +23,15 @@ export default async function QuickActions() {
     { href: "/invoices", icon: <HandCoins size={22} />, label: t(locale, "dashboard.recordPayment") },
   ];
   return (
-    <nav aria-label={t(locale, "dashboard.quickActions")} className="grid grid-cols-4 gap-2.5">
-      <Button href="/jobs/new" className={cn("flex-col !items-start !justify-between !rounded-[20px] !p-4 !min-h-[104px] whitespace-normal")}>
-        <Plus size={22} aria-hidden />
-        <span className="text-left leading-tight">{t(locale, "dashboard.newJob")}</span>
+    <nav aria-label={t(locale, "dashboard.quickActions")} className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-3">
+      <Button href="/jobs/new" className={cn("ej-quick-action ej-quick-action--primary !flex !min-h-[112px] !flex-col !items-start !justify-between !gap-3 !rounded-[20px] !p-4 whitespace-normal text-left")}>
+        <span className="ej-quick-action-icon" aria-hidden="true"><Plus size={21} /></span>
+        <span className="text-left text-[13px] font-bold leading-snug">{t(locale, "dashboard.newJob")}</span>
       </Button>
       {actions.map((a) => (
-        <Link key={a.href + a.label} href={a.href} className={cn(TILE, "text-ink")}>
-          <span aria-hidden className="text-ink-2">{a.icon}</span>
-          <span className="text-[13px] font-semibold leading-tight">{a.label}</span>
+        <Link key={a.href + a.label} href={a.href} className={cn(TILE)}>
+          <span aria-hidden className="ej-quick-action-icon text-ink-2 group-hover:text-ink">{a.icon}</span>
+          <span className="text-[13px] font-semibold leading-snug">{a.label}</span>
         </Link>
       ))}
     </nav>

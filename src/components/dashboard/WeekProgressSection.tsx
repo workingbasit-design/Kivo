@@ -71,15 +71,15 @@ export default async function WeekProgressSection({
   return (
     <section
       aria-label={heading}
-      className="rounded-[24px] border border-line bg-surface p-5"
+      className="ej-dashboard-card ej-dashboard-card--week rounded-[24px] p-5"
     >
-      <p className="text-[13px] font-semibold text-ink-2">
+      <p className="ej-dashboard-card-label">
         {heading}
       </p>
-      <p className="mt-1 text-[15px] font-bold leading-snug text-ink">
+      <p className="mt-1.5 text-[15px] font-semibold leading-relaxed text-ink">
         {summary}
       </p>
-      <div className="mt-4 flex justify-between" aria-hidden="true">
+      <div className="ej-week-days mt-5 grid grid-cols-7 gap-2" aria-hidden="true">
         {progress.weekKeys.map((key, i) => {
           const letter = new Intl.DateTimeFormat(dateTag, {
             timeZone: tz,
@@ -89,16 +89,27 @@ export default async function WeekProgressSection({
           const future = progress.future[i];
           const isToday = key === progress.todayKey;
           return (
-            <div key={key} className="flex flex-col items-center gap-1.5">
+            <div
+              key={key}
+              className={[
+                "flex min-w-0 flex-col items-center gap-2 rounded-xl px-1.5 py-2",
+                isToday ? "bg-surface-2 ring-1 ring-line-strong" : "bg-transparent",
+                future ? "opacity-50" : "",
+              ].join(" ")}
+            >
               <span
                 className={[
-                  "block h-3 w-3 rounded-full",
-                  filled ? "bg-hivis" : "border border-line bg-transparent",
-                  future ? "opacity-40" : "",
-                  isToday ? "ring-2 ring-line" : "",
+                  "block h-3.5 w-3.5 rounded-full",
+                  filled
+                    ? "bg-hivis shadow-[0_0_0_3px_rgba(198,244,50,0.16)]"
+                    : "border-2 border-line bg-transparent",
+                  isToday ? "ring-2 ring-hivis ring-offset-2 ring-offset-surface-2" : "",
                 ].join(" ")}
               />
-              <span className="text-[10px] font-bold text-ink-2">
+              <span className={[
+                "text-[11px] font-bold leading-none",
+                isToday ? "text-ink" : "text-ink-2",
+              ].join(" ")}>
                 {letter}
               </span>
             </div>

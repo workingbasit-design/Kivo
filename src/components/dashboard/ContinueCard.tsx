@@ -87,24 +87,24 @@ export default function ContinueCard({
   return (
     <section
       aria-label={labels.title}
-      className="rounded-[24px] border border-line bg-surface p-5"
+      className="ej-dashboard-card ej-dashboard-card--continue rounded-[24px] p-5"
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <p className="text-[13px] font-semibold text-ink-2">
+          <p className="ej-dashboard-card-label">
             {labels.title}
           </p>
-          <p className="mt-0.5 truncate text-[17px] font-bold leading-snug text-ink">
+          <p className="mt-1 truncate text-[18px] font-bold leading-snug tracking-[-0.02em] text-ink">
             {display.title}
           </p>
-          <p className="mt-0.5 truncate text-[13px] text-ink-2">
+          <p className="mt-1 truncate text-[13px] leading-relaxed text-ink-2">
             {display.subtitle}
             {display.meta ? ` · ${display.meta}` : ""}
           </p>
         </div>
         <Link
           href={display.href}
-          className="inline-flex min-h-[44px] shrink-0 items-center justify-center gap-1 rounded-full bg-hivis px-5 py-2 text-[14px] font-bold text-asphalt"
+          className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full border border-transparent bg-hivis px-5 py-2 text-[13px] font-bold text-asphalt shadow-sm transition-transform hover:-translate-y-0.5"
         >
           {display.actionLabel} <ChevronRight size={16} />
         </Link>
