@@ -166,10 +166,9 @@
 
   /* EveryJob Precision scale (2026-11-16): Tailwind utilities for the new
      kit scale. Only names that do not collide with Tailwind v4 defaults
-     are mapped here — --text-display, --shadow-card/raised/overlay are new
-     utility names; --text-*/--tracking-*/--leading-*/--radius-* are NOT
-     mapped because the kit's --ej-* vars deliberately avoid those theme
-     keys (a :root redefinition would restyle every Tailwind utility). */
+     are mapped here. The text, tracking, leading and radius scale vars
+     are NOT mapped: the kit vars deliberately avoid those theme keys
+     (a :root redefinition would restyle every Tailwind utility). */
   --text-display: var(--ej-text-display);
   --shadow-card: var(--shadow-card);
   --shadow-raised: var(--shadow-raised);

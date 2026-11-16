@@ -54,11 +54,11 @@
   --shadow-sheet:0 -12px 40px color-mix(in srgb, var(--asphalt) 25%, transparent);
   --switch-knob:#FFFFFF;
   /* EveryJob Precision scale (2026-11-16). Plain CSS vars, NOT Tailwind
-     theme keys: --ej-text-*, --ej-tracking-*, --ej-leading-* and
-     --ej-radius-* carry the --ej- prefix so they can never collide with
-     Tailwind v4's --text-*/--tracking-*/--leading-*/--radius-* theme keys
-     (a :root redefinition would silently restyle every Tailwind utility
-     that reads them). --space-* is not a Tailwind namespace. */
+     theme keys: --ej-text, --ej-tracking, --ej-leading and --ej-radius
+     carry the --ej- prefix so they can never collide with Tailwind v4
+     text, tracking, leading and radius theme keys (a :root redefinition
+     would silently restyle every Tailwind utility that reads them).
+     --space is not a Tailwind namespace. */
   --ej-text-display:clamp(2.75rem, 7vw, 5rem);
   --ej-text-4xl:3rem; --ej-text-3xl:2.25rem; --ej-text-2xl:1.75rem; --ej-text-xl:1.375rem;
   --weight-light:300; --weight-regular:400; --weight-medium:500; --weight-semibold:600; --weight-bold:700;
