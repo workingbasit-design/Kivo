@@ -93,6 +93,65 @@
   color: var(--hero-ink);
 }
 
+/* Sign-in menu: the button keeps the reference look; the panel drops
+   below it with both sign-in paths. A <button> needs an explicit
+   transparent background and inherited font (links inherit both). */
+.ej-home-signin-menu {
+  position: relative;
+}
+
+button.ej-home-signin {
+  background: transparent;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.ej-home-signin-menu .ej-home-signin {
+  gap: 6px;
+}
+
+.ej-home-signin-chevron {
+  display: inline-flex;
+  transition: transform 160ms ease;
+}
+
+.ej-home-signin-chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.ej-home-signin-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 30;
+  width: 220px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: var(--shadow-raised);
+}
+
+.ej-home-signin-panel a {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.ej-home-signin-panel a:hover {
+  background: var(--surface-2);
+}
+
+.ej-home-signin-panel a + a {
+  border-top: 1px solid var(--line);
+}
+
 .ej-home-hero {
   position: relative;
   display: flex;

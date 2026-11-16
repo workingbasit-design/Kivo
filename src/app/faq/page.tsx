@@ -7,11 +7,11 @@
 // fragment; the JSON-LD is built from the same visible FAQS (no drift).
 
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { getLocale } from '@/lib/i18n/server';
 import { getCspNonce } from '@/lib/csp-nonce';
 import { t } from '@/lib/i18n';
 import { safeJsonLd } from '@/lib/jsonld';
+import PublicHomeHeader from '@/components/public/PublicHomeHeader';
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
@@ -46,30 +46,7 @@ export default async function FaqPage() {
 
   return (
     <main className="ej-home">
-      <header className="ej-home-header">
-        <Link href="/" className="ej-home-brand" aria-label="EveryJob home">
-          <span className="ej-home-brand-mark">
-            <svg width={21} height={21} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z" />
-              <path d="M2 10 12 2l10 8" />
-            </svg>
-          </span>
-          <span>EveryJob</span>
-        </Link>
-        <nav className="ej-home-nav" aria-label="Main navigation">
-          <Link href="/directory">{tr('customer.publicHome.navFindPros')}</Link>
-          <Link href="/register">{tr('customer.publicHome.navForPros')}</Link>
-          <Link href="/how-it-works">{tr('customer.publicHome.navHowItWorks')}</Link>
-        </nav>
-        <div className="ej-home-header-actions">
-          <Link className="ej-home-signin" href="/customer/login">
-            {tr('customer.publicHome.signIn')}
-          </Link>
-          <Link className="ej-home-list-business" href="/register">
-            {tr('customer.publicHome.listBusiness')}
-          </Link>
-        </div>
-      </header>
+      <PublicHomeHeader locale={locale} active="none" />
 
       <script
         type="application/ld+json"

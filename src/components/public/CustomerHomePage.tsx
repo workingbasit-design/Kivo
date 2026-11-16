@@ -27,6 +27,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { t, type Locale } from "@/lib/i18n";
+import PublicHomeHeader from "@/components/public/PublicHomeHeader";
 import DirectoryProCard, { type DirectoryProData } from "@/components/DirectoryProCard";
 
 type Service = {
@@ -127,23 +128,7 @@ export function CustomerHomePage({
 
   return (
     <main className="ej-home">
-      <header className="ej-home-header">
-        <Link href="/" className="ej-home-brand" aria-label="EveryJob home">
-          <span className="ej-home-brand-mark"><Icon name="home" size={21} /></span>
-          <span>EveryJob</span>
-        </Link>
-
-        <nav className="ej-home-nav" aria-label="Main navigation">
-          <Link className="is-active" href="/directory">{tr('customer.publicHome.navFindPros')}</Link>
-          <Link href="/register">{tr('customer.publicHome.navForPros')}</Link>
-          <Link href="/how-it-works">{tr('customer.publicHome.navHowItWorks')}</Link>
-        </nav>
-
-        <div className="ej-home-header-actions">
-          <Link className="ej-home-signin" href="/customer/login">{tr('customer.publicHome.signIn')}</Link>
-          <Link className="ej-home-list-business" href="/register">{tr('customer.publicHome.listBusiness')}</Link>
-        </div>
-      </header>
+      <PublicHomeHeader locale={locale} active="find" />
 
       <section className="ej-home-hero" aria-labelledby="ej-home-title">
         <div className="ej-home-hero-photo" aria-hidden="true">
