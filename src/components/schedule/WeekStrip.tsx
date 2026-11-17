@@ -118,36 +118,33 @@ export default function WeekStrip({
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between gap-2 mb-4">
+    <div className="ej-week">
+      <div className="ej-week-head">
         <Link
           href={prevWeekHref}
-          className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-ink bg-surface border border-line"
+          className="ej-week-nav"
           aria-label={strings.prevWeek}
         >
           <ChevronLeft size={18} aria-hidden="true" />
         </Link>
-        <div className="flex items-center gap-2 flex-wrap justify-center min-w-0">
+        <div className="ej-week-title">
           {isCurrentWeek ? (
             <span
               aria-disabled="true"
-              className="text-xs font-bold text-ink-2 px-4 py-2 min-h-[44px] inline-flex items-center rounded-full bg-surface cursor-not-allowed"
+              className="ej-week-this"
             >
               {strings.thisWeek}
             </span>
           ) : (
-            <Link
-              href={thisWeekHref}
-              className="text-xs font-bold text-ink px-4 py-2 min-h-[44px] inline-flex items-center rounded-full bg-surface border border-line"
-            >
+            <Link href={thisWeekHref} className="ej-week-this">
               {strings.thisWeek}
             </Link>
           )}
-          <span className="text-sm font-bold text-ink">{weekLabel}</span>
+          <b>{weekLabel}</b>
         </div>
         <Link
           href={nextWeekHref}
-          className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full text-ink bg-surface border border-line"
+          className="ej-week-nav"
           aria-label={strings.nextWeek}
         >
           <ChevronRight size={18} aria-hidden="true" />
@@ -156,7 +153,7 @@ export default function WeekStrip({
 
       {/* 7-day strip. Cells are Links (deep-linkable); on desktop they also
           accept dragged visits. */}
-      <div className="grid grid-cols-7 gap-1.5 md:gap-2" role="list" aria-label={weekLabel}>
+      <div className="ej-week-days" role="list" aria-label={weekLabel}>
         {days.map((d) => {
           const isActive = activeDay === d.key;
           const isDropTarget = dropKey === d.key;
@@ -176,56 +173,27 @@ export default function WeekStrip({
               onDragLeave={() => setDropKey((k) => (k === d.key ? null : k))}
               onDrop={handleDrop(d.key)}
               className={cn(
-                'flex flex-col items-center rounded-xl border-2 py-2 md:py-3 min-h-[64px]',
-                'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
-                isActive
-                  ? 'bg-ink text-surface border-ink'
-                  : 'bg-surface border-line',
-                isDropTarget && 'border-line bg-info-bg'
+                'ej-week-day',
+                isActive && 'selected',
+                d.isToday && 'today',
+                isDropTarget && 'drop-target'
               )}
             >
-              <span
-                className={cn(
-                  'text-[10px] font-bold',
-                  isActive ? 'text-surface/80' : d.isToday ? 'text-ink' : 'text-ink-2'
-                )}
-              >
-                {d.dayName}
-              </span>
-              <span
-                className={cn(
-                  'text-sm md:text-base font-bold mt-0.5 tabular-nums',
-                  isActive ? 'text-surface' : 'text-ink'
-                )}
-              >
-                {d.dayNum}
-              </span>
+              <span className="ej-week-day-name">{d.dayName}</span>
+              <b className="ej-week-day-num">{d.dayNum}</b>
               {/* Today marker: a dot, not lime. DESIGN.md gives lime exactly
                   two jobs; "today" is a status shown with a shape. */}
               {d.isToday && (
-                <span
-                  aria-hidden="true"
-                  className={cn(
-                    'mt-1 h-1.5 w-1.5 rounded-full',
-                    isActive ? 'bg-surface' : 'bg-ink'
-                  )}
-                />
+                <span aria-hidden="true" className="ej-week-day-today-dot" />
               )}
               {/* Count badge only when there are jobs — never a row of zeros. */}
               {d.count > 0 && (
-                <span
-                  className={cn(
-                    'mt-1 min-w-5 h-5 px-1 rounded-full text-[10px] font-bold flex items-center justify-center tabular-nums',
-                    isActive ? 'bg-surface/25 text-surface' : 'bg-ink/10 text-ink'
-                  )}
-                >
-                  {d.count}
-                </span>
+                <span className="ej-week-day-count">{d.count}</span>
               )}
               {/* Holiday marker only — the full name lives in the agenda
                   header, never as a truncated chip here. */}
               {d.holidayName && (
-                <span title={d.holidayName} aria-hidden="true" className="mt-1 text-[10px] leading-none">
+                <span title={d.holidayName} aria-hidden="true" className="ej-week-day-holiday">
                   🎉
                 </span>
               )}
@@ -235,13 +203,8 @@ export default function WeekStrip({
       </div>
 
       {activeDay && (
-        <div className="mt-3 text-center">
-          <Link
-            href={clearDayHref}
-            className="text-xs font-semibold text-ink inline-flex items-center min-h-[44px] px-3"
-          >
-            {strings.showWholeWeek}
-          </Link>
+        <div className="ej-week-clear">
+          <Link href={clearDayHref}>{strings.showWholeWeek}</Link>
         </div>
       )}
     </div>

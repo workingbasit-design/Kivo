@@ -84,6 +84,9 @@ export interface JobsListClientProps {
   /** Customers + crews for the New Job modal's real JobForm. */
   customers: JobFormCustomer[];
   crews: JobFormCrew[];
+  /** Deep link: /jobs?filter=late (from the Schedule late banner) opens
+   *  with the Late filter already applied. Defaults to 'all'. */
+  initialFilter?: JobListFilterId;
 }
 
 /**
@@ -103,9 +106,10 @@ export default function JobsListClient({
   tomorrowKey,
   customers,
   crews,
+  initialFilter,
 }: JobsListClientProps) {
   const [query, setQuery] = useState('');
-  const [filterId, setFilterId] = useState<JobListFilterId>('all');
+  const [filterId, setFilterId] = useState<JobListFilterId>(initialFilter ?? 'all');
   const [sort, setSort] = useState<JobListSort>('date');
   const [sortOpen, setSortOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);

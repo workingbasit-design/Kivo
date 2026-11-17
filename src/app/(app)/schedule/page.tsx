@@ -1,9 +1,9 @@
 import React from 'react';
 import Link from 'next/link';
-import { CalendarDays, AlertTriangle } from '@/components/icons';
+import { CalendarDays, AlertTriangle, Sparkles } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { Card, Banner } from '@/components/kit';
+import { Card } from '@/components/kit';
 
 import ScheduleClient from '@/components/ScheduleClient';
 import WeekStrip, { type WeekStripDay } from '@/components/schedule/WeekStrip';
@@ -11,12 +11,10 @@ import WeatherStrip, { type StripDay } from '@/components/WeatherStrip';
 import { getWeatherForDates, geocodeLocation } from '@/lib/weather';
 import { getHolidays } from '@/lib/holidays';
 import { toISODateLocal, todayInTimezone, localeDateTag } from '@/lib/utils';
-import { formatDisplayDate } from '@/lib/attention';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
-import { getJobCounts, getOverdueJobs, getScheduleWeekJobs } from '@/lib/job-queries';
+import { getJobCounts, getScheduleWeekJobs } from '@/lib/job-queries';
 import { centsToDollars } from '@/lib/money';
-import { PageHeader} from '@/components/kit';
 
 /** Monday of the week containing `d` (local time). */
 function mondayOf(d: Date): Date {
@@ -72,18 +70,16 @@ export default async function SchedulePage({
 
   const activeDay = day && /^\d{4}-\d{2}-\d{2}$/.test(day) ? day : null;
 
-  // Week jobs, total count, and overdue jobs from the shared queries (one
-  // source of truth with Dashboard / Jobs / Money).
-  const [jobs, totalCount, overdueJobs] = await Promise.all([
+  // Week jobs and the shared counts (one source of truth with Dashboard /
+  // Jobs / Money). `counts.late` is the canonical Late count - it mirrors
+  // isJobLate() exactly (NEW/SCHEDULED only, start time passed), so the
+  // banner below and the Jobs "Late" filter can never disagree.
+  const [jobs, counts] = await Promise.all([
     getScheduleWeekJobs(businessId, weekStart, weekEnd),
-    getJobCounts(businessId, { timezone: business?.timezone ?? 'America/Toronto' }).then(
-      (c) => c.total
-    ),
-    // Overdue: past date, still open. These are invisible in the week grid
-    // (they're not in the current week) but the owner must see them here -
-    // otherwise Schedule says "0" while Jobs shows overdue work.
-    getOverdueJobs(businessId, weekStart, 10),
+    getJobCounts(businessId, { timezone: business?.timezone ?? 'America/Toronto' }),
   ]);
+  const totalCount = counts.total;
+  const lateCount = counts.late;
 
   const countryCode = 'CA' as const;
   // Province code (e.g. "ON") lets the scheduler badge provincial statutory
@@ -138,10 +134,10 @@ export default async function SchedulePage({
     assignedTo: j.assignedTo,
   }));
 
-  const counts = new Map<string, number>();
+  const countsByDay = new Map<string, number>();
   for (const j of jobs) {
     const key = dayKey(j.date);
-    counts.set(key, (counts.get(key) ?? 0) + 1);
+    countsByDay.set(key, (countsByDay.get(key) ?? 0) + 1);
   }
 
   const weekLabel = `${dayMonth(days[0])} - ${dayMonth(days[6])} ${yearOf(days[6])}`;
@@ -159,72 +155,27 @@ export default async function SchedulePage({
     `/schedule?week=${weekKey}&day=${toISODateLocal(d)}`;
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title={t(locale, 'schedule.title')}
-        summary={weekLabel}
-        actionLabel={T('schedNewJobBtn')}
-        actionHref="/jobs/new"
-        actionIcon={<CalendarDays />}
-      />
+    <div className="ej-schedule space-y-6">
+      {/* Prototype header: eyebrow + title + week range + lime primary action. */}
+      <header className="ej-schedule-header">
+        <div>
+          <p className="ej-schedule-eyebrow">{T('schedEyebrow')}</p>
+          <h1>{t(locale, 'schedule.title')}</h1>
+          <p className="ej-schedule-subtitle">{weekLabel}</p>
+        </div>
+        <Link href="/jobs/new" className="ej-schedule-new">
+          <CalendarDays size={16} aria-hidden="true" />
+          {T('schedNewJobBtn')}
+        </Link>
+      </header>
 
-      {/* Today focus mode (Scroll lesson 4): one job per card, vertical swipe. */}
-      <Link
-        href="/today"
-        className="min-h-[52px] flex items-center justify-center gap-2 bg-hivis text-asphalt px-6 rounded-xl font-bold text-sm"
-      >
-        <CalendarDays size={16} />
-        {T('todayViewButton')}
-      </Link>
-
-      {stripDays.length > 0 && (
-        <WeatherStrip days={stripDays} placeName={geo?.name.split(',').slice(0, 2).join(',') ?? ''} />
-      )}
-
-      {/* Late jobs — past date, still open. Not in the week grid (they're not
-          in the current week) but the owner must see them here. One urgency
-          signal per row: icon + the word "Late", never colour alone. */}
-      {overdueJobs.length > 0 && (
-        <section aria-label={T('schedOverdueTitle')}>
-          <Banner
-            tone="warn"
-            title={`${T('schedOverdueTitle')} (${overdueJobs.length})`}
-            text={T('schedOverdueDesc')}
-          />
-          <ul className="mt-3 bg-surface border border-line rounded-xl overflow-hidden divide-y divide-line">
-            {overdueJobs.map((j) => (
-              <li key={j.id}>
-                <Link
-                  href={`/jobs/${j.id}`}
-                  className="flex items-center justify-between gap-3 px-4 py-3 min-h-[56px]"
-                >
-                  <span className="min-w-0">
-                    <span className="block text-sm font-semibold text-ink truncate">
-                      {j.title}
-                    </span>
-                    <span className="block text-xs text-ink-2 dark:text-ink-2 truncate">{j.customer.name}</span>
-                    <span className="block text-xs text-ink-2 dark:text-ink-2 truncate">
-                      {formatDisplayDate(j.date, business?.timezone, locale)}
-                    </span>
-                  </span>
-                  <span className="shrink-0 inline-flex items-center gap-1 text-xs font-bold text-warn-text bg-warn-bg px-2 py-1 rounded-full">
-                    <AlertTriangle size={12} aria-hidden="true" />
-                    {T('schedOverdueBadge')}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {/* Week navigator + 7-day strip (client: day cells are drop targets
-          for desktop drag-and-drop rescheduling). */}
+      {/* Week calendar Mon-Sun FIRST on the page (client: day cells are drop
+          targets for desktop drag-and-drop rescheduling). */}
       <Card className="p-4">
         <WeekStrip
           days={days.map((d): WeekStripDay => {
             const key = toISODateLocal(d);
-            const count = counts.get(key) ?? 0;
+            const count = countsByDay.get(key) ?? 0;
             return {
               key,
               dayName: dayName(d),
@@ -256,6 +207,41 @@ export default async function SchedulePage({
           }}
         />
       </Card>
+
+      {/* Today focus mode (Scroll lesson 4): one job per card, vertical swipe. */}
+      <Link href="/today" className="ej-schedule-tip">
+        <span className="ej-schedule-tip-icon" aria-hidden="true">
+          <Sparkles size={15} />
+        </span>
+        <span>
+          <b>{T('todayViewButton')}</b>
+          <small>{T('schedTipText')}</small>
+        </span>
+      </Link>
+
+      {/* Late jobs — past start time, still not started. ONE compact banner:
+          count + Review, which opens Jobs filtered to Late. Never a list of
+          late rows here, and never colour alone: icon + the word "Late". */}
+      {lateCount > 0 && (
+        <section className="ej-schedule-late" aria-label={T('schedOverdueTitle')}>
+          <span className="ej-schedule-late-icon" aria-hidden="true">
+            <AlertTriangle size={18} />
+          </span>
+          <span className="ej-schedule-late-text">
+            <b>
+              {T('schedOverdueTitle')} ({lateCount})
+            </b>
+            <span>{T('schedOverdueDesc')}</span>
+          </span>
+          <Link href="/jobs?filter=late" className="ej-schedule-late-review">
+            {T('schedReviewLate')}
+          </Link>
+        </section>
+      )}
+
+      {stripDays.length > 0 && (
+        <WeatherStrip days={stripDays} placeName={geo?.name.split(',').slice(0, 2).join(',') ?? ''} />
+      )}
 
       {/* Job list for the week */}
       <ScheduleClient

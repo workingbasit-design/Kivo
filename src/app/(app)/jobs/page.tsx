@@ -7,6 +7,7 @@ import { getJobsForList } from '@/lib/job-queries';
 import {
   classifyJobRow,
   addDaysKey,
+  type JobListFilterId,
   type JobListInput,
 } from '@/lib/jobs-list';
 import { toISODateInTimezone } from '@/lib/utils';
@@ -24,10 +25,19 @@ function mondayOfWeek(todayKey: string): string {
 export default async function JobsPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ limit?: string }>;
+  searchParams?: Promise<{ limit?: string; filter?: string }>;
 }) {
   const { businessId } = await requireAuth();
-  const limit = parseListLimit((await searchParams)?.limit);
+  const params = await searchParams;
+  const limit = parseListLimit(params?.limit);
+  // Deep link from the Schedule late banner: /jobs?filter=late opens with
+  // the Late filter applied. Anything unrecognised falls back to 'all'.
+  const FILTER_IDS: JobListFilterId[] = ['all', 'late', 'today', 'upcoming', 'invoice'];
+  const initialFilter: JobListFilterId = FILTER_IDS.includes(
+    params?.filter as JobListFilterId
+  )
+    ? (params?.filter as JobListFilterId)
+    : 'all';
   const locale: Locale = await getLocale();
   const business = await prisma.business.findUnique({
     where: { id: businessId },
@@ -82,6 +92,7 @@ export default async function JobsPage({
         tomorrowKey={tomorrowKey}
         customers={customers}
         crews={crews}
+        initialFilter={initialFilter}
       />
       <ListMore
         shown={rows.length}

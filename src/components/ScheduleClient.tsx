@@ -17,10 +17,7 @@ import {
   Banner,
   BottomSheet,
   Button,
-  Card,
   DateField,
-  EmptyState,
-  FilterChips,
   Input,
   SearchField,
   Select,
@@ -148,14 +145,21 @@ export default function ScheduleClient({
   // `new Date(iso)` + toLocaleDateString, which shifts the day for
   // timezones behind UTC).
 
-  // Filter jobs logic - compare calendar-day keys, never UTC date strings.
-  const filteredJobs = initialJobs.filter((job) => {
+  // Date filter only — the status-filter counts below are computed on this
+  // set so the pills always describe the list they filter.
+  const dateFilteredJobs = initialJobs.filter((job) => {
     const jobDateStr = job.dateKey;
-
-    // Date filter
     if (selectedDate === 'TODAY' && jobDateStr !== todayStr) return false;
     if (selectedDate !== 'TODAY' && selectedDate !== 'ALL' && jobDateStr !== selectedDate) return false;
+    return true;
+  });
+  const statusCounts: Record<string, number> = { ALL: dateFilteredJobs.length };
+  for (const j of dateFilteredJobs) {
+    statusCounts[j.status] = (statusCounts[j.status] ?? 0) + 1;
+  }
 
+  // Filter jobs logic - compare calendar-day keys, never UTC date strings.
+  const filteredJobs = dateFilteredJobs.filter((job) => {
     // Status filter
     if (statusFilter !== 'ALL' && job.status !== statusFilter) return false;
 
@@ -320,7 +324,7 @@ export default function ScheduleClient({
           strip clears the day selection. The holiday name appears here
           in full, never as a truncated chip. */}
       {isAgendaDay && (
-        <div>
+        <div className="ej-schedule-agenda">
           <h2 className="text-base font-bold text-ink">
             <DateTimeText date={selectedDate} variant="weekday" timezone={timezone} locale={locale} />
           </h2>
@@ -335,21 +339,25 @@ export default function ScheduleClient({
         </div>
       )}
 
-      {/* Filter & Search Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-        <div className="relative flex-1">
-          <FilterChips
-            chips={(['ALL', ...JOB_STATUSES] as const).map((st) => ({
-              id: st,
-              label: st === 'ALL' ? T('jobsTabAll') : formatStatusLabel(st, locale),
-            }))}
-            selectedId={statusFilter}
-            onSelect={setStatusFilter}
-            ariaLabel={jobsL('status')}
-          />
+      {/* Filter & Search Bar — prototype pills: All + 6 statuses, with counts. */}
+      <div className="ej-schedule-controls">
+        <div className="ej-schedule-filters" role="tablist" aria-label={jobsL('status')}>
+          {(['ALL', ...JOB_STATUSES] as const).map((st) => (
+            <button
+              key={st}
+              type="button"
+              role="tab"
+              aria-selected={statusFilter === st}
+              className={cn('ej-schedule-filter', statusFilter === st && 'active')}
+              onClick={() => setStatusFilter(st)}
+            >
+              <span>{st === 'ALL' ? T('jobsTabAll') : formatStatusLabel(st, locale)}</span>
+              <small>{statusCounts[st] ?? 0}</small>
+            </button>
+          ))}
         </div>
 
-        <div className="sm:w-64">
+        <div className="ej-schedule-search">
           <SearchField
             value={searchQuery}
             onChange={setSearchQuery}
@@ -379,13 +387,13 @@ export default function ScheduleClient({
 
       {/* Jobs list - the day's agenda when a single day is selected */}
       {agendaJobs.length === 0 ? (
-        <Card className="mb-28 md:mb-0">
-          <EmptyState
-            icon={<CalendarIcon />}
-            title={T('schedEmptyTitle')}
-            text={initialJobs.length === 0 ? T('schedEmptyNone') : T('schedEmptyFiltered')}
-          />
-          <div className="flex justify-center px-6 pb-8 -mt-4">
+        <div className="ej-schedule-empty">
+          <div className="ej-schedule-empty-icon" aria-hidden="true">
+            <CalendarIcon />
+          </div>
+          <h2>{T('schedEmptyTitle')}</h2>
+          <p>{initialJobs.length === 0 ? T('schedEmptyNone') : T('schedEmptyFiltered')}</p>
+          <div className="flex justify-center">
             {canSeed ? (
               <Button
                 type="button"
@@ -410,7 +418,7 @@ export default function ScheduleClient({
               </Button>
             )}
           </div>
-        </Card>
+        </div>
       ) : (
         // DESIGN.md: work screens are vertical lists with dividers, not card
         // grids. On today's view the list carries the one memorable element:
@@ -426,24 +434,18 @@ export default function ScheduleClient({
               style={{ top: `${(nowMinutesInTimezone(timezone ?? 'America/Toronto') / 1440) * 100}%` }}
             />
           )}
-          <div
-            className={cn(
-              'bg-surface rounded-xl border border-line overflow-hidden divide-y divide-line',
-              isTodayView && 'border-l-2 border-l-ink'
-            )}
-          >
+          <div className="ej-schedule-list">
           {agendaJobs.map((job) => {
             const isEditing = editingJobId === job.id;
             const nextStatuses = validNextStatuses(job.status);
 
             return (
-              <div
+              <article
                 key={job.id}
-                className="p-4 md:p-5"
+                className="ej-sched-card"
               >
-                <div className="flex items-start gap-2">
-                  {/* Drag handle (desktop only). The reschedule dialog is the
-                      non-drag path for touch and keyboard (WCAG 2.5.7). */}
+                  {/* Drag handle. The reschedule dialog is the non-drag path
+                      for touch and keyboard (WCAG 2.5.7). */}
                   <span
                     draggable
                     aria-hidden="true"
@@ -458,51 +460,46 @@ export default function ScheduleClient({
                       e.dataTransfer.setData(DRAG_TYPE, JSON.stringify(payload));
                       e.dataTransfer.effectAllowed = 'move';
                     }}
-                    className="hidden md:inline-flex min-w-[44px] min-h-[44px] items-center justify-center text-ink-2 cursor-grab active:cursor-grabbing shrink-0 -ml-2"
+                    className="ej-sched-drag"
                   >
                     <GripVertical size={18} />
                   </span>
-                  <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 flex-1 min-w-0">
+                  <div className="ej-sched-pills">
+                    <StatusPill status={jobDisplayStatus(job.status, job.date)} locale={locale} />
+                    <span className="ej-sched-time-pill">
+                      <Clock size={12} />
+                      {hasJobTime(job.time) ? formatJobTime(job.time, locale) : T('schedTimeTbd')}
+                    </span>
+                    <span className="ej-sched-date">
+                      <DateTimeText date={job.dateKey} variant="weekday" timezone={timezone} locale={locale} />
+                    </span>
+                  </div>
                   {/* Tap target → job detail */}
-                  <Link href={`/jobs/${job.id}`} className="flex-1 min-w-0 space-y-2.5 py-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <StatusPill status={jobDisplayStatus(job.status, job.date)} locale={locale} />
-                      <span className="inline-flex items-center gap-1.5 text-xs font-bold text-ink bg-ink/10 px-2.5 py-1 rounded-md tabular-nums">
-                        <Clock size={12} />
-                        {hasJobTime(job.time) ? formatJobTime(job.time, locale) : T('schedTimeTbd')}
-                      </span>
-                      <span className="text-xs font-medium text-ink-2">
-                        <DateTimeText date={job.dateKey} variant="weekday" timezone={timezone} locale={locale} />
-                      </span>
-                    </div>
-
-                    <div>
-                      <p className="text-base font-bold text-ink">{job.title}</p>
-                      <p className="text-xs font-medium text-ink-2 mt-0.5">
-                        {jobsL('customer')}: <span className="font-semibold text-ink">{job.customer.name}</span>
-                        {job.customer.phone ? ` (${job.customer.phone})` : ''}
-                      </p>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-ink-2 font-medium">
+                  <Link href={`/jobs/${job.id}`} className="ej-sched-main">
+                    <h3>{job.title}</h3>
+                    <p>
+                      {jobsL('customer')}: <b>{job.customer.name}</b>
+                      {job.customer.phone ? ` (${job.customer.phone})` : ''}
+                    </p>
+                    <div className="ej-sched-meta">
                       {job.address && (
-                        <span className="inline-flex items-center gap-1 min-w-0">
-                          <MapPin size={12} className="text-ink-2 shrink-0" />
+                        <span>
+                          <MapPin size={12} />
                           <span className="truncate">{job.address}</span>
                         </span>
                       )}
-                      <span className="inline-flex items-center gap-1">
-                        <UserIcon size={12} className="text-ink-2" />
-                        {jobsL('technician')}: <strong className="text-ink-2">{job.assignedTo?.name || T('jobUnassigned')}</strong>
-                      </span>
                       <span>
-                        {T('schedAmount')}: <strong className="text-ink tabular-nums"><MoneyText dollars={job.price} locale={locale} /></strong>
+                        <UserIcon size={12} />
+                        {jobsL('technician')}: <b>{job.assignedTo?.name || T('jobUnassigned')}</b>
+                      </span>
+                      <span className="ej-sched-amount">
+                        {T('schedAmount')}: <b><MoneyText dollars={job.price} locale={locale} /></b>
                       </span>
                     </div>
                   </Link>
 
                   {/* Actions (kept outside the detail link) */}
-                  <div className="flex items-center gap-2 shrink-0 md:flex-col md:items-end">
+                  <div className="ej-sched-actions">
                     <Select
                       label={<span className="sr-only">{T('schedChangeStatus')}</span>}
                       value={job.status}
@@ -520,10 +517,10 @@ export default function ScheduleClient({
                       ]}
                     />
 
-                    <div className="flex items-center gap-1">
+                    <div className="ej-sched-icon-actions">
                       <button
                         onClick={() => startEdit(job)}
-                        className="min-w-[44px] min-h-[44px] flex items-center justify-center text-ink-2 rounded-full bg-surface border border-line"
+                        className="ej-sched-icon-btn"
                         title={T('schedRescheduleTitle')}
                         aria-label={T('schedRescheduleTitle')}
                       >
@@ -532,7 +529,7 @@ export default function ScheduleClient({
                       <button
                         onClick={() => setRemovingJobId(job.id)}
                         disabled={isPending}
-                        className="min-w-[44px] min-h-[44px] flex items-center justify-center text-danger rounded-full disabled:opacity-50 bg-surface border border-line"
+                        className="ej-sched-icon-btn danger"
                         title={jobsL('removeFromSchedule')}
                         aria-label={jobsL('removeFromSchedule')}
                       >
@@ -540,14 +537,12 @@ export default function ScheduleClient({
                       </button>
                     </div>
                   </div>
-                </div>
-                </div>
 
                 {/* Inline reschedule form — the non-drag path for moving a visit
                     (WCAG 2.5.7). Works with keyboard, touch, and screen readers. */}
                 {isEditing && (
-                  <div className="mt-4 p-4 bg-surface rounded-xl border border-line space-y-4">
-                    <p className="text-xs font-bold text-ink">{T('schedReschedule')}</p>
+                  <div className="ej-sched-edit space-y-4">
+                    <p className="ej-sched-edit-title">{T('schedReschedule')}</p>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <DateField
                         label={jobsL('date')}
@@ -590,11 +585,19 @@ export default function ScheduleClient({
                     </div>
                   </div>
                 )}
-              </div>
+              </article>
             );
           })}
           </div>
         </div>
+      )}
+      {agendaJobs.length > 0 && (
+        <p className="ej-schedule-footnote">
+          <span className="ej-schedule-footnote-dot" aria-hidden="true" />
+          {agendaJobs.length === 1
+            ? T('schedJobsShownOne')
+            : T('schedJobsShownMany').replace('{count}', String(agendaJobs.length))}
+        </p>
       )}
 
       {/* Remove-from-schedule confirmation (bottom sheet on mobile, Esc closes) */}
