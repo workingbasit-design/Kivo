@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { clientIpFromHeaders } from '@/lib/client-ip';
 import { normalizeProvinceCode } from '@/lib/property-province';
 
@@ -42,8 +42,8 @@ async function clientKey(prefix: string): Promise<string> {
   return `${prefix}:${ip}`;
 }
 
-function checkLimit(key: string): PropertyErrorCode | null {
-  const rl = rateLimit(key, ACTION_LIMIT);
+async function checkLimit(key: string): Promise<PropertyErrorCode | null> {
+  const rl = await rateLimitDurable(key, ACTION_LIMIT);
   return rl.ok ? null : 'tooMany';
 }
 
@@ -86,7 +86,7 @@ function validatePropertyFields(input: {
 
 /** List a customer's properties (primary first), tenant-scoped. */
 export async function listProperties(customerId: string): Promise<PropertyResult> {
-  const limited = checkLimit(await clientKey('props:list'));
+  const limited = await checkLimit(await clientKey('props:list'));
   if (limited) return { ok: false, error: limited };
 
   let businessId: string;
@@ -112,7 +112,7 @@ export async function addProperty(
   customerId: string,
   input: { label: string; address: string; notes?: string | null; province?: string | null }
 ): Promise<PropertyResult> {
-  const limited = checkLimit(await clientKey('props:write'));
+  const limited = await checkLimit(await clientKey('props:write'));
   if (limited) return { ok: false, error: limited };
 
   let businessId: string;
@@ -156,7 +156,7 @@ export async function updateProperty(
   id: string,
   input: { label: string; address: string; notes?: string | null; province?: string | null }
 ): Promise<PropertyResult> {
-  const limited = checkLimit(await clientKey('props:write'));
+  const limited = await checkLimit(await clientKey('props:write'));
   if (limited) return { ok: false, error: limited };
 
   let businessId: string;
@@ -186,7 +186,7 @@ export async function updateProperty(
 
 /** Delete a property. If it was primary, the oldest remaining becomes primary. */
 export async function deleteProperty(id: string): Promise<PropertyResult> {
-  const limited = checkLimit(await clientKey('props:write'));
+  const limited = await checkLimit(await clientKey('props:write'));
   if (limited) return { ok: false, error: limited };
 
   let businessId: string;
@@ -229,7 +229,7 @@ export async function deleteProperty(id: string): Promise<PropertyResult> {
 
 /** Mark one property as the customer's primary (unsets the rest). */
 export async function setPrimaryProperty(id: string): Promise<PropertyResult> {
-  const limited = checkLimit(await clientKey('props:write'));
+  const limited = await checkLimit(await clientKey('props:write'));
   if (limited) return { ok: false, error: limited };
 
   let businessId: string;

@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import { getSession } from '@/lib/auth';
 import { getActiveMembershipForUser } from '@/lib/membership';
 import { prisma } from '@/lib/prisma';
-import { rateLimit, AUTH_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, AUTH_LIMIT } from '@/lib/rate-limit-durable';
 import { exchangeCode } from '@/lib/quickbooks';
 import { encryptSecret } from '@/lib/crypto';
 import { QB_STATE_COOKIE, quickbooksConfigured, quickbooksRedirectUri } from '../connect/route';
@@ -25,7 +25,7 @@ export async function GET(req: Request) {
   }
 
   const ip = clientIpFromHeaders(req.headers);
-  const rl = rateLimit(`qb-callback:${ip}`, AUTH_LIMIT);
+  const rl = await rateLimitDurable(`qb-callback:${ip}`, AUTH_LIMIT);
   if (!rl.ok) {
     return NextResponse.redirect(new URL('/settings?quickbooks=rate-limited', req.url));
   }

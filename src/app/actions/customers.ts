@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
 import { requireAuth } from '@/lib/auth';
 import { requireMembership } from '@/lib/membership';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { customerSchema } from '@/lib/validations';
 import { validatePhone, INVALID_PHONE_MESSAGE } from '@/lib/phone';
 import { validatePostalCode, INVALID_POSTAL_MESSAGE } from '@/lib/postal';
@@ -55,7 +55,7 @@ function parseCustomerForm(formData: FormData) {
 }
 
 async function checkLimit(userId: string): Promise<ActionResult | null> {
-  const rl = rateLimit(`customer:${userId}`, ACTION_LIMIT);
+  const rl = await rateLimitDurable(`customer:${userId}`, ACTION_LIMIT);
   if (!rl.ok) {
     return { error: 'Too many requests. Please wait a moment and try again.' };
   }

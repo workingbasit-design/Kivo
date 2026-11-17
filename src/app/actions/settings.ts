@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
 import { requireAuth } from '@/lib/auth';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { CA_PROVINCES, DEFAULT_CA_PROVINCE, isValidQstNumber } from '@/lib/tax';
 import {
   INVITABLE_ROLES,
@@ -89,8 +89,8 @@ const inviteMemberSchema = z.object({
   role: z.enum(INVITABLE_ROLES).default(DEFAULT_INVITE_ROLE),
 });
 
-function limited(key: string): SettingsResult | null {
-  const rl = rateLimit(key, ACTION_LIMIT);
+async function limited(key: string): Promise<SettingsResult | null> {
+  const rl = await rateLimitDurable(key, ACTION_LIMIT);
   if (!rl.ok) return { error: 'Too many requests. Please slow down.' };
   return null;
 }
@@ -129,7 +129,7 @@ export async function updateBusinessSettings(
   const { businessId, role: callerRole } = await requireAuth();
   const notAdmin = requireAdminRole(callerRole);
   if (notAdmin) return notAdmin;
-  const hit = limited(`settings:${businessId}`);
+  const hit = await limited(`settings:${businessId}`);
   if (hit) return hit;
 
   const parsed = businessSettingsSchema.safeParse({
@@ -259,7 +259,7 @@ export async function inviteTeamMember(
   const { businessId, role: callerRole } = await requireAuth();
   const notAdmin = requireAdminRole(callerRole);
   if (notAdmin) return notAdmin;
-  const hit = limited(`team:${businessId}`);
+  const hit = await limited(`team:${businessId}`);
   if (hit) return hit;
 
   const parsed = inviteMemberSchema.safeParse({
@@ -302,7 +302,7 @@ export async function removeTeamMember(id: string): Promise<SettingsResult> {
   const { user, businessId, role: callerRole } = await requireAuth();
   const notAdmin = requireAdminRole(callerRole);
   if (notAdmin) return notAdmin;
-  const hit = limited(`team:${businessId}`);
+  const hit = await limited(`team:${businessId}`);
   if (hit) return hit;
 
   if (id === user.id) {
@@ -365,7 +365,7 @@ export async function suspendTeamMember(id: string): Promise<SettingsResult> {
   const { user, businessId, role: callerRole } = await requireAuth();
   const notAdmin = requireAdminRole(callerRole);
   if (notAdmin) return notAdmin;
-  const hit = limited(`team:${businessId}`);
+  const hit = await limited(`team:${businessId}`);
   if (hit) return hit;
 
   if (id === user.id) {
@@ -409,7 +409,7 @@ export async function unsuspendTeamMember(id: string): Promise<SettingsResult> {
   const { businessId, role: callerRole } = await requireAuth();
   const notAdmin = requireAdminRole(callerRole);
   if (notAdmin) return notAdmin;
-  const hit = limited(`team:${businessId}`);
+  const hit = await limited(`team:${businessId}`);
   if (hit) return hit;
 
   const updated = await prisma.membership.updateMany({
@@ -434,7 +434,7 @@ export async function changeTeamMemberRole(
   const { user, businessId, role: callerRole } = await requireAuth();
   const notAdmin = requireAdminRole(callerRole);
   if (notAdmin) return notAdmin;
-  const hit = limited(`team:${businessId}`);
+  const hit = await limited(`team:${businessId}`);
   if (hit) return hit;
 
   if (!isInvitableRole(role)) {
@@ -485,7 +485,7 @@ export async function completeBusinessSetup(opts: {
   const { businessId, role: callerRole } = await requireAuth();
   const notAdmin = requireAdminRole(callerRole);
   if (notAdmin) return notAdmin;
-  const hit = limited(`settings:${businessId}`);
+  const hit = await limited(`settings:${businessId}`);
   if (hit) return hit;
 
   const whatsappNumber = (opts.whatsappNumber ?? '').trim();
@@ -552,7 +552,7 @@ export async function uploadBusinessLogo(formData: FormData): Promise<LogoResult
   const { businessId, role: callerRole } = await requireAuth();
   const notAdmin = requireAdminRole(callerRole);
   if (notAdmin) return notAdmin;
-  const rl = rateLimit(`logo:${businessId}`, ACTION_LIMIT);
+  const rl = await rateLimitDurable(`logo:${businessId}`, ACTION_LIMIT);
   if (!rl.ok) return { error: 'Too many requests. Please slow down.' };
 
   const file = formData.get('logo');
@@ -604,7 +604,7 @@ export async function removeBusinessLogo(): Promise<LogoResult> {
   const { businessId, role: callerRole } = await requireAuth();
   const notAdmin = requireAdminRole(callerRole);
   if (notAdmin) return notAdmin;
-  const rl = rateLimit(`logo:${businessId}`, ACTION_LIMIT);
+  const rl = await rateLimitDurable(`logo:${businessId}`, ACTION_LIMIT);
   if (!rl.ok) return { error: 'Too many requests. Please slow down.' };
 
   const token = process.env.BLOB_READ_WRITE_TOKEN;

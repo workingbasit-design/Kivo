@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
 import { requireAuth } from '@/lib/auth';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { publicClientIp } from '@/lib/directory';
 import {
   newReviewTokenValue,
@@ -33,7 +33,7 @@ export async function createReviewRequest(
   jobId: string
 ): Promise<ReviewRequestResult> {
   const { businessId } = await requireAuth();
-  const rl = rateLimit(`review-request:${businessId}`, ACTION_LIMIT);
+  const rl = await rateLimitDurable(`review-request:${businessId}`, ACTION_LIMIT);
   if (!rl.ok) return { error: 'Too many requests. Please slow down.' };
 
   const elig = await getReviewEligibility(businessId, jobId);
@@ -72,7 +72,7 @@ export async function revokeReviewRequest(
   requestId: string
 ): Promise<ReviewRequestResult> {
   const { businessId } = await requireAuth();
-  const rl = rateLimit(`review-request:${businessId}`, ACTION_LIMIT);
+  const rl = await rateLimitDurable(`review-request:${businessId}`, ACTION_LIMIT);
   if (!rl.ok) return { error: 'Too many requests. Please slow down.' };
 
   const existing = await prisma.reviewRequest.findFirst({
@@ -152,12 +152,12 @@ export async function submitTokenReview(
   if (!req || !isReviewRequestActive(req)) return { error: STALE_LINK_ERROR };
 
   const ip = await publicClientIp();
-  const rlBiz = rateLimit(
+  const rlBiz = await rateLimitDurable(
     `review-token:${req.businessId}`,
     TOKEN_SUBMIT_BUSINESS_LIMIT
   );
   if (!rlBiz.ok) return { error: 'Too many reviews. Please try again later.' };
-  const rlIp = rateLimit(`review-token-ip:${ip}`, TOKEN_SUBMIT_IP_LIMIT);
+  const rlIp = await rateLimitDurable(`review-token-ip:${ip}`, TOKEN_SUBMIT_IP_LIMIT);
   if (!rlIp.ok) return { error: 'Too many reviews. Please try again later.' };
 
   // Atomic single-use: re-check the token INSIDE the transaction so two

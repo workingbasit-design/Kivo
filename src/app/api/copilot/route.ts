@@ -4,7 +4,7 @@ import crypto from 'crypto';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { getActiveMembershipForUser } from '@/lib/membership';
-import { rateLimit } from '@/lib/rate-limit';
+import { rateLimitDurable } from '@/lib/rate-limit-durable';
 import { runCopilot, type JobDraft, type CustomerDraft, type QuoteDraft, type CopilotHistoryItem } from '@/lib/copilot/engine';
 import { tryAnthropicReply } from '@/lib/copilot/anthropic';
 import { buildConfirmReply } from '@/lib/copilot/confirm-reply';
@@ -41,7 +41,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const rl = rateLimit(`copilot-lookup:${session.user.id}`, { limit: 60, windowMs: 60_000 });
+  const rl = await rateLimitDurable(`copilot-lookup:${session.user.id}`, { limit: 60, windowMs: 60_000 });
   if (!rl.ok) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
   }
@@ -207,7 +207,7 @@ export async function POST(req: Request) {
   }
 
   // Rate limit: 30 copilot calls/min per user
-  const rl = rateLimit(`copilot:${session.user.id}`, { limit: 30, windowMs: 60_000 });
+  const rl = await rateLimitDurable(`copilot:${session.user.id}`, { limit: 30, windowMs: 60_000 });
   if (!rl.ok) {
     return NextResponse.json(
       { error: tr('Too many requests - please wait a moment and try again.', 'Trop de requêtes - attendez un moment et réessayez.') },
@@ -216,7 +216,7 @@ export async function POST(req: Request) {
   }
   // B13.5: per-business daily usage cap (200/day) - bounds LLM spend and
   // abuse even when spread across many users of one business.
-  const rlDay = rateLimit(`copilot-day:${businessId}`, { limit: 200, windowMs: 24 * 60 * 60_000 });
+  const rlDay = await rateLimitDurable(`copilot-day:${businessId}`, { limit: 200, windowMs: 24 * 60 * 60_000 });
   if (!rlDay.ok) {
     return NextResponse.json(
       { error: tr("This business has reached today's copilot limit. Try again tomorrow.", "Cette entreprise a atteint la limite quotidienne de l'assistant. Réessayez demain.") },
@@ -235,7 +235,7 @@ export async function POST(req: Request) {
   // Customer confirm carries previewType: 'customer'; try it first.
   const asCustomerConfirm = customerConfirmSchema.safeParse(body);
   if (asCustomerConfirm.success) {
-    const rlConfirm = rateLimit(`copilot-confirm:${session.user.id}`, {
+    const rlConfirm = await rateLimitDurable(`copilot-confirm:${session.user.id}`, {
       limit: 10,
       windowMs: 60_000,
     });
@@ -256,7 +256,7 @@ export async function POST(req: Request) {
   const asConfirm = confirmSchema.safeParse(body);
   if (asConfirm.success) {
     // Job creation is higher-stakes than chat: tighter per-user budget.
-    const rlConfirm = rateLimit(`copilot-confirm:${session.user.id}`, {
+    const rlConfirm = await rateLimitDurable(`copilot-confirm:${session.user.id}`, {
       limit: 10,
       windowMs: 60_000,
     });
@@ -279,7 +279,7 @@ export async function POST(req: Request) {
   // be mistaken for a job confirm (the job schema requires literal 'job').
   const asQuoteConfirm = quoteConfirmSchema.safeParse(body);
   if (asQuoteConfirm.success) {
-    const rlConfirm = rateLimit(`copilot-confirm:${session.user.id}`, {
+    const rlConfirm = await rateLimitDurable(`copilot-confirm:${session.user.id}`, {
       limit: 10,
       windowMs: 60_000,
     });

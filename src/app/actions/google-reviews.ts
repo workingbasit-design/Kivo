@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { encryptSecret, decryptSecret } from '@/lib/crypto';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import {
   googleOAuthConfigured,
   googleScopes,
@@ -44,7 +44,7 @@ function googleEnv(): { clientId: string; clientSecret: string } | null {
 }
 
 async function checkLimit(userId: string): Promise<GoogleActionResult | null> {
-  const rl = rateLimit(`google:${userId}`, ACTION_LIMIT);
+  const rl = await rateLimitDurable(`google:${userId}`, ACTION_LIMIT);
   if (!rl.ok) return { error: 'Too many requests. Please wait a moment and try again.' };
   return null;
 }

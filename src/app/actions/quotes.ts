@@ -8,7 +8,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { requireMembership } from '@/lib/membership';
 import { quoteSchema, QUOTE_STATUSES } from '@/lib/validations';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { dollarsToCents, centsToDollars, formatCents } from '@/lib/money';
 import { nextDocumentNumber } from '@/lib/numbering';
 import { getTaxConfig, splitStoredTax, type TaxConfig, type TaxLine } from '@/lib/tax';
@@ -121,8 +121,8 @@ async function clientKey(prefix: string): Promise<string> {
   return `${prefix}:${ip}`;
 }
 
-function checkLimit(key: string): ActionResult | null {
-  const rl = rateLimit(key, ACTION_LIMIT);
+async function checkLimit(key: string): Promise<ActionResult | null> {
+  const rl = await rateLimitDurable(key, ACTION_LIMIT);
   if (!rl.ok) {
     const secs = Math.max(1, Math.ceil(rl.retryAfterMs / 1000));
     return { error: `Too many requests. Try again in ${secs}s.` };
@@ -176,7 +176,7 @@ export async function createQuote(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('quote:create'));
+  const limited = await checkLimit(await clientKey('quote:create'));
   if (limited) return limited;
 
   let businessId: string;
@@ -291,7 +291,7 @@ export async function updateQuoteItems(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('quote:items'));
+  const limited = await checkLimit(await clientKey('quote:items'));
   if (limited) return limited;
 
   let businessId: string;
@@ -376,7 +376,7 @@ export async function createQuoteTemplate(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('quote-template:create'));
+  const limited = await checkLimit(await clientKey('quote-template:create'));
   if (limited) return limited;
 
   let businessId: string;
@@ -421,7 +421,7 @@ export async function updateQuoteTemplate(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('quote-template:update'));
+  const limited = await checkLimit(await clientKey('quote-template:update'));
   if (limited) return limited;
 
   let businessId: string;
@@ -497,7 +497,7 @@ export async function recordQuoteDeposit(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('quote:deposit-record'));
+  const limited = await checkLimit(await clientKey('quote:deposit-record'));
   if (limited) return limited;
 
   let businessId: string;
@@ -565,7 +565,7 @@ export async function updateQuoteStatus(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('quote:status'));
+  const limited = await checkLimit(await clientKey('quote:status'));
   if (limited) return limited;
 
   let businessId: string;
@@ -635,7 +635,7 @@ export async function updateQuoteExpiry(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('quote:expiry'));
+  const limited = await checkLimit(await clientKey('quote:expiry'));
   if (limited) return limited;
 
   let businessId: string;
@@ -681,7 +681,7 @@ export async function sendQuoteEmail(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('quote:send-email'));
+  const limited = await checkLimit(await clientKey('quote:send-email'));
   if (limited) return limited;
 
   let businessId: string;
@@ -773,7 +773,7 @@ export async function convertQuoteToJob(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('quote:convert'));
+  const limited = await checkLimit(await clientKey('quote:convert'));
   if (limited) return limited;
 
   let businessId: string;
@@ -863,7 +863,7 @@ export async function deleteQuote(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('quote:delete'));
+  const limited = await checkLimit(await clientKey('quote:delete'));
   if (limited) return limited;
 
   let businessId: string;
@@ -921,7 +921,7 @@ export async function createQuoteAddon(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('quote:addon'));
+  const limited = await checkLimit(await clientKey('quote:addon'));
   if (limited) return limited;
 
   let businessId: string;
@@ -963,7 +963,7 @@ export async function updateQuoteAddon(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('quote:addon'));
+  const limited = await checkLimit(await clientKey('quote:addon'));
   if (limited) return limited;
 
   let businessId: string;
@@ -1005,7 +1005,7 @@ export async function deleteQuoteAddon(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('quote:addon'));
+  const limited = await checkLimit(await clientKey('quote:addon'));
   if (limited) return limited;
 
   let businessId: string;
@@ -1071,7 +1071,7 @@ export async function regenerateQuoteShareLink(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult & { token?: string; tokenId?: string }> {
-  const limited = checkLimit(await clientKey('quote:share'));
+  const limited = await checkLimit(await clientKey('quote:share'));
   if (limited) return limited;
 
   let businessId: string;
@@ -1103,7 +1103,7 @@ export async function revokeQuoteShareLink(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('quote:share'));
+  const limited = await checkLimit(await clientKey('quote:share'));
   if (limited) return limited;
 
   let businessId: string;
@@ -1130,7 +1130,7 @@ export async function setQuoteShareLinkExpiry(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('quote:share'));
+  const limited = await checkLimit(await clientKey('quote:share'));
   if (limited) return limited;
 
   let businessId: string;
@@ -1164,8 +1164,8 @@ export type PortalDecisionResult = {
 
 const PORTAL_LIMIT = { limit: 30, windowMs: 60 * 1000 };
 
-function checkPortalLimit(key: string): PortalDecisionResult | null {
-  const rl = rateLimit(key, PORTAL_LIMIT);
+async function checkPortalLimit(key: string): Promise<PortalDecisionResult | null> {
+  const rl = await rateLimitDurable(key, PORTAL_LIMIT);
   if (!rl.ok) {
     const secs = Math.max(1, Math.ceil(rl.retryAfterMs / 1000));
     return { error: `Too many requests. Try again in ${secs}s.` };
@@ -1188,7 +1188,7 @@ export async function portalQuoteDecisionByToken(
   signerName?: string,
   consent?: boolean
 ): Promise<PortalDecisionResult> {
-  const hit = checkPortalLimit(await clientKey('portal-quote-token'));
+  const hit = await checkPortalLimit(await clientKey('portal-quote-token'));
   if (hit) return hit;
 
   const resolved = await resolveShareToken(token, 'QUOTE');

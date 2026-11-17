@@ -6,7 +6,7 @@ import { getActiveMembershipForUser } from '@/lib/membership';
 import { jobSchema } from '@/lib/validations';
 import { validatePhone, INVALID_PHONE_MESSAGE } from '@/lib/phone';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { dollarsToCents } from '@/lib/money';
 
 const offlineJobSchema = z.object({
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   }
 
-  const rl = rateLimit(`offline-job:${businessId}`, ACTION_LIMIT);
+  const rl = await rateLimitDurable(`offline-job:${businessId}`, ACTION_LIMIT);
   if (!rl.ok) {
     return NextResponse.json({ error: 'Too many requests.' }, { status: 429 });
   }

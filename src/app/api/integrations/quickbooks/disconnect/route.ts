@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { getActiveMembershipForUser } from '@/lib/membership';
 import { prisma } from '@/lib/prisma';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 import { revokeTokens } from '@/lib/quickbooks';
 import { decryptSecret } from '@/lib/crypto';
@@ -21,7 +21,7 @@ export async function POST(req: Request) {
   }
   if (!checkSameOrigin(req)) return originForbidden();
 
-  const rl = rateLimit(`qb-disconnect:${businessId}`, ACTION_LIMIT);
+  const rl = await rateLimitDurable(`qb-disconnect:${businessId}`, ACTION_LIMIT);
   if (!rl.ok) {
     return NextResponse.json({ error: 'Too many requests. Please wait a moment.' }, { status: 429 });
   }

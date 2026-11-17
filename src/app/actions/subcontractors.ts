@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { clientIpFromHeaders } from '@/lib/client-ip';
 
 export type SubcontractorErrorCode =
@@ -54,8 +54,8 @@ async function clientKey(prefix: string): Promise<string> {
   return `${prefix}:${ip}`;
 }
 
-function checkLimit(key: string): SubcontractorErrorCode | null {
-  const rl = rateLimit(key, ACTION_LIMIT);
+async function checkLimit(key: string): Promise<SubcontractorErrorCode | null> {
+  const rl = await rateLimitDurable(key, ACTION_LIMIT);
   return rl.ok ? null : 'tooMany';
 }
 
@@ -150,7 +150,7 @@ export async function createSubcontractor(input: {
   defaultRate?: unknown;
   note?: unknown;
 }): Promise<SubcontractorResult> {
-  const limited = checkLimit(await clientKey('subs:create'));
+  const limited = await checkLimit(await clientKey('subs:create'));
   if (limited) return { ok: false, error: limited };
   let businessId: string;
   try {
@@ -176,7 +176,7 @@ export async function updateSubcontractor(
   id: string,
   input: { name: unknown; phone?: unknown; email?: unknown; defaultRate?: unknown; note?: unknown },
 ): Promise<SubcontractorResult> {
-  const limited = checkLimit(await clientKey('subs:update'));
+  const limited = await checkLimit(await clientKey('subs:update'));
   if (limited) return { ok: false, error: limited };
   let businessId: string;
   try {
@@ -210,7 +210,7 @@ export async function updateSubcontractor(
 
 /** Delete is BLOCKED while any job assignment exists — payout history is never silently destroyed. */
 export async function deleteSubcontractor(id: string): Promise<SubcontractorResult> {
-  const limited = checkLimit(await clientKey('subs:delete'));
+  const limited = await checkLimit(await clientKey('subs:delete'));
   if (limited) return { ok: false, error: limited };
   let businessId: string;
   try {
@@ -264,7 +264,7 @@ export async function assignSubcontractor(
   subcontractorId: string,
   input: { hours?: unknown; amount?: unknown; note?: unknown },
 ): Promise<SubcontractorResult> {
-  const limited = checkLimit(await clientKey('subs:assign'));
+  const limited = await checkLimit(await clientKey('subs:assign'));
   if (limited) return { ok: false, error: limited };
   let businessId: string;
   try {
@@ -294,7 +294,7 @@ export async function assignSubcontractor(
 }
 
 export async function removeSubcontractorFromJob(jobId: string, subcontractorId: string): Promise<SubcontractorResult> {
-  const limited = checkLimit(await clientKey('subs:remove'));
+  const limited = await checkLimit(await clientKey('subs:remove'));
   if (limited) return { ok: false, error: limited };
   let businessId: string;
   try {

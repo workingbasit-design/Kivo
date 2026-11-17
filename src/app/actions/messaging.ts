@@ -7,7 +7,7 @@ import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
 import { encryptSecret } from '@/lib/messaging/crypto';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { sendPlatformEmail } from '@/lib/messaging/platform-email';
 import { appBaseUrl } from '@/lib/app-url';
 import {
@@ -25,8 +25,8 @@ async function clientKey(prefix: string): Promise<string> {
   return `${prefix}:${ip}`;
 }
 
-function checkLimit(key: string): ActionResult | null {
-  const rl = rateLimit(key, ACTION_LIMIT);
+async function checkLimit(key: string): Promise<ActionResult | null> {
+  const rl = await rateLimitDurable(key, ACTION_LIMIT);
   if (!rl.ok) {
     const secs = Math.max(1, Math.ceil(rl.retryAfterMs / 1000));
     return { error: `Too many requests. Try again in ${secs}s.` };
@@ -58,7 +58,7 @@ export async function saveMessagingSettingsAction(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('messaging:settings'));
+  const limited = await checkLimit(await clientKey('messaging:settings'));
   if (limited) return limited;
   let businessId: string;
   try {
@@ -95,7 +95,7 @@ export async function connectWhatsAppAction(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('messaging:connect'));
+  const limited = await checkLimit(await clientKey('messaging:connect'));
   if (limited) return limited;
   let businessId: string;
   try {
@@ -160,7 +160,7 @@ export async function connectEmailAction(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('messaging:connect'));
+  const limited = await checkLimit(await clientKey('messaging:connect'));
   if (limited) return limited;
   let businessId: string;
   try {
@@ -210,7 +210,7 @@ export async function connectEmailAction(
 
 /** Disconnect a channel (deletes the stored secret). */
 export async function disconnectChannelAction(channel: string): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('messaging:connect'));
+  const limited = await checkLimit(await clientKey('messaging:connect'));
   if (limited) return limited;
   let businessId: string;
   try {
@@ -232,7 +232,7 @@ export async function setCustomerConsentAction(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('messaging:consent'));
+  const limited = await checkLimit(await clientKey('messaging:consent'));
   if (limited) return limited;
   let businessId: string;
   try {
@@ -283,7 +283,7 @@ export async function previewMessagingAction(): Promise<{
   error?: string;
   report?: Awaited<ReturnType<typeof runMessagingCycle>>;
 }> {
-  const limited = checkLimit(await clientKey('messaging:run'));
+  const limited = await checkLimit(await clientKey('messaging:run'));
   if (limited) return { ok: false, error: limited.error };
   let businessId: string;
   try {
@@ -305,7 +305,7 @@ export async function runMessagingNowAction(): Promise<{
   error?: string;
   report?: Awaited<ReturnType<typeof runMessagingCycle>>;
 }> {
-  const limited = checkLimit(await clientKey('messaging:run'));
+  const limited = await checkLimit(await clientKey('messaging:run'));
   if (limited) return { ok: false, error: limited.error };
   let businessId: string;
   try {
@@ -331,7 +331,7 @@ function hashVerifyToken(token: string): string {
  * engine refuses customer emails until the link is clicked.
  */
 export async function sendBusinessEmailVerification(): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('messaging:verify-email'));
+  const limited = await checkLimit(await clientKey('messaging:verify-email'));
   if (limited) return limited;
   let businessId: string;
   try {

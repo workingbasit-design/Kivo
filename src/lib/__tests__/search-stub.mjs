@@ -53,6 +53,7 @@ export function setSearchSession(s) {
   session = s;
 }
 export function resetSearchStub() {
+  rateLimitRows.clear();
   calls.customerFindMany.length = 0;
   calls.jobFindMany.length = 0;
   calls.quoteFindMany.length = 0;
@@ -105,7 +106,30 @@ function runFindMany(rows, args, callLog) {
     .map((r) => pick(r, args.select));
 }
 
+// In-memory RateLimit table for the durable limiter (P1.0 S4 P3):
+// mirrors the auth-stub delegate; updateMany only touches unexpired rows.
+const rateLimitRows = new Map();
+
 export const prisma = {
+  rateLimit: {
+    updateMany: async ({ where, data }) => {
+      const row = rateLimitRows.get(where?.key);
+      if (row && row.resetAt > where?.resetAt?.gt) {
+        row.count += data?.count?.increment ?? 1;
+        return { count: 1 };
+      }
+      return { count: 0 };
+    },
+    upsert: async ({ where, create, update }) => {
+      const row = { key: where.key, count: 1, resetAt: (create ?? update).resetAt };
+      rateLimitRows.set(where.key, row);
+      return row;
+    },
+    findUnique: async ({ where }) => {
+      const row = rateLimitRows.get(where?.key);
+      return row ? { count: row.count, resetAt: row.resetAt } : null;
+    },
+  },
   // getActiveMembershipForUser checks User.activeMembershipId first;
   // the stub user has no override, so the membership fallback applies.
   user: {

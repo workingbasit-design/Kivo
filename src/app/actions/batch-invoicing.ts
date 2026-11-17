@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { dollarsToCents, centsToDollars } from '@/lib/money';
 import { invoiceDueAt } from '@/lib/invoice-paid';
 import { nextDocumentNumber } from '@/lib/numbering';
@@ -36,8 +36,8 @@ async function clientKey(prefix: string): Promise<string> {
   return `${prefix}:${ip}`;
 }
 
-function checkLimit(key: string, locale: Locale): ConfirmBatchResult | null {
-  const rl = rateLimit(key, ACTION_LIMIT);
+async function checkLimit(key: string, locale: Locale): Promise<ConfirmBatchResult | null> {
+  const rl = await rateLimitDurable(key, ACTION_LIMIT);
   if (!rl.ok) return { error: t(locale, 'billing.errors.tooMany') };
   return null;
 }
@@ -72,7 +72,7 @@ function taxConfigForJob(
  */
 export async function previewBatchInvoices(): Promise<BatchPreviewResult> {
   const locale = await getLocale();
-  const limited = checkLimit(await clientKey('batch:preview'), locale);
+  const limited = await checkLimit(await clientKey('batch:preview'), locale);
   if (limited) return { error: limited.error };
 
   let businessId: string;
@@ -120,7 +120,7 @@ export async function confirmBatchInvoices(
   jobIds: string[]
 ): Promise<ConfirmBatchResult> {
   const locale = await getLocale();
-  const limited = checkLimit(await clientKey('batch:confirm'), locale);
+  const limited = await checkLimit(await clientKey('batch:confirm'), locale);
   if (limited) return limited;
 
   let businessId: string;
@@ -238,7 +238,7 @@ export async function createMilestoneInvoice(
   input: { label: string; amount: number | string; description?: string | null }
 ): Promise<MilestoneResult> {
   const locale = await getLocale();
-  const limited = checkLimit(await clientKey('milestone:create'), locale);
+  const limited = await checkLimit(await clientKey('milestone:create'), locale);
   if (limited) return limited;
 
   let businessId: string;

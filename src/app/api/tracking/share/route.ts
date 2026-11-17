@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { getActiveMembershipForUser } from '@/lib/membership';
-import { rateLimit } from '@/lib/rate-limit';
+import { rateLimitDurable } from '@/lib/rate-limit-durable';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 import { newShareTokenValue } from '@/lib/share';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
@@ -37,7 +37,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const rl = rateLimit(`tracking-share:${session.user.id}`, SHARE_LIMIT);
+  const rl = await rateLimitDurable(`tracking-share:${session.user.id}`, SHARE_LIMIT);
   if (!rl.ok) {
     return NextResponse.json(
       { error: 'Too many requests - please slow down.' },

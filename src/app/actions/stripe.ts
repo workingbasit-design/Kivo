@@ -5,7 +5,7 @@ import { headers } from 'next/headers';
 import { requireAuth } from '@/lib/auth';
 import { requireMembership } from '@/lib/membership';
 import { prisma } from '@/lib/prisma';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { clientIpFromHeaders } from '@/lib/client-ip';
 import { centsToDollars, dollarsToCents, formatCents } from '@/lib/money';
 
@@ -17,8 +17,8 @@ async function clientKey(prefix: string): Promise<string> {
   return `${prefix}:${ip}`;
 }
 
-function checkLimit(key: string): ActionResult | null {
-  const rl = rateLimit(key, ACTION_LIMIT);
+async function checkLimit(key: string): Promise<ActionResult | null> {
+  const rl = await rateLimitDurable(key, ACTION_LIMIT);
   if (!rl.ok) {
     const secs = Math.max(1, Math.ceil(rl.retryAfterMs / 1000));
     return { error: `Too many requests. Try again in ${secs}s.` };
@@ -91,7 +91,7 @@ export async function confirmLivePaymentsAction(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('stripe:live'));
+  const limited = await checkLimit(await clientKey('stripe:live'));
   if (limited) return limited;
   let businessId: string;
   try {
@@ -119,7 +119,7 @@ export async function confirmLivePaymentsAction(
 
 /** Disconnect Stripe (deletes the connection; recorded payments stay). */
 export async function disconnectStripeAction(): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('stripe:connect'));
+  const limited = await checkLimit(await clientKey('stripe:connect'));
   if (limited) return limited;
   let businessId: string;
   try {
@@ -139,7 +139,7 @@ export async function setQuoteDepositAction(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('quote:deposit'));
+  const limited = await checkLimit(await clientKey('quote:deposit'));
   if (limited) return limited;
   let businessId: string;
   try {
@@ -182,7 +182,7 @@ export async function recordManualQuoteDepositAction(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('quote:deposit'));
+  const limited = await checkLimit(await clientKey('quote:deposit'));
   if (limited) return limited;
   let businessId: string;
   try {

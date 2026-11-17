@@ -5,7 +5,7 @@ import { headers } from 'next/headers';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import {
   issueSignatureRequest,
   revokeSignatureRequest,
@@ -51,7 +51,7 @@ export async function createSignRequest(
 ): Promise<EsignActionResult> {
   const { businessId } = await requireAuth();
 
-  const rl = rateLimit(await clientKey('esign:create'), ACTION_LIMIT);
+  const rl = await rateLimitDurable(await clientKey('esign:create'), ACTION_LIMIT);
   if (!rl.ok) {
     return { error: 'Too many requests. Try again shortly.' };
   }

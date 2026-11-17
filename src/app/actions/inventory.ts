@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { dollarsToCents } from '@/lib/money';
 
 export interface ActionResult {
@@ -14,7 +14,7 @@ export interface ActionResult {
 }
 
 async function checkLimit(userId: string): Promise<ActionResult | null> {
-  const rl = rateLimit(`inventory:${userId}`, ACTION_LIMIT);
+  const rl = await rateLimitDurable(`inventory:${userId}`, ACTION_LIMIT);
   if (!rl.ok) {
     return { ok: false, error: 'Too many requests. Please wait a moment and try again.' };
   }

@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { getSession } from '@/lib/auth';
 import { getActiveMembershipForUser } from '@/lib/membership';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
 
 const subscribeSchema = z.object({
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   }
 
-  const rl = rateLimit(`push-subscribe:${businessId}`, ACTION_LIMIT);
+  const rl = await rateLimitDurable(`push-subscribe:${businessId}`, ACTION_LIMIT);
   if (!rl.ok) {
     return NextResponse.json({ error: 'Too many requests.' }, { status: 429 });
   }

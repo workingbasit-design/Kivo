@@ -3,7 +3,7 @@ import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { getActiveMembershipForUser } from '@/lib/membership';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { createInvoiceCheckout } from '@/lib/stripe';
 import { centsToDollars } from '@/lib/money';
 import { getLocale } from '@/lib/i18n/server';
@@ -13,7 +13,7 @@ import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 async function rateLimited(businessId: string): Promise<boolean> {
   const h = await headers();
   const ip = clientIpFromHeaders(h);
-  return !rateLimit(`stripe:invoice-checkout:${businessId}:${ip}`, ACTION_LIMIT).ok;
+  return !(await rateLimitDurable(`stripe:invoice-checkout:${businessId}:${ip}`, ACTION_LIMIT)).ok;
 }
 
 /**

@@ -1,7 +1,7 @@
 'use server';
 
 import { requireAuth } from '@/lib/auth';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import {
   optimizeDayRouteForBusiness,
   type DayRouteResult,
@@ -23,7 +23,7 @@ export async function optimizeDayRoute(
   dateStr: string
 ): Promise<OptimizeRouteActionResult> {
   const { user, businessId } = await requireAuth();
-  const rl = rateLimit(`routes:${user.id}`, ACTION_LIMIT);
+  const rl = await rateLimitDurable(`routes:${user.id}`, ACTION_LIMIT);
   if (!rl.ok) {
     return { error: 'Too many requests. Please wait a moment and try again.' };
   }

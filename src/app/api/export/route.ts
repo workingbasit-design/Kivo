@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { getActiveMembershipForUser } from '@/lib/membership';
-import { rateLimit } from '@/lib/rate-limit';
+import { rateLimitDurable } from '@/lib/rate-limit-durable';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 import { logPiiAccess } from '@/lib/pii-audit';
 import { buildExportCsv, EXPORT_TYPES, type ExportType } from '@/lib/export';
@@ -25,7 +25,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const rl = rateLimit(`export:${session.user.id}`, { limit: 20, windowMs: 60_000 });
+  const rl = await rateLimitDurable(`export:${session.user.id}`, { limit: 20, windowMs: 60_000 });
   if (!rl.ok) {
     return NextResponse.json({ error: 'Too many requests. Please wait a moment.' }, { status: 429 });
   }

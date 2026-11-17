@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { serviceSchema } from '@/lib/validations';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { dollarsToCents } from '@/lib/money';
 import { TRADE_KEYS } from '@/lib/trade-icons';
 
@@ -43,8 +43,8 @@ function nullIfBlank(v: string | undefined): string | null {
   return t === '' ? null : t;
 }
 
-function limited(businessId: string): ServiceResult | null {
-  const rl = rateLimit(`services:${businessId}`, ACTION_LIMIT);
+async function limited(businessId: string): Promise<ServiceResult | null> {
+  const rl = await rateLimitDurable(`services:${businessId}`, ACTION_LIMIT);
   if (!rl.ok) return { error: 'Too many requests. Please slow down.' };
   return null;
 }
@@ -60,7 +60,7 @@ async function parse(data: unknown): Promise<{ data?: ServiceFields; error?: str
 /** Create a price-book service. Called directly from PriceBookClient. */
 export async function createService(formData: FormData): Promise<ServiceResult> {
   const { businessId } = await requireAuth();
-  const hit = limited(businessId);
+  const hit = await limited(businessId);
   if (hit) return hit;
 
   const { data, error } = await parse({
@@ -115,7 +115,7 @@ export async function createService(formData: FormData): Promise<ServiceResult> 
 /** Update a price-book service. */
 export async function updateService(id: string, formData: FormData): Promise<ServiceResult> {
   const { businessId } = await requireAuth();
-  const hit = limited(businessId);
+  const hit = await limited(businessId);
   if (hit) return hit;
 
   const existing = await prisma.service.findFirst({ where: { id, businessId } });
@@ -162,7 +162,7 @@ export async function updateService(id: string, formData: FormData): Promise<Ser
 /** Delete a price-book service. */
 export async function deleteService(id: string): Promise<ServiceResult> {
   const { businessId } = await requireAuth();
-  const hit = limited(businessId);
+  const hit = await limited(businessId);
   if (hit) return hit;
 
   const existing = await prisma.service.findFirst({ where: { id, businessId } });
@@ -185,7 +185,7 @@ const DEFAULT_SERVICES = [
 /** Seed 6 standard services. Only runs when the price book is empty. */
 export async function seedDefaultServices(): Promise<ServiceResult> {
   const { businessId } = await requireAuth();
-  const hit = limited(businessId);
+  const hit = await limited(businessId);
   if (hit) return hit;
 
   const count = await prisma.service.count({ where: { businessId } });

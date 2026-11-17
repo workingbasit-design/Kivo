@@ -3,13 +3,13 @@
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { onboardingSchema } from '@/lib/validations';
 
 export type OnboardingResult = { error?: string; ok?: boolean };
 
 async function checkLimit(userId: string): Promise<OnboardingResult | null> {
-  const rl = rateLimit(`onboarding:${userId}`, ACTION_LIMIT);
+  const rl = await rateLimitDurable(`onboarding:${userId}`, ACTION_LIMIT);
   if (!rl.ok) {
     return { error: 'Too many requests. Please wait a moment and try again.' };
   }

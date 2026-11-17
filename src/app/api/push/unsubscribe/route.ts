@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { getActiveMembershipForUser } from '@/lib/membership';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 
 const unsubscribeSchema = z.object({
   endpoint: z.string().trim().url().max(2000),
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   }
 
-  const rl = rateLimit(`push-unsubscribe:${businessId}`, ACTION_LIMIT);
+  const rl = await rateLimitDurable(`push-unsubscribe:${businessId}`, ACTION_LIMIT);
   if (!rl.ok) {
     return NextResponse.json({ error: 'Too many requests.' }, { status: 429 });
   }

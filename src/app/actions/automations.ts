@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import {
@@ -20,7 +20,7 @@ export type AutomationActionResult = {
 };
 
 async function checkLimit(userId: string) {
-  const rl = rateLimit(`automations:${userId}`, ACTION_LIMIT);
+  const rl = await rateLimitDurable(`automations:${userId}`, ACTION_LIMIT);
   if (!rl.ok) {
     const locale = await getLocale();
     return { error: t(locale, 'track8.rateLimited') };

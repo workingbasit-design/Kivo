@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { locationPingSchema } from '@/lib/location-ping';
 import { getSession } from '@/lib/auth';
 import { getActiveMembershipForUser } from '@/lib/membership';
-import { rateLimit } from '@/lib/rate-limit';
+import { rateLimitDurable } from '@/lib/rate-limit-durable';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 
 /**
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const rl = rateLimit(`gps-ping:${userId}`, PING_LIMIT);
+  const rl = await rateLimitDurable(`gps-ping:${userId}`, PING_LIMIT);
   if (!rl.ok) {
     return NextResponse.json(
       { error: 'Too many requests - please slow down.' },

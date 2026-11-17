@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { getActiveMembershipForUser } from '@/lib/membership';
-import { rateLimit } from '@/lib/rate-limit';
+import { rateLimitDurable } from '@/lib/rate-limit-durable';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 
 /**
@@ -26,7 +26,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const rl = rateLimit(`gps-latest:${session.user.id}`, LATEST_LIMIT);
+  const rl = await rateLimitDurable(`gps-latest:${session.user.id}`, LATEST_LIMIT);
   if (!rl.ok) {
     return NextResponse.json(
       { error: 'Too many requests - please slow down.' },

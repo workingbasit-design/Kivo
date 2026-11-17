@@ -5,7 +5,7 @@ import { randomUUID } from 'crypto';
 import { put, del } from '@vercel/blob';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { dollarsToCents } from '@/lib/money';
 import {
   validateExpenseForm,
@@ -20,7 +20,7 @@ export type ExpenseResult =
 const RECEIPT_MAX_BYTES = 10 * 1024 * 1024; // 10 MB
 
 async function checkLimit(userId: string): Promise<ExpenseResult | null> {
-  const rl = rateLimit(`expenses:${userId}`, ACTION_LIMIT);
+  const rl = await rateLimitDurable(`expenses:${userId}`, ACTION_LIMIT);
   if (!rl.ok) return { ok: false, error: 'rateLimited' };
   return null;
 }

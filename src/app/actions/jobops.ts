@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { dollarsToCents } from '@/lib/money';
 import {
   validateExpenseInput,
@@ -21,7 +21,7 @@ import {
 export type JobOpsActionResult = { error?: string; ok?: boolean };
 
 async function checkLimit(userId: string): Promise<JobOpsActionResult | null> {
-  const rl = rateLimit(`jobops:${userId}`, ACTION_LIMIT);
+  const rl = await rateLimitDurable(`jobops:${userId}`, ACTION_LIMIT);
   if (!rl.ok) {
     const locale = await getLocale();
     return { error: t(locale, 'jobops.errors.tooManyRequests') };

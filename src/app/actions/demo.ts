@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { requireMembership } from '@/lib/membership';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 
 /**
  * Part 0 (dashboard rebuild): the stable id of the seeded demo business.
@@ -18,7 +18,7 @@ const DEMO_BUSINESS_ID = 'demo-biz';
 export type DemoResult = { error?: string };
 
 async function checkLimit(userId: string): Promise<DemoResult | null> {
-  const rl = rateLimit(`demo:${userId}`, ACTION_LIMIT);
+  const rl = await rateLimitDurable(`demo:${userId}`, ACTION_LIMIT);
   if (!rl.ok) {
     return { error: 'Too many requests. Please wait a moment and try again.' };
   }

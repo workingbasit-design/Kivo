@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { clientIpFromHeaders } from '@/lib/client-ip';
 import {
   CUSTOM_FIELD_TARGETS,
@@ -43,8 +43,8 @@ async function clientKey(prefix: string): Promise<string> {
   return `${prefix}:${ip}`;
 }
 
-function checkLimit(key: string): CustomFieldErrorCode | null {
-  const rl = rateLimit(key, ACTION_LIMIT);
+async function checkLimit(key: string): Promise<CustomFieldErrorCode | null> {
+  const rl = await rateLimitDurable(key, ACTION_LIMIT);
   return rl.ok ? null : 'tooMany';
 }
 
@@ -59,7 +59,7 @@ export async function listFieldDefs(
   customerId: string,
   target: CustomFieldTarget = 'CUSTOMER'
 ): Promise<CustomFieldResult> {
-  const limited = checkLimit(await clientKey('cfields:list'));
+  const limited = await checkLimit(await clientKey('cfields:list'));
   if (limited) return { ok: false, error: limited };
 
   let businessId: string;
@@ -94,7 +94,7 @@ export async function createFieldDef(
   rawName: string,
   rawTarget: unknown = 'CUSTOMER'
 ): Promise<CustomFieldResult> {
-  const limited = checkLimit(await clientKey('cfields:write'));
+  const limited = await checkLimit(await clientKey('cfields:write'));
   if (limited) return { ok: false, error: limited };
 
   let businessId: string;
@@ -130,7 +130,7 @@ export async function renameFieldDef(
   id: string,
   rawName: string
 ): Promise<CustomFieldResult> {
-  const limited = checkLimit(await clientKey('cfields:write'));
+  const limited = await checkLimit(await clientKey('cfields:write'));
   if (limited) return { ok: false, error: limited };
 
   let businessId: string;
@@ -171,7 +171,7 @@ export async function renameFieldDef(
 
 /** Delete a field definition (its per-customer values cascade). */
 export async function deleteFieldDef(id: string): Promise<CustomFieldResult> {
-  const limited = checkLimit(await clientKey('cfields:write'));
+  const limited = await checkLimit(await clientKey('cfields:write'));
   if (limited) return { ok: false, error: limited };
 
   let businessId: string;
@@ -205,7 +205,7 @@ export async function setFieldValue(
   fieldId: string,
   rawValue: string
 ): Promise<CustomFieldResult> {
-  const limited = checkLimit(await clientKey('cfields:write'));
+  const limited = await checkLimit(await clientKey('cfields:write'));
   if (limited) return { ok: false, error: limited };
 
   let businessId: string;
@@ -253,7 +253,7 @@ export async function setFieldValue(
 export async function listPropertyFieldDefs(
   propertyId: string
 ): Promise<CustomFieldResult> {
-  const limited = checkLimit(await clientKey('cfields:list'));
+  const limited = await checkLimit(await clientKey('cfields:list'));
   if (limited) return { ok: false, error: limited };
 
   let businessId: string;
@@ -292,7 +292,7 @@ export async function setPropertyFieldValue(
   fieldId: string,
   rawValue: string
 ): Promise<CustomFieldResult> {
-  const limited = checkLimit(await clientKey('cfields:write'));
+  const limited = await checkLimit(await clientKey('cfields:write'));
   if (limited) return { ok: false, error: limited };
 
   let businessId: string;
@@ -340,7 +340,7 @@ export async function setPropertyFieldValue(
 export async function listJobFieldDefs(
   jobId: string
 ): Promise<CustomFieldResult> {
-  const limited = checkLimit(await clientKey('cfields:list'));
+  const limited = await checkLimit(await clientKey('cfields:list'));
   if (limited) return { ok: false, error: limited };
 
   let businessId: string;
@@ -379,7 +379,7 @@ export async function setJobFieldValue(
   fieldId: string,
   rawValue: string
 ): Promise<CustomFieldResult> {
-  const limited = checkLimit(await clientKey('cfields:write'));
+  const limited = await checkLimit(await clientKey('cfields:write'));
   if (limited) return { ok: false, error: limited };
 
   let businessId: string;

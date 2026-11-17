@@ -6,14 +6,14 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { recurringSchema } from '@/lib/validations';
 import { generateDueJobs } from '@/lib/recurring';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { dollarsToCents } from '@/lib/money';
 import { parseDateInputInTimezone } from '@/lib/utils';
 
 export type RecurringActionResult = { error?: string; ok?: boolean; created?: number };
 
 async function checkLimit(userId: string, prefix: string): Promise<RecurringActionResult | null> {
-  const rl = rateLimit(`${prefix}:${userId}`, ACTION_LIMIT);
+  const rl = await rateLimitDurable(`${prefix}:${userId}`, ACTION_LIMIT);
   if (!rl.ok) {
     return { error: 'Too many requests. Please wait a moment and try again.' };
   }

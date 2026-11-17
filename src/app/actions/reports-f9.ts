@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { requireAuth } from '@/lib/auth';
 import { requireMembership } from '@/lib/membership';
 import { prisma } from '@/lib/prisma';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { getLocale } from '@/lib/i18n/server';
 import { parseFlags, isFlagOn, FLAG_REPORTS } from '@/lib/feature-flags';
 import { fetchF9Data } from '@/lib/reports-f9-data';
@@ -50,7 +50,7 @@ export async function exportF9Csv(
   const { businessId } = await requireAuth();
   const { userId } = await requireMembership(businessId, 'OWNER', 'ADMIN');
 
-  const rl = rateLimit(`reports-f9-export:${userId}`, ACTION_LIMIT);
+  const rl = await rateLimitDurable(`reports-f9-export:${userId}`, ACTION_LIMIT);
   if (!rl.ok) {
     return { ok: false, error: 'Too many requests. Please wait a moment.' };
   }

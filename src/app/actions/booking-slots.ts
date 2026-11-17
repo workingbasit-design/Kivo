@@ -4,7 +4,7 @@ import { headers } from 'next/headers';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
-import { rateLimit } from '@/lib/rate-limit';
+import { rateLimitDurable } from '@/lib/rate-limit-durable';
 import { validatePhone, INVALID_PHONE_MESSAGE } from '@/lib/phone';
 import { parseTimeToMinutes } from '@/lib/routes';
 import { dayRange, todayInTimezone } from '@/lib/utils';
@@ -61,8 +61,8 @@ async function publicClientKey(prefix: string): Promise<string> {
   return `${prefix}:${ip}`;
 }
 
-function checkPublicLimit(key: string): BookingResult | null {
-  const rl = rateLimit(key, PUBLIC_LIMIT);
+async function checkPublicLimit(key: string): Promise<BookingResult | null> {
+  const rl = await rateLimitDurable(key, PUBLIC_LIMIT);
   if (!rl.ok) {
     const secs = Math.max(1, Math.ceil(rl.retryAfterMs / 1000));
     return { error: `Too many requests. Try again in ${secs}s.` };
@@ -81,7 +81,7 @@ export async function getBookingSlots(
   slug: string,
   dateStr: string
 ): Promise<SlotsResult> {
-  const limit = checkPublicLimit(await publicClientKey('booking-slots'));
+  const limit = await checkPublicLimit(await publicClientKey('booking-slots'));
   if (limit) return { slots: [], closed: false, hoursNotSet: false, unscheduledCount: 0, error: limit.error };
   const locale: Locale = await getLocale();
 
@@ -195,7 +195,7 @@ export async function submitBookingWithTime(
     const botLocale = await getLocale();
     return { error: t(botLocale, 'reminders.booking.botRetry') };
   }
-  const hit = checkPublicLimit(await publicClientKey('booking-submit-time'));
+  const hit = await checkPublicLimit(await publicClientKey('booking-submit-time'));
   if (hit) return hit;
   const locale: Locale = await getLocale();
 

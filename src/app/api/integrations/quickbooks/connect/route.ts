@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { getActiveMembershipForUser } from '@/lib/membership';
-import { rateLimit, AUTH_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, AUTH_LIMIT } from '@/lib/rate-limit-durable';
 import { buildAuthorizeUrl } from '@/lib/quickbooks';
 import crypto from 'crypto';
 import { clientIpFromHeaders } from '@/lib/client-ip';
@@ -31,7 +31,7 @@ export async function GET(req: Request) {
   }
 
   const ip = clientIpFromHeaders(req.headers);
-  const rl = rateLimit(`qb-connect:${ip}`, AUTH_LIMIT);
+  const rl = await rateLimitDurable(`qb-connect:${ip}`, AUTH_LIMIT);
   if (!rl.ok) {
     return NextResponse.redirect(new URL('/settings?quickbooks=rate-limited', req.url));
   }

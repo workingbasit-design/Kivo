@@ -3,14 +3,14 @@
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 
 export type CrewActionResult = { ok?: boolean; error?: string };
 
 const GENERIC_ERROR = 'Too many requests. Please wait a moment and try again.';
 
 async function checkLimit(userId: string, prefix: string): Promise<CrewActionResult | null> {
-  const rl = rateLimit(`${prefix}:${userId}`, ACTION_LIMIT);
+  const rl = await rateLimitDurable(`${prefix}:${userId}`, ACTION_LIMIT);
   if (!rl.ok) return { error: GENERIC_ERROR };
   return null;
 }

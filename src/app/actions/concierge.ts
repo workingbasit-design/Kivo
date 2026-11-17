@@ -2,7 +2,7 @@
 
 import { getCustomerSession } from '@/lib/customer-auth';
 import { prisma } from '@/lib/prisma';
-import { rateLimit } from '@/lib/rate-limit';
+import { rateLimitDurable } from '@/lib/rate-limit-durable';
 import { leadExpiryDate } from '@/lib/lead-expiry';
 import { findDirectoryMatches } from './directory';
 import {
@@ -91,7 +91,7 @@ export async function sendConciergeRequests(input: {
   if (!session) return { ok: false, error: 'Please log in to use the concierge.' };
   const customer = session.customer;
 
-  const rl = rateLimit(`concierge:${customer.id}`, CONCIERGE_RATE_LIMIT);
+  const rl = await rateLimitDurable(`concierge:${customer.id}`, CONCIERGE_RATE_LIMIT);
   if (!rl.ok) {
     return { ok: false, error: 'You have sent several requests recently. Please wait a bit before sending more.' };
   }

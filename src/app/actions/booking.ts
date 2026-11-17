@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
 
 export type BookingResult = { error?: string; ok?: boolean };
@@ -40,7 +40,7 @@ export async function saveBookingSettings(
   formData: FormData
 ): Promise<BookingResult> {
   const { businessId } = await requireAuth();
-  const rl = rateLimit(`booking-settings:${businessId}`, ACTION_LIMIT);
+  const rl = await rateLimitDurable(`booking-settings:${businessId}`, ACTION_LIMIT);
   if (!rl.ok) return { error: 'Too many requests. Please slow down.' };
 
   const parsed = bookingSettingsSchema.safeParse({

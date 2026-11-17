@@ -3,14 +3,14 @@
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { leadSchema, LEAD_STATUSES } from '@/lib/validations';
 import { validatePhone, INVALID_PHONE_MESSAGE } from '@/lib/phone';
 
 export type ActionResult = { error?: string; ok?: boolean };
 
 async function checkLimit(userId: string): Promise<ActionResult | null> {
-  const rl = rateLimit(`lead:${userId}`, ACTION_LIMIT);
+  const rl = await rateLimitDurable(`lead:${userId}`, ACTION_LIMIT);
   if (!rl.ok) {
     return { error: 'Too many requests. Please wait a moment and try again.' };
   }

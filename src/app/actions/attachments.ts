@@ -5,7 +5,7 @@ import { randomUUID } from 'crypto';
 import { put, del } from '@vercel/blob';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import {
   isAttachmentEntityType,
   validateAttachmentFile,
@@ -48,7 +48,7 @@ export async function blobConfigured(): Promise<boolean> {
 }
 
 async function checkLimit(userId: string): Promise<AttachmentErrorCode | null> {
-  const rl = rateLimit(`attachments:${userId}`, ACTION_LIMIT);
+  const rl = await rateLimitDurable(`attachments:${userId}`, ACTION_LIMIT);
   return rl.ok ? null : 'rateLimited';
 }
 

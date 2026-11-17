@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import type { ReportConfig } from '@/lib/reports';
@@ -25,7 +25,7 @@ export async function saveReport(
   config: ReportConfig
 ): Promise<SaveReportResult> {
   const { businessId, user } = await requireAuth();
-  const rl = rateLimit(`reports:${user.id}`, ACTION_LIMIT);
+  const rl = await rateLimitDurable(`reports:${user.id}`, ACTION_LIMIT);
   if (!rl.ok) {
     const locale = await getLocale();
     return { error: t(locale, 'track8.rateLimited') };
@@ -58,7 +58,7 @@ export type DeleteReportResult = { ok?: boolean; error?: string };
 /** Delete a saved report - tenant-scoped, only the owning business's row. */
 export async function deleteReport(id: string): Promise<DeleteReportResult> {
   const { businessId, user } = await requireAuth();
-  const rl = rateLimit(`reports:${user.id}`, ACTION_LIMIT);
+  const rl = await rateLimitDurable(`reports:${user.id}`, ACTION_LIMIT);
   if (!rl.ok) {
     const locale = await getLocale();
     return { error: t(locale, 'track8.rateLimited') };

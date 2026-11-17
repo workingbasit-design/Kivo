@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { encryptSecret, decryptSecret } from '@/lib/crypto';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import {
@@ -66,7 +66,7 @@ function googleEnv(): { clientId: string; clientSecret: string } | null {
 }
 
 async function checkLimit(userId: string): Promise<ImportActionResult | null> {
-  const rl = rateLimit(`imports:${userId}`, ACTION_LIMIT);
+  const rl = await rateLimitDurable(`imports:${userId}`, ACTION_LIMIT);
   if (!rl.ok) {
     const locale = await getLocale();
     return { error: t(locale, 'imports.tooMany') };

@@ -15,12 +15,36 @@ export function resetReadCalls() {
 /** Per-model fixture overrides, e.g. setFixture('invoice', 'findMany', [...]) */
 const fixtures = new Map();
 
+// In-memory RateLimit table for the durable limiter (P1.0 S4 P3): mirrors
+// the auth-stub delegate; updateMany only touches unexpired rows.
+const rateLimitRows = new Map();
+const rateLimitDelegate = {
+  updateMany: async ({ where, data }) => {
+    const row = rateLimitRows.get(where?.key);
+    if (row && row.resetAt > where?.resetAt?.gt) {
+      row.count += data?.count?.increment ?? 1;
+      return { count: 1 };
+    }
+    return { count: 0 };
+  },
+  upsert: async ({ where, create, update }) => {
+    const row = { key: where.key, count: 1, resetAt: (create ?? update).resetAt };
+    rateLimitRows.set(where.key, row);
+    return row;
+  },
+  findUnique: async ({ where }) => {
+    const row = rateLimitRows.get(where?.key);
+    return row ? { count: row.count, resetAt: row.resetAt } : null;
+  },
+};
+
 export function setFixture(model, method, value) {
   fixtures.set(`${model}.${method}`, value);
 }
 
 export function clearFixtures() {
   fixtures.clear();
+  rateLimitRows.clear();
 }
 
 function recordWrite(model, method, args) {
@@ -86,6 +110,11 @@ export const prisma = new Proxy(
       if (model === '$executeRaw') {
         // nextDocumentNumber's counter insert/bump (quote confirm path).
         return async () => 1;
+      }
+      if (model === 'rateLimit') {
+        // Durable limiter state (P1.0 S4 P3) — NOT a recorded write: the
+        // limiter is infrastructure, not copilot business writes.
+        return rateLimitDelegate;
       }
       return delegate(String(model));
     },

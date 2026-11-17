@@ -9,7 +9,7 @@ import { logger } from '@/lib/logger';
 import { requireAuth } from '@/lib/auth';
 import { requireMembership } from '@/lib/membership';
 import { invoiceSchema, paymentSchema, INVOICE_STATUSES } from '@/lib/validations';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { dollarsToCents, centsToDollars, formatCents } from '@/lib/money';
 import {
   deriveInvoiceStatus,
@@ -122,8 +122,8 @@ async function clientKey(prefix: string): Promise<string> {
   return `${prefix}:${ip}`;
 }
 
-function checkLimit(key: string): ActionResult | null {
-  const rl = rateLimit(key, ACTION_LIMIT);
+async function checkLimit(key: string): Promise<ActionResult | null> {
+  const rl = await rateLimitDurable(key, ACTION_LIMIT);
   if (!rl.ok) {
     const secs = Math.max(1, Math.ceil(rl.retryAfterMs / 1000));
     return { error: `Too many requests. Try again in ${secs}s.` };
@@ -170,7 +170,7 @@ export async function createInvoice(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('invoice:create'));
+  const limited = await checkLimit(await clientKey('invoice:create'));
   if (limited) return limited;
 
   let businessId: string;
@@ -335,7 +335,7 @@ export async function updateInvoiceStatus(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('invoice:status'));
+  const limited = await checkLimit(await clientKey('invoice:status'));
   if (limited) return limited;
 
   let businessId: string;
@@ -371,7 +371,7 @@ export async function deleteInvoice(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('invoice:delete'));
+  const limited = await checkLimit(await clientKey('invoice:delete'));
   if (limited) return limited;
 
   let businessId: string;
@@ -420,7 +420,7 @@ export async function voidInvoice(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('invoice:void'));
+  const limited = await checkLimit(await clientKey('invoice:void'));
   if (limited) return limited;
 
   let businessId: string;
@@ -468,7 +468,7 @@ export async function voidPayment(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('payment:void'));
+  const limited = await checkLimit(await clientKey('payment:void'));
   if (limited) return limited;
 
   let businessId: string;
@@ -550,7 +550,7 @@ export async function createCreditNote(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('credit-note:create'));
+  const limited = await checkLimit(await clientKey('credit-note:create'));
   if (limited) return limited;
 
   let businessId: string;
@@ -608,7 +608,7 @@ export async function recordPayment(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('payment:record'));
+  const limited = await checkLimit(await clientKey('payment:record'));
   if (limited) return limited;
 
   let businessId: string;
@@ -805,7 +805,7 @@ export async function regenerateInvoiceShareLink(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult & { token?: string; tokenId?: string }> {
-  const limited = checkLimit(await clientKey('invoice:share'));
+  const limited = await checkLimit(await clientKey('invoice:share'));
   if (limited) return limited;
 
   let businessId: string;
@@ -837,7 +837,7 @@ export async function revokeInvoiceShareLink(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('invoice:share'));
+  const limited = await checkLimit(await clientKey('invoice:share'));
   if (limited) return limited;
 
   let businessId: string;
@@ -872,7 +872,7 @@ export async function sendInvoiceEmail(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('invoice:send-email'));
+  const limited = await checkLimit(await clientKey('invoice:send-email'));
   if (limited) return limited;
 
   let businessId: string;
@@ -954,7 +954,7 @@ export async function setInvoiceShareLinkExpiry(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const limited = checkLimit(await clientKey('invoice:share'));
+  const limited = await checkLimit(await clientKey('invoice:share'));
   if (limited) return limited;
 
   let businessId: string;

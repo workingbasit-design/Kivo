@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
 import { requireAuth } from '@/lib/auth';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { isDirectoryAdminEmail } from '@/lib/directory';
 import { serviceAreasToJson } from '@/lib/directory-claim';
 import { appendServiceArea, readServiceAreas } from '@/lib/directory-prompt';
@@ -13,7 +13,7 @@ import { appendServiceArea, readServiceAreas } from '@/lib/directory-prompt';
 export type DirectoryProfileResult = { ok?: boolean; error?: string };
 
 async function checkLimit(userId: string): Promise<DirectoryProfileResult | null> {
-  const rl = rateLimit(`dir-profile:${userId}`, ACTION_LIMIT);
+  const rl = await rateLimitDurable(`dir-profile:${userId}`, ACTION_LIMIT);
   if (!rl.ok) return { error: 'Too many requests. Please wait a moment and try again.' };
   return null;
 }

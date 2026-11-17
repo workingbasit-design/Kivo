@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { getActiveMembershipForUser } from '@/lib/membership';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { normalizeLocale, t } from '@/lib/i18n';
 import { isPushConfigured, sendPushNotification } from '@/lib/webpush';
 
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Sending pushes costs nothing, but a test button shouldn't be hammerable.
-  const rl = rateLimit(`push-test:${businessId}`, { limit: 10, windowMs: 60 * 1000 });
+  const rl = await rateLimitDurable(`push-test:${businessId}`, { limit: 10, windowMs: 60 * 1000 });
   if (!rl.ok) {
     return NextResponse.json({ error: 'Too many requests.' }, { status: 429 });
   }

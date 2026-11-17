@@ -3,7 +3,7 @@ import { getSession } from '@/lib/auth';
 import { getActiveMembershipForUser } from '@/lib/membership';
 import { prisma } from '@/lib/prisma';
 import { centsToDollars, formatCents } from '@/lib/money';
-import { rateLimit } from '@/lib/rate-limit';
+import { rateLimitDurable } from '@/lib/rate-limit-durable';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 import {
   quickbooksSandbox,
@@ -44,7 +44,7 @@ export async function POST(req: Request) {
   }
   if (!checkSameOrigin(req)) return originForbidden();
 
-  const rl = rateLimit(`qb-sync:${businessId}`, SYNC_LIMIT);
+  const rl = await rateLimitDurable(`qb-sync:${businessId}`, SYNC_LIMIT);
   if (!rl.ok) {
     return NextResponse.json({ error: 'Sync already running or run too recently - please wait a moment.' }, { status: 429 });
   }

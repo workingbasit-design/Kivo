@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { formatCents } from '@/lib/money';
 import { sumMoneyPayments } from '@/lib/invoice-status';
 import {
@@ -22,8 +22,8 @@ const campaignSchema = z.object({
   audience: z.enum(['ALL_CUSTOMERS', 'WITH_UNPAID', 'RECENT_JOBS']),
 });
 
-function limited(businessId: string): MarketingResult | null {
-  const rl = rateLimit(`marketing:${businessId}`, ACTION_LIMIT);
+async function limited(businessId: string): Promise<MarketingResult | null> {
+  const rl = await rateLimitDurable(`marketing:${businessId}`, ACTION_LIMIT);
   if (!rl.ok) return { error: 'Too many requests. Please slow down.' };
   return null;
 }
@@ -76,7 +76,7 @@ export async function createCampaign(
   formData: FormData
 ): Promise<MarketingResult> {
   const { businessId } = await requireAuth();
-  const hit = limited(businessId);
+  const hit = await limited(businessId);
   if (hit) return hit;
 
   const parsed = campaignSchema.safeParse({
@@ -102,7 +102,7 @@ export async function updateCampaign(
   formData: FormData
 ): Promise<MarketingResult> {
   const { businessId } = await requireAuth();
-  const hit = limited(businessId);
+  const hit = await limited(businessId);
   if (hit) return hit;
 
   const id = String(formData.get('id') ?? '');
@@ -131,7 +131,7 @@ export async function updateCampaign(
 /** Delete a campaign. */
 export async function deleteCampaign(id: string): Promise<MarketingResult> {
   const { businessId } = await requireAuth();
-  const hit = limited(businessId);
+  const hit = await limited(businessId);
   if (hit) return hit;
 
   const existing = await prisma.campaign.findFirst({ where: { id, businessId } });
@@ -149,7 +149,7 @@ export async function deleteCampaign(id: string): Promise<MarketingResult> {
  */
 export async function advanceCampaignStatus(id: string): Promise<MarketingResult> {
   const { businessId } = await requireAuth();
-  const hit = limited(businessId);
+  const hit = await limited(businessId);
   if (hit) return hit;
 
   const existing = await prisma.campaign.findFirst({ where: { id, businessId } });

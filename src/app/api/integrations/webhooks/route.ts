@@ -14,7 +14,7 @@ import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { getActiveMembershipForUser } from '@/lib/membership';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { WEBHOOK_EVENTS, generateWebhookSecret, type WebhookEvent } from '@/lib/webhooks';
 import { assertPublicUrl, SsrfError } from '@/lib/ssrf';
 
@@ -52,8 +52,8 @@ async function authedBusinessId() {
   return membership?.businessId ?? null;
 }
 
-function limited(businessId: string) {
-  const rl = rateLimit(`integrations-webhooks:${businessId}`, ACTION_LIMIT);
+async function limited(businessId: string): Promise<NextResponse | null> {
+  const rl = await rateLimitDurable(`integrations-webhooks:${businessId}`, ACTION_LIMIT);
   return rl.ok ? null : NextResponse.json({ error: 'Too many requests.' }, { status: 429 });
 }
 
@@ -97,7 +97,7 @@ export async function POST(req: Request) {
   if (g) return g;
   const businessId = await authedBusinessId();
   if (!businessId) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
-  const l = limited(businessId);
+  const l = await limited(businessId);
   if (l) return l;
 
   let body: unknown;
@@ -148,7 +148,7 @@ export async function PATCH(req: Request) {
   if (g) return g;
   const businessId = await authedBusinessId();
   if (!businessId) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
-  const l = limited(businessId);
+  const l = await limited(businessId);
   if (l) return l;
 
   let body: unknown;
@@ -175,7 +175,7 @@ export async function DELETE(req: Request) {
   if (g) return g;
   const businessId = await authedBusinessId();
   if (!businessId) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
-  const l = limited(businessId);
+  const l = await limited(businessId);
   if (l) return l;
 
   let body: unknown;

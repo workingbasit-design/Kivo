@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import {
   DESIGNATION_TYPES,
   designationSchema,
@@ -15,8 +15,8 @@ import { clientIpFromHeaders } from '@/lib/client-ip';
 
 export type DesignationResult = { error?: string; ok?: boolean; id?: string };
 
-function limited(key: string): DesignationResult | null {
-  const rl = rateLimit(key, ACTION_LIMIT);
+async function limited(key: string): Promise<DesignationResult | null> {
+  const rl = await rateLimitDurable(key, ACTION_LIMIT);
   if (!rl.ok) return { error: 'Too many requests. Please slow down.' };
   return null;
 }
@@ -50,7 +50,7 @@ export async function listDesignations() {
 }
 
 export async function createDesignation(input: DesignationInput): Promise<DesignationResult> {
-  const hit = limited(await clientKey('designation-create'));
+  const hit = await limited(await clientKey('designation-create'));
   if (hit) return hit;
   const { businessId } = await requireAuth();
   const parsed = designationSchema.safeParse(input);
@@ -80,7 +80,7 @@ export async function updateDesignation(
   id: string,
   input: DesignationInput
 ): Promise<DesignationResult> {
-  const hit = limited(await clientKey('designation-update'));
+  const hit = await limited(await clientKey('designation-update'));
   if (hit) return hit;
   const { businessId } = await requireAuth();
   const parsed = designationSchema.safeParse(input);
@@ -112,7 +112,7 @@ export async function updateDesignation(
 }
 
 export async function deleteDesignation(id: string): Promise<DesignationResult> {
-  const hit = limited(await clientKey('designation-delete'));
+  const hit = await limited(await clientKey('designation-delete'));
   if (hit) return hit;
   const { businessId } = await requireAuth();
   // Ownership check via scoped delete - deletes 0 rows for foreign ids.
@@ -125,7 +125,7 @@ export async function deleteDesignation(id: string): Promise<DesignationResult> 
 }
 
 export async function updateTradeProfile(input: TradeProfileInput): Promise<DesignationResult> {
-  const hit = limited(await clientKey('trade-profile'));
+  const hit = await limited(await clientKey('trade-profile'));
   if (hit) return hit;
   const { businessId } = await requireAuth();
   const parsed = tradeProfileSchema.safeParse(input);

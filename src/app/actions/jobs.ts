@@ -10,7 +10,7 @@ import { requireMembership } from '@/lib/membership';
 import { jobSchema, JOB_STATUSES } from '@/lib/validations';
 import { isValidTransition, deriveJobWindow } from '@/lib/job-status';
 import { validatePhone, INVALID_PHONE_MESSAGE } from '@/lib/phone';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { normalizeJobTime, parseDateInputInTimezone } from '@/lib/utils';
 import { dollarsToCents } from '@/lib/money';
 import { setJobFieldValue } from '@/app/actions/custom-fields';
@@ -18,7 +18,7 @@ import { setJobFieldValue } from '@/app/actions/custom-fields';
 export type JobActionResult = { error?: string; ok?: boolean; queued?: boolean; startedAt?: string };
 
 async function checkLimit(userId: string, prefix: string): Promise<JobActionResult | null> {
-  const rl = rateLimit(`${prefix}:${userId}`, ACTION_LIMIT);
+  const rl = await rateLimitDurable(`${prefix}:${userId}`, ACTION_LIMIT);
   if (!rl.ok) {
     return { error: 'Too many requests. Please wait a moment and try again.' };
   }

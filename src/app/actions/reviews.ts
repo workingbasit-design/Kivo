@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { getReviewEligibility } from '@/lib/review-eligibility';
 
 export type ReviewResult = { error?: string; ok?: boolean };
@@ -18,8 +18,8 @@ const reviewSchema = z.object({
   jobId: z.string().trim().min(1, 'Pick the completed job this review is for.'),
 });
 
-function limited(businessId: string): ReviewResult | null {
-  const rl = rateLimit(`reviews:${businessId}`, ACTION_LIMIT);
+async function limited(businessId: string): Promise<ReviewResult | null> {
+  const rl = await rateLimitDurable(`reviews:${businessId}`, ACTION_LIMIT);
   if (!rl.ok) return { error: 'Too many requests. Please slow down.' };
   return null;
 }
@@ -30,7 +30,7 @@ export async function createReview(
   formData: FormData
 ): Promise<ReviewResult> {
   const { businessId } = await requireAuth();
-  const hit = limited(businessId);
+  const hit = await limited(businessId);
   if (hit) return hit;
 
   const parsed = reviewSchema.safeParse({
@@ -70,7 +70,7 @@ export async function createReview(
 /** Delete a review. */
 export async function deleteReview(id: string): Promise<ReviewResult> {
   const { businessId } = await requireAuth();
-  const hit = limited(businessId);
+  const hit = await limited(businessId);
   if (hit) return hit;
 
   const existing = await prisma.review.findFirst({ where: { id, businessId } });
