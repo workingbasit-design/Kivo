@@ -17,15 +17,11 @@
   }
 }
 
-/* Release 13 override (user decision, Nov 17): the exact reference
-   build's Search button is dark green, so on THIS page the button is
-   --ok, not the standing --hivis lime. Scoped to .ej-cust-ref, so the
-   public homepage keeps its --hivis button per the standing rule. */
-.ej-cust-ref .ej-home-search-button {
-  border-color: var(--ok);
-  background: var(--ok);
-  color: var(--hero-ink);
-}
+/* (No Search-button override here: Decision 8, Nov 17 — every primary
+   button is --hivis lime + --hivis-ink in both modes, never --ok. The
+   base .ej-home-search-button in customer-home.css already renders
+   --hivis, so this page uses it like the public homepage. The R13
+   dark-green --ok override was removed.) */
 
 /* The reference renders service cards and "Change location" as links;
    the signed-in page renders them as buttons for in-page navigation.

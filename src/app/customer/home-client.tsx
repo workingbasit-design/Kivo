@@ -47,10 +47,10 @@ import ProCard, { type ProCardData } from '@/components/ProCard';
  *   - "Change location" scrolls to and focuses the search location
  *     field; "Broaden my search" widens to Toronto, still signed in.
  *
- * Reference override (user decision, Nov 17): the Search button on THIS
- * page is the reference's dark-green --ok, not the standing --hivis
- * lime. The override lives in customer-home-signed-in.css, scoped to
- * .ej-cust-ref, so the public homepage keeps its --hivis button.
+ * Decision 8 (user decision, Nov 17): the Search button on THIS page is
+ * --hivis lime + --hivis-ink like every other primary button, in both
+ * modes — never --ok. The R13 dark-green --ok override was removed;
+ * the base .ej-home-search-button in customer-home.css renders --hivis.
  */
 
 const SERVICES = [
