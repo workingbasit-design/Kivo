@@ -149,6 +149,8 @@ const en: Dict = {
     noTimeSet: 'Time to be set',
     emptyAllTitle: 'No jobs yet',
     emptyAllText: 'Create your first job to get started.',
+    emptySearchTitle: 'No matching jobs',
+    emptySearchText: 'Try changing your search or choosing another status filter.',
     emptyLateTitle: 'Nothing late',
     emptyLateText: 'Every job is on track.',
     emptyTodayTitle: 'Nothing today',

@@ -273,7 +273,13 @@ export default function JobsListClient({
     upcoming: { title: jobsL('emptyUpcomingTitle'), text: jobsL('emptyUpcomingText') },
     invoice: { title: jobsL('emptyInvoiceTitle'), text: jobsL('emptyInvoiceText') },
   };
-  const empty = emptyKeys[filterId];
+  // A no-match search gets the prototype's "No matching jobs" state (not
+  // the per-filter empty state — "No jobs yet" would be wrong when jobs
+  // exist but the query matches none of them).
+  const searching = query !== '';
+  const empty = searching
+    ? { title: jobsL('emptySearchTitle'), text: jobsL('emptySearchText') }
+    : emptyKeys[filterId];
   const EmptyIcon = FILTER_ICONS[filterId];
   const showClearFilters = query !== '' || filterId !== 'all';
 

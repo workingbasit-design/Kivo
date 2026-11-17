@@ -149,6 +149,8 @@ const fr: Dictionary = {
     noTimeSet: 'Heure à déterminer',
     emptyAllTitle: 'Aucun travail pour le moment',
     emptyAllText: 'Créez votre premier travail pour commencer.',
+    emptySearchTitle: 'Aucun travail correspondant',
+    emptySearchText: 'Essayez de modifier votre recherche ou de choisir un autre filtre de statut.',
     emptyLateTitle: 'Rien en retard',
     emptyLateText: 'Tous les travaux sont à jour.',
     emptyTodayTitle: 'Rien aujourd’hui',
