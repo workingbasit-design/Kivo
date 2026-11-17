@@ -31,6 +31,9 @@ function csv(headers: string[], rows: (string | number | null | undefined | Date
 const d = (v: Date | null | undefined) => (v ? new Date(v).toISOString().slice(0, 10) : '');
 
 /** Every query is scoped to the business. Returns CSV text. */
+// P1.0-D Tier C: export reads are intentionally uncapped — capping
+// would silently truncate the exported file. Explicit user action,
+// whole-table by design.
 export async function buildExportCsv(businessId: string, type: ExportType): Promise<string> {
   switch (type) {
     case 'customers': {

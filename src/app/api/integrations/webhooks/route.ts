@@ -11,6 +11,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { getSession } from '@/lib/auth';
 import { getActiveMembershipForUser } from '@/lib/membership';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
@@ -62,6 +63,7 @@ async function listData(businessId: string) {
     where: { businessId },
     orderBy: { createdAt: 'desc' },
     select: { id: true, url: true, events: true, active: true, createdAt: true },
+    take: LIST_MAX_SIZE,
   });
   const ids = endpoints.map((e) => e.id);
   const deliveries = ids.length

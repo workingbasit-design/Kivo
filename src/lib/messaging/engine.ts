@@ -18,6 +18,7 @@
  */
 
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import {
   buildMessageCandidates,
   isQuietHour,
@@ -458,6 +459,7 @@ export async function runMessagingCycle(
 
   const connections = await prisma.messagingConnection.findMany({
     where: { businessId, enabled: true },
+    take: LIST_MAX_SIZE,
   });
   const getConn = (channel: MessageChannel): ConnRow | undefined =>
     connections.find((c) => c.channel === channel);
@@ -481,6 +483,7 @@ export async function runMessagingCycle(
 
   // Idempotency: keys already terminally handled (SENT, or FAILED with a
   // permanent error kind - transient network/quota failures retry).
+  // P1.0-D Tier C: the idempotency set must stay complete — capping it could double-send. Follow-up: per-key lookup instead of loading the set.
   const terminalRows = await prisma.messageLog.findMany({
     where: { businessId, eventKey: { not: null } },
     select: { eventKey: true, status: true, error: true },
@@ -563,6 +566,7 @@ export async function runMessagingCycle(
 
   // Existing public pay links for invoices (only already-issued tokens - the
   // cycle never mints new public URLs on its own).
+  // P1.0-D Tier C: pay-link tokens must stay complete or older invoices lose their links. Follow-up: filter expired tokens.
   const shareTokens = await prisma.shareToken.findMany({
     where: { businessId, type: 'INVOICE', revokedAt: null, invoiceId: { not: null } },
     select: { token: true, invoiceId: true, expiresAt: true },
@@ -759,7 +763,10 @@ export async function getMessagingOverview(businessId: string) {
     create: { businessId, month, emailDay: dayKey, emailDayCount: 0 },
     update: {},
   });
-  const connections = await prisma.messagingConnection.findMany({ where: { businessId } });
+  const connections = await prisma.messagingConnection.findMany({
+    where: { businessId },
+    take: LIST_MAX_SIZE,
+  });
   // Secrets are encrypted at rest - never reveal even a suffix of the
   // ciphertext; presence alone is shown in the UI.
   const secretBadge = (s: string | null | undefined) => (s ? '••••••' : null);

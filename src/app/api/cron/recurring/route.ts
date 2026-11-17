@@ -22,6 +22,7 @@ export async function GET(req: Request) {
   if (unauth) return unauth;
 
   // Only businesses with at least one active plan need a generation pass.
+  // P1.0-D Tier C: the cron must visit every business with an active plan — a take would starve the rest. Revisit with cursor pagination past 2000 businesses.
   const businesses = await prisma.business.findMany({
     where: { recurringJobs: { some: { active: true } } },
     select: { id: true, name: true, timezone: true, regionCode: true },

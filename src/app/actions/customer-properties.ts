@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { requireAuth } from '@/lib/auth';
 import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { clientIpFromHeaders } from '@/lib/client-ip';
@@ -103,6 +104,7 @@ export async function listProperties(customerId: string): Promise<PropertyResult
     where: { customerId, businessId },
     orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }],
     select: { id: true, label: true, address: true, notes: true, isPrimary: true, province: true },
+    take: LIST_MAX_SIZE,
   });
   return { ok: true, properties };
 }

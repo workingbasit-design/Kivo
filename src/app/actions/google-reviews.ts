@@ -176,6 +176,7 @@ export async function syncGoogleReviews(): Promise<GoogleActionResult> {
     );
     const mapped = fetched.map(mapGoogleReview).filter((r) => r !== null);
 
+    // P1.0-D Tier C: existing external ids must stay complete — a missed id would re-import a duplicate review.
     const existing = await prisma.review.findMany({
       where: { businessId, externalId: { not: null } },
       select: { externalId: true },

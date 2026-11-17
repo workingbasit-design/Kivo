@@ -76,6 +76,7 @@ async function getProfile(slug: string) {
       where: { businessId, active: true },
       select: { name: true, priceCents: true },
       orderBy: { name: 'asc' },
+      take: LIST_MAX_SIZE,
     }),
     prisma.review.findMany({
       where: { businessId },

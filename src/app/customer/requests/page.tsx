@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { requireCustomerAuth } from '@/lib/customer-auth';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { Inbox, ChevronRight, Clock } from '@/components/icons';
@@ -55,6 +56,7 @@ export default async function CustomerRequestsPage() {
         updatedAt: true,
       },
       orderBy: { updatedAt: 'desc' },
+      take: LIST_MAX_SIZE,
     }),
   ]);
 

@@ -63,6 +63,7 @@ export default async function QuotesPage({
       take: takeWithProbe(limit),
     }),
     prisma.quote.count({ where: { businessId } }),
+    // P1.0-D Tier C: the converted-quote exclusion set must stay complete — capping it would wrongly count converted quotes as open pipeline.
     // 2026-11-05: jobs stamped with the conversion marker, so converted
     // quotes can be excluded from the open-pipeline total (they keep
     // APPROVED by design). Tenant-scoped like every other query here.

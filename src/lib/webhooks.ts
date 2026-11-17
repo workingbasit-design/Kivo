@@ -17,6 +17,7 @@
  */
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { assertPublicUrl, isSafeRedirectTarget, SsrfError } from './ssrf.ts';
 
 /** The full event catalog EveryJob can emit. Add new events here. */
@@ -100,6 +101,7 @@ export async function emitWebhookEvent(
     const endpoints = await prisma.webhookEndpoint.findMany({
       where: { businessId, active: true },
       select: { id: true, events: true, url: true, secret: true },
+      take: LIST_MAX_SIZE,
     });
     const targets = endpoints.filter((e) => {
       const evts = parseSubscribedEvents(e.events);

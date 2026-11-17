@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { requireAuth } from '@/lib/auth';
 import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { clientIpFromHeaders } from '@/lib/client-ip';
@@ -80,10 +81,12 @@ export async function listFieldDefs(
       where: { businessId, target: validateTarget(target) },
       orderBy: { createdAt: 'asc' },
       select: { id: true, name: true },
+      take: LIST_MAX_SIZE,
     }),
     prisma.customerFieldValue.findMany({
       where: { customerId, field: { businessId } },
       select: { fieldId: true, value: true },
+      take: LIST_MAX_SIZE,
     }),
   ]);
   return { ok: true, defs, values };
@@ -274,10 +277,12 @@ export async function listPropertyFieldDefs(
       where: { businessId, target: 'PROPERTY' },
       orderBy: { createdAt: 'asc' },
       select: { id: true, name: true },
+      take: LIST_MAX_SIZE,
     }),
     prisma.propertyFieldValue.findMany({
       where: { propertyId, field: { businessId } },
       select: { fieldId: true, value: true },
+      take: LIST_MAX_SIZE,
     }),
   ]);
   return { ok: true, defs, values };
@@ -361,10 +366,12 @@ export async function listJobFieldDefs(
       where: { businessId, target: 'JOB' },
       orderBy: { createdAt: 'asc' },
       select: { id: true, name: true },
+      take: LIST_MAX_SIZE,
     }),
     prisma.jobFieldValue.findMany({
       where: { jobId, field: { businessId } },
       select: { fieldId: true, value: true },
+      take: LIST_MAX_SIZE,
     }),
   ]);
   return { ok: true, defs, values };

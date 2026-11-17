@@ -16,6 +16,7 @@
  * - Per-key rate limiting on top of per-IP limits.
  */
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { unsafeUnscoped } from './tenant-guard.ts';
 import {
@@ -139,6 +140,7 @@ export async function listCustomerAgentKeys(customerId: string) {
   return prisma.customerAgentKey.findMany({
     where: { customerId },
     orderBy: { createdAt: 'desc' },
+    take: LIST_MAX_SIZE,
     select: {
       id: true,
       label: true,

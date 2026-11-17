@@ -17,6 +17,7 @@
  */
 
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { dayRange } from '@/lib/utils';
 import {
   geocodeAddress,
@@ -85,6 +86,7 @@ export async function optimizeDayRouteForBusiness(
     },
     include: { customer: { select: { name: true } } },
     orderBy: [{ time: 'asc' }, { createdAt: 'asc' }],
+    take: LIST_MAX_SIZE,
   });
 
   const baseStops = jobs.map(toRouteStop);

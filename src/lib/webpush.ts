@@ -14,6 +14,7 @@
  * Generate a pair locally (free):  npx web-push generate-vapid-keys
  */
 import webpush from 'web-push';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 
 export interface PushKeys {
   endpoint: string;
@@ -136,6 +137,7 @@ export async function pushToBusiness(
     const subs = await prisma.pushSubscription.findMany({
       where: { businessId },
       select: { id: true, endpoint: true, p256dh: true, auth: true },
+      take: LIST_MAX_SIZE,
     });
     for (const s of subs) {
       const r = await sendPushNotification(

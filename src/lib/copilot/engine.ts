@@ -16,6 +16,7 @@
  */
 
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { formatDateShort, toISODateLocal, dayRange } from '@/lib/utils';
 import { formatMoney, centsToDollars } from '@/lib/money';
 import { getCertificationRoadmap, type TradeKey } from '@/lib/certifications';
@@ -151,6 +152,7 @@ async function jobsOn(businessId: string, dateStr: string): Promise<JobWithCusto
     where: { businessId, date: { gte, lte } },
     include: { customer: { select: { name: true } } },
     orderBy: { time: 'asc' },
+    take: LIST_MAX_SIZE,
   });
 }
 

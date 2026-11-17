@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { requireAuth } from '@/lib/auth';
 import { serviceSchema } from '@/lib/validations';
 import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
@@ -85,6 +86,8 @@ export async function createService(formData: FormData): Promise<ServiceResult> 
   const existing = await prisma.service.findMany({
     where: { businessId },
     select: { name: true },
+    orderBy: { name: 'asc' },
+    take: LIST_MAX_SIZE,
   });
   const wanted = data.name.trim().toLowerCase();
   if (existing.some((s) => s.name.trim().toLowerCase() === wanted)) {

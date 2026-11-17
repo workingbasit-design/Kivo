@@ -33,6 +33,7 @@ export async function getAudienceRecipients(
   businessId: string,
   audience: Audience
 ): Promise<{ id: string; name: string; phone: string | null }[]> {
+  // P1.0-D Tier C: campaign recipients must be complete — capping would silently drop recipients from a send.
   if (audience === 'ALL_CUSTOMERS') {
     return prisma.customer.findMany({
       where: { businessId },

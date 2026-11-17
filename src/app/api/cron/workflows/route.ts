@@ -27,6 +27,7 @@ export async function GET(req: Request) {
   if (unauth) return unauth;
 
   // Only businesses with at least one enabled rule need an engine pass.
+  // P1.0-D Tier C: the cron must visit every business with an enabled rule — a take would starve the rest. Revisit with cursor pagination past 2000 businesses.
   const businesses = await prisma.business.findMany({
     where: { workflowRules: { some: { enabled: true } } },
     select: { id: true },

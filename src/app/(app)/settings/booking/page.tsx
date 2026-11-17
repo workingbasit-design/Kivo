@@ -30,6 +30,7 @@ export default async function BookingSettingsPage() {
       where: { businessId },
       select: { id: true, name: true },
       orderBy: { name: 'asc' },
+      take: LIST_MAX_SIZE,
     }),
   ]);
 

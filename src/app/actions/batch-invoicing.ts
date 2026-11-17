@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { requireAuth } from '@/lib/auth';
 import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { dollarsToCents, centsToDollars } from '@/lib/money';
@@ -90,6 +91,7 @@ export async function previewBatchInvoices(): Promise<BatchPreviewResult> {
         property: { select: { province: true } },
       },
       orderBy: { date: 'desc' },
+      take: LIST_MAX_SIZE,
     }),
     prisma.business.findUnique({
       where: { id: businessId },

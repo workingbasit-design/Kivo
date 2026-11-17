@@ -33,6 +33,7 @@
  * cron run never fails because generation did.
  */
 import { prisma } from './prisma.ts';
+import { LIST_MAX_SIZE } from './list-page.ts';
 import { dollarsToCents, centsToDollars } from './money.ts';
 import { getTaxConfig, totalTaxRate, calcTax, defaultTaxType } from './tax.ts';
 import { resolveTaxProvince } from './property-tax.ts';
@@ -225,6 +226,7 @@ export async function generateMonthlyInvoices(
         invoiceDayOfMonth: true,
         lastInvoicePeriod: true,
       },
+      take: LIST_MAX_SIZE,
     });
     const numbers: string[] = [];
     for (const series of seriesList) {

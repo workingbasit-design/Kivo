@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { requireAuth } from '@/lib/auth';
 import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import {
@@ -37,6 +38,7 @@ export async function listDesignations() {
   return prisma.designation.findMany({
     where: { businessId },
     orderBy: { createdAt: 'desc' },
+    take: LIST_MAX_SIZE,
     select: {
       id: true,
       type: true,

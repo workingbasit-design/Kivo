@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { randomUUID } from 'crypto';
 import { put, del } from '@vercel/blob';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { requireAuth } from '@/lib/auth';
 import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import {
@@ -199,6 +200,7 @@ export async function listAttachments(
   const rows = await prisma.attachment.findMany({
     where: { businessId, entityType, entityId },
     orderBy: { createdAt: 'desc' },
+    take: LIST_MAX_SIZE,
   });
   return { ok: true, attachments: rows.map(toRow) };
 }

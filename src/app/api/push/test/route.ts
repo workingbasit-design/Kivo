@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { getSession } from '@/lib/auth';
 import { getActiveMembershipForUser } from '@/lib/membership';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
@@ -54,6 +55,7 @@ export async function POST(req: NextRequest) {
   const subs = await prisma.pushSubscription.findMany({
     where: { businessId },
     select: { endpoint: true, p256dh: true, auth: true },
+    take: LIST_MAX_SIZE,
   });
 
   let sent = 0;

@@ -31,6 +31,8 @@ export async function exportAccountingCSV(
     if (endDate) where.date.lte = new Date(endDate);
   }
 
+  // P1.0-D Tier C: accounting-export reads are intentionally uncapped —
+  // the export file must contain every row in range.
   const [customers, invoices, payments] = await Promise.all([
     prisma.customer.findMany({
       where: { businessId, archivedAt: null },

@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { requireAuth } from '@/lib/auth';
 import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { clientIpFromHeaders } from '@/lib/client-ip';
@@ -139,6 +140,7 @@ export async function listSubcontractors(): Promise<SubcontractorResult> {
     where: { businessId },
     orderBy: { name: 'asc' },
     include: { _count: { select: { jobs: true } } },
+    take: LIST_MAX_SIZE,
   });
   return { ok: true, subcontractors: rows.map(toRow) };
 }
@@ -245,6 +247,7 @@ export async function listJobSubcontractors(jobId: string): Promise<Subcontracto
     where: { jobId },
     orderBy: { createdAt: 'asc' },
     include: { subcontractor: { select: { name: true } } },
+    take: LIST_MAX_SIZE,
   });
   return {
     ok: true,

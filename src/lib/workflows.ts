@@ -12,6 +12,7 @@
  */
 
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { centsToDollars } from '@/lib/money';
 
 export const WORKFLOW_TRIGGERS = ['JOB_COMPLETED', 'QUOTE_AWAITING', 'INVOICE_OVERDUE'] as const;
@@ -96,7 +97,7 @@ export function invoicesOverdueDue(
 /* ------------------------------------------------------------------ */
 
 export async function getOrCreateDefaultRules(businessId: string) {
-  const existing = await prisma.workflowRule.findMany({ where: { businessId } });
+  const existing = await prisma.workflowRule.findMany({ where: { businessId }, take: LIST_MAX_SIZE });
   if (existing.length > 0) return existing;
   await prisma.workflowRule.createMany({
     data: DEFAULT_WORKFLOW_RULES.map((r) => ({
@@ -107,7 +108,7 @@ export async function getOrCreateDefaultRules(businessId: string) {
       configJson: JSON.stringify(r.config),
     })),
   });
-  return prisma.workflowRule.findMany({ where: { businessId } });
+  return prisma.workflowRule.findMany({ where: { businessId }, take: LIST_MAX_SIZE });
 }
 
 /* ------------------------------------------------------------------ */
@@ -140,6 +141,7 @@ export async function runWorkflowsForBusiness(businessId: string): Promise<Workf
   const result: WorkflowRunResult = { rulesEvaluated: 0, fired: 0, details: [] };
 
   // Entities already fired for each rule (idempotency).
+  // P1.0-D Tier C: the fired-event set must stay complete — capping it could re-fire actions. Follow-up: per-key lookup.
   const firedKeys = new Set(
     (
       await prisma.workflowEvent.findMany({

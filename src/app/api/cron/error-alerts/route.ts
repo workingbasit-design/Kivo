@@ -114,6 +114,7 @@ export async function GET(req: Request) {
     await prisma.monitorAlert.create({
       data: { key: alert.key, businessId: alert.businessId, detail: alert.detail },
     });
+    // P1.0-D Tier C: owner memberships must stay complete — every owner gets the alert.
     // Notify the owner(s): global alerts go to every business owner, scoped
     // alerts to that business's owners.
     const ownerMemberships = alert.businessId

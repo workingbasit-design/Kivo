@@ -74,6 +74,7 @@ export async function POST(req: Request) {
   try {
     // Entities already synced are excluded up-front so reruns stay fast and
     // the log only records genuine outcomes (the lib still guards idempotency).
+    // P1.0-D Tier C: the synced set must stay complete — a missed row would re-sync/duplicate.
     const syncedRows = await prisma.quickBooksSyncLog.findMany({
       where: { businessId, status: 'synced' },
       select: { entityType: true, entityId: true, qbId: true },

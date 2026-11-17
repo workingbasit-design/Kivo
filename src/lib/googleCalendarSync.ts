@@ -28,6 +28,7 @@
  */
 import { createHash } from 'node:crypto';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { encryptSecret, decryptSecret } from './crypto.ts';
 import { refreshAccessToken } from '@/lib/google-reviews';
 import {
@@ -298,6 +299,7 @@ export async function syncJobsToGoogleCalendar(
       priceCents: true, status: true, notes: true, technician: true,
       customer: { select: { name: true } },
     },
+    take: LIST_MAX_SIZE,
   })) as JobForSync[];
 
   const active = jobs.filter((j) => j.status !== 'CANCELLED');

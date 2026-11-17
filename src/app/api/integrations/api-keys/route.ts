@@ -10,6 +10,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { getSession } from '@/lib/auth';
 import { getActiveMembershipForUser } from '@/lib/membership';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
@@ -49,6 +50,7 @@ export async function GET(req: Request) {
   const keys = await prisma.apiKey.findMany({
     where: { businessId },
     orderBy: { createdAt: 'desc' },
+    take: LIST_MAX_SIZE,
     select: {
       id: true,
       name: true,

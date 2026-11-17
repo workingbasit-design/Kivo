@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { RECURRING_FREQUENCIES } from '@/lib/validations';
 import { toISODateInTimezone, defaultTimezoneForRegion } from '@/lib/utils';
 
@@ -132,6 +133,7 @@ async function generateDueJobsInner(
   const due = await prisma.recurringJob.findMany({
     where: { businessId, active: true, nextRun: { lte: now } },
     orderBy: { nextRun: 'asc' },
+    take: LIST_MAX_SIZE,
   });
 
   let created = 0;

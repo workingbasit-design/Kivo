@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { requireAuth } from '@/lib/auth';
 import { encryptSecret, decryptSecret } from '@/lib/crypto';
 import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
@@ -124,6 +125,7 @@ export async function listImportCustomers(): Promise<ImportActionResult> {
     where: { businessId },
     orderBy: { name: 'asc' },
     select: { id: true, name: true },
+    take: LIST_MAX_SIZE,
   });
   return { ok: true, customers };
 }
@@ -191,6 +193,7 @@ export async function confirmCalendarImport(items: CalendarImportItem[]): Promis
   const picked = items.filter((i) => i.customerId && i.title?.trim() && i.startISO);
   if (picked.length === 0) return { ok: true, imported: 0, skipped: 0 };
 
+  // P1.0-D Tier C: the customer-id set must stay complete — a cap would falsely reject valid rows.
   // Verify every customerId belongs to this business - never invent customers.
   const customers = await prisma.customer.findMany({
     where: { businessId },
@@ -206,6 +209,7 @@ export async function confirmCalendarImport(items: CalendarImportItem[]): Promis
   const windowStart = new Date(`${dayKeys[0]}T00:00:00`);
   const windowEnd = new Date(`${dayKeys[dayKeys.length - 1]}T00:00:00`);
   windowEnd.setDate(windowEnd.getDate() + 1);
+  // P1.0-D Tier C: the overlap check is windowed to the import file — capping it would miss overlaps.
   const existing = await prisma.job.findMany({
     where: {
       businessId,
@@ -316,6 +320,7 @@ export async function commitCsvImport(type: CsvType, records: CsvRecord[]): Prom
       // rows without an email fall back to normalized name+phone. The `seen`
       // set also covers rows already in this file, so importing the same
       // file twice (or a file with internal dupes) never double-creates.
+      // P1.0-D Tier C: the dedupe set must stay complete or the import double-creates.
       const existingCustomers = await prisma.customer.findMany({
         where: { businessId },
         select: { name: true, phone: true, email: true },
@@ -335,6 +340,7 @@ export async function commitCsvImport(type: CsvType, records: CsvRecord[]): Prom
         toCreate.push(r);
       }
     } else {
+      // P1.0-D Tier C: the dedupe set must stay complete or the import double-creates.
       const existingServices = await prisma.service.findMany({
         where: { businessId },
         select: { name: true },
@@ -410,6 +416,7 @@ export async function commitCsvImport(type: CsvType, records: CsvRecord[]): Prom
   }
 
   // Jobs: resolve customerMatch → exactly one customer, else row-level error.
+  // P1.0-D Tier C: customer-match resolution must see every customer or rows error wrongly.
   const existing = await prisma.customer.findMany({
     where: { businessId },
     select: { id: true, name: true, phone: true, phoneNorm: true },
@@ -452,6 +459,7 @@ export async function commitCsvImport(type: CsvType, records: CsvRecord[]): Prom
     const normTitle = (t: string) => t.trim().toLowerCase();
     const keyOf = (customerId: string, title: string, date: string) =>
       `${customerId}|${normTitle(title)}|${date}`;
+    // P1.0-D Tier C: the dedupe set must stay complete or the import double-creates.
     const existingJobs = await prisma.job.findMany({
       where: { businessId },
       select: { customerId: true, title: true, date: true },

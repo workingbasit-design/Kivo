@@ -1,6 +1,7 @@
 'use server';
 
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { requireAuth } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import { TEMPLATE_IDS, type MessageTemplateId, type MsgLocale } from '@/lib/messaging/templates';
@@ -20,6 +21,7 @@ export async function getTemplateOverrides(): Promise<
   const overrides = await prisma.messageTemplateOverride.findMany({
     where: { businessId },
     select: { templateId: true, locale: true, subject: true, body: true },
+    take: LIST_MAX_SIZE,
   });
 
   const map: Record<string, { subject: string; body: string }> = {};
