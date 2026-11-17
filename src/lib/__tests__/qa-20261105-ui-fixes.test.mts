@@ -68,7 +68,16 @@ test('#7 project deletes use the kit dialog, never native confirm()', () => {
 });
 
 test('BONUS /money headers interpolate instead of rendering literal backticks', () => {
+  // Money redesign (2026-11-17): the old template-literal h3 headers are
+  // gone — the page is a server wrapper and MoneyClient renders the
+  // headings. The lock stays the same: no literal backtick template in
+  // any heading, headers come from the i18n lookup.
   const f = src('app/(app)/money/page.tsx');
-  assert.ok(!/<h3[^>]*>`\$/.test(f), 'literal backtick template found in a header');
-  assert.ok(f.includes('{`${L('), 'headers must be brace-wrapped template expressions');
+  const c = src('app/(app)/money/MoneyClient.tsx');
+  assert.ok(!/<h[123][^>]*>`\$/.test(f), 'literal backtick template found in a header');
+  assert.ok(!/<h[123][^>]*>`\$/.test(c), 'literal backtick template found in a header');
+  assert.ok(
+    c.includes("t(locale, 't10money.money.title')"),
+    'money title must come from i18n'
+  );
 });

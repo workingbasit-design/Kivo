@@ -136,17 +136,20 @@ test('money row balance: voided partial payment ignored, live partial counts', (
   assert.equal(balance, 126);
 });
 
-test('money page source: row balance counts COMPLETED-only payments, like the section total', () => {
+test('money page source: picker remaining balance counts COMPLETED-only payments, like the outstanding total', () => {
   const src = readFileSync(
     new URL('../../app/(app)/money/page.tsx', import.meta.url),
     'utf8',
   );
-  // Both the section total and the per-row computation must sum via
-  // sumMoneyPayments (COMPLETED-only).
-  const occurrences = src.split('sumMoneyPayments(inv.payments)').length - 1;
+  // The payment picker's remaining balance comes from remainingCents,
+  // which sums via sumMoneyPayments (COMPLETED-only) — the void-aware
+  // behaviour itself is pinned in money-hub.test.mts.
+  assert.match(src, /remainingCents\(inv\.totalCents, inv\.payments\)/);
+  // The outstanding / income aggregates count COMPLETED payments only.
+  const completed = src.split("status: 'COMPLETED'").length - 1;
   assert.ok(
-    occurrences >= 2,
-    `expected >=2 sumMoneyPayments(inv.payments) uses (total + row), found ${occurrences}`,
+    completed >= 3,
+    `expected >=3 COMPLETED-only payment scopes, found ${completed}`,
   );
   // The pre-fix row formula summed every payment row regardless of status.
   assert.doesNotMatch(src, /inv\.payments\.map\(\(p\) => centsToDollars\(p\.amountCents\)\)/);

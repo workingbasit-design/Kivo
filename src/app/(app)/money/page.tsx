@@ -1,48 +1,61 @@
-import { Plus, FileText, Clock, Hourglass, Wallet } from '@/components/icons';
 import { redirect } from 'next/navigation';
 import { requireAuth } from '@/lib/auth';
 import { canSeePrices } from '@/lib/roles';
 import { getLocale } from '@/lib/i18n/server';
-import { t } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 import { prisma } from '@/lib/prisma';
-import { Card, EmptyState, Button, ListRow } from '@/components/kit';
-
-
-import { formatMoney, centsToDollars } from '@/lib/money';
-import { sumMoneyPayments } from '@/lib/invoice-status';
-import { daysOverdue, remainingBalance, OVERDUE_AFTER_DAYS, DAY_MS } from '@/lib/revenue';
-import { formatDisplayDate } from '@/lib/attention';
-import { kitButtonClass , PageHeader} from '@/components/kit';
-
-/**
- * "Now" for overdue-threshold math. A plain module helper (not a component),
- * so it evaluates fresh on every request without tripping render-purity rules.
- */
-function overdueThreshold(): Date {
-  return new Date(Date.now() - OVERDUE_AFTER_DAYS * DAY_MS);
-}
+import { getTaxConfig } from '@/lib/tax';
+import {
+  buildMoneyActivity,
+  remainingCents,
+  type MoneyActivityItem,
+} from '@/lib/money-hub';
+import MoneyClient, { type UnpaidInvoiceOption } from './MoneyClient';
+import type { ExportColumn } from '@/components/ExportButtons';
 
 /**
- * "Now" snapshot for waiting-day math. A plain module helper (not a component),
- * so it evaluates fresh on every request without tripping render-purity rules.
- */
-function requestNowMs(): number {
-  return Date.now();
-}
-
-/**
- * Money hub (Part E4): three lists, not stat cards.
- * 1. Ready to invoice — completed jobs with no invoice yet
- * 2. Awaiting payment — unpaid/partially-paid invoices, oldest first
- * 3. Awaiting a decision — sent quotes waiting on the customer
+ * Money hub redesign (ChatGPT Money prototype, 2026-11-17): overview
+ * metrics (Outstanding, Income received, Expenses, Net cash flow),
+ * payment activity with All / Income / Expenses / Invoices filters and
+ * CSV export, quick actions, and the entry modal for recording a payment
+ * or adding an expense (New invoice reuses the real NewInvoiceModal).
  *
- * Each section shows its items with amounts and one-tap actions.
- * No giant $0.00 numbers. Empty sections show a compact empty state.
+ * All figures come from the real shared records — no parallel money
+ * store, no sample data. Stats are database aggregates over the whole
+ * tables (exact at any scale); the activity feed is the latest 200 rows
+ * per source, merged newest-first.
+ *
+ * Deliberate deviations from the prototype:
+ * - The old hub sections (Ready to invoice, Awaiting payment, Awaiting
+ *   a decision) are replaced by the prototype layout: outstanding is
+ *   now the Outstanding metric and invoice creation is an activity row.
+ * - The prototype's invoice modal (title + amount) is NOT ported: a
+ *   real invoice needs a customer, line items and tax, so New invoice
+ *   opens the existing NewInvoiceModal wrapping the real InvoiceForm.
+ * - The prototype's payment modal has a free-form description and a
+ *   date; a real Payment must attach to an invoice and recordPayment
+ *   stamps today, so the modal picks an unpaid invoice instead and
+ *   records with today's date.
+ * - The prototype's expense modal has a vendor field; JobExpense has
+ *   none, so the vendor is stored in the expense note.
+ * - The prototype joins detail and date with a middle dot; the
+ *   copy-lint bans it, so activity rows use a comma.
  */
+const ACTIVITY_TAKE = 200;
+
+/** Human labels for payment providers (record-only). */
+function providerLabel(p: string, locale: Locale): string {
+  if (p === 'CASH') return t(locale, 't10money.money.providerCash');
+  if (p === 'CHEQUE') return t(locale, 't10money.money.providerCheque');
+  if (p === 'OTHER') return t(locale, 't10money.money.providerOther');
+  if (p === 'STRIPE') return t(locale, 't10money.money.providerCard');
+  return t(locale, 't10money.money.providerInterac');
+}
+
 export default async function MoneyPage() {
   const { businessId, role } = await requireAuth();
 
-  // SEE_PRICES gate: every list on this page is money data. Viewers
+  // SEE_PRICES gate: every figure on this page is money data. Viewers
   // without the capability (technicians) are bounced to their dashboard
   // before any query runs, so no amounts reach the response.
   if (!canSeePrices(role)) {
@@ -50,252 +63,197 @@ export default async function MoneyPage() {
   }
 
   const locale = await getLocale();
-  const L = (path: string) => t(locale, path);
 
-  const [business, openQuotes, unpaidInvoices, unbilledJobs] = await Promise.all([
+  const [
+    business,
+    payments,
+    expenses,
+    invoices,
+    unpaidTotals,
+    outstandingPaid,
+    incomeAgg,
+    expenseAgg,
+    modalCustomers,
+  ] = await Promise.all([
     prisma.business.findUnique({
       where: { id: businessId },
-      select: { currency: true, name: true, regionCode: true, timezone: true },
-    }),
-    // Awaiting a decision: sent quotes, oldest first (longest waiting on top).
-    prisma.quote.findMany({
-      where: { businessId, status: 'SENT' },
       select: {
-        id: true,
-        number: true,
-        title: true,
-        totalCents: true,
-        updatedAt: true,
-        customer: { select: { name: true } },
+        currency: true,
+        regionCode: true,
+        taxRegion: true,
+        gstHstRegistered: true,
       },
-      orderBy: { updatedAt: 'asc' },
-      take: 10,
     }),
-    // Awaiting payment: unpaid/partially-paid invoices, oldest first.
-    // Excludes voided invoices.
-    prisma.invoice.findMany({
-      where: {
-        businessId,
-        status: { not: 'PAID' },
-        voidedAt: null,
-      },
-      select: {
-        id: true,
-        number: true,
-        totalCents: true,
-        date: true,
-        customer: { select: { name: true, phone: true } },
-        payments: { select: { amountCents: true, status: true } },
-      },
-      orderBy: { date: 'asc' },
-      take: 10,
-    }),
-    // Ready to invoice: completed jobs with no invoice yet - the most common
-    // cash leak for small trades. Uses the invoice relation (not invoicedAt,
-    // which is never cleared when a draft invoice is deleted).
-    prisma.job.findMany({
+    // Income rows: COMPLETED payments on live invoices, newest first.
+    prisma.payment.findMany({
       where: {
         businessId,
         status: 'COMPLETED',
-        invoices: { none: {} },
+        invoice: { businessId, voidedAt: null },
       },
       select: {
         id: true,
-        title: true,
-        date: true,
-        priceCents: true,
-        noCharge: true,
-        customer: { select: { name: true } },
+        amountCents: true,
+        provider: true,
+        createdAt: true,
+        invoiceId: true,
+        invoice: {
+          select: { number: true, customer: { select: { name: true } } },
+        },
       },
-      orderBy: { date: 'asc' },
-      take: 10,
+      orderBy: { createdAt: 'desc' },
+      take: ACTIVITY_TAKE,
+    }),
+    // Expense rows: every JobExpense, newest spending first.
+    prisma.jobExpense.findMany({
+      where: { businessId },
+      select: {
+        id: true,
+        description: true,
+        amountCents: true,
+        category: true,
+        spentAt: true,
+        note: true,
+        createdAt: true,
+      },
+      orderBy: { spentAt: 'desc' },
+      take: ACTIVITY_TAKE,
+    }),
+    // Invoice rows (activity + payment picker): live invoices with the
+    // payments that decide their remaining balance.
+    prisma.invoice.findMany({
+      where: { businessId, voidedAt: null },
+      select: {
+        id: true,
+        number: true,
+        totalCents: true,
+        status: true,
+        createdAt: true,
+        customer: { select: { name: true } },
+        payments: { select: { amountCents: true, status: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: ACTIVITY_TAKE,
+    }),
+    // Outstanding = live unpaid invoice totals minus the money already
+    // taken against them (same arithmetic as /invoices).
+    prisma.invoice.aggregate({
+      where: { businessId, voidedAt: null, status: { not: 'PAID' } },
+      _sum: { totalCents: true },
+    }),
+    prisma.payment.aggregate({
+      where: {
+        businessId,
+        status: 'COMPLETED',
+        invoice: { businessId, voidedAt: null, status: { not: 'PAID' } },
+      },
+      _sum: { amountCents: true },
+    }),
+    prisma.payment.aggregate({
+      where: {
+        businessId,
+        status: 'COMPLETED',
+        invoice: { businessId, voidedAt: null },
+      },
+      _sum: { amountCents: true },
+    }),
+    prisma.jobExpense.aggregate({
+      where: { businessId },
+      _sum: { amountCents: true },
+    }),
+    // The New Invoice modal wraps the real InvoiceForm, so the money
+    // page supplies its customers like /invoices/new.
+    prisma.customer.findMany({
+      where: { businessId },
+      select: { id: true, name: true },
+      orderBy: { name: 'asc' },
     }),
   ]);
 
-  const readyTotal = unbilledJobs.reduce(
-    (s, j) => s + (j.noCharge || j.priceCents == null ? 0 : centsToDollars(j.priceCents)),
-    0
-  );
-  const awaitingTotal = unpaidInvoices.reduce((s, inv) => {
-    // Voided payments are not money: awaiting counts only what the customer
-    // genuinely still owes (2026-10-21).
-    const remaining = remainingBalance(
-      centsToDollars(inv.totalCents),
-      [centsToDollars(sumMoneyPayments(inv.payments))]
-    );
-    return s + remaining;
-  }, 0);
-  const decisionTotal = openQuotes.reduce((s, q) => s + centsToDollars(q.totalCents), 0);
+  const outstandingCents =
+    Number(unpaidTotals._sum.totalCents ?? BigInt(0)) -
+    Number(outstandingPaid._sum.amountCents ?? BigInt(0));
+  const incomeCents = Number(incomeAgg._sum.amountCents ?? BigInt(0));
+  const expensesCents = Number(expenseAgg._sum.amountCents ?? BigInt(0));
 
-  const allCaughtUp =
-    unbilledJobs.length === 0 && unpaidInvoices.length === 0 && openQuotes.length === 0;
+  const categoryLabel = (category: string) =>
+    t(locale, `expenses.categories.${category}`);
+
+  const activity: MoneyActivityItem[] = buildMoneyActivity([
+    ...payments.map((p) => ({
+      id: p.id,
+      kind: 'income' as const,
+      title: `${p.invoice.number}, ${p.invoice.customer.name}`,
+      detail: providerLabel(p.provider, locale),
+      date: p.createdAt.toISOString(),
+      amountCents: Number(p.amountCents),
+      party: p.invoice.customer.name,
+      href: `/invoices/${p.invoiceId}`,
+      sortMs: p.createdAt.getTime(),
+    })),
+    ...expenses.map((e) => ({
+      id: e.id,
+      kind: 'expense' as const,
+      title: e.description,
+      detail: categoryLabel(e.category),
+      date: e.spentAt.toISOString(),
+      amountCents: -Number(e.amountCents),
+      party: e.note ?? '',
+      href: '/expenses',
+      sortMs: e.createdAt.getTime(),
+    })),
+    ...invoices.map((inv) => ({
+      id: `inv-${inv.id}`,
+      kind: 'invoice' as const,
+      title: `${inv.number}, ${inv.customer.name}`,
+      detail: t(locale, 't10money.money.invoiceCreatedDetail'),
+      date: inv.createdAt.toISOString(),
+      amountCents: Number(inv.totalCents),
+      party: inv.customer.name,
+      href: `/invoices/${inv.id}`,
+      sortMs: inv.createdAt.getTime(),
+    })),
+  ]);
+
+  // Payment picker: live unpaid invoices with a real remaining balance.
+  const unpaidInvoices: UnpaidInvoiceOption[] = invoices
+    .filter((inv) => inv.status !== 'PAID')
+    .map((inv) => ({
+      id: inv.id,
+      number: inv.number,
+      customerName: inv.customer.name,
+      remainingCents: Number(
+        remainingCents(inv.totalCents, inv.payments)
+      ),
+    }))
+    .filter((inv) => inv.remainingCents > 0);
+
+  const exportColumns: ExportColumn[] = [
+    { key: 'type', label: t(locale, 'exports.colType') },
+    { key: 'description', label: t(locale, 'exports.colDescription') },
+    { key: 'date', label: t(locale, 'exports.colDate') },
+    { key: 'amount', label: t(locale, 'exports.colAmount'), kind: 'money' },
+    { key: 'customer', label: t(locale, 'exports.colCustomer') },
+  ];
+  const exportFileBase = `everyjob-money-activity-${new Date().toISOString().slice(0, 10)}`;
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title={L('t10money.money.title')}
-        summary={L('t10money.money.subtitle')}
-        actionLabel={L('t10money.money.newInvoice')}
-        actionHref="/invoices/new"
-        actionIcon={<Plus />}
-      />
-
-      {allCaughtUp ? (
-        <Card>
-          <EmptyState
-            icon={<Wallet />}
-            title={L('t10money.money.emptyTitle')}
-            text={L('t10money.money.emptyDesc')}
-          />
-          <div className="flex justify-center pb-10 -mt-6">
-            <Button href="/invoices/new" variant="primary">
-              <Plus className="h-4 w-4" aria-hidden />
-              {L('t10money.money.newInvoice')}
-            </Button>
-          </div>
-        </Card>
-      ) : (
-        <>
-          {/* 1. Ready to invoice — completed jobs with no invoice yet. */}
-          <section aria-labelledby="ready-to-invoice">
-<div className="mb-3 flex items-center justify-between">
-              <h3 className="text-base font-bold text-ink">{`${L('t10money.money.unbilledTitle')} (${unbilledJobs.length})`}</h3>
-              {unbilledJobs.length > 0 ? (
-                <span className="num text-[20px] font-bold tabular-nums text-ink">
-                  {formatMoney(readyTotal, 'CAD', locale)}
-                </span>
-              ) : null}
-            </div>
-            {unbilledJobs.length === 0 ? (
-              <p className="text-sm text-ink-2 px-1">
-                {L('t10money.money.noUnbilled')}
-              </p>
-            ) : (
-              <Card className="!p-0 overflow-hidden">
-                <ul className="divide-y divide-line">
-                  {unbilledJobs.map((j) => (
-                    <ListRow
-                      key={j.id}
-                      title={j.title}
-                      subtitle={`${j.customer.name} · ${L('t10money.money.completedOn')} ${formatDisplayDate(new Date(j.date), business?.timezone, locale)}`}
-                      amount={
-                        j.noCharge
-                          ? '$0'
-                          : formatMoney(
-                              j.priceCents != null ? centsToDollars(j.priceCents) : 0,
-                              'CAD',
-                              locale
-                            )
-                      }
-                      amountCaption={j.noCharge ? L('t10money.money.noCharge') : undefined}
-                      href={`/jobs/${j.id}`}
-                    />
-                  ))}
-                </ul>
-              </Card>
-            )}
-            {unbilledJobs.length > 0 && (
-              <p className="mt-2 text-xs text-ink-2 px-1">{L('t10money.money.unbilledDesc')}</p>
-            )}
-          </section>
-
-          {/* 2. Awaiting payment — unpaid invoices, oldest first. */}
-          <section aria-labelledby="awaiting-payment">
-<div className="mb-3 flex items-center justify-between">
-              <h3 className="text-base font-bold text-ink">{`${L('t10money.money.invoicesCardTitle')} (${unpaidInvoices.length})`}</h3>
-              {unpaidInvoices.length > 0 ? (
-                <span className="num text-[20px] font-bold tabular-nums text-ink">
-                  {formatMoney(awaitingTotal, 'CAD', locale)}
-                </span>
-              ) : null}
-            </div>
-            {unpaidInvoices.length === 0 ? (
-              <p className="text-sm text-ink-2 px-1">
-                {L('t10money.money.noInvoicesYet')}
-              </p>
-            ) : (
-              <Card className="!p-0 overflow-hidden">
-                <ul className="divide-y divide-line">
-                  {unpaidInvoices.map((inv) => {
-                    // Voided payments are not money: the row balance
-                    // counts only COMPLETED payments, exactly like the
-                    // section total above (2026-10-21).
-                    const remaining = remainingBalance(
-                      centsToDollars(inv.totalCents),
-                      [centsToDollars(sumMoneyPayments(inv.payments))]
-                    );
-                    const isOverdue = new Date(inv.date) < overdueThreshold();
-                    const overdueDays = isOverdue
-                      ? Math.max(1, daysOverdue(new Date(inv.date), new Date(), business?.timezone))
-                      : 0;
-                    return (
-                      <ListRow
-                        key={inv.id}
-                        title={inv.number}
-                        subtitle={
-                          isOverdue
-                            ? `${inv.customer.name} · ${L('t10money.reminders.daysOverdue').replace('{days}', String(overdueDays))}`
-                            : `${inv.customer.name} · ${L('t10money.money.balanceDue')}: ${formatMoney(remaining, business?.currency)}`
-                        }
-                        amount={formatMoney(remaining, 'CAD', locale)}
-                        href={`/invoices/${inv.id}`}
-                      />
-                    );
-                  })}
-                </ul>
-              </Card>
-            )}
-          </section>
-
-          {/* 3. Awaiting a decision — sent quotes waiting on the customer. */}
-          <section aria-labelledby="awaiting-decision">
-<div className="mb-3 flex items-center justify-between">
-              <h3 className="text-base font-bold text-ink">{`${L('t10money.money.quotesCardTitle')} (${openQuotes.length})`}</h3>
-              {openQuotes.length > 0 ? (
-                <span className="num text-[20px] font-bold tabular-nums text-ink">
-                  {formatMoney(decisionTotal, 'CAD', locale)}
-                </span>
-              ) : null}
-            </div>
-            {openQuotes.length === 0 ? (
-              <p className="text-sm text-ink-2 px-1">
-                {L('t10money.money.noQuotesYet')}
-              </p>
-            ) : (
-              <Card className="!p-0 overflow-hidden">
-                <ul className="divide-y divide-line">
-                  {openQuotes.map((q) => {
-                    const daysWaiting = Math.max(
-                      0,
-                      Math.floor((requestNowMs() - new Date(q.updatedAt).getTime()) / DAY_MS)
-                    );
-                    return (
-                      <ListRow
-                        key={q.id}
-                        title={q.number}
-                        subtitle={`${q.customer.name} · ${L('t10money.followups.daysWaiting').replace('{days}', String(daysWaiting))}`}
-                        amount={formatMoney(centsToDollars(q.totalCents), 'CAD', locale)}
-                        href={`/quotes/${q.id}`}
-                      />
-                    );
-                  })}
-                </ul>
-              </Card>
-            )}
-            {openQuotes.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-2 px-1">
-                <Button href="/quotes" variant="secondary">
-                  {L('t10money.money.viewQuotes')}
-                </Button>
-                <Button href="/quotes/new" variant="secondary">
-                  <Plus className="h-4 w-4" aria-hidden />
-                  {L('t10money.money.newQuote')}
-                </Button>
-              </div>
-            )}
-          </section>
-        </>
-      )}
-    </div>
+    <MoneyClient
+      stats={{
+        outstandingCents,
+        incomeCents,
+        expensesCents,
+        netCents: incomeCents - expensesCents,
+      }}
+      activity={activity}
+      currency={business?.currency}
+      locale={locale}
+      exportColumns={exportColumns}
+      exportFileBase={exportFileBase}
+      unpaidInvoices={unpaidInvoices}
+      customers={modalCustomers}
+      taxConfig={getTaxConfig(business?.regionCode, business?.taxRegion)}
+      gstHstRegistered={business?.gstHstRegistered ?? false}
+    />
   );
 }

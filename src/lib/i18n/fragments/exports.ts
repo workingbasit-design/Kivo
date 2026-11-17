@@ -30,6 +30,9 @@ const fragment = {
       colPrice: 'Price',
       colNumber: 'Number',
       colTotal: 'Total',
+      colType: 'Type',
+      colDescription: 'Description',
+      colAmount: 'Amount',
     },
   },
   fr: {
@@ -53,6 +56,9 @@ const fragment = {
       colPrice: 'Prix',
       colNumber: 'Numéro',
       colTotal: 'Total',
+      colType: 'Type',
+      colDescription: 'Description',
+      colAmount: 'Montant',
     },
   },
 } as const;
