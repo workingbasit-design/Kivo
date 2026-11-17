@@ -7,7 +7,7 @@
  */
 import { NextResponse } from 'next/server';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
-import { rateLimit } from '@/lib/rate-limit';
+import { rateLimitDurable } from '@/lib/rate-limit-durable';
 import { AGENT_PROTOCOL_VERSION, AGENT_SEARCH_LIMIT, gateAgentContact } from '@/lib/agent-protocol';
 import {
   isPhoneVerified,
@@ -18,7 +18,7 @@ import {
 
 export async function GET(req: Request, { params }: { params: Promise<{ slug: string }> }) {
   const ip = await publicClientIp();
-  const rl = rateLimit(`agent-search:${ip}`, AGENT_SEARCH_LIMIT);
+  const rl = await rateLimitDurable(`agent-search:${ip}`, AGENT_SEARCH_LIMIT);
   if (!rl.ok) {
     return NextResponse.json({ error: 'Too many requests. Please slow down.' }, { status: 429 });
   }

@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { getCustomerSession } from '@/lib/customer-auth';
 import { prisma } from '@/lib/prisma';
-import { rateLimit, QUOTE_REQUEST_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, QUOTE_REQUEST_LIMIT } from '@/lib/rate-limit-durable';
 import { leadExpiryDate } from '@/lib/lead-expiry';
 
 export async function sendQuoteRequest(_prev: unknown, formData: FormData) {
@@ -12,7 +12,7 @@ export async function sendQuoteRequest(_prev: unknown, formData: FormData) {
   if (!session) redirect('/customer/login');
 
   // Rate limit: quote requests are spam-prone; per logged-in customer.
-  const rl = rateLimit(`customer-quote-request:${session.customer.id}`, QUOTE_REQUEST_LIMIT);
+  const rl = await rateLimitDurable(`customer-quote-request:${session.customer.id}`, QUOTE_REQUEST_LIMIT);
   if (!rl.ok) {
     return { error: 'You have sent several requests recently. Please wait a bit before sending more.' };
   }

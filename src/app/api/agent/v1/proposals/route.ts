@@ -16,7 +16,7 @@
  */
 import { NextResponse } from 'next/server';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
-import { rateLimit } from '@/lib/rate-limit';
+import { rateLimitDurable } from '@/lib/rate-limit-durable';
 import {
   AGENT_PROPOSAL_LIMIT,
   AGENT_PROTOCOL_VERSION,
@@ -91,7 +91,7 @@ export async function POST(req: Request) {
 
   // 1. Per-IP rate limit (spam-prone public endpoint).
   const ip = await publicClientIp();
-  const rl = rateLimit(`agent-proposal:${ip}`, AGENT_PROPOSAL_LIMIT);
+  const rl = await rateLimitDurable(`agent-proposal:${ip}`, AGENT_PROPOSAL_LIMIT);
   if (!rl.ok) {
     return NextResponse.json(
       { error: 'Too many proposals. Please slow down and try again later.' },

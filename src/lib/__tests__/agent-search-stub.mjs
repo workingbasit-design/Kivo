@@ -5,7 +5,8 @@
  *
  * - next/server: minimal NextResponse.json
  * - next/headers: headers() returns empty Headers (publicClientIp falls
- *   back to 'unknown'; the real in-memory rate limiter is used)
+ *   back to 'unknown'; the durable limiter runs against this stub's
+ *   in-memory rateLimit delegate, so the route's limit is enforced here)
  * - @/lib/prisma: business.findMany with call capture + a small evaluator
  *   for the where shapes buildAgentSearchWhere() produces (AND/OR,
  *   contains+insensitive, services.some, directoryOptIn,
@@ -20,6 +21,9 @@ import { setUnscopedClient } from '../tenant-guard.ts';
 export const calls = {
   businessFindMany: [],
 };
+
+// In-memory RateLimit rows for the durable limiter (P1.0 S4 P2).
+const rateLimitRows = new Map();
 
 const DB = {
   businesses: [
@@ -181,6 +185,27 @@ export const prisma = {
         .slice(0, args.take ?? 10)
         .map((b) => projectBusiness(b, args.select));
       return rows;
+    },
+  },
+  // In-memory RateLimit table for the durable limiter (P1.0 S4 P2):
+  // mirrors the auth-stub delegate; updateMany only touches unexpired rows.
+  rateLimit: {
+    updateMany: async ({ where, data }) => {
+      const row = rateLimitRows.get(where?.key);
+      if (row && row.resetAt > where?.resetAt?.gt) {
+        row.count += data?.count?.increment ?? 1;
+        return { count: 1 };
+      }
+      return { count: 0 };
+    },
+    upsert: async ({ where, create, update }) => {
+      const row = { key: where.key, count: 1, resetAt: (create ?? update).resetAt };
+      rateLimitRows.set(where.key, row);
+      return row;
+    },
+    findUnique: async ({ where }) => {
+      const row = rateLimitRows.get(where?.key);
+      return row ? { count: row.count, resetAt: row.resetAt } : null;
     },
   },
 };

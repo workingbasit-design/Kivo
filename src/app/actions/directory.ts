@@ -3,7 +3,7 @@
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
-import { rateLimit, QUOTE_REQUEST_LIMIT, REPORT_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, QUOTE_REQUEST_LIMIT, REPORT_LIMIT } from '@/lib/rate-limit-durable';
 import { leadExpiryDate } from '@/lib/lead-expiry';
 import { validatePhone, INVALID_PHONE_MESSAGE } from '@/lib/phone';
 import {
@@ -134,7 +134,7 @@ export async function submitQuoteRequest(
   }
 
   const ip = await publicClientIp();
-  const rl = rateLimit(`quote-request:${ip}`, QUOTE_REQUEST_LIMIT);
+  const rl = await rateLimitDurable(`quote-request:${ip}`, QUOTE_REQUEST_LIMIT);
   if (!rl.ok) {
     const mins = Math.max(1, Math.ceil(rl.retryAfterMs / 60000));
     return {
@@ -251,7 +251,7 @@ export async function reportBusiness(
   formData: FormData
 ): Promise<DirectoryActionResult> {
   const ip = await publicClientIp();
-  const rl = rateLimit(`dir-report:${ip}`, REPORT_LIMIT);
+  const rl = await rateLimitDurable(`dir-report:${ip}`, REPORT_LIMIT);
   if (!rl.ok) return { error: 'Too many reports. Please try again later.' };
 
   const parsed = reportSchema.safeParse({

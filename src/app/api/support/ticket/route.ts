@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
-import { rateLimit } from '@/lib/rate-limit';
+import { rateLimitDurable } from '@/lib/rate-limit-durable';
 import { publicClientIp } from '@/lib/directory';
 import { getSession } from '@/lib/auth';
 import { getActiveMembershipForUser } from '@/lib/membership';
@@ -64,7 +64,7 @@ async function notifyOwner(ticket: {
 
 export async function POST(req: Request) {
   const ip = await publicClientIp();
-  const rl = rateLimit(`support-ticket:${ip}`, TICKET_LIMIT);
+  const rl = await rateLimitDurable(`support-ticket:${ip}`, TICKET_LIMIT);
   if (!rl.ok) {
     return NextResponse.json(
       { error: 'rate_limited' },

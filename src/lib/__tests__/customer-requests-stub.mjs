@@ -5,10 +5,14 @@
  * - @/lib/customer-auth (getCustomerSession)
  * - next/navigation (redirect)
  * - next/cache (revalidatePath)
- * - @/lib/rate-limit (real one is used - in-memory, fine)
+ * - @/lib/rate-limit-durable (real one; its prisma is this stub's
+ *   in-memory rateLimit delegate, so the limit is enforced here too)
  * - @/lib/lead-expiry (real one - pure date math)
  */
 export const calls = { quoteRequests: [], leads: [], revalidated: [], dismissed: [] };
+
+// In-memory RateLimit rows for the durable limiter (P1.0 S4 P2).
+const rateLimitRows = new Map();
 
 // Seeded businesses: one verified+opted-in, one opted-out, one unverified.
 export const businesses = new Map([
@@ -85,6 +89,27 @@ export const prisma = {
     },
   },
   $transaction: async (fn) => fn(txStub()),
+  // In-memory RateLimit table for the durable limiter (P1.0 S4 P2):
+  // mirrors the auth-stub delegate; updateMany only touches unexpired rows.
+  rateLimit: {
+    updateMany: async ({ where, data }) => {
+      const row = rateLimitRows.get(where?.key);
+      if (row && row.resetAt > where?.resetAt?.gt) {
+        row.count += data?.count?.increment ?? 1;
+        return { count: 1 };
+      }
+      return { count: 0 };
+    },
+    upsert: async ({ where, create, update }) => {
+      const row = { key: where.key, count: 1, resetAt: (create ?? update).resetAt };
+      rateLimitRows.set(where.key, row);
+      return row;
+    },
+    findUnique: async ({ where }) => {
+      const row = rateLimitRows.get(where?.key);
+      return row ? { count: row.count, resetAt: row.resetAt } : null;
+    },
+  },
 };
 
 export function getCustomerSession() {

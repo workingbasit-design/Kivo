@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { rateLimit } from '@/lib/rate-limit';
+import { rateLimitDurable } from '@/lib/rate-limit-durable';
 import { headers } from 'next/headers';
 import { getLiveSnapshot } from '@/lib/live-tracking';
 import { clientIpFromHeaders } from '@/lib/client-ip';
@@ -28,7 +28,7 @@ export async function GET(
 ) {
   const { token } = await params;
 
-  const rl = rateLimit(`portal:track-ping:${await clientIp()}`, PING_LIMIT);
+  const rl = await rateLimitDurable(`portal:track-ping:${await clientIp()}`, PING_LIMIT);
   if (!rl.ok) {
     return NextResponse.json(
       { error: 'Too many requests - please wait a moment.' },

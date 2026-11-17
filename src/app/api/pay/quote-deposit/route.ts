@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { createCheckoutSession, type CheckoutSessionResult } from '@/lib/stripe';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 import { withRetry, newIdempotencyKey } from '@/lib/retry';
@@ -11,7 +11,7 @@ import { unsafeUnscoped } from '@/lib/tenant-guard';
 async function rateLimited(): Promise<boolean> {
   const h = await headers();
   const ip = clientIpFromHeaders(h);
-  return !rateLimit(`pay:deposit:${ip}`, ACTION_LIMIT).ok;
+  return !(await rateLimitDurable(`pay:deposit:${ip}`, ACTION_LIMIT)).ok;
 }
 
 /**

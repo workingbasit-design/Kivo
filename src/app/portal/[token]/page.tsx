@@ -2,7 +2,7 @@ import { headers } from 'next/headers';
 import Logo from '@/components/Logo';
 import { Briefcase, FileText, Phone, ReceiptText, Wallet } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
-import { rateLimit } from '@/lib/rate-limit';
+import { rateLimitDurable } from '@/lib/rate-limit-durable';
 import { resolveCustomerPortalToken } from '@/lib/portal';
 import { Card, StatusBadge, type StatusBadgeTone } from '@/components/kit';
 import { formatCents } from '@/lib/money';
@@ -57,7 +57,7 @@ export default async function CustomerPortalPage({
 }) {
   const { token } = await params;
 
-  const rl = rateLimit(`portal:customer:${await clientIp()}`, PORTAL_LIMIT);
+  const rl = await rateLimitDurable(`portal:customer:${await clientIp()}`, PORTAL_LIMIT);
   if (!rl.ok) return <PortalNotice variant="rate-limited" />;
 
   const resolved = await resolveCustomerPortalToken(token);

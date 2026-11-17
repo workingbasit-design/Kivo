@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { rateLimit } from '@/lib/rate-limit';
+import { rateLimitDurable } from '@/lib/rate-limit-durable';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 import { clientIpFromHeaders } from '@/lib/client-ip';
 
@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
   if (!originCheck.ok) return originForbidden(originCheck.reason);
 
   const ip = clientIp(req);
-  const rl = rateLimit(`places:${ip}`, { limit: 30, windowMs: 60 * 1000 });
+  const rl = await rateLimitDurable(`places:${ip}`, { limit: 30, windowMs: 60 * 1000 });
   if (!rl.ok) {
     return NextResponse.json(
       { error: 'Too many requests. Please wait a moment and try again.' },

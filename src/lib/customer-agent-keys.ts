@@ -16,7 +16,7 @@
  * - Per-key rate limiting on top of per-IP limits.
  */
 import { prisma } from '@/lib/prisma';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { unsafeUnscoped } from './tenant-guard.ts';
 import {
   AGENT_KEY_PREFIX,
@@ -104,7 +104,7 @@ export async function authenticateAgentRequest(req: Request): Promise<CustomerAg
       error: 'Invalid agent key. Generate a new one in your EveryJob customer profile.',
     };
   }
-  const rl = rateLimit(`agent:${verified.keyId}`, ACTION_LIMIT);
+  const rl = await rateLimitDurable(`agent:${verified.keyId}`, ACTION_LIMIT);
   if (!rl.ok) {
     return { ok: false, status: 429, error: 'Too many requests. Please slow down.' };
   }

@@ -14,7 +14,7 @@
  */
 import { createHash, randomBytes } from 'node:crypto';
 import { prisma } from '@/lib/prisma';
-import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { unsafeUnscoped } from './tenant-guard.ts';
 
 export const API_KEY_PREFIX = 'ejk_live_';
@@ -106,7 +106,7 @@ export async function authenticateV1Request(req: Request): Promise<V1AuthResult>
       error: 'Invalid or missing API key. Send Authorization: Bearer ejk_live_...',
     };
   }
-  const rl = rateLimit(`v1:${verified.keyId}`, ACTION_LIMIT);
+  const rl = await rateLimitDurable(`v1:${verified.keyId}`, ACTION_LIMIT);
   if (!rl.ok) {
     return { ok: false, status: 429, error: 'Too many requests. Please slow down.' };
   }

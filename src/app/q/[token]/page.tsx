@@ -1,7 +1,7 @@
 import { headers } from 'next/headers';
 import { CheckCircle2, Clock, FileText, MessageCircle, Phone, XCircle } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
-import { rateLimit } from '@/lib/rate-limit';
+import { rateLimitDurable } from '@/lib/rate-limit-durable';
 import { isLegacyCuid, resolveShareToken } from '@/lib/share';
 import { waLink } from '@/lib/whatsapp';
 import { Card } from '@/components/kit';
@@ -40,7 +40,7 @@ export default async function QuotePortalPage({
   const { token } = await params;
   const { paid } = await searchParams;
 
-  const rl = rateLimit(`portal:quote:${await clientIp()}`, PORTAL_LIMIT);
+  const rl = await rateLimitDurable(`portal:quote:${await clientIp()}`, PORTAL_LIMIT);
   if (!rl.ok) return <PortalNotice variant="rate-limited" />;
 
   // Old cuid-based links are retired - friendly message, no data lookup.

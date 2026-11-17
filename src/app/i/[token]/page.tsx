@@ -1,7 +1,7 @@
 import { headers } from 'next/headers';
 import { MapPin, MessageCircle, Phone, ReceiptText } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
-import { rateLimit } from '@/lib/rate-limit';
+import { rateLimitDurable } from '@/lib/rate-limit-durable';
 import { isLegacyCuid, resolveShareToken } from '@/lib/share';
 import { waLink } from '@/lib/whatsapp';
 import { displayNotes } from '@/lib/invoice-notes';
@@ -41,7 +41,7 @@ export default async function InvoicePortalPage({
   const { token } = await params;
   const { paid: paidParam } = await searchParams;
 
-  const rl = rateLimit(`portal:invoice:${await clientIp()}`, PORTAL_LIMIT);
+  const rl = await rateLimitDurable(`portal:invoice:${await clientIp()}`, PORTAL_LIMIT);
   if (!rl.ok) return <PortalNotice variant="rate-limited" />;
 
   // Old cuid-based links are retired - friendly message, no data lookup.

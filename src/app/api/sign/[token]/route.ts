@@ -4,7 +4,7 @@ import {
   resolveSignatureRequest,
   submitSignature,
 } from '@/lib/esign';
-import { rateLimit } from '@/lib/rate-limit';
+import { rateLimitDurable } from '@/lib/rate-limit-durable';
 import { clientIpFromHeaders } from '@/lib/client-ip';
 
 /**
@@ -24,7 +24,7 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ token: string }> }
 ) {
-  const rl = rateLimit(`sign:${await clientIp()}`, SIGN_LIMIT);
+  const rl = await rateLimitDurable(`sign:${await clientIp()}`, SIGN_LIMIT);
   if (!rl.ok) {
     return NextResponse.json({ error: 'failed' }, { status: 429 });
   }

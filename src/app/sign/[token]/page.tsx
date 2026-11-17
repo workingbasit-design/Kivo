@@ -7,7 +7,7 @@ import {
   verifyDocHash,
   type SignField,
 } from '@/lib/esign';
-import { rateLimit } from '@/lib/rate-limit';
+import { rateLimitDurable } from '@/lib/rate-limit-durable';
 import { formatMoney } from '@/lib/money';
 import { Card } from '@/components/kit';
 import PortalNotice from '@/components/PortalNotice';
@@ -86,7 +86,7 @@ export default async function SignPage({
 
   // Token is validated (hash + expiry + revocation) inside
   // resolveSignatureRequest BEFORE anything renders.
-  const rl = rateLimit(`sign:${await clientIp()}`, SIGN_LIMIT);
+  const rl = await rateLimitDurable(`sign:${await clientIp()}`, SIGN_LIMIT);
   if (!rl.ok) return <PortalNotice variant="rate-limited" />;
 
   const resolved = await resolveSignatureRequest(token);

@@ -1,6 +1,6 @@
 import { headers } from 'next/headers';
 import { prisma } from '@/lib/prisma';
-import { rateLimit } from '@/lib/rate-limit';
+import { rateLimitDurable } from '@/lib/rate-limit-durable';
 import { getLocale } from '@/lib/i18n/server';
 import PortalNotice from '@/components/PortalNotice';
 import LiveTrackingClient from '@/components/LiveTrackingClient';
@@ -40,7 +40,7 @@ export default async function TrackPage({
   const { token } = await params;
   const locale = await getLocale();
 
-  const rl = rateLimit(`portal:track:${await clientIp()}`, PORTAL_LIMIT);
+  const rl = await rateLimitDurable(`portal:track:${await clientIp()}`, PORTAL_LIMIT);
   if (!rl.ok) return <PortalNotice variant="rate-limited" />;
 
   let share;
