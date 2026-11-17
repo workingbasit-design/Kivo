@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { requireCronAuth } from '@/lib/cron-auth';
 import { prisma } from '@/lib/prisma';
 import { runWorkflowsForBusiness } from '@/lib/workflows';
 import { dispatchWebhookRetries } from '@/lib/webhooks';
@@ -11,9 +12,9 @@ import { unsafeUnscoped } from '@/lib/tenant-guard';
 /**
  * Cron entry point for the safe workflow engine. Scheduled in vercel.json
  * as a daily GET to /api/cron/workflows. Vercel automatically sends
- * `Authorization: Bearer $CRON_SECRET` when the CRON_SECRET env var is
- * set, so no secret appears in vercel.json or the repo; the `?secret=`
- * query parameter also works for manual runs.
+ * set, so no secret appears in vercel.json or the repo. Manual runs use
+ * the same Bearer header (see `src/lib/cron-auth.ts`); the `?secret=` query
+ * parameter is not accepted.
  *
  * The secret is required - without it the route refuses to run. Actions are
  * limited to in-app notifications and draft creation (never external sends),
@@ -22,20 +23,8 @@ import { unsafeUnscoped } from '@/lib/tenant-guard';
 export const maxDuration = 120;
 
 export async function GET(req: Request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) {
-    return NextResponse.json(
-      { error: 'CRON_SECRET is not configured.' },
-      { status: 500 }
-    );
-  }
-  const url = new URL(req.url);
-  const provided =
-    url.searchParams.get('secret') ??
-    req.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
-  if (provided !== secret) {
-    return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
-  }
+  const unauth = requireCronAuth(req);
+  if (unauth) return unauth;
 
   // Only businesses with at least one enabled rule need an engine pass.
   const businesses = await prisma.business.findMany({

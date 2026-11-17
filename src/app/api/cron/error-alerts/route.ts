@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { requireCronAuth } from '@/lib/cron-auth';
 import { prisma } from '@/lib/prisma';
 import { evaluateThresholds } from '@/lib/error-log';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
@@ -7,23 +8,15 @@ import { unsafeUnscoped } from '@/lib/tenant-guard';
  * B9.2 alert cron: evaluates error/login-failure/webhook/export thresholds
  * and notifies owners (in-app Notification). Each alert fires ONCE per
  * incident (MonitorAlert dedup) - not once per error.
- *
+ * Same CRON_SECRET convention as the other cron routes (Bearer header only). Scheduled in
  * Same CRON_SECRET convention as the other cron routes. Scheduled in
  * vercel.json as a 10-minute GET to /api/cron/error-alerts.
  */
 export const maxDuration = 60;
 
 export async function GET(req: Request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) {
-    return NextResponse.json({ error: 'CRON_SECRET is not configured.' }, { status: 500 });
-  }
-  const url = new URL(req.url);
-  const provided =
-    url.searchParams.get('secret') ?? req.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
-  if (provided !== secret) {
-    return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
-  }
+  const unauth = requireCronAuth(req);
+  if (unauth) return unauth;
 
   const now = new Date();
   const tenMinAgo = new Date(now.getTime() - 10 * 60 * 1000);

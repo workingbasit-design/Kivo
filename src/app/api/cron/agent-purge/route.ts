@@ -7,9 +7,10 @@
  * then deleted. Approved proposals are retained indefinitely as the audit
  * trail of executed actions (they point at the quote request they made).
  *
- * Auth: same CRON_SECRET pattern as the other cron routes.
+ * Auth: same CRON_SECRET pattern as the other cron routes (Bearer header only; see `src/lib/cron-auth.ts`).
  */
 import { NextResponse } from 'next/server';
+import { requireCronAuth } from '@/lib/cron-auth';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
 import { PROPOSAL_STATUS } from '@/lib/agent-protocol';
 
@@ -19,16 +20,8 @@ export const maxDuration = 60;
 const RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 
 export async function GET(req: Request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) {
-    return NextResponse.json({ error: 'CRON_SECRET is not configured.' }, { status: 500 });
-  }
-  const url = new URL(req.url);
-  const provided =
-    url.searchParams.get('secret') ?? req.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
-  if (provided !== secret) {
-    return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
-  }
+  const unauth = requireCronAuth(req);
+  if (unauth) return unauth;
 
   const cutoff = new Date(Date.now() - RETENTION_MS);
   const deleted = await unsafeUnscoped('cron:agent-purge', (db) =>

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { requireCronAuth } from '@/lib/cron-auth';
 import { runMessagingCycle } from '@/lib/messaging/engine';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
 
@@ -8,8 +8,9 @@ import { unsafeUnscoped } from '@/lib/tenant-guard';
  *
  * Auth: Vercel's scheduler automatically sends
  * `Authorization: Bearer $CRON_SECRET` when the CRON_SECRET env var is set,
- * so no secret appears in vercel.json or the repo. The `?secret=` query
- * parameter (or Bearer header) also works for manual runs.
+ * so no secret appears in vercel.json or the repo. Manual runs use the same
+ * Bearer header (see `src/lib/cron-auth.ts`); the `?secret=` query parameter
+ * is not accepted.
  *
  * Each cycle respects the business's dryRun flag: businesses still in
  * preview mode only get DRY_RUN log rows, so nothing can send before the
@@ -18,20 +19,8 @@ import { unsafeUnscoped } from '@/lib/tenant-guard';
 export const maxDuration = 120;
 
 export async function GET(req: Request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) {
-    return NextResponse.json(
-      { error: 'CRON_SECRET is not configured.' },
-      { status: 500 }
-    );
-  }
-  const url = new URL(req.url);
-  const provided =
-    url.searchParams.get('secret') ??
-    req.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
-  if (provided !== secret) {
-    return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
-  }
+  const unauth = requireCronAuth(req);
+  if (unauth) return unauth;
 
   // Cron fan-out (CRON_SECRET at route entry): enumerate opted-in
   // businesses. Each business's sends run inside its own tenant scope

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireCronAuth } from '@/lib/cron-auth';
 import { generateDueJobs } from '@/lib/recurring';
 import { defaultTimezoneForRegion, toISODateInTimezone } from '@/lib/utils';
 
@@ -7,9 +8,9 @@ import { defaultTimezoneForRegion, toISODateInTimezone } from '@/lib/utils';
  * Cron entry point for recurring-job auto-generation. Scheduled in
  * vercel.json as a daily GET to /api/cron/recurring. Vercel automatically
  * sends `Authorization: Bearer $CRON_SECRET` when the CRON_SECRET env var
- * is set, so no secret appears in vercel.json or the repo; the `?secret=`
- * query parameter also works for manual runs.
- *
+ * is set, so no secret appears in vercel.json or the repo. Manual runs use
+ * the same Bearer header (see `src/lib/cron-auth.ts`); the `?secret=` query
+ * parameter is not accepted.
  * The secret is required - without it the route refuses to run.
  * Generation is idempotent (per-plan transaction + @@unique backstop),
  * business-timezone aware, and every run is written to AutomationLog.
@@ -17,20 +18,8 @@ import { defaultTimezoneForRegion, toISODateInTimezone } from '@/lib/utils';
 export const maxDuration = 120;
 
 export async function GET(req: Request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) {
-    return NextResponse.json(
-      { error: 'CRON_SECRET is not configured.' },
-      { status: 500 }
-    );
-  }
-  const url = new URL(req.url);
-  const provided =
-    url.searchParams.get('secret') ??
-    req.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
-  if (provided !== secret) {
-    return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
-  }
+  const unauth = requireCronAuth(req);
+  if (unauth) return unauth;
 
   // Only businesses with at least one active plan need a generation pass.
   const businesses = await prisma.business.findMany({

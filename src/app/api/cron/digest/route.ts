@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { requireCronAuth } from '@/lib/cron-auth';
 import { sendDigestForBusiness } from '@/lib/digest';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
 
@@ -8,28 +8,16 @@ import { unsafeUnscoped } from '@/lib/tenant-guard';
  * vercel.json (12:00 UTC). Each business opts in via DigestSetting
  * (enabled + sendTime in its own timezone); this route only sends when
  * the business's local time has reached its sendTime.
- *
- * Same secret pattern as the other cron routes: CRON_SECRET via Bearer or
+ * Same secret pattern as the other cron routes: CRON_SECRET via Bearer
+ * header only (see `src/lib/cron-auth.ts`). Delivery is in-app Notification + VAPID web push - $0.
  * ?secret=. Delivery is in-app Notification + VAPID web push - $0.
  * Idempotent per (business, date) via the digest dedupeKey.
  */
 export const maxDuration = 120;
 
 export async function GET(req: Request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) {
-    return NextResponse.json(
-      { error: 'CRON_SECRET is not configured.' },
-      { status: 500 }
-    );
-  }
-  const url = new URL(req.url);
-  const provided =
-    url.searchParams.get('secret') ??
-    req.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
-  if (provided !== secret) {
-    return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
-  }
+  const unauth = requireCronAuth(req);
+  if (unauth) return unauth;
 
   // Cron fan-out (CRON_SECRET at route entry): enumerate digest settings.
   // Each send runs inside its own tenant scope in sendDigestForBusiness.
