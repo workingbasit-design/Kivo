@@ -24,7 +24,9 @@ function activeTab(pathname: string): CustomerNavKey {
   if (pathname.startsWith('/customer/saved')) return 'saved';
   if (pathname.startsWith('/customer/messages')) return 'messages';
   if (pathname.startsWith('/customer/profile')) return 'profile';
-  return 'home';
+  // Pages outside the nav (concierge, request detail, ...) light up
+  // nothing instead of wrongly highlighting Home.
+  return 'none';
 }
 
 export default function CustomerShell({

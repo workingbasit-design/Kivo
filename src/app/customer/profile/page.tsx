@@ -74,7 +74,7 @@ export default async function CustomerProfilePage() {
       </div>
 
       <form action={customerLogout}>
-        <Button type="submit" variant="danger" block>
+        <Button type="submit" variant="secondary" block>
           <LogOut className="w-4 h-4" />
           {tr('customer.profile.logOut')}
         </Button>

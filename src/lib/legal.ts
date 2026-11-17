@@ -90,11 +90,14 @@ export const PRIVACY: { en: LegalPage; fr: LegalPage } = {
         ],
       },
       {
-        // B14: privacy officer contact is a PENDING user decision.
-        // Placeholder - replace with the real name/email once decided.
+        // B14: privacy officer contact is a PENDING user decision. Until
+        // the user names an officer, the live text routes people to the
+        // help center (a real contact route) instead of showing a
+        // placeholder name and email. Replace with the real contact
+        // once decided.
         heading: 'Privacy officer',
         body: [
-          'Our privacy officer can be reached at: [PRIVACY OFFICER NAME], [PRIVACY OFFICER EMAIL]. (Contact details to be confirmed.)',
+          'To reach our privacy officer, send a message through the EveryJob help center and mark it for the privacy officer. We will pass it on and reply from there.',
           'If you have a privacy question or complaint, contact the privacy officer first. If you are not satisfied with the response, you can complain to the Office of the Privacy Commissioner of Canada (priv.gc.ca).',
         ],
       },
@@ -173,9 +176,11 @@ export const PRIVACY: { en: LegalPage; fr: LegalPage } = {
       {
         // B14 : les coordonnées du responsable de la protection des
         // renseignements personnels sont en attente d\u2019une décision de l\u2019utilisateur.
+        // En attendant, le texte renvoie au centre d\u2019aide (un vrai moyen
+        // de contact) plutôt que d\u2019afficher un nom et un courriel fictifs.
         heading: 'Responsable de la protection des renseignements personnels',
         body: [
-          'Notre responsable de la protection des renseignements personnels est joignable à : [NOM DU RESPONSABLE], [COURRIEL DU RESPONSABLE]. (Coordonnées à confirmer.)',
+          'Pour joindre notre responsable de la protection des renseignements personnels, envoyez un message par le centre d\u2019aide EveryJob en précisant qu\u2019il s\u2019adresse au responsable. Nous le transmettrons et vous répondrons à partir de là.',
           'Pour toute question ou plainte concernant la confidentialité, contactez d\u2019abord le responsable. Si la réponse ne vous satisfait pas, vous pouvez porter plainte au Commissariat à la protection de la vie privée du Canada (priv.gc.ca).',
         ],
       },

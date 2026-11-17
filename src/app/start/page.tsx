@@ -55,8 +55,8 @@ export default async function StartPage() {
           href="/login"
           className="group bg-surface rounded-[24px] p-7 border border-line shadow-[0_16px_40px_rgba(22,22,22,0.08)] hover:shadow-[0_20px_50px_rgba(22,22,22,0.15)] transition-shadow"
         >
-          <div className="w-12 h-12 rounded-2xl bg-asphalt flex items-center justify-center mb-5">
-            <Briefcase size={24} className="text-lime" />
+          <div className="w-12 h-12 rounded-2xl bg-lime flex items-center justify-center mb-5">
+            <Briefcase size={24} className="text-hivis-ink" />
           </div>
           <h2 className="text-xl font-bold mb-1.5 text-ink">
             {t(locale, 'start.businessTitle') ?? 'For businesses'}

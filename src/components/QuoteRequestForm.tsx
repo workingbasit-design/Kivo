@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from 'react';
 import Link from 'next/link';
-import { AlertCircle, CheckCircle2, Clock, MessageSquareQuote, Send } from '@/components/icons';
+import { AlertCircle, CheckCircle2, ClipboardList, Clock, Send } from '@/components/icons';
 import { submitQuoteRequest, type DirectoryActionResult } from '@/app/actions/directory';
 import { HONEYPOT_FIELD, FORM_STARTED_FIELD } from '@/lib/bot-check';
 import { useResolvedT } from '@/hooks/useResolvedLocale';
@@ -106,8 +106,8 @@ export default function QuoteRequestForm() {
       </div>
       <input type="hidden" name={FORM_STARTED_FIELD} value={formStartedAt} />
       <div className="flex items-center gap-2.5 mb-1">
-        <div className="w-10 h-10 rounded-xl bg-smoke flex items-center justify-center">
-          <MessageSquareQuote className="w-5 h-5 text-ink" />
+        <div className="w-10 h-10 rounded-xl bg-surface-2 flex items-center justify-center">
+          <ClipboardList className="w-5 h-5 text-ink" />
         </div>
         <div>
           <h1 className="text-lg font-bold text-ink tracking-tight">{t('t10misc.directory.qrTitle')}</h1>
@@ -224,7 +224,7 @@ export default function QuoteRequestForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="w-full min-h-[48px] inline-flex items-center justify-center gap-2 rounded-xl bg-asphalt hover:bg-hero-2 text-hero-ink text-sm font-bold px-5 py-3 transition-colors disabled:opacity-60"
+        className="w-full min-h-[48px] inline-flex items-center justify-center gap-2 rounded-xl bg-hivis text-hivis-ink text-sm font-bold px-5 py-3 transition-colors disabled:opacity-60"
       >
         <Send size={15} /> {isPending ? t('t10misc.directory.qrSending') : t('t10misc.directory.qrSubmit')}
       </button>

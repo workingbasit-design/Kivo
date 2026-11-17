@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { t, type Locale } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
-export type CustomerNavKey = 'home' | 'directory' | 'requests' | 'saved' | 'messages' | 'profile';
+export type CustomerNavKey = 'home' | 'directory' | 'requests' | 'saved' | 'messages' | 'profile' | 'none';
 
 /**
  * The customer-facing brand mark from the approved 2026-11-16 mockup:

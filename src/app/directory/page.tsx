@@ -337,14 +337,12 @@ export default async function DirectoryPage({
               <p className="mx-auto mt-1 max-w-sm text-sm text-ink-2">
                 {searching ? tr('t10misc.directory.noProsSearching') : tr('t10misc.directory.noProsIdle')}
               </p>
-              {!searching && (
-                <Link
-                  href="/register"
-                  className="mt-4 inline-flex min-h-[44px] items-center justify-center rounded-xl bg-asphalt px-6 py-2.5 text-sm font-bold text-hero-ink transition-colors hover:bg-hero-2"
-                >
-                  {tr('t10misc.directory.listBusiness')}
-                </Link>
-              )}
+              <Link
+                href="/register"
+                className="mt-4 inline-flex min-h-[44px] items-center justify-center rounded-xl bg-hivis px-6 py-2.5 text-sm font-bold text-hivis-ink transition-colors"
+              >
+                {tr('t10misc.directory.listBusiness')}
+              </Link>
             </Card>
           ) : (
             <ul className="grid gap-4">
