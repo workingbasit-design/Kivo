@@ -55,7 +55,7 @@ export default async function SchedulePage({
   // `new Date()` is the wrong day for Toronto evenings).
   const business = await prisma.business.findUnique({
     where: { id: businessId },
-    select: { regionCode: true, taxRegion: true, address: true, timezone: true },
+    select: { regionCode: true, taxRegion: true, address: true, timezone: true, isDemo: true },
   });
 
   /** "Today" in the business's timezone (defaults to America/Toronto). */
@@ -248,7 +248,11 @@ export default async function SchedulePage({
         key={`${weekKey}:${activeDay ?? 'ALL'}`}
         initialJobs={serialized}
         initialDateFilter={activeDay ?? 'ALL'}
-        allowSeed={totalCount === 0}
+        // Decision 6 (Nov 17): the sample-data seed button is offered only
+        // to demo businesses (labelled "Demo" everywhere) or outside
+        // production. The seedSampleJobs server action enforces the same
+        // rule — this only hides a button that would fail.
+        allowSeed={totalCount === 0 && (business?.isDemo || process.env.NODE_ENV !== 'production')}
         todayKey={todayKey}
         locale={locale}
         activeDayHoliday={activeHoliday}

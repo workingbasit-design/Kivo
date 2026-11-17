@@ -586,11 +586,28 @@ export async function deleteJobNote(
 /**
  * Create 3 sample jobs so a brand-new business sees the schedule working.
  * Only runs when the business has zero jobs.
+ *
+ * Decision 6 (Nov 17): sample data must NEVER be written into a real
+ * production business. The Schedule empty state used to offer this to any
+ * zero-job business, writing unmarked fake data (Martin Roy + 3 jobs)
+ * into real accounts. Only demo businesses (isDemo — the layout labels
+ * them "Demo" everywhere) or non-production environments may seed. The
+ * server check is authoritative; the Schedule page hides the button for
+ * everyone else. A real business that wants to try the schedule creates
+ * a real job instead.
  */
 export async function seedSampleJobs(): Promise<JobActionResult> {
   const { businessId, user } = await requireAuth();
   const limited = await checkLimit(user.id, 'seedSampleJobs');
   if (limited) return limited;
+
+  const business = await prisma.business.findUnique({
+    where: { id: businessId },
+    select: { isDemo: true },
+  });
+  if (!business?.isDemo && process.env.NODE_ENV === 'production') {
+    return { error: 'Sample jobs are only available for demo businesses.' };
+  }
 
   const existing = await prisma.job.count({ where: { businessId } });
   if (existing > 0) {
