@@ -12,9 +12,13 @@ import CustomerBottomNav from './CustomerBottomNav';
  * pages render their own single brand header inside CustomerAuthShell.
  * That is what fixes the double-logo defect: the brand appears once.
  *
- * The home page (pathname === '/customer') uses the wide .ej-main shell
- * (1200px, mockup desktop); every other customer page keeps the existing
- * narrow mobile-first container.
+ * The home page (pathname === '/customer') renders the exact reference
+ * design full-bleed (Release 13): no .ej-main width cap or padding, so
+ * the hero photo band reaches the viewport edges exactly like the public
+ * homepage. The home content carries its own section widths, and
+ * customer-home-signed-in.css adds the bottom clearance for the mobile
+ * tab bar. Every other customer page keeps the existing narrow
+ * mobile-first container.
  */
 const AUTH_PATHS = ['/customer/login', '/customer/signup'];
 
@@ -51,7 +55,7 @@ export default function CustomerShell({
       <main
         className={
           wide
-            ? 'ej-main w-full flex-1'
+            ? 'w-full flex-1'
             : 'mx-auto w-full max-w-lg flex-1 px-4 pb-24 pt-4 md:max-w-2xl md:pb-8'
         }
       >
