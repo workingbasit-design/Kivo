@@ -19,9 +19,11 @@ export default async function TeamPage() {
     redirect('/settings');
   }
 
+  // P1.0 (B-6): suspended members stay listed so an admin can unsuspend
+  // them; only ACTIVE members can sign in (requireAuth is ACTIVE-only).
   const members = (
     await prisma.membership.findMany({
-      where: { businessId, status: 'ACTIVE' },
+      where: { businessId, status: { in: ['ACTIVE', 'SUSPENDED'] } },
       include: {
         user: { select: { id: true, name: true, email: true, createdAt: true } },
       },
@@ -32,6 +34,7 @@ export default async function TeamPage() {
     name: m.user.name,
     email: m.user.email,
     role: m.role,
+    status: m.status,
     createdAt: m.user.createdAt,
   }));
 
@@ -48,12 +51,14 @@ export default async function TeamPage() {
             name: string | null;
             email: string;
             role: string;
+            status: string;
             createdAt: Date;
           }) => ({
             id: m.id,
             name: m.name,
             email: m.email,
             role: m.role,
+            status: m.status,
             createdAt: m.createdAt.toISOString(),
           })
         )}

@@ -1,5 +1,3 @@
-import type { Dictionary } from '../en';
-
 /**
  * Track 10C strings: UI/UX elevation for copilot + auth + directory +
  * settings + remaining screens (notifications, imports, marketing,
@@ -449,6 +447,19 @@ const fragment = {
         removeConfirm: 'Yes, remove',
         keep: 'Keep',
         removed: 'Team member removed.',
+        suspend: 'Suspend',
+        unsuspend: 'Unsuspend',
+        suspended: 'Suspended',
+        suspendTitle: 'Suspend {name}?',
+        suspendMessage:
+          'They will lose access to this business immediately. You can unsuspend them later.',
+        suspendConfirm: 'Yes, suspend',
+        suspendedToast: 'Team member suspended.',
+        unsuspendTitle: 'Unsuspend {name}?',
+        unsuspendMessage: 'They will be able to sign in to this business again.',
+        unsuspendConfirm: 'Yes, unsuspend',
+        unsuspendedToast: 'Team member unsuspended.',
+        roleChanged: 'Role updated.',
         pageTitle: 'Team',
         pageSubtitle: 'Invite staff and control who can do what.',
       },
@@ -1170,6 +1181,19 @@ const fragment = {
         removeConfirm: 'Oui, retirer',
         keep: 'Garder',
         removed: 'Membre de l’équipe retiré.',
+        suspend: 'Suspendre',
+        unsuspend: 'Réactiver',
+        suspended: 'Suspendu',
+        suspendTitle: 'Suspendre {name}?',
+        suspendMessage:
+          'Ils perdront immédiatement l’accès à cette entreprise. Vous pourrez les réactiver plus tard.',
+        suspendConfirm: 'Oui, suspendre',
+        suspendedToast: 'Membre de l’équipe suspendu.',
+        unsuspendTitle: 'Réactiver {name}?',
+        unsuspendMessage: 'Ils pourront de nouveau se connecter à cette entreprise.',
+        unsuspendConfirm: 'Oui, réactiver',
+        unsuspendedToast: 'Membre de l’équipe réactivé.',
+        roleChanged: 'Rôle mis à jour.',
         pageTitle: 'Équipe',
         pageSubtitle: 'Invitez du personnel et contrôlez qui peut faire quoi.',
       },

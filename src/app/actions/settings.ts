@@ -12,6 +12,7 @@ import {
   INVITABLE_ROLES,
   DEFAULT_INVITE_ROLE,
   inviteMemberToBusiness,
+  isInvitableRole,
 } from '@/lib/team-invite';
 import {
   WEEK_DAYS,
@@ -253,7 +254,7 @@ export async function inviteTeamMember(
   _prev: SettingsResult,
   formData: FormData
 ): Promise<SettingsResult> {
-  const { user, businessId, role: callerRole } = await requireAuth();
+  const { businessId, role: callerRole } = await requireAuth();
   const notAdmin = requireAdminRole(callerRole);
   if (notAdmin) return notAdmin;
   const hit = limited(`team:${businessId}`);
@@ -349,6 +350,124 @@ export async function removeTeamMember(id: string): Promise<SettingsResult> {
   if (remaining === 0) {
     await prisma.user.delete({ where: { id } }).catch(() => {});
   }
+  revalidatePath('/settings/team');
+  return { ok: true };
+}
+
+/** Suspend a team member (admin only). The member loses access immediately:
+ * their sessions are ended and requireAuth() (ACTIVE-only) locks them out
+ * of this business until unsuspended. Cannot suspend self or the last admin.
+ * Unlike removal, the identity and membership rows survive — suspension is
+ * the reversible revoke (P1.0 B-6). */
+export async function suspendTeamMember(id: string): Promise<SettingsResult> {
+  const { user, businessId, role: callerRole } = await requireAuth();
+  const notAdmin = requireAdminRole(callerRole);
+  if (notAdmin) return notAdmin;
+  const hit = limited(`team:${businessId}`);
+  if (hit) return hit;
+
+  if (id === user.id) {
+    return { error: 'You cannot suspend yourself.' };
+  }
+
+  const target = await prisma.membership.findFirst({
+    where: { userId: id, businessId, status: 'ACTIVE' },
+  });
+  if (!target) return { error: 'Team member not found.' };
+
+  if (target.role === 'ADMIN') {
+    const adminCount = await prisma.membership.count({
+      where: { businessId, role: 'ADMIN', status: 'ACTIVE' },
+    });
+    if (adminCount <= 1) {
+      return { error: 'Cannot suspend the last admin.' };
+    }
+  }
+
+  // updateMany (not update): lets businessId ride in the where clause for
+  // the tenant guard; the count check proves it landed.
+  const updated = await prisma.membership.updateMany({
+    where: { id: target.id, businessId, status: 'ACTIVE' },
+    data: { status: 'SUSPENDED' },
+  });
+  if (updated.count === 0) {
+    return { error: 'Team member not found.' };
+  }
+  // B7.5: suspending ends their sessions immediately, like removal.
+  const { invalidateUserSessions } = await import('@/lib/auth');
+  await invalidateUserSessions(id);
+  revalidatePath('/settings/team');
+  return { ok: true };
+}
+
+/** Unsuspend a team member (admin only). Restores ACTIVE so they can sign
+ * in to this business again. Their old sessions were ended at suspend time,
+ * so they sign in fresh. */
+export async function unsuspendTeamMember(id: string): Promise<SettingsResult> {
+  const { businessId, role: callerRole } = await requireAuth();
+  const notAdmin = requireAdminRole(callerRole);
+  if (notAdmin) return notAdmin;
+  const hit = limited(`team:${businessId}`);
+  if (hit) return hit;
+
+  const updated = await prisma.membership.updateMany({
+    where: { userId: id, businessId, status: 'SUSPENDED' },
+    data: { status: 'ACTIVE' },
+  });
+  if (updated.count === 0) {
+    return { error: 'Team member not found.' };
+  }
+  revalidatePath('/settings/team');
+  return { ok: true };
+}
+
+/** Change a team member's role (admin only). OWNER is never assignable
+ * (see INVITABLE_ROLES). Cannot change your own role or demote the last
+ * admin. Sessions are ended so the new role applies on the next sign-in
+ * (P1.0 B-6; auth.ts documents the same intent). */
+export async function changeTeamMemberRole(
+  id: string,
+  role: string,
+): Promise<SettingsResult> {
+  const { user, businessId, role: callerRole } = await requireAuth();
+  const notAdmin = requireAdminRole(callerRole);
+  if (notAdmin) return notAdmin;
+  const hit = limited(`team:${businessId}`);
+  if (hit) return hit;
+
+  if (!isInvitableRole(role)) {
+    return { error: 'Choose a valid role for the team member.' };
+  }
+  if (id === user.id) {
+    return { error: 'You cannot change your own role.' };
+  }
+
+  const target = await prisma.membership.findFirst({
+    where: { userId: id, businessId, status: 'ACTIVE' },
+  });
+  if (!target) return { error: 'Team member not found.' };
+  if (target.role === role) return { ok: true };
+
+  if (target.role === 'ADMIN' && role !== 'ADMIN') {
+    const adminCount = await prisma.membership.count({
+      where: { businessId, role: 'ADMIN', status: 'ACTIVE' },
+    });
+    if (adminCount <= 1) {
+      return { error: 'Cannot demote the last admin.' };
+    }
+  }
+
+  const updated = await prisma.membership.updateMany({
+    where: { id: target.id, businessId, status: 'ACTIVE' },
+    data: { role },
+  });
+  if (updated.count === 0) {
+    return { error: 'Team member not found.' };
+  }
+  // B7.5: a role change ends their sessions so the new role applies on the
+  // next sign-in (the role is otherwise resolved fresh per requireAuth).
+  const { invalidateUserSessions } = await import('@/lib/auth');
+  await invalidateUserSessions(id);
   revalidatePath('/settings/team');
   return { ok: true };
 }

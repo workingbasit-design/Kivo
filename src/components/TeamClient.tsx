@@ -3,9 +3,16 @@
 import React, { useActionState, useTransition } from 'react';
 import { AlertCircle, Trash2, UserPlus, ShieldCheck, User } from '@/components/icons';
 import { toast } from 'sonner';
-import { inviteTeamMember, removeTeamMember, type SettingsResult } from '@/app/actions/settings';
+import {
+  inviteTeamMember,
+  removeTeamMember,
+  suspendTeamMember,
+  unsuspendTeamMember,
+  changeTeamMemberRole,
+  type SettingsResult,
+} from '@/app/actions/settings';
 import ConfirmDialog from '@/components/ConfirmDialog';
-import { Button, Card, EmptyState, Input, Select } from '@/components/kit';
+import { Button, Card, EmptyState, Input, Select, StatusBadge } from '@/components/kit';
 import { StatusPill } from '@/app/(app)/_components/status-ui';
 import { useResolvedT } from '@/hooks/useResolvedLocale';
 
@@ -14,6 +21,7 @@ export type TeamMember = {
   name: string | null;
   email: string;
   role: string;
+  status: string;
   createdAt: string;
 };
 
@@ -115,11 +123,12 @@ function InviteForm() {
 function MemberRow({ member, isSelf }: { member: TeamMember; isSelf: boolean }) {
   const { t } = useResolvedT();
   const [isPending, startTransition] = useTransition();
-  const [confirming, setConfirming] = React.useState(false);
+  const [confirming, setConfirming] = React.useState<null | 'remove' | 'suspend' | 'unsuspend'>(null);
   const [error, setError] = React.useState<string | null>(null);
+  const suspended = member.status === 'SUSPENDED';
 
   const runRemove = () => {
-    setConfirming(false);
+    setConfirming(null);
     startTransition(async () => {
       setError(null);
       const res = await removeTeamMember(member.id);
@@ -128,6 +137,48 @@ function MemberRow({ member, isSelf }: { member: TeamMember; isSelf: boolean }) 
         toast.error(res.error);
       } else {
         toast.success(t('t10misc.team.removed'));
+      }
+    });
+  };
+
+  const runSuspend = () => {
+    setConfirming(null);
+    startTransition(async () => {
+      setError(null);
+      const res = await suspendTeamMember(member.id);
+      if (res.error) {
+        setError(res.error);
+        toast.error(res.error);
+      } else {
+        toast.success(t('t10misc.team.suspendedToast'));
+      }
+    });
+  };
+
+  const runUnsuspend = () => {
+    setConfirming(null);
+    startTransition(async () => {
+      setError(null);
+      const res = await unsuspendTeamMember(member.id);
+      if (res.error) {
+        setError(res.error);
+        toast.error(res.error);
+      } else {
+        toast.success(t('t10misc.team.unsuspendedToast'));
+      }
+    });
+  };
+
+  const runRoleChange = (nextRole: string) => {
+    if (nextRole === member.role) return;
+    startTransition(async () => {
+      setError(null);
+      const res = await changeTeamMemberRole(member.id, nextRole);
+      if (res.error) {
+        setError(res.error);
+        toast.error(res.error);
+      } else {
+        toast.success(t('t10misc.team.roleChanged'));
       }
     });
   };
@@ -151,9 +202,32 @@ function MemberRow({ member, isSelf }: { member: TeamMember; isSelf: boolean }) 
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <StatusPill status={member.role} />
+          {suspended && <StatusBadge tone="neutral">{t('t10misc.team.suspended')}</StatusBadge>}
+          {!isSelf && !suspended && (
+            <Button
+              type="button"
+              variant="ghost"
+              sm
+              onClick={() => setConfirming('suspend')}
+              disabled={isPending}
+            >
+              {t('t10misc.team.suspend')}
+            </Button>
+          )}
+          {!isSelf && suspended && (
+            <Button
+              type="button"
+              variant="ghost"
+              sm
+              onClick={() => setConfirming('unsuspend')}
+              disabled={isPending}
+            >
+              {t('t10misc.team.unsuspend')}
+            </Button>
+          )}
           {!isSelf && (
             <button
-              onClick={() => setConfirming(true)}
+              onClick={() => setConfirming('remove')}
               disabled={isPending}
               className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center text-ink-2 hover:text-danger p-2.5 rounded-lg hover:bg-danger-bg transition-colors"
               aria-label={t('t10misc.team.removeTitle').replace('{name}', displayName)}
@@ -163,18 +237,54 @@ function MemberRow({ member, isSelf }: { member: TeamMember; isSelf: boolean }) 
           )}
         </div>
       </div>
+      {!isSelf && !suspended && (
+        <div className="mt-3 max-w-[240px]">
+          <Select
+            label={t('t10misc.team.roleLabel')}
+            name={`role-${member.id}`}
+            defaultValue={member.role}
+            disabled={isPending}
+            onChange={(e) => runRoleChange(e.target.value)}
+            options={[
+              { value: 'TECHNICIAN', label: t('t10misc.team.roleTechnician') },
+              { value: 'DISPATCHER', label: t('t10misc.team.roleDispatcher') },
+              { value: 'ADMIN', label: t('t10misc.team.roleAdmin') },
+            ]}
+          />
+        </div>
+      )}
       {error && (
         <p className="text-[11px] text-danger mt-2 font-medium" role="alert">{error}</p>
       )}
       <ConfirmDialog
-        open={confirming}
+        open={confirming === 'remove'}
         title={t('t10misc.team.removeTitle').replace('{name}', displayName)}
         message={t('t10misc.team.removeMessage')}
         confirmLabel={t('t10misc.team.removeConfirm')}
         cancelLabel={t('t10misc.team.keep')}
         busy={isPending}
         onConfirm={runRemove}
-        onClose={() => setConfirming(false)}
+        onClose={() => setConfirming(null)}
+      />
+      <ConfirmDialog
+        open={confirming === 'suspend'}
+        title={t('t10misc.team.suspendTitle').replace('{name}', displayName)}
+        message={t('t10misc.team.suspendMessage')}
+        confirmLabel={t('t10misc.team.suspendConfirm')}
+        cancelLabel={t('t10misc.team.keep')}
+        busy={isPending}
+        onConfirm={runSuspend}
+        onClose={() => setConfirming(null)}
+      />
+      <ConfirmDialog
+        open={confirming === 'unsuspend'}
+        title={t('t10misc.team.unsuspendTitle').replace('{name}', displayName)}
+        message={t('t10misc.team.unsuspendMessage')}
+        confirmLabel={t('t10misc.team.unsuspendConfirm')}
+        cancelLabel={t('t10misc.team.keep')}
+        busy={isPending}
+        onConfirm={runUnsuspend}
+        onClose={() => setConfirming(null)}
       />
     </div>
   );
