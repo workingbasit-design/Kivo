@@ -15,7 +15,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Toast } from "@/components/kit/Toast";
 
 const DISMISSED_KEY = "everyjob:glance:dismissed";
 const REMINDER_KEY = "everyjob:morning-reminder";
@@ -48,6 +49,9 @@ export default function MorningGlanceCard({
   remindOffLabel,
   remindBlockedLabel,
   dismissLabel,
+  dismissedToast,
+  reminderOnToast,
+  reminderOffToast,
 }: {
   todayKey: string;
   title: string;
@@ -59,10 +63,28 @@ export default function MorningGlanceCard({
   remindOffLabel: string;
   remindBlockedLabel: string;
   dismissLabel: string;
+  dismissedToast: string;
+  reminderOnToast: string;
+  reminderOffToast: string;
 }) {
   const [dismissed, setDismissed] = useState(false);
   const [reminder, setReminder] = useState(false);
   const [blocked, setBlocked] = useState(false);
+  const [toast, setToast] = useState("");
+  const toastTimer = useRef<number | null>(null);
+
+  const showToast = (message: string) => {
+    setToast(message);
+    if (toastTimer.current !== null) window.clearTimeout(toastTimer.current);
+    toastTimer.current = window.setTimeout(() => setToast(""), 2400);
+  };
+
+  useEffect(
+    () => () => {
+      if (toastTimer.current !== null) window.clearTimeout(toastTimer.current);
+    },
+    []
+  );
 
   /* eslint-disable react-hooks/set-state-in-effect -- localStorage can
      only be read client-side after hydration (the server-rendered card
@@ -96,12 +118,14 @@ export default function MorningGlanceCard({
   const dismiss = () => {
     write(DISMISSED_KEY, todayKey);
     setDismissed(true);
+    showToast(dismissedToast);
   };
 
   const toggleReminder = async () => {
     if (reminder) {
       write(REMINDER_KEY, "off");
       setReminder(false);
+      showToast(reminderOffToast);
       return;
     }
     if (typeof Notification === "undefined") return;
@@ -114,6 +138,7 @@ export default function MorningGlanceCard({
       if (perm === "granted") {
         write(REMINDER_KEY, "on");
         setReminder(true);
+        showToast(reminderOnToast);
       } else {
         setBlocked(true);
       }
@@ -129,6 +154,7 @@ export default function MorningGlanceCard({
     >
       <div className="flex items-start justify-between gap-3">
         <h2>
+          <span className="ej-glance-live-dot" aria-hidden="true" />
           {title}
         </h2>
         <button
@@ -164,6 +190,7 @@ export default function MorningGlanceCard({
           {blocked ? remindBlockedLabel : reminder ? remindOffLabel : remindOnLabel}
         </button>
       </div>
+      <Toast message={toast} visible={toast !== ""} />
     </section>
   );
 }

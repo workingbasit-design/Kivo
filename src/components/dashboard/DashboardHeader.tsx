@@ -14,6 +14,7 @@ import { fillTemplate } from "@/lib/revenue";
 import { formatMoney } from "@/lib/money";
 import { localeMoneyTag } from "@/lib/utils";
 import DateTimeText from "@/components/DateTimeText";
+import DashboardPaletteButton from "./DashboardPaletteButton";
 
 export default async function DashboardHeader({
   businessId,
@@ -50,10 +51,15 @@ export default async function DashboardHeader({
 
   return (
     <header className="ej-dashboard-page-heading">
-      <h1>
-        <DateTimeText date={new Date()} variant="dateline" timezone={timezone ?? undefined} locale={locale} />
-      </h1>
-      <p className="ej-dashboard-subheading">{sentence}</p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <h1>
+            <DateTimeText date={new Date()} variant="dateline" timezone={timezone ?? undefined} locale={locale} />
+          </h1>
+          <p className="ej-dashboard-subheading">{sentence}</p>
+        </div>
+        <DashboardPaletteButton label={locale === "fr" ? "Recherche rapide" : "Quick search"} />
+      </div>
     </header>
   );
 }

@@ -82,6 +82,8 @@ function toDisplay(
     id: c.id,
     title: c.title,
     subtitle: c.subtitle,
+    customerName: c.customerName,
+    area: c.area,
     meta,
     href: c.href,
     actionLabel,
@@ -115,6 +117,11 @@ export default async function ContinueSection({
       liveIds={[...liveIds]}
       labels={{
         title: t(locale, "dashboard.continueTitle"),
+        details: t(locale, "dashboard.continueDetails"),
+        location: t(locale, "dashboard.continueLocation"),
+        customer: t(locale, "dashboard.continueCustomer"),
+        status: t(locale, "dashboard.continueStatus"),
+        noArea: t(locale, "dashboard.continueNoArea"),
         lastOpened: t(locale, "dashboard.continueLastOpened"),
         viewJob: t(locale, "dashboard.continueActionView"),
         viewQuote: t(locale, "dashboard.continueActionViewQuote"),

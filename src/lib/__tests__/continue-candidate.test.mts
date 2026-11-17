@@ -58,6 +58,47 @@ function invoice(
   };
 }
 
+test('candidate carries customerName, area and status separately', () => {
+  const c = selectContinueCandidate(
+    {
+      jobs: [
+        job({
+          id: 'doing',
+          title: 'Furnace repair',
+          customerName: 'Sarah',
+          area: 'Etobicoke',
+          status: 'IN PROGRESS',
+          updatedAt: new Date('2026-10-27T13:00:00Z'),
+        }),
+      ],
+      quotes: [],
+      invoices: [],
+    },
+    CTX
+  );
+  assert.equal(c?.customerName, 'Sarah');
+  assert.equal(c?.area, 'Etobicoke');
+  assert.equal(c?.status, 'IN PROGRESS');
+  // Subtitle still composes "Name, Area" for the collapsed card line.
+  assert.equal(c?.subtitle, 'Sarah, Etobicoke');
+
+  const q = selectContinueCandidate(
+    { jobs: [], quotes: [quote({ id: 'draft' })], invoices: [] },
+    CTX
+  );
+  assert.equal(q?.customerName, 'Bob');
+  assert.equal(q?.area, null);
+  assert.equal(q?.status, null);
+
+  const inv = selectContinueCandidate(
+    { jobs: [], quotes: [], invoices: [invoice({ id: 'inv' })] },
+    CTX
+  );
+  assert.equal(inv?.customerName, 'Carol');
+  assert.equal(inv?.area, null);
+  assert.equal(inv?.status, null);
+});
+
 test('in-progress job beats today’s scheduled job', () => {
   const c = selectContinueCandidate(
     {
@@ -176,7 +217,9 @@ const SERVER = {
   kind: 'job' as const,
   id: 'srv',
   title: 'Server job',
-  subtitle: 'Alice',
+  subtitle: 'Alice, Etobicoke',
+  customerName: 'Alice',
+  area: 'Etobicoke',
   meta: 'Today at 2:00 p.m.',
   href: '/jobs/srv',
   actionLabel: 'View job',
@@ -190,6 +233,9 @@ test('resolveDisplay: urgent server candidate beats last-opened', () => {
     LABELS
   );
   assert.equal(out?.id, 'srv');
+  // Detail fields pass through for the expandable card.
+  assert.equal(out?.customerName, 'Alice');
+  assert.equal(out?.area, 'Etobicoke');
 });
 
 test('resolveDisplay: last-opened beats upcoming/admin server candidate', () => {
@@ -203,6 +249,9 @@ test('resolveDisplay: last-opened beats upcoming/admin server candidate', () => 
   assert.equal(out?.meta, 'Where you left off');
   assert.equal(out?.actionLabel, 'View invoice');
   assert.equal(out?.href, '/invoices/i1');
+  // Last-opened records carry no detail fields.
+  assert.equal(out?.customerName, null);
+  assert.equal(out?.area, null);
 });
 
 test('resolveDisplay: same record on both sides keeps the server version', () => {

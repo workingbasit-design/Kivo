@@ -8,14 +8,19 @@
  * Future days are dimmed: not yet happened, not failed. Today gets a
  * ring so the pro can orient at a glance. Technicians see the jobs-only
  * variant (money rows skipped by the fetcher).
+ *
+ * Motion Edition: the strip is the weekly pulse — each day is
+ * selectable and the footer shows that day's own totals (jobs done,
+ * invoices issued, money collected), computed by computeWeekProgress.
  */
-import Link from "next/link";
 import { getWeekProgress } from "@/lib/dashboard-sections";
 import { getLocale } from "@/lib/i18n/server";
 import { t, type Locale } from "@/lib/i18n";
 import { fillTemplate } from "@/lib/revenue";
 import { formatMoney } from "@/lib/money";
 import { localeMoneyTag } from "@/lib/utils";
+import { isoWeekNumber } from "@/lib/week-progress";
+import WeekPulseCard, { type WeekPulseDay } from "./WeekPulseCard";
 
 export default async function WeekProgressSection({
   businessId,
@@ -37,6 +42,7 @@ export default async function WeekProgressSection({
   });
   const heading = t(locale, "dashboard.weekProgressTitle");
   const dateTag = locale === "fr" ? "fr-CA" : "en-CA";
+  const moneyLocale = localeMoneyTag(locale);
 
   const jobsLine = fillTemplate(
     t(
@@ -64,60 +70,88 @@ export default async function WeekProgressSection({
           amount: formatMoney(
             progress.collectedCents / 100,
             progress.currency,
-            localeMoneyTag(locale),
+            moneyLocale,
           ),
         }),
       ].join(" · ");
 
+  const weekLabel = fillTemplate(t(locale, "dashboard.weekPulseWeek"), {
+    week: String(isoWeekNumber(progress.todayKey)),
+  });
+
+  const days: WeekPulseDay[] = progress.weekKeys.map((key, i) => {
+    const dayTotals = progress.perDay[i];
+    const lines: string[] = [];
+    if (dayTotals.jobsDone > 0) {
+      lines.push(
+        fillTemplate(
+          t(
+            locale,
+            dayTotals.jobsDone === 1
+              ? "dashboard.weekProgressJobsOne"
+              : "dashboard.weekProgressJobsMany",
+          ),
+          { count: String(dayTotals.jobsDone) },
+        ),
+      );
+    }
+    if (!progress.technician && dayTotals.invoicesIssued > 0) {
+      lines.push(
+        fillTemplate(
+          t(
+            locale,
+            dayTotals.invoicesIssued === 1
+              ? "dashboard.weekProgressInvoicesOne"
+              : "dashboard.weekProgressInvoicesMany",
+          ),
+          { count: String(dayTotals.invoicesIssued) },
+        ),
+      );
+    }
+    if (!progress.technician && dayTotals.collectedCents > 0) {
+      lines.push(
+        fillTemplate(t(locale, "dashboard.weekProgressCollected"), {
+          amount: formatMoney(
+            dayTotals.collectedCents / 100,
+            progress.currency,
+            moneyLocale,
+          ),
+        }),
+      );
+    }
+    const date = new Date(`${key}T12:00:00Z`);
+    return {
+      key,
+      letter: new Intl.DateTimeFormat(dateTag, {
+        timeZone: tz,
+        weekday: "narrow",
+      }).format(date),
+      dayNum: new Intl.DateTimeFormat(dateTag, {
+        timeZone: tz,
+        day: "numeric",
+      }).format(date),
+      fullDate: new Intl.DateTimeFormat(dateTag, {
+        timeZone: tz,
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+      }).format(date),
+      active: progress.active[i],
+      future: progress.future[i],
+      isToday: key === progress.todayKey,
+      lines,
+    };
+  });
+
   return (
-    <section
-      aria-label={heading}
-      className="ej-week-card"
-    >
-      <h2>
-        {heading}
-      </h2>
-      <p className="ej-week-summary">
-        {summary}
-      </p>
-      <div className="ej-week-days">
-        {progress.weekKeys.map((key, i) => {
-          const letter = new Intl.DateTimeFormat(dateTag, {
-            timeZone: tz,
-            weekday: "narrow",
-          }).format(new Date(`${key}T12:00:00Z`));
-          const fullDate = new Intl.DateTimeFormat(dateTag, {
-            timeZone: tz,
-            weekday: "long",
-            month: "long",
-            day: "numeric",
-          }).format(new Date(`${key}T12:00:00Z`));
-          const filled = progress.active[i];
-          const future = progress.future[i];
-          const isToday = key === progress.todayKey;
-          return (
-            <Link
-              key={key}
-              href={`/schedule?day=${key}`}
-              aria-label={fullDate}
-              className={[
-                "ej-week-day",
-                filled ? "ej-week-day--active" : "",
-                future ? "ej-week-day--future" : "",
-                isToday ? "ej-week-day--today" : "",
-              ].join(" ")}
-            >
-              <span
-                className="ej-week-day-dot"
-                aria-hidden="true"
-              />
-              <span className="ej-week-day-label" aria-hidden="true">
-                {letter}
-              </span>
-            </Link>
-          );
-        })}
-      </div>
-    </section>
+    <WeekPulseCard
+      heading={heading}
+      summary={summary}
+      weekLabel={weekLabel}
+      days={days}
+      todayKey={progress.todayKey}
+      noActivity={t(locale, "dashboard.weekPulseNoActivity")}
+      viewDay={t(locale, "dashboard.weekPulseViewDay")}
+    />
   );
 }

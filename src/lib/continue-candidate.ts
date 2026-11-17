@@ -43,6 +43,12 @@ export interface ContinueCandidate {
   title: string;
   /** Customer name, plus area for jobs. */
   subtitle: string;
+  /** Customer name on its own (detail rows need it separately). */
+  customerName: string;
+  /** Job area (city/neighbourhood) on its own; null for quotes/invoices. */
+  area: string | null;
+  /** Raw job status ("IN PROGRESS", "NEW", "SCHEDULED"); null otherwise. */
+  status: string | null;
   href: string;
   action: ContinueAction;
   /** 1 = most urgent. Last-opened beats priorities 4–6 only. */
@@ -109,6 +115,9 @@ export function selectContinueCandidate(
       subtitle: inProgress.area
         ? `${inProgress.customerName}, ${inProgress.area}`
         : inProgress.customerName,
+      customerName: inProgress.customerName,
+      area: inProgress.area,
+      status: inProgress.status,
       href: `/jobs/${inProgress.id}`,
       action: "continue",
       priority: 1,
@@ -133,6 +142,9 @@ export function selectContinueCandidate(
       id: late.id,
       title: late.title,
       subtitle: late.area ? `${late.customerName}, ${late.area}` : late.customerName,
+      customerName: late.customerName,
+      area: late.area,
+      status: late.status,
       href: `/jobs/${late.id}`,
       action: "view",
       priority: 2,
@@ -157,6 +169,9 @@ export function selectContinueCandidate(
       id: today.id,
       title: today.title,
       subtitle: today.area ? `${today.customerName}, ${today.area}` : today.customerName,
+      customerName: today.customerName,
+      area: today.area,
+      status: today.status,
       href: `/jobs/${today.id}`,
       action: "view",
       priority: 3,
@@ -187,6 +202,9 @@ export function selectContinueCandidate(
       id: future.id,
       title: future.title,
       subtitle: future.area ? `${future.customerName}, ${future.area}` : future.customerName,
+      customerName: future.customerName,
+      area: future.area,
+      status: future.status,
       href: `/jobs/${future.id}`,
       action: "view",
       priority: 4,
@@ -206,6 +224,9 @@ export function selectContinueCandidate(
       id: draft.id,
       title: draft.title,
       subtitle: draft.customerName,
+      customerName: draft.customerName,
+      area: null,
+      status: null,
       href: `/quotes/${draft.id}`,
       action: "send",
       priority: 5,
@@ -220,6 +241,9 @@ export function selectContinueCandidate(
       id: unpaid.id,
       title: unpaid.number,
       subtitle: unpaid.customerName,
+      customerName: unpaid.customerName,
+      area: null,
+      status: null,
       href: `/invoices/${unpaid.id}`,
       action: "pay",
       priority: 6,
@@ -272,6 +296,11 @@ export interface ContinueDisplay {
   id: string;
   title: string;
   subtitle: string;
+  /** Customer name on its own; null when the display came from a
+   * last-opened record (localStorage only stores title/subtitle). */
+  customerName: string | null;
+  /** Job area on its own; null for quotes/invoices and last-opened. */
+  area: string | null;
   /** Second line: "In progress", "Today at 8:30 a.m.", "Where you left off"… */
   meta: string;
   href: string;
@@ -319,6 +348,8 @@ export function resolveContinueDisplay(
       id: lastOpened.id,
       title: lastOpened.title,
       subtitle: lastOpened.subtitle,
+      customerName: null,
+      area: null,
       meta: labels.lastOpened,
       href: `/${lastOpened.kind}s/${lastOpened.id}`,
       actionLabel,

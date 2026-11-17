@@ -107,6 +107,9 @@ export default async function MorningGlanceSection({
       remindOffLabel={t(locale, "dashboard.morningGlanceRemindOff")}
       remindBlockedLabel={t(locale, "dashboard.morningGlanceRemindBlocked")}
       dismissLabel={t(locale, "dashboard.morningGlanceDismiss")}
+      dismissedToast={t(locale, "dashboard.morningGlanceDismissedToast")}
+      reminderOnToast={t(locale, "dashboard.morningGlanceReminderOnToast")}
+      reminderOffToast={t(locale, "dashboard.morningGlanceReminderOffToast")}
     />
   );
 }

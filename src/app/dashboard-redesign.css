@@ -538,7 +538,182 @@
   .ej-quick-card,
   .ej-side-link,
   .ej-side-icon-btn,
-  .ej-side-profile {
+  .ej-side-profile,
+  .ej-palette-trigger,
+  .ej-continue-details-btn,
+  .ej-continue-details-btn svg,
+  .ej-continue-expand {
     transition: none;
   }
+  .ej-glance-live-dot {
+    animation: none;
+  }
+}
+
+/* ---------- Motion Edition (Nov 17): palette trigger, live dot,
+   expandable Continue card, weekly pulse ---------- */
+.ej-palette-trigger {
+  display: inline-flex;
+  flex-shrink: 0;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 160ms ease, color 160ms ease;
+}
+.ej-palette-trigger:hover {
+  border-color: var(--ok);
+  color: var(--ink);
+}
+.ej-palette-trigger kbd {
+  padding: 3px 5px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: 0.625rem;
+}
+@media (max-width: 560px) {
+  .ej-palette-trigger kbd {
+    display: none;
+  }
+}
+
+@keyframes ej-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--hivis) 45%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 6px transparent;
+  }
+}
+.ej-glance-live-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--hivis);
+  vertical-align: middle;
+  animation: ej-pulse 2.4s infinite;
+}
+
+.ej-continue-details-btn {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ok);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.ej-continue-details-btn:hover {
+  background: var(--surface-2);
+}
+.ej-continue-details-btn svg {
+  transition: transform 200ms ease;
+}
+.ej-rotate {
+  transform: rotate(180deg);
+}
+.ej-continue-expand {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 300ms ease;
+}
+.ej-continue-expand--open {
+  grid-template-rows: 1fr;
+  margin-top: 12px;
+}
+.ej-continue-expand > div {
+  min-height: 0;
+  overflow: hidden;
+}
+.ej-continue-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+.ej-continue-details > div {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  color: var(--ok);
+  font-size: 0.8125rem;
+}
+.ej-continue-details span {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  color: var(--ink);
+}
+.ej-continue-details b {
+  color: var(--ink-2);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+.ej-week-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+.ej-week-day-num {
+  font-family: var(--ejd-serif);
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1;
+}
+.ej-week-day--selected {
+  border-color: var(--hivis);
+  background: color-mix(in srgb, var(--hivis) 12%, var(--surface));
+}
+.ej-week-day--selected .ej-week-day-dot {
+  border-color: var(--hivis);
+  background: var(--hivis);
+}
+/* Today stays solid lime even when it is the selected day. */
+.ej-week-day--today.ej-week-day--selected {
+  background: var(--hivis);
+}
+.ej-week-day--today.ej-week-day--selected .ej-week-day-dot {
+  border-color: var(--hivis-ink);
+  background: var(--hivis-ink);
+}
+.ej-week-pulse-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  color: var(--ink-2);
+  font-size: 0.8125rem;
+  line-height: 1.5;
 }

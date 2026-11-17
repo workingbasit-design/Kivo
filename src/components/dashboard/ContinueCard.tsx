@@ -7,14 +7,18 @@
  * wins; a last-opened record wins over upcoming/admin work. Renders
  * nothing when there is nothing to resume.
  *
+ * Motion Edition: the card expands (Details toggle) to show the
+ * Location / Customer / Status rows from the candidate's own fields —
+ * no extra fetch, no sample data.
+ *
  * The last-opened value is read through useSyncExternalStore so the
  * card stays correct across tabs and never sets state inside an effect.
  */
 "use client";
 
-import { useMemo, useSyncExternalStore } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
-import { ChevronRight } from "@/components/icons";
+import { ChevronDown, ChevronRight, Clock3, MapPin, UserRound } from "@/components/icons";
 import {
   LAST_OPENED_KEY,
   resolveContinueDisplay,
@@ -24,6 +28,11 @@ import {
 
 export interface ContinueCardLabels {
   title: string;
+  details: string;
+  location: string;
+  customer: string;
+  status: string;
+  noArea: string;
   lastOpened: string;
   viewJob: string;
   viewQuote: string;
@@ -82,6 +91,7 @@ export default function ContinueCard({
   const lastOpened = useMemo(() => parseLastOpened(raw), [raw]);
   const live = useMemo(() => new Set(liveIds), [liveIds]);
   const display = resolveContinueDisplay(serverDisplay, serverPriority, lastOpened, labels, live);
+  const [expanded, setExpanded] = useState(false);
   if (!display) return null;
 
   return (
@@ -102,12 +112,54 @@ export default function ContinueCard({
             {display.meta ? ` · ${display.meta}` : ""}
           </p>
         </div>
-        <Link
-          href={display.href}
-          className="ej-lime-pill shrink-0"
-        >
-          {display.actionLabel} <ChevronRight size={16} />
-        </Link>
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          <button
+            type="button"
+            aria-expanded={expanded}
+            onClick={() => setExpanded((v) => !v)}
+            className="ej-continue-details-btn"
+          >
+            {labels.details}
+            <ChevronDown size={14} aria-hidden className={expanded ? "ej-rotate" : ""} />
+          </button>
+          <Link
+            href={display.href}
+            className="ej-lime-pill shrink-0"
+          >
+            {display.actionLabel} <ChevronRight size={16} />
+          </Link>
+        </div>
+      </div>
+      <div className={`ej-continue-expand${expanded ? " ej-continue-expand--open" : ""}`}>
+        <div className="ej-continue-details">
+          {display.kind === "job" ? (
+            <div>
+              <MapPin size={14} aria-hidden />
+              <span>
+                <b>{labels.location}</b>
+                {display.area ?? labels.noArea}
+              </span>
+            </div>
+          ) : null}
+          {display.customerName ? (
+            <div>
+              <UserRound size={14} aria-hidden />
+              <span>
+                <b>{labels.customer}</b>
+                {display.customerName}
+              </span>
+            </div>
+          ) : null}
+          {display.meta ? (
+            <div>
+              <Clock3 size={14} aria-hidden />
+              <span>
+                <b>{labels.status}</b>
+                {display.meta}
+              </span>
+            </div>
+          ) : null}
+        </div>
       </div>
     </section>
   );

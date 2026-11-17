@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { computeWeekProgress } from '../week-progress.ts';
+import { computeWeekProgress, isoWeekNumber } from '../week-progress.ts';
 
 // Week of Mon 2026-10-26 … Sun 2026-11-01; today Tue 2026-10-27 (EDT).
 const WEEK_KEYS = [
@@ -32,6 +32,10 @@ test('dots fill on activity days; future days dimmed, never failed', () => {
   assert.equal(p.jobsDone, 1);
   assert.equal(p.invoicesIssued, 1);
   assert.equal(p.collectedCents, 11300);
+  // Weekly pulse: per-day totals feed the selectable day strip.
+  assert.deepEqual(p.perDay[0], { jobsDone: 1, invoicesIssued: 1, collectedCents: 0 });
+  assert.deepEqual(p.perDay[1], { jobsDone: 0, invoicesIssued: 0, collectedCents: 11300 });
+  assert.deepEqual(p.perDay[2], { jobsDone: 0, invoicesIssued: 0, collectedCents: 0 });
 });
 
 test('quiet week: all dots unfilled, totals zero, no streak anywhere', () => {
@@ -61,4 +65,19 @@ test('out-of-week rows are ignored entirely', () => {
   });
   assert.deepEqual(p.active, [false, false, false, false, false, false, false]);
   assert.equal(p.jobsDone, 0);
+  assert.deepEqual(
+    p.perDay.map((d) => d.jobsDone),
+    [0, 0, 0, 0, 0, 0, 0],
+  );
+});
+
+test('isoWeekNumber follows the Thursday rule', () => {
+  // Week of Mon 2026-10-26 is ISO week 44.
+  assert.equal(isoWeekNumber('2026-10-26'), 44);
+  assert.equal(isoWeekNumber('2026-11-01'), 44);
+  // 2026-01-01 (Thu) is week 1; 2025-12-29 (Mon) is week 1 of 2026.
+  assert.equal(isoWeekNumber('2026-01-01'), 1);
+  assert.equal(isoWeekNumber('2025-12-29'), 1);
+  // 2026-12-31 (Thu) is week 53.
+  assert.equal(isoWeekNumber('2026-12-31'), 53);
 });

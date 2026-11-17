@@ -33,6 +33,7 @@ import TodaysVisits from "@/components/dashboard/TodaysVisits";
 import MoneyPipeline from "@/components/dashboard/MoneyPipeline";
 import Last8Weeks from "@/components/dashboard/Last8Weeks";
 import CustomizePanel from "@/components/dashboard/CustomizePanel";
+import MotionSection from "@/components/dashboard/MotionSection";
 import { getDashboardLayout, type DashboardSectionKey } from "@/lib/dashboard-layout";
 import { canSeePrices } from "@/lib/roles";
 
@@ -140,47 +141,59 @@ export default async function DashboardPage() {
   if (role === "TECHNICIAN") {
     return (
       <div className="space-y-6">
-        <DashboardHeader businessId={businessId} timezone={timezone} regionCode={regionCode} showMoney={showMoney} />
-        <Section errorMessage={errorMessage} retryLabel={retryLabel}>
-          <MorningGlanceSection
-            businessId={businessId}
-            timezone={timezone}
-            regionCode={regionCode}
-            technicianUserId={user.id}
-          />
-        </Section>
-        <Section errorMessage={errorMessage} retryLabel={retryLabel}>
-          <ContinueSection
-            businessId={businessId}
-            timezone={timezone}
-            regionCode={regionCode}
-            technicianUserId={user.id}
-          />
-        </Section>
-        <Section errorMessage={errorMessage} retryLabel={retryLabel}>
-          <NextActionSection
-            businessId={businessId}
-            timezone={timezone}
-            regionCode={regionCode}
-            technicianUserId={user.id}
-          />
-        </Section>
-        <Section errorMessage={errorMessage} retryLabel={retryLabel}>
-          <WeekProgressSection
-            businessId={businessId}
-            timezone={timezone}
-            regionCode={regionCode}
-            technicianUserId={user.id}
-          />
-        </Section>
-        <Section errorMessage={errorMessage} retryLabel={retryLabel}>
-          <TodaysVisits
-            businessId={businessId}
-            timezone={timezone}
-            regionCode={regionCode}
-            technicianUserId={user.id}
-          />
-        </Section>
+        <MotionSection index={0}>
+          <DashboardHeader businessId={businessId} timezone={timezone} regionCode={regionCode} showMoney={showMoney} />
+        </MotionSection>
+        <MotionSection index={1}>
+          <Section errorMessage={errorMessage} retryLabel={retryLabel}>
+            <MorningGlanceSection
+              businessId={businessId}
+              timezone={timezone}
+              regionCode={regionCode}
+              technicianUserId={user.id}
+            />
+          </Section>
+        </MotionSection>
+        <MotionSection index={2}>
+          <Section errorMessage={errorMessage} retryLabel={retryLabel}>
+            <ContinueSection
+              businessId={businessId}
+              timezone={timezone}
+              regionCode={regionCode}
+              technicianUserId={user.id}
+            />
+          </Section>
+        </MotionSection>
+        <MotionSection index={3}>
+          <Section errorMessage={errorMessage} retryLabel={retryLabel}>
+            <NextActionSection
+              businessId={businessId}
+              timezone={timezone}
+              regionCode={regionCode}
+              technicianUserId={user.id}
+            />
+          </Section>
+        </MotionSection>
+        <MotionSection index={4}>
+          <Section errorMessage={errorMessage} retryLabel={retryLabel}>
+            <WeekProgressSection
+              businessId={businessId}
+              timezone={timezone}
+              regionCode={regionCode}
+              technicianUserId={user.id}
+            />
+          </Section>
+        </MotionSection>
+        <MotionSection index={5}>
+          <Section errorMessage={errorMessage} retryLabel={retryLabel}>
+            <TodaysVisits
+              businessId={businessId}
+              timezone={timezone}
+              regionCode={regionCode}
+              technicianUserId={user.id}
+            />
+          </Section>
+        </MotionSection>
       </div>
     );
   }
@@ -199,56 +212,74 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-5">
-      <DashboardHeader businessId={businessId} timezone={timezone} regionCode={regionCode} showMoney={showMoney} />
-      <Section errorMessage={errorMessage} retryLabel={retryLabel}>
-        <MorningGlanceSection businessId={businessId} timezone={timezone} regionCode={regionCode} />
-      </Section>
-      <Section errorMessage={errorMessage} retryLabel={retryLabel}>
-        <ContinueSection businessId={businessId} timezone={timezone} regionCode={regionCode} />
-      </Section>
-      <Section errorMessage={errorMessage} retryLabel={retryLabel}>
-        <NextActionSection businessId={businessId} timezone={timezone} regionCode={regionCode} />
-      </Section>
-      <Section errorMessage={errorMessage} retryLabel={retryLabel}>
-        <WeekProgressSection businessId={businessId} timezone={timezone} regionCode={regionCode} />
-      </Section>
-      <QuickActions />
+      <MotionSection index={0}>
+        <DashboardHeader businessId={businessId} timezone={timezone} regionCode={regionCode} showMoney={showMoney} />
+      </MotionSection>
+      <MotionSection index={1}>
+        <Section errorMessage={errorMessage} retryLabel={retryLabel}>
+          <MorningGlanceSection businessId={businessId} timezone={timezone} regionCode={regionCode} />
+        </Section>
+      </MotionSection>
+      <MotionSection index={2}>
+        <Section errorMessage={errorMessage} retryLabel={retryLabel}>
+          <ContinueSection businessId={businessId} timezone={timezone} regionCode={regionCode} />
+        </Section>
+      </MotionSection>
+      <MotionSection index={3}>
+        <Section errorMessage={errorMessage} retryLabel={retryLabel}>
+          <NextActionSection businessId={businessId} timezone={timezone} regionCode={regionCode} />
+        </Section>
+      </MotionSection>
+      <MotionSection index={4}>
+        <Section errorMessage={errorMessage} retryLabel={retryLabel}>
+          <WeekProgressSection businessId={businessId} timezone={timezone} regionCode={regionCode} />
+        </Section>
+      </MotionSection>
+      <MotionSection index={5}>
+        <QuickActions />
+      </MotionSection>
       {layout
         .filter((s) => s.visible)
-        .map((s) => (
-          <Section key={s.key} errorMessage={errorMessage} retryLabel={retryLabel}>
-            {sections[s.key]}
-          </Section>
+        .map((s, i) => (
+          <MotionSection key={s.key} index={6 + i}>
+            <Section errorMessage={errorMessage} retryLabel={retryLabel}>
+              {sections[s.key]}
+            </Section>
+          </MotionSection>
         ))}
-      <CustomizePanel
-        initial={layout}
-        labels={{
-          customize: L("dashboard.customize"),
-          title: L("dashboard.customizeTitle"),
-          done: L("dashboard.customizeDone"),
-          reset: L("dashboard.customizeReset"),
-          moveUp: L("dashboard.customizeMoveUp"),
-          moveDown: L("dashboard.customizeMoveDown"),
-          show: L("dashboard.customizeShow"),
-          hide: L("dashboard.customizeHide"),
-          saved: L("dashboard.customizeSaved"),
-          saveFailed: L("dashboard.customizeSaveFailed"),
-          sectionNames: {
-            collected: L("dashboard.sectionCollected"),
-            needsYou: L("dashboard.sectionNeedsYou"),
-            keyNumbers: L("dashboard.sectionKeyNumbers"),
-            visits: L("dashboard.sectionVisits"),
-            pipeline: L("dashboard.sectionPipeline"),
-            last8Weeks: L("dashboard.sectionLast8Weeks"),
-          },
-        }}
-      />
-      <OnboardingChecklist
-        locale={locale}
-        businessId={businessId}
-        completed={onboardingCompleted}
-        tailoredSteps={tailoredSteps}
-      />
+      <MotionSection index={12}>
+        <CustomizePanel
+          initial={layout}
+          labels={{
+            customize: L("dashboard.customize"),
+            title: L("dashboard.customizeTitle"),
+            done: L("dashboard.customizeDone"),
+            reset: L("dashboard.customizeReset"),
+            moveUp: L("dashboard.customizeMoveUp"),
+            moveDown: L("dashboard.customizeMoveDown"),
+            show: L("dashboard.customizeShow"),
+            hide: L("dashboard.customizeHide"),
+            saved: L("dashboard.customizeSaved"),
+            saveFailed: L("dashboard.customizeSaveFailed"),
+            sectionNames: {
+              collected: L("dashboard.sectionCollected"),
+              needsYou: L("dashboard.sectionNeedsYou"),
+              keyNumbers: L("dashboard.sectionKeyNumbers"),
+              visits: L("dashboard.sectionVisits"),
+              pipeline: L("dashboard.sectionPipeline"),
+              last8Weeks: L("dashboard.sectionLast8Weeks"),
+            },
+          }}
+        />
+      </MotionSection>
+      <MotionSection index={13}>
+        <OnboardingChecklist
+          locale={locale}
+          businessId={businessId}
+          completed={onboardingCompleted}
+          tailoredSteps={tailoredSteps}
+        />
+      </MotionSection>
     </div>
   );
 }
