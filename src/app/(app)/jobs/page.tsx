@@ -54,7 +54,7 @@ export default async function JobsPage({
     prisma.job.count({ where: { businessId } }),
     // New Job modal: the real JobForm needs the customer + crew pickers.
     prisma.customer.findMany({
-      where: { businessId },
+      where: { businessId, archivedAt: null },
       select: { id: true, name: true },
       orderBy: { name: 'asc' },
     }),

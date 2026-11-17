@@ -84,7 +84,7 @@ export default async function InvoicesPage({
       // InvoiceForm, so the list page supplies its customers like
       // /invoices/new.
       prisma.customer.findMany({
-        where: { businessId },
+        where: { businessId, archivedAt: null },
         select: { id: true, name: true },
         orderBy: { name: 'asc' },
       }),

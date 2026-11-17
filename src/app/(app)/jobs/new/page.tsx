@@ -25,7 +25,7 @@ export default async function NewJobPage({
   const locale = await getLocale();
 
   const customers = await prisma.customer.findMany({
-    where: { businessId },
+    where: { businessId, archivedAt: null },
     select: { id: true, name: true },
     orderBy: { name: 'asc' },
   });

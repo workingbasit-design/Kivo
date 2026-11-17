@@ -204,7 +204,7 @@ export default function GoogleReviewsPanel({
           <p className="text-xs text-ink-2">{G(locale, 'connectDesc')}</p>
           <a
             href="/api/google/connect"
-            className="min-h-[44px] inline-flex items-center gap-2 bg-asphalt hover:bg-hero-2 text-hero-ink px-4 rounded-xl font-bold text-xs"
+            className="min-h-[44px] inline-flex items-center gap-2 bg-hivis text-hivis-ink px-4 rounded-xl font-bold text-xs"
           >
             <ExternalLink size={13} /> {G(locale, 'connectButton')}
           </a>

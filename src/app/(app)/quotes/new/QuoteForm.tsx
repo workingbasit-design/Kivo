@@ -121,6 +121,7 @@ export default function QuoteForm({
           <MorphSelect
             id="quote-customer"
             label={t(locale, 'quotes.customerLabel')}
+            placeholder={t(locale, 'quotes.selectCustomer')}
             options={customers.map((c) => ({ value: c.id, label: c.name }))}
             value={customerId}
             onChange={setCustomerId}

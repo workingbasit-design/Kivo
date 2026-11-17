@@ -102,7 +102,7 @@ export default async function ExpensesPage({
       {/* Filters */}
       <Card className="p-4 md:p-5">
         <form method="GET" action="/expenses" className="flex flex-col gap-3">
-          <div className="flex gap-2 items-end">
+          <div className="flex flex-col gap-3 sm:flex-row sm:gap-2 sm:items-end">
             <div className="flex-1 min-w-0">
               <Input
                 label={F('search')}
@@ -111,11 +111,11 @@ export default async function ExpensesPage({
                 placeholder={F('search')}
               />
             </div>
-            <Button type="submit" variant="secondary" sm>
+            <Button type="submit" variant="secondary" sm className="w-full sm:w-auto justify-center">
               {F('search').split('…')[0]}
             </Button>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
             <Select
               label={F('category')}
               name="category"

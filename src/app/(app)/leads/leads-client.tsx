@@ -8,6 +8,7 @@ import { createLead, updateLeadStatus, deleteLead } from '@/app/actions/leads';
 import { convertLeadToCustomer } from '@/app/actions/customers';
 import { formatDateShort } from '@/lib/utils';
 import { LEAD_STATUSES } from '@/lib/validations';
+import { PageHeader } from '@/components/kit';
 
 /**
  * Fires a toast exactly once per server-action result. Minimal inline
@@ -292,21 +293,16 @@ function LeadCard({ lead, locale }: { lead: LeadItem; locale: Locale }) {
   );
 }
 
-export function AddLeadForm({ locale = 'en' }: { locale?: Locale }) {
-  const [open, setOpen] = useState(false);
+/**
+ * The new-lead form card. Shared by the inline toggle (AddLeadForm, used
+ * in the empty state) and the page header (LeadsHeader).
+ */
+function LeadForm({ locale, onClose }: { locale: Locale; onClose: () => void }) {
   const [state, formAction, isPending] = useActionState(createLead, {});
 
   useResultToast(state, {
     success: t(locale, 't10money.leadSaved'),
   });
-
-  if (!open) {
-    return (
-      <Button variant="primary" sm onClick={() => setOpen(true)}>
-        <Plus size={14} /> {t(locale, 't10money.leadAdd')}
-      </Button>
-    );
-  }
 
   return (
     <form action={formAction} className="bg-surface border border-line shadow-kit-card rounded-[20px] p-5 space-y-4">
@@ -314,7 +310,7 @@ export function AddLeadForm({ locale = 'en' }: { locale?: Locale }) {
         <h3 className="font-bold text-sm text-ink">{t(locale, 't10money.leadNew')}</h3>
         <button
           type="button"
-          onClick={() => setOpen(false)}
+          onClick={onClose}
           aria-label={t(locale, 't10money.leadClose')}
           className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center text-ink-2 hover:text-ink-2"
         >
@@ -375,11 +371,53 @@ export function AddLeadForm({ locale = 'en' }: { locale?: Locale }) {
         <Button type="submit" variant="primary" disabled={isPending}>
           {isPending ? t(locale, 't10money.leadSaving') : t(locale, 't10money.leadSave')}
         </Button>
-        <Button type="button" variant="secondary" onClick={() => setOpen(false)}>
+        <Button type="button" variant="secondary" onClick={onClose}>
           {t(locale, 't10money.leadCancel')}
         </Button>
       </div>
     </form>
+  );
+}
+
+export function AddLeadForm({ locale = 'en' }: { locale?: Locale }) {
+  const [open, setOpen] = useState(false);
+
+  if (!open) {
+    return (
+      <Button variant="primary" sm onClick={() => setOpen(true)}>
+        <Plus size={14} /> {t(locale, 't10money.leadAdd')}
+      </Button>
+    );
+  }
+
+  return <LeadForm locale={locale} onClose={() => setOpen(false)} />;
+}
+
+/**
+ * Page head for /leads: the kit PageHeader puts "+ Add lead" top-right
+ * like every other list page; the form opens below the header.
+ */
+export function LeadsHeader({
+  locale = 'en',
+  title,
+  summary,
+}: {
+  locale?: Locale;
+  title: string;
+  summary?: string;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <PageHeader
+        title={title}
+        summary={summary}
+        actionLabel={t(locale, 't10money.leadAdd')}
+        onAction={() => setOpen((v) => !v)}
+      />
+      {open && <LeadForm locale={locale} onClose={() => setOpen(false)} />}
+    </>
   );
 }
 

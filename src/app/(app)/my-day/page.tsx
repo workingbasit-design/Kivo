@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { formatJobTime } from '@/lib/utils';
 import { getLocale } from '@/lib/i18n/server';
 import Link from 'next/link';
+import { CalendarBlank } from '@/components/icons';
+import { EmptyState } from '@/components/kit';
 
 export default async function MyDayPage() {
   const session = await requireAuth();
@@ -62,13 +64,11 @@ export default async function MyDayPage() {
   }[locale === 'fr' ? 'fr' : 'en'];
 
   return (
-    <div className="p-4 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">{t.title}</h1>
-      
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold">{t.title}</h1>
+
       {jobs.length === 0 ? (
-        <div className="text-center py-12 text-ink-2">
-          <p>{t.noJobs}</p>
-        </div>
+        <EmptyState icon={<CalendarBlank />} title={t.noJobs} />
       ) : (
         <div className="space-y-4">
           {jobs.map((job) => (
@@ -79,7 +79,7 @@ export default async function MyDayPage() {
                   <div className="text-sm text-ink-2">{job.title}</div>
                 </div>
                 <span className={`px-2 py-1 rounded text-xs ${
-                  job.status === 'IN PROGRESS' ? 'bg-info-bg text-info' : 'bg-surface-2 text-ink'
+                  job.status === 'IN PROGRESS' ? 'bg-ok-bg text-ok' : 'bg-surface-2 text-ink'
                 }`}>
                   {job.status}
                 </span>

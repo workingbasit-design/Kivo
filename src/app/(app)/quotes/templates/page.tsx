@@ -5,8 +5,8 @@ import { canSeePrices } from '@/lib/roles';
 import { prisma } from '@/lib/prisma';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
-import { PageTitle } from '../../_components/PageTitle';
-import { Button, Card } from '@/components/kit';
+import { Card } from '@/components/kit';
+import { PageHeader } from '@/components/kit';
 
 /**
  * Slice 4: quote template list. Server-rendered — deletion lives on the
@@ -32,15 +32,12 @@ export default async function TemplatesPage() {
 
   return (
     <div className="space-y-6">
-      <PageTitle
+      <PageHeader
         title={t(locale, 'quotes.templates.title')}
         summary={t(locale, 'quotes.templates.subtitle')}
+        actionLabel={t(locale, 'quotes.templates.newTemplate')}
+        actionHref="/quotes/templates/new"
       />
-      <div>
-        <Button variant="primary" href="/quotes/templates/new">
-          {t(locale, 'quotes.templates.newTemplate')}
-        </Button>
-      </div>
 
       {templates.length === 0 ? (
         <Card className="p-6 space-y-2">

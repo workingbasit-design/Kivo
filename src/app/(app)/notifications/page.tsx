@@ -21,10 +21,10 @@ import { PageTitle } from '../_components/PageTitle';
 export const metadata = { title: 'Notifications | EveryJob' };
 
 const TYPE_ICON_BG: Record<string, string> = {
-  job_tomorrow: 'bg-info-bg text-info',
+  job_tomorrow: 'bg-ok-bg text-ok',
   job_soon: 'bg-warn-bg text-warn-text',
   invoice_overdue: 'bg-danger-bg text-danger',
-  quote_expiring: 'bg-info-bg text-info',
+  quote_expiring: 'bg-ok-bg text-ok',
   booking_new: 'bg-hivis-soft text-hivis-ink',
   payment_recorded: 'bg-ok-bg text-ok',
 };

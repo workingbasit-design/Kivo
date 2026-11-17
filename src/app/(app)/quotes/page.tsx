@@ -89,7 +89,7 @@ export default async function QuotesPage({
     // Quotes redesign: the New Quote modal wraps the real QuoteForm, so
     // the list page supplies its customers + templates like /quotes/new.
     prisma.customer.findMany({
-      where: { businessId },
+      where: { businessId, archivedAt: null },
       select: { id: true, name: true },
       orderBy: { name: 'asc' },
     }),

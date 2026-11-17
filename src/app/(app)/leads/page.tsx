@@ -5,8 +5,7 @@ import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { prisma } from '@/lib/prisma';
 import { Card } from '@/components/kit';
-import { AddLeadForm, LeadsBoard, type LeadItem } from './leads-client';
-import { PageTitle } from '../_components/PageTitle';
+import { AddLeadForm, LeadsBoard, LeadsHeader, type LeadItem } from './leads-client';
 import { EmptyState } from '@/components/kit';
 
 export default async function LeadsPage() {
@@ -40,7 +39,8 @@ export default async function LeadsPage() {
 
   return (
     <div className="space-y-6">
-      <PageTitle
+      <LeadsHeader
+        locale={locale}
         title={T('title')}
         summary={
           newCount > 0
@@ -48,9 +48,6 @@ export default async function LeadsPage() {
             : T('subtitleDefault')
         }
       />
-      <div className="flex flex-wrap gap-2">
-        <AddLeadForm locale={locale} />
-      </div>
 
       {leads.length === 0 ? (
         <Card>

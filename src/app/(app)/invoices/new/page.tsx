@@ -30,7 +30,7 @@ export default async function NewInvoicePage({
 
   const [customers, business] = await Promise.all([
     prisma.customer.findMany({
-      where: { businessId },
+      where: { businessId, archivedAt: null },
       select: { id: true, name: true },
       orderBy: { name: 'asc' },
     }),

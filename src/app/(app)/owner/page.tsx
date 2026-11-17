@@ -123,7 +123,7 @@ export default async function OwnerPage() {
                 </p>
                 {health.subs.map((s) => (
                   <div key={s.key} className="flex items-baseline justify-between gap-3">
-                    <p className="text-xs text-ink-2 truncate">
+                    <p className="text-xs text-ink-2 min-w-0 leading-relaxed">
                       {t(locale, s.titleKey)}
                       <span className="text-ink-2">
                         {" "}

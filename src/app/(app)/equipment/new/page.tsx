@@ -24,7 +24,7 @@ export default async function NewEquipmentPage({
   const { customerId } = await searchParams;
 
   const customers = await prisma.customer.findMany({
-    where: { businessId },
+    where: { businessId, archivedAt: null },
     select: { id: true, name: true },
     orderBy: { name: 'asc' },
     take: 500,

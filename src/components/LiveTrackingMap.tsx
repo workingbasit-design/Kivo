@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import DispatcherMap, { type MapPin } from '@/components/DispatcherMap';
+import { MapPin as MapPinIcon, Wrench as WrenchIcon } from '@/components/icons';
 import { Button } from '@/components/kit';
 import { t } from '@/lib/i18n';
 import type { Locale } from '@/lib/i18n';
@@ -79,8 +80,8 @@ export default function LiveTrackingMap({ locale = 'en' }: { locale?: Locale }) 
   if (jobs.length === 0) {
     return (
       <div className="py-8 text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-surface-2 text-3xl">
-          🗺️
+        <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-2xl bg-surface-2 text-ink shadow-[inset_0_0_0_1px_var(--line)]">
+          <MapPinIcon className="h-8 w-8" aria-hidden="true" />
         </div>
         <h3 className="text-lg font-bold text-ink">
           {t(locale, 'gps.noJobsTitle') || 'No active jobs today'}
@@ -101,7 +102,8 @@ export default function LiveTrackingMap({ locale = 'en' }: { locale?: Locale }) 
       <div className="space-y-4">
         <div className="rounded-xl bg-info-bg border border-info/25 p-4">
           <h3 className="font-bold text-info text-sm">
-            📍 {t(locale, 'gps.howToShareTitle') || 'How live tracking works'}
+            <MapPinIcon className="mr-1 inline h-4 w-4" aria-hidden="true" />
+            {t(locale, 'gps.howToShareTitle') || 'How live tracking works'}
           </h3>
           <ol className="mt-2 space-y-1.5 text-sm text-ink-2">
             <li>1. {t(locale, 'gps.howToShare1') || 'Open the job on your technician\'s phone'}</li>
@@ -124,8 +126,8 @@ export default function LiveTrackingMap({ locale = 'en' }: { locale?: Locale }) 
                 href={`/jobs/${job.id}`}
                 className="flex items-center gap-3 rounded-xl border border-line bg-surface p-3 hover:border-line-strong hover:shadow-sm transition-shadow"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-2 text-lg">
-                  🔧
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-2 text-ink">
+                  <WrenchIcon className="h-5 w-5" aria-hidden="true" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-ink">{job.title}</p>
@@ -168,8 +170,8 @@ export default function LiveTrackingMap({ locale = 'en' }: { locale?: Locale }) 
               href={`/jobs/${job.id}`}
               className="flex items-center gap-3 rounded-xl border border-ok/25 bg-ok-bg/50 p-3 hover:shadow-sm transition-shadow"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ok-bg text-lg">
-                📍
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ok-bg text-ok">
+                <MapPinIcon className="h-5 w-5" aria-hidden="true" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-ink">{job.title}</p>

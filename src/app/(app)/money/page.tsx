@@ -164,7 +164,7 @@ export default async function MoneyPage() {
     // The New Invoice modal wraps the real InvoiceForm, so the money
     // page supplies its customers like /invoices/new.
     prisma.customer.findMany({
-      where: { businessId },
+      where: { businessId, archivedAt: null },
       select: { id: true, name: true },
       orderBy: { name: 'asc' },
     }),

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BellRing, CalendarClock, FileText, PhoneMissed } from '@/components/icons';
+import { BellRing, FileText, PhoneMissed } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';
@@ -80,7 +80,7 @@ export default async function RemindersPage() {
     }),
     // Customers with phone numbers, for the manual missed-call quick-draft.
     prisma.customer.findMany({
-      where: { businessId, phone: { not: null } },
+      where: { businessId, archivedAt: null, phone: { not: null } },
       select: { id: true, name: true, phone: true },
       orderBy: { name: 'asc' },
       take: 200,
@@ -115,16 +115,10 @@ export default async function RemindersPage() {
 
       {/* Upcoming jobs */}
       <section aria-label={t(locale, 'reminders.upcomingJobs')}>
+        <h2 className="text-xs font-bold text-ink-2 mb-2 px-1">
+          {t(locale, 'reminders.upcomingJobs')}
+        </h2>
         <Card className="p-4 sm:p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <span className="w-8 h-8 rounded-xl bg-asphalt text-lime flex items-center justify-center shrink-0">
-              <CalendarClock size={16} />
-            </span>
-            <h2 className="text-sm font-bold text-ink">
-              {t(locale, 'reminders.upcomingJobs')}
-            </h2>
-          </div>
-
           {jobs.length === 0 ? (
             <EmptyState
               icon={<BellRing />}
@@ -160,16 +154,10 @@ export default async function RemindersPage() {
 
       {/* Invoice follow-ups */}
       <section aria-label={t(locale, 'reminders.invoiceFollowups')}>
+        <h2 className="text-xs font-bold text-ink-2 mb-2 px-1">
+          {t(locale, 'reminders.invoiceFollowups')}
+        </h2>
         <Card className="p-4 sm:p-5">
-          <div className="flex items-center gap-2 mb-4">
-            <span className="w-8 h-8 rounded-xl bg-warn-bg text-warn-text flex items-center justify-center shrink-0">
-              <FileText size={16} />
-            </span>
-            <h2 className="text-sm font-bold text-ink">
-              {t(locale, 'reminders.invoiceFollowups')}
-            </h2>
-          </div>
-
           {invoices.length === 0 ? (
             <EmptyState
               icon={<FileText />}

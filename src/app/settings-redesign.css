@@ -28,6 +28,10 @@
   margin: 0 -2px;
   background: var(--bg);
   scrollbar-width: none;
+  /* Scroll affordance (same fade as kit FilterChips): the row scrolls
+     with a hidden scrollbar, so the fading right edge signals more tabs. */
+  -webkit-mask-image: linear-gradient(to right, black calc(100% - 28px), transparent);
+  mask-image: linear-gradient(to right, black calc(100% - 28px), transparent);
 }
 .ej-settings-tabs::-webkit-scrollbar { display: none; }
 .ej-settings-tabs a {

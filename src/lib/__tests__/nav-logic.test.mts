@@ -61,4 +61,10 @@ describe('isTabActive', () => {
     assert.equal(isTabActive('/schedule', '/dashboard'), false);
     assert.equal(isTabActive('/dashboard', '/schedule'), false);
   });
+
+  it('treats /my-day as the Today tab', () => {
+    assert.equal(isTabActive('/my-day', '/dashboard'), true);
+    assert.equal(isTabActive('/my-day', '/schedule'), false);
+    assert.equal(isTabActive('/my-day', '/jobs'), false);
+  });
 });

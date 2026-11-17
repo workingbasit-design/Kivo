@@ -14,12 +14,16 @@ export default function MorphSelect<T extends string>({
   onChange,
   label,
   id,
+  placeholder,
 }: {
   options: readonly { value: T; label: string }[];
   value: T;
   onChange: (v: T) => void;
   label?: string;
   id: string;
+  /** Shown in the trigger when nothing is selected yet (otherwise the
+   *  trigger renders empty, just a chevron). */
+  placeholder?: string;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -54,7 +58,11 @@ export default function MorphSelect<T extends string>({
         className="min-h-[44px] px-4 rounded-xl border border-line bg-surface text-sm font-semibold text-ink inline-flex items-center gap-2 shadow-sm"
         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
       >
-        {selected?.label ?? value}
+        {selected ? (
+          selected.label
+        ) : (
+          <span className="text-ink-2 font-medium">{placeholder ?? value}</span>
+        )}
         <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>
           <ChevronDown size={16} />
         </motion.span>

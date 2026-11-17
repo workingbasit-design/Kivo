@@ -9,7 +9,7 @@ export default async function ExportsPage() {
   const locale = await getLocale();
   
   return (
-    <div className="max-w-2xl mx-auto p-4 md:p-6">
+    <div className="space-y-6">
       <h1 className="text-xl font-bold text-ink mb-2">
         {locale === 'fr' ? 'Export comptable' : 'Accounting export'}
       </h1>

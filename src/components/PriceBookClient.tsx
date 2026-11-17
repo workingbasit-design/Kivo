@@ -200,12 +200,12 @@ export default function PriceBookClient({
   return (
     <div className="space-y-6">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface p-6 rounded-[20px] border border-line shadow-kit-card">
-        <div>
-          <h1 className="text-3xl font-bold text-ink tracking-tight">
+      <header className="flex flex-wrap items-end justify-between gap-x-3 gap-y-2.5 px-0 pb-[14px] pt-1.5">
+        <div className="min-w-0 flex-[1_1_200px]">
+          <h1 className="m-0 text-[28px] font-bold leading-[1.1] tracking-tight text-ink">
             {tr('t10misc.pricebook.title')}
           </h1>
-          <p className="text-ink-2 mt-1">{tr('t10misc.pricebook.subtitle')}</p>
+          <p className="mb-0 mt-[5px] text-[16px] text-ink-2">{tr('t10misc.pricebook.subtitle')}</p>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
@@ -225,7 +225,7 @@ export default function PriceBookClient({
             <Plus size={16} /> {tr('t10misc.pricebook.addService')}
           </Button>
         </div>
-      </div>
+      </header>
 
       {/* Main Container */}
       {error && (
@@ -244,7 +244,7 @@ export default function PriceBookClient({
       )}
       <div className="bg-surface rounded-2xl shadow-sm border border-line p-6">
         {/* Search Bar */}
-        <div className="relative max-w-md mb-6">
+        <div className="relative mb-6">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-2" size={16} />
           <input
             type="text"
@@ -347,7 +347,7 @@ export default function PriceBookClient({
           ))}
 
           {filteredServices.length === 0 && (
-            <div className="col-span-full py-16 flex flex-col items-center justify-center text-ink-2 border-2 border-dashed border-line rounded-2xl text-center">
+            <div className="col-span-full py-16 flex flex-col items-center justify-center text-ink-2 border border-line rounded-2xl text-center">
               <Tag size={40} className="text-line-strong mb-3" />
               {initialServices.length === 0 ? (
                 <>

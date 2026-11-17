@@ -24,7 +24,7 @@ export default async function NewQuotePage() {
 
   const [customers, business, templates] = await Promise.all([
     prisma.customer.findMany({
-      where: { businessId },
+      where: { businessId, archivedAt: null },
       select: { id: true, name: true },
       orderBy: { name: 'asc' },
     }),

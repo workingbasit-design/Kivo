@@ -24,6 +24,10 @@ export function isTabActive(pathname: string, href: string): boolean {
   if (href === '/dashboard' && (pathname === '/digest' || pathname.startsWith('/digest/'))) {
     return true;
   }
+  // My Day is the Today view: the Today tab reads as active there too.
+  if (href === '/dashboard' && pathname === '/my-day') {
+    return true;
+  }
   return false;
 }
 

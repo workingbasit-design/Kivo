@@ -41,7 +41,10 @@ export default function AppSidebar({
   const isActive = (href: string) =>
     pathname === href ||
     pathname.startsWith(href + '/') ||
-    (pathname === '/' && href === '/dashboard');
+    (pathname === '/' && href === '/dashboard') ||
+    // My Day is the Today view for the signed-in member: the Today
+    // (/dashboard) item reads as active there, like /digest.
+    (pathname === '/my-day' && href === '/dashboard');
 
   // Advanced group: collapsed by default, persisted per device (shared with
   // the mobile More sheet). Auto-expands on an advanced route.

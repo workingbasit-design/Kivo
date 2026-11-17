@@ -310,13 +310,13 @@ export default function JobForm({
               No price set - is this a no-charge job?
             </p>
           )}
-          <label className="mt-3 flex items-center gap-2.5 cursor-pointer min-h-[44px]">
+          <label className="mt-3 flex items-start gap-2.5 cursor-pointer min-h-[44px]">
             <input
               type="checkbox"
               name="noCharge"
               checked={noCharge}
               onChange={(e) => setNoCharge(e.target.checked)}
-              className="h-5 w-5 rounded-md border-line-strong accent-ink"
+              className="mt-0.5 h-5 w-5 shrink-0 rounded-md border-line-strong accent-ink"
             />
             <span className="text-sm text-ink">
               {T('formNoCharge')}{' '}

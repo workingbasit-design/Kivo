@@ -13,7 +13,7 @@ export default async function NewProjectPage() {
   const locale = await getLocale();
 
   const customers = await prisma.customer.findMany({
-    where: { businessId },
+    where: { businessId, archivedAt: null },
     select: { id: true, name: true },
     orderBy: { name: "asc" },
     take: 500,

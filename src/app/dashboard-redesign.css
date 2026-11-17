@@ -382,9 +382,6 @@
   background: var(--surface);
   color: var(--ink);
 }
-.dark .ej-sidebar {
-  background: color-mix(in srgb, var(--ok) 6%, var(--surface));
-}
 .ej-side-icon-btn {
   display: inline-flex;
   min-width: 36px;
@@ -408,9 +405,6 @@
   border: 1px solid var(--line);
   border-radius: 16px;
   background: var(--surface);
-}
-.dark .ej-side-summary {
-  background: color-mix(in srgb, var(--ok) 8%, var(--surface));
 }
 .ej-side-summary-eyebrow {
   margin-bottom: 4px;
@@ -467,14 +461,10 @@
   background: var(--surface-2);
   color: var(--ink);
 }
-.dark .ej-side-link:hover {
-  background: color-mix(in srgb, var(--ink) 6%, transparent);
-}
 .ej-side-link[aria-current="page"] {
   background: var(--hivis);
   color: var(--hivis-ink);
   font-weight: 600;
-  box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 8%, transparent);
 }
 .ej-side-link[aria-current="page"]:hover {
   background: var(--hivis);
@@ -489,20 +479,15 @@
   justify-content: center;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: var(--surface);
-  color: var(--ink-2);
-}
-.dark .ej-side-icon {
-  background: color-mix(in srgb, var(--ok) 10%, var(--surface));
-  border-color: color-mix(in srgb, var(--ink) 10%, transparent);
-  color: var(--ink-2);
+  background: var(--surface-2);
+  color: var(--ink);
 }
 .ej-side-link:hover .ej-side-icon {
   color: var(--ink);
 }
 .ej-side-link[aria-current="page"] .ej-side-icon {
-  border-color: color-mix(in srgb, var(--hivis-ink) 16%, transparent);
-  background: color-mix(in srgb, var(--surface) 22%, transparent);
+  border-color: transparent;
+  background: transparent;
   color: var(--hivis-ink);
 }
 .ej-sidebar-bottom {
@@ -526,9 +511,6 @@
 .ej-side-profile:hover {
   background: var(--surface-2);
   color: var(--ink);
-}
-.dark .ej-side-profile:hover {
-  background: color-mix(in srgb, var(--ink) 6%, transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {
