@@ -25,7 +25,10 @@ register('./register-loader.mjs', import.meta.url);
 const { auditUserAction } = await import('../audit.ts');
 
 const REPO = join(import.meta.dirname, '..', '..', '..');
-const INVOICES = readFileSync(join(REPO, 'src/app/actions/invoices.ts'), 'utf8');
+
+function readRel(rel: string): string {
+  return readFileSync(join(REPO, rel), 'utf8');
+}
 
 function bodyOf(src: string, fn: string): string {
   const start = src.indexOf(`export async function ${fn}(`);
@@ -34,25 +37,55 @@ function bodyOf(src: string, fn: string): string {
   return next === -1 ? src.slice(start) : src.slice(start, next);
 }
 
-const MONEY_POINTS: Array<{
+interface AuditPoint {
+  file: string;
   fn: string;
   action: string;
   entity: string;
   inTx: boolean;
-}> = [
-  { fn: 'createInvoice', action: 'MONEY_CREATE', entity: 'Invoice', inTx: true },
-  { fn: 'updateInvoiceStatus', action: 'MONEY_UPDATE', entity: 'Invoice', inTx: false },
-  { fn: 'deleteInvoice', action: 'DELETE', entity: 'Invoice', inTx: false },
-  { fn: 'voidInvoice', action: 'MONEY_VOID', entity: 'Invoice', inTx: false },
-  { fn: 'voidPayment', action: 'PAYMENT_VOID', entity: 'Payment', inTx: true },
-  { fn: 'createCreditNote', action: 'CREDIT_NOTE_CREATE', entity: 'CreditNote', inTx: true },
-  { fn: 'recordPayment', action: 'PAYMENT_RECORD', entity: 'Payment', inTx: true },
-  { fn: 'sendInvoiceEmail', action: 'INVOICE_SEND', entity: 'Invoice', inTx: false },
+}
+
+const MONEY_POINTS: AuditPoint[] = [
+  { file: 'src/app/actions/invoices.ts', fn: 'createInvoice', action: 'MONEY_CREATE', entity: 'Invoice', inTx: true },
+  { file: 'src/app/actions/invoices.ts', fn: 'updateInvoiceStatus', action: 'MONEY_UPDATE', entity: 'Invoice', inTx: false },
+  { file: 'src/app/actions/invoices.ts', fn: 'deleteInvoice', action: 'DELETE', entity: 'Invoice', inTx: false },
+  { file: 'src/app/actions/invoices.ts', fn: 'voidInvoice', action: 'MONEY_VOID', entity: 'Invoice', inTx: false },
+  { file: 'src/app/actions/invoices.ts', fn: 'voidPayment', action: 'PAYMENT_VOID', entity: 'Payment', inTx: true },
+  { file: 'src/app/actions/invoices.ts', fn: 'createCreditNote', action: 'CREDIT_NOTE_CREATE', entity: 'CreditNote', inTx: true },
+  { file: 'src/app/actions/invoices.ts', fn: 'recordPayment', action: 'PAYMENT_RECORD', entity: 'Payment', inTx: true },
+  { file: 'src/app/actions/invoices.ts', fn: 'sendInvoiceEmail', action: 'INVOICE_SEND', entity: 'Invoice', inTx: false },
 ];
 
-for (const { fn, action, entity, inTx } of MONEY_POINTS) {
-  test(`${fn} audits ${action} on ${entity}`, () => {
-    const body = bodyOf(INVOICES, fn);
+// F1b: team/settings, deletes, auth events. All non-transactional.
+const F1B_POINTS: AuditPoint[] = [
+  { file: 'src/app/actions/settings.ts', fn: 'updateBusinessSettings', action: 'SETTINGS_CHANGE', entity: 'Business', inTx: false },
+  { file: 'src/app/actions/settings.ts', fn: 'inviteTeamMember', action: 'TEAM_INVITE', entity: 'Membership', inTx: false },
+  { file: 'src/app/actions/settings.ts', fn: 'removeTeamMember', action: 'TEAM_REMOVE', entity: 'Membership', inTx: false },
+  { file: 'src/app/actions/settings.ts', fn: 'suspendTeamMember', action: 'ARCHIVE', entity: 'Membership', inTx: false },
+  { file: 'src/app/actions/settings.ts', fn: 'unsuspendTeamMember', action: 'RESTORE', entity: 'Membership', inTx: false },
+  { file: 'src/app/actions/settings.ts', fn: 'changeTeamMemberRole', action: 'ROLE_CHANGE', entity: 'Membership', inTx: false },
+  { file: 'src/app/actions/jobs.ts', fn: 'deleteJob', action: 'DELETE', entity: 'Job', inTx: false },
+  { file: 'src/app/actions/customers.ts', fn: 'deleteCustomer', action: 'DELETE', entity: 'Customer', inTx: false },
+  { file: 'src/app/actions/quotes.ts', fn: 'deleteQuote', action: 'DELETE', entity: 'Quote', inTx: false },
+  { file: 'src/app/actions/quotes.ts', fn: 'recordQuoteDeposit', action: 'PAYMENT_RECORD', entity: 'QuoteDeposit', inTx: false },
+  { file: 'src/app/actions/auth.ts', fn: 'login', action: 'LOGIN', entity: 'User', inTx: false },
+  { file: 'src/app/actions/auth.ts', fn: 'logout', action: 'LOGOUT', entity: 'User', inTx: false },
+  { file: 'src/app/actions/password-reset.ts', fn: 'resetPassword', action: 'PASSWORD_CHANGE', entity: 'User', inTx: false },
+];
+
+const SRC_CACHE = new Map<string, string>();
+function srcOf(file: string): string {
+  let src = SRC_CACHE.get(file);
+  if (!src) {
+    src = readRel(file);
+    SRC_CACHE.set(file, src);
+  }
+  return src;
+}
+
+for (const { file, fn, action, entity, inTx } of [...MONEY_POINTS, ...F1B_POINTS]) {
+  test(`${file} :: ${fn} audits ${action} on ${entity}`, () => {
+    const body = bodyOf(srcOf(file), fn);
     assert.match(body, /auditUserAction\(/, `${fn} never calls auditUserAction`);
     assert.ok(
       body.includes(`'${action}'`),
@@ -62,8 +95,13 @@ for (const { fn, action, entity, inTx } of MONEY_POINTS) {
       body.includes(`'${entity}'`),
       `${fn} must audit entity type '${entity}'`
     );
-    // The actor comes from requireAuth in the same function.
-    assert.match(body, /actorId/, `${fn} must capture the actor id for the audit row`);
+    // The audit call itself must carry the actor (user / actorId).
+    const callAt = body.indexOf('auditUserAction(');
+    const call = body.slice(callAt, callAt + 200);
+    assert.ok(
+      call.includes('user') || call.includes('actorId'),
+      `${fn} must pass the actor to the audit call`
+    );
     if (inTx) {
       // Transactional sites pass the tx client, not the base client.
       assert.match(
@@ -75,7 +113,7 @@ for (const { fn, action, entity, inTx } of MONEY_POINTS) {
       // Non-transactional sites must not fail the response on audit error.
       assert.match(
         body,
-        /catch \(err\) \{\s*\n?\s*console\.error\('invoices: audit write failed/,
+        /catch \(err\) \{\s*\n?\s*console\.error\('[^']*: audit write failed/,
         `${fn} must swallow audit failures after the mutation committed`
       );
     }

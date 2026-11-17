@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
 import { requireAuth } from '@/lib/auth';
+import { auditUserAction } from '@/lib/audit';
 import { requireMembership } from '@/lib/membership';
 import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { customerSchema } from '@/lib/validations';
@@ -269,6 +270,18 @@ export async function deleteCustomer(
   }
 
   await prisma.customer.delete({ where: { id, businessId } });
+  try {
+    await auditUserAction(
+      prisma,
+      { businessId, user },
+      'DELETE',
+      'Customer',
+      id,
+      { archivedAt: existing.archivedAt?.toISOString() ?? null }
+    );
+  } catch (err) {
+    console.error('customers: audit write failed for deleteCustomer', { businessId, error: err });
+  }
 
   revalidatePath('/customers');
   redirect('/customers');

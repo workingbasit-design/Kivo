@@ -13,6 +13,7 @@ import { sendPlatformEmail } from '@/lib/messaging/platform-email';
 import { welcomeEmail } from '@/lib/messaging/email-templates';
 import { validateCanadianPhone } from '@/lib/google-auth';
 import { getActiveMembershipForUser } from '@/lib/membership';
+import { auditUserAction } from '@/lib/audit';
 import { defaultFeatureFlags } from '@/lib/feature-flags';
 import { revalidatePath } from 'next/cache';
 
@@ -217,12 +218,45 @@ export async function login(
   }
 
   await createSession(user.id);
+  // F1b: successful sign-in only — failed attempts are already reported
+  // to the brute-force alert (reportLoginFailure) and must not oracle
+  // whether the email exists.
+  try {
+    await auditUserAction(
+      prisma,
+      { businessId: membership.businessId, user },
+      'LOGIN',
+      'User',
+      user.id
+    );
+  } catch (err) {
+    console.error('auth: audit write failed for login', { error: err });
+  }
   redirect('/dashboard');
 }
 
 /** Log out everywhere for this session. */
 export async function logout(): Promise<void> {
+  const session = await getSession();
   await destroySession();
+  // F1b: audit the sign-out against the session that just ended; a
+  // missing session or membership simply means there is nothing to log.
+  if (session?.user) {
+    try {
+      const membership = await getActiveMembershipForUser(session.user.id);
+      if (membership) {
+        await auditUserAction(
+          prisma,
+          { businessId: membership.businessId, user: session.user },
+          'LOGOUT',
+          'User',
+          session.user.id
+        );
+      }
+    } catch (err) {
+      console.error('auth: audit write failed for logout', { error: err });
+    }
+  }
   redirect('/login');
 }
 

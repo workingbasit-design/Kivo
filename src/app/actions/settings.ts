@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
 import { requireAuth } from '@/lib/auth';
+import { auditUserAction } from '@/lib/audit';
 import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
 import { CA_PROVINCES, DEFAULT_CA_PROVINCE, isValidQstNumber } from '@/lib/tax';
 import {
@@ -126,7 +127,7 @@ export async function updateBusinessSettings(
   _prev: SettingsResult,
   formData: FormData
 ): Promise<SettingsResult> {
-  const { businessId, role: callerRole } = await requireAuth();
+  const { businessId, role: callerRole, user } = await requireAuth();
   const notAdmin = requireAdminRole(callerRole);
   if (notAdmin) return notAdmin;
   const hit = await limited(`settings:${businessId}`);
@@ -246,6 +247,19 @@ export async function updateBusinessSettings(
     }
   }
 
+  try {
+    await auditUserAction(
+      prisma,
+      { businessId, user },
+      'SETTINGS_CHANGE',
+      'Business',
+      businessId,
+      undefined,
+      { name, directoryOptIn: directoryOptIn ?? null }
+    );
+  } catch (err) {
+    console.error('settings: audit write failed for updateBusinessSettings', { businessId, error: err });
+  }
   revalidatePath('/settings');
   revalidatePath('/directory');
   return { ok: true };
@@ -256,7 +270,7 @@ export async function inviteTeamMember(
   _prev: SettingsResult,
   formData: FormData
 ): Promise<SettingsResult> {
-  const { businessId, role: callerRole } = await requireAuth();
+  const { businessId, role: callerRole, user } = await requireAuth();
   const notAdmin = requireAdminRole(callerRole);
   if (notAdmin) return notAdmin;
   const hit = await limited(`team:${businessId}`);
@@ -293,6 +307,19 @@ export async function inviteTeamMember(
     role,
   });
   if (!invited.ok) return { error: invited.error };
+  try {
+    await auditUserAction(
+      prisma,
+      { businessId, user },
+      'TEAM_INVITE',
+      'Membership',
+      invited.userId,
+      undefined,
+      { email, role }
+    );
+  } catch (err) {
+    console.error('settings: audit write failed for inviteTeamMember', { businessId, error: err });
+  }
   revalidatePath('/settings/team');
   return { ok: true };
 }
@@ -333,6 +360,18 @@ export async function removeTeamMember(id: string): Promise<SettingsResult> {
   });
   if (deleted.count === 0) {
     return { error: 'Team member not found.' };
+  }
+  try {
+    await auditUserAction(
+      prisma,
+      { businessId, user },
+      'TEAM_REMOVE',
+      'Membership',
+      target.id,
+      { role: target.role, status: 'ACTIVE' }
+    );
+  } catch (err) {
+    console.error('settings: audit write failed for removeTeamMember', { businessId, error: err });
   }
   // B7.5: removing a team member ends their sessions immediately - a
   // removed member must not keep using an existing session.
@@ -395,6 +434,19 @@ export async function suspendTeamMember(id: string): Promise<SettingsResult> {
   if (updated.count === 0) {
     return { error: 'Team member not found.' };
   }
+  try {
+    await auditUserAction(
+      prisma,
+      { businessId, user },
+      'ARCHIVE',
+      'Membership',
+      target.id,
+      { role: target.role, status: 'ACTIVE' },
+      { status: 'SUSPENDED' }
+    );
+  } catch (err) {
+    console.error('settings: audit write failed for suspendTeamMember', { businessId, error: err });
+  }
   // B7.5: suspending ends their sessions immediately, like removal.
   const { invalidateUserSessions } = await import('@/lib/auth');
   await invalidateUserSessions(id);
@@ -406,18 +458,35 @@ export async function suspendTeamMember(id: string): Promise<SettingsResult> {
  * in to this business again. Their old sessions were ended at suspend time,
  * so they sign in fresh. */
 export async function unsuspendTeamMember(id: string): Promise<SettingsResult> {
-  const { businessId, role: callerRole } = await requireAuth();
+  const { businessId, role: callerRole, user } = await requireAuth();
   const notAdmin = requireAdminRole(callerRole);
   if (notAdmin) return notAdmin;
   const hit = await limited(`team:${businessId}`);
   if (hit) return hit;
 
+  const target = await prisma.membership.findFirst({
+    where: { userId: id, businessId, status: 'SUSPENDED' },
+  });
+  if (!target) return { error: 'Team member not found.' };
   const updated = await prisma.membership.updateMany({
     where: { userId: id, businessId, status: 'SUSPENDED' },
     data: { status: 'ACTIVE' },
   });
   if (updated.count === 0) {
     return { error: 'Team member not found.' };
+  }
+  try {
+    await auditUserAction(
+      prisma,
+      { businessId, user },
+      'RESTORE',
+      'Membership',
+      target.id,
+      { status: 'SUSPENDED' },
+      { status: 'ACTIVE' }
+    );
+  } catch (err) {
+    console.error('settings: audit write failed for unsuspendTeamMember', { businessId, error: err });
   }
   revalidatePath('/settings/team');
   return { ok: true };
@@ -465,6 +534,19 @@ export async function changeTeamMemberRole(
   });
   if (updated.count === 0) {
     return { error: 'Team member not found.' };
+  }
+  try {
+    await auditUserAction(
+      prisma,
+      { businessId, user },
+      'ROLE_CHANGE',
+      'Membership',
+      target.id,
+      { role: target.role },
+      { role }
+    );
+  } catch (err) {
+    console.error('settings: audit write failed for changeTeamMemberRole', { businessId, error: err });
   }
   // B7.5: a role change ends their sessions so the new role applies on the
   // next sign-in (the role is otherwise resolved fresh per requireAuth).

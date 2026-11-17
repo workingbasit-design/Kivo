@@ -12,6 +12,8 @@ import {
   RESET_TOKEN_TTL_MS,
 } from '@/lib/password-reset';
 import { sendPlatformEmail } from '@/lib/messaging/platform-email';
+import { getActiveMembershipForUser } from '@/lib/membership';
+import { auditUserAction } from '@/lib/audit';
 import { passwordResetEmail } from '@/lib/messaging/email-templates';
 import { appBaseUrl } from '@/lib/app-url';
 import { clientIpFromHeaders } from '@/lib/client-ip';
@@ -156,6 +158,24 @@ export async function resetPassword(
     // everywhere, including any attacker-held session.
     prisma.session.deleteMany({ where: { userId: row.userId } }),
   ]);
+
+  // F1b: the reset ran against the token's userId (no session exists at
+  // this point). A missing membership means there is no business to scope
+  // the row to, so nothing is logged.
+  try {
+    const membership = await getActiveMembershipForUser(row.userId);
+    if (membership) {
+      await auditUserAction(
+        prisma,
+        { businessId: membership.businessId, user: { id: row.userId } },
+        'PASSWORD_CHANGE',
+        'User',
+        row.userId
+      );
+    }
+  } catch (err) {
+    console.error('password-reset: audit write failed for resetPassword', { error: err });
+  }
 
   return { ok: true };
 }

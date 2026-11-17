@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
 import { requireAuth } from '@/lib/auth';
+import { auditUserAction } from '@/lib/audit';
 import { requireMembership } from '@/lib/membership';
 import { jobSchema, JOB_STATUSES } from '@/lib/validations';
 import { isValidTransition, deriveJobWindow } from '@/lib/job-status';
@@ -522,6 +523,18 @@ export async function deleteJob(jobId: string): Promise<JobActionResult> {
   if (!job) return { error: 'Job not found.' };
 
   await prisma.job.delete({ where: { id: jobId, businessId } });
+  try {
+    await auditUserAction(
+      prisma,
+      { businessId, user },
+      'DELETE',
+      'Job',
+      jobId,
+      { title: job.title, status: job.status }
+    );
+  } catch (err) {
+    console.error('jobs: audit write failed for deleteJob', { businessId, error: err });
+  }
   revalidateJobPaths();
   return { ok: true };
 }

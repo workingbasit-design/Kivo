@@ -6,6 +6,7 @@ import { headers } from 'next/headers';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { auditUserAction } from '@/lib/audit';
 import { requireMembership } from '@/lib/membership';
 import { quoteSchema, QUOTE_STATUSES } from '@/lib/validations';
 import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
@@ -501,8 +502,11 @@ export async function recordQuoteDeposit(
   if (limited) return limited;
 
   let businessId: string;
+  let actorId: string;
   try {
-    ({ businessId } = await requireAuth());
+    const auth = await requireAuth();
+    businessId = auth.businessId;
+    actorId = auth.user.id;
   } catch {
     return { error: 'Please log in again.' };
   }
@@ -545,7 +549,7 @@ export async function recordQuoteDeposit(
     return { error: 'Notes are too long (max 500 characters).' };
   }
 
-  await prisma.quoteDeposit.create({
+  const deposit = await prisma.quoteDeposit.create({
     data: {
       quoteId,
       businessId,
@@ -555,6 +559,19 @@ export async function recordQuoteDeposit(
       note: noteRaw ? noteRaw : null,
     },
   });
+  try {
+    await auditUserAction(
+      prisma,
+      { businessId, user: { id: actorId } },
+      'PAYMENT_RECORD',
+      'QuoteDeposit',
+      deposit.id,
+      undefined,
+      { amountCents: deposit.amountCents.toString(), provider, quoteId }
+    );
+  } catch (err) {
+    console.error('quotes: audit write failed for recordQuoteDeposit', { businessId, error: err });
+  }
 
   revalidatePath(`/quotes/${quoteId}`);
   return { ok: true };
@@ -867,8 +884,11 @@ export async function deleteQuote(
   if (limited) return limited;
 
   let businessId: string;
+  let actorId: string;
   try {
-    ({ businessId } = await requireAuth());
+    const auth = await requireAuth();
+    businessId = auth.businessId;
+    actorId = auth.user.id;
   } catch {
     return { error: 'Please log in again.' };
   }
@@ -883,6 +903,18 @@ export async function deleteQuote(
   }
 
   await prisma.quote.delete({ where: { id, businessId } });
+  try {
+    await auditUserAction(
+      prisma,
+      { businessId, user: { id: actorId } },
+      'DELETE',
+      'Quote',
+      id,
+      { number: quote.number, status: quote.status, totalCents: quote.totalCents.toString() }
+    );
+  } catch (err) {
+    console.error('quotes: audit write failed for deleteQuote', { businessId, error: err });
+  }
   revalidatePath('/quotes');
   redirect('/quotes');
 }
