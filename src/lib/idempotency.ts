@@ -78,8 +78,14 @@ async function deleteKeyRow(
     });
     return;
   }
+  // P1.0 (slice A §1.3.3): re-validate the row being deleted — the id is
+  // server-generated from the lookup in this same flow, but the delete
+  // must not be able to touch a row from another scope if that flow
+  // ever changes.
   await unsafeUnscoped('idempotency:null-business-delete', () =>
-    (db as PrismaClient).idempotencyKey.deleteMany({ where: { id: rowId } })
+    (db as PrismaClient).idempotencyKey.deleteMany({
+      where: { id: rowId, businessId: null, endpoint: scope.endpoint, key: scope.key },
+    })
   );
 }
 
