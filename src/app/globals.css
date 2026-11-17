@@ -7,7 +7,6 @@
 @import "../../docs/design/everyjob-kit.css";
 @import "./tokens.css";
 @import "./customer-home.css";
-@import "./customer-home-signed-in.css";
 @import "./dashboard-redesign.css";
 
 /* Part B (dashboard rebuild): class-based dark mode. `dark:` variants apply

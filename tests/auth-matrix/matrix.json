@@ -1892,6 +1892,22 @@
     },
     {
       "type": "action",
+      "file": "customer-requests.ts",
+      "function": "withdrawOpenLead",
+      "auth": "customer-session",
+      "hint": "",
+      "expected": {
+        "anonymous": "deny",
+        "consumer": "allow",
+        "ownerA": "deny",
+        "adminA": "deny",
+        "dispatcherA": "deny",
+        "technicianA": "deny",
+        "ownerB": "deny"
+      }
+    },
+    {
+      "type": "action",
       "file": "customers.ts",
       "function": "archiveCustomer",
       "auth": "session",

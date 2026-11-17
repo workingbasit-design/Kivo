@@ -11,7 +11,7 @@ import {
 } from '@/lib/directory';
 import CustomerHomeClient from './home-client';
 
-type SearchParams = { q?: string; city?: string; minRating?: string };
+type SearchParams = { q?: string; city?: string };
 
 /**
  * Customer home - mobile-first pro search for logged-in homeowners.
@@ -23,9 +23,8 @@ export default async function CustomerHomePage({
   searchParams: Promise<SearchParams>;
 }) {
   const session = await requireCustomerAuth();
-  const { q = '', city = '', minRating = '' } = await searchParams;
+  const { q = '', city = '' } = await searchParams;
   const locale = await getLocale();
-  const minR = Number(minRating) || 0;
 
   // Default city to the customer's saved city
   const effectiveCity = city || session.customer.city || '';
@@ -67,12 +66,11 @@ export default async function CustomerHomePage({
     .filter(
       (b) =>
         matchesCity(effectiveCity, b.locality) &&
-        matchesServiceKeyword(q, b.name, b.services) &&
-        (minR <= 0 || (b.avg ?? 0) >= minR)
+        matchesServiceKeyword(q, b.name, b.services)
     )
     .sort((a, b) => (b.avg ?? -1) - (a.avg ?? -1) || b.count - a.count);
 
-  const searching = q.trim() !== '' || effectiveCity.trim() !== '' || minR > 0;
+  const searching = q.trim() !== '' || effectiveCity.trim() !== '';
 
   // Customer's saved pro IDs for heart state
   const saved = await prisma.savedPro
@@ -86,7 +84,6 @@ export default async function CustomerHomePage({
       searching={searching}
       initialQ={q}
       initialCity={effectiveCity}
-      initialMinRating={minR > 0 ? String(minRating) : ''}
       savedIds={Array.from(savedIds)}
       locale={locale}
     />
