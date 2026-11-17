@@ -41,6 +41,8 @@ export default function QuoteForm({
   templates = [],
   locale = 'en',
   gstHstRegistered = false,
+  onCancel,
+  initialTemplateId = '',
 }: {
   customers: { id: string; name: string }[];
   taxConfig: TaxConfig;
@@ -55,6 +57,12 @@ export default function QuoteForm({
     items: { desc: string; qty: string; rate: string; cost: string }[];
   }[];
   locale?: Locale;
+  /** Quotes redesign: when the form lives inside the New Quote modal,
+   *  Cancel closes the modal instead of navigating to /quotes. */
+  onCancel?: () => void;
+  /** Quotes redesign: a template chosen in the templates picker starts
+   *  the modal pre-filled (title + lines) instead of blank. */
+  initialTemplateId?: string;
 }) {
   const [state, formAction, isPending] = useActionState<ActionResult, FormData>(
     createQuote,
@@ -65,10 +73,12 @@ export default function QuoteForm({
   // Slice 4: title is CONTROLLED so picking a template can fill it, and
   // so a failed save (useActionState resets the form element) never
   // wipes it — the JobForm form-reset lesson.
-  const [title, setTitle] = useState('');
+  const initialTemplate =
+    templates.find((tpl) => tpl.id === initialTemplateId) ?? null;
+  const [title, setTitle] = useState(initialTemplate?.name ?? '');
   // Slice 5: same treatment for the validity date.
   const [validUntil, setValidUntil] = useState('');
-  const [appliedId, setAppliedId] = useState('');
+  const [appliedId, setAppliedId] = useState(initialTemplate?.id ?? '');
   const applied = templates.find((tpl) => tpl.id === appliedId) ?? null;
   // M2: an unregistered business starts (and stays) on the no-tax selection.
   const NO_TAX: TaxSelection = {
@@ -236,9 +246,15 @@ export default function QuoteForm({
           <FileCheck size={14} />
           {isPending ? t(locale, 't10money.quoteCreating') : t(locale, 't10money.quoteCreate')}
         </Button>
-        <Button variant="secondary" href="/quotes">
-          {t(locale, 't10money.formCancel')}
-        </Button>
+        {onCancel ? (
+          <Button type="button" variant="secondary" onClick={onCancel}>
+            {t(locale, 't10money.formCancel')}
+          </Button>
+        ) : (
+          <Button variant="secondary" href="/quotes">
+            {t(locale, 't10money.formCancel')}
+          </Button>
+        )}
       </div>
     </form>
   );

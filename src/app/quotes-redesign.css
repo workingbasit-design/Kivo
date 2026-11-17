@@ -1,0 +1,474 @@
+/* EveryJob Quotes list redesign (ChatGPT Quotes prototype, 2026-11-17).
+   Ports everyjob-quotes-page/src/styles.css (Quotes section only) onto
+   the live app: eyebrow header, open-pipeline subtitle, templates +
+   export toolbar, search, status filter pills with live counts, quote
+   cards with a file mark, amount + status, hover status-change / edit /
+   delete actions, empty states, footnote, and the New quote + templates
+   modals, restyled through the kit token set
+   (docs/design/everyjob-kit.css). Token utilities only - no hard-coded
+   colours in this file (kit-gates colour-count gate). Scoped to
+   .ej-quotes so no other screen is touched. The duplicated Customers /
+   Schedule components ChatGPT accumulated into the Quotes ZIP are
+   ignored here; they belong to earlier releases, already done.
+   Prototype sample data (Q-0002 / QATEST Quote 1 / $226.00) is never
+   shipped: every row comes from the live Prisma query. */
+
+.ej-quotes { min-width: 0; }
+
+/* ---------- Header ---------- */
+.ej-quotes-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 18px;
+}
+.ej-quotes-eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.13em;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  margin: 0 0 5px;
+}
+.ej-quotes-header h1 {
+  font-size: 28px;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin: 0;
+  color: var(--ink);
+  font-weight: 800;
+}
+.ej-quotes-subtitle {
+  margin: 5px 0 0;
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.ej-quotes-new {
+  flex: none;
+  white-space: nowrap;
+}
+
+/* ---------- Top actions ---------- */
+.ej-quotes-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+/* ---------- Filters ---------- */
+.ej-quotes-filters {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin: 12px 0 18px;
+}
+.ej-quotes-filter {
+  height: 36px;
+  min-height: 36px;
+  padding: 0 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 200ms ease, background 200ms ease, color 200ms ease;
+}
+.ej-quotes-filter:hover {
+  border-color: var(--line-strong);
+  background: var(--surface-2);
+  color: var(--ok);
+}
+.ej-quotes-filter.active {
+  background: var(--pine);
+  border-color: var(--pine);
+  color: var(--hero-ink);
+  box-shadow: var(--shadow-card);
+}
+.ej-quotes-filter small {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.ej-quotes-filter.active small {
+  color: var(--hero-ink);
+  opacity: 0.75;
+}
+
+/* ---------- Quote cards ---------- */
+.ej-quotes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ej-quote-card {
+  min-height: 79px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+  animation: ej-quotes-fade-up 300ms ease both;
+}
+.ej-quote-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow-raised);
+}
+.ej-quote-card-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  color: inherit;
+  text-decoration: none;
+  border-radius: 11px;
+}
+.ej-quote-card-info:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.ej-quote-mark {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+.ej-quote-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 5px;
+}
+.ej-quote-copy > b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ink);
+}
+.ej-quote-copy > small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+.ej-quote-card-right {
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.ej-quote-amount {
+  font-size: 14px;
+  color: var(--ink);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.ej-quote-card-actions {
+  display: none;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+}
+.ej-quote-card:hover .ej-quote-card-actions,
+.ej-quote-card:focus-within .ej-quote-card-actions {
+  display: flex;
+}
+.ej-quote-status-select {
+  height: 36px;
+  min-height: 36px;
+  max-width: 132px;
+  padding: 0 7px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 12px;
+  outline: 0;
+}
+.ej-quote-status-select:focus {
+  border-color: var(--ok);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ok) 12%, transparent);
+}
+.ej-quote-icon-action {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink-2);
+  transition: border-color 200ms ease, background 200ms ease, color 200ms ease;
+  text-decoration: none;
+  cursor: pointer;
+}
+.ej-quote-icon-action:hover {
+  border-color: var(--ok);
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+.ej-quote-icon-action.danger:hover {
+  border-color: var(--danger);
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+/* ---------- Empty state + footnote ---------- */
+.ej-quotes-empty {
+  min-height: 280px;
+  padding: 28px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 18px;
+  background: var(--surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+}
+.ej-quotes-empty-icon {
+  width: 50px;
+  height: 50px;
+  margin-bottom: 12px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+.ej-quotes-empty h2 {
+  margin: 0 0 6px;
+  color: var(--ink);
+  font-size: 17px;
+  letter-spacing: -0.02em;
+}
+.ej-quotes-empty p {
+  max-width: 370px;
+  margin: 0 0 15px;
+  color: var(--ink-2);
+  font-size: 13px;
+  line-height: 1.55;
+}
+.ej-quotes-footnote {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 16px 2px;
+  color: var(--ink-2);
+  font-size: 12px;
+}
+.ej-quotes-footnote-dot {
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--ok);
+}
+
+/* ---------- Modals (New quote + templates) ---------- */
+.ej-quotes-modal-backdrop {
+  position: fixed;
+  z-index: 70;
+  inset: 0;
+  background: var(--overlay-scrim);
+  backdrop-filter: blur(5px);
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  animation: ej-quotes-fade-in 180ms ease;
+}
+.ej-quotes-modal {
+  width: min(100%, 720px);
+  max-height: 90vh;
+  overflow: auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 25px;
+  box-shadow: var(--shadow-overlay);
+  animation: ej-quotes-modal-in 250ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.ej-quotes-modal-narrow {
+  width: min(100%, 540px);
+}
+.ej-quotes-modal-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+.ej-quotes-modal-kicker {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--ok);
+}
+.ej-quotes-modal-heading h2 {
+  font-size: 24px;
+  letter-spacing: -0.03em;
+  margin: 5px 0 4px;
+  color: var(--ink);
+}
+.ej-quotes-modal-heading p {
+  font-size: 14px;
+  color: var(--ink-2);
+  margin: 0;
+}
+.ej-quotes-modal-close {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink-2);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.ej-quotes-modal-close:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+/* Templates picker list (prototype QuoteTemplatesModal). */
+.ej-quotes-template-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ej-quotes-template-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  text-align: left;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: border-color 200ms ease, background 200ms ease, transform 200ms ease;
+}
+.ej-quotes-template-option:hover {
+  border-color: var(--ok);
+  background: var(--surface-2);
+  transform: translateX(2px);
+}
+.ej-quotes-template-icon {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+.ej-quotes-template-option > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ej-quotes-template-option b {
+  font-size: 14px;
+  color: var(--ink);
+}
+.ej-quotes-template-option small {
+  font-size: 12px;
+  color: var(--ink-2);
+}
+.ej-quotes-template-option > svg {
+  color: var(--ink-2);
+  flex: none;
+}
+.ej-quotes-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+/* ---------- Motion ---------- */
+@keyframes ej-quotes-fade-up {
+  from { opacity: 0; transform: translateY(9px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes ej-quotes-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes ej-quotes-modal-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ej-quotes-modal-backdrop, .ej-quotes-modal-backdrop *,
+  .ej-quotes-modal, .ej-quotes-modal *,
+  .ej-quotes-list, .ej-quotes-list * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width: 650px) {
+  .ej-quotes-header { align-items: flex-start; }
+  .ej-quotes-header h1 { font-size: 26px; }
+  .ej-quotes-subtitle { font-size: 12px; }
+  .ej-quotes-top-actions > * { flex: 1; justify-content: center; }
+  .ej-quote-card { padding: 11px; gap: 8px; }
+  .ej-quote-card-info { gap: 8px; }
+  .ej-quote-mark { width: 34px; height: 34px; flex-basis: 34px; }
+  .ej-quote-copy > b { font-size: 13px; }
+  .ej-quote-copy > small { font-size: 11px; }
+  .ej-quote-amount { font-size: 13px; }
+  /* Touch: actions are always visible, never hover-only. */
+  .ej-quote-card-actions { display: flex; }
+  .ej-quote-status-select { max-width: 108px; }
+  .ej-quotes-modal { padding: 20px 16px; }
+  .ej-quotes-modal-heading h2 { font-size: 21px; }
+}
+@media (max-width: 390px) {
+  .ej-quotes-header { gap: 10px; }
+  .ej-quotes-header h1 { font-size: 24px; }
+  .ej-quotes-top-actions { gap: 6px; }
+  .ej-quote-card { align-items: flex-start; flex-direction: column; }
+  .ej-quote-card-right { width: 100%; align-items: flex-start; padding-left: 42px; }
+  .ej-quote-card-actions { flex-wrap: wrap; }
+  .ej-quote-status-select { max-width: 132px; }
+}

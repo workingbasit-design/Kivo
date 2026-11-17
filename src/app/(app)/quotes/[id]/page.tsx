@@ -128,7 +128,7 @@ export default async function QuoteDetailPage({
       : '');
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="ej-quotes space-y-6 max-w-3xl">
       <RecordLastOpened kind="quote" id={quote.id} title={quote.title} subtitle={quote.customer.name} />
       <Link
         href="/quotes"
@@ -137,6 +137,7 @@ export default async function QuoteDetailPage({
         <ArrowLeft size={14} /> Back to quotes
       </Link>
 
+      <p className="ej-quotes-eyebrow">{t(locale, 'quotes.list.eyebrow')}</p>
       <PageTitle
         title={`${quote.number} · ${quote.title}`}
         summary={<>Created <DateTimeText date={quote.createdAt} variant="short" timezone={quote.business.timezone ?? 'America/Toronto'} locale={locale} /></>}

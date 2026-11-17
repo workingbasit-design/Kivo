@@ -1,8 +1,9 @@
 'use client';
 
-import { useMemo, useState, type CSSProperties } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 import Link from 'next/link';
-import { Plus, ClipboardList, Clock } from '@/components/icons';
+import { toast } from 'sonner';
+import { Plus, FileText, Pencil, Trash2, ClipboardList, Clock } from '@/components/icons';
 import { fillTemplate, daysWaiting } from '@/lib/revenue';
 import { Card, Button, SearchField } from '@/components/kit';
 import { formatDateShort, cn } from '@/lib/utils';
@@ -10,12 +11,18 @@ import { formatMoney } from '@/lib/money';
 import MoneyText from '@/components/MoneyText';
 import DateTimeText from '@/components/DateTimeText';
 import { QUOTE_STATUSES } from '@/lib/validations';
+import { QUOTE_TRANSITIONS } from '@/lib/quote-status';
 import { t, type Locale } from '@/lib/i18n';
 import SmsButton from '@/components/SmsButton';
 import WhatsAppButton from '@/components/WhatsAppButton';
 import ExportButtons, { type ExportColumn, type ExportRow } from '@/components/ExportButtons';
-import { PageHeader, EmptyState } from '@/components/kit';
 import { StatusPill } from '../_components/status-ui';
+import ConfirmDialog from '@/components/ConfirmDialog';
+import { updateQuoteStatus, deleteQuote } from '@/app/actions/quotes';
+import { clearLastOpenedRecord } from '@/lib/continue-candidate';
+import NewQuoteModal from '@/components/NewQuoteModal';
+import QuoteTemplatesModal from '@/components/QuoteTemplatesModal';
+import type { TaxConfig } from '@/lib/tax';
 
 const FILTERS = ['ALL', ...QUOTE_STATUSES] as const;
 type Filter = (typeof FILTERS)[number];
@@ -48,10 +55,24 @@ export type StaleQuoteItem = {
   customer: { name: string; phone: string | null };
 };
 
+export type QuoteTemplateOption = {
+  id: string;
+  name: string;
+  items: { desc: string; qty: string; rate: string; cost: string }[];
+};
+
 /**
- * Quote list with instant client-side tab filtering. The server sends all
- * quotes once; switching tabs filters in memory - no navigation, no
- * server roundtrip, no lag.
+ * Quote list redesign (ChatGPT Quotes prototype, 2026-11-17): eyebrow
+ * header with the open-pipeline total, templates + export toolbar, live
+ * search, status filter pills with counts, and quote cards with a file
+ * mark, amount, status pill and hover actions — a status-change select
+ * (only the transitions QUOTE_TRANSITIONS allows), an edit link to the
+ * detail page, and delete behind a confirm dialog.
+ *
+ * All rows are real Prisma quotes; the follow-up queue, export and the
+ * detail-page flows (send, approve/decline, convert, expiry, add-ons,
+ * deposits, e-sign) are untouched. Creating a quote opens the New Quote
+ * modal, which wraps the real QuoteForm + createQuote action.
  */
 export default function QuotesClient({
   quotes,
@@ -63,6 +84,10 @@ export default function QuotesClient({
   exportFileBase,
   filterLabels,
   initialFilter,
+  customers,
+  taxConfig,
+  templates,
+  gstHstRegistered,
 }: {
   quotes: QuoteListItem[];
   staleQuotes: StaleQuoteItem[];
@@ -73,16 +98,46 @@ export default function QuotesClient({
   exportFileBase: string;
   filterLabels: Record<Filter, string>;
   initialFilter: Filter;
+  /** For the New Quote modal (real QuoteForm). */
+  customers: { id: string; name: string }[];
+  taxConfig: TaxConfig;
+  templates: QuoteTemplateOption[];
+  gstHstRegistered: boolean;
 }) {
   const [activeFilter, setActiveFilter] = useState<Filter>(initialFilter);
   // 2026-11-06: quotes had no text search at all (status tabs only).
   const [query, setQuery] = useState('');
+  // Local rows: status changes apply here at once, and quotes deleted
+  // from this list are hidden here at once (the customers lesson: the
+  // server re-render after a mutation can serve a stale snapshot).
+  const [liveQuotes, setLiveQuotes] = useState<QuoteListItem[]>(quotes);
+  const [hiddenIds, setHiddenIds] = useState<ReadonlySet<string>>(new Set());
+  const [newQuoteOpen, setNewQuoteOpen] = useState(false);
+  const [templatesOpen, setTemplatesOpen] = useState(false);
+  const [chosenTemplateId, setChosenTemplateId] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState<QuoteListItem | null>(null);
+  const [pendingStatusId, setPendingStatusId] = useState<string | null>(null);
+  const [deletePending, setDeletePending] = useState(false);
+  const [, startTransition] = useTransition();
+
+  const visibleQuotes = useMemo(
+    () => liveQuotes.filter((q) => !hiddenIds.has(q.id)),
+    [liveQuotes, hiddenIds]
+  );
+
+  const counts = useMemo(() => {
+    const c: Record<string, number> = { ALL: visibleQuotes.length };
+    for (const s of QUOTE_STATUSES) {
+      c[s] = visibleQuotes.filter((q) => q.status === s).length;
+    }
+    return c;
+  }, [visibleQuotes]);
 
   const filtered = useMemo(() => {
     const byStatus =
       activeFilter === 'ALL'
-        ? quotes
-        : quotes.filter((q) => q.status === activeFilter);
+        ? visibleQuotes
+        : visibleQuotes.filter((q) => q.status === activeFilter);
     const q = query.trim().toLowerCase();
     if (!q) return byStatus;
     return byStatus.filter(
@@ -91,17 +146,17 @@ export default function QuotesClient({
         quote.title.toLowerCase().includes(q) ||
         quote.customer.name.toLowerCase().includes(q)
     );
-  }, [quotes, activeFilter, query]);
+  }, [visibleQuotes, activeFilter, query]);
 
-  // 2026-11-05: converted quotes are realized work, not pipeline — a
-  // converted quote keeps APPROVED forever, so without the !converted
-  // filter every conversion inflated "open pipeline" permanently.
+  // Open pipeline is a property of the whole book, not of the current
+  // filter/search: SENT + APPROVED, excluding converted quotes (realized
+  // work, not pipeline — 2026-11-05) and excluding DECLINED.
   const pipelineTotal = useMemo(
     () =>
-      filtered
+      visibleQuotes
         .filter((q) => (q.status === 'SENT' || q.status === 'APPROVED') && !q.converted)
         .reduce((s, q) => s + q.total, 0),
-    [filtered]
+    [visibleQuotes]
   );
 
   const exportRows: ExportRow[] = useMemo(
@@ -118,11 +173,11 @@ export default function QuotesClient({
   );
 
   const quoteWord =
-    filtered.length === 1
+    visibleQuotes.length === 1
       ? t(locale, 'quotes.list.quoteOne')
       : t(locale, 'quotes.list.quoteOther');
   const subtitle = t(locale, 'quotes.list.subtitle')
-    .replace('{count}', String(filtered.length))
+    .replace('{count}', String(visibleQuotes.length))
     .replace('{quoteWord}', quoteWord)
     .replace('{pipeline}', formatMoney(pipelineTotal, business?.currency));
 
@@ -136,18 +191,87 @@ export default function QuotesClient({
 
   const linkFor = (id: string) => followupLinks[id] ?? `/quotes/${id}`;
 
+  const changeStatus = (quote: QuoteListItem, next: string) => {
+    if (next === quote.status || pendingStatusId) return;
+    setPendingStatusId(quote.id);
+    const fd = new FormData();
+    fd.set('id', quote.id);
+    fd.set('status', next);
+    startTransition(async () => {
+      try {
+        const result = await updateQuoteStatus({}, fd);
+        if (result?.error) {
+          toast.error(result.error);
+        } else {
+          setLiveQuotes((list) =>
+            list.map((q) => (q.id === quote.id ? { ...q, status: next } : q))
+          );
+          toast.success(
+            t(locale, 'quotes.list.statusUpdated').replace(
+              '{status}',
+              filterLabels[next as Filter] ?? next
+            )
+          );
+        }
+      } finally {
+        setPendingStatusId(null);
+      }
+    });
+  };
+
+  const confirmDelete = () => {
+    if (!deleteTarget || deletePending) return;
+    const target = deleteTarget;
+    setDeletePending(true);
+    // Hide the row locally at once (see hiddenIds); the server action
+    // redirects to /quotes, and the revalidated list catches up.
+    setHiddenIds((prev) => new Set(prev).add(target.id));
+    setDeleteTarget(null);
+    const fd = new FormData();
+    fd.set('id', target.id);
+    // Never leave the Continue card pointing at this deleted quote.
+    clearLastOpenedRecord(target.id);
+    startTransition(async () => {
+      try {
+        await deleteQuote({}, fd);
+      } catch {
+        // deleteQuote redirects to /quotes on success; the navigation
+        // itself is the success path, not an error to surface.
+      } finally {
+        setDeletePending(false);
+      }
+    });
+  };
+
+  const openNewQuote = (templateId = '') => {
+    setChosenTemplateId(templateId);
+    setTemplatesOpen(false);
+    setNewQuoteOpen(true);
+  };
+
+  const isFiltered = query.trim() !== '' || activeFilter !== 'ALL';
+
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title={t(locale, 'quotes.list.title')}
-        summary={subtitle}
-        actionLabel={t(locale, 'quotes.list.newQuote')}
-        actionHref="/quotes/new"
-        actionIcon={<Plus />}
-      />
-      <div className="flex flex-wrap gap-2">
-        <Button href="/quotes/templates" variant="secondary">
-          {t(locale, 'quotes.templates.title')}
+    <div className="ej-quotes space-y-6">
+      <header className="ej-quotes-header">
+        <div className="min-w-0">
+          <p className="ej-quotes-eyebrow">{t(locale, 'quotes.list.eyebrow')}</p>
+          <h1>{t(locale, 'quotes.list.title')}</h1>
+          <p className="ej-quotes-subtitle">{subtitle}</p>
+        </div>
+        <Button
+          type="button"
+          variant="primary"
+          onClick={() => openNewQuote()}
+          className="ej-quotes-new"
+        >
+          <Plus size={16} aria-hidden="true" /> {t(locale, 'quotes.list.newQuote')}
+        </Button>
+      </header>
+
+      <div className="ej-quotes-top-actions">
+        <Button type="button" variant="secondary" onClick={() => setTemplatesOpen(true)}>
+          <FileText size={15} aria-hidden="true" /> {t(locale, 'quotes.templates.title')}
         </Button>
         <ExportButtons
           columns={exportColumns}
@@ -166,7 +290,7 @@ export default function QuotesClient({
         clearLabel={t(locale, 'quotes.list.clearSearch')}
       />
 
-      <div className="flex gap-2 flex-wrap" role="tablist" aria-label={t(locale, 'quotes.list.title')}>
+      <div className="ej-quotes-filters" role="tablist" aria-label={t(locale, 'quotes.list.title')}>
         {FILTERS.map((f) => (
           <button
             key={f}
@@ -174,14 +298,10 @@ export default function QuotesClient({
             role="tab"
             aria-selected={activeFilter === f}
             onClick={() => switchFilter(f)}
-            className={cn(
-              'min-h-[44px] inline-flex items-center px-4 rounded-full text-xs font-semibold border transition-colors',
-              activeFilter === f
-                ? 'bg-asphalt text-hero-ink border-asphalt'
-                : 'bg-surface text-ink-2 border-line hover:border-line-strong'
-            )}
+            className={cn('ej-quotes-filter', activeFilter === f && 'active')}
           >
-            {filterLabels[f]}
+            <span>{filterLabels[f]}</span>
+            {f !== 'ALL' && <small>{counts[f] ?? 0}</small>}
           </button>
         ))}
       </div>
@@ -277,65 +397,178 @@ export default function QuotesClient({
       )}
 
       {filtered.length === 0 ? (
-        <Card>
-          <EmptyState
-            icon={<ClipboardList />}
-            title={
-              query.trim() !== ''
-                ? t(locale, 'quotes.list.noSearchResults')
-                : t(locale, 'quotes.list.emptyTitle')
-            }
-            text={
-              query.trim() !== ''
-                ? ''
-                : t(locale, 'quotes.list.emptyDesc')
-            }
-          />
-{query.trim() === '' && (
-<div className="flex justify-center pb-10 -mt-6">
-            <Button href="/quotes/new" variant="primary">
-              <Plus size={14} /> {t(locale, 'quotes.list.newQuote')}
+        <div className="ej-quotes-empty">
+          <span className="ej-quotes-empty-icon">
+            <ClipboardList size={23} aria-hidden="true" />
+          </span>
+          <h2>
+            {isFiltered
+              ? t(locale, 'quotes.list.noMatchingTitle')
+              : t(locale, 'quotes.list.emptyTitle')}
+          </h2>
+          <p>
+            {isFiltered
+              ? t(locale, 'quotes.list.noMatchingDesc')
+              : t(locale, 'quotes.list.emptyDesc')}
+          </p>
+          {isFiltered ? (
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                setQuery('');
+                switchFilter('ALL');
+              }}
+            >
+              {t(locale, 'quotes.list.clearFilters')}
             </Button>
-          </div>
-)}
-        </Card>
+          ) : (
+            <Button type="button" variant="primary" onClick={() => openNewQuote()}>
+              <Plus size={16} aria-hidden="true" /> {t(locale, 'quotes.list.newQuote')}
+            </Button>
+          )}
+        </div>
       ) : (
-        <Card className="!p-0 overflow-hidden">
-          <ul className="divide-y divide-line">
-            {filtered.map((q, i) => (
-              <li
-                key={q.id}
-                className="ej-row-in"
-                style={{ '--row-delay': `${Math.min(i, 12) * 35}ms` } as CSSProperties}
-              >
-                <Link
-                  href={`/quotes/${q.id}`}
-                  className="flex items-center justify-between gap-4 px-4 sm:px-5 py-4 hover:bg-surface-2 active:bg-surface-2 transition-colors min-h-[76px]"
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-ink truncate">
+        <div className="ej-quotes-list">
+          {filtered.map((q) => {
+            const transitions = QUOTE_TRANSITIONS[q.status] ?? [];
+            return (
+              <article className="ej-quote-card" key={q.id}>
+                <Link href={`/quotes/${q.id}`} className="ej-quote-card-info">
+                  <span className="ej-quote-mark">
+                    <FileText size={17} aria-hidden="true" />
+                  </span>
+                  <span className="ej-quote-copy">
+                    <b>
                       {q.number} · {q.title}
-                    </p>
-                    <p className="text-xs text-ink-2 mt-1">
-                      {q.customer.name} · <DateTimeText date={q.createdAt} variant="short" timezone={business?.timezone ?? 'America/Toronto'} locale={locale} />
+                    </b>
+                    <small>
+                      {q.customer.name} ·{' '}
+                      <DateTimeText
+                        date={q.createdAt}
+                        variant="short"
+                        timezone={business?.timezone ?? 'America/Toronto'}
+                        locale={locale}
+                      />
                       {q.expiresAt && q.status === 'SENT' && (
                         q.expired ? (
-                          <span className="text-danger font-semibold"> · {t(locale, 'quotes.expiry.expired')}</span>
+                          <span className="text-danger font-semibold">
+                            {' '}· {t(locale, 'quotes.expiry.expired')}
+                          </span>
                         ) : (
-                          <span> · {t(locale, 'quotes.expiry.validUntil')} <DateTimeText date={q.expiresAt} variant="short" timezone={business?.timezone ?? 'America/Toronto'} locale={locale} /></span>
+                          <span>
+                            {' '}· {t(locale, 'quotes.expiry.validUntil')}{' '}
+                            <DateTimeText
+                              date={q.expiresAt}
+                              variant="short"
+                              timezone={business?.timezone ?? 'America/Toronto'}
+                              locale={locale}
+                            />
+                          </span>
                         )
                       )}
-                    </p>
-                  </div>
-                  <div className="flex flex-col items-end gap-1.5 shrink-0">
-                    <span className="text-sm font-bold text-ink tabular-nums"><MoneyText dollars={q.total} locale={locale} /></span>
-                    <StatusPill status={q.status} locale={locale} />
-                  </div>
+                    </small>
+                  </span>
                 </Link>
-              </li>
-            ))}
-          </ul>
-        </Card>
+                <div className="ej-quote-card-right">
+                  <b className="ej-quote-amount">
+                    <MoneyText dollars={q.total} locale={locale} />
+                  </b>
+                  <StatusPill status={q.status} locale={locale} />
+                  <div className="ej-quote-card-actions">
+                    {transitions.length > 0 && (
+                      <select
+                        className="ej-quote-status-select"
+                        aria-label={t(locale, 'quotes.list.changeStatusFor').replace(
+                          '{number}',
+                          q.number
+                        )}
+                        value={q.status}
+                        disabled={pendingStatusId === q.id}
+                        onChange={(e) => changeStatus(q, e.target.value)}
+                      >
+                        <option value={q.status}>
+                          {filterLabels[q.status as Filter] ?? q.status}
+                        </option>
+                        {transitions.map((s) => (
+                          <option key={s} value={s}>
+                            {filterLabels[s as Filter] ?? s}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                    <Link
+                      href={`/quotes/${q.id}`}
+                      className="ej-quote-icon-action"
+                      aria-label={`${t(locale, 'quotes.list.editQuote')} ${q.number}`}
+                    >
+                      <Pencil size={14} aria-hidden="true" />
+                    </Link>
+                    {q.status !== 'APPROVED' && (
+                      <button
+                        type="button"
+                        className="ej-quote-icon-action danger"
+                        onClick={() => setDeleteTarget(q)}
+                        aria-label={`${t(locale, 'quotes.list.deleteQuote')} ${q.number}`}
+                      >
+                        <Trash2 size={14} aria-hidden="true" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+
+      <div className="ej-quotes-footnote">
+        <span className="ej-quotes-footnote-dot" aria-hidden="true" />
+        {t(locale, 'quotes.list.shownFootnote')
+          .replace('{count}', String(filtered.length))
+          .replace(
+            '{quoteWord}',
+            filtered.length === 1
+              ? t(locale, 'quotes.list.quoteOne')
+              : t(locale, 'quotes.list.quoteOther')
+          )}
+      </div>
+
+      {deleteTarget && (
+        <ConfirmDialog
+          open
+          locale={locale}
+          title={t(locale, 't10money.quoteDeleteTitle')}
+          message={t(locale, 't10money.quoteDeleteMsg')}
+          busy={deletePending}
+          onConfirm={confirmDelete}
+          onClose={() => !deletePending && setDeleteTarget(null)}
+        />
+      )}
+
+      {newQuoteOpen && (
+        <NewQuoteModal
+          customers={customers}
+          taxConfig={taxConfig}
+          templates={templates}
+          locale={locale}
+          gstHstRegistered={gstHstRegistered}
+          initialTemplateId={chosenTemplateId}
+          onClose={() => setNewQuoteOpen(false)}
+        />
+      )}
+
+      {templatesOpen && (
+        <QuoteTemplatesModal
+          templates={templates.map((tpl) => ({
+            id: tpl.id,
+            name: tpl.name,
+            itemCount: tpl.items.length,
+          }))}
+          locale={locale}
+          onChoose={openNewQuote}
+          onClose={() => setTemplatesOpen(false)}
+        />
       )}
     </div>
   );

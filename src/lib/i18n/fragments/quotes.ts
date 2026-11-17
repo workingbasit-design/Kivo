@@ -56,6 +56,7 @@ const fragment = {
       },
       list: {
         title: 'Quotes',
+        eyebrow: 'Estimates & proposals',
         newQuote: 'New quote',
         subtitle: '{count} {quoteWord}, {pipeline} in open pipeline',
         quoteOne: 'quote',
@@ -69,10 +70,18 @@ const fragment = {
         searchPlaceholder: 'Search number, title or customer',
         searchLabel: 'Search quotes',
         clearSearch: 'Clear search',
+        clearFilters: 'Clear filters',
         noSearchResults: 'No quotes match your search.',
+        noMatchingTitle: 'No matching quotes',
+        noMatchingDesc: 'Try another search or status filter.',
         emptyTitle: 'No quotes yet',
         emptyDesc:
           'Send your first quote in under a minute. Line items in, a clean total out.',
+        shownFootnote: '{count} {quoteWord} shown · Keep every estimate moving',
+        changeStatusFor: 'Change status for {number}',
+        editQuote: 'Edit quote',
+        deleteQuote: 'Delete quote',
+        statusUpdated: 'Quote marked {status}.',
       },
       new: {
         title: 'New quote',
@@ -102,6 +111,7 @@ const fragment = {
         useTemplate: 'Start from template…',
         blankOption: 'Blank quote',
         saveAsTemplate: 'Save as template',
+        manageTemplates: 'Manage templates',
         lineOne: '1 line',
         lineOther: '{count} lines',
         fromQuoteHint:
@@ -169,6 +179,7 @@ const fragment = {
       },
       list: {
         title: 'Devis',
+        eyebrow: 'Estimations et propositions',
         newQuote: 'Nouveau devis',
         subtitle: '{count} {quoteWord}, {pipeline} en pipeline ouvert',
         quoteOne: 'devis',
@@ -182,10 +193,18 @@ const fragment = {
         searchPlaceholder: 'Rechercher numéro, titre ou client',
         searchLabel: 'Rechercher des devis',
         clearSearch: 'Effacer la recherche',
+        clearFilters: 'Effacer les filtres',
         noSearchResults: 'Aucun devis ne correspond à votre recherche.',
+        noMatchingTitle: 'Aucun devis correspondant',
+        noMatchingDesc: 'Essayez une autre recherche ou un autre filtre de statut.',
         emptyTitle: 'Aucun devis pour le moment',
         emptyDesc:
           'Envoyez votre premier devis en moins d\u2019une minute. Articles entrés, total clair en sortie.',
+        shownFootnote: '{count} {quoteWord} affichés · Gardez chaque estimation en mouvement',
+        changeStatusFor: 'Changer le statut de {number}',
+        editQuote: 'Modifier le devis',
+        deleteQuote: 'Supprimer le devis',
+        statusUpdated: 'Devis marqué {status}.',
       },
       new: {
         title: 'Nouveau devis',
@@ -213,6 +232,7 @@ const fragment = {
         useTemplate: 'Commencer à partir d’un modèle…',
         blankOption: 'Devis vierge',
         saveAsTemplate: 'Enregistrer comme modèle',
+        manageTemplates: 'Gérer les modèles',
         lineOne: '1 ligne',
         lineOther: '{count} lignes',
         fromQuoteHint:

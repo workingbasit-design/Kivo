@@ -10,6 +10,7 @@ import { QUOTE_STATUSES } from '@/lib/validations';
 import { centsToDollars } from '@/lib/money';
 import { isQuoteExpired } from '@/lib/quote-expiry';
 import { convertedQuoteNumbers } from '@/lib/quotes';
+import { getTaxConfig } from '@/lib/tax';
 import QuotesClient, { type QuoteListItem, type StaleQuoteItem } from './QuotesClient';
 import type { ExportColumn } from '@/components/ExportButtons';
 import { parseListLimit, takeWithProbe, sliceListPage } from '@/lib/list-page';
@@ -49,10 +50,10 @@ export default async function QuotesPage({
   // M3: the quote list is a bounded page (newest first); tab switching still
   // filters that page in memory on the client. `totalQuotes` is an exact
   // database count so the footer can say how much is not on screen.
-  const [business, fetchedQuotes, totalQuotes, convertedJobs, staleRows] = await Promise.all([
+  const [business, fetchedQuotes, totalQuotes, convertedJobs, staleRows, modalCustomers, modalTemplates] = await Promise.all([
     prisma.business.findUnique({
       where: { id: businessId },
-      select: { currency: true, name: true, regionCode: true, timezone: true },
+      select: { currency: true, name: true, regionCode: true, timezone: true, taxRegion: true, gstHstRegistered: true },
     }),
     prisma.quote.findMany({
       where: { businessId },
@@ -84,6 +85,18 @@ export default async function QuotesPage({
       },
       orderBy: { updatedAt: 'asc' },
       take: 5,
+    }),
+    // Quotes redesign: the New Quote modal wraps the real QuoteForm, so
+    // the list page supplies its customers + templates like /quotes/new.
+    prisma.customer.findMany({
+      where: { businessId },
+      select: { id: true, name: true },
+      orderBy: { name: 'asc' },
+    }),
+    prisma.quoteTemplate.findMany({
+      where: { businessId },
+      include: { items: { orderBy: { position: 'asc' } } },
+      orderBy: { updatedAt: 'desc' },
     }),
   ]);
 
@@ -154,6 +167,22 @@ export default async function QuotesPage({
       exportFileBase={exportFileBase}
       filterLabels={filterLabels}
       initialFilter={initialFilter}
+      customers={modalCustomers}
+      taxConfig={getTaxConfig(business?.regionCode, business?.taxRegion)}
+      templates={modalTemplates.map((tpl) => ({
+        id: tpl.id,
+        name: tpl.name,
+        items: tpl.items.map((li) => ({
+          desc: li.description,
+          qty: String(li.qty),
+          rate: String(centsToDollars(li.unitPriceCents)),
+          cost:
+            li.unitCostCents == null
+              ? ''
+              : String(centsToDollars(li.unitCostCents)),
+        })),
+      }))}
+      gstHstRegistered={business?.gstHstRegistered ?? false}
     />
       <ListMore
         shown={quotes.length}
