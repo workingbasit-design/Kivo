@@ -47,7 +47,11 @@ export default defineConfig({
       // The suite logs in hundreds of times from 127.0.0.1, which would
       // otherwise share one `login:unknown` bucket (8/10 min) and collapse
       // into 60s login timeouts. Never set on Vercel/production.
+      // P1.0 (S5): the bypass needs BOTH flags plus a non-production
+      // NODE_ENV — so do NOT run this server with NODE_ENV=production,
+      // or the bypass stays off and the suite collapses (see rate-limit.ts).
       E2E_DISABLE_RATE_LIMIT: '1',
+      E2E_TEST_SERVER: '1',
     },
   },
   projects: [

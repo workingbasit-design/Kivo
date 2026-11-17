@@ -41,25 +41,73 @@ test('keys are isolated from each other', () => {
   assert.equal(rateLimit(b, { limit: 1, windowMs: 60_000 }).ok, true);
 });
 
-test('E2E_DISABLE_RATE_LIMIT=1 bypasses the limiter without consuming the bucket', () => {
+test('E2E bypass needs both flags and a non-production NODE_ENV (S5)', () => {
   // CI e2e regression (run 43729091950): every login from 127.0.0.1 shares
   // one `login:unknown` bucket (8/10 min); the 9th login was throttled and
-  // the suite collapsed into 60s login timeouts. The e2e server sets this
-  // flag; production never does.
+  // the suite collapsed into 60s login timeouts. The e2e server sets both
+  // flags; production never does — and a single leaked flag must not be
+  // enough to switch the limiter off.
   const key = `test-e2e-bypass-${Date.now()}`;
-  const prev = process.env.E2E_DISABLE_RATE_LIMIT;
+  const prevDisable = process.env.E2E_DISABLE_RATE_LIMIT;
+  const prevServer = process.env.E2E_TEST_SERVER;
+  const prevNodeEnv = process.env.NODE_ENV;
   process.env.E2E_DISABLE_RATE_LIMIT = '1';
+  process.env.E2E_TEST_SERVER = '1';
   try {
     for (let i = 0; i < 5; i++) {
       assert.equal(rateLimit(key, { limit: 2, windowMs: 60_000 }).ok, true);
     }
   } finally {
-    if (prev === undefined) delete process.env.E2E_DISABLE_RATE_LIMIT;
-    else process.env.E2E_DISABLE_RATE_LIMIT = prev;
+    if (prevDisable === undefined) delete process.env.E2E_DISABLE_RATE_LIMIT;
+    else process.env.E2E_DISABLE_RATE_LIMIT = prevDisable;
+    if (prevServer === undefined) delete process.env.E2E_TEST_SERVER;
+    else process.env.E2E_TEST_SERVER = prevServer;
+    if (prevNodeEnv === undefined) delete process.env.NODE_ENV;
+    else process.env.NODE_ENV = prevNodeEnv;
   }
-  // Bypassed calls did not consume the bucket: with the flag off, the
+  // Bypassed calls did not consume the bucket: with the flags off, the
   // first 2 calls pass and the 3rd is blocked, exactly as configured.
   assert.equal(rateLimit(key, { limit: 2, windowMs: 60_000 }).ok, true);
   assert.equal(rateLimit(key, { limit: 2, windowMs: 60_000 }).ok, true);
   assert.equal(rateLimit(key, { limit: 2, windowMs: 60_000 }).ok, false);
+});
+
+test('E2E_DISABLE_RATE_LIMIT alone does not bypass the limiter', () => {
+  const key = `test-e2e-flag-alone-${Date.now()}`;
+  const prevDisable = process.env.E2E_DISABLE_RATE_LIMIT;
+  const prevServer = process.env.E2E_TEST_SERVER;
+  process.env.E2E_DISABLE_RATE_LIMIT = '1';
+  delete process.env.E2E_TEST_SERVER;
+  try {
+    assert.equal(rateLimit(key, { limit: 2, windowMs: 60_000 }).ok, true);
+    assert.equal(rateLimit(key, { limit: 2, windowMs: 60_000 }).ok, true);
+    assert.equal(rateLimit(key, { limit: 2, windowMs: 60_000 }).ok, false);
+  } finally {
+    if (prevDisable === undefined) delete process.env.E2E_DISABLE_RATE_LIMIT;
+    else process.env.E2E_DISABLE_RATE_LIMIT = prevDisable;
+    if (prevServer === undefined) delete process.env.E2E_TEST_SERVER;
+    else process.env.E2E_TEST_SERVER = prevServer;
+  }
+});
+
+test('E2E bypass is inert when NODE_ENV=production', () => {
+  const key = `test-e2e-prod-${Date.now()}`;
+  const prevDisable = process.env.E2E_DISABLE_RATE_LIMIT;
+  const prevServer = process.env.E2E_TEST_SERVER;
+  const prevNodeEnv = process.env.NODE_ENV;
+  process.env.E2E_DISABLE_RATE_LIMIT = '1';
+  process.env.E2E_TEST_SERVER = '1';
+  process.env.NODE_ENV = 'production';
+  try {
+    assert.equal(rateLimit(key, { limit: 2, windowMs: 60_000 }).ok, true);
+    assert.equal(rateLimit(key, { limit: 2, windowMs: 60_000 }).ok, true);
+    assert.equal(rateLimit(key, { limit: 2, windowMs: 60_000 }).ok, false);
+  } finally {
+    if (prevDisable === undefined) delete process.env.E2E_DISABLE_RATE_LIMIT;
+    else process.env.E2E_DISABLE_RATE_LIMIT = prevDisable;
+    if (prevServer === undefined) delete process.env.E2E_TEST_SERVER;
+    else process.env.E2E_TEST_SERVER = prevServer;
+    if (prevNodeEnv === undefined) delete process.env.NODE_ENV;
+    else process.env.NODE_ENV = prevNodeEnv;
+  }
 });

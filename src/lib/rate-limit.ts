@@ -40,7 +40,16 @@ export function rateLimit(
   // 376 did not run). The e2e server only ever serves a local test
   // database (playwright.config refuses vercel.app URLs), so disabling
   // the limiter there cannot weaken production.
-  if (process.env.E2E_DISABLE_RATE_LIMIT === '1') {
+  //
+  // P1.0 (S5): the bypass needs ALL THREE conditions — the disable flag,
+  // the E2E_TEST_SERVER marker the Playwright webServer sets, AND a
+  // non-production NODE_ENV (Vercel always runs production). A single
+  // leaked env var can no longer switch the limiter off on a live host.
+  if (
+    process.env.E2E_DISABLE_RATE_LIMIT === '1' &&
+    process.env.E2E_TEST_SERVER === '1' &&
+    process.env.NODE_ENV !== 'production'
+  ) {
     return { ok: true, remaining: opts.limit, retryAfterMs: 0 };
   }
 
