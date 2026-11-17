@@ -90,15 +90,16 @@ export default function CustomerModal({
         // is underway); nothing more to do here.
       } catch (err) {
         // A redirect thrown by the server action means the create
-        // succeeded and the router is navigating to /customers — but
-        // that is the page the modal is already on, so a soft navigation
-        // would leave the modal open. Treat it as success: close the
-        // modal, toast, and refresh the list.
+        // succeeded and the framework is navigating to /customers — that
+        // navigation re-fetches the list, so do NOT call router.refresh()
+        // here: a manual refresh racing the in-flight navigation left
+        // the list showing stale data (QA runs 2-4: the new customer was
+        // in the DB but invisible until a hard reload). Close the modal
+        // and toast; the navigation does the rest.
         const digest = (err as { digest?: string })?.digest;
         if (typeof digest === 'string' && digest.startsWith('NEXT_REDIRECT')) {
           if (!customer) toast.success(custL('customerAdded'));
           onClose();
-          router.refresh();
           return;
         }
         setError(err instanceof Error ? err.message : 'Could not save this customer.');
