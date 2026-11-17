@@ -22,6 +22,7 @@ const ACTIONS_DIR = join(HERE, '..', '..', 'app', 'actions');
 const PUBLIC_ALLOWLIST = new Set([
   'customer-auth.ts', // login/signup/logout
   'password-reset.ts', // request/reset (token-gated)
+  'customer-password-reset.ts', // customer request/reset (token-gated, B-6)
   'booking-slots.ts', // public booking page
 ]);
 

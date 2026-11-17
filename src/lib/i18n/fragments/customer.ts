@@ -1,5 +1,3 @@
-import type { Dictionary } from '../en';
-
 /**
  * Customer (homeowner) experience strings: home search, pro cards,
  * requests, saved, messages, profile, auth pages, quote flow.
@@ -240,6 +238,20 @@ const fragment = {
         signIn: 'Sign in',
         showPassword: 'Show password',
         hidePassword: 'Hide password',
+        forgotPassword: 'Forgot password?',
+        forgotTitle: 'Reset your password',
+        forgotSub: 'Enter the email for your account and we will send you a reset link.',
+        forgotButton: 'Send reset link',
+        sendingLink: 'Sending…',
+        forgotSent:
+          'If an account exists for that email, a reset link is on its way. It is good for one hour.',
+        resetTitle: 'Choose a new password',
+        resetSub: 'Your new password must be at least 8 characters.',
+        newPassword: 'New password',
+        resetButton: 'Reset password',
+        resetting: 'Resetting…',
+        resetDone: 'Your password has been reset. You can now log in.',
+        backToLogin: 'Back to log in',
       },
       quote: {
         backToSearch: 'Back to search',
@@ -495,6 +507,21 @@ const fragment = {
         signIn: 'Se connecter',
         showPassword: 'Afficher le mot de passe',
         hidePassword: 'Masquer le mot de passe',
+        forgotPassword: 'Mot de passe oublié?',
+        forgotTitle: 'Réinitialiser votre mot de passe',
+        forgotSub:
+          'Entrez le courriel de votre compte et nous vous enverrons un lien de réinitialisation.',
+        forgotButton: 'Envoyer le lien',
+        sendingLink: 'Envoi…',
+        forgotSent:
+          'Si un compte existe pour ce courriel, un lien de réinitialisation est en route. Il est valide une heure.',
+        resetTitle: 'Choisissez un nouveau mot de passe',
+        resetSub: 'Votre nouveau mot de passe doit compter au moins 8 caractères.',
+        newPassword: 'Nouveau mot de passe',
+        resetButton: 'Réinitialiser le mot de passe',
+        resetting: 'Réinitialisation…',
+        resetDone: 'Votre mot de passe a été réinitialisé. Vous pouvez maintenant vous connecter.',
+        backToLogin: 'Retour à la connexion',
       },
       quote: {
         backToSearch: 'Retour à la recherche',

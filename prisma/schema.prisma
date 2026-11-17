@@ -1946,6 +1946,7 @@ model CustomerUser {
   locale        String      @default("en")
   agentCreatedAt DateTime? // set when the account was created by an AI-agent proposal approval (no usable password yet — claim via the confirmation link)
   sessions      CustomerSession[]
+  passwordResetTokens CustomerPasswordResetToken[]
   savedPros     SavedPro[]
   quoteRequests QuoteRequest[]
   directoryRequests DirectoryRequest[]
@@ -1984,6 +1985,21 @@ model CustomerSession {
   customerId String
   expiresAt  DateTime
   customer   CustomerUser @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+}
+
+// Customer password-reset tokens (P1.0 B-6): mirrors PasswordResetToken
+// for business users. Single-use, 1h expiry, stored hashed. One live token
+// per customer — requesting a new link retires older unused ones.
+model CustomerPasswordResetToken {
+  id         String       @id @default(cuid())
+  customerId String
+  customer   CustomerUser @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  tokenHash  String       @unique
+  expiresAt  DateTime
+  usedAt     DateTime?
+  createdAt  DateTime     @default(now())
 
   @@index([customerId])
 }

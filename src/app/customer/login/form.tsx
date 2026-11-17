@@ -13,10 +13,8 @@ import { Button, Input } from '@/components/kit';
  * once, in CustomerAuthShell above this form. Auth behaviour is
  * unchanged: the same customerLogin server action, same error surface.
  *
- * NOTE: the mockup shows a "Forgot password?" link, but no customer
- * password-reset flow exists yet (the reset flow under (auth) is
- * business-only). It is intentionally omitted here rather than linked
- * to a flow that cannot reset a customer account.
+ * Forgot password: the customer reset flow exists since P1.0 (B-6)
+ * (/customer/forgot-password), so the mockup's link is wired, not omitted.
  */
 export default function CustomerLoginForm({ locale, next }: { locale: Locale; next?: string | null }) {
   const [state, formAction, isPending] = useActionState(customerLogin, { error: '' });
@@ -82,6 +80,15 @@ export default function CustomerLoginForm({ locale, next }: { locale: Locale; ne
               </button>
             </div>
           </label>
+
+          <div className="text-right">
+            <Link
+              href="/customer/forgot-password"
+              className="text-xs font-semibold text-ink underline underline-offset-2"
+            >
+              {tr('customer.auth.forgotPassword')}
+            </Link>
+          </div>
 
           {state?.error && (
             <div

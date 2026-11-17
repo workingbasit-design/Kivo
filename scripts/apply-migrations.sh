@@ -19,6 +19,10 @@
 # pre-auth rows do not vanish under a future FORCE. Pure DDL, no rows
 # touched; idempotent (DROP POLICY IF EXISTS + CREATE POLICY).
 #
+# m36 (2026-11-17, P1.0 B-6) adds the CustomerPasswordResetToken table
+# (customer forgot-password flow; mirrors PasswordResetToken). Brand-new
+# table, no rows touched; idempotent (IF NOT EXISTS guards).
+#
 # m31/m32 (2026-11-11, Claude design+DB series) are pure backfills with no
 # schema change: m31 seeds BookableService rows so existing /book pages do
 # not go blank when the page starts reading the curated list, and m32 flips
@@ -63,6 +67,7 @@ for m in \
   20261116120000_m33_directory_request_customer \
   20261117120000_m34_job_startedat \
   20261117130000_m35_rls_policy_gaps \
+  20261117140000_m36_customer_password_reset \
 ; do
   echo "==> Applying migration ${m}..."
   prisma db execute --file "prisma/migrations/${m}/migration.sql" --schema prisma/schema.prisma

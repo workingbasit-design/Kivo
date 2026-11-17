@@ -24,6 +24,8 @@ export function resetAuthStub() {
   customerUserRow = null;
   testIp = '9.9.9.9';
   rateLimitRows.clear();
+  customerResetTokens.clear();
+  customerSessions.clear();
 }
 
 // next/headers
@@ -73,7 +75,27 @@ export default bcryptStub;
 // the limit hold across serverless instances. updateMany only touches
 // unexpired rows, matching the real implementation's semantics.
 const rateLimitRows = new Map();
+// In-memory CustomerPasswordResetToken table + customer sessions (P1.0 B-6).
+const customerResetTokens = new Map(); // tokenHash -> row
+export const __customerResetTokens = customerResetTokens;
+const customerSessions = new Map(); // session id -> { customerId }
+export function __seedCustomerSession(id, customerId) {
+  customerSessions.set(id, { customerId });
+}
+export function __customerSessionCount(customerId) {
+  let n = 0;
+  for (const s of customerSessions.values()) if (s.customerId === customerId) n++;
+  return n;
+}
 export const prisma = {
+  // $transaction: array form awaits the (already-created) operation promises
+  // in order; callback form runs against this stub client.
+  $transaction: async (ops) => {
+    if (typeof ops === 'function') return ops(prisma);
+    const out = [];
+    for (const op of ops) out.push(await op);
+    return out;
+  },
   user: {
     findUnique: async ({ where }) =>
       businessUser && where?.email === businessUser.email ? businessUser : null,
@@ -83,6 +105,61 @@ export const prisma = {
       customerUserRow && where?.email === customerUserRow.email
         ? customerUserRow
         : null,
+    update: async ({ where, data }) => {
+      if (!customerUserRow || customerUserRow.id !== where?.id) {
+        throw new Error('stub: customer row not found');
+      }
+      Object.assign(customerUserRow, data);
+      return customerUserRow;
+    },
+  },
+  customerPasswordResetToken: {
+    deleteMany: async ({ where }) => {
+      let count = 0;
+      for (const [hash, row] of customerResetTokens) {
+        const unusedOnly = where?.usedAt === null;
+        if (
+          row.customerId === where?.customerId &&
+          (!unusedOnly || row.usedAt === null)
+        ) {
+          customerResetTokens.delete(hash);
+          count++;
+        }
+      }
+      return { count };
+    },
+    create: async ({ data }) => {
+      const row = {
+        id: `crt-${customerResetTokens.size + 1}`,
+        ...data,
+        usedAt: null,
+        createdAt: new Date(),
+      };
+      customerResetTokens.set(data.tokenHash, row);
+      return row;
+    },
+    findUnique: async ({ where }) => customerResetTokens.get(where?.tokenHash) ?? null,
+    update: async ({ where, data }) => {
+      for (const row of customerResetTokens.values()) {
+        if (row.id === where?.id) {
+          Object.assign(row, data);
+          return row;
+        }
+      }
+      throw new Error('stub: token row not found');
+    },
+  },
+  customerSession: {
+    deleteMany: async ({ where }) => {
+      let count = 0;
+      for (const [id, s] of customerSessions) {
+        if (s.customerId === where?.customerId) {
+          customerSessions.delete(id);
+          count++;
+        }
+      }
+      return { count };
+    },
   },
   rateLimit: {
     updateMany: async ({ where, data }) => {
