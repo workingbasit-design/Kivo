@@ -125,7 +125,7 @@ export default async function InvoiceDetailPage({
   }
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="ej-invoices space-y-6 max-w-3xl">
       <RecordLastOpened kind="invoice" id={invoice.id} title={invoice.number} subtitle={invoice.customer.name} />
       <div className="flex items-center justify-between">
         <Link
@@ -153,6 +153,7 @@ export default async function InvoiceDetailPage({
         </div>
       </div>
 
+      <p className="ej-invoices-eyebrow">{L('billing.listEyebrow')}</p>
       <PageTitle
         title={`${L('invoices.invoice')} ${invoice.number}`}
         summary={<>{L('invoices.dated')} <DateTimeText date={invoice.date} variant="short" timezone={invoice.business.timezone ?? 'America/Toronto'} locale={locale} />{invoice.dueAt && <> · {L('invoices.due')} <DateTimeText date={invoice.dueAt} variant="short" timezone={invoice.business.timezone ?? 'America/Toronto'} locale={locale} /></>}</>}

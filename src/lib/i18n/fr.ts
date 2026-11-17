@@ -875,6 +875,7 @@ const fr: Dictionary = {
     APPROVED: 'Approuvé',
     DECLINED: 'Refusé',
     CANCELLED: 'Annulé',
+    VOID: 'Annulée',
     OVERDUE: 'En retard',
     LATE: 'En retard',
     CONVERTED: 'Converti',

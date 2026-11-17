@@ -50,6 +50,7 @@ export default function InvoiceForm({
   locale = 'en',
   jobContext = null,
   gstHstRegistered = false,
+  onCancel,
 }: {
   customers: { id: string; name: string }[];
   taxConfig: TaxConfig;
@@ -69,6 +70,9 @@ export default function InvoiceForm({
     /** Slice 2: the job's service property, when linked. */
     property: { id: string; label: string; province: string | null } | null;
   } | null;
+  /** Invoices redesign: when the form runs inside the New Invoice modal,
+   *  Cancel closes the modal instead of navigating to /invoices. */
+  onCancel?: () => void;
 }) {
   const [state, formAction, isPending] = useActionState<ActionResult, FormData>(
     createInvoice,
@@ -394,9 +398,15 @@ export default function InvoiceForm({
           <Receipt size={14} />
           {isPending ? t(locale, 't10money.invCreating') : t(locale, 't10money.invCreate')}
         </Button>
-        <Button variant="secondary" href="/invoices">
-          {t(locale, 't10money.formCancel')}
-        </Button>
+        {onCancel ? (
+          <Button type="button" variant="secondary" onClick={onCancel}>
+            {t(locale, 't10money.formCancel')}
+          </Button>
+        ) : (
+          <Button variant="secondary" href="/invoices">
+            {t(locale, 't10money.formCancel')}
+          </Button>
+        )}
       </div>
     </form>
   );

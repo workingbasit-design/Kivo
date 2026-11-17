@@ -6,6 +6,7 @@ import { t } from '@/lib/i18n';
 import { prisma } from '@/lib/prisma';
 import { INVOICE_STATUSES } from '@/lib/validations';
 import { centsToDollars } from '@/lib/money';
+import { getTaxConfig } from '@/lib/tax';
 import InvoicesClient, { type InvoiceListItem } from './InvoicesClient';
 import type { ExportColumn } from '@/components/ExportButtons';
 import { parseListLimit, takeWithProbe, sliceListPage } from '@/lib/list-page';
@@ -40,9 +41,9 @@ export default async function InvoicesPage({
   // matching row, so they stay exact no matter how few invoices are on
   // screen. (The old code fetched the whole table TWICE: once with every
   // invoice's payments for the list, and again for the totals.)
-  const [business, fetchedRows, totalCount, unpaidTotals, collectedAgg, outstandingPaid] =
+  const [business, fetchedRows, totalCount, unpaidTotals, collectedAgg, outstandingPaid, modalCustomers] =
     await Promise.all([
-      prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } }),
+      prisma.business.findUnique({ where: { id: businessId }, select: { currency: true, regionCode: true, taxRegion: true, gstHstRegistered: true } }),
       prisma.invoice.findMany({
         where: { businessId },
         include: {
@@ -79,6 +80,14 @@ export default async function InvoicesPage({
         },
         _sum: { amountCents: true },
       }),
+      // Invoices redesign: the New Invoice modal wraps the real
+      // InvoiceForm, so the list page supplies its customers like
+      // /invoices/new.
+      prisma.customer.findMany({
+        where: { businessId },
+        select: { id: true, name: true },
+        orderBy: { name: 'asc' },
+      }),
     ]);
 
   const page = sliceListPage(fetchedRows, limit);
@@ -111,6 +120,13 @@ export default async function InvoicesPage({
   ];
   const exportFileBase = `everyjob-invoices-${new Date().toISOString().slice(0, 10)}`;
 
+  const filterLabels = {
+    ALL: t(locale, 'billing.filterAll'),
+    UNPAID: t(locale, 'statuses.UNPAID'),
+    'PARTIALLY PAID': t(locale, 'statuses.PARTIALLY PAID'),
+    PAID: t(locale, 'statuses.PAID'),
+  } as Record<(typeof FILTERS)[number], string>;
+
   return (
     <>
     <InvoicesClient
@@ -122,6 +138,10 @@ export default async function InvoicesPage({
       exportColumns={exportColumns}
       exportFileBase={exportFileBase}
       initialFilter={initialFilter}
+      filterLabels={filterLabels}
+      customers={modalCustomers}
+      taxConfig={getTaxConfig(business?.regionCode, business?.taxRegion)}
+      gstHstRegistered={business?.gstHstRegistered ?? false}
     />
       <ListMore
         shown={invoices.length}

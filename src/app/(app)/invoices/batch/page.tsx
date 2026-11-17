@@ -14,7 +14,8 @@ export default async function BatchInvoicesPage() {
   const preview = await previewBatchInvoices();
 
   return (
-    <div className="space-y-6">
+    <div className="ej-invoices space-y-6">
+      <p className="ej-invoices-eyebrow">{t(locale, 'billing.listEyebrow')}</p>
       <PageTitle
         title={t(locale, 'billing.batchTitle')}
         summary={t(locale, 'billing.batchSubtitle')}

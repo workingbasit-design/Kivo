@@ -873,6 +873,7 @@ const en: Dict = {
     APPROVED: 'Approved',
     DECLINED: 'Declined',
     CANCELLED: 'Cancelled',
+    VOID: 'Void',
     OVERDUE: 'Overdue',
     LATE: 'Late',
     CONVERTED: 'Converted',
