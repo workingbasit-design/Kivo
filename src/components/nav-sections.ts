@@ -91,6 +91,7 @@ export const navSections: NavSection[] = [
       { nameKey: 'nav.insights', href: '/insights', icon: Sparkles, advanced: true },
       { nameKey: 'nav.imports', href: '/imports', icon: Import },
       { nameKey: 'nav.team', href: '/settings/team', icon: UserCog },
+      { nameKey: 'nav.auditLog', href: '/settings/audit', icon: FileText },
       { nameKey: 'nav.settings', href: '/settings', icon: Settings },
     ],
   },

@@ -4,6 +4,7 @@ import {
   CalendarCheck,
   CreditCard,
   Download,
+  FileText,
   ImagePlus,
   Inbox,
   Languages,
@@ -373,6 +374,9 @@ export default async function SettingsPage() {
           />
           <Button href="/settings/team" variant="secondary">
             <Users size={14} /> {tr('t10misc.settingsMain.manageTeam')}
+          </Button>
+          <Button href="/settings/audit" variant="secondary">
+            <FileText size={14} /> {tr('nav.auditLog')}
           </Button>
         </Card>
       </section>

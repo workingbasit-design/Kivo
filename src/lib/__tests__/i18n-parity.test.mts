@@ -78,6 +78,10 @@ function placeholderSet(value: string): Set<string> {
 // identical value must be deliberately added here, not silently pass.
 const IDENTICAL_ALLOWLIST: string[] = [
   'agent.confirm.service',
+  // F2: 'Action' is the same word in French — a cognate, not a missing
+  // translation.
+  'auditLog.colAction',
+  'auditLog.filterAction',
   'attention.items.jobAtRisk.detail',
   'attention.items.jobUnassigned.detail',
   'attention.severity.info',

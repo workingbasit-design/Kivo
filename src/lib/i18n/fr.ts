@@ -38,6 +38,7 @@ const fr: Dictionary = {
     insights: 'Perspectives',
     pricebook: 'Catalogue de prix',
     team: 'Équipe',
+    auditLog: 'Journal d’audit',
     timesheets: 'Feuilles de temps',
     marketing: 'Marketing',
     reminders: 'Rappels',
