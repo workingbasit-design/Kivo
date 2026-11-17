@@ -113,7 +113,10 @@ export default function MorningGlanceCard({
     }
   }, [reminder, dismissed, todayKey, title, notificationBody]);
 
-  if (dismissed) return null;
+  // Dismissed: the card is gone, but the toast must still render — it
+  // lives inside this component, so returning null here would swallow
+  // the "Dismissed until tomorrow" feedback entirely.
+  if (dismissed) return <Toast message={toast} visible={toast !== ""} />;
 
   const dismiss = () => {
     write(DISMISSED_KEY, todayKey);
