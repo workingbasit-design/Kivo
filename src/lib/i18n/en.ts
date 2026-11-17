@@ -248,6 +248,7 @@ const en: Dict = {
     decline: 'Decline',
     convertToJob: 'Convert to job',
     customerLabel: 'Customer',
+    selectCustomer: 'Select a customer',
     titleLabel: 'Title',
     titlePlaceholder: 'e.g. Full house wiring repair',
     noCustomersYet: 'No customers yet',

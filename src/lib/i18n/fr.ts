@@ -248,6 +248,7 @@ const fr: Dictionary = {
     decline: 'Refuser',
     convertToJob: 'Convertir en travail',
     customerLabel: 'Client',
+    selectCustomer: 'Sélectionner un client',
     titleLabel: 'Titre',
     titlePlaceholder: 'p. ex. Réparation complète du câblage',
     noCustomersYet: 'Aucun client pour l’instant',

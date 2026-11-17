@@ -51,6 +51,15 @@ test('public paths: customer-home public pages are reachable without a session',
   assert.equal(isPublicPath('/faqx'), false);
 });
 
+test('public paths: help center is reachable without a session', () => {
+  // Batch C audit (2026-11-16): /help bounced anonymous visitors to
+  // /login even though the help-center page itself needs no session.
+  // The index and article pages (/help/[slug]) are both public.
+  assert.equal(isPublicPath('/help'), true);
+  assert.equal(isPublicPath('/help/getting-started'), true);
+  assert.equal(isPublicPath('/helpx'), false);
+});
+
 test('public paths: app pages still require a session', () => {
   for (const p of ['/dashboard', '/jobs', '/schedule', '/customers', '/settings', '/invoices', '/quotes']) {
     assert.equal(isPublicPath(p), false, p);

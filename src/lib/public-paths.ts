@@ -22,6 +22,7 @@ export const PUBLIC_PATHS = [
   '/agents',
   '/how-it-works',
   '/faq',
+  '/help',
   '/.well-known/everyjob.json',
 ];
 
@@ -51,6 +52,7 @@ export const PUBLIC_PREFIXES = [
   '/reset-password/',
   '/a/',
   '/api/agent/',
+  '/help/',
 ];
 
 export const PUBLIC_EXACT_EXTRA = [

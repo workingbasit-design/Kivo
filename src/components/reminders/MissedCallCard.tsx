@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AlertCircle, MessageCircle, PhoneMissed, Smartphone } from '@/components/icons';
+import { AlertCircle, MessageCircle, Smartphone } from '@/components/icons';
 import { draftMissedCall } from '@/app/actions/reminders';
 import CopyButton from '@/components/CopyButton';
 import WhatsAppButton from '@/components/WhatsAppButton';
@@ -20,7 +20,6 @@ export default function MissedCallCard({
   customers,
   regionCode,
   ui,
-  title,
   note,
   pickCustomerLabel,
   draftLabel,
@@ -28,7 +27,6 @@ export default function MissedCallCard({
   customers: { id: string; name: string; phone: string }[];
   regionCode: string | null;
   ui: ReminderUiStrings;
-  title: string;
   note: string;
   pickCustomerLabel: string;
   draftLabel: string;
@@ -63,12 +61,6 @@ export default function MissedCallCard({
 
   return (
     <div className="bg-surface rounded-2xl border border-smoke shadow-sm p-4 sm:p-5">
-      <div className="flex items-center gap-2 mb-1">
-        <span className="w-8 h-8 rounded-xl bg-asphalt text-lime flex items-center justify-center shrink-0">
-          <PhoneMissed size={16} />
-        </span>
-        <h2 className="text-sm font-bold text-ink">{title}</h2>
-      </div>
       <p className="text-xs text-graphite mb-4">{note}</p>
 
       <div className="flex flex-col sm:flex-row gap-3 sm:items-end">

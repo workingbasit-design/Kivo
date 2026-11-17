@@ -195,11 +195,13 @@ export default async function RemindersPage() {
 
       {/* Missed-call text-back (manual quick-draft) */}
       <section aria-label={t(locale, 'reminders.missedCall')}>
+        <h2 className="text-xs font-bold text-ink-2 mb-2 px-1">
+          {t(locale, 'reminders.missedCall')}
+        </h2>
         <MissedCallCard
           customers={textableCustomers}
           regionCode={regionCode}
           ui={ui}
-          title={t(locale, 'reminders.missedCall')}
           note={t(locale, 'reminders.missedCallNote')}
           pickCustomerLabel={t(locale, 'reminders.pickCustomer')}
           draftLabel={t(locale, 'reminders.draftTextback')}
