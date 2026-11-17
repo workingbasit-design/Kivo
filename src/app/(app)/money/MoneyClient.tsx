@@ -94,18 +94,34 @@ export default function MoneyClient({
   const [liveStats, setLiveStats] = useState<MoneyStats>(stats);
   const [modalKind, setModalKind] = useState<'invoice' | 'income' | 'expense' | null>(null);
   const router = useRouter();
+  // A save that just returned ok, whose record the server may not show
+  // yet (a post-save refresh can return data that predates the write
+  // when the deploy is cold or the DB is under connection pressure —
+  // observed in QA runs 3 and 4: the expense was invisible on /money
+  // for 90-180s after a save that returned ok, then appeared).
+  const [pendingEntry, setPendingEntry] = useState<SavedEntry | null>(null);
 
   // Server truth replaces the live copy whenever the page re-renders
   // (after router.refresh() following a modal save). Adjusted during
   // render per the React "adjusting state when props change" pattern —
-  // not in an effect — so a record is never shown twice.
+  // not in an effect — so a record is never shown twice. While a save
+  // is pending, a refresh that predates it must NOT clobber the
+  // optimistic copy: keep the live values until the server stats have
+  // caught up with them, then accept server truth.
   const [prevActivity, setPrevActivity] = useState(activity);
   const [prevStats, setPrevStats] = useState(stats);
   if (prevActivity !== activity || prevStats !== stats) {
     setPrevActivity(activity);
     setPrevStats(stats);
-    setLiveActivity(activity);
-    setLiveStats(stats);
+    const serverCaughtUp =
+      !pendingEntry ||
+      (stats.incomeCents >= liveStats.incomeCents &&
+        stats.expensesCents >= liveStats.expensesCents);
+    if (serverCaughtUp) {
+      if (pendingEntry) setPendingEntry(null);
+      setLiveActivity(activity);
+      setLiveStats(stats);
+    }
   }
 
   const filtered = useMemo(
@@ -169,6 +185,7 @@ export default function MoneyClient({
       };
     });
     setModalKind(null);
+    setPendingEntry(entry);
     toast.success(
       t(
         locale,
