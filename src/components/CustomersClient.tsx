@@ -84,6 +84,12 @@ export default function CustomersClient({
   const [modalCustomer, setModalCustomer] = useState<CustomerRow | 'new' | null>(null);
   const [payById, setPayById] = useState<Record<string, PaymentSummary | 'loading' | 'error'>>({});
   const [archivingId, setArchivingId] = useState<string | null>(null);
+  // Customers archived from this list in this session. The server action
+  // archives them for real, but the list re-render after the mutation
+  // served a stale cached snapshot in QA (runs 7-8: Beta reappeared for
+  // 90s+ although the DB was correct), so the archived row is hidden
+  // locally the moment the action succeeds — the next server load agrees.
+  const [hiddenIds, setHiddenIds] = useState<ReadonlySet<string>>(new Set());
   const [, startTransition] = useTransition();
   const router = useRouter();
   const searchRef = useRef<HTMLInputElement>(null);
@@ -102,19 +108,25 @@ export default function CustomersClient({
     return () => document.removeEventListener('keydown', onKey);
   }, []);
 
+  // Live rows: the server list minus anything archived in this session.
+  const visibleCustomers = useMemo(
+    () => customers.filter((c) => !hiddenIds.has(c.id)),
+    [customers, hiddenIds],
+  );
+
   // Distinct tags across this business's customers (tenant-safe: only this
   // business's customers are in `customers`), for the filter chips.
   const allTags = useMemo(() => {
     const set = new Set<string>();
-    for (const c of customers) {
+    for (const c of visibleCustomers) {
       for (const tag of c.tags ?? []) set.add(tag);
     }
     return [...set].sort((a, b) => a.localeCompare(b));
-  }, [customers]);
+  }, [visibleCustomers]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return customers.filter((c) => {
+    return visibleCustomers.filter((c) => {
       if (activeTag && !(c.tags ?? []).includes(activeTag)) return false;
       if (!q) return true;
       return (
@@ -124,16 +136,22 @@ export default function CustomersClient({
         (c.address ?? '').toLowerCase().includes(q)
       );
     });
-  }, [customers, query, activeTag]);
+  }, [visibleCustomers, query, activeTag]);
 
   const hasFilter = query.trim() !== '' || activeTag !== null;
   const countLabel = fill(
     L(filtered.length === 1 ? 'custListCountOne' : 'custListCountMany'),
     { count: filtered.length },
   );
-  const headerCount = custL(totalCustomers === 1 ? 'countOne' : 'countOther').replace(
+  // The header count is the real total, minus anything archived in this
+  // session that is still in the (possibly stale) server list — count
+  // only hidden ids still present in props, so a refreshed total is
+  // never double-subtracted after the navigation refetch lands.
+  const hiddenVisibleCount = customers.filter((c) => hiddenIds.has(c.id)).length;
+  const displayTotal = Math.max(0, totalCustomers - hiddenVisibleCount);
+  const headerCount = custL(displayTotal === 1 ? 'countOne' : 'countOther').replace(
     '{count}',
-    String(totalCustomers),
+    String(displayTotal),
   );
 
   // Export the *currently filtered* list (2026-09-24).
@@ -209,11 +227,11 @@ export default function CustomersClient({
         } else if (result?.ok) {
           toast.success(custL('customerArchived'));
           setExpandedId(null);
-          // Navigate (same URL) instead of router.refresh(): the refresh
-          // re-rendered a stale cached snapshot of the list in QA run 7
-          // (Beta reappeared for 90s+ although the DB was correct). A
-          // soft navigation re-fetches the route, exactly like the
-          // modal create's redirect, which proved reliable in probe 4.
+          // Hide the row locally at once (see hiddenIds): the server
+          // re-render after this mutation served stale snapshots in QA.
+          setHiddenIds((prev) => new Set(prev).add(customer.id));
+          // Soft navigation re-fetches the route so the server state
+          // (count, tags) catches up with the local hide.
           router.replace('/customers');
         }
       } finally {
