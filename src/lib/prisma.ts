@@ -28,7 +28,7 @@ export function pooledDatabaseUrl(fromEnv = process.env.DATABASE_URL): string | 
 }
 
 import { withDbRetry } from './db-retry.ts';
-import { assertTenantScope, setUnscopedClient } from './tenant-guard.ts';
+import { assertTenantScope } from './tenant-guard.ts';
 
 const cached = globalForPrisma.prisma;
 export const prisma =
@@ -92,20 +92,24 @@ const globalForUnscoped = globalThis as unknown as {
  * tracking shares, quote/invoice/portal tokens). NEVER for businessId-scoped
  * data access - the guarded `prisma` client remains the default everywhere.
  *
- * POOL NOTE: one extra connection per serverless instance (connection_limit=1).
- * Acceptable: token pages are low-traffic, and the alternative is broken
- * public flows.
+ * LAZY (P1.0 D1): created on first use only, via getPrismaUnscoped().
+ * Previously both clients were created eagerly at module import, so EVERY
+ * serverless instance opened 2 connections at cold start even if it never
+ * served a token page. Now most instances (dashboard, jobs, invoices...)
+ * hold 1 connection; only instances that serve a token/agent page open the
+ * second. The client is cached on globalThis like the guarded one, so a
+ * module re-evaluation never creates a second pool in the same instance.
  */
-const unscopedCached = globalForUnscoped.prismaUnscoped;
-export const prismaUnscoped =
-  unscopedCached ??
-  new PrismaClient({
+export function getPrismaUnscoped(): PrismaClient {
+  const cached = globalForUnscoped.prismaUnscoped;
+  if (cached) return cached;
+  const client = new PrismaClient({
     log: process.env.NODE_ENV === 'production' ? ['error'] : ['query'],
     datasourceUrl: pooledDatabaseUrl(),
   });
-globalForUnscoped.prismaUnscoped = prismaUnscoped;
-if (!unscopedCached) {
-  prismaUnscoped.$use(async (params, next) => withDbRetry(() => next(params)));
+  // Retry middleware only (no tenant guard - see SAFETY above). Registered
+  // here, at the single creation site, so it can never stack.
+  client.$use(async (params, next) => withDbRetry(() => next(params)));
+  globalForUnscoped.prismaUnscoped = client;
+  return client;
 }
-// Inject into the guard module so unsafeUnscoped() can hand out this client.
-setUnscopedClient(prismaUnscoped);

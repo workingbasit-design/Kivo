@@ -1,8 +1,8 @@
 /**
  * Durable DB-backed rate limiter.
  *
- * Replaces the in-memory token bucket (src/lib/rate-limit.ts) so limits
- * hold across Vercel serverless instances and cold starts. Uses the
+ * Replaces the former in-memory token bucket (deleted in P1.0 S4 P3) so
+ * limits hold across Vercel serverless instances and cold starts. Uses the
  * RateLimit table with atomic increment-or-reset.
  *
  * The check is: increment the counter if the window hasn't expired;
@@ -113,7 +113,7 @@ export async function pruneRateLimits(): Promise<number> {
   return result.count;
 }
 
-/** Presets (mirroring src/lib/rate-limit.ts for drop-in replacement). */
+/** Presets (same values as the former in-memory limiter). */
 export const AUTH_LIMIT = { limit: 8, windowMs: 10 * 60 * 1000 };
 export const ACTION_LIMIT = { limit: 120, windowMs: 60 * 1000 };
 export const QUOTE_REQUEST_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };

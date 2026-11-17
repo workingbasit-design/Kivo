@@ -22,6 +22,7 @@ import { prisma as defaultPrisma } from '@/lib/prisma';
 import { isJobLate, LATE_ELIGIBLE_STATUSES } from './job-status.ts';
 import { dayRangeInTimezone, toISODateInTimezone } from './utils.ts';
 import { centsToDollars } from './money.ts';
+import { LIST_MAX_SIZE } from './list-page.ts';
 
 type Db = typeof defaultPrisma;
 /** Database client shape accepted by the query functions (real Prisma
@@ -64,6 +65,9 @@ export async function getJobsInRange(
     where: { businessId, date: { gte: start, lte: end } },
     orderBy: { date: 'asc' },
     include: { customer: { select: { id: true, name: true } } },
+    // Defensive cap (P1.0 D1): a month cannot hold 2000 jobs for a
+    // 1-5-person shop; the cap is a guardrail, not a behaviour change.
+    take: LIST_MAX_SIZE,
   });
 }
 
@@ -316,6 +320,9 @@ export async function getJobs(
       customer: { select: { id: true, name: true, phone: true } },
     },
     orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
+    // Defensive cap (P1.0 D1): the jobs list page already paginates via
+    // getJobsForList; this helper must never return a whole table.
+    take: LIST_MAX_SIZE,
   });
 }
 

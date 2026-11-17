@@ -48,15 +48,16 @@ import type { PrismaClient } from '@prisma/client';
 import { logger } from './logger.ts';
 
 /**
- * The unguarded client, injected by lib/prisma.ts via setUnscopedClient().
- * Type-only import: no runtime dependency, so tests can stub freely and
- * there is no circular module initialization.
+ * The unguarded client, created lazily by lib/prisma.ts getPrismaUnscoped()
+ * (P1.0 D1) on first unsafeUnscoped() use. Tests inject a mock via
+ * setUnscopedClient(). Type-only import: no runtime dependency, so tests
+ * can stub freely and there is no circular module initialization.
  */
 let unscopedClient: PrismaClient | null = null;
 
 /**
- * Inject the unguarded Prisma client (called once by lib/prisma.ts).
- * Tests inject a mock via this same function.
+ * Inject the unguarded Prisma client. Tests inject a mock via this
+ * function; production creates the client lazily in getPrismaUnscoped().
  */
 export function setUnscopedClient(client: PrismaClient): void {
   unscopedClient = client;
@@ -357,12 +358,16 @@ export async function unsafeUnscoped<T>(
   // in that route's graph *uses* its exports, so unsafeUnscoped 500'd on
   // every agent API route in production. Fix: lazily import lib/prisma.ts
   // here (dynamic import keeps the cycle broken) instead of throwing.
+  //
+  // NOTE (P1.0 D1): the unscoped client is LAZY - importing lib/prisma.ts
+  // no longer creates it. Create it on first use via getPrismaUnscoped().
   if (!unscopedClient) {
-    await import('./prisma.ts');
+    const { getPrismaUnscoped } = await import('./prisma.ts');
+    unscopedClient = getPrismaUnscoped();
   }
   if (!unscopedClient) {
     throw new Error(
-      '[tenant-guard] unscoped client not initialized - lib/prisma.ts must call setUnscopedClient()'
+      '[tenant-guard] unscoped client not initialized - getPrismaUnscoped() must return a client'
     );
   }
   unscopedEvents.push({ at: Date.now(), op: operationName });
