@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Sparkles, Play, Trash2, Loader2, Save } from '@/components/icons';
+import { Sparkles, Play, Trash2, Loader2, Save, CheckCircle2, Download, FileText } from '@/components/icons';
 import { t, type Locale } from '@/lib/i18n';
 import { formatMoney } from '@/lib/money';
 import {
@@ -43,7 +43,7 @@ const EXAMPLES: Record<Locale, string[]> = {
   ],
 };
 
-/** "Revenue · grouped by month · last 30 days" - shows the user what was parsed. */
+/** "Revenue, grouped by month, last 30 days" - shows the user what was parsed. */
 function describeConfig(config: ReportConfig, locale: Locale): string {
   const parts = [
     t(locale, `reports.type.${config.type}`),
@@ -53,7 +53,7 @@ function describeConfig(config: ReportConfig, locale: Locale): string {
   if (config.metric !== 'total') {
     parts.push(t(locale, `reports.metric.${config.metric}`));
   }
-  return parts.join(' · ');
+  return parts.join(', ');
 }
 
 /** Which report types carry money values (vs plain counts). */
@@ -139,17 +139,47 @@ export function ReportBuilder({
   const fmt = (n: number) =>
     money ? formatMoney(n, currency, moneyLocale) : String(Math.round(n));
 
+  /** Export the built report as a plain-text file (real rows only). */
+  const exportBuilt = () => {
+    if (!built) return;
+    const lines = [
+      t(locale, `reports.type.${built.config.type}`),
+      describeConfig(built.config, locale),
+      '',
+      `${t(locale, 'reports.total')}: ${fmt(built.result.total)}`,
+      `${t(locale, 'reports.countLabel')}: ${built.result.totalCount}`,
+      ...built.result.rows.map(
+        (row) =>
+          `${row.label}, ${fmt(row.value)}${row.count !== undefined ? ` (${row.count})` : ''}`
+      ),
+    ];
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'everyjob-report.txt';
+    a.click();
+    URL.revokeObjectURL(url);
+    setSaveMsg(t(locale, 'reports.exported'));
+  };
+
   return (
     <div className="space-y-6">
       {/* Builder */}
       <Card className="p-5">
-        <h2 className="text-sm font-bold text-ink flex items-center gap-2">
-          <Sparkles size={15} className="text-ink" />
-          {t(locale, 'reports.builderTitle')}
-        </h2>
-        <p className="text-xs text-ink-2 mt-1 mb-4">
-          {t(locale, 'reports.builderSubtitle')}
-        </p>
+        <div className="flex items-start gap-2.5 mb-4">
+          <span className="w-6 h-6 grid place-items-center rounded-lg bg-ok-bg text-ok shrink-0">
+            <Sparkles size={15} />
+          </span>
+          <div>
+            <h2 className="text-sm font-bold text-ink">
+              {t(locale, 'reports.builderTitle')}
+            </h2>
+            <p className="text-xs text-ink-2 mt-0.5">
+              {t(locale, 'reports.builderSubtitle')}
+            </p>
+          </div>
+        </div>
 
         <Textarea
           label={t(locale, 'reports.promptLabel')}
@@ -172,7 +202,7 @@ export function ReportBuilder({
                 setPrompt(ex);
                 run(ex);
               }}
-              className="text-xs font-medium text-ink-2 bg-surface-2 hover:bg-line rounded-full px-3 py-2 min-h-[44px] transition-colors"
+              className="text-xs font-medium text-ink-2 bg-surface-2 hover:bg-line border border-line rounded-full px-3 py-2 min-h-[44px] transition-colors"
             >
               {ex}
             </button>
@@ -208,97 +238,88 @@ export function ReportBuilder({
 
         {built && (
           <div className="mt-5 pt-5 border-t border-line">
-            <p className="text-xs text-ink-2">
-              <span className="font-semibold text-ink">
-                {t(locale, 'reports.understoodAs')}
-              </span>{' '}
-              {describeConfig(built.config, locale)}
-            </p>
-            {built.defaulted && (
-              <p className="text-xs text-warn-text bg-warn-bg rounded-lg px-3 py-2 mt-2">
-                {t(locale, 'reports.vagueHint')}
-              </p>
-            )}
-
-            {built.result.rows.length === 0 ? (
-              <p className="text-sm text-ink-2 mt-4">
-                {t(locale, 'reports.noRows')}
-              </p>
-            ) : (
-              <div className="mt-4 overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-xs text-ink-2 font-semibold border-b border-line">
-                      <th className="py-2 pr-3 font-semibold"> </th>
-                      <th className="py-2 pr-3 font-semibold text-right">
-                        {t(locale, 'reports.countLabel')}
-                      </th>
-                      <th className="py-2 font-semibold text-right">
-                        {built.config.metric === 'count'
-                          ? t(locale, 'reports.countLabel')
-                          : t(locale, 'reports.total')}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {built.result.rows.map((row) => (
-                      <tr
-                        key={row.label}
-                        className="border-b border-line last:border-0"
-                      >
-                        <td className="py-2.5 pr-3 font-medium text-ink">
-                          {row.label}
-                        </td>
-                        <td className="py-2.5 pr-3 text-right text-ink-2 tabular-nums">
-                          {row.count ?? '-'}
-                        </td>
-                        <td className="py-2.5 text-right font-bold text-ink tabular-nums">
-                          {fmt(row.value)}
-                        </td>
-                      </tr>
-                    ))}
-                    <tr className="bg-surface-2">
-                      <td className="py-2.5 pr-3 font-bold text-ink">
-                        {t(locale, 'reports.total')}
-                      </td>
-                      <td className="py-2.5 pr-3 text-right text-ink-2 tabular-nums font-semibold">
-                        {built.result.totalCount}
-                      </td>
-                      <td className="py-2.5 text-right font-bold text-ink tabular-nums">
-                        {fmt(built.result.total)}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+            {/* Generated report (prototype `.generated-report`) */}
+            <div className="p-3.5 border border-line rounded-[13px] bg-surface-2/60">
+              <div className="flex flex-col sm:flex-row sm:justify-between gap-3">
+                <div className="min-w-0">
+                  <span className="inline-flex items-center gap-1.5 text-ok text-[11px] font-extrabold uppercase tracking-[0.1em]">
+                    <CheckCircle2 size={13} />
+                    {t(locale, 'reports.reportReady')}
+                  </span>
+                  <h3 className="text-base font-bold text-ink mt-1.5">
+                    {t(locale, `reports.type.${built.config.type}`)}
+                  </h3>
+                  <p className="text-xs text-ink-2 mt-1 leading-relaxed">
+                    <span className="font-semibold text-ink">
+                      {t(locale, 'reports.understoodAs')}
+                    </span>{' '}
+                    {describeConfig(built.config, locale)}
+                  </p>
+                </div>
+                <strong className="text-xl font-bold text-ink whitespace-nowrap sm:text-right tabular-nums">
+                  {fmt(built.result.total)}
+                  <small className="block text-[11px] font-medium text-ink-2 mt-0.5">
+                    {built.config.metric === 'count'
+                      ? t(locale, 'reports.countLabel')
+                      : t(locale, 'reports.total')}
+                    {` (${built.result.totalCount})`}
+                  </small>
+                </strong>
               </div>
-            )}
-
-            {/* Save this report */}
-            <div className="mt-4 flex flex-col sm:flex-row gap-2 items-start">
-              <div className="w-full min-w-0">
-                <Input
-                  label={<span className="sr-only">{t(locale, 'reports.reportName')}</span>}
-                  type="text"
-                  value={saveName}
-                  onChange={(e) => setSaveName(e.target.value)}
-                  placeholder={t(locale, 'reports.reportName')}
-                  maxLength={80}
-                />
+              {built.defaulted && (
+                <p className="text-xs text-warn-text bg-warn-bg rounded-lg px-3 py-2 mt-3">
+                  {t(locale, 'reports.vagueHint')}
+                </p>
+              )}
+              {built.result.rows.length === 0 ? (
+                <p className="text-sm text-ink-2 mt-3">
+                  {t(locale, 'reports.noRows')}
+                </p>
+              ) : (
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {built.result.rows.map((row) => (
+                    <span
+                      key={row.label}
+                      className="px-2.5 py-1.5 border border-line rounded-lg bg-surface text-ink-2 text-xs tabular-nums"
+                    >
+                      {row.label}, {fmt(row.value)}
+                      {row.count !== undefined ? ` (${row.count})` : ''}
+                    </span>
+                  ))}
+                </div>
+              )}
+              <div className="flex flex-wrap justify-end gap-2 mt-3 pt-3 border-t border-line">
+                <Button type="button" variant="secondary" onClick={exportBuilt} sm>
+                  <Download size={14} />
+                  {t(locale, 'reports.exportReport')}
+                </Button>
+                <Button
+                  type="button"
+                  variant="primary"
+                  onClick={save}
+                  disabled={saving}
+                  sm
+                >
+                  {saving ? (
+                    <Loader2 size={15} className="animate-spin" />
+                  ) : (
+                    <Save size={15} />
+                  )}
+                  {t(locale, 'reports.saveReport')}
+                </Button>
               </div>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={save}
-                disabled={saving}
-                className="shrink-0"
-              >
-                {saving ? (
-                  <Loader2 size={15} className="animate-spin" />
-                ) : (
-                  <Save size={15} />
-                )}
-                {t(locale, 'reports.saveReport')}
-              </Button>
+            </div>
+
+            {/* Save this report: name the report before saving */}
+            <div className="mt-4">
+              <Input
+                label={<span className="sr-only">{t(locale, 'reports.reportName')}</span>}
+                type="text"
+                value={saveName}
+                onChange={(e) => setSaveName(e.target.value)}
+                placeholder={t(locale, 'reports.reportName')}
+                maxLength={80}
+              />
             </div>
             {saveMsg && (
               <p className="text-sm text-ok font-medium mt-2" role="status">
@@ -309,20 +330,33 @@ export function ReportBuilder({
         )}
       </Card>
 
-      {/* Saved reports */}
+      {/* Saved reports (prototype `.saved-reports`: count badge, icon rows) */}
       <Card className="p-5">
-        <h2 className="text-sm font-bold text-ink mb-1">
-          {t(locale, 'reports.savedReports')}
-        </h2>
-        {savedReports.length === 0 ? (
-          <p className="text-sm text-ink-2 mt-2">{t(locale, 'reports.noSaved')}</p>
-        ) : (
-          <ul className="divide-y divide-line">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-sm font-bold text-ink">
+              {t(locale, 'reports.savedReports')}
+            </h2>
+            <p className="text-xs text-ink-2 mt-0.5">
+              {savedReports.length === 0
+                ? t(locale, 'reports.noSaved')
+                : t(locale, 'reports.savedReportsReady')}
+            </p>
+          </div>
+          <span className="min-w-[23px] h-[23px] px-2 grid place-items-center rounded-full bg-surface-2 text-ink-2 text-[11px] font-extrabold shrink-0">
+            {savedReports.length}
+          </span>
+        </div>
+        {savedReports.length > 0 && (
+          <ul className="mt-3 border-t border-line">
             {savedReports.map((s) => (
               <li
                 key={s.id}
-                className="flex items-center gap-3 py-3 min-h-[44px]"
+                className="flex items-center gap-3 py-3 min-h-[54px] border-b border-line last:border-0"
               >
+                <span className="w-[30px] h-[30px] grid place-items-center rounded-[9px] bg-ok-bg text-ok shrink-0">
+                  <FileText size={16} />
+                </span>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-ink truncate">
                     {s.name}

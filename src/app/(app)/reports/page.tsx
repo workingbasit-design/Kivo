@@ -3,13 +3,11 @@ import Link from "next/link";
 import { forbidden, redirect } from "next/navigation";
 import {
   TrendingUp,
-  Briefcase,
-  AlertCircle,
-  Target,
   Trophy,
   ChevronRight,
   Wrench,
   CalendarClock,
+  Users,
 } from '@/components/icons';
 import { requireAuth } from "@/lib/auth";
 import { canSeePrices } from "@/lib/roles";
@@ -18,24 +16,26 @@ import { getReportStats } from "@/lib/dashboard";
 import { cn } from "@/lib/utils";
 import { formatMoney } from "@/lib/money";
 import { getLocale } from "@/lib/i18n/server";
+import { t } from "@/lib/i18n";
 import { Card, Button } from '@/components/kit';
 import { ReportBuilder, type SavedReportLite } from "@/components/ReportBuilder";
 import { parseFlags, isFlagOn, FLAG_REPORTS } from "@/lib/feature-flags";
 import { F9Reports } from "./f9-reports";
 import { PageTitle } from '../_components/PageTitle';
 import { StatusPill } from '../_components/status-ui';
-import { EmptyState, SummaryCard } from '@/components/kit';
+import { EmptyState } from '@/components/kit';
 
 const JOB_STATUS_ORDER = ["NEW", "SCHEDULED", "IN PROGRESS", "COMPLETED", "PAID", "CANCELLED"];
 
 const frReports = {
   title: 'Rapports',
+  eyebrow: 'Intelligence d’affaires',
   subtitle: 'La santé de votre entreprise - 6 derniers mois',
   emptyTitle: 'Aucune donnée pour le moment',
   emptyDesc:
     'Ajoutez des travaux, envoyez des factures et enregistrez des paiements - vos rapports se construiront ici.',
   createFirstJob: 'Créez votre premier travail',
-  collectedLabel: 'Encaissé · 6 mois',
+  collectedLabel: 'Encaissé, 6 mois',
   paymentsReceived: 'Paiements reçus',
   avgJobLabel: 'Valeur moyenne par travail',
   completedPaid: 'Travaux terminés et payés',
@@ -76,12 +76,13 @@ const frReports = {
 
 const enReports = {
   title: 'Reports',
+  eyebrow: 'Business intelligence',
   subtitle: 'How your business is doing - last 6 months',
   emptyTitle: 'No data yet',
   emptyDesc:
     'Add jobs, send invoices and record payments - your reports will build themselves here.',
   createFirstJob: 'Create your first job',
-  collectedLabel: 'Collected · 6 months',
+  collectedLabel: 'Collected, 6 months',
   paymentsReceived: 'Payments received',
   avgJobLabel: 'Avg job value',
   completedPaid: 'Completed & paid jobs',
@@ -192,6 +193,7 @@ export default async function ReportsPage({
     <div className="space-y-6">
       <PageTitle
         title={r.title}
+        eyebrow={r.eyebrow}
         summary={r.subtitle}
       />
 
@@ -213,23 +215,33 @@ export default async function ReportsPage({
         </Card>
       ) : (
         <>
-          {/* Stat cards */}
-          <SummaryCard
-            stats={[
-              { label: r.collectedLabel, value: formatMoney(stats.totalCollected, currency), sub: r.paymentsReceived },
-              { label: r.avgJobLabel, value: formatMoney(stats.avgJobValue, currency), sub: r.completedPaid },
-              {
-                label: r.outstandingLabel,
-                value: formatMoney(stats.outstanding, currency),
-                sub: `${stats.outstandingCount} ${stats.outstandingCount === 1 ? r.unpaidInvoice : r.unpaidInvoices}`,
-              },
-              {
-                label: r.winRateLabel,
-                value: stats.quoteWinRate === null ? "-" : `${stats.quoteWinRate}%`,
-                sub: `${stats.quotesSent} ${stats.quotesSent === 1 ? r.quote : r.quotes} ${r.quoteTotalSuffix}`,
-              },
-            ]}
-          />
+          {/* Stat cards (prototype `.report-stats`: one panel, four stats) */}
+          <Card className="p-5">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
+              {[
+                { label: r.collectedLabel, value: formatMoney(stats.totalCollected, currency), sub: r.paymentsReceived },
+                { label: r.avgJobLabel, value: formatMoney(stats.avgJobValue, currency), sub: r.completedPaid },
+                {
+                  label: r.outstandingLabel,
+                  value: formatMoney(stats.outstanding, currency),
+                  sub: `${stats.outstandingCount} ${stats.outstandingCount === 1 ? r.unpaidInvoice : r.unpaidInvoices}`,
+                },
+                {
+                  label: r.winRateLabel,
+                  value: stats.quoteWinRate === null ? "-" : `${stats.quoteWinRate}%`,
+                  sub: `${stats.quotesSent} ${stats.quotesSent === 1 ? r.quote : r.quotes} ${r.quoteTotalSuffix}`,
+                },
+              ].map((stat) => (
+                <div key={stat.label} className="min-w-0">
+                  <span className="block text-xs text-ink-2 font-bold">{stat.label}</span>
+                  <span className="num block text-[20px] leading-[1.25] font-medium text-ink tabular-nums">
+                    {stat.value}
+                  </span>
+                  <small className="block text-[11px] text-ink-2 mt-0.5 leading-[1.3]">{stat.sub}</small>
+                </div>
+              ))}
+            </div>
+          </Card>
 
           <div className="grid lg:grid-cols-2 gap-4">
             {/* Revenue by service */}
@@ -241,7 +253,16 @@ export default async function ReportsPage({
                 <span className="text-[11px] text-ink-2 font-medium">{r.revenueByServiceSub}</span>
               </div>
               {stats.revenueByService.length === 0 ? (
-                <p className="text-sm text-ink-2">{r.noServiceRevenue}</p>
+                <>
+                  <p className="text-sm text-ink-2">{r.noServiceRevenue}</p>
+                  {/* Prototype empty visual: quiet bars, no fabricated values. */}
+                  <div className="h-[34px] mt-3 flex items-end gap-2 opacity-45" aria-hidden="true">
+                    <span className="w-[17%] h-[5px] rounded-full bg-line" />
+                    <span className="w-[17%] h-[10px] rounded-full bg-line" />
+                    <span className="w-[17%] h-[7px] rounded-full bg-line" />
+                    <span className="w-[17%] h-[14px] rounded-full bg-line" />
+                  </div>
+                </>
               ) : (
                 <div className="space-y-3">
                   {stats.revenueByService.map((s) => (
@@ -307,17 +328,20 @@ export default async function ReportsPage({
           </div>
 
           <div className="grid lg:grid-cols-2 gap-4">
-            {/* Team performance shortcut */}
+            {/* Team performance shortcut (prototype full-width action card) */}
             <Link
               href="/reports/team"
-              className="lg:col-span-2 bg-surface border border-line shadow-kit-card rounded-2xl p-5 flex items-center justify-between gap-4 hover:border-smoke transition-colors"
+              className="lg:col-span-2 bg-surface border border-line shadow-kit-card rounded-2xl p-5 flex items-center gap-3 hover:border-ok transition-colors"
             >
-              <div>
-                <h2 className="text-sm font-bold text-ink">{r.teamPerf}</h2>
-                <p className="text-xs text-ink-2 mt-0.5">
+              <span className="w-8 h-8 grid place-items-center rounded-[10px] bg-ok-bg text-ok shrink-0">
+                <Users size={17} />
+              </span>
+              <span className="flex-1 min-w-0">
+                <span className="block text-sm font-bold text-ink">{r.teamPerf}</span>
+                <span className="block text-xs text-ink-2 mt-0.5">
                   {r.teamPerfDesc}
-                </p>
-              </div>
+                </span>
+              </span>
               <span className="text-xs font-semibold text-ink inline-flex items-center gap-1 shrink-0">
                 {r.viewReport} <ChevronRight size={13} />
               </span>
@@ -336,14 +360,15 @@ export default async function ReportsPage({
                       <p className="text-xs font-semibold text-ink-2 w-10">{m.label}</p>
                       <p className="text-xs font-bold text-ink">{formatMoney(m.revenue, currency)}</p>
                     </div>
-                    <div className="h-2.5 bg-surface-2 rounded-full overflow-hidden ml-0">
-                      <div
-                        className={cn(
-                          "h-full rounded-full transition-all",
-                          m.revenue > 0 ? "bg-asphalt" : "bg-line"
-                        )}
-                        style={{ width: `${Math.max(2, (m.revenue / maxRevenue) * 100)}%` }}
-                      />
+                    <div className="h-[7px] bg-surface-2 rounded-full overflow-hidden ml-0 flex items-center">
+                      {m.revenue > 0 ? (
+                        <div
+                          className="h-full bg-hivis rounded-full transition-all"
+                          style={{ width: `${Math.max(2, (m.revenue / maxRevenue) * 100)}%` }}
+                        />
+                      ) : (
+                        <span className="block w-[7px] h-[7px] rounded-full bg-line shrink-0" />
+                      )}
                     </div>
                     <p className="text-[11px] text-ink-2 mt-1">
                       {m.jobs} {m.jobs === 1 ? r.otherLabelJob : r.otherLabelJobs}
@@ -373,7 +398,7 @@ export default async function ReportsPage({
                       <div className="w-32 shrink-0">
                         <StatusPill status={g.status} locale={locale} />
                       </div>
-                      <div className="flex-1 h-2.5 bg-surface-2 rounded-full overflow-hidden">
+                      <div className="flex-1 h-[7px] bg-surface-2 rounded-full overflow-hidden">
                         <div
                           className="h-full bg-asphalt rounded-full"
                           style={{ width: `${Math.max(2, (g.count / totalJobs) * 100)}%` }}
@@ -445,13 +470,31 @@ export default async function ReportsPage({
                 </div>
                 <Link
                   href="/invoices"
-                  className="bg-asphalt hover:bg-hero-2 text-hero-ink px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm shrink-0"
+                  className="bg-hivis hover:brightness-105 text-hivis-ink px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors inline-flex items-center gap-2 shadow-sm shrink-0"
                 >
                   {r.reviewInvoices} <ChevronRight size={13} />
                 </Link>
               </div>
             </Card>
           )}
+
+          {/* Reporting snapshot footer (prototype): what feeds this page. */}
+          <footer className="flex flex-wrap items-center gap-x-3 gap-y-2 text-[11px] text-ink-2">
+            <span className="font-extrabold uppercase tracking-[0.09em]">
+              {t(locale, 'reports.snapshot')}
+            </span>
+            <span className="flex-1 basis-full sm:basis-auto">
+              {t(locale, 'reports.snapshotDesc')}
+            </span>
+            <details className="shrink-0">
+              <summary className="cursor-pointer font-semibold text-ink hover:underline list-none inline-flex items-center gap-1">
+                {t(locale, 'reports.dataDetails')} <ChevronRight size={13} />
+              </summary>
+              <p className="mt-2 text-xs text-ink-2 leading-relaxed max-w-[560px]">
+                {t(locale, 'reports.dataDetailsBody')}
+              </p>
+            </details>
+          </footer>
 
           {/* F9: the six flag-gated reports (Owner/Admin only — enforced
               above via forbidden() when the flag is on). The render call
