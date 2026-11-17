@@ -123,6 +123,10 @@ export default function MoneyEntryModal({
       fd.set('invoiceId', selectedInvoice.id);
       fd.set('amount', value.toFixed(2));
       fd.set('provider', provider);
+      // recordPayment's schema requires a string transactionId; a
+      // missing key reads as null and fails validation, so send the
+      // empty value the invoice-detail form sends.
+      fd.set('transactionId', '');
       const result = await recordPayment({}, fd);
       if (result?.error) {
         setError(result.error);
