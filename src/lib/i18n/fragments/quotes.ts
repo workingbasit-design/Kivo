@@ -77,7 +77,7 @@ const fragment = {
         emptyTitle: 'No quotes yet',
         emptyDesc:
           'Send your first quote in under a minute. Line items in, a clean total out.',
-        shownFootnote: '{count} {quoteWord} shown · Keep every estimate moving',
+        shownFootnote: '{count} {quoteWord} shown, keep every estimate moving',
         changeStatusFor: 'Change status for {number}',
         editQuote: 'Edit quote',
         deleteQuote: 'Delete quote',
@@ -200,7 +200,7 @@ const fragment = {
         emptyTitle: 'Aucun devis pour le moment',
         emptyDesc:
           'Envoyez votre premier devis en moins d\u2019une minute. Articles entrés, total clair en sortie.',
-        shownFootnote: '{count} {quoteWord} affichés · Gardez chaque estimation en mouvement',
+        shownFootnote: '{count} {quoteWord} affichés, gardez chaque estimation en mouvement',
         changeStatusFor: 'Changer le statut de {number}',
         editQuote: 'Modifier le devis',
         deleteQuote: 'Supprimer le devis',
