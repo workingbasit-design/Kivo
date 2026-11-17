@@ -10,6 +10,7 @@
  */
 
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { centsToDollars } from '@/lib/money';
 
 export interface TaxSummary {
@@ -46,6 +47,8 @@ export async function getTaxSummary(
       include: {
         taxLines: true,
       },
+      orderBy: { date: 'desc' },
+      take: LIST_MAX_SIZE,
     }),
     prisma.jobExpense.findMany({
       where: {
@@ -58,6 +61,8 @@ export async function getTaxSummary(
         taxQstCents: true,
         taxPstCents: true,
       },
+      orderBy: { spentAt: 'desc' },
+      take: LIST_MAX_SIZE,
     }),
   ]);
 

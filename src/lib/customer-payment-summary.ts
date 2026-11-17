@@ -1,4 +1,5 @@
 import type { PrismaClient } from '@prisma/client';
+import { LIST_MAX_SIZE } from './list-page.ts';
 
 /**
  * Customer payment summary (2026-11-17, Customers redesign).
@@ -52,6 +53,7 @@ export async function getCustomerPaymentSummary(
     },
     select: { id: true, number: true, totalCents: true, dueAt: true },
     orderBy: { date: 'asc' },
+    take: LIST_MAX_SIZE,
   });
   const unpaidIds = unpaid.map((i) => i.id);
   const paidByInvoice = new Map<string, number>();

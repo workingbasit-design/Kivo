@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { LIST_MAX_SIZE } from "@/lib/list-page";
 import { dayRangeInTimezone, todayInTimezone } from "@/lib/utils";
 import { centsToDollars } from "@/lib/money";
 import { t } from "@/lib/i18n";
@@ -344,6 +345,8 @@ export async function getReportStats(
         businessId,
       },
       select: { amountCents: true, createdAt: true },
+      orderBy: { createdAt: "desc" },
+      take: LIST_MAX_SIZE,
     }),
     prisma.job.findMany({
       where: { businessId, date: { gte: rangeStart } },
@@ -356,6 +359,8 @@ export async function getReportStats(
         customer: { select: { name: true } },
         service: { select: { name: true } },
       },
+      orderBy: { date: "desc" },
+      take: LIST_MAX_SIZE,
     }),
     prisma.job.groupBy({
       by: ["status"],
@@ -368,6 +373,8 @@ export async function getReportStats(
         payments: { where: { status: "COMPLETED" }, select: { amountCents: true } },
         customer: { select: { name: true } },
       },
+      orderBy: { date: "asc" },
+      take: LIST_MAX_SIZE,
     }),
     prisma.quote.groupBy({
       by: ["status"],
@@ -381,6 +388,7 @@ export async function getReportStats(
         status: { in: OPEN_JOB_STATUSES },
       },
       select: { priceCents: true },
+      take: LIST_MAX_SIZE,
     }),
   ]);
 

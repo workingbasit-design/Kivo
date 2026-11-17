@@ -1,5 +1,6 @@
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { Card } from '@/components/kit';
 import { formatWorkingHoursSummary } from '@/lib/working-hours';
 import BookingSettingsForm from '@/components/BookingSettingsForm';
@@ -44,6 +45,7 @@ export default async function BookingSettingsPage() {
             // unscoped version crashed /settings/booking on every load).
             where: { businessId, bookingPageId: page.id, active: true },
             select: { serviceId: true },
+            take: LIST_MAX_SIZE,
           })
         ).map((b) => b.serviceId)
       )

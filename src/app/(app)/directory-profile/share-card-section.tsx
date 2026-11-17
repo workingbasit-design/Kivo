@@ -4,7 +4,6 @@ import { Card } from '@/components/kit';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { parseServiceAreas } from '@/lib/directory-claim';
-import { ratingSummary } from '@/lib/directory';
 import { buildShareCardText, isProfilePublic } from '@/lib/share-card';
 import { setShareRating } from '@/app/actions/directory-profile';
 import ShareCardButton from './share-card-button';
@@ -24,7 +23,7 @@ export default async function ShareCardSection({
   const locale = await getLocale();
   const tr = (path: string) => t(locale, path);
 
-  const [business, page, reviews] = await Promise.all([
+  const [business, page, reviewAgg] = await Promise.all([
     prisma.business.findUnique({
       where: { id: businessId },
       select: { name: true, directoryOptIn: true, directoryVerifiedAt: true },
@@ -40,9 +39,12 @@ export default async function ShareCardSection({
         shareRating: true,
       },
     }),
-    prisma.review.findMany({
+    // P1.0-D Tier B: the card needs only count + average — a DB
+    // aggregate, not a whole-table reviews read.
+    prisma.review.aggregate({
       where: { businessId },
-      select: { rating: true },
+      _count: { _all: true },
+      _avg: { rating: true },
     }),
   ]);
 
@@ -53,7 +55,13 @@ export default async function ShareCardSection({
       ? (page?.headlineFr ?? page?.headline ?? null)
       : (page?.headline ?? null);
   const areas = parseServiceAreas(page?.serviceAreas);
-  const { count, avg } = ratingSummary(reviews);
+  const { count, avg } = {
+    count: reviewAgg._count._all,
+    avg:
+      reviewAgg._avg.rating === null
+        ? null
+        : Math.round(reviewAgg._avg.rating * 10) / 10,
+  };
   const formattedAvg =
     avg === null
       ? null

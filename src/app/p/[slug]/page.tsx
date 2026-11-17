@@ -11,6 +11,7 @@ import {
   Star,
 } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { waLink } from '@/lib/whatsapp';
 import { formatCents } from '@/lib/money';
 import { formatWorkingHoursSummary } from '@/lib/working-hours';
@@ -88,6 +89,7 @@ async function getProfile(slug: string) {
       where: { businessId },
       select: { type: true, title: true, issuer: true, number: true },
       orderBy: { createdAt: 'asc' },
+      take: LIST_MAX_SIZE,
     }),
   ]);
   return { page, services, reviews, designations };

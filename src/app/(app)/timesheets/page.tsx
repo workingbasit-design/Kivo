@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Clock3, Filter, Timer } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { requireAuth } from '@/lib/auth';
 
 import ClockWidget from '@/components/ClockWidget';
@@ -67,6 +68,7 @@ export default async function TimesheetsPage({
       where: { businessId, status: 'ACTIVE' },
       include: { user: { select: { id: true, name: true, email: true } } },
       orderBy: { user: { name: 'asc' } },
+      take: LIST_MAX_SIZE,
     })
   ).map((m) => m.user);
 

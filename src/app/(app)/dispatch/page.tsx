@@ -1,5 +1,6 @@
 import React from 'react';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { requireAuth } from '@/lib/auth';
 import { Card, EmptyState, Button } from '@/components/kit';
 import { PageTitle } from '../_components/PageTitle';
@@ -56,6 +57,7 @@ export default async function DispatchPage({
       assignedTo: { select: { id: true, name: true } },
     },
     orderBy: [{ time: 'asc' }, { createdAt: 'asc' }],
+    take: LIST_MAX_SIZE,
   });
 
   const team = (
@@ -63,6 +65,7 @@ export default async function DispatchPage({
       where: { businessId, status: 'ACTIVE' },
       include: { user: { select: { id: true, name: true } } },
       orderBy: { user: { name: 'asc' } },
+      take: LIST_MAX_SIZE,
     })
   ).map((m) => m.user);
 

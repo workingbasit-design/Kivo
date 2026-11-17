@@ -16,6 +16,7 @@
  * caller goes through checkReviewEligibility.
  */
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 
 /** Job statuses that count as "completed" for review purposes. */
 export const REVIEW_ELIGIBLE_JOB_STATUSES: ReadonlySet<string> = new Set([
@@ -113,6 +114,8 @@ export async function listEligibleReviewJobs(
       customerId: true,
       customer: { select: { name: true, phone: true } },
     },
+    // P1.0-D Tier B: newest first, so the cap keeps the most recent eligibles.
+    take: LIST_MAX_SIZE,
   });
   if (jobs.length === 0) return [];
 

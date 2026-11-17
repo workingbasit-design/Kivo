@@ -12,6 +12,7 @@
  * when configured. Everything is $0: VAPID push + in-app only.
  */
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { getAttentionItems, type AttentionItem } from './attention.ts';
 import { pushToBusiness, isPushConfigured, type PushPayload } from './webpush.ts';
 import { centsToDollars } from './money.ts';
@@ -131,6 +132,7 @@ export async function getDigestData(businessId: string): Promise<DigestData> {
           status: { notIn: ['CANCELLED'] },
         },
         select: { priceCents: true },
+        take: LIST_MAX_SIZE,
       }),
       getAttentionItems(businessId, 5),
       prisma.invoice.findMany({
@@ -149,6 +151,7 @@ export async function getDigestData(businessId: string): Promise<DigestData> {
       prisma.invoice.findMany({
         where: { businessId, status: 'PAID', paidAt: { gte: weekAgo } },
         select: { totalCents: true },
+        take: LIST_MAX_SIZE,
       }),
     ]);
 

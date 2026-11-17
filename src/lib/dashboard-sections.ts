@@ -10,6 +10,7 @@
  * calendar days, never server-local.
  */
 import { prisma } from "@/lib/prisma";
+import { LIST_MAX_SIZE } from "@/lib/list-page";
 import { centsToDollars } from "./money.ts";
 import { daysOverdue } from "./revenue.ts";
 import { todayInTimezone, toISODateInTimezone, dayRangeInTimezone } from "./utils.ts";
@@ -309,15 +310,19 @@ export async function getHeaderSummary(
       date: { gte: todayStart, lte: todayEnd },
     },
     select: { status: true },
+    // P1.0-D Tier B: one day of jobs, defensively capped.
+    take: LIST_MAX_SIZE,
   });
-  const ready = await prisma.job.findMany({
+  // P1.0-D Tier B: ready-to-invoice is a money sum — a DB aggregate, not
+  // a sum over fetched rows (which would understate past the cap).
+  const ready = await prisma.job.aggregate({
     where: { businessId, archivedAt: null, status: "COMPLETED", invoices: { none: {} } },
-    select: { priceCents: true },
+    _sum: { priceCents: true },
   });
   return {
     visitsToday: jobs.length,
     doneToday: jobs.filter((j) => DONE_JOB.includes(j.status)).length,
-    readyToInvoice: ready.reduce((s, j) => s + centsToDollars(j.priceCents), 0),
+    readyToInvoice: centsToDollars(ready._sum.priceCents),
     dateKey: todayKey,
   };
 }
@@ -340,6 +345,8 @@ interface MoneyRow {
 async function getMoneyRows(businessId: string, monthsBack: number): Promise<MoneyRow> {
   const now = new Date();
   const rangeStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - monthsBack, 1));
+  // P1.0-D Tier B: windowed money rows, defensively capped; newest
+  // first so the cap keeps the charted weeks.
   const [payments, invoices, jobs] = await Promise.all([
     prisma.payment.findMany({
       where: {
@@ -349,14 +356,20 @@ async function getMoneyRows(businessId: string, monthsBack: number): Promise<Mon
         invoice: { voidedAt: null },
       },
       select: { createdAt: true, amountCents: true },
+      orderBy: { createdAt: "desc" },
+      take: LIST_MAX_SIZE,
     }),
     prisma.invoice.findMany({
       where: { businessId, voidedAt: null, date: { gte: rangeStart } },
       select: { date: true, totalCents: true },
+      orderBy: { date: "desc" },
+      take: LIST_MAX_SIZE,
     }),
     prisma.job.findMany({
       where: { businessId, archivedAt: null, date: { gte: rangeStart } },
       select: { date: true, status: true },
+      orderBy: { date: "desc" },
+      take: LIST_MAX_SIZE,
     }),
   ]);
   return { payments, invoices, jobs };
@@ -497,7 +510,12 @@ export async function getKeyNumbers(
   const now = new Date();
   const weekAgo = new Date(now.getTime() - 7 * 86_400_000);
 
-  const [invoices, readyJobs, quotes, leads, comms] = await Promise.all([
+  // P1.0-D Tier B: quote money is a DB aggregate (sum + count), not a
+  // sum over fetched rows; the open-invoice rows stay row-level (aging
+  // needs per-invoice dates/payments) and are capped, oldest first.
+  const expiringSoonCutoff = new Date(now.getTime() - 23 * 86_400_000);
+  const expiredCutoff = new Date(now.getTime() - 30 * 86_400_000);
+  const [invoices, readyJobs, quoteAgg, expiringSoon, leads, comms] = await Promise.all([
     prisma.invoice.findMany({
       where: { businessId, status: { in: OPEN_INVOICE }, voidedAt: null },
       select: {
@@ -505,6 +523,8 @@ export async function getKeyNumbers(
         totalCents: true,
         payments: { where: { status: "COMPLETED" }, select: { amountCents: true } },
       },
+      orderBy: { date: "asc" },
+      take: LIST_MAX_SIZE,
     }),
     prisma.job.findMany({
       where: { businessId, archivedAt: null, status: "COMPLETED", invoices: { none: {} } },
@@ -512,14 +532,23 @@ export async function getKeyNumbers(
       orderBy: { updatedAt: "desc" },
       take: 50,
     }),
-    prisma.quote.findMany({
+    prisma.quote.aggregate({
       where: { businessId, status: "SENT" },
-      select: { totalCents: true, updatedAt: true },
+      _sum: { totalCents: true },
+      _count: { _all: true },
+    }),
+    prisma.quote.count({
+      where: {
+        businessId,
+        status: "SENT",
+        updatedAt: { lte: expiringSoonCutoff, gt: expiredCutoff },
+      },
     }),
     prisma.lead.count({ where: { businessId, status: "NEW" } }),
     prisma.communication.findMany({
       where: { businessId, createdAt: { gte: weekAgo } },
       select: { status: true, waitingSince: true, updatedAt: true },
+      take: LIST_MAX_SIZE,
     }),
   ]);
 
@@ -536,11 +565,6 @@ export async function getKeyNumbers(
     .filter((r) => r.overdueDays > 0)
     .reduce((s, r) => s + r.outstanding, 0);
 
-  const expiringSoonCutoff = new Date(now.getTime() - 23 * 86_400_000);
-  const expiredCutoff = new Date(now.getTime() - 30 * 86_400_000);
-  const expiringSoon = quotes.filter(
-    (q) => q.updatedAt <= expiringSoonCutoff && q.updatedAt > expiredCutoff
-  ).length;
 
   const replied = comms.filter((c) => c.status === "REPLIED" || c.status === "RESOLVED");
   const replyMins = replied.map((c) => (c.updatedAt.getTime() - c.waitingSince.getTime()) / 60000);
@@ -559,8 +583,8 @@ export async function getKeyNumbers(
       customerInitials: uniqueInitials(readyJobs.map((j) => j.customer.name)),
     },
     quotesWaiting: {
-      amount: quotes.reduce((s, q) => s + centsToDollars(q.totalCents), 0),
-      count: quotes.length,
+      amount: centsToDollars(quoteAgg._sum.totalCents),
+      count: quoteAgg._count._all,
       expiringSoon,
     },
     newLeads: {
@@ -616,6 +640,7 @@ export async function getTodaysVisits(
       service: { select: { name: true, nameFr: true, category: true, iconKey: true } },
     },
     orderBy: [{ time: "asc" }, { createdAt: "asc" }],
+    take: LIST_MAX_SIZE,
   });
 
   const visits: VisitRow[] = jobs.map((j) => {
@@ -657,23 +682,31 @@ export async function getTodaysVisits(
  * the leaks.
  */
 export async function getMoneyPipeline(businessId: string): Promise<MoneyPipeline> {
-  const [leadCount, quotes, unscheduled, scheduled, doneJobs, openInvoices] = await Promise.all([
+  // P1.0-D Tier B: pipeline stage money/counts are DB aggregates —
+  // sums over fetched rows would understate past a cap. Open invoices
+  // stay row-level (per-invoice overdue needs dates/payments), capped
+  // oldest-first.
+  const [leadCount, quoteAgg, unscheduledAgg, scheduledAgg, doneAgg, openInvoices] = await Promise.all([
     prisma.lead.count({ where: { businessId, status: "NEW" } }),
-    prisma.quote.findMany({
+    prisma.quote.aggregate({
       where: { businessId, status: "SENT" },
-      select: { totalCents: true },
+      _sum: { totalCents: true },
+      _count: { _all: true },
     }),
-    prisma.job.findMany({
+    prisma.job.aggregate({
       where: { businessId, archivedAt: null, status: "NEW", startAt: null, time: null },
-      select: { priceCents: true },
+      _sum: { priceCents: true },
+      _count: { _all: true },
     }),
-    prisma.job.findMany({
+    prisma.job.aggregate({
       where: { businessId, archivedAt: null, status: { in: ["SCHEDULED", "IN PROGRESS"] } },
-      select: { priceCents: true },
+      _sum: { priceCents: true },
+      _count: { _all: true },
     }),
-    prisma.job.findMany({
+    prisma.job.aggregate({
       where: { businessId, archivedAt: null, status: "COMPLETED", invoices: { none: {} } },
-      select: { priceCents: true },
+      _sum: { priceCents: true },
+      _count: { _all: true },
     }),
     prisma.invoice.findMany({
       where: { businessId, status: { in: OPEN_INVOICE }, voidedAt: null },
@@ -682,13 +715,10 @@ export async function getMoneyPipeline(businessId: string): Promise<MoneyPipelin
         totalCents: true,
         payments: { where: { status: "COMPLETED" }, select: { amountCents: true } },
       },
+      orderBy: { date: "asc" },
+      take: LIST_MAX_SIZE,
     }),
   ]);
-
-  const sumCents = (rows: { priceCents: bigint | null }[]) =>
-    rows.reduce((s, r) => s + centsToDollars(r.priceCents), 0);
-  const sumQuoteCents = (rows: { totalCents: bigint | null }[]) =>
-    rows.reduce((s, r) => s + centsToDollars(r.totalCents), 0);
   const invOpen = openInvoices
     .map((inv) => {
       const total = centsToDollars(inv.totalCents);
@@ -699,17 +729,17 @@ export async function getMoneyPipeline(businessId: string): Promise<MoneyPipelin
   const invTotal = invOpen.reduce((s, r) => s + r.outstanding, 0);
   const invOverdue = invOpen.filter((r) => r.overdueDays > 0).reduce((s, r) => s + r.outstanding, 0);
 
-  const quotesAmt = sumQuoteCents(quotes);
-  const unscheduledAmt = sumCents(unscheduled);
-  const scheduledAmt = sumCents(scheduled);
-  const doneAmt = sumCents(doneJobs);
+  const quotesAmt = centsToDollars(quoteAgg._sum.totalCents);
+  const unscheduledAmt = centsToDollars(unscheduledAgg._sum.priceCents);
+  const scheduledAmt = centsToDollars(scheduledAgg._sum.priceCents);
+  const doneAmt = centsToDollars(doneAgg._sum.priceCents);
 
   const stages: PipelineStage[] = [
     { key: "leads", count: leadCount, amount: null, leak: false },
-    { key: "quotes", count: quotes.length, amount: quotesAmt, leak: false },
-    { key: "approved", count: unscheduled.length, amount: unscheduledAmt, leak: unscheduled.length > 0 },
-    { key: "scheduled", count: scheduled.length, amount: scheduledAmt, leak: false },
-    { key: "done", count: doneJobs.length, amount: doneAmt, leak: doneJobs.length > 0 },
+    { key: "quotes", count: quoteAgg._count._all, amount: quotesAmt, leak: false },
+    { key: "approved", count: unscheduledAgg._count._all, amount: unscheduledAmt, leak: unscheduledAgg._count._all > 0 },
+    { key: "scheduled", count: scheduledAgg._count._all, amount: scheduledAmt, leak: false },
+    { key: "done", count: doneAgg._count._all, amount: doneAmt, leak: doneAgg._count._all > 0 },
     {
       key: "invoiced",
       count: invOpen.length,
@@ -805,6 +835,10 @@ export async function getContinueCandidate(
         status: true,
         customer: { select: { name: true, address: true } },
       },
+      // P1.0-D Tier B: open jobs, newest-touched first (the picker
+      // sorts in-progress by recency, so the cap keeps the right one).
+      orderBy: { updatedAt: "desc" },
+      take: LIST_MAX_SIZE,
     }),
     opts?.technicianUserId
       ? Promise.resolve([])
@@ -878,6 +912,10 @@ export async function getContinueCandidate(
  * status, invoices including voided ones (their detail page renders).
  * Technicians mirror getContinueCandidate: their jobs only, no
  * quotes/invoices.
+ *
+ * P1.0-D Tier C: intentionally uncapped — an id-only live set; capping
+ * it would falsely drop live records as stale. A future pass can accept
+ * the client's ids instead of returning the whole set.
  */
 export async function getContinueLiveIds(
   businessId: string,
@@ -973,6 +1011,9 @@ export async function getNextAction(
               dueAt: true,
               customer: { select: { name: true } },
             },
+            // P1.0-D Tier B: longest-unpaid wins, so oldest first.
+            orderBy: { date: "asc" },
+            take: LIST_MAX_SIZE,
           }),
       prisma.job.findMany({
         where: {
@@ -991,6 +1032,7 @@ export async function getNextAction(
           status: true,
           customer: { select: { name: true } },
         },
+        take: LIST_MAX_SIZE,
       }),
       prisma.job.count({
         where: {
@@ -1114,6 +1156,7 @@ export async function getWeekProgress(
           date: { gte: weekStart, lte: weekEnd },
         },
         select: { date: true },
+        take: LIST_MAX_SIZE,
       });
   const paymentPromise: Promise<{ createdAt: Date; amountCents: bigint }[]> =
     technician
@@ -1126,6 +1169,7 @@ export async function getWeekProgress(
             createdAt: { gte: weekStart, lte: weekEnd },
           },
           select: { createdAt: true, amountCents: true },
+          take: LIST_MAX_SIZE,
         });
   const [business, jobs, invoices, payments] = await Promise.all([
     prisma.business.findUnique({
@@ -1141,6 +1185,7 @@ export async function getWeekProgress(
         ...techFilter,
       },
       select: { date: true },
+      take: LIST_MAX_SIZE,
     }),
     invoicePromise,
     paymentPromise,
@@ -1219,6 +1264,7 @@ export async function getMorningGlance(
         ...techFilter,
       },
       select: { id: true, title: true, time: true, date: true, startAt: true, status: true },
+      take: LIST_MAX_SIZE,
     }),
     prisma.job.count({
       where: {

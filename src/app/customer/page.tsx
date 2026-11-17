@@ -7,7 +7,6 @@ import {
   matchesServiceKeyword,
   localityFromAddress,
   isPhoneVerified,
-  ratingSummary,
 } from '@/lib/directory';
 import CustomerHomeClient from './home-client';
 
@@ -43,15 +42,29 @@ export default async function CustomerHomePage({
       directoryHideAddress: true,
       bookingPage: { select: { slug: true } },
       services: { select: { name: true }, orderBy: { name: 'asc' }, take: 8 },
-      reviews: { select: { rating: true } },
     },
     orderBy: { name: 'asc' },
     take: 200,
   });
 
+  // P1.0-D Tier B: review counts/averages come from one groupBy, not a
+  // nested whole-table reviews read under every listed business.
+  const ratingByBusiness = new Map<string, { count: number; avg: number | null }>();
+  for (const r of await prisma.review.groupBy({
+    by: ['businessId'],
+    where: { businessId: { in: businesses.map((b) => b.id) } },
+    _count: { _all: true },
+    _avg: { rating: true },
+  })) {
+    ratingByBusiness.set(r.businessId, {
+      count: r._count._all,
+      avg: r._avg.rating === null ? null : Math.round(r._avg.rating * 10) / 10,
+    });
+  }
+
   const results = businesses
     .map((b) => {
-      const { count, avg } = ratingSummary(b.reviews);
+      const { count, avg } = ratingByBusiness.get(b.id) ?? { count: 0, avg: null };
       return {
         id: b.id,
         name: b.name,

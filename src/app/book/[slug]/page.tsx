@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { MapPin, Phone } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import EveryJobLogo from '@/components/EveryJobLogo';
 import BookingForm, { type BookingSlotStrings } from '@/components/BookingForm';
 import { formatWorkingHoursSummary } from '@/lib/working-hours';
@@ -73,6 +74,7 @@ export default async function PublicBookingPage({
       service: { select: { id: true, name: true, priceCents: true } },
     },
     orderBy: [{ position: 'asc' }],
+    take: LIST_MAX_SIZE,
   });
   const services = bookable.map((b) => b.service);
 

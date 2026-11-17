@@ -2,6 +2,7 @@ import React from 'react';
 import { requireAuth } from '@/lib/auth';
 import { isDatabaseUnavailable } from '@/lib/db-errors';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { dayRange, todayInTimezone } from '@/lib/utils';
 import { summarizeTodayJobs } from '@/lib/dashboard';
 import AppSidebar from '@/components/AppSidebar';
@@ -52,6 +53,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       prisma.job.findMany({
         where: { businessId, date: { gte: start, lt: end } },
         select: { priceCents: true, status: true },
+        take: LIST_MAX_SIZE,
       }),
       prisma.lead.count({ where: { businessId, status: 'NEW' } }),
     ]);

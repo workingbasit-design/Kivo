@@ -1,5 +1,6 @@
 import React from 'react';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { requireAuth } from '@/lib/auth';
 
 import { dayRange, toISODateLocal, formatDateLabel, localeDateTag } from '@/lib/utils';
@@ -39,6 +40,7 @@ export default async function RoutesPage({
     },
     include: { customer: { select: { name: true } } },
     orderBy: [{ time: 'asc' }, { createdAt: 'asc' }],
+    take: LIST_MAX_SIZE,
   });
 
   const stops: RouteStop[] = jobs.map((j) => ({

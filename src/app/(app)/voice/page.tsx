@@ -1,5 +1,6 @@
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { LIST_MAX_SIZE } from "@/lib/list-page";
 import { getLocale } from "@/lib/i18n/server";
 import { t } from "@/lib/i18n";
 
@@ -33,6 +34,7 @@ export default async function VoicePage() {
         customer: { select: { name: true } },
       },
       orderBy: { time: "asc" },
+      take: LIST_MAX_SIZE,
     });
   } catch (err) {
     console.error("[voice] jobs failed:", err);

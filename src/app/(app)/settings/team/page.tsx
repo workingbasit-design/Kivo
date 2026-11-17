@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 
 import TeamClient from '@/components/TeamClient';
 import { getLocale } from '@/lib/i18n/server';
@@ -28,6 +29,7 @@ export default async function TeamPage() {
         user: { select: { id: true, name: true, email: true, createdAt: true } },
       },
       orderBy: { user: { createdAt: 'asc' } },
+      take: LIST_MAX_SIZE,
     })
   ).map((m) => ({
     id: m.user.id,

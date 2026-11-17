@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { ArrowLeft, Users, Clock3, Briefcase, DollarSign, Trophy } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { requireAuth } from '@/lib/auth';
 import { canSeePrices } from '@/lib/roles';
 import { getLocale } from '@/lib/i18n/server';
@@ -84,6 +85,7 @@ export default async function TeamPerformancePage({
       where: { businessId, status: 'ACTIVE' },
       include: { user: { select: { id: true, name: true, email: true } } },
       orderBy: { user: { name: 'asc' } },
+      take: LIST_MAX_SIZE,
     })
   ).map((m) => ({
     id: m.user.id,
@@ -96,6 +98,7 @@ export default async function TeamPerformancePage({
     prisma.timeEntry.findMany({
       where: { businessId, clockIn: { gte: start, lte: end } },
       select: { userId: true, clockIn: true, clockOut: true },
+      take: LIST_MAX_SIZE,
     }),
     prisma.job.findMany({
       where: {
@@ -104,6 +107,7 @@ export default async function TeamPerformancePage({
         date: { gte: start, lte: end },
       },
       select: { assignedToId: true, priceCents: true },
+      take: LIST_MAX_SIZE,
     }),
   ]);
 

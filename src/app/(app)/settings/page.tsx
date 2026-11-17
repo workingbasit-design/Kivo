@@ -20,6 +20,7 @@ import {
 } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { Card, Button } from '@/components/kit';
 import SettingsForm from '@/components/SettingsForm';
 import LogoUploadCard from '@/components/LogoUploadCard';
@@ -103,6 +104,7 @@ export default async function SettingsPage() {
   const designations = await prisma.designation.findMany({
     where: { businessId },
     orderBy: { createdAt: 'desc' },
+    take: LIST_MAX_SIZE,
     select: {
       id: true,
       type: true,

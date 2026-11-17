@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ArrowLeft } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { centsToDollars } from '@/lib/money';
 
 import { ChecklistTemplatesClient } from '@/components/ChecklistTemplatesClient';
@@ -19,6 +20,7 @@ export default async function ChecklistTemplatesPage() {
     where: { businessId },
     include: { items: { orderBy: { sortOrder: 'asc' } } },
     orderBy: { createdAt: 'asc' },
+    take: LIST_MAX_SIZE,
   });
 
   return (

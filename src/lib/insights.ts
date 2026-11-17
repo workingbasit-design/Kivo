@@ -9,6 +9,7 @@
  */
 
 import { prisma } from './prisma';
+import { LIST_MAX_SIZE } from './list-page.ts';
 import { centsToDollars } from './money.ts';
 import {
   computeInsights,
@@ -38,6 +39,8 @@ export async function getInsights(businessId: string, locale: 'en' | 'fr' = 'en'
     prisma.payment.findMany({
       where: { status: 'COMPLETED', createdAt: { gte: rangeStart }, businessId },
       select: { amountCents: true, createdAt: true },
+      orderBy: { createdAt: 'desc' },
+      take: LIST_MAX_SIZE,
     }),
     prisma.job.findMany({
       where: { businessId },
@@ -52,6 +55,9 @@ export async function getInsights(businessId: string, locale: 'en' | 'fr' = 'en'
         service: { select: { name: true } },
         expenses: { select: { amountCents: true } },
       },
+      // P1.0-D Tier B: all-time jobs, newest first (insights window is 6 months).
+      orderBy: { date: 'desc' },
+      take: LIST_MAX_SIZE,
     }),
     prisma.quote.findMany({
       where: { businessId },
@@ -64,6 +70,7 @@ export async function getInsights(businessId: string, locale: 'en' | 'fr' = 'en'
         customer: { select: { name: true } },
       },
       orderBy: { createdAt: 'desc' },
+      take: LIST_MAX_SIZE,
     }),
   ]);
 

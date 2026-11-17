@@ -10,6 +10,7 @@
  */
 import { daysOverdue, needsFollowUp, daysWaiting, remainingBalance } from './revenue.ts';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { centsToDollars } from './money.ts';
 import { t } from '@/lib/i18n';
 
@@ -447,10 +448,15 @@ export async function getAttentionItems(
       prisma.invoice.findMany({
         where: { businessId, status: 'PAID', paidAt: { gte: weekAgo } },
         select: { totalCents: true },
+        take: LIST_MAX_SIZE,
       }),
       prisma.invoice.findMany({
         where: { businessId, jobId: { not: null } },
         select: { jobId: true },
+        // P1.0-D Tier B: one row per invoiced job — the set must stay
+        // complete (a cap would misflag jobs as uninvoiced), so dedupe
+        // instead of taking.
+        distinct: ['jobId'],
       }),
     ]);
 

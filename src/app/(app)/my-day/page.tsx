@@ -1,5 +1,6 @@
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { formatJobTime } from '@/lib/utils';
 import { getLocale } from '@/lib/i18n/server';
 import Link from 'next/link';
@@ -38,6 +39,7 @@ export default async function MyDayPage() {
       },
     },
     orderBy: { time: 'asc' },
+    take: LIST_MAX_SIZE,
   });
 
   const t = {

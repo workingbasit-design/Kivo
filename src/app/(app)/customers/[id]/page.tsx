@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft, Clock3, Phone, Mail, MapPin, MessageSquare, Navigation, Plus } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { logPiiAccess } from '@/lib/pii-audit';
 import { formatDateShort } from '@/lib/utils';
 import { formatMoney, formatCents, centsToDollars } from '@/lib/money';
@@ -156,6 +157,7 @@ export default async function CustomerDetailPage({
       where: { businessId, target: 'CUSTOMER' },
       orderBy: { createdAt: 'asc' },
       select: { id: true, name: true },
+      take: LIST_MAX_SIZE,
     });
   } catch (e) {
     const digest = e instanceof Error ? (e as { digest?: string }).digest : undefined;

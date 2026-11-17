@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { requireAuth } from '@/lib/auth';
 import { canSeePrices } from '@/lib/roles';
 import { getLocale } from '@/lib/i18n/server';
@@ -76,6 +77,7 @@ export default async function TodayPage() {
         ...techFilter,
       },
       select,
+      take: LIST_MAX_SIZE,
     }),
     // Late candidates: open, dated before today. Capped — a day view is
     // not the place for an unbounded backlog; the Jobs list holds the rest.

@@ -7,6 +7,7 @@
  * the pure functions in ./reports-f9.ts.
  */
 import { prisma } from './prisma.ts';
+import { LIST_MAX_SIZE } from './list-page.ts';
 import {
   computeRevenueByMonth,
   computeAging,
@@ -72,6 +73,8 @@ export async function fetchF9Data(
         select: { amountCents: true },
       },
     },
+    orderBy: { date: 'desc' },
+    take: LIST_MAX_SIZE,
   });
 
   // --- Payments (completed, non-voided) in the year — the "collected" side.
@@ -83,6 +86,8 @@ export async function fetchF9Data(
       createdAt: { gte: yearStart, lt: nextYearStart },
     },
     select: { amountCents: true, createdAt: true },
+    orderBy: { createdAt: 'desc' },
+    take: LIST_MAX_SIZE,
   });
 
   // --- AR aging needs ALL unpaid invoices, not just this year's.
@@ -102,6 +107,8 @@ export async function fetchF9Data(
         select: { amountCents: true },
       },
     },
+    orderBy: { date: 'asc' },
+    take: LIST_MAX_SIZE,
   });
 
   // --- Tax lines for non-voided invoices in the year.
@@ -114,6 +121,7 @@ export async function fetchF9Data(
       amountCents: true,
       invoice: { select: { date: true } },
     },
+    take: LIST_MAX_SIZE,
   });
 
   // --- Job profitability: jobs in the year with linked invoices + expenses.
@@ -148,12 +156,16 @@ export async function fetchF9Data(
       taxQstCents: true,
       taxPstCents: true,
     },
+    orderBy: { spentAt: 'desc' },
+    take: LIST_MAX_SIZE,
   });
 
   // --- Leads (all time — sources and conversion are cumulative).
   const leads = await prisma.lead.findMany({
     where: { businessId },
     select: { source: true, status: true },
+    orderBy: { createdAt: 'desc' },
+    take: LIST_MAX_SIZE,
   });
 
   const now = new Date();
