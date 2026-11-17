@@ -1,17 +1,32 @@
 /**
- * Restore drill: logical backup of the scratch DB -> restore into a FRESH
- * database -> verify. Records timings for docs/BACKUP_RESTORE.md.
+ * Restore drill: take a real pg_dump -Fc backup file (produced by
+ * scripts/backup-db.sh), restore it with pg_restore into a FRESH
+ * database, and verify every table's row count matches the source.
  *
- * Steps: (1) extract all rows from every user table, (2) CREATE DATABASE
- * kivo_restore_drill, (3) `prisma migrate deploy` on the fresh DB (also
- * validates the hand-written migration chain applies cleanly to empty),
- * (4) bulk-load all rows with FK checks deferred, (5) verify row counts +
- * spot-check queries.
+ * This is the D5 Stage 3 acceptance test: a backup does not count until
+ * a restore of the actual artifact succeeds.
  *
- * Scratch-local ONLY. Refuses to run unless the URL is the local scratch
- * Postgres. Never touches production.
+ * Usage:
+ *   DATABASE_URL="postgresql://postgres@127.0.0.1:54333/kivo_scratch" \
+ *     node --experimental-strip-types scripts/restore-drill.ts \
+ *     /var/backups/everyjob/everyjob-2026-11-17.dump
+ *
+ * Scratch-local ONLY. Refuses to run unless DATABASE_URL is the local
+ * scratch Postgres (127.0.0.1:54333). Never touches production.
+ *
+ * Steps: (1) read per-table counts from the source DB, (2) DROP/CREATE
+ * DATABASE kivo_restore_drill, (3) pg_restore the dump into it,
+ * (4) compare every table count, (5) data-driven spot checks: one
+ * business's customers/jobs/invoices, and one invoice's total vs its
+ * payments, must be identical in source and restored DBs.
+ *
+ * History: the 2026-10-14 version extracted rows via Prisma and
+ * hard-coded the perf seed (perf-biz, 10000 jobs). This rewrite restores
+ * the real backup artifact instead, so the drill tests what the nightly
+ * cron actually produces.
  */
 import { execFileSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { PrismaClient } from '@prisma/client';
 
 const SRC = process.env.DATABASE_URL ?? '';
@@ -19,100 +34,119 @@ if (!SRC.includes('127.0.0.1:54333') && !SRC.includes('localhost:54333')) {
   console.error('REFUSED: restore drill only runs against the local scratch DB.');
   process.exit(1);
 }
+const DUMP = process.argv[2] ?? '';
+if (!DUMP || !existsSync(DUMP)) {
+  console.error('Usage: restore-drill.ts <dump-file>  (dump from scripts/backup-db.sh)');
+  process.exit(1);
+}
 const DST = SRC.replace(/\/[^/]*$/, '/kivo_restore_drill');
 const t0 = Date.now();
 const log = (m: string) => console.log(`[+${((Date.now() - t0) / 1000).toFixed(1)}s] ${m}`);
+
+function pgRestore(args: string[]): void {
+  try {
+    execFileSync('pg_restore', args, { stdio: 'pipe' });
+  } catch (e: unknown) {
+    const err = e as { stderr?: Buffer; message?: string };
+    console.error('pg_restore failed:', (err.stderr?.toString() ?? err.message ?? '').slice(-2000));
+    throw new Error('pg_restore failed');
+  }
+}
+
+async function tableCounts(db: PrismaClient): Promise<Map<string, number>> {
+  const tables = (await db.$queryRawUnsafe(
+    `SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE' ORDER BY table_name`,
+  )) as Array<{ table_name: string }>;
+  const counts = new Map<string, number>();
+  for (const { table_name } of tables) {
+    const n = (await db.$queryRawUnsafe(
+      `SELECT count(*)::int AS n FROM "${table_name}"`,
+    )) as Array<{ n: number }>;
+    counts.set(table_name, n[0].n);
+  }
+  return counts;
+}
 
 async function main() {
   const src = new PrismaClient({ datasources: { db: { url: SRC } } });
   const admin = new PrismaClient({ datasources: { db: { url: SRC.replace(/\/[^/]*$/, '/postgres') } } });
 
-  // ---- 1. Extract ----
-  const tables = (await src.$queryRawUnsafe(
-    `SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE' AND table_name NOT LIKE '\\_prisma%' ORDER BY table_name`
-  )) as Array<{ table_name: string }>;
-  log(`extract: ${tables.length} tables`);
-  const dump = new Map<string, { cols: string[]; rows: unknown[][] }>();
-  for (const { table_name } of tables) {
-    const cols = (await src.$queryRawUnsafe(
-      `SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name='${table_name}' ORDER BY ordinal_position`
-    )) as Array<{ column_name: string }>;
-    const colNames = cols.map((c) => c.column_name);
-    const rows = (await src.$queryRawUnsafe(
-      `SELECT ${colNames.map((c) => `"${c}"`).join(',')} FROM "${table_name}"`
-    )) as Array<Record<string, unknown>>;
-    dump.set(table_name, { cols: colNames, rows: rows.map((r) => colNames.map((c) => r[c])) });
-  }
-  const totalRows = [...dump.values()].reduce((n, t) => n + t.rows.length, 0);
-  log(`extract done: ${totalRows} rows`);
+  // ---- 1. Source counts ----
+  const expected = await tableCounts(src);
+  const totalRows = [...expected.values()].reduce((n, c) => n + c, 0);
+  log(`source: ${expected.size} tables, ${totalRows} rows`);
 
   // ---- 2. Fresh database ----
   await admin.$executeRawUnsafe(`DROP DATABASE IF EXISTS "kivo_restore_drill"`);
   await admin.$executeRawUnsafe(`CREATE DATABASE "kivo_restore_drill"`);
   log('created database kivo_restore_drill');
 
-  // ---- 3. Migrate deploy on the empty DB (validates the chain) ----
-  execFileSync('npx', ['prisma', 'migrate', 'deploy'], {
-    env: { ...process.env, DATABASE_URL: DST },
-    stdio: 'pipe',
-  });
-  log('migrate deploy on fresh DB: ok');
+  // ---- 3. Restore the real artifact ----
+  pgRestore(['--dbname', DST, '--no-owner', DUMP]);
+  log(`pg_restore done: ${DUMP}`);
 
-  // ---- 4. Load (FK checks deferred, like pg_restore) ----
+  // ---- 4. Compare counts ----
   const dst = new PrismaClient({ datasources: { db: { url: DST } } });
-  await dst.$executeRawUnsafe(`SET session_replication_role = 'replica'`);
-  for (const [table, { cols, rows }] of dump) {
-    if (rows.length === 0) continue;
-    const colList = cols.map((c) => `"${c}"`).join(',');
-    for (let i = 0; i < rows.length; i += 500) {
-      const batch = rows.slice(i, i + 500);
-      const params: unknown[] = [];
-      const tuples = batch.map((row) => {
-        const ph = row.map((v) => {
-          params.push(v instanceof Date ? v : v);
-          return `$${params.length}`;
-        });
-        return `(${ph.join(',')})`;
-      });
-      try {
-        // ON CONFLICT DO NOTHING: migrate deploy re-seeds static tables
-        // (e.g. M3 TaxRate rows); the restore must not duplicate them.
-        await dst.$executeRawUnsafe(
-          `INSERT INTO "${table}" (${colList}) VALUES ${tuples.join(',')} ON CONFLICT DO NOTHING`,
-          ...params
-        );
-      } catch (e: unknown) {
-        const err = e as { message?: unknown; code?: unknown } | null;
-        console.log(`LOAD FAILED at ${table} batch ${i}:`, String(err?.message ?? e).slice(0, 300), 'code=', err?.code);
-        throw e;
-      }
-    }
-  }
-  await dst.$executeRawUnsafe(`SET session_replication_role = 'origin'`);
-  log('load done');
-
-  // ---- 5. Verify ----
+  const actual = await tableCounts(dst);
   let mismatches = 0;
-  for (const [table] of dump) {
-    const n = (await dst.$queryRawUnsafe(`SELECT count(*)::int AS n FROM "${table}"`)) as Array<{ n: number }>;
-    const expected = dump.get(table)!.rows.length;
-    if (n[0].n !== expected) {
-      console.log(`MISMATCH ${table}: expected ${expected}, got ${n[0].n}`);
+  for (const [table, want] of expected) {
+    const got = actual.get(table);
+    if (got !== want) {
+      console.log(`MISMATCH ${table}: expected ${want}, got ${got}`);
       mismatches++;
     }
   }
-  const spot = (await dst.$queryRawUnsafe(
-    `SELECT count(*)::int AS n FROM "Job" WHERE "businessId"='perf-biz'`
-  )) as Array<{ n: number }>;
-  const spot2 = (await dst.$queryRawUnsafe(
-    `SELECT "number","totalCents" FROM "Invoice" WHERE "businessId"='perf-biz' AND "status"='UNPAID' ORDER BY "dueAt" LIMIT 3`
-  )) as Array<{ number: string; totalCents: number }>;
-  log(`verify: ${mismatches} mismatches; spot-check perf jobs=${spot[0].n}, unpaid invoices sample=${spot2.length}`);
-  if (mismatches > 0 || spot[0].n !== 10000 || spot2.length === 0) throw new Error('VERIFY FAILED');
+  for (const table of actual.keys()) {
+    if (!expected.has(table)) {
+      console.log(`MISMATCH ${table}: unexpected table in restored DB`);
+      mismatches++;
+    }
+  }
+  log(`verify: ${mismatches} mismatches across ${expected.size} tables`);
+
+  // ---- 5. Data-driven spot checks (no hardcoded seed ids) ----
+  const biz = (await src.$queryRawUnsafe(
+    `SELECT id FROM "Business" ORDER BY "createdAt" LIMIT 1`,
+  )) as Array<{ id: string }>;
+  if (biz.length === 0) throw new Error('VERIFY FAILED: source has no business to spot-check');
+  const bizId = biz[0].id;
+  for (const [table, where] of [
+    ['Customer', `"businessId"='${bizId}'`],
+    ['Job', `"businessId"='${bizId}'`],
+    ['Invoice', `"businessId"='${bizId}'`],
+  ] as const) {
+    const s = (await src.$queryRawUnsafe(
+      `SELECT count(*)::int AS n FROM "${table}" WHERE ${where}`,
+    )) as Array<{ n: number }>;
+    const d = (await dst.$queryRawUnsafe(
+      `SELECT count(*)::int AS n FROM "${table}" WHERE ${where}`,
+    )) as Array<{ n: number }>;
+    if (s[0].n !== d[0].n) throw new Error(`VERIFY FAILED: ${table} for first business ${s[0].n} != ${d[0].n}`);
+    log(`spot-check ${table} (first business): ${s[0].n} rows match`);
+  }
+  const inv = (await src.$queryRawUnsafe(
+    `SELECT id, "totalCents" FROM "Invoice" ORDER BY "createdAt" LIMIT 1`,
+  )) as Array<{ id: string; totalCents: bigint }>;
+  if (inv.length > 0) {
+    const paid = async (db: PrismaClient) =>
+      (await db.$queryRawUnsafe(
+        `SELECT coalesce(sum("amountCents"),0)::bigint AS s FROM "Payment" WHERE "invoiceId"='${inv[0].id}' AND status='COMPLETED'`,
+      )) as Array<{ s: bigint }>;
+    const sPaid = (await paid(src))[0].s;
+    const dPaid = (await paid(dst))[0].s;
+    const dTotal = (await dst.$queryRawUnsafe(
+      `SELECT "totalCents" FROM "Invoice" WHERE id='${inv[0].id}'`,
+    )) as Array<{ totalCents: bigint }>;
+    if (dTotal.length !== 1 || dTotal[0].totalCents !== inv[0].totalCents || sPaid !== dPaid) {
+      throw new Error('VERIFY FAILED: first invoice total/payments differ after restore');
+    }
+    log(`spot-check invoice ${inv[0].id}: totalCents=${inv[0].totalCents}, completed payments=${sPaid} match`);
+  }
 
   await src.$disconnect();
   await dst.$disconnect();
   await admin.$disconnect();
+  if (mismatches > 0) throw new Error('VERIFY FAILED');
   log(`DRILL PASSED in ${((Date.now() - t0) / 1000).toFixed(1)}s`);
 }
 
