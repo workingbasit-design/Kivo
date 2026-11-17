@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { requireAuth } from '@/lib/auth';
+import { requireMembership } from '@/lib/membership';
 import { prisma } from '@/lib/prisma';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { clientIpFromHeaders } from '@/lib/client-ip';
@@ -98,6 +99,8 @@ export async function confirmLivePaymentsAction(
   } catch {
     return { error: 'Please log in again.' };
   }
+  // B-8: Stripe Connect is OWNER-only. requireMembership throws on denial.
+  await requireMembership(businessId, 'OWNER');
   if (formData.get('confirm') !== 'yes') {
     return { error: 'Tick the confirmation box to enable live payments.' };
   }
@@ -124,6 +127,8 @@ export async function disconnectStripeAction(): Promise<ActionResult> {
   } catch {
     return { error: 'Please log in again.' };
   }
+  // B-8: Stripe Connect is OWNER-only. requireMembership throws on denial.
+  await requireMembership(businessId, 'OWNER');
   await prisma.stripeConnection.deleteMany({ where: { businessId } });
   revalidatePath('/settings/payments');
   return { ok: true };

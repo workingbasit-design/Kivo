@@ -60,6 +60,12 @@ export async function requireAuth() {
   return { businessId: 'biz-1', user: { id: 'user-1' } };
 }
 
+// B-8: jobs.ts imports requireMembership (deleteJob gate). The stub
+// persona is the business owner, so the check always passes.
+export async function requireMembership(businessId, ...allowedRoles) {
+  return { userId: 'user-1', businessId, role: 'OWNER', membershipId: 'mem-1' };
+}
+
 export function rateLimit() {
   return { ok: true, remaining: 120, retryAfterMs: 0 };
 }

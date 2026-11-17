@@ -16,6 +16,8 @@ const STUBBED = new Set([
   '@/lib/prisma.ts',
   '@/lib/auth',
   '@/lib/auth.ts',
+  '@/lib/membership',
+  '@/lib/membership.ts',
   '@/lib/rate-limit',
   '@/lib/rate-limit.ts',
   '@/lib/logger',

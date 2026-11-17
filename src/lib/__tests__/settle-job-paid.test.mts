@@ -4,7 +4,7 @@
  * (payment-based) showed $0.00 while top-customer / avg-job-value /
  * revenue-by-service (job-based) showed the job's price.
  *
- * settleJobPaid() (src/app/actions/invoices.ts) now settles the money in the
+ * settleJobPaid() (src/lib/settle-job-paid.ts) now settles the money in the
  * same transaction: open invoices get a COMPLETED payment for the outstanding
  * balance, and a job with no invoice gets a paid invoice + payment created.
  *
@@ -17,7 +17,7 @@ import { register } from 'node:module';
 register('./register-loader.mjs', import.meta.url);
 register('./settle-stub-loader.mjs', import.meta.url);
 
-const { settleJobPaid } = await import('@/app/actions/invoices.ts');
+const { settleJobPaid } = await import('@/lib/settle-job-paid.ts');
 const stub = await import('./settle-stub.mjs');
 
 test('no invoice + priced job: creates a PAID invoice and a COMPLETED payment', async () => {

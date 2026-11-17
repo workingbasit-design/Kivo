@@ -126,7 +126,9 @@ export async function updateBusinessSettings(
   _prev: SettingsResult,
   formData: FormData
 ): Promise<SettingsResult> {
-  const { businessId } = await requireAuth();
+  const { businessId, role: callerRole } = await requireAuth();
+  const notAdmin = requireAdminRole(callerRole);
+  if (notAdmin) return notAdmin;
   const hit = limited(`settings:${businessId}`);
   if (hit) return hit;
 
@@ -480,7 +482,9 @@ export async function completeBusinessSetup(opts: {
   whatsappNumber?: string;
   workingHoursJson?: string;
 }): Promise<SettingsResult> {
-  const { businessId } = await requireAuth();
+  const { businessId, role: callerRole } = await requireAuth();
+  const notAdmin = requireAdminRole(callerRole);
+  if (notAdmin) return notAdmin;
   const hit = limited(`settings:${businessId}`);
   if (hit) return hit;
 
@@ -545,7 +549,9 @@ export type LogoResult = { error?: string; ok?: boolean; logoUrl?: string };
  * business. Replaces any existing logo (old blob is deleted).
  */
 export async function uploadBusinessLogo(formData: FormData): Promise<LogoResult> {
-  const { businessId } = await requireAuth();
+  const { businessId, role: callerRole } = await requireAuth();
+  const notAdmin = requireAdminRole(callerRole);
+  if (notAdmin) return notAdmin;
   const rl = rateLimit(`logo:${businessId}`, ACTION_LIMIT);
   if (!rl.ok) return { error: 'Too many requests. Please slow down.' };
 
@@ -595,7 +601,9 @@ export async function uploadBusinessLogo(formData: FormData): Promise<LogoResult
 
 /** Remove the business logo (deletes the blob and clears the URL). */
 export async function removeBusinessLogo(): Promise<LogoResult> {
-  const { businessId } = await requireAuth();
+  const { businessId, role: callerRole } = await requireAuth();
+  const notAdmin = requireAdminRole(callerRole);
+  if (notAdmin) return notAdmin;
   const rl = rateLimit(`logo:${businessId}`, ACTION_LIMIT);
   if (!rl.ok) return { error: 'Too many requests. Please slow down.' };
 

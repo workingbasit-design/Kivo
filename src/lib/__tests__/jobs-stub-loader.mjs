@@ -7,6 +7,7 @@ export async function resolve(specifier, context, nextResolve) {
   if (
     specifier === '@/lib/prisma' ||
     specifier === '@/lib/auth' ||
+    specifier === '@/lib/membership' ||
     specifier === '@/lib/validations' ||
     specifier === '@/lib/job-status' ||
     specifier === '@/lib/phone' ||
@@ -14,7 +15,7 @@ export async function resolve(specifier, context, nextResolve) {
     specifier === 'next/cache' ||
     specifier === 'next/navigation' ||
     specifier === 'next/headers' ||
-    specifier === './invoices' ||
+    specifier === '@/lib/settle-job-paid' ||
     specifier.endsWith('/lib/prisma.ts') ||
     specifier.endsWith('/lib/auth.ts')
   ) {

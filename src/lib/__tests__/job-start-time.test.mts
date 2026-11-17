@@ -75,8 +75,15 @@ test('re-start after a step back re-stamps with the new time', async () => {
 
 test('invalid transition writes nothing', async () => {
   db.reset();
-  db.fixture.status = 'NEW';
-  const res = await updateJobStatus('job-1', 'PAID');
-  assert.ok(res.error, 'expected an error for NEW -> PAID');
+  // PAID -> SCHEDULED is genuinely invalid (PAID may only step back to
+  // COMPLETED, and never forward again): the action must return an error
+  // before any write. (2026-11-17: this test previously used NEW -> PAID,
+  // which is a VALID forward transition — it only passed because the old
+  // dynamic import('./invoices') threw before the write; the settle
+  // helper now lives in lib and imports cleanly, so the test must use a
+  // truly invalid transition.)
+  db.fixture.status = 'PAID';
+  const res = await updateJobStatus('job-1', 'SCHEDULED');
+  assert.ok(res.error, 'expected an error for PAID -> SCHEDULED');
   assert.equal(db.updates.length, 0);
 });

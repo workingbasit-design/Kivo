@@ -47,6 +47,12 @@ export async function requireAuth() {
   return { businessId: 'biz_1', user: { id: 'user_1' } };
 }
 
+// B-8: jobs.ts imports requireMembership (deleteJob gate). The stub
+// persona is the business owner, so the check always passes.
+export async function requireMembership(businessId, ...allowedRoles) {
+  return { userId: 'user_1', businessId, role: 'OWNER', membershipId: 'mem-1' };
+}
+
 export function revalidatePath() {}
 export function redirect() {}
 
@@ -93,7 +99,7 @@ export async function headers() {
   return new Headers();
 }
 
-// ./invoices (relative import inside jobs.ts)
+// @/lib/settle-job-paid (dynamic import inside jobs.ts)
 export async function settleJobPaid(businessId, jobId, tx) {
   calls.settle.push({ businessId, jobId, inTransaction: !!tx });
 }

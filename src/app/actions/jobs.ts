@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
 import { requireAuth } from '@/lib/auth';
+import { requireMembership } from '@/lib/membership';
 import { jobSchema, JOB_STATUSES } from '@/lib/validations';
 import { isValidTransition, deriveJobWindow } from '@/lib/job-status';
 import { validatePhone, INVALID_PHONE_MESSAGE } from '@/lib/phone';
@@ -393,7 +394,7 @@ export async function updateJobStatus(
   const startedAt = newStatus === 'IN PROGRESS' ? new Date() : undefined;
   try {
     if (newStatus === 'PAID') {
-      const { settleJobPaid } = await import('./invoices');
+      const { settleJobPaid } = await import('@/lib/settle-job-paid');
       await prisma.$transaction(async (tx) => {
         await tx.job.update({ where: { id: jobId, businessId }, data: { status: newStatus } });
         await settleJobPaid(businessId, jobId, tx);
@@ -480,7 +481,7 @@ export async function updateJobSchedule(
     });
     // 2026-10-01: marking PAID settles the money so earnings numbers agree.
     if (status === 'PAID') {
-      const { settleJobPaid } = await import('./invoices');
+      const { settleJobPaid } = await import('@/lib/settle-job-paid');
       await settleJobPaid(businessId, jobId, tx);
     }
   });
@@ -512,6 +513,8 @@ export async function updateJobSchedule(
 /** Delete a job (notes & photos cascade). Returns ok; caller navigates. */
 export async function deleteJob(jobId: string): Promise<JobActionResult> {
   const { businessId, user } = await requireAuth();
+  // B-8: destructive — OWNER/ADMIN only. requireMembership throws on denial.
+  await requireMembership(businessId, 'OWNER', 'ADMIN');
   const limited = await checkLimit(user.id, 'deleteJob');
   if (limited) return limited;
 

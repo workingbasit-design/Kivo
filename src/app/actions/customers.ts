@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
 import { requireAuth } from '@/lib/auth';
+import { requireMembership } from '@/lib/membership';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { customerSchema } from '@/lib/validations';
 import { validatePhone, INVALID_PHONE_MESSAGE } from '@/lib/phone';
@@ -228,6 +229,8 @@ export async function deleteCustomer(
   formData: FormData
 ): Promise<ActionResult> {
   const { businessId, user } = await requireAuth();
+  // B-8: destructive — OWNER/ADMIN only. requireMembership throws on denial.
+  await requireMembership(businessId, 'OWNER', 'ADMIN');
   const limited = await checkLimit(user.id);
   if (limited) return limited;
   const id = String(formData.get('id') ?? '');

@@ -6,6 +6,7 @@ import { headers } from 'next/headers';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/auth';
+import { requireMembership } from '@/lib/membership';
 import { quoteSchema, QUOTE_STATUSES } from '@/lib/validations';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { dollarsToCents, centsToDollars, formatCents } from '@/lib/money';
@@ -505,6 +506,8 @@ export async function recordQuoteDeposit(
   } catch {
     return { error: 'Please log in again.' };
   }
+  // B-8: money mutation — OWNER/ADMIN only. requireMembership throws on denial.
+  await requireMembership(businessId, 'OWNER', 'ADMIN');
 
   const quoteId = String(formData.get('quoteId') ?? '');
   const quote = await ownedQuote(businessId, quoteId);
@@ -869,6 +872,8 @@ export async function deleteQuote(
   } catch {
     return { error: 'Please log in again.' };
   }
+  // B-8: money mutation — OWNER/ADMIN only. requireMembership throws on denial.
+  await requireMembership(businessId, 'OWNER', 'ADMIN');
 
   const id = String(formData.get('id') ?? '');
   const quote = await ownedQuote(businessId, id);
