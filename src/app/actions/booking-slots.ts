@@ -3,6 +3,7 @@
 import { headers } from 'next/headers';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { unsafeUnscoped } from '@/lib/tenant-guard';
 import { rateLimitDurable } from '@/lib/rate-limit-durable';
 import { validatePhone, INVALID_PHONE_MESSAGE } from '@/lib/phone';
@@ -124,6 +125,7 @@ export async function getBookingSlots(
       status: { not: 'CANCELLED' },
     },
     select: { time: true },
+    take: LIST_MAX_SIZE,
   });
 
   const { slots, unscheduledCount } = computeSlotAvailability(

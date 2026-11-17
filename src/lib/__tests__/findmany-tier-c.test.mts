@@ -42,6 +42,7 @@ test('Tier C: capped sites carry exactly the expected LIST_MAX_SIZE caps', () =>
     ['src/app/api/integrations/webhooks/route.ts', 1],
     ['src/app/api/push/test/route.ts', 1],
     ['src/app/customer/requests/page.tsx', 1],
+    ['src/app/actions/booking-slots.ts', 1],
   ];
   for (const [rel, expected] of capped) {
     const src = read(rel);
@@ -98,6 +99,15 @@ test('Tier C: completeness-required reads are pinned uncapped, with reasons', ()
       `${rel} must stay uncapped (Tier C)`,
     );
   }
+});
+
+test('Tier C: money-leaks dedupes invoiced jobs like attention does', () => {
+  const src = read('src/lib/money-leaks.ts');
+  assert.ok(src.includes("distinct: ['jobId']"), 'invoiced-job set uses distinct');
+  assert.ok(
+    src.includes('.filter((j) => !invoiced.has(j.id)'),
+    'the complete set still drives the uninvoiced filter',
+  );
 });
 
 test('Tier C: id/in:-list lookups stay bounded by the list, not a take', () => {

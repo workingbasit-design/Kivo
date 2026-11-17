@@ -112,6 +112,10 @@ export async function getMoneyLeaks(businessId: string): Promise<MoneyLeak[]> {
     prisma.invoice.findMany({
       where: { businessId, jobId: { not: null } },
       select: { jobId: true },
+      // P1.0-D Tier C: one row per invoiced job — the set must stay
+      // complete (a cap would misflag jobs as uninvoiced), so dedupe
+      // instead of taking.
+      distinct: ['jobId'],
     }),
     prisma.quote.findMany({
       where: { businessId, status: 'SENT' },
