@@ -39,9 +39,20 @@ export default async function JobsPage({
   // query, classified by the pure jobs-list helpers.
   // M3: bounded read plus an exact total from the database, so the "N of M"
   // footer is right even though only a page of rows is on screen.
-  const [fetched, totalJobs] = await Promise.all([
+  const [fetched, totalJobs, customers, crews] = await Promise.all([
     getJobsForList(businessId, prisma, { take: takeWithProbe(limit) }),
     prisma.job.count({ where: { businessId } }),
+    // New Job modal: the real JobForm needs the customer + crew pickers.
+    prisma.customer.findMany({
+      where: { businessId },
+      select: { id: true, name: true },
+      orderBy: { name: 'asc' },
+    }),
+    prisma.crew.findMany({
+      where: { businessId },
+      select: { id: true, name: true },
+      orderBy: { name: 'asc' },
+    }),
   ]);
   const page = sliceListPage(fetched, limit);
   // Back into ascending date order for the day grouping in the client.
@@ -69,6 +80,8 @@ export default async function JobsPage({
         summary={summary}
         todayKey={todayKey}
         tomorrowKey={tomorrowKey}
+        customers={customers}
+        crews={crews}
       />
       <ListMore
         shown={rows.length}

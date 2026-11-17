@@ -9,6 +9,7 @@
 @import "./customer-home.css";
 @import "./customer-home-signed-in.css";
 @import "./dashboard-redesign.css";
+@import "./jobs-redesign.css";
 
 /* Part B (dashboard rebuild): class-based dark mode. `dark:` variants apply
    under `.dark` anywhere in the tree (the theme script in app/layout.tsx

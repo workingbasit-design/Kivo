@@ -118,7 +118,11 @@ const fr: Dictionary = {
     directoryPromptError: 'Impossible de l’ajouter. Veuillez réessayer.',
     yesCancel: 'Oui, annuler le travail',
     yesDelete: 'Oui, supprimer définitivement',
-    // All-modules redesign, Part 3 group 1 (Jobs list + Job detail).
+    // Jobs list redesign (ChatGPT Jobs prototype, 2026-11-17).
+    eyebrow: 'Votre espace de travail',
+    createJobTitle: 'Créer un travail',
+    createJobSubtitle: 'Ajoutez les détails et planifiez le travail.',
+    clearFilters: 'Effacer les filtres',
     searchPlaceholder: 'Rechercher travaux, clients, adresses',
     clearSearch: 'Effacer la recherche',
     sortButton: 'Trier',

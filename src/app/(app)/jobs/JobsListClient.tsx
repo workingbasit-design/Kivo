@@ -1,17 +1,22 @@
 'use client';
 
-import { useMemo, useState, type ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import Link from 'next/link';
 import {
-  ListScreen,
-  type ListScreenFilter,
-  type ListScreenGroup,
-  type ListScreenRow,
-} from '@/components/patterns';
-import { BottomSheet, StatusBadge } from '@/components/kit';
-import TradeIcon from '@/components/TradeIcon';
+  ArrowRight,
+  ArrowUpDown,
+  Briefcase,
+  CheckCircle2,
+  Clock3,
+  FileText,
+  MapPin,
+  Plus,
+  Search,
+  X,
+} from '@/components/icons';
 import type { IconComponent } from '@/components/icons';
-import { ArrowUpDown, Briefcase, CheckCircle2, Clock3, FileText, Plus } from '@/components/icons';
+import { StatusBadge } from '@/components/kit';
+import TradeIcon from '@/components/TradeIcon';
 import {
   searchJobRows,
   sortJobRows,
@@ -22,12 +27,18 @@ import {
   type JobListFilterId,
   type JobListGroupId,
 } from '@/lib/jobs-list';
+import {
+  computeFilterCounts,
+  visibleGroupsForFilter,
+} from '@/components/patterns/list-logic';
 import { formatJobTime, cn } from '@/lib/utils';
 import { t, type Locale } from '@/lib/i18n';
 import { tp } from '@/lib/i18n/plural';
 import type { TradeKey } from '@/lib/trade-icons';
+import NewJobModal from '@/components/NewJobModal';
+import type { JobFormCustomer, JobFormCrew } from '@/components/JobForm';
 
-/** Stable icon element per trade key for the kit ListRow. */
+/** Stable icon element per trade key for the job card. */
 const tradeIconCache = new Map<TradeKey, ReactNode>();
 function tradeIconNode(trade: TradeKey): ReactNode {
   const hit = tradeIconCache.get(trade);
@@ -55,6 +66,14 @@ const FILTER_ICONS: Record<JobListFilterId, IconComponent> = {
   invoice: FileText,
 };
 
+interface JobsGroup {
+  id: JobListGroupId;
+  heading: string;
+  headingTone: 'danger' | 'default';
+  headingMeta?: string;
+  rows: JobListRowVm[];
+}
+
 export interface JobsListClientProps {
   rows: JobListRowVm[];
   locale: Locale;
@@ -62,12 +81,18 @@ export interface JobsListClientProps {
   summary: string;
   todayKey: string;
   tomorrowKey: string;
+  /** Customers + crews for the New Job modal's real JobForm. */
+  customers: JobFormCustomer[];
+  crews: JobFormCrew[];
 }
 
 /**
- * Jobs list screen (Part 3 group 1): the ListScreen pattern fed by the
- * server-computed rows. Search, sort and filter selection are client-side
- * so the chips, counts and groups can never drift apart.
+ * Jobs list screen (Jobs redesign, ChatGPT Jobs prototype): the prototype's
+ * header, search, filter pills with live counts, sort menu, grouped job
+ * cards and New Job modal, fed by the server-computed rows. Search, sort
+ * and filter selection are client-side so the chips, counts and groups can
+ * never drift apart. The modal creates a real job through the existing
+ * server action — never sample data.
  */
 export default function JobsListClient({
   rows,
@@ -76,14 +101,47 @@ export default function JobsListClient({
   summary,
   todayKey,
   tomorrowKey,
+  customers,
+  crews,
 }: JobsListClientProps) {
-  const router = useRouter();
   const [query, setQuery] = useState('');
   const [filterId, setFilterId] = useState<JobListFilterId>('all');
   const [sort, setSort] = useState<JobListSort>('date');
   const [sortOpen, setSortOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const sortRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   const jobsL = (k: string) => t(locale, `jobs.${k}`);
+
+  // Close the sort menu on outside tap / Escape; Cmd/Ctrl+K focuses search.
+  useEffect(() => {
+    if (!sortOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
+        setSortOpen(false);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSortOpen(false);
+    };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [sortOpen]);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        searchRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
 
   const weekdayName = (dayKey: string) => {
     const [y, m, d] = dayKey.split('-').map(Number);
@@ -93,8 +151,26 @@ export default function JobsListClient({
     }).format(new Date(Date.UTC(y, m - 1, d, 12)));
   };
 
-  const rowMeta = (r: JobListRowVm) => {
+  /** Time / was-due / date line for a card (the Late and Earlier groups
+   *  show the date instead of the time). */
+  const metaLine = (r: JobListRowVm) => {
     const timeLabel = r.time ? formatJobTime(r.time, locale) : null;
+    if (r.groupId === 'late') {
+      return (
+        <span className="num">{jobsL('wasDue').replace('{date}', formatWasDueDate(r.dayKey, timezone, locale))}</span>
+      );
+    }
+    if (r.groupId === 'earlier') {
+      return <span className="num">{formatWasDueDate(r.dayKey, timezone, locale)}</span>;
+    }
+    if (timeLabel) return <span className="num">{timeLabel}</span>;
+    return <span>{jobsL('noTimeSet')}</span>;
+  };
+
+  /** Status badges for a card. Late is derived by the shared classifier
+   *  (not started + start time passed); in-progress work past its end
+   *  time is "Running over", never Late. */
+  const metaBadges = (r: JobListRowVm) => {
     const badges: React.ReactNode[] = [];
     if (r.late) {
       badges.push(
@@ -128,45 +204,17 @@ export default function JobsListClient({
         </StatusBadge>,
       );
     }
-    const secondLine = r.uninvoiced ? (
-      <span key="inv-break" className="w-full" aria-hidden="true" />
-    ) : null;
-    const notInvoiced = r.uninvoiced ? (
-      <StatusBadge key="notinv" tone="warn">
-        {jobsL('notInvoiced')}
-      </StatusBadge>
-    ) : null;
-
-    if (r.groupId === 'late') {
-      return (
-        <>
-          <span className="num">{jobsL('wasDue').replace('{date}', formatWasDueDate(r.dayKey, timezone, locale))}</span>
-          {badges}
-        </>
+    if (r.uninvoiced) {
+      badges.push(
+        <StatusBadge key="notinv" tone="warn">
+          {jobsL('notInvoiced')}
+        </StatusBadge>,
       );
     }
-    if (r.groupId === 'earlier') {
-      return (
-        <>
-          <span className="num">{formatWasDueDate(r.dayKey, timezone, locale)}</span>
-          {badges}
-          {secondLine}
-          {notInvoiced}
-        </>
-      );
-    }
-    return (
-      <>
-        {timeLabel && <span className="num">{timeLabel}</span>}
-        {!timeLabel && <span>{jobsL('noTimeSet')}</span>}
-        {badges}
-        {secondLine}
-        {notInvoiced}
-      </>
-    );
+    return badges;
   };
 
-  const groups: ListScreenGroup[] = useMemo(() => {
+  const groups: JobsGroup[] = useMemo(() => {
     const narrowed = searchJobRows(rows, query);
     return JOB_LIST_GROUP_ORDER.map((groupId: JobListGroupId) => {
       const inGroup = sortJobRows(
@@ -174,16 +222,6 @@ export default function JobsListClient({
         sort,
         locale,
       );
-      const listRows: ListScreenRow[] = inGroup.map((r) => ({
-        rowKey: r.id,
-        filterIds: r.filterIds,
-        icon: tradeIconNode(r.tradeKey),
-        title: r.title,
-        subtitle: r.address ? `${r.customerName}, ${r.address}` : r.customerName,
-        meta: rowMeta(r),
-        amount: formatCompactCAD(r.priceCents, r.noCharge),
-        href: `/jobs/${r.id}`,
-      }));
       const headings: Record<JobListGroupId, string> = {
         late: jobsL('groupLate'),
         today: jobsL('groupToday').replace('{weekday}', weekdayName(todayKey)),
@@ -199,48 +237,28 @@ export default function JobsListClient({
           groupId === 'today' || groupId === 'tomorrow'
             ? tp(locale, 'jobs.jobsCount', inGroup.length)
             : undefined,
-        rows: listRows,
+        rows: inGroup,
       };
     }).filter((g) => g.rows.length > 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows, query, sort, locale, timezone, todayKey, tomorrowKey]);
 
-  const filters: ListScreenFilter[] = FILTER_ORDER.map((id) => {
-    const Icon = FILTER_ICONS[id];
-    const emptyKeys: Record<JobListFilterId, { title: string; text: string }> = {
-      all: { title: jobsL('emptyAllTitle'), text: jobsL('emptyAllText') },
-      late: { title: jobsL('emptyLateTitle'), text: jobsL('emptyLateText') },
-      today: { title: jobsL('emptyTodayTitle'), text: jobsL('emptyTodayText') },
-      upcoming: { title: jobsL('emptyUpcomingTitle'), text: jobsL('emptyUpcomingText') },
-      invoice: { title: jobsL('emptyInvoiceTitle'), text: jobsL('emptyInvoiceText') },
-    };
-    return {
-      id,
-      label: jobsL(
-        id === 'all'
-          ? 'filterAll'
-          : id === 'late'
-            ? 'filterLate'
-            : id === 'today'
-              ? 'filterToday'
-              : id === 'upcoming'
-                ? 'filterUpcoming'
-                : 'filterToInvoice',
-      ),
-      tone: id === 'late' ? 'danger' : 'default',
-      empty: {
-        icon: <Icon />,
-        title: emptyKeys[id].title,
-        text: emptyKeys[id].text,
-        ...(id === 'all'
-          ? {
-              actionLabel: jobsL('createFirstJob'),
-              onAction: () => router.push('/jobs/new'),
-            }
-          : {}),
-      },
-    };
-  });
+  // Live counts, computed from the (search-narrowed) rows — never hand-written.
+  const counts = computeFilterCounts(groups, FILTER_ORDER);
+  const visible = visibleGroupsForFilter(groups, filterId);
+
+  const filterLabel = (id: JobListFilterId) =>
+    jobsL(
+      id === 'all'
+        ? 'filterAll'
+        : id === 'late'
+          ? 'filterLate'
+          : id === 'today'
+            ? 'filterToday'
+            : id === 'upcoming'
+              ? 'filterUpcoming'
+              : 'filterToInvoice',
+    );
 
   const sortLabels: Record<JobListSort, string> = {
     date: jobsL('sortSoonest'),
@@ -248,69 +266,197 @@ export default function JobsListClient({
     customer: jobsL('sortCustomerAZ'),
   };
 
+  const emptyKeys: Record<JobListFilterId, { title: string; text: string }> = {
+    all: { title: jobsL('emptyAllTitle'), text: jobsL('emptyAllText') },
+    late: { title: jobsL('emptyLateTitle'), text: jobsL('emptyLateText') },
+    today: { title: jobsL('emptyTodayTitle'), text: jobsL('emptyTodayText') },
+    upcoming: { title: jobsL('emptyUpcomingTitle'), text: jobsL('emptyUpcomingText') },
+    invoice: { title: jobsL('emptyInvoiceTitle'), text: jobsL('emptyInvoiceText') },
+  };
+  const empty = emptyKeys[filterId];
+  const EmptyIcon = FILTER_ICONS[filterId];
+  const showClearFilters = query !== '' || filterId !== 'all';
+
   return (
-    <>
-      <ListScreen
-        title={jobsL('title')}
-        summary={summary}
-        actionLabel={jobsL('newJob')}
-        actionIcon={<Plus />}
-        actionHref="/jobs/new"
-        searchValue={query}
-        onSearchChange={setQuery}
-        searchPlaceholder={jobsL('searchPlaceholder')}
-        searchLabel={jobsL('filtersLabel')}
-        searchClearLabel={jobsL('clearSearch')}
-        filtersLabel={jobsL('filtersLabel')}
-        filters={filters}
-        selectedFilterId={filterId}
-        onSelectFilter={(id) => setFilterId(id as JobListFilterId)}
-        groups={groups}
-        belowChips={
-          <div className="mt-1 mb-1 flex items-center justify-between px-[2px]">
-            <span className="text-[14px] font-medium text-ink-2">{sortLabels[sort]}</span>
-            <button
-              type="button"
-              onClick={() => setSortOpen(true)}
+    <div className="ej-jobs">
+      <header className="ej-jobs-header">
+        <div className="min-w-0">
+          <p className="ej-jobs-eyebrow">{jobsL('eyebrow')}</p>
+          <h1>{jobsL('title')}</h1>
+          <p className="ej-jobs-subtitle">{summary}</p>
+        </div>
+        <button
+          type="button"
+          className="ej-jobs-new"
+          onClick={() => setModalOpen(true)}
+        >
+          <Plus size={18} aria-hidden="true" /> {jobsL('newJob')}
+        </button>
+      </header>
+
+      <label className="ej-jobs-search">
+        <Search size={19} aria-hidden="true" />
+        <input
+          ref={searchRef}
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={jobsL('searchPlaceholder')}
+          aria-label={jobsL('searchPlaceholder')}
+        />
+        {query !== '' && (
+          <button
+            type="button"
+            className="ej-jobs-search-clear"
+            onClick={() => setQuery('')}
+            aria-label={jobsL('clearSearch')}
+          >
+            <X size={20} aria-hidden="true" />
+          </button>
+        )}
+        <kbd>⌘ K</kbd>
+      </label>
+
+      <div className="ej-jobs-filters" role="tablist" aria-label={jobsL('filtersLabel')}>
+        {FILTER_ORDER.map((id) => (
+          <button
+            key={id}
+            type="button"
+            role="tab"
+            aria-selected={filterId === id}
+            className={cn('ej-jobs-filter-tab', filterId === id && 'active')}
+            onClick={() => setFilterId(id)}
+          >
+            <span>{filterLabel(id)}</span>
+            <span
               className={cn(
-                'inline-flex min-h-[44px] items-center gap-1.5 rounded-xl px-3',
-                'text-[15px] font-semibold text-ink',
-                'focus-visible:outline-2 focus-visible:outline-focus active:bg-surface-2',
+                'ej-jobs-filter-count',
+                id === 'late' && (counts[id] ?? 0) > 0 && 'count-late',
               )}
             >
-              <ArrowUpDown size={18} aria-hidden="true" />
-              {jobsL('sortButton')}
-            </button>
-          </div>
-        }
-      />
-      <BottomSheet
-        open={sortOpen}
-        onClose={() => setSortOpen(false)}
-        title={jobsL('sortSheetTitle')}
-      >
-        <div className="flex flex-col gap-1 pb-2">
-          {(Object.keys(sortLabels) as JobListSort[]).map((key) => (
+              {counts[id] ?? 0}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      <div className="ej-jobs-toolbar">
+        <span className="ej-jobs-sort-caption">{sortLabels[sort]}</span>
+        <div className="ej-jobs-sort-control" ref={sortRef}>
+          <button
+            type="button"
+            className="ej-jobs-sort-button"
+            aria-expanded={sortOpen}
+            aria-haspopup="menu"
+            onClick={() => setSortOpen((v) => !v)}
+          >
+            <ArrowUpDown size={15} aria-hidden="true" /> {jobsL('sortButton')}
+          </button>
+          {sortOpen && (
+            <div className="ej-jobs-sort-menu" role="menu">
+              {(Object.keys(sortLabels) as JobListSort[]).map((key) => (
+                <button
+                  key={key}
+                  type="button"
+                  role="menuitemradio"
+                  aria-checked={sort === key}
+                  className={sort === key ? 'chosen' : ''}
+                  onClick={() => {
+                    setSort(key);
+                    setSortOpen(false);
+                  }}
+                >
+                  <span>{sortLabels[key]}</span>
+                  {sort === key && <CheckCircle2 size={18} aria-hidden="true" />}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {visible.length === 0 ? (
+        <div className="ej-jobs-empty">
+          <span className="ej-jobs-empty-icon" aria-hidden="true">
+            <EmptyIcon size={23} />
+          </span>
+          <h2>{empty.title}</h2>
+          <p>{empty.text}</p>
+          {showClearFilters ? (
             <button
-              key={key}
               type="button"
+              className="ej-jobs-clear"
               onClick={() => {
-                setSort(key);
-                setSortOpen(false);
+                setQuery('');
+                setFilterId('all');
               }}
-              aria-pressed={sort === key}
-              className={cn(
-                'flex min-h-[52px] items-center justify-between rounded-xl px-4 text-left',
-                'text-[16px] font-semibold',
-                sort === key ? 'bg-surface-2 text-ink' : 'text-ink-2',
-              )}
             >
-              {sortLabels[key]}
-              {sort === key && <CheckCircle2 size={20} className="text-ok" aria-hidden="true" />}
+              {jobsL('clearFilters')}
             </button>
+          ) : (
+            <button
+              type="button"
+              className="ej-jobs-new"
+              onClick={() => setModalOpen(true)}
+            >
+              {jobsL('createFirstJob')}
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="ej-jobs-groups">
+          {visible.map((group) => (
+            <section className="ej-jobs-group" key={group.id} aria-label={group.heading}>
+              <div className="ej-jobs-group-heading">
+                <h2 className={group.headingTone === 'danger' ? 'tone-danger' : ''}>
+                  {group.heading}
+                </h2>
+                {group.headingMeta && <span>{group.headingMeta}</span>}
+              </div>
+              <div className="ej-jobs-list">
+                {group.rows.map((r) => (
+                  <Link key={r.id} href={`/jobs/${r.id}`} className="ej-jobs-card">
+                    <span className="ej-jobs-card-icon">{tradeIconNode(r.tradeKey)}</span>
+                    <span className="ej-jobs-card-info">
+                      <b>{r.title}</b>
+                      <span>
+                        {r.address ? `${r.customerName}, ${r.address}` : r.customerName}
+                      </span>
+                      <small>
+                        <Clock3 size={12} aria-hidden="true" />
+                        {metaLine(r)}
+                        {r.address && (
+                          <>
+                            <i className="ej-jobs-card-dot" aria-hidden="true" />
+                            <MapPin size={11} aria-hidden="true" />
+                            {r.address}
+                          </>
+                        )}
+                      </small>
+                      <span className="ej-jobs-card-badges">{metaBadges(r)}</span>
+                    </span>
+                    <span className="ej-jobs-card-value">
+                      {formatCompactCAD(r.priceCents, r.noCharge)}
+                    </span>
+                    <span className="ej-jobs-card-open" aria-hidden="true">
+                      <ArrowRight size={16} />
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </section>
           ))}
         </div>
-      </BottomSheet>
-    </>
+      )}
+
+      {modalOpen && (
+        <NewJobModal
+          customers={customers}
+          crews={crews}
+          locale={locale}
+          onClose={() => setModalOpen(false)}
+        />
+      )}
+    </div>
   );
 }

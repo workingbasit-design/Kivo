@@ -119,7 +119,11 @@ const en: Dict = {
     directoryPromptError: 'Could not add it. Please try again.',
     yesCancel: 'Yes, cancel job',
     yesDelete: 'Yes, delete permanently',
-    // All-modules redesign, Part 3 group 1 (Jobs list + Job detail).
+    // Jobs list redesign (ChatGPT Jobs prototype, 2026-11-17).
+    eyebrow: 'Your workspace',
+    createJobTitle: 'Create a job',
+    createJobSubtitle: 'Add the details and get it on your schedule.',
+    clearFilters: 'Clear filters',
     searchPlaceholder: 'Search jobs, customers, addresses',
     clearSearch: 'Clear search',
     sortButton: 'Sort',    filtersLabel: 'Filter jobs',

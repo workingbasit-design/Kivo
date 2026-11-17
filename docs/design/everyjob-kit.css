@@ -34,6 +34,9 @@
   --warn:#E8590C; --warn-text:#B54708; --warn-bg:#FFF1E6; --warn-line:#F6C9A8;
   --danger:#C8322B; --danger-bg:#FDECEB;
   --ok:#1C7C45; --ok-bg:#E7F5EC;
+  /* Deep pine green for the Jobs filter active pill (ChatGPT Jobs
+     redesign mockup): dark in both modes, always paired with light text. */
+  --pine:#173d29;
   --info:#1D4ED8; --info-bg:#E8EFFE;
   --star:#C77700; --biz:#0E5E6F;
   --hero:#0B0B0C; --hero-2:#1A1A1E; --hero-ink:#F4F5F2; --hero-ink-2:#A9AFB6; --hero-line:#3A3F45;

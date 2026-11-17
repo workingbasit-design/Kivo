@@ -62,6 +62,7 @@ export default function JobForm({
   submitLabel,
   locale: localeProp,
   currency,
+  onCancel,
 }: {
   customers: JobFormCustomer[];
   /** Optional crew options for the crew <select> (omitted when crews aren't loaded). */
@@ -78,6 +79,10 @@ export default function JobForm({
   locale?: Locale;
   /** Business currency code - drives the price label (e.g. CAD). */
   currency?: string;
+  /** Optional cancel handler (New Job modal): renders a quiet Cancel
+   *  button beside the submit button. Omitted on the /jobs/new and
+   *  edit pages, where the back link already covers it. */
+  onCancel?: () => void;
 }) {
   const [state, formAction, isPending] = useActionState(action, {});
   // Locale: an explicit prop wins, otherwise the resolved locale (SSR-safe
@@ -380,10 +385,17 @@ export default function JobForm({
         </div>
       )}
 
-      <Button variant="primary" type="submit" disabled={isPending} className="disabled:opacity-60 disabled:cursor-not-allowed">
-        <Save size={14} />
-        {isPending ? t(locale, 'common.saving') : submitLabel}
-      </Button>
+      <div className="flex items-center justify-end gap-2.5 border-t border-line pt-4">
+        {onCancel && (
+          <Button variant="secondary" type="button" onClick={onCancel}>
+            {t(locale, 'common.cancel')}
+          </Button>
+        )}
+        <Button variant="primary" type="submit" disabled={isPending} className="disabled:opacity-60 disabled:cursor-not-allowed">
+          <Save size={14} />
+          {isPending ? t(locale, 'common.saving') : submitLabel}
+        </Button>
+      </div>
     </form>
   );
 }
