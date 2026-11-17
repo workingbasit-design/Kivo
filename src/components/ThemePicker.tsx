@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from 'react';
-import { Sun, Moon, Monitor } from '@/components/icons';
-import { cn } from '@/lib/utils';
 
 /** localStorage key shared with the pre-paint theme script in app/layout.tsx. */
 export const THEME_KEY = 'ej-theme';
@@ -34,6 +32,13 @@ export function applyTheme(choice: ThemeChoice) {
  * Appearance picker (Part B): Light / Dark / System. Persists to
  * localStorage and toggles .dark on <html> immediately. The inline script
  * in app/layout.tsx applies the saved choice before first paint.
+ *
+ * ChatGPT Settings redesign: three swatch buttons (prototype
+ * `.appearance-options`) - a light swatch, a half-light/half-dark system
+ * swatch, and a dark swatch. The selected option uses the kit selected
+ * treatment (hivis bg + hivis-ink text), identical in light and dark
+ * mode. Swatches are built from non-flipping tokens (--hero-ink,
+ * --asphalt) so the preview reads correctly under either theme.
  */
 export default function ThemePicker({
   labels,
@@ -49,15 +54,15 @@ export default function ThemePicker({
     applyTheme(c);
   };
 
-  const options: { id: ThemeChoice; label: string; Icon: typeof Sun }[] = [
-    { id: 'light', label: labels.light, Icon: Sun },
-    { id: 'dark', label: labels.dark, Icon: Moon },
-    { id: 'system', label: labels.system, Icon: Monitor },
+  const options: { id: ThemeChoice; label: string; swatch: string }[] = [
+    { id: 'light', label: labels.light, swatch: 'ej-settings-swatch' },
+    { id: 'system', label: labels.system, swatch: 'ej-settings-swatch ej-settings-swatch-system' },
+    { id: 'dark', label: labels.dark, swatch: 'ej-settings-swatch ej-settings-swatch-dark' },
   ];
 
   return (
-    <div role="radiogroup" aria-label="appearance" className="grid grid-cols-3 gap-2">
-      {options.map(({ id, label, Icon }) => {
+    <div role="radiogroup" aria-label="appearance" className="ej-settings-appearance">
+      {options.map(({ id, label, swatch }) => {
         const active = choice === id;
         return (
           <button
@@ -66,14 +71,8 @@ export default function ThemePicker({
             role="radio"
             aria-checked={active}
             onClick={() => pick(id)}
-            className={cn(
-              'flex min-h-[56px] flex-col items-center justify-center gap-1 rounded-xl border px-2 py-2 text-xs font-semibold transition-colors',
-              active
-                ? 'border-asphalt bg-asphalt text-hero-ink dark:border-hivis dark:bg-hivis dark:text-asphalt'
-                : 'border-line bg-surface text-ink-2 hover:bg-surface-2'
-            )}
           >
-            <Icon size={18} aria-hidden />
+            <span className={swatch} aria-hidden />
             {label}
           </button>
         );

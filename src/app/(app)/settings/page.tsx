@@ -1,4 +1,22 @@
-import { Award, Download, Languages, ListChecks, ShieldCheck, Users } from '@/components/icons';
+import {
+  Award,
+  Bell,
+  CalendarCheck,
+  CreditCard,
+  Download,
+  ImagePlus,
+  Inbox,
+  Languages,
+  ListChecks,
+  MessageCircle,
+  Palette,
+  Plug,
+  ShieldCheck,
+  Smartphone,
+  Store,
+  UserCog,
+  Users,
+} from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { Card, Button } from '@/components/kit';
@@ -16,6 +34,8 @@ import { parseSettings } from '@/lib/notifications';
 import { parseFlags, isFlagOn, FLAG_NOTIFICATIONS } from '@/lib/feature-flags';
 import { EXPORT_TYPES } from '@/lib/export';
 import SettingsSearch from '@/components/SettingsSearch';
+import SettingsTabs from '@/components/SettingsTabs';
+import { SettingsSectionHeading, SettingsGroupTitle } from '@/components/SettingsSection';
 import DemoSwitchCard from '@/components/DemoSwitchCard';
 import ThemePicker from '@/components/ThemePicker';
 import { } from '@/components/kit';
@@ -34,6 +54,13 @@ const SHOW_ADVANCED_SETTINGS_LINKS = false;
  * E7: settings are grouped by topic and searchable. Each section carries
  * data-keywords (title + description + aliases, in the current locale)
  * so the client-side search filters instantly with no refetch.
+ *
+ * ChatGPT Settings redesign (Release 11): all 15 sections on ONE page -
+ * eyebrow header, sticky pill tab nav, two-column Business group (details
+ * left, logo / language / credentials right), wide single column for the
+ * remaining groups, icon-tile section headings. Every section stays wired
+ * to the real server actions and Prisma data; the prototype's sample data
+ * is never rendered.
  */
 export default async function SettingsPage() {
   const { businessId, user, role } = await requireAuth();
@@ -113,25 +140,16 @@ export default async function SettingsPage() {
     `${title} ${desc} ${extra}`.toLowerCase();
 
   return (
-    <div data-settings-root className="space-y-6">
+    <div data-settings-root className="ej-settings space-y-6">
       <PageTitle
+        eyebrow={tr('t10misc.settingsMain.eyebrow')}
         title={tr('t10misc.settingsMain.title')}
         summary={tr('t10misc.settingsMain.subtitle')}
       />
 
       <SettingsSearch locale={locale} />
 
-      <nav data-settings-nav aria-label={tr('t10misc.settingsMain.title')} className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
-        {groups.map((g) => (
-          <a
-            key={g.id}
-            href={`#settings-${g.id}`}
-            className="shrink-0 rounded-full border border-line bg-surface px-4 py-2 text-sm font-semibold text-ink-2 hover:text-ink hover:border-line min-h-[44px] inline-flex items-center transition-colors"
-          >
-            {g.title}
-          </a>
-        ))}
-      </nav>
+      <SettingsTabs tabs={groups.map(({ id, title }) => ({ id, label: title }))} />
 
       {/* ------------------------------ Business ------------------------------ */}
       <section
@@ -140,57 +158,79 @@ export default async function SettingsPage() {
         data-keywords={kw(groups[0].title, groups[0].desc, 'profile logo language trade credentials certifications business name phone address hours timezone')}
         className="scroll-mt-24 space-y-4"
       >
-        <div>
-          <h3 className="text-base font-bold text-ink">{groups[0].title}</h3>
-          <p className="text-sm text-ink-2 -mt-2 mb-1">{groups[0].desc}</p>
-        </div>
-        <SettingsForm
-          business={{
-            name: business.name,
-            phone: business.phone ?? '',
-            whatsappNumber: business.whatsappNumber ?? '',
-            workingHours: business.workingHours ?? '',
-            address: business.address ?? '',
-            taxId: business.taxId ?? '',
-            qstNumber: business.qstNumber ?? '',
-            interacEmail: business.interacEmail ?? '',
-            timezone: business.timezone ?? '',
-            currency: 'CAD',
-            taxRegion: business.taxRegion ?? '',
-            gstHstRegistered: business.gstHstRegistered,
-            directoryOptIn: business.directoryOptIn,
-            directoryHideAddress: business.directoryHideAddress,
-          }}
-        />
-        <div id="logo" className="scroll-mt-24">
-          <LogoUploadCard locale={locale} initialLogoUrl={business.logoUrl} />
-        </div>
-        <Card className="p-5 md:p-6">
-          <h2 className="text-sm font-bold text-ink mb-1 flex items-center gap-2">
-            <Languages size={14} /> {t(locale, 'settings.language')}
-          </h2>
-          <p className="text-xs text-ink-2 mb-4">{t(locale, 'settings.languageHint')}</p>
-          <LanguageToggle current={locale} />
-        </Card>
-        <Card className="p-5 md:p-6">
-          <h2 className="text-sm font-bold text-ink mb-1 flex items-center gap-2">
-            <Award size={14} /> {tr('credentials.cardTitle')}
-          </h2>
-          <p className="text-xs text-ink-2 mb-4">{tr('credentials.cardDesc')}</p>
-          <DesignationsManager locale={locale} initial={designations} />
-          <div className="mt-6 pt-5 border-t border-line">
-            <h3 className="text-sm font-bold text-ink mb-1">{tr('credentials.tradeTitle')}</h3>
-            <p className="text-xs text-ink-2 mb-4">{tr('credentials.tradeDesc')}</p>
-            <TradeProfileForm
-              locale={locale}
-              initial={{
-                trade: business.trade ?? '',
-                yearsInBusiness: business.yearsInBusiness ?? null,
-                specialties: specialtiesText,
+        <SettingsGroupTitle title={groups[0].title} desc={groups[0].desc} />
+        <div className="ej-settings-business-grid">
+          <div className="space-y-4">
+            <SettingsForm
+              business={{
+                name: business.name,
+                phone: business.phone ?? '',
+                whatsappNumber: business.whatsappNumber ?? '',
+                workingHours: business.workingHours ?? '',
+                address: business.address ?? '',
+                taxId: business.taxId ?? '',
+                qstNumber: business.qstNumber ?? '',
+                interacEmail: business.interacEmail ?? '',
+                timezone: business.timezone ?? '',
+                currency: 'CAD',
+                taxRegion: business.taxRegion ?? '',
+                gstHstRegistered: business.gstHstRegistered,
+                directoryOptIn: business.directoryOptIn,
+                directoryHideAddress: business.directoryHideAddress,
               }}
+              heading={
+                <SettingsSectionHeading
+                  icon={<Store size={15} />}
+                  title={tr('t10misc.settingsMain.businessDetailsTitle')}
+                  desc={tr('t10misc.settingsMain.businessDetailsDesc')}
+                />
+              }
             />
           </div>
-        </Card>
+          <div className="space-y-4">
+            <div id="logo" className="scroll-mt-24">
+              <LogoUploadCard
+                locale={locale}
+                initialLogoUrl={business.logoUrl}
+                heading={
+                  <SettingsSectionHeading
+                    icon={<ImagePlus size={15} />}
+                    title={t(locale, 't10misc.settings.logoTitle')}
+                    desc={t(locale, 't10misc.settings.logoHint')}
+                  />
+                }
+              />
+            </div>
+            <Card className="p-5 md:p-6">
+              <SettingsSectionHeading
+                icon={<Languages size={15} />}
+                title={t(locale, 'settings.language')}
+                desc={t(locale, 'settings.languageHint')}
+              />
+              <LanguageToggle current={locale} />
+            </Card>
+            <Card className="p-5 md:p-6">
+              <SettingsSectionHeading
+                icon={<Award size={15} />}
+                title={tr('credentials.cardTitle')}
+                desc={tr('credentials.cardDesc')}
+              />
+              <DesignationsManager locale={locale} initial={designations} />
+              <div className="mt-6 pt-5 border-t border-line">
+                <h3 className="text-sm font-bold text-ink mb-1">{tr('credentials.tradeTitle')}</h3>
+                <p className="text-xs text-ink-2 mb-4">{tr('credentials.tradeDesc')}</p>
+                <TradeProfileForm
+                  locale={locale}
+                  initial={{
+                    trade: business.trade ?? '',
+                    yearsInBusiness: business.yearsInBusiness ?? null,
+                    specialties: specialtiesText,
+                  }}
+                />
+              </div>
+            </Card>
+          </div>
+        </div>
       </section>
 
       {/* ------------------------------- Money -------------------------------- */}
@@ -200,26 +240,23 @@ export default async function SettingsPage() {
         data-keywords={kw(groups[1].title, groups[1].desc, 'stripe card payments tax province interac e-transfer export csv backup')}
         className="scroll-mt-24 space-y-4"
       >
-        <div>
-          <h3 className="text-base font-bold text-ink">{groups[1].title}</h3>
-          <p className="text-sm text-ink-2 -mt-2 mb-1">{groups[1].desc}</p>
-        </div>
+        <SettingsGroupTitle title={groups[1].title} desc={groups[1].desc} />
         <Card className="p-5 md:p-6">
-          <h2 className="text-sm font-bold text-ink mb-1">{tr('t10misc.settingsMain.paymentsTitle')}</h2>
-          <p className="text-xs text-ink-2 mb-4">
-            {tr('t10misc.settingsMain.paymentsDesc')}
-          </p>
+          <SettingsSectionHeading
+            icon={<CreditCard size={15} />}
+            title={tr('t10misc.settingsMain.paymentsTitle')}
+            desc={tr('t10misc.settingsMain.paymentsDesc')}
+          />
           <Button href="/settings/payments" variant="secondary">
             {tr('t10misc.settingsMain.managePayments')}
           </Button>
         </Card>
         <Card className="p-5 md:p-6">
-          <h2 className="text-sm font-bold text-ink mb-1 flex items-center gap-2">
-            <Download size={14} /> {tr('t10misc.settingsMain.exportTitle')}
-          </h2>
-          <p className="text-xs text-ink-2 mb-4">
-            {tr('t10misc.settingsMain.exportDesc')}
-          </p>
+          <SettingsSectionHeading
+            icon={<Download size={15} />}
+            title={tr('t10misc.settingsMain.exportTitle')}
+            desc={tr('t10misc.settingsMain.exportDesc')}
+          />
           <div className="flex flex-wrap gap-2">
             {EXPORT_TYPES.map((t) => (
               <a
@@ -241,15 +278,13 @@ export default async function SettingsPage() {
         data-keywords={kw(groups[2].title, groups[2].desc, 'messaging reminders notifications push sms email')}
         className="scroll-mt-24 space-y-4"
       >
-        <div>
-          <h3 className="text-base font-bold text-ink">{groups[2].title}</h3>
-          <p className="text-sm text-ink-2 -mt-2 mb-1">{groups[2].desc}</p>
-        </div>
+        <SettingsGroupTitle title={groups[2].title} desc={groups[2].desc} />
         <Card className="p-5 md:p-6">
-          <h2 className="text-sm font-bold text-ink mb-1">{tr('t10misc.settingsMain.messagingTitle')}</h2>
-          <p className="text-xs text-ink-2 mb-4">
-            {tr('t10misc.settingsMain.messagingDesc')}
-          </p>
+          <SettingsSectionHeading
+            icon={<MessageCircle size={15} />}
+            title={tr('t10misc.settingsMain.messagingTitle')}
+            desc={tr('t10misc.settingsMain.messagingDesc')}
+          />
           <Button href="/settings/messaging" variant="secondary">
             {tr('t10misc.settingsMain.manageMessaging')}
           </Button>
@@ -259,8 +294,24 @@ export default async function SettingsPage() {
           instantOn={isFlagOn(parseFlags(business.featureFlags), FLAG_NOTIFICATIONS)}
           locale={locale}
           savedMessage={t(locale, 'notifications.settingsSaved')}
+          heading={
+            <SettingsSectionHeading
+              icon={<Bell size={15} />}
+              title={t(locale, 'notifications.settingsTitle')}
+              desc={t(locale, 'notifications.settingsHint')}
+            />
+          }
         />
-        <PushSettingsCard locale={locale} />
+        <PushSettingsCard
+          locale={locale}
+          heading={
+            <SettingsSectionHeading
+              icon={<Smartphone size={15} />}
+              title={t(locale, 'pwa.push.cardTitle')}
+              desc={t(locale, 'pwa.push.cardDesc')}
+            />
+          }
+        />
       </section>
 
       {/* ----------------------------- Scheduling ----------------------------- */}
@@ -270,15 +321,13 @@ export default async function SettingsPage() {
         data-keywords={kw(groups[3].title, groups[3].desc, 'booking online checklists templates working hours availability')}
         className="scroll-mt-24 space-y-4"
       >
-        <div>
-          <h3 className="text-base font-bold text-ink">{groups[3].title}</h3>
-          <p className="text-sm text-ink-2 -mt-2 mb-1">{groups[3].desc}</p>
-        </div>
+        <SettingsGroupTitle title={groups[3].title} desc={groups[3].desc} />
         <Card className="p-5 md:p-6">
-          <h2 className="text-sm font-bold text-ink mb-1">{tr('t10misc.booking.pageTitle')}</h2>
-          <p className="text-xs text-ink-2 mb-4">
-            {tr('t10misc.booking.pageSubtitle')}
-          </p>
+          <SettingsSectionHeading
+            icon={<CalendarCheck size={15} />}
+            title={tr('t10misc.booking.pageTitle')}
+            desc={tr('t10misc.booking.pageSubtitle')}
+          />
           {bookingPage?.enabled && bookingPage.slug ? (
             <div className="mb-4 p-3 bg-surface-2 rounded-lg border border-line">
               <p className="text-xs text-ink-2 mb-1">{tr('t10misc.booking.publicUrlLabel')}</p>
@@ -297,10 +346,11 @@ export default async function SettingsPage() {
           </Button>
         </Card>
         <Card className="p-5 md:p-6">
-          <h2 className="text-sm font-bold text-ink mb-1 flex items-center gap-2">
-            <ListChecks size={14} /> {t(locale, 'jobops.templates.title')}
-          </h2>
-          <p className="text-xs text-ink-2 mb-4">{t(locale, 'jobops.templates.subtitle')}</p>
+          <SettingsSectionHeading
+            icon={<ListChecks size={15} />}
+            title={t(locale, 'jobops.templates.title')}
+            desc={t(locale, 'jobops.templates.subtitle')}
+          />
           <Button href="/settings/checklists" variant="secondary">
             <ListChecks size={14} /> {t(locale, 'jobops.checklist.manageTemplates')}
           </Button>
@@ -314,15 +364,13 @@ export default async function SettingsPage() {
         data-keywords={kw(groups[4].title, groups[4].desc, 'team members invite roles')}
         className="scroll-mt-24 space-y-4"
       >
-        <div>
-          <h3 className="text-base font-bold text-ink">{groups[4].title}</h3>
-          <p className="text-sm text-ink-2 -mt-2 mb-1">{groups[4].desc}</p>
-        </div>
+        <SettingsGroupTitle title={groups[4].title} desc={groups[4].desc} />
         <Card className="p-5 md:p-6">
-          <h2 className="text-sm font-bold text-ink mb-1 flex items-center gap-2">
-            <Users size={14} /> {tr('t10misc.settingsMain.manageTeam')}
-          </h2>
-          <p className="text-xs text-ink-2 mb-4">{groups[4].desc}</p>
+          <SettingsSectionHeading
+            icon={<Users size={15} />}
+            title={tr('t10misc.settingsMain.manageTeam')}
+            desc={groups[4].desc}
+          />
           <Button href="/settings/team" variant="secondary">
             <Users size={14} /> {tr('t10misc.settingsMain.manageTeam')}
           </Button>
@@ -336,13 +384,13 @@ export default async function SettingsPage() {
         data-keywords={kw(groups[5].title, groups[5].desc, 'profile google security 2fa two-factor sessions password appearance dark mode theme')}
         className="scroll-mt-24 space-y-4"
       >
-        <div>
-          <h3 className="text-base font-bold text-ink">{groups[5].title}</h3>
-          <p className="text-sm text-ink-2 -mt-2 mb-1">{groups[5].desc}</p>
-        </div>
+        <SettingsGroupTitle title={groups[5].title} desc={groups[5].desc} />
         <Card className="p-5 md:p-6">
-          <h2 className="text-sm font-bold text-ink mb-1">{t(locale, 'googleAuth.profileTitle')}</h2>
-          <p className="text-xs text-ink-2 mb-4">{t(locale, 'googleAuth.profileSubtitle')}</p>
+          <SettingsSectionHeading
+            icon={<UserCog size={15} />}
+            title={t(locale, 'googleAuth.profileTitle')}
+            desc={t(locale, 'googleAuth.profileSubtitle')}
+          />
           <ProfileForm
             locale={locale}
             initial={{
@@ -354,29 +402,32 @@ export default async function SettingsPage() {
           />
         </Card>
         <Card className="p-5 md:p-6">
-          <h2 className="text-sm font-bold text-ink mb-1">{tr('t10misc.settingsMain.accountsTitle')}</h2>
-          <p className="text-xs text-ink-2 mb-4">
-            {tr('t10misc.settingsMain.accountsDesc')}
-          </p>
+          <SettingsSectionHeading
+            icon={<Plug size={15} />}
+            title={tr('t10misc.settingsMain.accountsTitle')}
+            desc={tr('t10misc.settingsMain.accountsDesc')}
+          />
           <Button href="/reviews" variant="secondary">
             {tr('t10misc.settingsMain.manageGoogle')}
           </Button>
         </Card>
         <Card className="p-5 md:p-6">
-          <h2 className="text-sm font-bold text-ink mb-1 flex items-center gap-2">
-            <ShieldCheck size={14} /> {tr('t10misc.settingsMain.securityTitle')}
-          </h2>
-          <p className="text-xs text-ink-2 mb-4">
-            {tr('t10misc.settingsMain.securityDesc')}
-          </p>
+          <SettingsSectionHeading
+            icon={<ShieldCheck size={15} />}
+            title={tr('t10misc.settingsMain.securityTitle')}
+            desc={tr('t10misc.settingsMain.securityDesc')}
+          />
           <Button href="/settings/security" variant="secondary">
             {tr('t10misc.settingsMain.manageSecurity')}
           </Button>
         </Card>
         {/* Part B: appearance (light/dark/system). */}
         <Card className="p-5 md:p-6">
-          <h2 className="text-sm font-bold text-ink mb-1">{tr('t10misc.settingsMain.appearanceTitle')}</h2>
-          <p className="text-xs text-ink-2 mb-4">{tr('t10misc.settingsMain.appearanceDesc')}</p>
+          <SettingsSectionHeading
+            icon={<Palette size={15} />}
+            title={tr('t10misc.settingsMain.appearanceTitle')}
+            desc={tr('t10misc.settingsMain.appearanceDesc')}
+          />
           <ThemePicker
             labels={{
               light: tr('t10misc.settingsMain.appearanceLight'),
@@ -386,8 +437,11 @@ export default async function SettingsPage() {
           />
         </Card>
         <Card className="p-5 md:p-6">
-          <h2 className="text-sm font-bold text-ink mb-1">{t(locale, 'integrations.title')}</h2>
-          <p className="text-xs text-ink-2 mb-4">{t(locale, 'integrations.subtitle')}</p>
+          <SettingsSectionHeading
+            icon={<Plug size={15} />}
+            title={t(locale, 'integrations.title')}
+            desc={t(locale, 'integrations.subtitle')}
+          />
           <Button href="/settings/integrations" variant="secondary">
             {t(locale, 'integrations.title')}
           </Button>
@@ -401,13 +455,13 @@ export default async function SettingsPage() {
         data-keywords={kw(groups[6].title, groups[6].desc, 'help support tickets inbox contact')}
         className="scroll-mt-24 space-y-4"
       >
-        <div>
-          <h3 className="text-base font-bold text-ink">{groups[6].title}</h3>
-          <p className="text-sm text-ink-2 -mt-2 mb-1">{groups[6].desc}</p>
-        </div>
+        <SettingsGroupTitle title={groups[6].title} desc={groups[6].desc} />
         <Card className="p-5 md:p-6">
-          <h2 className="text-sm font-bold text-ink mb-1">{t(locale, 'support.inboxTitle')}</h2>
-          <p className="text-xs text-ink-2 mb-4">{t(locale, 'support.inboxSub')}</p>
+          <SettingsSectionHeading
+            icon={<Inbox size={15} />}
+            title={t(locale, 'support.inboxTitle')}
+            desc={t(locale, 'support.inboxSub')}
+          />
           <Button href="/settings/support" variant="secondary">
             {t(locale, 'support.inboxTitle')}
           </Button>

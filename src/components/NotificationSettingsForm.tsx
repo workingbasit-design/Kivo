@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 import { Bell } from '@/components/icons';
 import { toast } from 'sonner';
 import { Button, Card } from '@/components/kit';
@@ -22,12 +23,18 @@ export default function NotificationSettingsForm({
   instantOn = true,
   locale = 'en',
   savedMessage,
+  heading,
 }: {
   initial: NotificationSettings;
   /** Master switch for the F10 instant (event-driven) notification stream. */
   instantOn?: boolean;
   locale?: Locale;
   savedMessage: string;
+  /**
+   * Section heading (icon tile + title + description, ChatGPT Settings
+   * redesign). Replaces the plain h2 + hint when the page supplies it.
+   */
+  heading?: ReactNode;
 }) {
   const [values, setValues] = useState<NotificationSettings>(initial);
   const [instant, setInstant] = useState(instantOn);
@@ -38,10 +45,14 @@ export default function NotificationSettingsForm({
 
   return (
     <Card className="p-5 md:p-6">
-      <h2 className="text-sm font-bold text-ink mb-1 flex items-center gap-2">
-        <Bell size={14} /> {t(locale, 'notifications.settingsTitle')}
-      </h2>
-      <p className="text-xs text-ink-2 mb-4">{t(locale, 'notifications.settingsHint')}</p>
+      {heading ?? (
+        <>
+          <h2 className="text-sm font-bold text-ink mb-1 flex items-center gap-2">
+            <Bell size={14} /> {t(locale, 'notifications.settingsTitle')}
+          </h2>
+          <p className="text-xs text-ink-2 mb-4">{t(locale, 'notifications.settingsHint')}</p>
+        </>
+      )}
       <form
         action={async (formData: FormData) => {
           await saveNotificationSettingsAction(formData);

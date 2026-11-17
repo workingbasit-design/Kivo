@@ -14,6 +14,7 @@
  *   <PushSettingsCard locale={locale} />
  */
 import { useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 import { Bell, BellOff, Send } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
@@ -38,7 +39,18 @@ async function vapidPublicKey(): Promise<string | null> {
   return data.configured && data.publicKey ? data.publicKey : null;
 }
 
-export default function PushSettingsCard({ locale = 'en' }: { locale?: Locale }) {
+export default function PushSettingsCard({
+  locale = 'en',
+  heading,
+}: {
+  locale?: Locale;
+  /**
+   * Section heading (icon tile + title + description, ChatGPT Settings
+   * redesign). Replaces the plain h3 + desc when the page supplies it;
+   * the on/off status badge stays beside it.
+   */
+  heading?: ReactNode;
+}) {
   const tr = (p: string) => t(locale, `pwa.push.${p}`);
   const [status, setStatus] = useState<Status>('loading');
   const [busy, setBusy] = useState(false);
@@ -164,10 +176,12 @@ export default function PushSettingsCard({ locale = 'en' }: { locale?: Locale })
   return (
     <Card>
       <div className="flex items-start justify-between gap-3">
-        <div>
-          <h3 className="font-bold text-ink">{tr('cardTitle')}</h3>
-          <p className="mt-1 text-sm text-ink-2">{tr('cardDesc')}</p>
-        </div>
+        {heading ?? (
+          <div>
+            <h3 className="font-bold text-ink">{tr('cardTitle')}</h3>
+            <p className="mt-1 text-sm text-ink-2">{tr('cardDesc')}</p>
+          </div>
+        )}
         {status === 'on' && <StatusBadge tone="done">{tr('statusOn')}</StatusBadge>}
         {status === 'off' && <StatusBadge tone="neutral">{tr('statusOff')}</StatusBadge>}
       </div>

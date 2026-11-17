@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import { ImagePlus, Loader2, Trash2 } from '@/components/icons';
 import { toast } from 'sonner';
 import { Button, Card } from '@/components/kit';
@@ -15,9 +16,15 @@ import { uploadBusinessLogo, removeBusinessLogo } from '@/app/actions/settings';
 export default function LogoUploadCard({
   locale,
   initialLogoUrl,
+  heading,
 }: {
   locale: Locale;
   initialLogoUrl: string | null;
+  /**
+   * Section heading (icon tile + title + description, ChatGPT Settings
+   * redesign). Replaces the plain h2 + hint when the page supplies it.
+   */
+  heading?: ReactNode;
 }) {
   const [logoUrl, setLogoUrl] = useState<string | null>(initialLogoUrl);
   const [busy, setBusy] = useState(false);
@@ -54,12 +61,16 @@ export default function LogoUploadCard({
 
   return (
     <Card className="p-6 max-w-2xl">
-      <h2 className="text-base font-bold text-ink">
-        {t(locale, 't10misc.settings.logoTitle')}
-      </h2>
-      <p className="mt-1 text-sm text-ink-2">
-        {t(locale, 't10misc.settings.logoHint')}
-      </p>
+      {heading ?? (
+        <>
+          <h2 className="text-base font-bold text-ink">
+            {t(locale, 't10misc.settings.logoTitle')}
+          </h2>
+          <p className="mt-1 text-sm text-ink-2">
+            {t(locale, 't10misc.settings.logoHint')}
+          </p>
+        </>
+      )}
       <div className="mt-4 flex items-center gap-4">
         <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-line bg-surface-2 flex items-center justify-center">
           {logoUrl ? (

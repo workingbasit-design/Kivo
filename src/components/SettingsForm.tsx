@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useActionState, useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 import { AlertCircle, Globe, Save } from '@/components/icons';
 import { toast } from 'sonner';
 import { updateBusinessSettings, type SettingsResult } from '@/app/actions/settings';
@@ -78,9 +79,9 @@ function WorkingHoursEditor({
         return (
           <div
             key={d.key}
-            className="rounded-xl border border-line bg-surface-2 px-3 py-2.5"
+            className="ej-settings-day"
           >
-            <div className="flex items-center justify-between gap-2">
+            <div className="ej-settings-day-top">
               <span className="text-xs font-semibold text-ink">{label}</span>
               <button
                 type="button"
@@ -128,7 +129,18 @@ function WorkingHoursEditor({
   );
 }
 
-export default function SettingsForm({ business }: { business: BusinessFormData }) {
+export default function SettingsForm({
+  business,
+  heading,
+}: {
+  business: BusinessFormData;
+  /**
+   * Section heading (icon tile + title + description, ChatGPT Settings
+   * redesign). Rendered at the top of the card when the page supplies it;
+   * the form itself stays unchanged.
+   */
+  heading?: ReactNode;
+}) {
   const { t, locale } = useResolvedT();
   const [state, formAction, isPending] = useActionState<SettingsResult, FormData>(
     updateBusinessSettings,
@@ -142,6 +154,7 @@ export default function SettingsForm({ business }: { business: BusinessFormData 
 
   return (
     <Card className="p-6 max-w-2xl">
+      {heading}
       <form action={formAction} className="space-y-4">
         <Input
           label={t('t10misc.auth.businessName')}

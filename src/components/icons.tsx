@@ -131,6 +131,7 @@ export { PhoneSlashIcon as PhoneMissed } from './icons/phosphor';
 export { PiggyBankIcon as PiggyBank } from './icons/phosphor';
 export { PlayIcon as Play } from './icons/phosphor';
 export { PlugChargingIcon as PlugZap } from './icons/phosphor';
+export { PlugIcon as Plug } from './icons/phosphor';
 export { PlugIcon as Unplug } from './icons/phosphor';
 export { PlusCircleIcon as PlusCircle } from './icons/phosphor';
 export { PlusIcon as Plus } from './icons/phosphor';

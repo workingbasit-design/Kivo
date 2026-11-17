@@ -36,7 +36,13 @@ export function useT(): { t: (path: string) => string; locale: Locale } {
   return { t: (path: string) => lookup(locale, path), locale };
 }
 
-/** EN / FR segmented toggle. Renders nothing interactive until hydrated. */
+/** EN / FR segmented toggle. Renders nothing interactive until hydrated.
+ *
+ * ChatGPT Settings redesign: the selected language uses the kit selected
+ * treatment (hivis bg + hivis-ink text, as in SegmentedControl) with a
+ * check mark, identical in light and dark mode. Same footprint as before,
+ * so the auth layouts and public pages that share this toggle are
+ * unaffected. */
 export function LanguageToggle({ current, tone = 'light' }: { current: Locale; tone?: 'light' | 'dark' }) {
   const setLocale = (code: Locale) => {
     if (code === current) return;
@@ -54,9 +60,7 @@ export function LanguageToggle({ current, tone = 'light' }: { current: Locale; t
     <div
       role="group"
       aria-label="Language / Langue"
-      className={`inline-flex rounded-full border p-0.5 text-xs font-bold ${
-        dark ? 'border-hero-line bg-hero-2' : 'border-line bg-surface'
-      }`}
+      className={`ej-settings-lang ${dark ? 'ej-settings-lang-dark' : ''}`}
     >
       {LOCALES.map((l) => (
         <button
@@ -64,16 +68,13 @@ export function LanguageToggle({ current, tone = 'light' }: { current: Locale; t
           type="button"
           onClick={() => setLocale(l.code)}
           aria-pressed={current === l.code}
-          className={`rounded-full px-3 py-1.5 transition-colors min-h-[44px] min-w-[44px] inline-flex items-center justify-center ${
-            current === l.code
-              ? dark
-                ? 'bg-surface text-ink shadow-sm'
-                : 'bg-asphalt text-hero-ink shadow-sm'
-              : dark
-                ? 'text-hero-ink-2 hover:text-hero-ink'
-                : 'text-ink-2 hover:text-ink'
-          }`}
+          className={dark && current !== l.code ? 'ej-settings-lang-dark-idle' : undefined}
         >
+          {current === l.code && (
+            <span aria-hidden="true">
+              ✓
+            </span>
+          )}
           {l.code.toUpperCase()}
         </button>
       ))}

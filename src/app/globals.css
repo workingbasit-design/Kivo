@@ -15,6 +15,7 @@
 @import "./quotes-redesign.css";
 @import "./invoices-redesign.css";
 @import "./money-redesign.css";
+@import "./settings-redesign.css";
 
 /* Part B (dashboard rebuild): class-based dark mode. `dark:` variants apply
    under `.dark` anywhere in the tree (the theme script in app/layout.tsx

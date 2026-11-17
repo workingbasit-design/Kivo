@@ -1,0 +1,224 @@
+/* EveryJob Settings redesign (ChatGPT Settings prototype, 2026-11-17).
+   Ports everyjob-settings-page/src/styles.css (Settings section only) onto
+   the live app: eyebrow header, sticky pill tab nav, two-column Business
+   group (details left, logo / language / credentials right), wide single
+   column for the remaining groups, icon-tile section headings, and the
+   per-day working-hours rows, restyled through the kit token set
+   (docs/design/everyjob-kit.css). Token utilities only - no hard-coded
+   colours in this file (kit-gates colour-count gate). Scoped to
+   .ej-settings so no other screen is touched. The duplicated Sidebar /
+   Schedule / Customers / Quotes / Invoices / Money / Reports components
+   ChatGPT accumulated into the Settings ZIP are ignored here; they belong
+   to their own releases, already done. Prototype sample data is never
+   rendered: every section is wired to the real server actions and Prisma
+   data on the settings page. Prototype type is lifted to the kit scale
+   (12px+ descriptions) - the prototype's 8-9px text is not readable on a
+   phone - and primary actions stay kit Buttons (hivis), never the
+   prototype's green hover. */
+
+/* ---------- Sticky pill tab nav (prototype .settings-tabs) ---------- */
+.ej-settings-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 15;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 10px 0 12px;
+  margin: 0 -2px;
+  background: var(--bg);
+  scrollbar-width: none;
+}
+.ej-settings-tabs::-webkit-scrollbar { display: none; }
+.ej-settings-tabs a {
+  height: 36px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 13px;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: border-color 0.18s, background 0.18s, color 0.18s;
+}
+.ej-settings-tabs a:hover {
+  border-color: var(--ok);
+  color: var(--ok);
+  background: var(--surface-2);
+}
+.ej-settings-tabs a[aria-current="true"] {
+  border-color: var(--hivis);
+  background: var(--hivis);
+  color: var(--hivis-ink);
+}
+.ej-settings-tabs a:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* ---------- Group titles (prototype .settings-group-title) ---------- */
+.ej-settings-group-title { scroll-margin-top: 72px; margin: 4px 0 12px; }
+.ej-settings-group-title h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+.ej-settings-group-title p { margin: 3px 0 0; color: var(--ink-2); font-size: 13px; }
+
+/* ---------- Section headings (prototype .settings-section-heading) --- */
+.ej-settings-section-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.ej-settings-section-heading > span {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+.ej-settings-section-heading h2 {
+  margin: 1px 0 3px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 800;
+}
+.ej-settings-section-heading p {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+/* Section anchors sit below the sticky tab bar when jumped to. */
+.ej-settings [id] { scroll-margin-top: 72px; }
+
+/* ---------- Business two-column layout (prototype .settings-layout) - */
+.ej-settings-business-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(300px, 0.95fr);
+  align-items: start;
+  gap: 16px;
+}
+.ej-settings-business-grid > * { min-width: 0; }
+
+/* ---------- Working-hours day rows (prototype .working-day) --------- */
+.ej-settings-day {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+.ej-settings-day-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 32px;
+}
+
+/* ---------- Language options (prototype .language-options) ---------- */
+.ej-settings-lang {
+  display: flex;
+  gap: 8px;
+}
+.ej-settings-lang button {
+  min-height: 44px;
+  min-width: 64px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 800;
+}
+.ej-settings-lang button[aria-pressed="true"] {
+  border-color: var(--hivis);
+  background: var(--hivis);
+  color: var(--hivis-ink);
+}
+/* Dark-tone toggle (auth layouts, public pages): same hivis selected
+   state; idle options read on the dark panel. */
+.ej-settings-lang-dark button { border-color: var(--hero-line); background: var(--hero-2); }
+.ej-settings-lang button.ej-settings-lang-dark-idle { color: var(--hero-ink-2); }
+.ej-settings-lang button.ej-settings-lang-dark-idle:hover { color: var(--hero-ink); }
+
+/* ---------- Appearance options (prototype .appearance-options) ------ */
+.ej-settings-appearance {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.ej-settings-appearance button {
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 700;
+}
+.ej-settings-appearance button[aria-checked="true"] {
+  border-color: var(--hivis);
+  background: var(--hivis);
+  color: var(--hivis-ink);
+}
+/* Swatches are literal previews of the mode, built from non-flipping
+   tokens: --hero-ink is near-white in both modes, --asphalt near-black
+   in both modes, so the preview reads correctly under either theme. */
+.ej-settings-swatch {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--hero-ink);
+}
+.ej-settings-swatch-system {
+  background: linear-gradient(90deg, var(--hero-ink) 50%, var(--asphalt) 50%);
+}
+.ej-settings-swatch-dark { background: var(--asphalt); }
+
+/* ---------- Motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .ej-settings-tabs a { transition: none; }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1100px) {
+  .ej-settings-business-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+}
+@media (max-width: 850px) {
+  .ej-settings-business-grid { grid-template-columns: 1fr; gap: 0; }
+  /* Single column on phones: the two Business columns stack in source
+     order (details, then logo / language / credentials), matching the
+     prototype's display:contents reorder without the ordering fragility. */
+  .ej-settings-business-grid > * + * { margin-top: 16px; }
+}
+@media (max-width: 390px) {
+  .ej-settings-tabs a { height: 34px; padding: 0 10px; font-size: 11px; }
+  .ej-settings-appearance { grid-template-columns: 1fr; }
+  .ej-settings-appearance button { min-height: 48px; justify-content: flex-start; padding: 0 14px; }
+}

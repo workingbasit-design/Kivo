@@ -669,7 +669,10 @@ const fragment = {
       },
       settingsMain: {
         title: 'Settings',
+        eyebrow: 'Your business, your rules',
         subtitle: 'Your business profile, shown on quotes and invoices.',
+        businessDetailsTitle: 'Business details',
+        businessDetailsDesc: 'The information customers see on quotes and invoices.',
         manageTeam: 'Manage team',
         messagingTitle: 'Automated messaging',
         messagingDesc: 'Reminders, follow-ups and review requests. Opt-in only, quiet hours, free-quota hard stop.',
@@ -1387,7 +1390,10 @@ const fragment = {
       },
       settingsMain: {
         title: 'Réglages',
+        eyebrow: 'Votre entreprise, vos règles',
         subtitle: 'Votre profil d’entreprise, affiché sur les devis et factures.',
+        businessDetailsTitle: 'Détails de l’entreprise',
+        businessDetailsDesc: 'Les informations que les clients voient sur les devis et les factures.',
         manageTeam: 'Gérer l’équipe',
         messagingTitle: 'Messagerie automatisée',
         messagingDesc: 'Rappels, suivis et demandes d’avis. Sur inscription seulement, heures silencieuses, limite gratuite stricte.',
