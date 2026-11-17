@@ -8,6 +8,8 @@ import { Card, Button } from '@/components/kit';
 import { FolderKanban, Plus, ArrowRight } from '@/components/icons';
 import Link from "next/link";
 import { PageHeader, EmptyState } from '@/components/kit';
+import { parseListLimit, takeWithProbe, sliceListPage } from '@/lib/list-page';
+import { ListMore } from '../_components/ListMore';
 
 const STATUS_TONE: Record<string, string> = {
   ACTIVE: "bg-ok-bg text-ok",
@@ -23,26 +25,40 @@ const STATUS_LABEL: Record<string, string> = {
   CANCELLED: "projects.statusCancelled",
 };
 
-export default async function ProjectsPage() {
+export default async function ProjectsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ limit?: string }>;
+}) {
   const { businessId } = await requireAuth();
   const locale = await getLocale();
   const moneyLocale = localeMoneyTag(locale);
+  const limit = parseListLimit((await searchParams)?.limit);
 
-  const projects = await prisma.project.findMany({
-    where: { businessId },
-    select: {
-      id: true,
-      title: true,
-      status: true,
-      budgetCents: true,
-      startDate: true,
-      endDate: true,
-      customer: { select: { name: true } },
-      phases: { select: { id: true, status: true } },
-      jobs: { select: { id: true, priceCents: true } },
-    },
-    orderBy: { updatedAt: "desc" },
-  }).catch(() => []);
+  // M3: bounded read + exact total from the database. Per-project
+  // progress/spend are computed from the project's own rows, so the cap
+  // cannot make them wrong.
+  const [fetched, total] = await Promise.all([
+    prisma.project.findMany({
+      where: { businessId },
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        budgetCents: true,
+        startDate: true,
+        endDate: true,
+        customer: { select: { name: true } },
+        phases: { select: { id: true, status: true } },
+        jobs: { select: { id: true, priceCents: true } },
+      },
+      orderBy: { updatedAt: "desc" },
+      take: takeWithProbe(limit),
+    }).catch(() => []),
+    prisma.project.count({ where: { businessId } }),
+  ]);
+  const page = sliceListPage(fetched, limit);
+  const projects = page.rows;
 
   return (
     <div className="space-y-6">
@@ -126,6 +142,15 @@ export default async function ProjectsPage() {
             );
           })}
         </div>
+      )}
+      {projects.length > 0 && (
+        <ListMore
+          shown={projects.length}
+          total={total}
+          nextLimit={page.nextLimit}
+          locale={locale}
+          basePath="/projects"
+        />
       )}
     </div>
   );

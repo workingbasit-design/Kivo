@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { requireAuth } from '@/lib/auth';
 import { Card } from '@/components/kit';
 import RecurringForm from '@/components/RecurringForm';
@@ -30,11 +31,13 @@ export default async function EditRecurringPage({
       where: { businessId },
       select: { id: true, name: true },
       orderBy: { name: 'asc' },
+      take: LIST_MAX_SIZE,
     }),
     prisma.service.findMany({
       where: { businessId },
       select: { id: true, name: true, priceCents: true },
       orderBy: { name: 'asc' },
+      take: LIST_MAX_SIZE,
     }),
   ]);
 

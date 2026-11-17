@@ -52,7 +52,18 @@ function applyJobWhere(where) {
 
 export const prisma = {
   customer: {
-    findMany: async ({ where }) => CUSTOMERS.filter((c) => !where?.businessId || c.businessId === where.businessId),
+    // Mirrors the route's where: businessId + optional ?q= name filter
+    // (case-insensitive contains).
+    findMany: async ({ where }) =>
+      CUSTOMERS.filter((c) => {
+        if (where?.businessId && c.businessId !== where.businessId) return false;
+        if (
+          where?.name?.contains &&
+          !c.name.toLowerCase().includes(String(where.name.contains).toLowerCase())
+        )
+          return false;
+        return true;
+      }),
   },
   customerProperty: {
     findMany: async ({ where }) => PROPERTIES.filter((p) => !where?.businessId || p.businessId === where.businessId),

@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { requireAuth } from '@/lib/auth';
 import { canSeePrices } from '@/lib/roles';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 
 import { getTaxConfig } from '@/lib/tax';
 import { resolveTaxProvince } from '@/lib/property-tax';
@@ -33,6 +34,7 @@ export default async function NewInvoicePage({
       where: { businessId, archivedAt: null },
       select: { id: true, name: true },
       orderBy: { name: 'asc' },
+      take: LIST_MAX_SIZE,
     }),
     prisma.business.findUnique({
       where: { id: businessId },

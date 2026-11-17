@@ -8,6 +8,8 @@ import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
 import { formatDateShort } from '@/lib/utils';
 import { StatusPill } from '../_components/status-ui';
+import { parseListLimit, takeWithProbe, sliceListPage } from '@/lib/list-page';
+import { ListMore } from '../_components/ListMore';
 
 export const metadata = { title: 'Marketing | EveryJob' };
 
@@ -17,15 +19,27 @@ const AUDIENCE_KEY: Record<Audience, string> = {
   RECENT_JOBS: 't10misc.marketing.audienceRecent',
 };
 
-export default async function MarketingPage() {
+export default async function MarketingPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ limit?: string }>;
+}) {
   const { businessId } = await requireAuth();
   const locale: Locale = await getLocale();
   const tr = (path: string) => t(locale, path);
+  const limit = parseListLimit((await searchParams)?.limit);
 
-  const campaigns = await prisma.campaign.findMany({
-    where: { businessId },
-    orderBy: { createdAt: 'desc' },
-  });
+  // M3: bounded read + exact total from the database.
+  const [fetched, total] = await Promise.all([
+    prisma.campaign.findMany({
+      where: { businessId },
+      orderBy: { createdAt: 'desc' },
+      take: takeWithProbe(limit),
+    }),
+    prisma.campaign.count({ where: { businessId } }),
+  ]);
+  const page = sliceListPage(fetched, limit);
+  const campaigns = page.rows;
 
   return (
     <div className="space-y-6">
@@ -75,6 +89,15 @@ export default async function MarketingPage() {
             </Link>
           ))}
         </div>
+      )}
+      {campaigns.length > 0 && (
+        <ListMore
+          shown={campaigns.length}
+          total={total}
+          nextLimit={page.nextLimit}
+          locale={locale}
+          basePath="/marketing"
+        />
       )}
     </div>
   );

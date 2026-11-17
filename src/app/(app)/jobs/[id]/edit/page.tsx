@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { requireAuth } from '@/lib/auth';
 import { Card } from '@/components/kit';
 import JobForm from '@/components/JobForm';
@@ -30,17 +31,20 @@ export default async function EditJobPage({
       where: { businessId },
       select: { id: true, name: true },
       orderBy: { name: 'asc' },
+      take: LIST_MAX_SIZE,
     }),
     prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } }),
     prisma.crew.findMany({
       where: { businessId },
       select: { id: true, name: true },
       orderBy: { name: 'asc' },
+      take: LIST_MAX_SIZE,
     }),
     prisma.customerProperty.findMany({
       where: { businessId },
       select: { id: true, customerId: true, label: true, address: true, province: true },
       orderBy: { label: 'asc' },
+      take: LIST_MAX_SIZE,
     }),
   ]);
   if (!job) notFound();

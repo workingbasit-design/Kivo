@@ -218,6 +218,9 @@ export async function getScheduleWeekJobs(
       assignedTo: { select: { id: true, name: true, email: true } },
     },
     orderBy: [{ date: 'asc' }, { createdAt: 'asc' }],
+    // Defensive cap (P1.0 D2): a week cannot hold 2000 jobs for a
+    // 1-5-person shop; the cap is a guardrail, not a behaviour change.
+    take: LIST_MAX_SIZE,
   });
 }
 
@@ -234,6 +237,9 @@ export async function getTodayJobs(
     where: { businessId, date: { gte: dayStart, lte: dayEnd } },
     include: { customer: { select: { name: true } } },
     orderBy: [{ time: 'asc' }, { createdAt: 'asc' }],
+    // Defensive cap (P1.0 D2): a day cannot hold 2000 jobs for a
+    // 1-5-person shop; the cap is a guardrail, not a behaviour change.
+    take: LIST_MAX_SIZE,
   });
 }
 

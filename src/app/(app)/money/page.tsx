@@ -4,6 +4,7 @@ import { canSeePrices } from '@/lib/roles';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { getTaxConfig } from '@/lib/tax';
 import {
   buildMoneyActivity,
@@ -167,6 +168,7 @@ export default async function MoneyPage() {
       where: { businessId, archivedAt: null },
       select: { id: true, name: true },
       orderBy: { name: 'asc' },
+      take: LIST_MAX_SIZE,
     }),
   ]);
 

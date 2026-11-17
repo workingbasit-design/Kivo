@@ -26,7 +26,7 @@ const stub = await import('./customer-options-jobs-stub.mjs');
 beforeEach(() => stub.resetStub());
 
 test('jobs list offers only the completed, uninvoiced job of this business', async () => {
-  const res = await GET();
+  const res = await GET(new Request('http://localhost/api/customers/options'));
   assert.equal(res.status, 200);
   assert.deepEqual(
     res.data.jobs.map((j) => j.id),
@@ -35,7 +35,7 @@ test('jobs list offers only the completed, uninvoiced job of this business', asy
 });
 
 test('the jobs query scopes by business and excludes already-invoiced jobs', async () => {
-  await GET();
+  await GET(new Request('http://localhost/api/customers/options'));
   const where = stub.calls.jobFindMany[0];
   assert.equal(where.businessId, 'biz-1');
   assert.equal(where.status, 'COMPLETED');
@@ -43,13 +43,13 @@ test('the jobs query scopes by business and excludes already-invoiced jobs', asy
 });
 
 test('offered jobs carry no priceCents (BigInt would break JSON)', async () => {
-  const res = await GET();
+  const res = await GET(new Request('http://localhost/api/customers/options'));
   assert.equal(res.data.jobs.length, 1);
   assert.deepEqual(Object.keys(res.data.jobs[0]).sort(), ['customerId', 'date', 'id', 'title']);
 });
 
 test('customers and properties keep their existing shape', async () => {
-  const res = await GET();
+  const res = await GET(new Request('http://localhost/api/customers/options'));
   assert.equal(res.data.customers.length, 1);
   assert.equal(res.data.customers[0].id, 'cus-1');
   assert.equal(res.data.properties.length, 1);
@@ -58,6 +58,17 @@ test('customers and properties keep their existing shape', async () => {
 
 test('unauthenticated: 401, no jobs leaked', async () => {
   stub.setSessionOn(false);
-  const res = await GET();
+  const res = await GET(new Request('http://localhost/api/customers/options'));
   assert.equal(res.status, 401);
+});
+
+test('?q= filters customers server-side by name (case-insensitive)', async () => {
+  const one = await GET(new Request('http://localhost/api/customers/options?q=one'));
+  assert.deepEqual(
+    one.data.customers.map((c) => c.id),
+    ['cus-1'],
+    'lowercase q matches Cust One'
+  );
+  const none = await GET(new Request('http://localhost/api/customers/options?q=zzz'));
+  assert.deepEqual(none.data.customers, [], 'no match returns an empty list');
 });

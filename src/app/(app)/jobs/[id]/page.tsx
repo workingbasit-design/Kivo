@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { requireAuth } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
@@ -124,11 +125,13 @@ export default async function JobDetailPage({
         where: { businessId, status: 'ACTIVE' },
         include: { user: { select: { id: true, name: true, email: true } } },
         orderBy: { user: { name: 'asc' } },
+        take: LIST_MAX_SIZE,
       }),
       prisma.checklistTemplate.findMany({
         where: { businessId },
         select: { id: true, name: true },
         orderBy: { createdAt: 'asc' },
+        take: LIST_MAX_SIZE,
       }),
       prisma.job.count({ where: { businessId, customerId: job.customerId } }),
       getReviewEligibility(businessId, job.id),
@@ -140,6 +143,7 @@ export default async function JobDetailPage({
         where: { businessId },
         select: { id: true, name: true, defaultRateCents: true },
         orderBy: { name: 'asc' },
+        take: LIST_MAX_SIZE,
       }),
     ]);
 

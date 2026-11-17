@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Users, ChevronRight } from '@/components/icons';
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { Card } from '@/components/kit';
@@ -23,6 +24,7 @@ export default async function CrewsPage() {
       members: { select: { id: true, name: true }, orderBy: { name: 'asc' } },
       _count: { select: { jobs: true } },
     },
+    take: LIST_MAX_SIZE,
   });
 
   return (

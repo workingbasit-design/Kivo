@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from '@/components/icons';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { requireAuth } from '@/lib/auth';
 import { Card } from '@/components/kit';
 import JobForm, { type JobFormInitial } from '@/components/JobForm';
@@ -28,12 +29,14 @@ export default async function NewJobPage({
     where: { businessId, archivedAt: null },
     select: { id: true, name: true },
     orderBy: { name: 'asc' },
+    take: LIST_MAX_SIZE,
   });
 
   const crews = await prisma.crew.findMany({
     where: { businessId },
     select: { id: true, name: true },
     orderBy: { name: 'asc' },
+    take: LIST_MAX_SIZE,
   });
 
   // "Use in job" from the price book: pre-fill title + price, link the job

@@ -9,6 +9,8 @@ import { getGoogleStatus } from '@/app/actions/google-reviews';
 import { listEligibleReviewJobs } from '@/lib/review-eligibility';
 import { classifyLegacySource } from '@/lib/review-guards';
 import { PageTitle } from '../_components/PageTitle';
+import { parseListLimit, takeWithProbe, sliceListPage } from '@/lib/list-page';
+import { ListMore } from '../_components/ListMore';
 
 export const metadata = { title: 'Reviews | EveryJob' };
 
@@ -24,15 +26,21 @@ function eligibilitySince(): Date {
 // invoice). Older sources are shown as "Legacy" - only Verified and Google
 // keep their badge.
 
-export default async function ReviewsPage() {
+export default async function ReviewsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ limit?: string }>;
+}) {
   const { businessId } = await requireAuth();
   const locale = await getLocale();
+  const limit = parseListLimit((await searchParams)?.limit);
 
-  const [reviews, eligibleJobs, agg, googleStatus] = await Promise.all([
+  const [fetched, eligibleJobs, agg, googleStatus] = await Promise.all([
     prisma.review.findMany({
       where: { businessId },
       orderBy: { createdAt: 'desc' },
       include: { customer: { select: { name: true } } },
+      take: takeWithProbe(limit),
     }),
     listEligibleReviewJobs(
       businessId,
@@ -48,6 +56,9 @@ export default async function ReviewsPage() {
 
   const total = agg._count.id;
   const average = total > 0 && agg._avg.rating ? agg._avg.rating.toFixed(1) : '-';
+  // M3: bounded read; total/average already come from the database aggregate.
+  const page = sliceListPage(fetched, limit);
+  const reviews = page.rows;
 
   return (
     <div className="space-y-6">
@@ -87,6 +98,13 @@ export default async function ReviewsPage() {
         }))}
         average={average}
         total={total}
+      />
+      <ListMore
+        shown={reviews.length}
+        total={total}
+        nextLimit={page.nextLimit}
+        locale={locale}
+        basePath="/reviews"
       />
     </div>
   );

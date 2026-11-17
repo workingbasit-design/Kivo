@@ -3,6 +3,7 @@ import { requireAuth } from '@/lib/auth';
 import { canSeePrices } from '@/lib/roles';
 import { FOLLOWUP_AFTER_DAYS, DAY_MS } from '@/lib/revenue';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
 import { getActiveShareToken } from '@/lib/share';
@@ -92,11 +93,13 @@ export default async function QuotesPage({
       where: { businessId, archivedAt: null },
       select: { id: true, name: true },
       orderBy: { name: 'asc' },
+      take: LIST_MAX_SIZE,
     }),
     prisma.quoteTemplate.findMany({
       where: { businessId },
       include: { items: { orderBy: { position: 'asc' } } },
       orderBy: { updatedAt: 'desc' },
+      take: LIST_MAX_SIZE,
     }),
   ]);
 

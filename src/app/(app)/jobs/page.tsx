@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { requireAuth } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';
 import { type Locale } from '@/lib/i18n';
@@ -57,11 +58,13 @@ export default async function JobsPage({
       where: { businessId, archivedAt: null },
       select: { id: true, name: true },
       orderBy: { name: 'asc' },
+      take: LIST_MAX_SIZE,
     }),
     prisma.crew.findMany({
       where: { businessId },
       select: { id: true, name: true },
       orderBy: { name: 'asc' },
+      take: LIST_MAX_SIZE,
     }),
   ]);
   const page = sliceListPage(fetched, limit);

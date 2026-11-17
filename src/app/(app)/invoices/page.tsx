@@ -4,6 +4,7 @@ import { canSeePrices } from '@/lib/roles';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { INVOICE_STATUSES } from '@/lib/validations';
 import { centsToDollars } from '@/lib/money';
 import { getTaxConfig } from '@/lib/tax';
@@ -87,6 +88,7 @@ export default async function InvoicesPage({
         where: { businessId, archivedAt: null },
         select: { id: true, name: true },
         orderBy: { name: 'asc' },
+        take: LIST_MAX_SIZE,
       }),
     ]);
 

@@ -1,5 +1,6 @@
 import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { LIST_MAX_SIZE } from '@/lib/list-page';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { PageTitle } from '../_components/PageTitle';
@@ -16,6 +17,7 @@ export default async function SubcontractorsPage() {
     where: { businessId },
     orderBy: { name: 'asc' },
     include: { _count: { select: { jobs: true } } },
+    take: LIST_MAX_SIZE,
   });
 
   const business = await prisma.business.findUnique({
