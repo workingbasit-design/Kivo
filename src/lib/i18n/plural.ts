@@ -8,6 +8,7 @@
  * it with the given vars ("1 jobs" is impossible by construction).
  */
 import { getDictionary, t, type Locale } from './index.ts';
+import type { Dictionary } from './en.ts';
 
 export type PluralForms = { one: string; other: string };
 
@@ -23,9 +24,9 @@ function fill(template: string, vars: Record<string, string | number>): string {
   return out;
 }
 
-function lookupPlural(locale: Locale, path: string): PluralForms | undefined {
+function lookupPluralIn(dict: Dictionary, path: string): PluralForms | undefined {
   const parts = path.split('.');
-  let cur: unknown = getDictionary(locale);
+  let cur: unknown = dict;
   for (const p of parts) {
     if (cur && typeof cur === 'object' && p in cur) {
       cur = (cur as Record<string, unknown>)[p];
@@ -42,6 +43,14 @@ function lookupPlural(locale: Locale, path: string): PluralForms | undefined {
     return cur as PluralForms;
   }
   return undefined;
+}
+
+/** FR plural lookup falls back to the EN forms, like t() (P1.0 E1). */
+function lookupPlural(locale: Locale, path: string): PluralForms | undefined {
+  return (
+    lookupPluralIn(getDictionary(locale), path) ??
+    (locale === 'fr' ? lookupPluralIn(getDictionary('en'), path) : undefined)
+  );
 }
 
 /**

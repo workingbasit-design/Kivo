@@ -74,6 +74,11 @@ const fragment = {
       autoRefresh: 'Updates automatically',
       distance: 'Distance',
     },
+    // Public expired-tracking page (LiveTrackingClient): title + body.
+    tracking: {
+      expiredTitle: 'This tracking link has expired.',
+      expiredBody: 'This tracking link has expired or is invalid. Please contact the business for a new link.',
+    },
   },
   fr: {
     gps: {
@@ -145,6 +150,11 @@ const fragment = {
       liveNow: 'En direct',
       autoRefresh: 'Actualisation automatique',
       distance: 'Distance',
+    },
+    // Public expired-tracking page (LiveTrackingClient): title + body.
+    tracking: {
+      expiredTitle: 'Ce lien de suivi a expiré.',
+      expiredBody: 'Ce lien de suivi a expiré ou est invalide. Veuillez contacter l’entreprise pour obtenir un nouveau lien.',
     },
   },
 } as const;

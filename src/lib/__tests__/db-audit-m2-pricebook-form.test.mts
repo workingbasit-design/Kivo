@@ -157,7 +157,9 @@ describe('m2 - F6 i18n fragment is wired in (no longer orphaned)', () => {
   it('fragments.ts imports the pricebook fragment', () => {
     const fragments = readCode('src/lib/i18n/fragments.ts');
     assert.match(fragments, /import pricebook from '\.\/fragments\/pricebook\.ts'/);
-    assert.match(fragments, /errorsFrag, pricebook\]/);
+    // Pricebook must be registered in the FRAGMENTS array (position is
+    // not pinned — later fragments may follow it).
+    assert.match(fragments, /errorsFrag, pricebook(,|\])/);
   });
 
   it('every label the client uses resolves in both locales', () => {

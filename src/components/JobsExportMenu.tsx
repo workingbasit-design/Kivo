@@ -64,8 +64,8 @@ export default function JobsExportMenu({
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-haspopup="menu"
-        aria-label={t(locale, 'common.more')}
-        title={t(locale, 'common.more')}
+        aria-label={t(locale, 'nav.more')}
+        title={t(locale, 'nav.more')}
         className="rounded-full p-0 min-h-[44px] min-w-[44px]"
       >
         <EllipsisVertical size={18} />
