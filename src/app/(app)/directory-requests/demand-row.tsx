@@ -79,7 +79,7 @@ export default function DemandRow({ request }: { request: DemandRequest }) {
             <button
               onClick={() => setStatusTo('FULFILLED')}
               disabled={busy}
-              className="min-h-[44px] inline-flex items-center justify-center gap-1.5 text-xs font-bold px-4 rounded-xl bg-ok hover:bg-ok text-hero-ink disabled:opacity-60"
+              className="min-h-[44px] inline-flex items-center justify-center gap-1.5 text-xs font-bold px-4 rounded-xl bg-hivis hover:bg-hivis/85 text-hivis-ink disabled:opacity-60"
             >
               <Check size={14} /> {busy ? '…' : t('t10misc.demand.markFulfilled')}
             </button>

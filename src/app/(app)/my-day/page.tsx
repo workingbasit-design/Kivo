@@ -113,7 +113,7 @@ export default async function MyDayPage() {
                 {job.customer.phone && (
                   <a
                     href={`tel:${job.customer.phone}`}
-                    className="px-3 py-2 bg-ok text-hero-ink rounded text-sm"
+                    className="px-3 py-2 bg-hivis text-hivis-ink rounded text-sm"
                   >
                     {t.call}
                   </a>

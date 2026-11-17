@@ -11,6 +11,14 @@
    Weather-app feel: light weights, open tracking, airy line-height.
    Barlow 400 survives ONLY on tiny eyebrow/label text (open tracking
    reads light and airy there); Barlow Condensed is retired from numbers.
+   Green theme layer (Batch B, 2026-11-17): the ChatGPT green theme is
+   reconciled ONTO these tokens, no parallel --ej-* system. Focus is
+   deep green in light mode and lime in dark mode; the input ring is
+   the same token at low opacity. Primary buttons are always --hivis
+   plus --hivis-ink, never --ok, in both modes. Dark --ok stays mint
+   on purpose: it is the success-text colour on dark surfaces, and
+   lime would read worse there; lime already serves primary actions
+   via --hivis. Text selection is lime via globals.css.
    ===================================================================== */
 /* ===== Tokens: every colour in the app comes from here ===== */
 /* The light palette is declared ONCE on `:root, .ej-light-lock` — the
@@ -43,7 +51,7 @@
   --nav:#0B0B0C; --nav-ink:#A9AFB6; --nav-active:#F4F5F2;
   --chart-a:#0B0B0C; --chart-b:#8B939B;
   --toast-bg:#0B0B0C; --toast-ink:#F4F5F2;
-  --focus:#2563EB; --topbar:#FFFFFF;
+  --focus:#1C7C45; --topbar:#FFFFFF;
   /* Semantic overlay/shadow tokens: component styles reference these, so
      no component hard-codes a translucent colour. --asphalt never flips,
      so scrim/switch shadows are identical in both modes; --surface/--ink
@@ -75,7 +83,7 @@
   --shadow-raised:0 8px 24px color-mix(in srgb, var(--ink) 7%, transparent);
   --shadow-overlay:0 20px 60px color-mix(in srgb, var(--ink) 16%, transparent);
   --ej-transition-fast:140ms ease; --ej-transition-normal:220ms ease;
-  --focus-ring:0 0 0 3px var(--focus);
+  --focus-ring:0 0 0 3px color-mix(in srgb, var(--focus) 22%, transparent);
   /* Type: system stack renders SF Pro on iPhone (the Weather-app feel the
      user asked for); light open sans everywhere else. */
   --font-display:-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, "Segoe UI", sans-serif;
@@ -102,7 +110,8 @@
     --hero:#141416; --hero-2:#1E1E21; --hero-line:#2E2E33;
     --nav:#0B0B0C; --chart-a:#EEF0F2; --chart-b:#6E767E;
     --toast-bg:#EEF0F2; --toast-ink:#0B0B0C;
-    --focus:#7AA2FF; --topbar:#0B0B0C;
+    --focus:#C6F432; --topbar:#0B0B0C;
+    --focus-ring:0 0 0 3px color-mix(in srgb, var(--focus) 24%, transparent);
     color-scheme: dark;
   }
 }
@@ -129,7 +138,8 @@
   --hero:#141416; --hero-2:#1E1E21; --hero-line:#2E2E33;
   --nav:#0B0B0C; --chart-a:#EEF0F2; --chart-b:#6E767E;
   --toast-bg:#EEF0F2; --toast-ink:#0B0B0C;
-  --focus:#7AA2FF; --topbar:#0B0B0C;
+  --focus:#C6F432; --topbar:#0B0B0C;
+  --focus-ring:0 0 0 3px color-mix(in srgb, var(--focus) 24%, transparent);
   color-scheme: dark;
 }
 
@@ -234,7 +244,7 @@ a.row:active, button.row:active{ background:var(--surface-2); }
 .search svg{ width:22px; height:22px; color:var(--ink-2); }
 .search input{ flex:1; min-width:0; border:0; outline:0; background:transparent; color:var(--ink); font-size:16px; }
 .search input::placeholder{ color:var(--ink-2); }
-.search:focus-within{ box-shadow:0 0 0 3px var(--focus); }
+.search:focus-within{ box-shadow:var(--focus-ring); }
 .chips{ display:flex; gap:10px; overflow-x:auto; margin:0 -16px 8px; padding:2px 16px 10px; scrollbar-width:none; -webkit-mask-image:linear-gradient(to right, #000 calc(100% - 28px), transparent); mask-image:linear-gradient(to right, #000 calc(100% - 28px), transparent); }
 .chips::-webkit-scrollbar{ display:none; }
 .fchip{ flex:none; display:inline-flex; align-items:center; gap:8px; min-height:44px; padding:0 14px; border-radius:22px; border:1px solid var(--line); background:var(--surface); color:var(--ink); font-weight:600; font-size:15px; cursor:pointer; }
@@ -557,7 +567,7 @@ details.dt thead th{ color:var(--ink-2); font-weight:600; border-top:0; }
 .input, .field input:not([type="checkbox"]):not([type="radio"]), .field select, .field textarea{ display:block; width:100%; min-width:0; min-height:50px; padding:12px 14px; border-radius:12px; border:1.5px solid var(--line-strong); background:var(--surface); color:var(--ink); font:inherit; font-size:16px; line-height:1.3; }
 .field textarea{ min-height:96px; resize:vertical; }
 .field input::placeholder, .field textarea::placeholder, .input::placeholder{ color:var(--ink-2); }
-.field input:focus, .field select:focus, .field textarea:focus, .input:focus{ border-color:var(--ink); box-shadow:0 0 0 3px var(--focus); }
+.field input:focus, .field select:focus, .field textarea:focus, .input:focus{ border-color:var(--ink); box-shadow:var(--focus-ring); }
 .field [aria-invalid="true"]{ border-color:var(--danger); }
 .field .err{ display:block; margin-top:6px; color:var(--danger); font-size:14px; font-weight:600; }
 /* iPhone Safari: date and time inputs ignore width and spill out of their

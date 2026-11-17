@@ -88,9 +88,9 @@
 }
 
 .ej-home-list-business {
-  border-color: var(--ok);
-  background: var(--ok);
-  color: var(--hero-ink);
+  border-color: var(--hivis);
+  background: var(--hivis);
+  color: var(--hivis-ink);
 }
 
 /* Sign-in menu: the button keeps the reference look; the panel drops
@@ -269,10 +269,10 @@ button.ej-home-signin {
   align-items: center;
   justify-content: center;
   gap: 9px;
-  border: 1px solid var(--ok);
+  border: 1px solid var(--hivis);
   border-radius: 11px;
-  background: var(--ok);
-  color: var(--hero-ink);
+  background: var(--hivis);
+  color: var(--hivis-ink);
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;

@@ -385,7 +385,7 @@ export default function VoiceModeClient({
                       type="button"
                       disabled={!!isBusy}
                       onClick={() => tap({ kind: "complete", jobId: job.id })}
-                      className="min-h-[56px] rounded-xl bg-ok text-hero-ink text-sm font-bold inline-flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="min-h-[56px] rounded-xl bg-hivis text-hivis-ink text-sm font-bold inline-flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       <Check size={16} /> {t(locale, "voice.completeJob")}
                     </button>
