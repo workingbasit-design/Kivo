@@ -88,6 +88,11 @@ export function rateLimit() {
 }
 export const ACTION_LIMIT = 100;
 
+// next/headers (pulled in via jobs.ts -> custom-fields.ts, R16)
+export async function headers() {
+  return new Headers();
+}
+
 // ./invoices (relative import inside jobs.ts)
 export async function settleJobPaid(businessId, jobId, tx) {
   calls.settle.push({ businessId, jobId, inTransaction: !!tx });

@@ -12,6 +12,7 @@ import { validatePhone, INVALID_PHONE_MESSAGE } from '@/lib/phone';
 import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { normalizeJobTime, parseDateInputInTimezone } from '@/lib/utils';
 import { dollarsToCents } from '@/lib/money';
+import { setJobFieldValue } from '@/app/actions/custom-fields';
 
 export type JobActionResult = { error?: string; ok?: boolean; queued?: boolean; startedAt?: string };
 
@@ -338,6 +339,22 @@ export async function updateJob(
       ...propertyUpdate,
     },
   });
+
+  // R16: the job edit page's custom-field editor sits outside this form,
+  // so its values arrive as customField_<fieldId> entries (form="job-form").
+  // The main Save must persist them — the per-field checkmark is a redundant
+  // shortcut, not the only write path. On a write failure the job itself is
+  // already saved, so return an error (no redirect) and the editor still
+  // holds the value for a retry.
+  for (const [key, raw] of formData.entries()) {
+    if (!key.startsWith('customField_')) continue;
+    const fieldId = key.slice('customField_'.length);
+    if (!fieldId) continue;
+    const saved = await setJobFieldValue(id, fieldId, String(raw ?? ''));
+    if (!saved.ok) {
+      return { error: 'Could not save custom fields. Please try again.' };
+    }
+  }
 
   revalidateJobPaths(id);
   redirect(`/jobs/${id}`);

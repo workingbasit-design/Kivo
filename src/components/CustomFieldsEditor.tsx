@@ -28,6 +28,7 @@ export default function CustomFieldsEditor({
   titleKey,
   hintKey,
   fetchOnMount = false,
+  formId,
   listAction,
   setAction,
   createAction,
@@ -41,6 +42,14 @@ export default function CustomFieldsEditor({
   hintKey: string;
   /** Property/job pages don't know the defs server-side — load on mount. */
   fetchOnMount?: boolean;
+  /**
+   * R16: id of an outer <form> this editor's value inputs should submit
+   * with (HTML `form` attribute). Only the job wrapper passes it — the
+   * editor itself sits outside the job form, so without this its values
+   * never reach the main Save. Customer/property wrappers omit it and
+   * keep their checkmark-only behaviour.
+   */
+  formId?: string;
   listAction: (recordId: string) => Promise<CustomFieldResult>;
   setAction: (recordId: string, fieldId: string, value: string) => Promise<CustomFieldResult>;
   createAction: (name: string) => Promise<CustomFieldResult>;
@@ -241,6 +250,12 @@ export default function CustomFieldsEditor({
                       }
                       maxLength={500}
                       placeholder={L('customfields.valuePlaceholder')}
+                      // R16: when the editor is wired to an outer form, the
+                      // value submits with it (name + form attribute — the
+                      // input itself lives outside the <form> element).
+                      {...(formId
+                        ? { name: `customField_${def.id}`, form: formId }
+                        : {})}
                     />
                   )}
                 </div>

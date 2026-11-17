@@ -13,6 +13,7 @@ export async function resolve(specifier, context, nextResolve) {
     specifier === '@/lib/rate-limit' ||
     specifier === 'next/cache' ||
     specifier === 'next/navigation' ||
+    specifier === 'next/headers' ||
     specifier === './invoices' ||
     specifier.endsWith('/lib/prisma.ts') ||
     specifier.endsWith('/lib/auth.ts')

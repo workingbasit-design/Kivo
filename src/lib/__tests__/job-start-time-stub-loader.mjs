@@ -28,6 +28,7 @@ const STUBBED = new Set([
   '@/lib/webhooks.ts',
   'next/cache',
   'next/navigation',
+  'next/headers',
 ]);
 
 export async function resolve(specifier, context, nextResolve) {

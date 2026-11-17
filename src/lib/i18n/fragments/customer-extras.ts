@@ -54,7 +54,7 @@ const fragment = {
       cancel: 'Cancel',
       deleteConfirmTitle: 'Delete this custom field?',
       deleteConfirm: 'Delete this field and all its values? This can’t be undone.',
-      valuePlaceholder: '-',
+      valuePlaceholder: 'Add a value',
       empty: 'No custom fields yet. Add one like “Gate code” or “Dog name”.',
       saving: 'Saving…',
       errors: {
@@ -116,7 +116,7 @@ const fragment = {
       cancel: 'Annuler',
       deleteConfirmTitle: 'Supprimer ce champ personnalisé?',
       deleteConfirm: 'Supprimer ce champ et toutes ses valeurs? Cette action est irréversible.',
-      valuePlaceholder: '-',
+      valuePlaceholder: 'Ajouter une valeur',
       empty: 'Aucun champ personnalisé. Ajoutez-en un, p. Ex. « Code du portail » ou « Nom du chien ».',
       saving: 'Enregistrement…',
       errors: {

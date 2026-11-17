@@ -32,6 +32,8 @@ export default function JobCustomFields({
       titleKey="customfields.titleJob"
       hintKey="customfields.hintJob"
       fetchOnMount={fetchOnMount}
+      // R16: submit the editor's values with the job form's main Save.
+      formId="job-form"
       listAction={listJobFieldDefs}
       setAction={setJobFieldValue}
       createAction={(name) => createFieldDef(name, 'JOB')}

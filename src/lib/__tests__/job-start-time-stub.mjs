@@ -54,6 +54,10 @@ export const logger = {
 
 export function revalidatePath() {}
 
+export async function headers() {
+  return new Headers();
+}
+
 export function redirect() {
   throw new Error('redirect() called in test');
 }

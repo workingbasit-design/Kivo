@@ -177,7 +177,12 @@ export default function JobForm({
   };
 
   return (
-    <form action={formAction} className="space-y-5">
+    <form action={formAction} id="job-form" className="space-y-5">
+      {/* R16: the job edit page's custom-field editor sits outside this form
+          (a sibling Card below it). Its value inputs associate back here via
+          form="job-form" + name="customField_<fieldId>" so the main Save
+          submits them too — the per-field checkmark is a shortcut, not the
+          only write path. */}
       {initial?.id && <input
             autoComplete="off" type="hidden" name="id" value={initial.id} />}
       {initial?.serviceId && <input
