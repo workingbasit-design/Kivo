@@ -61,14 +61,17 @@ function Stars({ rating, size = 14 }: { rating: number; size?: number }) {
   );
 }
 
-function AddReviewForm({
+export function AddReviewForm({
   eligibleJobs,
   locale,
+  /** Test hook: render the form open (default closed, as in production). */
+  initialShow = false,
 }: {
   eligibleJobs: EligibleJobOption[];
   locale: Locale;
+  initialShow?: boolean;
 }) {
-  const [show, setShow] = React.useState(false);
+  const [show, setShow] = React.useState(initialShow);
   // Wrap so the form closes on success in the submission handler
   // (user-initiated) instead of syncing via an effect.
   const [state, formAction, isPending] = useActionState<ReviewResult, FormData>(
@@ -144,6 +147,16 @@ function AddReviewForm({
               <div className="flex items-start gap-2 bg-danger-bg border border-line text-danger text-xs font-medium rounded-xl px-3 py-2.5">
                 <AlertCircle size={14} className="mt-0.5 shrink-0" />
                 <span>{state.error}</span>
+              </div>
+            )}
+
+            {eligibleJobs.length === 0 && (
+              <div
+                data-testid="review-no-jobs-notice"
+                className="flex items-start gap-2 bg-surface-2 border border-line text-ink-2 text-xs font-medium rounded-xl px-3 py-2.5"
+              >
+                <AlertCircle size={14} className="mt-0.5 shrink-0" />
+                <span>{t(locale, 't10money.reviewNoEligibleJobs')}</span>
               </div>
             )}
 

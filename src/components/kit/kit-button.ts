@@ -9,6 +9,12 @@ const BASE =
   'inline-flex items-center justify-center gap-2 min-h-[52px] px-[18px] rounded-[14px] ' +
   'font-bold text-[17px] whitespace-nowrap ' +
   'focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 ' +
+  // Disabled kit buttons must LOOK disabled: the kit CSS only styles
+  // `.btn:disabled`, but kitButtonClass never emits `.btn`, so a disabled
+  // primary button used to render at full hi-vis lime and read as tappable
+  // (Reviews "Save review" with no eligible job). Dim + not-allowed here so
+  // every disabled kit button is visibly inert.
+  'disabled:opacity-50 disabled:cursor-not-allowed ' +
   'motion-safe:transition-colors [&_svg]:h-5 [&_svg]:w-5';
 
 const VARIANTS: Record<KitButtonVariant, string> = {
