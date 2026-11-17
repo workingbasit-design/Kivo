@@ -91,24 +91,42 @@ export async function GET(req: Request) {
 
   let fired = 0;
   for (const alert of alerts) {
-    const open = await prisma.monitorAlert.findFirst({
-      where: { key: alert.key, resolvedAt: null },
-      select: { id: true },
-    });
+    // P1.0 (S-A2): the guard requires a non-empty where.businessId, so the
+    // businessId-less findFirst/findMany below threw TenantScopeError the
+    // moment ANY alert fired — the cron 500d exactly when alerting matters.
+    // Business alerts scope by their businessId on the guarded client.
+    // Global alerts (error-spike, login-failures) have no businessId to
+    // scope by, so they use the same CRON_SECRET-gated unscoped fan-out
+    // as the reads above; the queries return ids only, and every
+    // notification is created per-business on the guarded client.
+    const open = alert.businessId
+      ? await prisma.monitorAlert.findFirst({
+          where: { key: alert.key, resolvedAt: null, businessId: alert.businessId },
+          select: { id: true },
+        })
+      : await unsafeUnscoped('error-alerts:global-alert-dedup', (db) =>
+          db.monitorAlert.findFirst({
+            where: { key: alert.key, resolvedAt: null },
+            select: { id: true },
+          })
+        );
     if (open) continue; // already fired and unresolved - don't spam
     await prisma.monitorAlert.create({
       data: { key: alert.key, businessId: alert.businessId, detail: alert.detail },
     });
     // Notify the owner(s): global alerts go to every business owner, scoped
     // alerts to that business's owners.
-    const ownerMemberships = await prisma.membership.findMany({
-      where: {
-        role: 'OWNER',
-        status: 'ACTIVE',
-        ...(alert.businessId ? { businessId: alert.businessId } : {}),
-      },
-      select: { businessId: true },
-    });
+    const ownerMemberships = alert.businessId
+      ? await prisma.membership.findMany({
+          where: { role: 'OWNER', status: 'ACTIVE', businessId: alert.businessId },
+          select: { businessId: true },
+        })
+      : await unsafeUnscoped('error-alerts:global-alert-owners', (db) =>
+          db.membership.findMany({
+            where: { role: 'OWNER', status: 'ACTIVE' },
+            select: { businessId: true },
+          })
+        );
     const businessIds = [...new Set(ownerMemberships.map((m) => m.businessId))];
     for (const businessId of businessIds) {
       await prisma.notification

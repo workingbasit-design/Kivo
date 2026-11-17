@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { prisma } from '@/lib/prisma';
 import { getSession } from '@/lib/auth';
 import { getActiveMembershipForUser } from '@/lib/membership';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
@@ -54,9 +53,27 @@ export async function POST(req: NextRequest) {
   }
 
   const { endpoint, keys } = parsed.data;
-  // endpoint is the device's unique push URL (unguessable); the upsert
-  // binds it to the authenticated session's business and rewrites keys.
-  // Authenticated route - no other tenant's data is readable here.
+  // P1.0 (S-A3): endpoint is the device's unique push URL (unguessable),
+  // but it is @unique — so an upsert keyed ONLY by endpoint would let any
+  // authenticated user rebind another business's device to their own
+  // business and receive (or silence) the victim's pushes. Check ownership
+  // first and refuse to touch a foreign subscription. The lookup is by the
+  // unguessable endpoint and returns only the owning businessId.
+  const existing = await unsafeUnscoped('push:subscribe:checkOwner', (db) =>
+    db.pushSubscription.findFirst({
+      where: { endpoint },
+      select: { businessId: true },
+    })
+  );
+  if (existing && existing.businessId !== businessId) {
+    return NextResponse.json(
+      { error: 'This device is already registered to another business.' },
+      { status: 403 },
+    );
+  }
+  // The upsert is only reached after the ownership check above, so
+  // re-binding a foreign row is impossible here; the unscoped client is
+  // needed because upsert's where is {endpoint} (no businessId to scope by).
   await unsafeUnscoped('push:subscribe:upsert', (db) =>
     db.pushSubscription.upsert({
       where: { endpoint },

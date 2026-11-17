@@ -164,14 +164,18 @@ export async function submitTokenReview(
   // simultaneous submits can't both create reviews (double-submit race).
   try {
     await prisma.$transaction(async (tx) => {
-      // Same capability-token justification as the lookup above; re-checked
-      // inside the transaction for the atomic single-use guarantee.
-      const fresh = await unsafeUnscoped('review-requests:recheckToken', (db) =>
-        tx.reviewRequest.findUnique({
-          where: { tokenHash },
-          select: { status: true, expiresAt: true },
-        })
-      );
+      // P1.0 (S-A1): the unsafeUnscoped wrappers here were no-ops — they
+      // hand out the unscoped client as `db`, but the queries ran through
+      // `tx` (guarded client), so the guard threw TenantScopeError on the
+      // businessId-less where and every public review submit failed with
+      // STALE_LINK_ERROR. The outer lookup already resolved businessId,
+      // so scope the re-check by it on the guarded client instead.
+      // findFirst (not findUnique): {tokenHash, businessId} is not a
+      // unique key — only tokenHash is @unique.
+      const fresh = await tx.reviewRequest.findFirst({
+        where: { tokenHash, businessId: req.businessId },
+        select: { status: true, expiresAt: true },
+      });
       if (!fresh || !isReviewRequestActive(fresh)) throw new Error('STALE_TOKEN');
       const review = await tx.review.create({
         data: {
@@ -183,14 +187,16 @@ export async function submitTokenReview(
           businessId: req.businessId,
         },
       });
-      // Same capability-token justification as the lookups above: the token
-      // proves the caller may act on this request; no tenant scope exists.
-      await unsafeUnscoped('review-requests:markTokenUsed', (db) =>
-        tx.reviewRequest.update({
-          where: { tokenHash },
-          data: { status: 'USED', usedAt: new Date(), reviewId: review.id },
-        })
-      );
+      // updateMany (not update): same non-unique where. The
+      // status:'PENDING' guard makes the single-use atomic — a concurrent
+      // submit that used the token first matches 0 rows here, so
+      // count !== 1 throws and the transaction rolls back instead of
+      // creating a second review.
+      const marked = await tx.reviewRequest.updateMany({
+        where: { tokenHash, businessId: req.businessId, status: 'PENDING' },
+        data: { status: 'USED', usedAt: new Date(), reviewId: review.id },
+      });
+      if (marked.count !== 1) throw new Error('STALE_TOKEN');
     });
   } catch {
     return { error: STALE_LINK_ERROR };
