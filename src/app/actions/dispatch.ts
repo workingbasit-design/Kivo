@@ -42,9 +42,12 @@ export async function updateJobStatus(jobId: string, status: string): Promise<Ac
     return { ok: false, error: `Cannot move job from ${job.status} to ${status}.` };
   }
 
+  // R15: same rule as jobs.updateJobStatus — a transition into IN PROGRESS
+  // stamps the actual start time (startedAt); other transitions leave it.
+  const startedAt = status === 'IN PROGRESS' ? new Date() : undefined;
   await prisma.job.update({
     where: { id: jobId, businessId },
-    data: { status },
+    data: { status, ...(startedAt ? { startedAt } : {}) },
   });
   revalidatePath('/dispatch');
   revalidatePath('/schedule');

@@ -10,6 +10,8 @@ export interface VoiceJob {
   title: string;
   customerName: string;
   status: string;
+  /** Actual start time (ISO) once started; null until the first start. */
+  startedAt?: string | null;
 }
 
 export type VoiceActionKind = 'start' | 'complete' | 'note' | 'material';

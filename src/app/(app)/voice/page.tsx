@@ -15,7 +15,7 @@ export default async function VoicePage() {
     select: { timezone: true, regionCode: true },
   });
 
-  let jobs: { id: string; title: string; status: string; customer: { name: string } }[] = [];
+  let jobs: { id: string; title: string; status: string; startedAt: Date | null; customer: { name: string } }[] = [];
   try {
     const todayStr = todayInTimezone(business?.timezone, business?.regionCode);
     const { gte, lte } = dayRange(todayStr);
@@ -29,6 +29,7 @@ export default async function VoicePage() {
         id: true,
         title: true,
         status: true,
+        startedAt: true,
         customer: { select: { name: true } },
       },
       orderBy: { time: "asc" },
@@ -45,11 +46,13 @@ export default async function VoicePage() {
       />
       <VoiceModeClient
         locale={locale}
+        timezone={business?.timezone ?? null}
         jobs={jobs.map((j) => ({
           id: j.id,
           title: j.title,
           customerName: j.customer.name,
           status: j.status,
+          startedAt: j.startedAt ? j.startedAt.toISOString() : null,
         }))}
       />
     </div>

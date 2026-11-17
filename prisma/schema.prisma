@@ -288,6 +288,7 @@ model Job {
   date           DateTime
   time           String?
   startAt        DateTime? // canonical start (timestamptz); migrated from date+time; null = unscheduled
+  startedAt      DateTime? // actual start (timestamptz); set when status -> IN PROGRESS; null = never started
   endAt          DateTime? // optional end
   timeTbd        Boolean            @default(false) // time to be determined
   invoicedAt     DateTime? // set when the first non-voided invoice links to this job

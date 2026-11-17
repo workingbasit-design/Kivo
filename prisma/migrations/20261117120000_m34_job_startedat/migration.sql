@@ -1,0 +1,11 @@
+-- m34: record the actual start time of a job (2026-11-17, Voice mode defect).
+--
+-- Voice mode "Start job" only flipped the status to IN PROGRESS; no start
+-- time was recorded anywhere, so the Done log rendered a bare "-" and the
+-- job card showed no start time. Adding an optional startedAt, set by
+-- updateJobStatus whenever a job transitions into IN PROGRESS.
+--
+-- Safe: nullable column, no existing rows are touched (all stay null =
+-- never started, as before). Idempotent: ADD COLUMN IF NOT EXISTS, so a
+-- re-run after a partial apply - or two builds racing - converges.
+ALTER TABLE "Job" ADD COLUMN IF NOT EXISTS "startedAt" TIMESTAMPTZ;

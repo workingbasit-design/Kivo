@@ -13,7 +13,7 @@ import { rateLimit, ACTION_LIMIT } from '@/lib/rate-limit';
 import { normalizeJobTime, parseDateInputInTimezone } from '@/lib/utils';
 import { dollarsToCents } from '@/lib/money';
 
-export type JobActionResult = { error?: string; ok?: boolean; queued?: boolean };
+export type JobActionResult = { error?: string; ok?: boolean; queued?: boolean; startedAt?: string };
 
 async function checkLimit(userId: string, prefix: string): Promise<JobActionResult | null> {
   const rl = rateLimit(`${prefix}:${userId}`, ACTION_LIMIT);
@@ -369,6 +369,11 @@ export async function updateJobStatus(
   // 2026-10-01: marking PAID settles the money in the same transaction -
   // without this, "Collected" and the monthly revenue bars (payment-based)
   // disagreed with the job status and the job-based earnings numbers.
+  // R15: the actual start time lives on the job. A transition into
+  // IN PROGRESS stamps startedAt (Voice mode "Start job" previously only
+  // flipped the status, so the Done log rendered a bare "-" and the job
+  // card showed no start time). Re-starting after a step back re-stamps.
+  const startedAt = newStatus === 'IN PROGRESS' ? new Date() : undefined;
   try {
     if (newStatus === 'PAID') {
       const { settleJobPaid } = await import('./invoices');
@@ -377,7 +382,10 @@ export async function updateJobStatus(
         await settleJobPaid(businessId, jobId, tx);
       });
     } else {
-      await prisma.job.update({ where: { id: jobId, businessId }, data: { status: newStatus } });
+      await prisma.job.update({
+        where: { id: jobId, businessId },
+        data: { status: newStatus, ...(startedAt ? { startedAt } : {}) },
+      });
     }
   } catch (e) {
     logger.error('jobs: updateJobStatus failed', { businessId, jobId, error: e });
@@ -408,7 +416,7 @@ export async function updateJobStatus(
       logger.error('jobs: job.completed webhook failed', { businessId, jobId, error: err });
     }
   }
-  return { ok: true };
+  return { ok: true, ...(startedAt ? { startedAt: startedAt.toISOString() } : {}) };
 }
 
 /** Reschedule a job: change date/time (and status, subject to transition rules). */

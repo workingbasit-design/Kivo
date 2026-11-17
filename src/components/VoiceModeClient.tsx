@@ -47,9 +47,12 @@ function fill(key: string, locale: Locale, params: Record<string, string | numbe
 export default function VoiceModeClient({
   jobs,
   locale,
+  timezone,
 }: {
   jobs: VoiceJob[];
   locale: Locale;
+  /** Business timezone for formatting start times; browser tz when null. */
+  timezone?: string | null;
 }) {
   // Hydration-safe: server snapshot is always false (matches SSR); the real
   // value is read after hydration. Reading window in a useState initializer
@@ -75,6 +78,23 @@ export default function VoiceModeClient({
   useEffect(() => {
     jobsRef.current = jobs;
   }, [jobs]);
+
+  // Format an ISO start time in the business timezone (R15: the Done log
+  // and the job card show the actual start time, never a bare "-").
+  const formatStartTime = useCallback(
+    (iso: string) => {
+      try {
+        return new Date(iso).toLocaleTimeString(locale === "fr" ? "fr-CA" : "en-CA", {
+          hour: "numeric",
+          minute: "2-digit",
+          timeZone: timezone ?? undefined,
+        });
+      } catch {
+        return "";
+      }
+    },
+    [locale, timezone]
+  );
 
   const speak = useCallback(
     (text: string) => {
@@ -168,11 +188,15 @@ export default function VoiceModeClient({
             action.kind === "start" ? "IN PROGRESS" : "COMPLETED"
           );
           if (res.error) throw new Error(res.error);
-          const msg = fill(
-            action.kind === "start" ? "voice.confirmStart" : "voice.confirmComplete",
-            locale,
-            { title: job?.title ?? "" }
-          );
+          // The start confirm carries the actual start time the server just
+          // stamped (fall back to now if the server did not return one).
+          const msg =
+            action.kind === "start"
+              ? fill("voice.confirmStart", locale, {
+                  title: job?.title ?? "",
+                  time: formatStartTime(res.startedAt ?? new Date().toISOString()),
+                })
+              : fill("voice.confirmComplete", locale, { title: job?.title ?? "" });
           pushLog(transcript, msg, true);
           speak(msg);
         } else {
@@ -204,7 +228,7 @@ export default function VoiceModeClient({
         setPending(null);
       }
     },
-    [locale, pushLog, speak, router]
+    [locale, pushLog, speak, router, formatStartTime]
   );
 
   const handleTranscript = useCallback(
@@ -307,7 +331,9 @@ export default function VoiceModeClient({
     };
   }, []);
 
-  const tap = (action: VoiceAction) => runAction(action, "-");
+  // Taps have no transcript: pass "" so the Done log never renders a bare
+  // "-" where a real value should be (the heard line is skipped when empty).
+  const tap = (action: VoiceAction) => runAction(action, "");
 
   return (
     <div className="space-y-5">
@@ -372,6 +398,13 @@ export default function VoiceModeClient({
                   <p className="text-xs text-ink-2 mb-3">
                     {job.customerName} · {job.status}
                   </p>
+                  {job.status === "IN PROGRESS" && job.startedAt && (
+                    <p className="text-xs font-semibold text-ok -mt-2 mb-3">
+                      {fill("voice.startedAt", locale, {
+                        time: formatStartTime(job.startedAt),
+                      })}
+                    </p>
+                  )}
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
@@ -423,7 +456,9 @@ export default function VoiceModeClient({
           <Card className="px-2 py-2 divide-y divide-line">
             {log.map((e) => (
               <div key={e.id} className="px-3 py-2.5">
-                <p className="text-xs text-ink-2 truncate">“{e.heard}”</p>
+                {e.heard !== "" && (
+                  <p className="text-xs text-ink-2 truncate">“{e.heard}”</p>
+                )}
                 <p className={cn("text-sm font-semibold", e.ok ? "text-ok" : "text-warn-text")}>
                   {e.result}
                 </p>
