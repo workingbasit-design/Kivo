@@ -131,34 +131,36 @@ export default function ContinueCard({
         </div>
       </div>
       <div className={`ej-continue-expand${expanded ? " ej-continue-expand--open" : ""}`}>
-        <div className="ej-continue-details">
-          {display.kind === "job" ? (
-            <div>
-              <MapPin size={14} aria-hidden />
-              <span>
-                <b>{labels.location}</b>
-                {display.area ?? labels.noArea}
-              </span>
-            </div>
-          ) : null}
-          {display.customerName ? (
-            <div>
-              <UserRound size={14} aria-hidden />
-              <span>
-                <b>{labels.customer}</b>
-                {display.customerName}
-              </span>
-            </div>
-          ) : null}
-          {display.meta ? (
-            <div>
-              <Clock3 size={14} aria-hidden />
-              <span>
-                <b>{labels.status}</b>
-                {display.meta}
-              </span>
-            </div>
-          ) : null}
+        <div>
+          <div className="ej-continue-details">
+            {display.kind === "job" ? (
+              <div>
+                <MapPin size={14} aria-hidden />
+                <span>
+                  <b>{labels.location}</b>
+                  {display.area ?? labels.noArea}
+                </span>
+              </div>
+            ) : null}
+            {display.customerName ? (
+              <div>
+                <UserRound size={14} aria-hidden />
+                <span>
+                  <b>{labels.customer}</b>
+                  {display.customerName}
+                </span>
+              </div>
+            ) : null}
+            {display.meta ? (
+              <div>
+                <Clock3 size={14} aria-hidden />
+                <span>
+                  <b>{labels.status}</b>
+                  {display.meta}
+                </span>
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
     </section>
