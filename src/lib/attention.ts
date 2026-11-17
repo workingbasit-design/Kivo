@@ -11,6 +11,7 @@
 import { daysOverdue, needsFollowUp, daysWaiting, remainingBalance } from './revenue.ts';
 import { prisma } from '@/lib/prisma';
 import { centsToDollars } from './money.ts';
+import { t } from '@/lib/i18n';
 
 export type AttentionSeverity = 'critical' | 'attention' | 'info' | 'positive';
 export type AttentionCategory =
@@ -128,17 +129,17 @@ export function formatDisplayDate(
   
   // Today/Yesterday/Tomorrow
   if (dateKey === todayKey) {
-    return locale === 'fr' ? "Aujourd'hui" : 'Today';
+    return t(locale, 'nav.dashboard');
   }
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   if (dateKey === dayKey(yesterday, tz)) {
-    return locale === 'fr' ? 'Hier' : 'Yesterday';
+    return t(locale, 'dashboard.yesterday');
   }
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   if (dateKey === dayKey(tomorrow, tz)) {
-    return locale === 'fr' ? 'Demain' : 'Tomorrow';
+    return t(locale, 'dashboard.nextActionTomorrow');
   }
   
   // "Tue, Sep 29" format

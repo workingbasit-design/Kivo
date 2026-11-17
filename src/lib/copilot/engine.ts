@@ -19,6 +19,7 @@ import { prisma } from '@/lib/prisma';
 import { formatDateShort, toISODateLocal, dayRange } from '@/lib/utils';
 import { formatMoney, centsToDollars } from '@/lib/money';
 import { getCertificationRoadmap, type TradeKey } from '@/lib/certifications';
+import { t } from '@/lib/i18n';
 import {
   detectIntent,
   detectMessageLang,
@@ -333,9 +334,7 @@ export async function runCopilot(
   const lang = detectMessageLang(message) ?? langOf(opts.locale);
   // Locale-appropriate booking example for help/greeting/clarify.
   const example =
-    lang === 'fr'
-      ? 'Réparation de clim pour Sarah demain à 15h, 800 $'
-      : 'AC repair for Sarah tomorrow at 3pm, $800';
+    t(lang, 'copilot.examples.booking');
 
   const currency = 'CAD';
   // Pronoun follow-ups ("usko kal kar do") resolve against recent turns.

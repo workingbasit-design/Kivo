@@ -91,6 +91,9 @@ const fragment = {
         // GST/HST, so the page does not promise a tax it will not add.
         subtitleNoTax: 'Line items in, total out. No tax is added, because your business is not registered to collect GST/HST.',
       },
+      sign: {
+        preparedFor: 'Prepared {date} for {name}',
+      },
       templates: {
         title: 'Quote templates',
         subtitle:
@@ -101,6 +104,7 @@ const fragment = {
         namePlaceholder: 'e.g. Furnace tune-up package',
         saveTemplate: 'Save template',
         templateSaved: 'Template saved.',
+        templateReset: 'Template reset to built-in.',
         templateDeleted: 'Template deleted.',
         deleteTemplate: 'Delete template',
         deleteConfirm:
@@ -212,6 +216,9 @@ const fragment = {
           'Articles entrés, total en sortie. {taxLabel} est ajouté automatiquement selon vos paramètres régionaux.',
         subtitleNoTax: 'Postes en entrée, total en sortie. Aucune taxe n’est ajoutée, car votre entreprise n’est pas inscrite pour percevoir la TPS/TVH.',
       },
+      sign: {
+        preparedFor: 'Préparé le {date} pour {name}',
+      },
       templates: {
         title: 'Modèles de devis',
         subtitle:
@@ -222,6 +229,7 @@ const fragment = {
         namePlaceholder: 'p. ex. Forfait de mise au point de fournaise',
         saveTemplate: 'Enregistrer le modèle',
         templateSaved: 'Modèle enregistré.',
+        templateReset: 'Modèle réinitialisé.',
         templateDeleted: 'Modèle supprimé.',
         deleteTemplate: 'Supprimer le modèle',
         deleteConfirm:

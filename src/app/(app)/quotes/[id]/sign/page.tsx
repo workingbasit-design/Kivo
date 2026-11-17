@@ -95,9 +95,9 @@ export default async function SignPreparePage({
               {quote.number} · {quote.title}
             </h2>
             <p className="text-xs text-ink-2 mt-1">
-              {locale === 'fr'
-                ? `Préparé le ${formatDateShort(quote.createdAt)} pour ${quote.customer.name}`
-                : `Prepared ${formatDateShort(quote.createdAt)} for ${quote.customer.name}`}
+              {t(locale, 'quotes.sign.preparedFor')
+                .replace('{date}', formatDateShort(quote.createdAt))
+                .replace('{name}', quote.customer.name)}
             </p>
           </div>
 

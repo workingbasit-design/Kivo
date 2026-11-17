@@ -14,12 +14,9 @@ import PublicHomeHeader from '@/components/public/PublicHomeHeader';
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
-  const en = locale === 'en';
   return {
-    title: en ? 'How It Works | EveryJob' : 'Comment ça marche | EveryJob',
-    description: en
-      ? 'Find a pro, get a quote, get it done. How EveryJob works for homeowners.'
-      : 'Trouvez un pro, obtenez un devis, et c’est fait. Comment EveryJob fonctionne pour les propriétaires.',
+    title: t(locale, 'meta.howTitle'),
+    description: t(locale, 'meta.howDesc'),
   };
 }
 

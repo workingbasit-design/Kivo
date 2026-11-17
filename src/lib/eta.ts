@@ -133,11 +133,11 @@ export function formatEta(seconds: number, locale: string): string {
   if (!Number.isFinite(seconds) || seconds < 0) return '';
   const mins = Math.max(1, Math.round(seconds / 60));
   if (mins < 60) {
-    return `~${mins.toLocaleString(tag)} ${locale === 'fr' ? 'min' : 'min'}`;
+    return `~${mins.toLocaleString(tag)} min`;
   }
   const h = Math.floor(mins / 60);
   const m = mins % 60;
   const hStr = h.toLocaleString(tag);
   if (m === 0) return `~${hStr} h`;
-  return `~${hStr} h ${m.toLocaleString(tag)} ${locale === 'fr' ? 'min' : 'min'}`;
+  return `~${hStr} h ${m.toLocaleString(tag)} min`;
 }

@@ -3,6 +3,7 @@
 import React from "react";
 import { Search } from '@/components/icons';
 import { cn } from "@/lib/utils";
+import { t } from '@/lib/i18n';
 
 /** Button that opens the global command palette (⌘K / Ctrl+K). */
 export function openPalette() {
@@ -16,7 +17,7 @@ export default function PaletteTrigger({
   locale?: "en" | "fr";
   variant?: "sidebar" | "icon";
 }) {
-  const label = locale === "fr" ? "Recherche rapide" : "Quick search";
+  const label = t(locale, 'search.quickSearch');
 
   if (variant === "icon") {
     return (

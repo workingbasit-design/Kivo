@@ -69,12 +69,12 @@ export default function CommandPalette({ locale = "en" }: { locale?: Locale }) {
         });
       }
     }
-    const newLabel = locale === "fr" ? "Nouveau" : "New";
+    const newLabel = t(locale, 'statuses.NEW');
     for (const qa of QUICK_ACTIONS) {
       out.push({
         id: `new:${qa.href}`,
         label: `${newLabel} · ${t(locale, qa.key).toLowerCase()}`,
-        hint: locale === "fr" ? "Action rapide" : "Quick action",
+        hint: t(locale, 'search.quickAction'),
         href: qa.href,
         action: true,
       });
@@ -253,7 +253,7 @@ export default function CommandPalette({ locale = "en" }: { locale?: Locale }) {
         initial={{ opacity: 0, scale: 0.96, y: -12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-        aria-label={locale === "fr" ? "Recherche rapide" : "Quick search"}
+        aria-label={t(locale, 'search.quickSearch')}
         className="relative w-full max-w-xl overflow-hidden rounded-2xl bg-surface shadow-2xl border border-line"
       >
         <div className="flex items-center gap-3 border-b border-line px-4">
@@ -276,7 +276,7 @@ export default function CommandPalette({ locale = "en" }: { locale?: Locale }) {
           <button
             type="button"
             onClick={close}
-            aria-label={locale === "fr" ? "Fermer la recherche" : "Close search"}
+            aria-label={t(locale, 'search.closeSearch')}
             className="ej-liquid ej-spring shrink-0 rounded-xl p-2 text-ink-2 bg-surface/60 backdrop-blur-md saturate-150 ring-1 ring-inset ring-ink/10 hover:text-ink focus-visible:outline-2 focus-visible:outline-hivis"
           >
             <X size={16} />
@@ -325,11 +325,11 @@ export default function CommandPalette({ locale = "en" }: { locale?: Locale }) {
         <div className="border-t border-line px-4 py-2.5 flex items-center gap-4 text-[11px] text-ink-2">
           <span>
             <kbd className="rounded border border-line bg-surface-2 px-1">↑↓</kbd>{" "}
-            {locale === "fr" ? "naviguer" : "navigate"}
+            {t(locale, 'search.navigate')}
           </span>
           <span>
             <kbd className="rounded border border-line bg-surface-2 px-1">↵</kbd>{" "}
-            {locale === "fr" ? "ouvrir" : "open"}
+            {t(locale, 'search.open')}
           </span>
           <span className="ml-auto">⌘K / Ctrl+K</span>
         </div>

@@ -8,7 +8,7 @@
  * businessId) and is covered by integration checks.
  */
 import { prisma } from '@/lib/prisma';
-import type { Locale } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 import { centsToDollars } from './money.ts';
 
 export type ReportType =
@@ -309,7 +309,7 @@ export async function runReport(
           amount: centsToDollars(p.amountCents),
         }));
       } else {
-        const label = locale === 'fr' ? 'Revenus' : 'Revenue';
+        const label = t(locale, 'reports.type.revenue');
         items = payments.map((p) => ({ key: 'all', label, amount: centsToDollars(p.amountCents) }));
       }
       break;
@@ -334,7 +334,7 @@ export async function runReport(
           amount: centsToDollars(e.amountCents),
         }));
       } else {
-        const label = locale === 'fr' ? 'Dépenses' : 'Expenses';
+        const label = t(locale, 'reports.type.expenses');
         items = expenses.map((e) => ({ key: 'all', label, amount: centsToDollars(e.amountCents) }));
       }
       break;
@@ -385,7 +385,7 @@ export async function runReport(
           amount: centsToDollars(q.totalCents),
         }));
       } else {
-        const label = locale === 'fr' ? 'Devis' : 'Quotes';
+        const label = t(locale, 'reports.type.quotes');
         items = quotes.map((q) => ({ key: 'all', label, amount: centsToDollars(q.totalCents) }));
       }
       break;
@@ -411,7 +411,7 @@ export async function runReport(
           amount: centsToDollars(i.totalCents),
         }));
       } else {
-        const label = locale === 'fr' ? 'Factures' : 'Invoices';
+        const label = t(locale, 'reports.type.invoices');
         items = invoices.map((i) => ({ key: 'all', label, amount: centsToDollars(i.totalCents) }));
       }
       break;
@@ -430,7 +430,7 @@ export async function runReport(
           amount: 1,
         }));
       } else {
-        const label = locale === 'fr' ? 'Clients' : 'Customers';
+        const label = t(locale, 'reports.type.customers');
         items = customers.map(() => ({ key: 'all', label, amount: 1 }));
       }
       break;

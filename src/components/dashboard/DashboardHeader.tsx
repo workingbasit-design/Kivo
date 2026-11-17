@@ -58,7 +58,7 @@ export default async function DashboardHeader({
           </h1>
           <p className="ej-dashboard-subheading">{sentence}</p>
         </div>
-        <DashboardPaletteButton label={locale === "fr" ? "Recherche rapide" : "Quick search"} />
+        <DashboardPaletteButton label={t(locale, 'search.quickSearch')} />
       </div>
     </header>
   );

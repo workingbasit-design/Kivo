@@ -100,9 +100,17 @@ describe('money gates: forbidden() surfaces as a real HTTP 403, not the error bo
     const src = page('forbidden.tsx');
     assert.match(src, /export default async function AppForbidden/);
     // A clear access-denied message in both locales, not a crash page.
-    assert.match(src, /You don’t have access to this page/);
-    assert.match(src, /Accès refusé/);
+    // The copy lives in the dictionary (errors.forbidden.*); the page renders it via t().
+    assert.match(src, /errors\.forbidden\.title/);
+    assert.match(src, /errors\.forbidden\.body/);
     assert.doesNotMatch(src, /Something went wrong/);
+    // The message text itself stays pinned in the dictionary.
+    const errors = readFileSync(
+      new URL('../i18n/fragments/errors.ts', import.meta.url),
+      'utf8'
+    );
+    assert.match(errors, /You don’t have access to this page/);
+    assert.match(errors, /Accès refusé/);
   });
 });
 

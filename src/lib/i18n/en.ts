@@ -24,6 +24,7 @@ const en: Dict = {
     add: 'Add',
     viewAll: 'View all',
     retry: 'Try again',
+    or: ' or ',
   },
   nav: {
     dashboard: 'Today',
@@ -377,6 +378,21 @@ const en: Dict = {
     fieldPhone: 'Phone',
     fieldAddress: 'Address',
     fieldPrice: 'Price',
+    widget: {
+      promptToday: "Today's jobs?",
+      promptOutstanding: "What's outstanding?",
+      promptEarnings: 'How much did I earn today?',
+      promptTomorrow: "Tomorrow's jobs?",
+      example1: 'Who owes me money?',
+      example2: "What's on today?",
+      example3: "How's business this week?",
+      askQuestion: 'Ask a question',
+      askPlaceholder: 'Ask anything about your business…',
+      sendQuestion: 'Send question',
+    },
+    examples: {
+      booking: 'AC repair for Sarah tomorrow at 3pm, $800',
+    },
   },
   esign: {
     title: 'E-signature',
@@ -434,6 +450,8 @@ const en: Dict = {
   },
   dashboard: {
     title: 'Today',
+    yesterday: 'Yesterday',
+    other: 'Other',
     newJob: 'New job',
     newCustomer: 'New customer',
     newQuote: 'New quote',

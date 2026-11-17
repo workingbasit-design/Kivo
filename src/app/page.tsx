@@ -15,6 +15,7 @@
 import type { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
 import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
 import { getCspNonce } from '@/lib/csp-nonce';
 import { getCustomerSession } from '@/lib/customer-auth';
 import { safeJsonLd } from '@/lib/jsonld';
@@ -31,12 +32,9 @@ const DEFAULT_CITY = 'Etobicoke, Toronto';
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
-  const en = locale === 'en';
   return {
-    title: en ? 'Find trusted local pros | EveryJob' : 'Trouvez un pro local de confiance | EveryJob',
-    description: en
-      ? 'Find trusted local home-service professionals in Canada. Get free quotes, no commission, and contact them directly.'
-      : 'Trouvez des professionnels locaux de confiance au Canada. Obtenez des devis gratuits, sans commission, et contactez-les directement.',
+    title: t(locale, 'meta.homeTitle'),
+    description: t(locale, 'meta.homeDesc'),
   };
 }
 

@@ -64,7 +64,7 @@ export default function CampaignForm({
   const recipientLine = preview
     ? t(locale, 't10misc.marketing.recipients')
         .replace('{count}', String(preview.count))
-        .replace('{s}', preview.count === 1 ? '' : locale === 'fr' ? 's' : 's')
+        .replace('{s}', preview.count === 1 ? '' : 's')
     : '';
 
   return (

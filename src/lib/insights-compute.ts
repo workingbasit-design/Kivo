@@ -4,6 +4,8 @@
  * unit-tested in src/lib/__tests__/insights.test.mts.
  */
 
+import { t } from '@/lib/i18n';
+
 export interface RevenueTrendPoint {
   key: string;
   label: string;
@@ -120,7 +122,7 @@ export function computeInsights(
     const costs = job.expenses.reduce((s, e) => s + e.amount, 0);
     const entry = byService.get(key) ?? {
       serviceId: job.serviceId,
-      name: job.service?.name ?? (locale === 'fr' ? 'Sans service' : 'No service'),
+      name: job.service?.name ?? t(locale, 'growth.noService'),
       jobs: 0,
       revenue: 0,
       costs: 0,

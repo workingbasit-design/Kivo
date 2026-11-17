@@ -1,7 +1,7 @@
 'use client';
 
 import { Select } from '@/components/kit';
-import type { Locale } from '@/lib/i18n';
+import { t, type Locale } from '@/lib/i18n';
 
 /**
  * Locale-aware time picker.
@@ -82,7 +82,7 @@ export function TimeField({
       <span className="min-w-[112px] flex-1">
         <Select
           label={
-            <span className="sr-only">{ariaLabel ?? (locale === 'fr' ? 'Heure' : 'Hour')}</span>
+            <span className="sr-only">{ariaLabel ?? t(locale, 'pricebook.unitHour')}</span>
           }
           value={hour}
           onChange={(e) => setHour(e.target.value === '' ? '' : Number(e.target.value))}
@@ -102,7 +102,7 @@ export function TimeField({
       <span className="min-w-[84px] flex-1">
         <Select
           label={
-            <span className="sr-only">{ariaLabel ?? (locale === 'fr' ? 'Minute' : 'Minute')}</span>
+            <span className="sr-only">{ariaLabel ?? 'Minute'}</span>
           }
           value={minute}
           onChange={(e) => setMinute(e.target.value === '' ? '' : Number(e.target.value))}

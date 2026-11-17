@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Store } from '@/components/icons';
 import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
 import { Card } from '@/components/kit';
 
 /**
@@ -9,19 +10,16 @@ import { Card } from '@/components/kit';
  */
 export default async function ProfileNotFound() {
   const locale = await getLocale();
-  const fr = locale === 'fr';
   return (
     <div className="min-h-screen bg-paper font-sans">
       <main className="max-w-lg mx-auto px-4 py-16">
         <Card className="p-8 text-center">
           <Store size={36} className="mx-auto text-ink-2 mb-3" />
           <h1 className="text-lg font-bold text-ink">
-            {fr ? 'Profil d’entreprise introuvable' : 'Business profile not found'}
+            {t(locale, 'errors.profileNotFound.title')}
           </h1>
           <p className="text-sm text-ink-2 mt-2 leading-relaxed">
-            {fr
-              ? 'Cette entreprise n’est pas inscrite au répertoire EveryJob ou son profil n’est plus disponible.'
-              : 'This business isn’t listed in the EveryJob directory, or its profile is no longer available.'}
+            {t(locale, 'errors.profileNotFound.body')}
           </p>
           <Link
             href="/"

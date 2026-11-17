@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
+import { t } from '@/lib/i18n';
 import {
   getTemplateOverrides,
   saveTemplateOverride,
@@ -66,7 +67,7 @@ export default function TemplateEditor({
       if (res.error) {
         toast.error(res.error);
       } else {
-        toast.success(locale === 'fr' ? 'Modèle enregistré.' : 'Template saved.');
+        toast.success(t(locale, 'quotes.templates.templateSaved'));
         const updated = await getTemplateOverrides();
         setOverrides(updated);
       }
@@ -79,7 +80,7 @@ export default function TemplateEditor({
       if (res.error) {
         toast.error(res.error);
       } else {
-        toast.success(locale === 'fr' ? 'Modèle réinitialisé.' : 'Template reset to built-in.');
+        toast.success(t(locale, 'quotes.templates.templateReset'));
         const updated = await getTemplateOverrides();
         setOverrides(updated);
       }
@@ -90,7 +91,7 @@ export default function TemplateEditor({
     setBody((b) => b + v);
   }
 
-  const t = (en: string, fr: string) => (locale === 'fr' ? fr : en);
+  const tr = (en: string, fr: string) => (locale === 'fr' ? fr : en);
 
   return (
     <div className="space-y-6">
@@ -126,37 +127,37 @@ export default function TemplateEditor({
         </button>
         {isCustom && (
           <span className="ml-2 px-2 py-1 bg-warn-bg text-warn-text rounded text-xs self-center">
-            {t('Customized', 'Personnalisé')}
+            {tr('Customized', 'Personnalisé')}
           </span>
         )}
       </div>
 
       <div>
         <label className="block text-sm font-medium mb-1">
-          {t('Subject', 'Objet')}
+          {tr('Subject', 'Objet')}
         </label>
         <input
           type="text"
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
           className="w-full px-3 py-2 border rounded"
-          placeholder={t('Email subject line', 'Objet du courriel')}
+          placeholder={tr('Email subject line', 'Objet du courriel')}
         />
       </div>
 
       <div>
         <label className="block text-sm font-medium mb-1">
-          {t('Body', 'Corps')}
+          {tr('Body', 'Corps')}
         </label>
         <textarea
           value={body}
           onChange={(e) => setBody(e.target.value)}
           rows={8}
           className="w-full px-3 py-2 border rounded font-mono text-sm"
-          placeholder={t('Message body with {variables}', 'Corps du message avec {variables}')}
+          placeholder={tr('Message body with {variables}', 'Corps du message avec {variables}')}
         />
         <p className="text-xs text-ink-2 mt-1">
-          {t(
+          {tr(
             'Must include "Reply STOP to opt out." for CASL compliance.',
             'Doit inclure « Répondez ARRÊT pour vous désinscrire. » pour conformité LCAP.'
           )}
@@ -165,7 +166,7 @@ export default function TemplateEditor({
 
       <div>
         <label className="block text-sm font-medium mb-1">
-          {t('Insert variable', 'Insérer une variable')}
+          {tr('Insert variable', 'Insérer une variable')}
         </label>
         <div className="flex gap-2 flex-wrap">
           {VARIABLES.map((v) => (
@@ -186,7 +187,7 @@ export default function TemplateEditor({
           disabled={pending || !subject.trim() || !body.trim()}
           className="px-4 py-2 bg-asphalt text-hero-ink rounded disabled:opacity-50"
         >
-          {t('Save template', 'Enregistrer le modèle')}
+          {tr('Save template', 'Enregistrer le modèle')}
         </button>
         {isCustom && (
           <button
@@ -194,7 +195,7 @@ export default function TemplateEditor({
             disabled={pending}
             className="px-4 py-2 bg-line rounded"
           >
-            {t('Reset to built-in', 'Réinitialiser')}
+            {tr('Reset to built-in', 'Réinitialiser')}
           </button>
         )}
       </div>

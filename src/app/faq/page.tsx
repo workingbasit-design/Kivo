@@ -15,12 +15,9 @@ import PublicHomeHeader from '@/components/public/PublicHomeHeader';
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
-  const en = locale === 'en';
   return {
-    title: en ? 'Frequently asked questions | EveryJob' : 'Questions fréquentes | EveryJob',
-    description: en
-      ? 'Straight answers. No fine print, no sales pitch.'
-      : 'Des réponses franches. Sans petits caractères ni discours de vente.',
+    title: t(locale, 'meta.faqTitle'),
+    description: t(locale, 'meta.faqDesc'),
   };
 }
 

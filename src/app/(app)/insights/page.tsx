@@ -531,9 +531,11 @@ export default async function InsightsPage() {
                 {bestService && worstService && bestService.marginPct !== null && worstService.marginPct !== null && (
                   <li className="text-sm text-ink flex gap-2">
                     <Wrench size={14} className="text-ink-2 shrink-0 mt-0.5" />
-                    {locale === "fr"
-                      ? `« ${bestService.name} » a votre meilleure marge (${bestService.marginPct}%), « ${worstService.name} » la plus faible (${worstService.marginPct}%) - revoyez vos prix ou vos coûts.`
-                      : `“${bestService.name}” has your best margin (${bestService.marginPct}%), “${worstService.name}” the lowest (${worstService.marginPct}%) - review pricing or costs.`}
+                    {t(locale, 'growth.bestWorstMargin')
+                      .replace('{best}', bestService.name)
+                      .replace('{bestMargin}', String(bestService.marginPct))
+                      .replace('{worst}', worstService.name)
+                      .replace('{worstMargin}', String(worstService.marginPct))}
                   </li>
                 )}
               </ul>

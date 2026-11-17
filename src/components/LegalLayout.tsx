@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import type { LegalPage } from '@/lib/legal';
 
@@ -37,13 +38,13 @@ export default async function LegalLayout({ page }: { page: { en: LegalPage; fr:
         </div>
         <div className="mt-12 pt-8 border-t border-smoke flex flex-wrap gap-x-6 gap-y-2 text-sm">
           <Link href="/privacy" className="text-graphite hover:text-ink hover:underline">
-            {locale === 'fr' ? 'Confidentialité' : 'Privacy'}
+            {t(locale, 'home.footer.privacy')}
           </Link>
           <Link href="/terms" className="text-graphite hover:text-ink hover:underline">
-            {locale === 'fr' ? 'Conditions' : 'Terms'}
+            {t(locale, 'home.footer.terms')}
           </Link>
           <Link href="/copyright" className="text-graphite hover:text-ink hover:underline">
-            {locale === 'fr' ? 'Droit d\u2019auteur' : 'Copyright'}
+            {t(locale, 'home.footer.copyright')}
           </Link>
         </div>
       </div>

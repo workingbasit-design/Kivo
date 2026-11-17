@@ -23,6 +23,7 @@ const fr: Dictionary = {
     add: 'Ajouter',
     viewAll: 'Tout voir',
     retry: 'Réessayer',
+    or: ' ou ',
   },
   nav: {
     dashboard: "Aujourd'hui",
@@ -377,6 +378,21 @@ const fr: Dictionary = {
     fieldPhone: 'Téléphone',
     fieldAddress: 'Adresse',
     fieldPrice: 'Prix',
+    widget: {
+      promptToday: "Les tâches d'aujourd'hui?",
+      promptOutstanding: 'Combien me doit-on?',
+      promptEarnings: "Combien ai-je gagné aujourd'hui?",
+      promptTomorrow: 'Les tâches de demain?',
+      example1: 'Qui me doit de l’argent?',
+      example2: 'Quoi au programme aujourd’hui?',
+      example3: 'Comment vont les affaires cette semaine?',
+      askQuestion: 'Poser une question',
+      askPlaceholder: 'Posez n’importe quelle question sur votre entreprise…',
+      sendQuestion: 'Envoyer la question',
+    },
+    examples: {
+      booking: 'Réparation de clim pour Sarah demain à 15h, 800 $',
+    },
   },
   esign: {
     title: 'Signature électronique',
@@ -435,6 +451,8 @@ const fr: Dictionary = {
   },
   dashboard: {
     title: "Aujourd'hui",
+    yesterday: 'Hier',
+    other: 'Autre',
     newJob: 'Nouveau rendez-vous',
     newCustomer: 'Nouveau client',
     newQuote: 'Nouvelle soumission',

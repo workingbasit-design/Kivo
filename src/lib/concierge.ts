@@ -15,6 +15,8 @@
  *   EveryJob's internal inbox (QuoteRequest + Lead) only.
  */
 
+import { t } from '@/lib/i18n';
+
 export const CONCIERGE_MAX_PROS = 3;
 
 /** Rate limit for concierge sends: 5 per customer per hour. */
@@ -152,7 +154,7 @@ export function interpretServiceNeed(
   }
   return {
     key: 'general',
-    label: locale === 'fr' ? 'Service à domicile' : 'Home service',
+    label: t(locale, 'customer.concierge.homeService'),
     matchKeyword: description.trim().slice(0, 60),
   };
 }

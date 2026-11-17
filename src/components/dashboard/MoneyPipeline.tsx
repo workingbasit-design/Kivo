@@ -44,7 +44,7 @@ const STAGE_SHORT_NAMES: Record<PipelineStage["key"], string> = {
 /** "a, b, c or d" / "a, b, c ou d" for the muted empty-stages line. */
 function joinNames(names: string[], locale: Locale): string {
   if (names.length <= 1) return names.join("");
-  const conj = locale === "fr" ? " ou " : " or ";
+  const conj = t(locale, 'common.or');
   return names.slice(0, -1).join(", ") + conj + names[names.length - 1];
 }
 

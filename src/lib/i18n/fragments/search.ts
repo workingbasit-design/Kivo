@@ -17,6 +17,11 @@ const fragment = {
       groupQuotes: 'Quotes',
       groupInvoices: 'Invoices',
       viewAll: 'View all results',
+      quickAction: 'Quick action',
+      quickSearch: 'Quick search',
+      closeSearch: 'Close search',
+      navigate: 'navigate',
+      open: 'open',
     },
     notifBell: {
       viewAll: 'View all notifications',
@@ -36,6 +41,11 @@ const fragment = {
       groupQuotes: 'Soumissions',
       groupInvoices: 'Factures',
       viewAll: 'Voir tous les résultats',
+      quickAction: 'Action rapide',
+      quickSearch: 'Recherche rapide',
+      closeSearch: 'Fermer la recherche',
+      navigate: 'naviguer',
+      open: 'ouvrir',
     },
     notifBell: {
       viewAll: 'Voir toutes les notifications',

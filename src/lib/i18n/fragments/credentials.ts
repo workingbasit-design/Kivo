@@ -77,6 +77,9 @@ const fragment = {
       peerNote:
         'EveryJob has no peer data to compare against yet. The directory is consent-only and still growing. When consented businesses join, real anonymized comparisons will appear here.',
       setTradeCta: 'Set your trade in Settings → Credentials to get a tailored roadmap.',
+      noService: 'No service',
+      bestWorstMargin:
+        '“{best}” has your best margin ({bestMargin}%), “{worst}” the lowest ({worstMargin}%) - review pricing or costs.',
       checks: {
         businessName: 'Business name',
         phone: 'Phone number',
@@ -197,6 +200,9 @@ const fragment = {
       peerNote:
         'EveryJob n’a pas encore de données de pairs à comparer. Le répertoire est sur consentement et grandit encore. Quand des entreprises consentantes s’y joindront, de vraies comparaisons anonymisées apparaîtront ici.',
       setTradeCta: 'Définissez votre métier dans Paramètres → Titres pour une feuille de route personnalisée.',
+      noService: 'Sans service',
+      bestWorstMargin:
+        '« {best} » a votre meilleure marge ({bestMargin}%), « {worst} » la plus faible ({worstMargin}%) - revoyez vos prix ou vos coûts.',
       checks: {
         businessName: 'Nom de l’entreprise',
         phone: 'Numéro de téléphone',

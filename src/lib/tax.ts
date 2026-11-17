@@ -5,6 +5,8 @@
  * The Business `taxRegion` field carries the province code (e.g. "ON").
  */
 
+import { t } from '@/lib/i18n';
+
 export type RegionCode = 'CA';
 
 export interface TaxLine {
@@ -181,7 +183,7 @@ export function taxIdLabelForRegion(
   _regionCode: string | null | undefined,
   locale: 'en' | 'fr' = 'en'
 ): string {
-  return locale === 'fr' ? 'N° TPS/TVQ' : 'GST/HST number';
+  return t(locale, 'invoices.taxIdLabel');
 }
 
 /**

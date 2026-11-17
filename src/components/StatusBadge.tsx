@@ -11,6 +11,7 @@
  */
 import { jobStatusLabel } from '@/lib/job-status';
 import { statusClasses, statusLabel, cn } from '@/lib/utils';
+import { t } from '@/lib/i18n';
 
 function resolveLabel(status: string, locale: 'en' | 'fr'): string {
   const normalized = status.replace(/_/g, ' ');
@@ -41,7 +42,7 @@ export default function StatusBadge({
       </span>
       {isLate && (
         <span className="inline-flex items-center rounded-full border border-line bg-danger-bg px-2 py-0.5 text-xs font-semibold whitespace-nowrap text-danger">
-          {locale === 'fr' ? 'En retard' : 'Late'}
+          {t(locale, 'jobs.filterLate')}
         </span>
       )}
     </span>

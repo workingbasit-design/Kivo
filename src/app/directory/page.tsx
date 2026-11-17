@@ -20,12 +20,9 @@ import {
 
 export async function generateMetadata() {
   const locale = await getLocale();
-  const en = locale === 'en';
   return {
-    title: en ? 'Find trusted local pros | EveryJob Directory' : 'Trouvez un pro local de confiance | Répertoire EveryJob',
-    description: en
-      ? 'Search the EveryJob directory for plumbers, electricians, cleaners, furnace repair and more near you. Free quotes, verified phone numbers, real reviews.'
-      : 'Recherchez dans le répertoire EveryJob plombiers, électriciens, ménage, réparation de fournaise et plus près de chez vous. Devis gratuits, numéros vérifiés, vrais avis.',
+    title: t(locale, 'meta.directoryTitle'),
+    description: t(locale, 'meta.directoryDesc'),
   };
 }
 

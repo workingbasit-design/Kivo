@@ -569,10 +569,10 @@ export default function GlobalCopilotWidget({
 }) {
   const lang: Locale = locale === 'fr' ? 'fr' : 'en';
   const quickPrompts = [
-    lang === 'fr' ? "Les tâches d'aujourd'hui?" : "Today's jobs?",
-    lang === 'fr' ? 'Combien me doit-on?' : "What's outstanding?",
-    lang === 'fr' ? "Combien ai-je gagné aujourd'hui?" : 'How much did I earn today?',
-    lang === 'fr' ? 'Les tâches de demain?' : "Tomorrow's jobs?",
+    t(lang, 'copilot.widget.promptToday'),
+    t(lang, 'copilot.widget.promptOutstanding'),
+    t(lang, 'copilot.widget.promptEarnings'),
+    t(lang, 'copilot.widget.promptTomorrow'),
   ];
   const reduceMotion = useReducedMotion();
   const router = useRouter();
@@ -1370,10 +1370,11 @@ export default function GlobalCopilotWidget({
         run: () => setMode('chat'),
       },
     ];
-    const askExamples =
-      lang === 'fr'
-        ? ['Qui me doit de l’argent?', 'Quoi au programme aujourd’hui?', 'Comment vont les affaires cette semaine?']
-        : ['Who owes me money?', "What's on today?", "How's business this week?"];
+    const askExamples = [
+      t(lang, 'copilot.widget.example1'),
+      t(lang, 'copilot.widget.example2'),
+      t(lang, 'copilot.widget.example3'),
+    ];
     const askQuestion = (q: string) => {
       const clean = q.trim();
       if (!clean) return;
@@ -1403,26 +1404,22 @@ export default function GlobalCopilotWidget({
           className="mt-4 relative flex items-center gap-2"
         >
           <label htmlFor="copilot-home-ask" className="sr-only">
-            {lang === 'fr' ? 'Poser une question' : 'Ask a question'}
+            {t(lang, 'copilot.widget.askQuestion')}
           </label>
           <input
             id="copilot-home-ask"
             type="text"
             value={homeAsk}
             onChange={(e) => setHomeAsk(e.target.value)}
-            placeholder={
-              lang === 'fr'
-                ? 'Posez n’importe quelle question sur votre entreprise…'
-                : 'Ask anything about your business…'
-            }
-            aria-label={lang === 'fr' ? 'Poser une question' : 'Ask a question'}
+            placeholder={t(lang, 'copilot.widget.askPlaceholder')}
+            aria-label={t(lang, 'copilot.widget.askQuestion')}
             className="w-full min-h-[48px] pl-4 pr-14 py-3 rounded-2xl border border-line bg-surface-2 focus:outline-none focus:ring-2 focus:ring-ink/40 focus:border-transparent text-sm text-ink placeholder:text-ink-2 transition-shadow"
           />
           <button
             type="submit"
             disabled={!homeAsk.trim()}
             className="absolute right-1.5 top-1/2 -translate-y-1/2 w-11 h-11 rounded-xl bg-asphalt hover:bg-hero-2 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-hero-ink transition-colors"
-            aria-label={lang === 'fr' ? 'Envoyer la question' : 'Send question'}
+            aria-label={t(lang, 'copilot.widget.sendQuestion')}
           >
             <Send className="w-4 h-4 ml-0.5" />
           </button>

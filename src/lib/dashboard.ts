@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { dayRangeInTimezone, todayInTimezone } from "@/lib/utils";
 import { centsToDollars } from "@/lib/money";
+import { t } from "@/lib/i18n";
 import {
   bucketRevenueByService,
   type ServiceRevenueRow,
@@ -438,7 +439,7 @@ export async function getReportStats(
       price: centsToDollars(j.priceCents),
       serviceName: j.service?.name ?? null,
     })),
-    locale === "fr" ? "Autre" : "Other"
+    t(locale, 'dashboard.other')
   );
 
   const upcomingWorkload = {

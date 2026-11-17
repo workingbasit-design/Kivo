@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Download } from '@/components/icons';
 import { exportAccountingCSV } from '@/app/actions/accounting-export';
+import { t } from '@/lib/i18n';
 
 type Format = 'quickbooks' | 'xero' | 'wave';
 
@@ -33,10 +34,10 @@ export default function AccountingExportClient({ locale }: { locale: string }) {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        setMessage(fr ? `Exporté: ${result.summary}` : `Exported: ${result.summary}`);
+        setMessage(t(fr ? 'fr' : 'en', 'exports.exported').replace('{summary}', result.summary ?? ''));
       }
     } catch (e) {
-      setMessage(fr ? 'Échec de l’export.' : 'Export failed.');
+      setMessage(t(fr ? 'fr' : 'en', 'exports.failed'));
     } finally {
       setExporting(false);
     }
@@ -52,7 +53,7 @@ export default function AccountingExportClient({ locale }: { locale: string }) {
 
       <div>
         <label className="block text-sm font-bold text-ink mb-2">
-          {fr ? 'Format' : 'Format'}
+          {'Format'}
         </label>
         <div className="space-y-2">
           {(['quickbooks', 'xero', 'wave'] as Format[]).map((f) => (
@@ -76,7 +77,7 @@ export default function AccountingExportClient({ locale }: { locale: string }) {
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-bold text-ink mb-1.5">
-            {fr ? 'Du' : 'From'}
+            {t(fr ? 'fr' : 'en', 'imports.from')}
           </label>
           <input
             type="date"
@@ -87,7 +88,7 @@ export default function AccountingExportClient({ locale }: { locale: string }) {
         </div>
         <div>
           <label className="block text-sm font-bold text-ink mb-1.5">
-            {fr ? 'Au' : 'To'}
+            {t(fr ? 'fr' : 'en', 'imports.to')}
           </label>
           <input
             type="date"
@@ -105,7 +106,7 @@ export default function AccountingExportClient({ locale }: { locale: string }) {
         className="w-full bg-hivis text-hivis-ink rounded-xl px-4 py-3 font-semibold text-sm inline-flex items-center justify-center gap-2 disabled:opacity-60"
       >
         <Download size={16} />
-        {exporting ? (fr ? 'Export…' : 'Exporting…') : (fr ? 'Exporter CSV' : 'Export CSV')}
+        {exporting ? t(fr ? 'fr' : 'en', 'exports.exporting') : t(fr ? 'fr' : 'en', 'exports.csv')}
       </button>
 
       <p className="text-xs text-graphite">

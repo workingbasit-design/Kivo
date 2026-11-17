@@ -58,11 +58,12 @@ import reports from './fragments/reports.ts';
 import brand from './fragments/brand.ts';
 import team from './fragments/team.ts';
 import searchFrag from './fragments/search.ts';
+import metaFrag from './fragments/meta.ts';
 import bookingF7 from './fragments/booking-f7.ts';
 import errorsFrag from './fragments/errors.ts';
 import pricebook from './fragments/pricebook.ts';
 
-const FRAGMENTS: I18nFragment[] = [reminders, jobops, quotes, homehero, homefaq, notifications, track9, googleReviews, attachments, imports, googleAuth, track8, billing, customerExtras, quoteItems, track10work, track10money, track10misc, exportsFrag, credentials, gps, support, quickbooks, paymentsFrag, pwa, integrations, dispatch, equipment, inventory, leads, customer, agent, attention, pageChrome, expenses, digest, projects, crews, subcontractors, bookkeeping, reports, brand, bookingF7, errorsFrag, pricebook, searchFrag, team];
+const FRAGMENTS: I18nFragment[] = [reminders, jobops, quotes, homehero, homefaq, notifications, track9, googleReviews, attachments, imports, googleAuth, track8, billing, customerExtras, quoteItems, track10work, track10money, track10misc, exportsFrag, credentials, gps, support, quickbooks, paymentsFrag, pwa, integrations, dispatch, equipment, inventory, leads, customer, agent, attention, pageChrome, expenses, digest, projects, crews, subcontractors, bookkeeping, reports, brand, bookingF7, errorsFrag, pricebook, searchFrag, team, metaFrag];
 
 function deepMerge(target: Dictionary, src: Dictionary): Dictionary {
   for (const [k, v] of Object.entries(src)) {
