@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { requireAuth, createSession } from '@/lib/auth';
-import { rateLimit, AUTH_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, AUTH_LIMIT } from '@/lib/rate-limit-durable';
 import { encryptSecret, decryptSecret } from '@/lib/crypto';
 import {
   generateTotpSecret,
@@ -100,7 +100,7 @@ export async function disableTotp(password: string): Promise<TotpResult> {
  * challenge. Accepts a TOTP code OR a single-use backup code.
  */
 export async function verifyTotpLogin(challenge: string, code: string): Promise<TotpResult> {
-  const rl = rateLimit(`totp:${challenge.slice(0, 24)}`, AUTH_LIMIT);
+  const rl = await rateLimitDurable(`totp:${challenge.slice(0, 24)}`, AUTH_LIMIT);
   if (!rl.ok) return { error: 'Too many attempts. Please wait a moment.' };
   const userId = verifyTotpChallenge(challenge);
   if (!userId) return { error: 'This verification expired. Please sign in again.' };

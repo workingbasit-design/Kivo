@@ -5,7 +5,7 @@ import {
   randomOAuthValue,
   safeRedirectPath,
 } from '@/lib/google-auth';
-import { rateLimit, AUTH_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, AUTH_LIMIT } from '@/lib/rate-limit-durable';
 import { clientIpFromHeaders } from '@/lib/client-ip';
 
 const STATE_COOKIE = 'google_oauth_state';
@@ -26,7 +26,7 @@ export async function GET(req: Request) {
   }
 
   // Rate-limit OAuth initiations per IP - prevents state-cookie churn attacks.
-  const rl = rateLimit(`google-oauth-init:${clientIp(req)}`, AUTH_LIMIT);
+  const rl = await rateLimitDurable(`google-oauth-init:${clientIp(req)}`, AUTH_LIMIT);
   if (!rl.ok) {
     return NextResponse.redirect(new URL('/login?google=rate-limited', req.url));
   }

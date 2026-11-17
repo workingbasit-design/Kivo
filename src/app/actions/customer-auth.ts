@@ -11,7 +11,7 @@ import {
   DUMMY_CUSTOMER_HASH,
 } from '@/lib/customer-auth';
 import { isPasswordTooLong, MAX_PASSWORD_LENGTH } from '@/lib/password-policy';
-import { rateLimit, AUTH_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, AUTH_LIMIT } from '@/lib/rate-limit-durable';
 
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -31,7 +31,7 @@ function tooMany(): { error: string } {
 }
 
 export async function customerSignup(_prev: unknown, formData: FormData) {
-  const rl = rateLimit(await clientKey('customer-signup'), AUTH_LIMIT);
+  const rl = await rateLimitDurable(await clientKey('customer-signup'), AUTH_LIMIT);
   if (!rl.ok) return tooMany();
 
   // B11.1: honeypot + fill-time bot check on customer signup.
@@ -79,7 +79,7 @@ export async function customerSignup(_prev: unknown, formData: FormData) {
 }
 
 export async function customerLogin(_prev: unknown, formData: FormData) {
-  const rl = rateLimit(await clientKey('customer-login'), AUTH_LIMIT);
+  const rl = await rateLimitDurable(await clientKey('customer-login'), AUTH_LIMIT);
   if (!rl.ok) return tooMany();
 
   const email = String(formData.get('email') || '').trim().toLowerCase();
@@ -92,7 +92,7 @@ export async function customerLogin(_prev: unknown, formData: FormData) {
     return { error: 'Please enter your email and password.' };
   }
   // Per-email bucket alongside the per-IP one (credential-stuffing defense).
-  const rlEmail = rateLimit(`customer-login-email:${email}`, AUTH_LIMIT);
+  const rlEmail = await rateLimitDurable(`customer-login-email:${email}`, AUTH_LIMIT);
   if (!rlEmail.ok) return tooMany();
   // Same cap as signup: keeps the PBKDF2 verify cheap even
   // when the stored account was created before the cap existed.

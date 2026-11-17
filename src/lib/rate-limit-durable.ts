@@ -25,6 +25,37 @@ export async function rateLimitDurable(
   key: string,
   opts: { limit: number; windowMs: number }
 ): Promise<RateLimitResult> {
+  // E2E TEST SERVERS ONLY — same three-way gate as the in-memory limiter
+  // (P1.0 S5): E2E_DISABLE_RATE_LIMIT=1 + E2E_TEST_SERVER=1 (set only by
+  // the Playwright webServer env) + NODE_ENV != 'production'. The
+  // Playwright suite logs in hundreds of times against a real server and
+  // a real test DB — it cannot stub Prisma, so without this gate the suite
+  // would collapse the moment auth swaps to the durable limiter (CI run
+  // 43729091950). Vercel always runs production, so the gate is inert there.
+  if (
+    process.env.E2E_DISABLE_RATE_LIMIT === '1' &&
+    process.env.E2E_TEST_SERVER === '1' &&
+    process.env.NODE_ENV !== 'production'
+  ) {
+    return { ok: true, remaining: opts.limit, retryAfterMs: 0 };
+  }
+
+  try {
+    return await rateLimitDurableDb(key, opts);
+  } catch (err) {
+    // Fail CLOSED on a DB error for auth buckets (S4): an attacker must
+    // never get free attempts because the database is unreachable, and a
+    // DB outage already makes login impossible (the user lookup fails),
+    // so denying here costs nothing extra. Log so the outage is visible.
+    console.error('[rate-limit-durable] DB check failed, denying:', err);
+    return { ok: false, remaining: 0, retryAfterMs: opts.windowMs };
+  }
+}
+
+async function rateLimitDurableDb(
+  key: string,
+  opts: { limit: number; windowMs: number }
+): Promise<RateLimitResult> {
   const now = Date.now();
   const nowDate = new Date(now);
 

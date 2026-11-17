@@ -1,8 +1,8 @@
 /**
  * In-memory stand-in for the modules the auth rate-limit tests touch.
- * The REAL @/lib/rate-limit is used (that's what's under test); everything
- * else is stubbed. Pure helper modules (validations, password-policy,
- * password-reset, client-ip, zod) are not intercepted.
+ * The REAL @/lib/rate-limit-durable is used (that's what's under test);
+ * everything else is stubbed. Pure helper modules (validations,
+ * password-policy, password-reset, client-ip, zod) are not intercepted.
  */
 
 let testIp = '9.9.9.9';
@@ -23,6 +23,7 @@ export function resetAuthStub() {
   businessUser = null;
   customerUserRow = null;
   testIp = '9.9.9.9';
+  rateLimitRows.clear();
 }
 
 // next/headers
@@ -67,6 +68,11 @@ const bcryptStub = {
 export default bcryptStub;
 
 // @/lib/prisma
+// In-memory RateLimit table for the durable limiter (P1.0 S4): the
+// limiter's state lives here, not in module state — that is what makes
+// the limit hold across serverless instances. updateMany only touches
+// unexpired rows, matching the real implementation's semantics.
+const rateLimitRows = new Map();
 export const prisma = {
   user: {
     findUnique: async ({ where }) =>
@@ -77,6 +83,25 @@ export const prisma = {
       customerUserRow && where?.email === customerUserRow.email
         ? customerUserRow
         : null,
+  },
+  rateLimit: {
+    updateMany: async ({ where, data }) => {
+      const row = rateLimitRows.get(where?.key);
+      if (row && row.resetAt > where?.resetAt?.gt) {
+        row.count += data?.count?.increment ?? 1;
+        return { count: 1 };
+      }
+      return { count: 0 };
+    },
+    upsert: async ({ where, create, update }) => {
+      const row = { key: where.key, count: 1, resetAt: (create ?? update).resetAt };
+      rateLimitRows.set(where.key, row);
+      return row;
+    },
+    findUnique: async ({ where }) => {
+      const row = rateLimitRows.get(where?.key);
+      return row ? { count: row.count, resetAt: row.resetAt } : null;
+    },
   },
 };
 

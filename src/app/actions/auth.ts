@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 import { createSession, destroySession, getSession, requireAuth } from '@/lib/auth';
 import { loginSchema, registerSchema } from '@/lib/validations';
-import { rateLimit, AUTH_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, AUTH_LIMIT } from '@/lib/rate-limit-durable';
 import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { sendPlatformEmail } from '@/lib/messaging/platform-email';
@@ -48,7 +48,7 @@ export async function register(
   _prev: AuthResult,
   formData: FormData
 ): Promise<AuthResult> {
-  const rl = rateLimit(await clientKey('register'), AUTH_LIMIT);
+  const rl = await rateLimitDurable(await clientKey('register'), AUTH_LIMIT);
   if (!rl.ok) return tooMany(rl);
 
   // B11.1: honeypot + fill-time bot check on business signup.
@@ -70,7 +70,7 @@ export async function register(
 
   // Per-email bucket alongside the per-IP one: without it, one account's
   // signup could be retried indefinitely by rotating IPs.
-  const rlEmail = rateLimit(`register-email:${email}`, AUTH_LIMIT);
+  const rlEmail = await rateLimitDurable(`register-email:${email}`, AUTH_LIMIT);
   if (!rlEmail.ok) return tooMany(rlEmail);
 
   const existing = await prisma.user.findUnique({ where: { email } });
@@ -161,7 +161,7 @@ export async function login(
   _prev: AuthResult,
   formData: FormData
 ): Promise<AuthResult> {
-  const rl = rateLimit(await clientKey('login'), AUTH_LIMIT);
+  const rl = await rateLimitDurable(await clientKey('login'), AUTH_LIMIT);
   if (!rl.ok) return tooMany(rl);
 
   const parsed = loginSchema.safeParse({
@@ -176,7 +176,7 @@ export async function login(
   // Per-email bucket alongside the per-IP one: this is the credential-
   // stuffing defense. An attacker rotating IPs still can't hammer one
   // account's password beyond the limit.
-  const rlEmail = rateLimit(`login-email:${email}`, AUTH_LIMIT);
+  const rlEmail = await rateLimitDurable(`login-email:${email}`, AUTH_LIMIT);
   if (!rlEmail.ok) return tooMany(rlEmail);
 
   // Always hash-compare to keep timing consistent-ish, even for unknown emails.

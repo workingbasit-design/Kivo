@@ -4,7 +4,7 @@ import { headers } from 'next/headers';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
-import { rateLimit, AUTH_LIMIT } from '@/lib/rate-limit';
+import { rateLimitDurable, AUTH_LIMIT } from '@/lib/rate-limit-durable';
 import {
   newResetToken,
   hashResetToken,
@@ -54,7 +54,7 @@ export async function requestPasswordReset(
   _prev: ResetResult,
   formData: FormData
 ): Promise<ResetResult> {
-  const rl = rateLimit(await clientKey('pw-reset'), AUTH_LIMIT);
+  const rl = await rateLimitDurable(await clientKey('pw-reset'), AUTH_LIMIT);
   if (!rl.ok) return tooMany(rl);
 
   const parsed = emailSchema.safeParse({ email: formData.get('email') });
@@ -65,7 +65,7 @@ export async function requestPasswordReset(
 
   // Per-email bucket alongside the per-IP one: without it, an attacker
   // could flood one victim's inbox with reset emails by rotating IPs.
-  const rlEmail = rateLimit(`pw-reset-email:${email}`, AUTH_LIMIT);
+  const rlEmail = await rateLimitDurable(`pw-reset-email:${email}`, AUTH_LIMIT);
   if (!rlEmail.ok) return tooMany(rlEmail);
 
   const user = await prisma.user.findUnique({
@@ -115,7 +115,7 @@ export async function resetPassword(
   _prev: ResetResult,
   formData: FormData
 ): Promise<ResetResult> {
-  const rl = rateLimit(await clientKey('pw-reset-confirm'), AUTH_LIMIT);
+  const rl = await rateLimitDurable(await clientKey('pw-reset-confirm'), AUTH_LIMIT);
   if (!rl.ok) return tooMany(rl);
 
   const parsed = confirmSchema.safeParse({
