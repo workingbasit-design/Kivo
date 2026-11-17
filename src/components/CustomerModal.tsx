@@ -84,7 +84,10 @@ export default function CustomerModal({
         if (result?.ok) {
           toast.success(custL('customerUpdated'));
           onClose();
-          router.refresh();
+          // Same reason as the list archive (CustomersClient): a soft
+          // navigation re-fetches the list, while router.refresh() here
+          // raced and served stale snapshots in QA.
+          router.replace('/customers');
         }
         // createCustomer redirects to /customers on success (navigation
         // is underway); nothing more to do here.

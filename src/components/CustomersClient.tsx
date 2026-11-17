@@ -209,7 +209,12 @@ export default function CustomersClient({
         } else if (result?.ok) {
           toast.success(custL('customerArchived'));
           setExpandedId(null);
-          router.refresh();
+          // Navigate (same URL) instead of router.refresh(): the refresh
+          // re-rendered a stale cached snapshot of the list in QA run 7
+          // (Beta reappeared for 90s+ although the DB was correct). A
+          // soft navigation re-fetches the route, exactly like the
+          // modal create's redirect, which proved reliable in probe 4.
+          router.replace('/customers');
         }
       } finally {
         setArchivingId(null);
