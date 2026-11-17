@@ -70,7 +70,7 @@ describe('M11 RLS staging gate', () => {
       `ALTER ROLE "${TESTER_ROLE}" WITH LOGIN PASSWORD '${TESTER_PASSWORD}'`
     );
     await owner.$executeRawUnsafe(`GRANT USAGE ON SCHEMA public TO "${TESTER_ROLE}"`);
-    for (const t of ['Job', 'Invoice', 'Customer', 'InvoiceLineItem']) {
+    for (const t of ['Job', 'Invoice', 'Customer', 'InvoiceLineItem', 'Subcontractor', 'MonitorAlert']) {
       await owner.$executeRawUnsafe(
         `GRANT SELECT, INSERT, UPDATE, DELETE ON "${t}" TO "${TESTER_ROLE}"`
       );
@@ -245,25 +245,110 @@ describe('M11 RLS staging gate', () => {
     );
   });
 
+  it('m35 tables: Subcontractor isolated, MonitorAlert null rows stay visible (carve-out)', async () => {
+    // Idempotent setup (re-runnable against the same scratch DB).
+    await owner.monitorAlert.deleteMany({
+      where: { key: { in: ['m35-biz', 'm35-platform'] } },
+    });
+    await owner.subcontractor.deleteMany({
+      where: { name: { in: ['RLS Sub A', 'RLS Sub B'] } },
+    });
+    await owner.subcontractor.create({ data: { businessId: bizA, name: 'RLS Sub A' } });
+    await owner.subcontractor.create({ data: { businessId: bizB, name: 'RLS Sub B' } });
+    await owner.monitorAlert.create({
+      data: { key: 'm35-biz', businessId: bizA, detail: 'tenant alert' },
+    });
+    await owner.monitorAlert.create({
+      data: { key: 'm35-platform', businessId: null, detail: 'platform alert' },
+    });
+
+    // Tenant B sees only its own subcontractor...
+    const subsB = await asTenant(bizB, (tx) =>
+      tx.$queryRawUnsafe<Array<{ name: string }>>(`SELECT "name" FROM "Subcontractor"`)
+    );
+    assert.deepEqual(subsB.map((r) => r.name), ['RLS Sub B']);
+    // ...and none of A's alerts, but DOES see the platform null-business
+    // alert (the OR "businessId" IS NULL carve-out — without it, global
+    // alerts would silently vanish under FORCE).
+    const alertsB = await asTenant(bizB, (tx) =>
+      tx.$queryRawUnsafe<Array<{ key: string }>>(`SELECT "key" FROM "MonitorAlert"`)
+    );
+    assert.deepEqual(alertsB.map((r) => r.key), ['m35-platform']);
+    // Tenant A sees its own alert plus the platform row.
+    const alertsA = await asTenant(bizA, (tx) =>
+      tx.$queryRawUnsafe<Array<{ key: string }>>(`SELECT "key" FROM "MonitorAlert"`)
+    );
+    assert.deepEqual(
+      alertsA.map((r) => r.key).sort(),
+      ['m35-biz', 'm35-platform'],
+    );
+  });
+
   it('rollout coverage: every business table has its tenant policy', async () => {
-    // Mirrors the migration's table list: every model with a scalar
-    // businessId, plus the parent-linked tables and ConciergeSend.
-    const expected: string[] = [
-      'AgentProposal','ApiKey','Attachment','AuditEvent','AutomationLog','BookingPage',
-      'Campaign','ChecklistTemplate','Communication','ConfidentialityIncident','ConsentLog',
-      'CreditNote','Crew','CustomFieldDef','Customer','CustomerLink','CustomerPortalToken',
-      'CustomerProperty','Designation','DigestSetting','DirectoryClaim','DirectoryReport',
-      'DocumentCounter','Equipment','GoogleConnection','IdempotencyKey','Invoice','Job',
-      'JobExpense','Lead','Membership','MessageLog','MessageQuota','MessagingConnection',
-      'MessagingSettings','Notification','Part','Payment','PiaAuditLog','Project','PushSubscription',
-      'QuickBooksConnection','QuickBooksSyncLog','Quote','QuoteDeposit','QuoteRequest',
-      'RecurringJob','Review','ReviewRequest','SavedPro','SavedReport','Service','ShareToken',
-      'SignatureRequest','StripeConnection','StripeEvent','SupportTicket','TechnicianLocation',
-      'TimeEntry','TrackingShare','WebhookEndpoint','WebhookEvent','WorkflowRule',
-      'InvoiceLineItem','InvoiceTaxLine','QuoteLineItem','QuoteAddon','JobNote','JobPhoto',
-      'JobChecklistItem','ChecklistTemplateItem','CrewMember','WorkflowEvent',
-      'WebhookDelivery','CustomerFieldValue','QuoteMessage','ProjectPhase','ConciergeSend',
+    // GENERATED from prisma/schema.prisma (P1.0 Stage 1): every model with
+    // a scalar businessId column must have a policy, so a new business
+    // table can never again ship without one — the hardcoded list this
+    // replaced omitted the 13 tables m35 adds, and the test passed while
+    // they were unprotected. Parent-linked child tables have no businessId
+    // column; they are listed explicitly with the parent each resolves via.
+    const { readFileSync } = await import('node:fs');
+    const { join, dirname } = await import('node:path');
+    const { fileURLToPath } = await import('node:url');
+    const schemaPath = join(
+      dirname(fileURLToPath(import.meta.url)),
+      '..',
+      '..',
+      '..',
+      'prisma',
+      'schema.prisma',
+    );
+    const schemaText = readFileSync(schemaPath, 'utf8');
+    const businessTables = new Set<string>();
+    for (const m of schemaText.matchAll(/^model (\w+) \{([\s\S]*?)^\}/gm)) {
+      const [, name, body] = m;
+      if (/^\s*businessId\s+String\??\b/m.test(body)) businessTables.add(name);
+    }
+    // Spot-check the generation: the 13 tables m35 adds must be found.
+    for (const t of [
+      'BookableService',
+      'BookingRequest',
+      'JobAssignment',
+      'VisitSignature',
+      'MessageTemplateOverride',
+      'DashboardLayout',
+      'EmailVerificationToken',
+      'ErrorLog',
+      'MonitorAlert',
+      'PortalEvent',
+      'QuoteSignature',
+      'QuoteTemplate',
+      'Subcontractor',
+    ]) {
+      assert.ok(businessTables.has(t), `schema parse must find ${t}`);
+    }
+    // Child tables resolve their tenant via a parent row (see M11/M35).
+    const childTables: string[] = [
+      'InvoiceLineItem',
+      'InvoiceTaxLine',
+      'QuoteLineItem',
+      'QuoteAddon',
+      'JobNote',
+      'JobPhoto',
+      'JobChecklistItem',
+      'ChecklistTemplateItem',
+      'CrewMember',
+      'WorkflowEvent',
+      'WebhookDelivery',
+      'CustomerFieldValue',
+      'QuoteMessage',
+      'ProjectPhase',
+      'QuoteTemplateItem',
+      'JobFieldValue',
+      'PropertyFieldValue',
+      'JobSubcontractor',
+      'ConciergeSend',
     ];
+    const expected: string[] = [...businessTables, ...childTables];
     const rows = (await owner.$queryRawUnsafe(
       `SELECT tablename FROM pg_policies WHERE policyname LIKE '%_tenant_isolation'`
     )) as { tablename: string }[];

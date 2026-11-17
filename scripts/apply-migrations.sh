@@ -11,6 +11,14 @@
 # m34 (2026-11-17) adds the optional Job.startedAt (actual start time, set
 # when a job transitions into IN PROGRESS). Pure additive, no rows touched.
 #
+# m35 (2026-11-17, P1.0 Stage 1) closes the 17-table RLS policy gap found
+# by the master-plan audit: 13 business tables added after M11 never got a
+# policy, plus 4 parent-linked child tables. Also tightens
+# CustomerFieldValue (field business AND customer business) and carves out
+# NULL businessId rows on the 6 nullable-businessId models so platform /
+# pre-auth rows do not vanish under a future FORCE. Pure DDL, no rows
+# touched; idempotent (DROP POLICY IF EXISTS + CREATE POLICY).
+#
 # m31/m32 (2026-11-11, Claude design+DB series) are pure backfills with no
 # schema change: m31 seeds BookableService rows so existing /book pages do
 # not go blank when the page starts reading the curated list, and m32 flips
@@ -54,6 +62,7 @@ for m in \
   20261111130000_m32_backfill_gst_registered \
   20261116120000_m33_directory_request_customer \
   20261117120000_m34_job_startedat \
+  20261117130000_m35_rls_policy_gaps \
 ; do
   echo "==> Applying migration ${m}..."
   prisma db execute --file "prisma/migrations/${m}/migration.sql" --schema prisma/schema.prisma
