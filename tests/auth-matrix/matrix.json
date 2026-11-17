@@ -1748,6 +1748,38 @@
     },
     {
       "type": "action",
+      "file": "customer-password-reset.ts",
+      "function": "requestCustomerPasswordReset",
+      "auth": "unknown",
+      "hint": "manually reviewed",
+      "expected": {
+        "anonymous": "allow",
+        "consumer": "deny",
+        "ownerA": "deny",
+        "adminA": "deny",
+        "dispatcherA": "deny",
+        "technicianA": "deny",
+        "ownerB": "deny"
+      }
+    },
+    {
+      "type": "action",
+      "file": "customer-password-reset.ts",
+      "function": "resetCustomerPassword",
+      "auth": "unknown",
+      "hint": "manually reviewed",
+      "expected": {
+        "anonymous": "allow",
+        "consumer": "deny",
+        "ownerA": "deny",
+        "adminA": "deny",
+        "dispatcherA": "deny",
+        "technicianA": "deny",
+        "ownerB": "deny"
+      }
+    },
+    {
+      "type": "action",
       "file": "customer-profile.ts",
       "function": "updateCustomerProfile",
       "auth": "customer-session",
@@ -2886,22 +2918,6 @@
       "type": "action",
       "file": "invoices.ts",
       "function": "setInvoiceShareLinkExpiry",
-      "auth": "session",
-      "hint": "",
-      "expected": {
-        "anonymous": "deny",
-        "consumer": "deny",
-        "ownerA": "allow",
-        "adminA": "allow",
-        "dispatcherA": "deny",
-        "technicianA": "deny",
-        "ownerB": "deny"
-      }
-    },
-    {
-      "type": "action",
-      "file": "invoices.ts",
-      "function": "settleJobPaid",
       "auth": "session",
       "hint": "",
       "expected": {
@@ -4565,6 +4581,22 @@
     {
       "type": "action",
       "file": "settings.ts",
+      "function": "changeTeamMemberRole",
+      "auth": "session",
+      "hint": "",
+      "expected": {
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerA": "allow",
+        "adminA": "allow",
+        "dispatcherA": "deny",
+        "technicianA": "deny",
+        "ownerB": "deny"
+      }
+    },
+    {
+      "type": "action",
+      "file": "settings.ts",
       "function": "completeBusinessSetup",
       "auth": "session",
       "hint": "",
@@ -4614,6 +4646,38 @@
       "type": "action",
       "file": "settings.ts",
       "function": "removeTeamMember",
+      "auth": "session",
+      "hint": "",
+      "expected": {
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerA": "allow",
+        "adminA": "allow",
+        "dispatcherA": "deny",
+        "technicianA": "deny",
+        "ownerB": "deny"
+      }
+    },
+    {
+      "type": "action",
+      "file": "settings.ts",
+      "function": "suspendTeamMember",
+      "auth": "session",
+      "hint": "",
+      "expected": {
+        "anonymous": "deny",
+        "consumer": "deny",
+        "ownerA": "allow",
+        "adminA": "allow",
+        "dispatcherA": "deny",
+        "technicianA": "deny",
+        "ownerB": "deny"
+      }
+    },
+    {
+      "type": "action",
+      "file": "settings.ts",
+      "function": "unsuspendTeamMember",
       "auth": "session",
       "hint": "",
       "expected": {
