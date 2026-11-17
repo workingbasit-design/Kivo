@@ -56,6 +56,9 @@ export default async function CustomersPage({
           phone: true,
           email: true,
           address: true,
+          province: true,
+          postalCode: true,
+          notes: true,
           tags: true,
           _count: { select: { jobs: true } },
         },
@@ -100,6 +103,9 @@ export default async function CustomersPage({
       phone: c.phone ?? null,
       email: c.email ?? null,
       address: c.address ?? null,
+      province: c.province ?? null,
+      postalCode: c.postalCode ?? null,
+      notes: c.notes ?? null,
       tags: (c.tags ?? '').split(',').map((t) => t.trim()).filter(Boolean),
       jobCount: c._count?.jobs ?? 0,
       revenue: revenueByCustomer.get(c.id ?? '') ?? 0,
@@ -109,46 +115,44 @@ export default async function CustomersPage({
     loadError = custL('loadErrorBody');
   }
 
-  // The header count is the real total from the database, not the page size.
-  const countLabel = custL(totalCustomers === 1 ? 'countOne' : 'countOther').replace(
-    '{count}',
-    String(totalCustomers)
-  );
-
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={custL('title')}
-        summary={countLabel}
-        actionLabel={custL('addCustomer')}
-        actionHref="/customers/new"
-        actionIcon={<Plus />}
-      />
-
       {loadError ? (
-        <Card className="p-8 text-center">
-          <div className="mx-auto w-11 h-11 rounded-2xl bg-danger-bg text-danger flex items-center justify-center mb-4">
-            <AlertCircle size={22} />
-          </div>
-          <h2 className="text-base font-semibold text-ink mb-1">
-            {custL('loadErrorTitle')}
-          </h2>
-          <p className="text-sm text-ink-2 mb-5">{loadError}</p>
-          <div className="flex items-center justify-center gap-3">
-            <Button href="/customers" variant="primary">
-              {custL('tryAgain')}
-            </Button>
-            <Link href="/customers/new" className="text-sm font-medium text-ink hover:underline">
-              {custL('addACustomer')}
-            </Link>
-          </div>
-        </Card>
+        <>
+          <PageHeader
+            title={custL('title')}
+            summary=""
+            actionLabel={custL('addCustomer')}
+            actionHref="/customers/new"
+            actionIcon={<Plus />}
+          />
+          <Card className="p-8 text-center">
+            <div className="mx-auto w-11 h-11 rounded-2xl bg-danger-bg text-danger flex items-center justify-center mb-4">
+              <AlertCircle size={22} />
+            </div>
+            <h2 className="text-base font-semibold text-ink mb-1">
+              {custL('loadErrorTitle')}
+            </h2>
+            <p className="text-sm text-ink-2 mb-5">{loadError}</p>
+            <div className="flex items-center justify-center gap-3">
+              <Button href="/customers" variant="primary">
+                {custL('tryAgain')}
+              </Button>
+              <Link href="/customers/new" className="text-sm font-medium text-ink hover:underline">
+                {custL('addACustomer')}
+              </Link>
+            </div>
+          </Card>
+        </>
       ) : (
         <>
+          {/* Customers redesign: the client renders the header (eyebrow,
+              title, real total) plus search, filters and expandable cards. */}
           <CustomersClient
             customers={customers}
             currency={currency}
             locale={locale}
+            totalCustomers={totalCustomers}
           />
           <ListMore
             shown={customers.length}

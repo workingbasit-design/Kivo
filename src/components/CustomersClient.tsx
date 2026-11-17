@@ -1,19 +1,34 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Users, Search, Phone, Upload } from '@/components/icons';
+import {
+  Archive,
+  ChevronDown,
+  Download,
+  Mail,
+  Pencil,
+  Phone,
+  Plus,
+  Search,
+  Upload,
+  Users,
+  X,
+} from '@/components/icons';
+import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
 import MoneyText from '@/components/MoneyText';
+import { formatCents } from '@/lib/money';
+import { StatusBadge } from '@/components/kit';
 import {
-  Avatar,
-  Button,
-  Card,
-  EmptyState,
-  StatusBadge,
-} from '@/components/kit';
-import ExportButtons, { type ExportColumn, type ExportRow } from '@/components/ExportButtons';
+  useExportDownloads,
+  type ExportColumn,
+  type ExportRow,
+} from '@/components/ExportButtons';
+import { archiveCustomer } from '@/app/actions/customers';
+import type { PaymentSummary } from '@/lib/customer-payment-summary';
+import CustomerModal from '@/components/CustomerModal';
 
 /** Replace `{name}` tokens in a template string (minimal inline fill helper). */
 function fill(template: string, vars: Record<string, string | number>): string {
@@ -30,36 +45,69 @@ export type CustomerRow = {
   phone: string | null;
   email: string | null;
   address: string | null;
+  province: string | null;
+  postalCode: string | null;
+  notes: string | null;
   tags: string[];
   jobCount: number;
   revenue: number;
 };
 
 /**
- * Customer list with a live search box and tag filter chips. Typing filters
- * the list client-side across name, phone, email and address - no submit or
- * page reload needed.
+ * Customer list (Customers redesign, ChatGPT Customers prototype): the
+ * prototype's header, pill search, Export / Import toolbar, tag filter
+ * chips and expandable customer cards, fed by the server-loaded rows.
+ * Search and tag filtering are client-side. Expanding a card auto-fetches
+ * that customer's real payment position (balance due, unpaid invoices,
+ * last payment, lifetime paid) from /api/customers/[id]/payment-summary —
+ * never sample data. Add / Edit go through the CustomerModal and the real
+ * create / update server actions. Archive uses the real archive action
+ * (delete stays on the detail page, guarded by the archive + linked
+ * records rule). CSV import links to /imports?type=customers, which is
+ * preview-and-confirm — nothing is created silently.
  */
 export default function CustomersClient({
   customers,
   currency,
   locale = 'en',
+  totalCustomers,
 }: {
   customers: CustomerRow[];
   currency?: string;
   locale?: Locale;
+  /** Real total from the database (the list page is capped). */
+  totalCustomers: number;
 }) {
   const [query, setQuery] = useState('');
   const [activeTag, setActiveTag] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [modalCustomer, setModalCustomer] = useState<CustomerRow | 'new' | null>(null);
+  const [payById, setPayById] = useState<Record<string, PaymentSummary | 'loading' | 'error'>>({});
+  const [archivingId, setArchivingId] = useState<string | null>(null);
+  const [, startTransition] = useTransition();
   const router = useRouter();
+  const searchRef = useRef<HTMLInputElement>(null);
+  const custL = (k: string) => t(locale, `customers.${k}`);
   const L = (path: string) => t(locale, `t10money.${path}`);
+
+  // Cmd/Ctrl+K focuses search (same as Jobs).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        searchRef.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
 
   // Distinct tags across this business's customers (tenant-safe: only this
   // business's customers are in `customers`), for the filter chips.
   const allTags = useMemo(() => {
     const set = new Set<string>();
     for (const c of customers) {
-      for (const t of c.tags ?? []) set.add(t);
+      for (const tag of c.tags ?? []) set.add(tag);
     }
     return [...set].sort((a, b) => a.localeCompare(b));
   }, [customers]);
@@ -81,7 +129,11 @@ export default function CustomersClient({
   const hasFilter = query.trim() !== '' || activeTag !== null;
   const countLabel = fill(
     L(filtered.length === 1 ? 'custListCountOne' : 'custListCountMany'),
-    { count: filtered.length }
+    { count: filtered.length },
+  );
+  const headerCount = custL(totalCustomers === 1 ? 'countOne' : 'countOther').replace(
+    '{count}',
+    String(totalCustomers),
   );
 
   // Export the *currently filtered* list (2026-09-24).
@@ -95,7 +147,7 @@ export default function CustomersClient({
       { key: 'jobs', label: t(locale, 'exports.colJobs') },
       { key: 'revenue', label: t(locale, 'exports.colRevenue'), kind: 'money' },
     ],
-    [locale]
+    [locale],
   );
   const exportRows: ExportRow[] = useMemo(
     () =>
@@ -108,53 +160,174 @@ export default function CustomersClient({
         jobs: c.jobCount,
         revenue: c.revenue,
       })),
-    [filtered]
+    [filtered],
   );
   const exportFileBase = useMemo(
     () => `everyjob-customers-${new Date().toISOString().slice(0, 10)}`,
-    []
+    [],
   );
+  const { downloadCsv, busy: exportBusy, disabled: exportDisabled } = useExportDownloads({
+    columns: exportColumns,
+    rows: exportRows,
+    fileBase: exportFileBase,
+    currency,
+    locale,
+  });
 
-  const chipClass = (active: boolean) =>
-    `min-h-[44px] inline-flex items-center text-xs font-bold rounded-full px-4 transition-colors ${
-      active ? 'bg-asphalt text-hero-ink' : 'bg-surface text-ink-2 border border-line hover:border-line-strong'
-    }`;
+  /** Expand a card; the first expand auto-fetches the real payment summary. */
+  const toggleExpanded = (customer: CustomerRow) => {
+    if (expandedId === customer.id) {
+      setExpandedId(null);
+      return;
+    }
+    setExpandedId(customer.id);
+    if (payById[customer.id] === undefined) {
+      setPayById((prev) => ({ ...prev, [customer.id]: 'loading' }));
+      fetch(`/api/customers/${customer.id}/payment-summary`, {
+        headers: { Accept: 'application/json' },
+      })
+        .then((res) => (res.ok ? res.json() : Promise.reject(new Error(String(res.status)))))
+        .then((data: PaymentSummary) =>
+          setPayById((prev) => ({ ...prev, [customer.id]: data })),
+        )
+        .catch(() =>
+          setPayById((prev) => ({ ...prev, [customer.id]: 'error' })),
+        );
+    }
+  };
+
+  const archive = (customer: CustomerRow) => {
+    if (archivingId) return;
+    setArchivingId(customer.id);
+    const fd = new FormData();
+    fd.set('id', customer.id);
+    startTransition(async () => {
+      try {
+        const result = await archiveCustomer({}, fd);
+        if (result?.error) {
+          toast.error(result.error);
+        } else if (result?.ok) {
+          toast.success(custL('customerArchived'));
+          setExpandedId(null);
+          router.refresh();
+        }
+      } finally {
+        setArchivingId(null);
+      }
+    });
+  };
+
+  const initials = (name: string) =>
+    (name || 'C')
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((s) => s[0])
+      .join('')
+      .toUpperCase();
+
+  const payPanel = (customer: CustomerRow) => {
+    const pay = payById[customer.id];
+    return (
+      <div className="ej-customer-pay">
+        <h3>{custL('paymentTitle')}</h3>
+        {pay === undefined || pay === 'loading' ? (
+          <p className="ej-customer-pay-loading">{custL('loadingPayments')}</p>
+        ) : pay === 'error' ? (
+          <p className="ej-customer-pay-loading">{custL('paymentLoadError')}</p>
+        ) : (
+          <div className="ej-customer-pay-grid">
+            <div>
+              <span>{custL('balanceDue')}</span>
+              <b className={pay.balanceDueCents > 0 ? 'balance-due' : 'balance-ok'}>
+                {formatCents(pay.balanceDueCents, currency, locale === 'fr' ? 'fr' : 'en')}
+              </b>
+            </div>
+            <div>
+              <span>{custL('unpaidInvoices')}</span>
+              <b>{pay.unpaidCount}</b>
+            </div>
+            <div>
+              <span>{custL('lastPayment')}</span>
+              <b>
+                {pay.lastPayment
+                  ? formatCents(pay.lastPayment.amountCents, currency, locale === 'fr' ? 'fr' : 'en')
+                  : custL('noPayments')}
+              </b>
+            </div>
+            <div>
+              <span>{custL('totalPaid')}</span>
+              <b>{formatCents(pay.totalPaidCents, currency, locale === 'fr' ? 'fr' : 'en')}</b>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
-    <div className="space-y-6">
-      <div className="relative max-w-md">
-        <Search
-          size={16}
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-2 pointer-events-none"
-        />
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t(locale, 'customers.searchPlaceholder')}
-          aria-label={t(locale, 'customers.searchPlaceholder')}
-          className="input !pl-11 !rounded-full !bg-surface shadow-sm"
-        />
+    <div className="ej-customers">
+      <header className="ej-customers-header">
+        <div className="min-w-0">
+          <p className="ej-customers-eyebrow">{custL('eyebrow')}</p>
+          <h1>{custL('title')}</h1>
+          <p className="ej-customers-subtitle">{headerCount}</p>
+        </div>
+        <button
+          type="button"
+          className="ej-customers-new"
+          onClick={() => setModalCustomer('new')}
+        >
+          <Plus size={18} aria-hidden="true" /> {custL('addCustomer')}
+        </button>
+      </header>
+
+      <div className="ej-customers-toolbar">
+        <label className="ej-customers-search">
+          <Search size={18} aria-hidden="true" />
+          <input
+            ref={searchRef}
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={custL('searchPlaceholder')}
+            aria-label={custL('searchPlaceholder')}
+          />
+          {query !== '' && (
+            <button
+              type="button"
+              className="ej-customers-search-clear"
+              onClick={() => setQuery('')}
+              aria-label={custL('clearSearch')}
+            >
+              <X size={18} aria-hidden="true" />
+            </button>
+          )}
+        </label>
+        <div className="ej-customers-actions">
+          <button
+            type="button"
+            className="ej-customers-action"
+            onClick={downloadCsv}
+            disabled={exportDisabled}
+          >
+            <Download size={16} aria-hidden="true" />
+            {exportBusy === 'csv' ? t(locale, 'exports.preparing') : t(locale, 'exports.csv')}
+          </button>
+          <Link href="/imports?type=customers" className="ej-customers-action">
+            <Upload size={16} aria-hidden="true" /> {t(locale, 'exports.importBtn')}
+          </Link>
+        </div>
       </div>
 
-      {/* Export the currently filtered list + jump to the importer */}
-      <div className="flex flex-wrap items-center gap-2">
-        <ExportButtons
-          columns={exportColumns}
-          rows={exportRows}
-          fileBase={exportFileBase}
-          currency={currency}
-          locale={locale}
-        />
-        <Button href="/imports?type=customers" variant="secondary">
-          <Upload size={14} /> {t(locale, 'exports.importBtn')}
-        </Button>
-      </div>
-
-      {/* Tag filter chips */}
       {allTags.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2" role="group" aria-label={L('custListFilterTags')}>
-          <button type="button" onClick={() => setActiveTag(null)} className={chipClass(activeTag === null)}>
+        <div className="ej-customers-chips" role="group" aria-label={L('custListFilterTags')}>
+          <button
+            type="button"
+            onClick={() => setActiveTag(null)}
+            aria-pressed={activeTag === null}
+            className={`ej-customers-chip${activeTag === null ? ' active' : ''}`}
+          >
             {L('custListAll')}
           </button>
           {allTags.map((tag) => (
@@ -163,7 +336,7 @@ export default function CustomersClient({
               type="button"
               onClick={() => setActiveTag(activeTag === tag ? null : tag)}
               aria-pressed={activeTag === tag}
-              className={chipClass(activeTag === tag)}
+              className={`ej-customers-chip${activeTag === tag ? ' active' : ''}`}
             >
               {tag}
             </button>
@@ -171,94 +344,182 @@ export default function CustomersClient({
         </div>
       )}
 
+      <div className="ej-customers-list-heading">
+        <span>
+          {countLabel}
+          {activeTag ? ` ${fill(L('custListTagged'), { tag: activeTag })}` : ''}
+          {query.trim() ? ` ${fill(L('custListMatching'), { q: query.trim() })}` : ''}
+          {hasFilter && (
+            <button
+              type="button"
+              className="ej-customers-clear"
+              onClick={() => {
+                setActiveTag(null);
+                setQuery('');
+              }}
+            >
+              {custL('clearSearch')}
+            </button>
+          )}
+        </span>
+        <span className="ej-customers-list-note">{custL('directoryNote')}</span>
+      </div>
+
       {filtered.length === 0 ? (
-        <Card>
-          <EmptyState
-            icon={<Users />}
-            title={hasFilter ? t(locale, 'customers.noResults') : L('custListNoCustomersYet')}
-            text={
-              hasFilter
-                ? `${countLabel}${activeTag ? ` ${fill(L('custListTagged'), { tag: activeTag })}` : ''}${query.trim() ? ` ${fill(L('custListMatching'), { q: query.trim() })}` : ''}.`
-                : L('custListNoCustomersDesc')
-            }
-            actionLabel={L('custListAddCustomer')}
-            onAction={() => router.push('/customers/new')}
-          />
-        </Card>
+        <section className="ej-customers-empty">
+          <span className="ej-customers-empty-icon" aria-hidden="true">
+            <Users size={23} />
+          </span>
+          <h2>{hasFilter ? custL('noMatchingTitle') : custL('noCustomersTitle')}</h2>
+          <p>{hasFilter ? custL('noMatchingText') : custL('noCustomersText')}</p>
+          {hasFilter ? (
+            <button
+              type="button"
+              className="ej-customers-btn"
+              onClick={() => {
+                setActiveTag(null);
+                setQuery('');
+              }}
+            >
+              {custL('clearSearch')}
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="ej-customers-btn primary"
+              onClick={() => setModalCustomer('new')}
+            >
+              <Plus size={16} aria-hidden="true" /> {custL('addCustomer')}
+            </button>
+          )}
+        </section>
       ) : (
-        <>
-          <p className="text-xs font-semibold text-ink-2">
-            {countLabel}
-            {activeTag ? ` ${fill(L('custListTagged'), { tag: activeTag })}` : ''}
-            {query.trim() ? ` ${fill(L('custListMatching'), { q: query.trim() })}` : ''}
-            {hasFilter && (
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveTag(null);
-                  setQuery('');
-                }}
-                className="ml-2 min-h-[44px] inline-flex items-center text-ink font-bold hover:underline"
+        <section className="ej-customers-list">
+          {filtered.map((c, i) => {
+            const expanded = expandedId === c.id;
+            return (
+              <article
+                key={c.id}
+                className={`ej-customer-card${expanded ? ' expanded' : ''}`}
+                style={{ '--row-delay': `${Math.min(i, 12) * 35}ms` } as React.CSSProperties}
               >
-                {L('custListClear')}
-              </button>
-            )}
-          </p>
-          <Card className="!p-0 overflow-hidden">
-            <ul className="divide-y divide-line">
-              {filtered.map((c, i) => (
-                <li
-                  key={c.id}
-                  className="ej-row-in"
-                  style={{ '--row-delay': `${Math.min(i, 12) * 35}ms` } as React.CSSProperties}
+                <button
+                  type="button"
+                  className="ej-customer-card-main"
+                  onClick={() => toggleExpanded(c)}
+                  aria-expanded={expanded}
                 >
-                  <Link
-                    href={`/customers/${c.id}`}
-                    className="flex items-center gap-3.5 px-4 sm:px-5 py-3.5 hover:bg-surface-2 active:bg-surface-2 transition-colors min-h-[72px]"
-                  >
-                    <Avatar
-                      initials={c.name
-                        .split(' ')
-                        .map((w) => w[0])
-                        .slice(0, 2)
-                        .join('')
-                        .toUpperCase()}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm text-ink truncate">{c.name}</p>
-                      {c.phone ? (
-                        <p className="text-xs text-ink-2 truncate flex items-center gap-1 mt-0.5">
-                          <Phone size={11} aria-hidden /> {c.phone}
-                        </p>
-                      ) : (
-                        <p className="text-xs text-ink-2 mt-0.5">{L('custListNoPhone')}</p>
+                  <span className="ej-customer-avatar" aria-hidden="true">
+                    {initials(c.name)}
+                  </span>
+                  <span className="ej-customer-identity">
+                    <b>{c.name}</b>
+                    <small>
+                      {c.phone && (
+                        <>
+                          <Phone size={12} aria-hidden="true" />
+                          {c.phone}
+                        </>
                       )}
-                      {(c.tags ?? []).length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1.5">
-                          {(c.tags ?? []).map((tag) => (
-                            <StatusBadge key={tag} tone="neutral">
-                              {tag}
-                            </StatusBadge>
-                          ))}
-                        </div>
+                      {c.email && (
+                        <>
+                          <Mail size={12} aria-hidden="true" />
+                          {c.email}
+                        </>
                       )}
+                      {!c.phone && !c.email && <>{L('custListNoPhone')}</>}
+                    </small>
+                    {(c.tags ?? []).length > 0 && (
+                      <span className="ej-customer-tags">
+                        {(c.tags ?? []).map((tag) => (
+                          <StatusBadge key={tag} tone="neutral">
+                            {tag}
+                          </StatusBadge>
+                        ))}
+                      </span>
+                    )}
+                  </span>
+                  <span className="ej-customer-spend">
+                    <b>
+                      <MoneyText dollars={c.revenue} locale={locale} />
+                    </b>
+                    <small>
+                      {fill(L(c.jobCount === 1 ? 'custListJobOne' : 'custListJobMany'), {
+                        count: c.jobCount,
+                      })}
+                    </small>
+                  </span>
+                  <span className="ej-customer-expand" aria-hidden="true">
+                    <ChevronDown size={16} />
+                  </span>
+                </button>
+                {expanded && (
+                  <div className="ej-customer-details">
+                    <div className="ej-customer-detail-grid">
+                      <div>
+                        <span>{custL('phone')}</span>
+                        <b>{c.phone ?? custL('notProvided')}</b>
+                      </div>
+                      <div>
+                        <span>{custL('email')}</span>
+                        <b>{c.email ?? custL('notProvided')}</b>
+                      </div>
+                      <div>
+                        <span>{custL('address')}</span>
+                        <b>{c.address ?? custL('notProvided')}</b>
+                      </div>
+                      <div>
+                        <span>{custL('jobsBooked')}</span>
+                        <b>{c.jobCount}</b>
+                      </div>
                     </div>
-                    <div className="text-right shrink-0">
-                      <p className="font-bold text-sm text-ink tabular-nums">
-                        <MoneyText dollars={c.revenue} locale={locale} />
-                      </p>
-                      <p className="text-[11px] text-ink-2">
-                        {fill(L(c.jobCount === 1 ? 'custListJobOne' : 'custListJobMany'), {
-                          count: c.jobCount,
-                        })}
-                      </p>
+                    {c.notes && <p className="ej-customer-notes">{c.notes}</p>}
+                    {payPanel(c)}
+                    <div className="ej-customer-detail-actions">
+                      <button
+                        type="button"
+                        className="ej-customers-btn small"
+                        onClick={() => setModalCustomer(c)}
+                      >
+                        <Pencil size={14} aria-hidden="true" /> {custL('editCustomer')}
+                      </button>
+                      <Link
+                        href={`/customers/${c.id}`}
+                        className="ej-customers-btn small"
+                      >
+                        {custL('viewDetails')}
+                      </Link>
+                      <button
+                        type="button"
+                        className="ej-customers-btn small"
+                        onClick={() => archive(c)}
+                        disabled={archivingId === c.id}
+                      >
+                        <Archive size={14} aria-hidden="true" />{' '}
+                        {archivingId === c.id
+                          ? t(locale, 't10money.custArchiving')
+                          : t(locale, 't10money.custArchive')}
+                      </button>
                     </div>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </Card>
-        </>
+                  </div>
+                )}
+              </article>
+            );
+          })}
+        </section>
+      )}
+
+      <div className="ej-customers-footnote">
+        <span className="ej-customers-footnote-dot" aria-hidden="true" />
+        {custL('footnote')}
+      </div>
+
+      {modalCustomer && (
+        <CustomerModal
+          customer={modalCustomer === 'new' ? null : modalCustomer}
+          locale={locale}
+          onClose={() => setModalCustomer(null)}
+        />
       )}
     </div>
   );

@@ -6,7 +6,8 @@ import { requireAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { logPiiAccess } from '@/lib/pii-audit';
 import { formatDateShort } from '@/lib/utils';
-import { formatMoney, centsToDollars } from '@/lib/money';
+import { formatMoney, formatCents, centsToDollars } from '@/lib/money';
+import { getCustomerPaymentSummary, type PaymentSummary } from '@/lib/customer-payment-summary';
 import { formatDisplayDate } from '@/lib/attention';
 import { Card, Button } from '@/components/kit';
 
@@ -168,6 +169,22 @@ export default async function CustomerDetailPage({
   const tz = business?.timezone ?? 'America/Toronto';
   const custL = (k: string) => t(locale, 'customers.' + k);
   const customerName = customer.name ?? custL('unnamed');
+
+  // Customers redesign: the payment position, from the same shared helper
+  // as the invoice-form auto-fetch endpoint and the list's expand panel,
+  // so all three surfaces show the same numbers. A failure here must not
+  // break the detail page — the card simply does not render.
+  let paymentSummary: PaymentSummary | null = null;
+  try {
+    paymentSummary = await getCustomerPaymentSummary(
+      prisma,
+      businessId,
+      customer.id,
+      customerName,
+    );
+  } catch (e) {
+    console.error('[customers] failed to load payment summary:', e);
+  }
   const totalRevenue = (customer.jobs ?? []).reduce(
     (s, j) => s + centsToDollars(j?.priceCents),
     0
@@ -212,7 +229,7 @@ export default async function CustomerDetailPage({
     : '';
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6 max-w-4xl ej-customers">
       <Button href="/customers" variant="secondary" className=" self-start">
         <ArrowLeft size={14} /> {custL('allCustomers')}
       </Button>
@@ -384,6 +401,45 @@ export default async function CustomerDetailPage({
           />
         </div>
       </Card>
+
+      {/* Customers redesign: payment position, auto-fetched on selection.
+          Same numbers as the list expand panel and the invoice form. */}
+      {paymentSummary && (
+        <Card className="p-6 md:p-8 ej-customer-pay-card">
+          <div className="ej-customer-pay">
+            <h3>{custL('paymentTitle')}</h3>
+            <div className="ej-customer-pay-grid">
+              <div>
+                <span>{custL('balanceDue')}</span>
+                <b className={paymentSummary.balanceDueCents > 0 ? 'balance-due' : 'balance-ok'}>
+                  {formatCents(paymentSummary.balanceDueCents, currency, locale === 'fr' ? 'fr' : 'en')}
+                </b>
+              </div>
+              <div>
+                <span>{custL('unpaidInvoices')}</span>
+                <b>{paymentSummary.unpaidCount}</b>
+              </div>
+              <div>
+                <span>{custL('lastPayment')}</span>
+                <b>
+                  {paymentSummary.lastPayment
+                    ? formatCents(paymentSummary.lastPayment.amountCents, currency, locale === 'fr' ? 'fr' : 'en')
+                    : custL('noPayments')}
+                </b>
+                {paymentSummary.lastPayment && (
+                  <span>
+                    {formatDateShort(new Date(paymentSummary.lastPayment.createdAt), undefined, tz)}
+                  </span>
+                )}
+              </div>
+              <div>
+                <span>{custL('totalPaid')}</span>
+                <b>{formatCents(paymentSummary.totalPaidCents, currency, locale === 'fr' ? 'fr' : 'en')}</b>
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* E5: Unified history timeline */}
       <Card className="p-6 md:p-8">
