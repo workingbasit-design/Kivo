@@ -211,7 +211,7 @@
 .ej-money-filter.active {
   border-color: var(--pine);
   background: var(--pine);
-  color: var(--surface);
+  color: var(--hero-ink);
 }
 .ej-money-activity-count {
   color: var(--ink-2);
