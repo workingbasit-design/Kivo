@@ -1,24 +1,53 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { prisma } from './prisma';
-import { DatabaseUnavailableError } from './db-errors';
+import { prisma } from './prisma.ts';
+import { DatabaseUnavailableError } from './db-errors.ts';
 import { customerSessionCookieName, newSessionId } from './session-cookie.ts';
 import crypto from 'crypto';
+import { promisify } from 'node:util';
 
 const COOKIE_NAME = customerSessionCookieName();
 const SESSION_DAYS = 30;
 
-function hashPassword(password: string): string {
+// PBKDF2 params (unchanged from the sync version, so every stored hash keeps
+// verifying): 100k iterations, SHA-512, 64-byte output, `salt:hash` hex
+// format. Async since P1.0 (S7): the sync version blocked the Node event
+// loop for the full hash duration on unauthenticated endpoints.
+const PBKDF2_ITERATIONS = 100000;
+const PBKDF2_KEY_LEN = 64;
+const PBKDF2_DIGEST = 'sha512';
+const pbkdf2Async = promisify(crypto.pbkdf2);
+
+// S6 dummy hash: a well-formed `salt:hash` value (generated once with the
+// real hash function, password 'dummy') that no account stores. The login
+// path verifies against it for non-existent emails so the timing matches a
+// real login instead of short-circuiting (email-existence oracle).
+export const DUMMY_CUSTOMER_HASH =
+  '1b7441f57320ecf6efd7d34a903babf1:871266671f210956dd05248f527858dbd621f96fecced87f844d2dfa43b9d3481dac5f8d0bfac98f1860622d22d9f2c316b005797b293059837d6515c037ad69';
+
+async function hashPassword(password: string): Promise<string> {
   const salt = crypto.randomBytes(16).toString('hex');
-  const hash = crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha512').toString('hex');
+  const hash = (
+    await pbkdf2Async(password, salt, PBKDF2_ITERATIONS, PBKDF2_KEY_LEN, PBKDF2_DIGEST)
+  ).toString('hex');
   return `${salt}:${hash}`;
 }
 
-export function verifyCustomerPassword(password: string, stored: string): boolean {
+export async function verifyCustomerPassword(
+  password: string,
+  stored: string,
+): Promise<boolean> {
   const [salt, hash] = stored.split(':');
   if (!salt || !hash) return false;
-  const check = crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha512').toString('hex');
-  return crypto.timingSafeEqual(Buffer.from(hash), Buffer.from(check));
+  const check = (
+    await pbkdf2Async(password, salt, PBKDF2_ITERATIONS, PBKDF2_KEY_LEN, PBKDF2_DIGEST)
+  ).toString('hex');
+  const a = Buffer.from(hash);
+  const b = Buffer.from(check);
+  // A malformed/short stored hash must fail closed, not throw RangeError
+  // from timingSafeEqual (which would turn a login into a 500).
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
 }
 
 export { hashPassword as hashCustomerPassword };

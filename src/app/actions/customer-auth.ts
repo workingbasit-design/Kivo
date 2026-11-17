@@ -8,6 +8,7 @@ import {
   destroyCustomerSession,
   hashCustomerPassword,
   verifyCustomerPassword,
+  DUMMY_CUSTOMER_HASH,
 } from '@/lib/customer-auth';
 import { isPasswordTooLong, MAX_PASSWORD_LENGTH } from '@/lib/password-policy';
 import { rateLimit, AUTH_LIMIT } from '@/lib/rate-limit';
@@ -48,9 +49,9 @@ export async function customerSignup(_prev: unknown, formData: FormData) {
   if (!name) return { error: 'Please enter your name.' };
   if (!isValidEmail(email)) return { error: 'Please enter a valid email address.' };
   if (password.length < 8) return { error: 'Password must be at least 8 characters.' };
-  // Cap password length: hashing runs PBKDF2-SHA512 100k iterations
-  // synchronously, so an unbounded input on this unauthenticated endpoint
-  // would burn CPU and block the event loop.
+  // Cap password length: hashing runs PBKDF2-SHA512 100k iterations, so an
+  // unbounded input on this unauthenticated endpoint would burn CPU (async
+  // since P1.0, but the cap stays as defence-in-depth).
   if (isPasswordTooLong(password)) return { error: `Password must be at most ${MAX_PASSWORD_LENGTH} characters.` };
 
   const existing = await prisma.customerUser.findUnique({ where: { email } }).catch(() => null);
@@ -67,7 +68,7 @@ export async function customerSignup(_prev: unknown, formData: FormData) {
     data: {
       name,
       email,
-      passwordHash: hashCustomerPassword(password),
+      passwordHash: await hashCustomerPassword(password),
       phone: phone || null,
       city: city || null,
     },
@@ -93,14 +94,21 @@ export async function customerLogin(_prev: unknown, formData: FormData) {
   // Per-email bucket alongside the per-IP one (credential-stuffing defense).
   const rlEmail = rateLimit(`customer-login-email:${email}`, AUTH_LIMIT);
   if (!rlEmail.ok) return tooMany();
-  // Same cap as signup: keeps the sync PBKDF2 verify cheap even
+  // Same cap as signup: keeps the PBKDF2 verify cheap even
   // when the stored account was created before the cap existed.
   if (isPasswordTooLong(password)) {
     return { error: 'Please enter your email and password.' };
   }
 
   const customer = await prisma.customerUser.findUnique({ where: { email } }).catch(() => null);
-  if (!customer || !verifyCustomerPassword(password, customer.passwordHash)) {
+  // S6: always verify, even for a non-existent email — verifying against the
+  // dummy hash costs one full PBKDF2, so the response time no longer reveals
+  // whether the email is registered.
+  const ok = await verifyCustomerPassword(
+    password,
+    customer?.passwordHash ?? DUMMY_CUSTOMER_HASH,
+  );
+  if (!customer || !ok) {
     return { error: 'Invalid email or password.' };
   }
 

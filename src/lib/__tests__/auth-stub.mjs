@@ -97,12 +97,17 @@ export async function createCustomerSession() {
   return { id: 'csess_1' };
 }
 export async function destroyCustomerSession() {}
-export function hashCustomerPassword() {
+export async function hashCustomerPassword() {
   return 'hashed';
 }
-export function verifyCustomerPassword() {
+export async function verifyCustomerPassword() {
   return false;
 }
+// Same well-formed dummy hash as the real module (hash of 'dummy'); the
+// stub verifier always returns false, so this value is never used to
+// authenticate — it only satisfies the import in customer-auth actions.
+export const DUMMY_CUSTOMER_HASH =
+  '1b7441f57320ecf6efd7d34a903babf1:871266671f210956dd05248f527858dbd621f96fecced87f844d2dfa43b9d3481dac5f8d0bfac98f1860622d22d9f2c316b005797b293059837d6515c037ad69';
 
 // @/lib/i18n/server
 export async function getLocale() {

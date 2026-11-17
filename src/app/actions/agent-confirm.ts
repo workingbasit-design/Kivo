@@ -295,10 +295,10 @@ export async function claimAgentAccount(_prev: unknown, formData: FormData) {
     return { error: 'This account already has a password. Log in instead.' };
   }
 
-  await unsafeUnscoped('agent:claim:setPassword', (db) =>
+  await unsafeUnscoped('agent:claim:setPassword', async (db) =>
     db.customerUser.update({
       where: { id: customer.id },
-      data: { passwordHash: hashCustomerPassword(password), agentCreatedAt: null },
+      data: { passwordHash: await hashCustomerPassword(password), agentCreatedAt: null },
     })
   );
   await createCustomerSession(customer.id);
