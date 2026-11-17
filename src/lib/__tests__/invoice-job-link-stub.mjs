@@ -7,6 +7,7 @@ export const calls = {
   invoiceCreate: [],
   lineItemCreateMany: [],
   jobUpdate: [],
+  auditEventCreate: [],
 };
 
 export const store = {
@@ -36,6 +37,7 @@ export function resetInvoiceLinkStub() {
   calls.invoiceCreate.length = 0;
   calls.lineItemCreateMany.length = 0;
   calls.jobUpdate.length = 0;
+  calls.auditEventCreate.length = 0;
 }
 
 function findJob({ where }) {
@@ -66,6 +68,13 @@ function makeTx() {
       update: async (args) => {
         calls.jobUpdate.push(args);
         return { id: args.where.id };
+      },
+    },
+    // F1a: createInvoice audits MONEY_CREATE inside the same tx.
+    auditEvent: {
+      create: async ({ data }) => {
+        calls.auditEventCreate.push(data);
+        return { id: 'audit_1', ...data };
       },
     },
   };

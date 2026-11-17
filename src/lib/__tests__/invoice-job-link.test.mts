@@ -40,6 +40,12 @@ test('jobId from the job page: the invoice persists the job link', async () => {
   assert.equal(stub.calls.invoiceCreate[0].jobId, 'job_1');
   assert.equal(stub.calls.invoiceCreate[0].customerId, 'cus_1');
   assert.equal(stub.calls.invoiceCreate[0].businessId, 'biz_1');
+  // F1a: the create audits MONEY_CREATE inside the same tx.
+  assert.equal(stub.calls.auditEventCreate.length, 1);
+  assert.equal(stub.calls.auditEventCreate[0].action, 'MONEY_CREATE');
+  assert.equal(stub.calls.auditEventCreate[0].entityType, 'Invoice');
+  assert.equal(stub.calls.auditEventCreate[0].businessId, 'biz_1');
+  assert.equal(stub.calls.auditEventCreate[0].actorId, 'user_1');
 });
 
 test('first linked invoice stamps the job invoicedAt (A1 bookkeeping)', async () => {

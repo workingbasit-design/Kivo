@@ -83,6 +83,37 @@ export interface AuditEventInput {
 type AuditCapable = Pick<PrismaClient, 'auditEvent'> | Pick<Prisma.TransactionClient, 'auditEvent'>;
 
 /**
+ * Shorthand for a user-initiated action: actor is always USER, actorId is
+ * the signed-in user's id (from requireAuth()). Use inside the same
+ * transaction as the mutation when one exists — a failed audit write then
+ * rolls the mutation back, so no money moves unaudited. For non-transactional
+ * callers, call it AFTER the mutation succeeds and swallow failures
+ * (console.error): the mutation already committed, so failing the response
+ * would lie about what happened. See the copilot precedent in
+ * src/app/api/copilot/route.ts.
+ */
+export async function auditUserAction(
+  db: AuditCapable,
+  auth: { businessId: string; user: { id: string } },
+  action: AuditAction,
+  entityType: string,
+  entityId: string | null,
+  before?: unknown,
+  after?: unknown
+): Promise<void> {
+  await writeAuditEvent(db, {
+    businessId: auth.businessId,
+    actorId: auth.user.id,
+    actorType: 'USER',
+    action,
+    entityType,
+    entityId,
+    before,
+    after,
+  });
+}
+
+/**
  * Write one audit row. `db` is the transaction the logged action runs in
  * (or the base client for non-transactional callers) — the audit row must
  * commit or roll back together with the action.

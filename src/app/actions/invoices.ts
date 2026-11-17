@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
 import { requireAuth } from '@/lib/auth';
+import { auditUserAction } from '@/lib/audit';
 import { requireMembership } from '@/lib/membership';
 import { invoiceSchema, paymentSchema, INVOICE_STATUSES } from '@/lib/validations';
 import { rateLimitDurable, ACTION_LIMIT } from '@/lib/rate-limit-durable';
@@ -174,8 +175,11 @@ export async function createInvoice(
   if (limited) return limited;
 
   let businessId: string;
+  let actorId: string;
   try {
-    ({ businessId } = await requireAuth());
+    const auth = await requireAuth();
+    businessId = auth.businessId;
+    actorId = auth.user.id;
   } catch {
     return { error: 'Please log in again.' };
   }
@@ -307,6 +311,16 @@ export async function createInvoice(
         data: { invoicedAt: new Date() },
       });
     }
+    // F1a: audit inside the tx — a failed audit write rolls the create back.
+    await auditUserAction(
+      tx,
+      { businessId, user: { id: actorId } },
+      'MONEY_CREATE',
+      'Invoice',
+      inv.id,
+      undefined,
+      { number: inv.number, totalCents: inv.totalCents.toString(), status: 'UNPAID' }
+    );
     return inv;
   });
 
@@ -339,8 +353,11 @@ export async function updateInvoiceStatus(
   if (limited) return limited;
 
   let businessId: string;
+  let actorId: string;
   try {
-    ({ businessId } = await requireAuth());
+    const auth = await requireAuth();
+    businessId = auth.businessId;
+    actorId = auth.user.id;
   } catch {
     return { error: 'Please log in again.' };
   }
@@ -361,6 +378,21 @@ export async function updateInvoiceStatus(
   }
 
   await prisma.invoice.update({ where: { id, businessId }, data: { status } });
+  // F1a: non-transactional caller — the mutation already committed, so an
+  // audit failure must not fail the response; log it instead.
+  try {
+    await auditUserAction(
+      prisma,
+      { businessId, user: { id: actorId } },
+      'MONEY_UPDATE',
+      'Invoice',
+      id,
+      { status: invoice.status },
+      { status }
+    );
+  } catch (err) {
+    console.error('invoices: audit write failed for updateInvoiceStatus', { businessId, invoiceId: id, error: err });
+  }
   revalidatePath('/invoices');
   revalidatePath(`/invoices/${id}`);
   return { ok: true };
@@ -375,8 +407,11 @@ export async function deleteInvoice(
   if (limited) return limited;
 
   let businessId: string;
+  let actorId: string;
   try {
-    ({ businessId } = await requireAuth());
+    const auth = await requireAuth();
+    businessId = auth.businessId;
+    actorId = auth.user.id;
   } catch {
     return { error: 'Please log in again.' };
   }
@@ -406,6 +441,18 @@ export async function deleteInvoice(
   }
 
   await prisma.invoice.delete({ where: { id, businessId } });
+  try {
+    await auditUserAction(
+      prisma,
+      { businessId, user: { id: actorId } },
+      'DELETE',
+      'Invoice',
+      id,
+      { number: invoice.number, status: invoice.status, totalCents: invoice.totalCents.toString() }
+    );
+  } catch (err) {
+    console.error('invoices: audit write failed for deleteInvoice', { businessId, invoiceId: id, error: err });
+  }
   revalidatePath('/invoices');
   revalidatePath('/dashboard');
   redirect('/invoices');
@@ -424,8 +471,11 @@ export async function voidInvoice(
   if (limited) return limited;
 
   let businessId: string;
+  let actorId: string;
   try {
-    ({ businessId } = await requireAuth());
+    const auth = await requireAuth();
+    businessId = auth.businessId;
+    actorId = auth.user.id;
   } catch {
     return { error: 'Please log in again.' };
   }
@@ -454,6 +504,19 @@ export async function voidInvoice(
     // stay as the audit fields.
     data: { status: 'VOID', voidedAt: new Date(), voidReason: reason },
   });
+  try {
+    await auditUserAction(
+      prisma,
+      { businessId, user: { id: actorId } },
+      'MONEY_VOID',
+      'Invoice',
+      id,
+      { status: invoice.status },
+      { status: 'VOID', voidReason: reason }
+    );
+  } catch (err) {
+    console.error('invoices: audit write failed for voidInvoice', { businessId, invoiceId: id, error: err });
+  }
 
   revalidatePath('/invoices');
   revalidatePath('/dashboard');
@@ -472,8 +535,11 @@ export async function voidPayment(
   if (limited) return limited;
 
   let businessId: string;
+  let actorId: string;
   try {
-    ({ businessId } = await requireAuth());
+    const auth = await requireAuth();
+    businessId = auth.businessId;
+    actorId = auth.user.id;
   } catch {
     return { error: 'Please log in again.' };
   }
@@ -510,6 +576,16 @@ export async function voidPayment(
       // stay as the audit fields.
       data: { status: 'VOID', voidedAt: new Date(), voidReason: reason },
     });
+    // F1a: audit inside the tx — a failed audit write rolls the void back.
+    await auditUserAction(
+      tx,
+      { businessId, user: { id: actorId } },
+      'PAYMENT_VOID',
+      'Payment',
+      id,
+      { status: payment.status },
+      { status: 'VOID', voidReason: reason }
+    );
 
     const invoice = await tx.invoice.findFirst({
       where: { id: payment.invoiceId, businessId },
@@ -554,8 +630,11 @@ export async function createCreditNote(
   if (limited) return limited;
 
   let businessId: string;
+  let actorId: string;
   try {
-    ({ businessId } = await requireAuth());
+    const auth = await requireAuth();
+    businessId = auth.businessId;
+    actorId = auth.user.id;
   } catch {
     return { error: 'Please log in again.' };
   }
@@ -580,7 +659,7 @@ export async function createCreditNote(
   // Number generated inside the same transaction as the insert (M4).
   await prisma.$transaction(async (tx) => {
     const number = await nextDocumentNumber(tx, businessId, 'CREDIT_NOTE');
-    await tx.creditNote.create({
+    const note = await tx.creditNote.create({
       data: {
         number,
         invoiceId,
@@ -589,6 +668,15 @@ export async function createCreditNote(
         reason,
       },
     });
+    await auditUserAction(
+      tx,
+      { businessId, user: { id: actorId } },
+      'CREDIT_NOTE_CREATE',
+      'CreditNote',
+      note.id,
+      undefined,
+      { number, amountCents: note.amountCents.toString(), invoiceId }
+    );
   });
 
   revalidatePath('/invoices');
@@ -612,8 +700,11 @@ export async function recordPayment(
   if (limited) return limited;
 
   let businessId: string;
+  let actorId: string;
   try {
-    ({ businessId } = await requireAuth());
+    const auth = await requireAuth();
+    businessId = auth.businessId;
+    actorId = auth.user.id;
   } catch {
     return { error: 'Please log in again.' };
   }
@@ -694,6 +785,21 @@ export async function recordPayment(
       // fully paid - required by paidAt-filtered revenue reporting.
       data: invoicePaidUpdate(newStatus),
     });
+    // F1a: audit inside the tx — a failed audit write rolls the payment back.
+    await auditUserAction(
+      tx,
+      { businessId, user: { id: actorId } },
+      'PAYMENT_RECORD',
+      'Payment',
+      payment.id,
+      undefined,
+      {
+        amountCents: payment.amountCents.toString(),
+        provider: payment.provider,
+        invoiceId: invoice.id,
+        newStatus,
+      }
+    );
 
     return { payment, newStatus, invoice };
   });
@@ -876,8 +982,11 @@ export async function sendInvoiceEmail(
   if (limited) return limited;
 
   let businessId: string;
+  let actorId: string;
   try {
-    ({ businessId } = await requireAuth());
+    const auth = await requireAuth();
+    businessId = auth.businessId;
+    actorId = auth.user.id;
   } catch {
     return { error: 'Please log in again.' };
   }
@@ -944,6 +1053,19 @@ export async function sendInvoiceEmail(
         : { dueAt: invoiceDueAt(new Date(), await businessTimeZone(businessId)) }),
     },
   });
+  try {
+    await auditUserAction(
+      prisma,
+      { businessId, user: { id: actorId } },
+      'INVOICE_SEND',
+      'Invoice',
+      id,
+      { sentAt: invoice.sentAt?.toISOString() ?? null },
+      { sentAt: new Date().toISOString() }
+    );
+  } catch (err) {
+    console.error('invoices: audit write failed for sendInvoiceEmail', { businessId, invoiceId: id, error: err });
+  }
   revalidatePath('/invoices');
   revalidatePath(`/invoices/${id}`);
   return { ok: true };
