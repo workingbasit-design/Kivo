@@ -10,6 +10,9 @@
   gap: 45px;
   padding: 42px 0 24px;
   min-height: 520px;
+  /* Sticky header clearance: an anchor/scroll-restore jump must never park
+     the heading under the sticky .ej-header. */
+  scroll-margin-top: 88px;
 }
 
 .ej-cust-hero-copy {
@@ -20,7 +23,9 @@
 .ej-cust-hero-title {
   font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(36px, 3.2vw, 48px);
-  line-height: 0.99;
+  /* 0.99 clipped Georgia cap-height at the top of the line box on mobile;
+     1.06 keeps the full glyph inside the line box in both modes. */
+  line-height: 1.06;
   letter-spacing: -0.045em;
   font-weight: 750;
   margin: 0;
@@ -130,6 +135,9 @@
   padding: 11px 14px;
   box-shadow: 0 9px 25px color-mix(in srgb, var(--asphalt) 10%, transparent);
   min-width: 205px;
+  /* Never wider than the hero image card it overlaps. */
+  max-width: calc(100% - 36px);
+  box-sizing: border-box;
   color: var(--ink);
   text-decoration: none;
   animation: ej-cust-float-note 5s ease-in-out infinite;
@@ -155,6 +163,7 @@
   flex-direction: column;
   gap: 3px;
   flex: 1;
+  min-width: 0;
 }
 
 .ej-cust-hero-note b {
@@ -172,7 +181,8 @@
 }
 
 /* Search bar — same treatment as the public homepage: rounded rectangle,
-   deep-green primary action, green field icons. */
+   lime primary action, green field icons. Primary buttons are ALWAYS
+   --hivis tile + --hivis-ink text, never --ok, in light AND dark. */
 .ej-cust-search {
   min-height: 56px;
   display: flex;
@@ -241,9 +251,9 @@
   padding: 0 24px;
   font-size: 14px;
   font-weight: 700;
-  background: var(--ok);
-  color: var(--hero-ink);
-  border: 1px solid var(--ok);
+  background: var(--hivis);
+  color: var(--hivis-ink);
+  border: 1px solid var(--hivis);
   min-height: 44px;
   white-space: nowrap;
   cursor: pointer;
@@ -342,13 +352,17 @@
 .ej-cust-service-text b {
   font-size: 13px;
   font-weight: 750;
-  white-space: nowrap;
+  /* Wrap instead of nowrap: fr-CA labels (e.g. "Aménagement paysager")
+     spill out of the 2-column mobile card when forced onto one line. */
+  white-space: normal;
+  line-height: 1.2;
 }
 
 .ej-cust-service-text small {
   font-size: 9px;
   color: var(--ink-2);
-  white-space: nowrap;
+  white-space: normal;
+  line-height: 1.3;
 }
 
 .ej-cust-service-arrow {
@@ -563,11 +577,14 @@
   .ej-cust-hero {
     grid-template-columns: 1fr;
     gap: 21px;
-    padding: 37px 0 24px;
+    /* Extra top clearance so the heading never sits clipped under the
+       sticky header on a small phone. */
+    padding: 48px 0 24px;
     min-height: 0;
   }
   .ej-cust-hero-title {
     font-size: clamp(33px, 6vw, 43px);
+    line-height: 1.08;
   }
   .ej-cust-hero-sub {
     font-size: 13px;
@@ -590,12 +607,16 @@
     border-radius: 24px;
   }
   .ej-cust-hero-note {
-    right: 10px;
-    min-width: 185px;
+    right: 14px;
+    min-width: 0;
+    max-width: calc(100% - 28px);
     padding: 9px 11px;
   }
   .ej-cust-search {
-    grid-template-columns: minmax(0, 1fr);
+    /* The base bar is display:flex, so grid-template-columns here was a
+       no-op and the fields stayed crammed in one row at 390px. Stack it. */
+    flex-direction: column;
+    align-items: stretch;
     gap: 0;
     padding: 7px;
     border-radius: 14px;
@@ -603,6 +624,7 @@
   }
   .ej-cust-search-field {
     min-height: 43px;
+    width: 100%;
     padding: 0 8px;
     gap: 7px;
   }
@@ -616,6 +638,7 @@
   }
   .ej-cust-search-submit {
     min-height: 42px;
+    width: 100%;
     margin-top: 5px;
     padding: 0 10px;
     font-size: 14px;
