@@ -91,7 +91,6 @@ export default function TemplateEditor({
     setBody((b) => b + v);
   }
 
-  const tr = (en: string, fr: string) => (locale === 'fr' ? fr : en);
 
   return (
     <div className="space-y-6">
@@ -127,46 +126,43 @@ export default function TemplateEditor({
         </button>
         {isCustom && (
           <span className="ml-2 px-2 py-1 bg-warn-bg text-warn-text rounded text-xs self-center">
-            {tr('Customized', 'Personnalisé')}
+            {t(locale, 'quotes.templates.customized')}
           </span>
         )}
       </div>
 
       <div>
         <label className="block text-sm font-medium mb-1">
-          {tr('Subject', 'Objet')}
+          {t(locale, 'quotes.templates.subject')}
         </label>
         <input
           type="text"
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
           className="w-full px-3 py-2 border rounded"
-          placeholder={tr('Email subject line', 'Objet du courriel')}
+          placeholder={t(locale, 'quotes.templates.subjectPlaceholder')}
         />
       </div>
 
       <div>
         <label className="block text-sm font-medium mb-1">
-          {tr('Body', 'Corps')}
+          {t(locale, 'quotes.templates.body')}
         </label>
         <textarea
           value={body}
           onChange={(e) => setBody(e.target.value)}
           rows={8}
           className="w-full px-3 py-2 border rounded font-mono text-sm"
-          placeholder={tr('Message body with {variables}', 'Corps du message avec {variables}')}
+          placeholder={t(locale, 'quotes.templates.bodyPlaceholder')}
         />
         <p className="text-xs text-ink-2 mt-1">
-          {tr(
-            'Must include "Reply STOP to opt out." for CASL compliance.',
-            'Doit inclure « Répondez ARRÊT pour vous désinscrire. » pour conformité LCAP.'
-          )}
+          {t(locale, 'quotes.templates.caslNote')}
         </p>
       </div>
 
       <div>
         <label className="block text-sm font-medium mb-1">
-          {tr('Insert variable', 'Insérer une variable')}
+          {t(locale, 'quotes.templates.insertVariable')}
         </label>
         <div className="flex gap-2 flex-wrap">
           {VARIABLES.map((v) => (
@@ -187,7 +183,7 @@ export default function TemplateEditor({
           disabled={pending || !subject.trim() || !body.trim()}
           className="px-4 py-2 bg-asphalt text-hero-ink rounded disabled:opacity-50"
         >
-          {tr('Save template', 'Enregistrer le modèle')}
+          {t(locale, 'quotes.templates.saveTemplate')}
         </button>
         {isCustom && (
           <button
@@ -195,7 +191,7 @@ export default function TemplateEditor({
             disabled={pending}
             className="px-4 py-2 bg-line rounded"
           >
-            {tr('Reset to built-in', 'Réinitialiser')}
+            {t(locale, 'quotes.templates.resetToBuiltIn')}
           </button>
         )}
       </div>

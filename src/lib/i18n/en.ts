@@ -393,6 +393,32 @@ const en: Dict = {
     examples: {
       booking: 'AC repair for Sarah tomorrow at 3pm, $800',
     },
+    errors: {
+      somethingWrong: 'Something went wrong on my side - please try again in a moment.',
+      tooManyRequests: 'Too many requests - please wait a moment and try again.',
+      copilotLimit: "This business has reached today's copilot limit. Try again tomorrow.",
+      tooManyConfirms: 'Too many confirm requests - please wait a moment and try again.',
+      confirmInvalid: "That confirmation didn't validate - please re-open the preview and try again.",
+      messageTooLong: 'That message is too long - please shorten it and try again.',
+      emptyMessage: "Send a message - an empty message won't work.",
+      quoteNeedsPrice: 'Add a price to the quote first.',
+      dateNotUnderstood: "Couldn't understand the date - please try again.",
+      customerSaveFailed: "Couldn't save the customer - please try again.",
+    },
+    replies: {
+      customerDuplicate: '"{name}" is already in your customers - no duplicate added.',
+      customerAdded: 'Customer added ✓\n\n{name}{phone}\n\nYou’ll find them on the Customers page.',
+      quoteCustomerMissing: '"{customer}" isn\'t in your customers yet - add them first, then confirm the quote.',
+      quoteDuplicate: 'Quote {number} already created ✓\n\n{title} - {customer} - {total}\n\nYou\'ll find it on the Quotes page.',
+      quoteCreated: 'Quote created ✓\n\n{number} - {title} - {customer} - {total}\n\nYou\'ll find it on the Quotes page.',
+    },
+    confirm: {
+      alreadyConfirmed: 'This booking was already confirmed - no duplicate job was created.\n\n',
+      jobBooked: 'Job booked! ✓\n\n',
+      priceLabel: 'Price: ',
+      priceTbd: 'TBD',
+      seeOnSchedule: 'You can see it on the Schedule page.',
+    },
   },
   esign: {
     title: 'E-signature',

@@ -7,6 +7,7 @@
  */
 import { formatDateShort } from '@/lib/utils.ts';
 import { formatMoney } from '@/lib/money.ts';
+import { t } from '@/lib/i18n';
 
 export interface JobConfirmDraft {
   title: string;
@@ -22,25 +23,21 @@ export function buildConfirmReply(
   currency: string,
   fr: boolean
 ): string {
-  const tr = (en: string, frText: string) => (fr ? frText : en);
   return (
     (duplicate
-      ? tr(
-          'This booking was already confirmed - no duplicate job was created.\n\n',
-          'Cette réservation était déjà confirmée - aucun doublon n’a été créé.\n\n'
-        )
-      : tr('Job booked! ✓\n\n', 'Travail réservé! ✓\n\n')) +
+      ? t(fr ? 'fr' : 'en', 'copilot.confirm.alreadyConfirmed')
+      : t(fr ? 'fr' : 'en', 'copilot.confirm.jobBooked')) +
     `${draft.title} - ${customerName}\n` +
     // Date renders in the UI locale (fr-CA: "2 oct. 2026", en-CA: "Oct 2, 2026").
     `${formatDateShort(draft.date, fr ? 'fr-CA' : 'en-CA')}${draft.time ? `, ${draft.time}` : ''}\n` +
     // formatMoney already includes the currency symbol ($120.00 / 120,00 $),
     // so no literal $ here - a second one rendered as "$$120.00".
     // Colon spacing is locale-correct: "Price: " in English, "Prix : " in French.
-    `${tr('Price: ', 'Prix : ')}${
+    `${t(fr ? 'fr' : 'en', 'copilot.confirm.priceLabel')}${
       draft.price !== null && draft.price !== undefined
         ? formatMoney(draft.price, currency, fr ? 'fr' : 'en')
-        : tr('TBD', 'À déterminer')
+        : t(fr ? 'fr' : 'en', 'copilot.confirm.priceTbd')
     }\n\n` +
-    tr('You can see it on the Schedule page.', 'Vous pouvez le voir sur la page Horaire.')
+    t(fr ? 'fr' : 'en', 'copilot.confirm.seeOnSchedule')
   );
 }

@@ -393,6 +393,32 @@ const fr: Dictionary = {
     examples: {
       booking: 'Réparation de clim pour Sarah demain à 15h, 800 $',
     },
+    errors: {
+      somethingWrong: 'Un problème est survenu de mon côté - réessayez dans un instant.',
+      tooManyRequests: 'Trop de requêtes - attendez un moment et réessayez.',
+      copilotLimit: "Cette entreprise a atteint la limite quotidienne de l'assistant. Réessayez demain.",
+      tooManyConfirms: 'Trop de confirmations - attendez un moment et réessayez.',
+      confirmInvalid: "Cette confirmation n'a pas été validée - rouvrez l'aperçu et réessayez.",
+      messageTooLong: 'Ce message est trop long - raccourcissez-le et réessayez.',
+      emptyMessage: 'Envoyez un message - un message vide ne fonctionne pas.',
+      quoteNeedsPrice: 'Ajoutez un prix au devis d’abord.',
+      dateNotUnderstood: 'Date non comprise - veuillez réessayer.',
+      customerSaveFailed: "Impossible d'enregistrer le client - veuillez réessayer.",
+    },
+    replies: {
+      customerDuplicate: '« {name} » est déjà dans vos clients - aucun doublon ajouté.',
+      customerAdded: 'Client ajouté ✓\n\n{name}{phone}\n\nVous le trouverez sur la page Clients.',
+      quoteCustomerMissing: '« {customer} » ne figure pas encore dans vos clients - ajoutez-le d’abord, puis confirmez le devis.',
+      quoteDuplicate: 'Devis {number} déjà créé ✓\n\n{title} - {customer} - {total}\n\nVous le trouverez sur la page Devis.',
+      quoteCreated: 'Devis créé ✓\n\n{number} - {title} - {customer} - {total}\n\nVous le trouverez sur la page Devis.',
+    },
+    confirm: {
+      alreadyConfirmed: 'Cette réservation était déjà confirmée - aucun doublon n’a été créé.\n\n',
+      jobBooked: 'Travail réservé! ✓\n\n',
+      priceLabel: 'Prix : ',
+      priceTbd: 'À déterminer',
+      seeOnSchedule: 'Vous pouvez le voir sur la page Horaire.',
+    },
   },
   esign: {
     title: 'Signature électronique',

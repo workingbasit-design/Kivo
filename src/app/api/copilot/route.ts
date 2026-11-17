@@ -16,6 +16,7 @@ import { computeQuoteTotals } from '@/lib/quote-totals';
 import { nextDocumentNumber } from '@/lib/numbering';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
 import { getLocale } from '@/lib/i18n/server';
+import { t } from '@/lib/i18n';
 
 export const maxDuration = 30;
 
@@ -184,7 +185,6 @@ export async function POST(req: Request) {
   if (!originCheck.ok) return originForbidden(originCheck.reason);
 
   const fr = (await getLocale()) === 'fr';
-  const tr = (en: string, frText: string) => (fr ? frText : en);
 
   // getSession() throws DatabaseUnavailableError during a DB outage (by
   // design, so an outage never looks like a logout) - catch it here so the
@@ -197,7 +197,7 @@ export async function POST(req: Request) {
   } catch (err) {
     console.error('[copilot] session lookup failed', err);
     return NextResponse.json(
-      { error: tr('Something went wrong on my side - please try again in a moment.', 'Un problème est survenu de mon côté - réessayez dans un instant.') },
+      { error: t(fr ? 'fr' : 'en', 'copilot.errors.somethingWrong') },
       { status: 500 }
     );
   }
@@ -210,7 +210,7 @@ export async function POST(req: Request) {
   const rl = await rateLimitDurable(`copilot:${session.user.id}`, { limit: 30, windowMs: 60_000 });
   if (!rl.ok) {
     return NextResponse.json(
-      { error: tr('Too many requests - please wait a moment and try again.', 'Trop de requêtes - attendez un moment et réessayez.') },
+      { error: t(fr ? 'fr' : 'en', 'copilot.errors.tooManyRequests') },
       { status: 429 }
     );
   }
@@ -219,7 +219,7 @@ export async function POST(req: Request) {
   const rlDay = await rateLimitDurable(`copilot-day:${businessId}`, { limit: 200, windowMs: 24 * 60 * 60_000 });
   if (!rlDay.ok) {
     return NextResponse.json(
-      { error: tr("This business has reached today's copilot limit. Try again tomorrow.", "Cette entreprise a atteint la limite quotidienne de l'assistant. Réessayez demain.") },
+      { error: t(fr ? 'fr' : 'en', 'copilot.errors.copilotLimit') },
       { status: 429 }
     );
   }
@@ -241,7 +241,7 @@ export async function POST(req: Request) {
     });
     if (!rlConfirm.ok) {
       return NextResponse.json(
-        { error: tr('Too many confirm requests - please wait a moment and try again.', 'Trop de confirmations - attendez un moment et réessayez.') },
+        { error: t(fr ? 'fr' : 'en', 'copilot.errors.tooManyConfirms') },
         { status: 429 }
       );
     }
@@ -262,7 +262,7 @@ export async function POST(req: Request) {
     });
     if (!rlConfirm.ok) {
       return NextResponse.json(
-        { error: tr('Too many confirm requests - please wait a moment and try again.', 'Trop de confirmations - attendez un moment et réessayez.') },
+        { error: t(fr ? 'fr' : 'en', 'copilot.errors.tooManyConfirms') },
         { status: 429 }
       );
     }
@@ -285,7 +285,7 @@ export async function POST(req: Request) {
     });
     if (!rlConfirm.ok) {
       return NextResponse.json(
-        { error: tr('Too many confirm requests - please wait a moment and try again.', 'Trop de confirmations - attendez un moment et réessayez.') },
+        { error: t(fr ? 'fr' : 'en', 'copilot.errors.tooManyConfirms') },
         { status: 429 }
       );
     }
@@ -306,17 +306,17 @@ export async function POST(req: Request) {
     const b = body as { confirm?: unknown; message?: unknown } | null;
     if (b && b.confirm === true) {
       return NextResponse.json(
-        { error: tr('That confirmation didn\'t validate - please re-open the preview and try again.', 'Cette confirmation n\'a pas été validée - rouvrez l\'aperçu et réessayez.') },
+        { error: t(fr ? 'fr' : 'en', 'copilot.errors.confirmInvalid') },
         { status: 400 }
       );
     }
     if (b && typeof b.message === 'string' && b.message.length > 2000) {
       return NextResponse.json(
-        { error: tr('That message is too long - please shorten it and try again.', 'Ce message est trop long - raccourcissez-le et réessayez.') },
+        { error: t(fr ? 'fr' : 'en', 'copilot.errors.messageTooLong') },
         { status: 400 }
       );
     }
-    return NextResponse.json({ error: tr('Send a message - an empty message won\'t work.', 'Envoyez un message - un message vide ne fonctionne pas.') }, { status: 400 });
+    return NextResponse.json({ error: t(fr ? 'fr' : 'en', 'copilot.errors.emptyMessage') }, { status: 400 });
   }
 
   // A DB/engine failure must surface as a structured JSON error, not an
@@ -333,7 +333,7 @@ export async function POST(req: Request) {
   } catch (err) {
     console.error('[copilot] runCopilot failed', err);
     return NextResponse.json(
-      { error: tr('Something went wrong on my side - please try again in a moment.', 'Un problème est survenu de mon côté - réessayez dans un instant.') },
+      { error: t(fr ? 'fr' : 'en', 'copilot.errors.somethingWrong') },
       { status: 500 }
     );
   }
@@ -471,7 +471,6 @@ async function handleConfirm(
   clientKey: string | undefined,
   fr: boolean
 ) {
-  const tr = (en: string, frText: string) => (fr ? frText : en);
   const key = clientKey?.trim() ? `cli:${clientKey.trim()}` : deterministicKey(businessId, draft);
 
   // Replay of an in-flight or recently completed confirm → original job.
@@ -521,7 +520,6 @@ async function handleCustomerConfirm(
   clientKey: string | undefined,
   fr: boolean
 ) {
-  const tr = (en: string, frText: string) => (fr ? frText : en);
   const canonical = [
     'cust',
     businessId,
@@ -568,7 +566,6 @@ async function runCustomerConfirm(
   draft: z.infer<typeof customerConfirmSchema>['preview'],
   fr: boolean
 ): Promise<ConfirmOutcome> {
-  const tr = (en: string, frText: string) => (fr ? frText : en);
   const name = draft.name.trim();
 
   // Re-check duplicates at confirm time (tenant-scoped): an exact name or
@@ -582,10 +579,7 @@ async function runCustomerConfirm(
       return {
         ok: true,
         jobId: byPhone.id,
-        reply: tr(
-          `"${byPhone.name}" is already in your customers - no duplicate added.`,
-          `« ${byPhone.name} » est déjà dans vos clients - aucun doublon ajouté.`
-        ),
+        reply: t(fr ? 'fr' : 'en', 'copilot.replies.customerDuplicate').replace('{name}', byPhone.name),
         duplicate: true,
       };
     }
@@ -600,10 +594,7 @@ async function runCustomerConfirm(
     return {
       ok: true,
       jobId: exact.id,
-      reply: tr(
-        `"${exact.name}" is already in your customers - no duplicate added.`,
-        `« ${exact.name} » est déjà dans vos clients - aucun doublon ajouté.`
-      ),
+      reply: t(fr ? 'fr' : 'en', 'copilot.replies.customerDuplicate').replace('{name}', exact.name),
       duplicate: true,
     };
   }
@@ -622,10 +613,9 @@ async function runCustomerConfirm(
   return {
     ok: true,
     jobId: customer.id,
-    reply: tr(
-      `Customer added ✓\n\n${customer.name}${draft.phone ? ` - ${draft.phone}` : ''}\n\nYou’ll find them on the Customers page.`,
-      `Client ajouté ✓\n\n${customer.name}${draft.phone ? ` - ${draft.phone}` : ''}\n\nVous le trouverez sur la page Clients.`
-    ),
+    reply: t(fr ? 'fr' : 'en', 'copilot.replies.customerAdded')
+      .replace('{name}', customer.name)
+      .replace('{phone}', draft.phone ? ` - ${draft.phone}` : ''),
     duplicate: false,
   };
 }
@@ -684,11 +674,10 @@ async function runQuoteConfirm(
   draft: z.infer<typeof quoteConfirmSchema>['preview'],
   fr: boolean
 ): Promise<ConfirmOutcome> {
-  const tr = (en: string, frText: string) => (fr ? frText : en);
   const title = draft.title.trim();
   const price = draft.price ?? null;
   if (price === null) {
-    return { ok: false, status: 400, error: tr('Add a price to the quote first.', 'Ajoutez un prix au devis d’abord.') };
+    return { ok: false, status: 400, error: t(fr ? 'fr' : 'en', 'copilot.errors.quoteNeedsPrice') };
   }
 
   // A quote needs an EXISTING customer - never auto-create one from a draft
@@ -700,9 +689,9 @@ async function runQuoteConfirm(
     return {
       ok: false,
       status: 400,
-      error: tr(
-        `"${draft.customerName.trim()}" isn't in your customers yet - add them first, then confirm the quote.`,
-        `« ${draft.customerName.trim()} » ne figure pas encore dans vos clients - ajoutez-le d’abord, puis confirmez le devis.`
+      error: t(fr ? 'fr' : 'en', 'copilot.replies.quoteCustomerMissing').replace(
+        '{customer}',
+        draft.customerName.trim()
       ),
     };
   }
@@ -738,10 +727,11 @@ async function runQuoteConfirm(
     return {
       ok: true,
       jobId: recent.id,
-      reply: tr(
-        `Quote ${recent.number} already created ✓\n\n${title} - ${customer.name} - ${formatMoney(totals.total, 'CAD')}\n\nYou'll find it on the Quotes page.`,
-        `Devis ${recent.number} déjà créé ✓\n\n${title} - ${customer.name} - ${formatMoney(totals.total, 'CAD')}\n\nVous le trouverez sur la page Devis.`
-      ),
+      reply: t(fr ? 'fr' : 'en', 'copilot.replies.quoteDuplicate')
+        .replace('{number}', String(recent.number))
+        .replace('{title}', title)
+        .replace('{customer}', customer.name)
+        .replace('{total}', formatMoney(totals.total, 'CAD')),
       duplicate: true,
     };
   }
@@ -781,10 +771,11 @@ async function runQuoteConfirm(
   return {
     ok: true,
     jobId: quote.id,
-    reply: tr(
-      `Quote created ✓\n\n${quote.number} - ${title} - ${customer.name} - ${formatMoney(totals.total, 'CAD')}\n\nYou'll find it on the Quotes page.`,
-      `Devis créé ✓\n\n${quote.number} - ${title} - ${customer.name} - ${formatMoney(totals.total, 'CAD')}\n\nVous le trouverez sur la page Devis.`
-    ),
+    reply: t(fr ? 'fr' : 'en', 'copilot.replies.quoteCreated')
+      .replace('{number}', String(quote.number))
+      .replace('{title}', title)
+      .replace('{customer}', customer.name)
+      .replace('{total}', formatMoney(totals.total, 'CAD')),
     duplicate: false,
   };
 }
@@ -795,12 +786,11 @@ async function runConfirm(
   draft: z.infer<typeof confirmSchema>['preview'],
   fr: boolean
 ): Promise<ConfirmOutcome> {
-  const tr = (en: string, frText: string) => (fr ? frText : en);
   // Re-validate the date is a real calendar date
   const [y, m, d] = draft.date.split('-').map(Number);
   const date = new Date(y, m - 1, d, 9, 0, 0, 0);
   if (Number.isNaN(date.getTime())) {
-    return { ok: false, status: 400, error: tr('Couldn\'t understand the date - please try again.', 'Date non comprise - veuillez réessayer.') };
+    return { ok: false, status: 400, error: t(fr ? 'fr' : 'en', 'copilot.errors.dateNotUnderstood') };
   }
 
   const biz = await prisma.business.findUnique({ where: { id: businessId }, select: { currency: true } });
@@ -838,7 +828,7 @@ async function runConfirm(
   // Defensive: creation must have succeeded by now.
   const bookedCustomer: { id: string; name: string } | null = customer;
   if (!bookedCustomer) {
-    return { ok: false, status: 500, error: tr('Couldn\'t save the customer - please try again.', 'Impossible d\'enregistrer le client - veuillez réessayer.') };
+    return { ok: false, status: 500, error: t(fr ? 'fr' : 'en', 'copilot.errors.customerSaveFailed') };
   }
 
   // Idempotency DB fallback: an identical copilot booking created moments ago
