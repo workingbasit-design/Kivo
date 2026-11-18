@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { requireCustomerAuth } from '@/lib/customer-auth';
 import { prisma } from '@/lib/prisma';
+import { unsafeUnscoped } from '@/lib/tenant-guard';
 import { getLocale } from '@/lib/i18n/server';
 import {
   matchesCity,
@@ -49,13 +50,21 @@ export default async function CustomerHomePage({
 
   // P1.0-D Tier B: review counts/averages come from one groupBy, not a
   // nested whole-table reviews read under every listed business.
+  // Legitimately unscoped (2026-11-18): this aggregates PUBLIC review
+  // counts/averages for the already-filtered listed businesses only
+  // (no row content, read-only). The tenant guard only accepts a
+  // plain-string where.businessId, so a businessId: { in: [...] } list
+  // must go through the escape hatch — the guarded client 500s both
+  // directory pages on every load otherwise (TenantScopeError).
   const ratingByBusiness = new Map<string, { count: number; avg: number | null }>();
-  for (const r of await prisma.review.groupBy({
-    by: ['businessId'],
-    where: { businessId: { in: businesses.map((b) => b.id) } },
-    _count: { _all: true },
-    _avg: { rating: true },
-  })) {
+  for (const r of await unsafeUnscoped('directory:review-ratings', (db) =>
+    db.review.groupBy({
+      by: ['businessId'],
+      where: { businessId: { in: businesses.map((b) => b.id) } },
+      _count: { _all: true },
+      _avg: { rating: true },
+    })
+  )) {
     ratingByBusiness.set(r.businessId, {
       count: r._count._all,
       avg: r._avg.rating === null ? null : Math.round(r._avg.rating * 10) / 10,

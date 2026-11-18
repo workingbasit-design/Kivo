@@ -78,7 +78,19 @@ test('Tier B: review counts/averages come from aggregates, not row reads', () =>
   assert.ok(!share.includes('ratingSummary'), 'share card no longer uses ratingSummary');
   for (const rel of ['src/app/directory/page.tsx', 'src/app/customer/page.tsx']) {
     const src = read(rel);
-    assert.ok(src.includes('prisma.review.groupBy'), `${rel} groups reviews by business`);
+    // 2026-11-18: the groupBy MUST go through unsafeUnscoped — the tenant
+    // guard only accepts a plain-string where.businessId, so a guarded
+    // businessId: { in: [...] } groupBy 500s the page (TenantScopeError).
+    // The aggregate is public counts/averages over listed businesses only.
+    assert.ok(
+      src.includes("unsafeUnscoped('directory:review-ratings'"),
+      `${rel} routes the review groupBy through the unscoped escape hatch`,
+    );
+    assert.ok(src.includes('review.groupBy'), `${rel} groups reviews by business`);
+    assert.ok(
+      !src.includes('prisma.review.groupBy'),
+      `${rel} never calls groupBy on the guarded client`,
+    );
     assert.ok(
       !src.includes('reviews: { select: { rating: true } }'),
       `${rel} no longer nests a whole-table reviews read`,
