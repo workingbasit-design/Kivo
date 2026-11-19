@@ -209,7 +209,11 @@ function seedJob(status = 'COMPLETED') {
     status,
     customerId: 'cust_1',
     title: 'Furnace repair',
-    date: new Date('2026-09-20T00:00:00Z'),
+    // Relative date: the eligibility test calls listEligibleReviewJobs with
+    // since = now - 60 days, so a fixed seed date ages out of the window
+    // (that is exactly how this test broke on 2026-11-19, 60 days after
+    // the old fixed 2026-09-20 seed). 10 days ago stays inside it.
+    date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
     customer: { id: 'cust_1', name: 'Ava Chen' },
   });
 }

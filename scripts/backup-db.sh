@@ -22,7 +22,8 @@
 # - Read-only against the database (pg_dump never writes to it).
 # - DATABASE_URL is never echoed or logged (it carries the DB password).
 # - Refuses to run without DATABASE_URL, without pg_dump/pg_restore,
-#   or when BACKUP_DIR cannot be created.
+#   or when BACKUP_DIR cannot be created. BACKUP_DIR is checked first,
+#   so a bad dir is reported even on a host without pg_dump installed.
 # - Exit 0 = dump written + verified (+ uploaded when a hook is set).
 #   A missing upload hook is a WARNING, not a failure: the local dump is
 #   still written, but the runbook treats it as incomplete until the
@@ -36,11 +37,11 @@ WEEKLY_KEEP_DAYS="${BACKUP_WEEKLY_KEEP_DAYS:-91}"
 MONTHLY_KEEP_DAYS="${BACKUP_MONTHLY_KEEP_DAYS:-365}"
 UPLOAD_HOOK="${BACKUP_UPLOAD_HOOK:-}"
 
-command -v pg_dump >/dev/null 2>&1 || { echo "ERROR: pg_dump not found on PATH" >&2; exit 1; }
-command -v pg_restore >/dev/null 2>&1 || { echo "ERROR: pg_restore not found on PATH" >&2; exit 1; }
-
 mkdir -p "$BACKUP_DIR" || { echo "ERROR: cannot create BACKUP_DIR=$BACKUP_DIR" >&2; exit 1; }
 [ -w "$BACKUP_DIR" ] || { echo "ERROR: BACKUP_DIR=$BACKUP_DIR is not writable" >&2; exit 1; }
+
+command -v pg_dump >/dev/null 2>&1 || { echo "ERROR: pg_dump not found on PATH" >&2; exit 1; }
+command -v pg_restore >/dev/null 2>&1 || { echo "ERROR: pg_restore not found on PATH" >&2; exit 1; }
 
 STAMP="$(date +%F)"
 FILE="$BACKUP_DIR/everyjob-$STAMP.dump"
