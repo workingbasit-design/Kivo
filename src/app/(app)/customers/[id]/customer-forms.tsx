@@ -235,14 +235,21 @@ export function DeleteCustomerButton({
           setDeleteError(null);
           const fd = new FormData();
           fd.append('id', customerId);
-          const result = await deleteCustomer({} as ActionResult, fd);
-          setDeletePending(false);
-          if (result?.error) {
-            setDeleteError(result.error);
-          } else {
-            setConfirming(false);
-            toast.success(t(locale, 't10money.customerDeleted'));
-            router.push('/customers');
+          try {
+            const result = await deleteCustomer({} as ActionResult, fd);
+            setDeletePending(false);
+            if (result?.error) {
+              setDeleteError(result.error);
+            } else {
+              setConfirming(false);
+              toast.success(t(locale, 't10money.customerDeleted'));
+              router.push('/customers');
+            }
+          } catch {
+            // Network / server failure: never leave the dialog stuck on
+            // "Working…"; the error stays in the dialog.
+            setDeletePending(false);
+            setDeleteError('Could not delete this customer. Please try again.');
           }
         }}
         onClose={() => !deletePending && setConfirming(false)}

@@ -234,13 +234,20 @@ export default function InvoiceActions({
                     clearLastOpenedRecord(id);
                     // Direct call (not useActionState): see the note at the
                     // delete state declarations above (React #441, Nov 20).
-                    const result = await deleteInvoice({} as ActionResult, fd);
-                    setDeletePending(false);
-                    if (result?.error) {
-                      setDeleteError(result.error);
-                    } else {
-                      setConfirmingDelete(false);
-                      router.push('/invoices');
+                    try {
+                      const result = await deleteInvoice({} as ActionResult, fd);
+                      setDeletePending(false);
+                      if (result?.error) {
+                        setDeleteError(result.error);
+                      } else {
+                        setConfirmingDelete(false);
+                        router.push('/invoices');
+                      }
+                    } catch {
+                      // Network / server failure: never leave the dialog
+                      // stuck on "Working…"; the error stays in the dialog.
+                      setDeletePending(false);
+                      setDeleteError('Could not delete this invoice. Please try again.');
                     }
                   }}
                   onClose={() => !deletePending && setConfirmingDelete(false)}

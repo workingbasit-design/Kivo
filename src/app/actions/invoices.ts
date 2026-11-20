@@ -439,8 +439,32 @@ export async function deleteInvoice(
         'Void it instead to keep the payment history.',
     };
   }
+  // Same for credit notes: they are financial records against the invoice.
+  const creditNoteCount = await prisma.creditNote.count({
+    where: { invoiceId: id, invoice: { businessId } },
+  });
+  if (creditNoteCount > 0) {
+    return {
+      error:
+        'This invoice has credit notes on file and can\'t be deleted. ' +
+        'Void it instead to keep the audit trail.',
+    };
+  }
 
-  await prisma.invoice.delete({ where: { id, businessId } });
+  // A DRAFT has no payments and no credit notes, but it DOES have line
+  // items and immutable tax-line snapshots, both onDelete: Restrict — a
+  // bare prisma.invoice.delete() throws P2003 (Nov 20 deep test, D-5:
+  // the delete 500'd and the client saw React #441). Delete the draft's
+  // children first, in one transaction with the invoice itself.
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.invoiceLineItem.deleteMany({ where: { invoiceId: id } });
+      await tx.invoiceTaxLine.deleteMany({ where: { invoiceId: id } });
+      await tx.invoice.delete({ where: { id, businessId } });
+    });
+  } catch {
+    return { error: 'Could not delete this invoice. Please try again.' };
+  }
   try {
     await auditUserAction(
       prisma,
