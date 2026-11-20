@@ -429,8 +429,13 @@ export async function deleteInvoice(
   }
   // Never delete an invoice with payments on file - that destroys the payment
   // record. Void it instead (keeps the audit trail).
+  // Scope by TOP-LEVEL businessId: the tenant guard fails closed on any
+  // tenant-model query without one, and a nested `invoice: { businessId }`
+  // does not count — the old shape threw TenantScopeError here and the
+  // delete 500'd (Nov 20 deep test, D-5). Payment carries businessId
+  // directly (required since M9).
   const paymentCount = await prisma.payment.count({
-    where: { invoiceId: id, invoice: { businessId } },
+    where: { invoiceId: id, businessId },
   });
   if (paymentCount > 0) {
     return {
@@ -440,8 +445,9 @@ export async function deleteInvoice(
     };
   }
   // Same for credit notes: they are financial records against the invoice.
+  // CreditNote also carries businessId directly; same top-level rule.
   const creditNoteCount = await prisma.creditNote.count({
-    where: { invoiceId: id, invoice: { businessId } },
+    where: { invoiceId: id, businessId },
   });
   if (creditNoteCount > 0) {
     return {
