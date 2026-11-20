@@ -100,6 +100,27 @@ export default function PortalLinkManager({
     success: t(locale, 't10money.portalLinkRevoked'),
   });
 
+  // The fresh token is ALSO synced from the React-managed action
+  // result. setState calls made inside the useActionState action
+  // wrapper were lost on production (Nov 20 deep test: the section
+  // flipped to "already active" but the URL never rendered, so the
+  // portal could never be shared), so the token is derived from
+  // regenState as well — it is guaranteed to update when the action
+  // resolves. Revoke does not touch regenState, so a revoked URL can
+  // never reappear from here; the revoke wrapper still clears the
+  // token state on success.
+  /* eslint-disable react-hooks/set-state-in-effect -- the token arrives
+     via the action result, not during render, so it is synced in this
+     effect (same pattern as the origin sync below). */
+  useEffect(() => {
+    if (regenState?.ok && regenState.token) {
+      setToken(regenState.token);
+      setTokenId(regenState.tokenId ?? null);
+      setConfirming(null);
+    }
+  }, [regenState]);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
   // 2026-11-09 deep test (F2): read the origin AFTER mount. A useState
   // lazy initializer runs on the client during hydration too, so it
   // produced a full URL on first client render while SSR rendered the

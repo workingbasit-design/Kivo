@@ -45,7 +45,13 @@ export async function createPortalLink(
 
   try {
     const rec = await issueCustomerPortalToken(businessId, customerId);
-    revalidatePath(`/customers/${customerId}`);
+    // No revalidatePath here on purpose: the fresh token lives only in
+    // the action result / client state, and the refresh a revalidation
+    // triggers can wipe it before it ever renders (Nov 20 deep test:
+    // the section flipped to "already active" but the URL never
+    // appeared, so the portal could never be shared). The UI updates
+    // from the action result; a later full navigation renders the
+    // correct active state from the server via getActivePortalToken.
     return { ok: true, token: rec.token, tokenId: rec.id };
   } catch {
     return { error: 'Could not create the portal link. Please try again.' };

@@ -322,6 +322,11 @@ const en: Dict = {
     noMatchingText: 'Try another name, phone number or email address.',
     noCustomersTitle: 'No customers yet',
     noCustomersText: 'Add your first customer to keep contact details and job history together.',
+    // Nov 20 deep test (D-2): Active / Archived tabs on the list.
+    tabActive: 'Active',
+    tabArchived: 'Archived',
+    noArchivedTitle: 'No archived customers',
+    noArchivedText: 'Customers you archive will appear here.',
     jobsBooked: 'Jobs completed / booked',
     notProvided: 'Not provided',
     editCustomer: 'Edit customer',

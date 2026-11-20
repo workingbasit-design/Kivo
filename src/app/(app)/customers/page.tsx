@@ -22,17 +22,24 @@ import { ListMore } from '../_components/ListMore';
 export default async function CustomersPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ limit?: string }>;
+  searchParams?: Promise<{ limit?: string; archived?: string }>;
 }) {
   const { businessId, user } = await requireAuth();
   const locale = await getLocale();
   const custL = (k: string) => t(locale, 'customers.' + k);
-  const limit = parseListLimit((await searchParams)?.limit);
+  const params = await searchParams;
+  const limit = parseListLimit(params?.limit);
+  // Nov 20 deep test (D-2): archived customers were undiscoverable —
+  // the list only ever queried archivedAt: null and offered no Archived
+  // view. ?archived=true lists archived customers instead.
+  const showArchived = params?.archived === 'true';
 
   let customers: CustomerRow[] = [];
   let currency: string | undefined;
   let loadError: string | null = null;
   let totalCustomers = 0;
+  let activeCount = 0;
+  let archivedCount = 0;
   let nextLimit: number | null = null;
 
   try {
@@ -47,9 +54,11 @@ export default async function CustomersPage({
     // revenue per customer - so the payload grew with jobs x customers. The
     // page is now capped, and revenue is summed BY THE DATABASE for just the
     // customers on screen.
-    const [fetched, total] = await Promise.all([
+    const [fetched, active, archived] = await Promise.all([
       prisma.customer.findMany({
-        where: { businessId, archivedAt: null },
+        where: showArchived
+          ? { businessId, archivedAt: { not: null } }
+          : { businessId, archivedAt: null },
         select: {
           id: true,
           name: true,
@@ -66,10 +75,15 @@ export default async function CustomersPage({
         take: takeWithProbe(limit),
       }),
       prisma.customer.count({ where: { businessId, archivedAt: null } }),
+      prisma.customer.count({
+        where: { businessId, archivedAt: { not: null } },
+      }),
     ]);
     const page = sliceListPage(fetched, limit);
     const rows = page.rows;
-    totalCustomers = total;
+    totalCustomers = showArchived ? archived : active;
+    activeCount = active;
+    archivedCount = archived;
     nextLimit = page.nextLimit;
 
     const revenueByCustomer = new Map<string, number>();
@@ -92,7 +106,7 @@ export default async function CustomersPage({
       userId: user.id,
       action: 'view',
       entityType: 'customer',
-      metadata: { count: rows.length, view: 'list' },
+      metadata: { count: rows.length, view: showArchived ? 'archived' : 'list' },
     });
 
     customers = rows.map((c) => ({
@@ -153,6 +167,9 @@ export default async function CustomersPage({
             currency={currency}
             locale={locale}
             totalCustomers={totalCustomers}
+            showArchived={showArchived}
+            activeCount={activeCount}
+            archivedCount={archivedCount}
           />
           <ListMore
             shown={customers.length}
@@ -160,6 +177,7 @@ export default async function CustomersPage({
             nextLimit={nextLimit}
             locale={locale}
             basePath="/customers"
+            params={{ archived: showArchived ? 'true' : undefined }}
           />
         </>
       )}

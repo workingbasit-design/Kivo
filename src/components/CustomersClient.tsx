@@ -71,12 +71,20 @@ export default function CustomersClient({
   currency,
   locale = 'en',
   totalCustomers,
+  showArchived = false,
+  activeCount = 0,
+  archivedCount = 0,
 }: {
   customers: CustomerRow[];
   currency?: string;
   locale?: Locale;
   /** Real total from the database (the list page is capped). */
   totalCustomers: number;
+  /** True when this render lists archived customers (?archived=true). */
+  showArchived?: boolean;
+  /** Tab counts from the database. */
+  activeCount?: number;
+  archivedCount?: number;
 }) {
   const [query, setQuery] = useState('');
   const [activeTag, setActiveTag] = useState<string | null>(null);
@@ -305,6 +313,28 @@ export default function CustomersClient({
         </button>
       </header>
 
+      {/* Nov 20 deep test (D-2): archived customers were undiscoverable
+          from the list — no tab, no filter, no link. Active / Archived
+          tabs switch the server view (?archived=true). */}
+      <div className="ej-customers-chips" role="tablist" aria-label={custL('title')}>
+        <Link
+          href="/customers"
+          role="tab"
+          aria-selected={!showArchived}
+          className={`ej-customers-chip${!showArchived ? ' active' : ''}`}
+        >
+          {custL('tabActive')} ({activeCount})
+        </Link>
+        <Link
+          href="/customers?archived=true"
+          role="tab"
+          aria-selected={showArchived}
+          className={`ej-customers-chip${showArchived ? ' active' : ''}`}
+        >
+          {custL('tabArchived')} ({archivedCount})
+        </Link>
+      </div>
+
       <div className="ej-customers-toolbar">
         <label className="ej-customers-search">
           <Search size={18} aria-hidden="true" />
@@ -393,8 +423,20 @@ export default function CustomersClient({
           <span className="ej-customers-empty-icon" aria-hidden="true">
             <Users size={23} />
           </span>
-          <h2>{hasFilter ? custL('noMatchingTitle') : custL('noCustomersTitle')}</h2>
-          <p>{hasFilter ? custL('noMatchingText') : custL('noCustomersText')}</p>
+          <h2>
+            {hasFilter
+              ? custL('noMatchingTitle')
+              : showArchived
+                ? custL('noArchivedTitle')
+                : custL('noCustomersTitle')}
+          </h2>
+          <p>
+            {hasFilter
+              ? custL('noMatchingText')
+              : showArchived
+                ? custL('noArchivedText')
+                : custL('noCustomersText')}
+          </p>
           {hasFilter ? (
             <button
               type="button"
@@ -512,17 +554,21 @@ export default function CustomersClient({
                       >
                         {custL('viewDetails')}
                       </Link>
-                      <button
-                        type="button"
-                        className="ej-customers-btn small"
-                        onClick={() => archive(c)}
-                        disabled={archivingId === c.id}
-                      >
-                        <Archive size={14} aria-hidden="true" />{' '}
-                        {archivingId === c.id
-                          ? t(locale, 't10money.custArchiving')
-                          : t(locale, 't10money.custArchive')}
-                      </button>
+                      {/* Archived rows have no Archive action — restore
+                          lives on the customer detail page. */}
+                      {!showArchived && (
+                        <button
+                          type="button"
+                          className="ej-customers-btn small"
+                          onClick={() => archive(c)}
+                          disabled={archivingId === c.id}
+                        >
+                          <Archive size={14} aria-hidden="true" />{' '}
+                          {archivingId === c.id
+                            ? t(locale, 't10money.custArchiving')
+                            : t(locale, 't10money.custArchive')}
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}

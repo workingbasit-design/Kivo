@@ -322,6 +322,11 @@ const fr: Dictionary = {
     noMatchingText: 'Essayez un autre nom, numéro de téléphone ou courriel.',
     noCustomersTitle: 'Aucun client pour l’instant',
     noCustomersText: 'Ajoutez votre premier client pour regrouper les coordonnées et l’historique des travaux.',
+    // Nov 20 deep test (D-2): Active / Archived tabs on the list.
+    tabActive: 'Actifs',
+    tabArchived: 'Archivés',
+    noArchivedTitle: 'Aucun client archivé',
+    noArchivedText: 'Les clients que vous archivez apparaîtront ici.',
     jobsBooked: 'Travaux terminés / réservés',
     notProvided: 'Non fourni',
     editCustomer: 'Modifier le client',
