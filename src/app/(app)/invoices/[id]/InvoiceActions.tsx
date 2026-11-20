@@ -89,10 +89,13 @@ export default function InvoiceActions({
     sendInvoiceEmail,
     {}
   );
-  const [deleteState, deleteAction, deletePending] = useActionState<ActionResult, FormData>(
-    deleteInvoice,
-    {}
-  );
+  // Delete is a DIRECT call (not useActionState): useActionState 500'd
+  // with React #441 for this action on production (Nov 20 deep test,
+  // D-4/D-5: the confirm closed, the page crashed to "Something went
+  // wrong", and the invoice was never deleted). Same pattern as
+  // voidPayment above and the list-page delete in InvoicesClient.
+  const [deletePending, setDeletePending] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   // Single void-payment action + dialog at this level (not in the .map()):
   // useActionState 500'd with React #441 for voidPayment on production, so
@@ -113,10 +116,9 @@ export default function InvoiceActions({
   useResultToast(emailState, {
     success: t(locale, 't10money.invoiceEmailSent'),
   });
-  // deleteInvoice redirects to the invoices list on success - toast on failure only.
-  useResultToast(deleteState, {});
-
-  const error = payState?.error || emailState?.error || deleteState?.error;
+  // deleteInvoice returns { ok: true } on success (no redirect); the
+  // detail page navigates itself, and failures surface in the dialog.
+  const error = payState?.error || emailState?.error || deleteError;
 
   return (
     <div className="space-y-4">
@@ -221,13 +223,25 @@ export default function InvoiceActions({
                   title={t(locale, 't10money.invDeleteTitle')}
                   message={t(locale, 't10money.invDeleteMsg')}
                   busy={deletePending}
-                  error={deleteState?.error ?? null}
-                  onConfirm={() => {
+                  error={deleteError}
+                  onConfirm={async () => {
+                    if (deletePending) return;
+                    setDeletePending(true);
+                    setDeleteError(null);
                     const fd = new FormData();
                     fd.append('id', id);
                     // Never leave the Continue card pointing at this deleted invoice.
                     clearLastOpenedRecord(id);
-                    deleteAction(fd);
+                    // Direct call (not useActionState): see the note at the
+                    // delete state declarations above (React #441, Nov 20).
+                    const result = await deleteInvoice({} as ActionResult, fd);
+                    setDeletePending(false);
+                    if (result?.error) {
+                      setDeleteError(result.error);
+                    } else {
+                      setConfirmingDelete(false);
+                      router.push('/invoices');
+                    }
                   }}
                   onClose={() => !deletePending && setConfirmingDelete(false)}
                 />

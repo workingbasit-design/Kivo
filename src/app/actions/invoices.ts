@@ -455,7 +455,14 @@ export async function deleteInvoice(
   }
   revalidatePath('/invoices');
   revalidatePath('/dashboard');
-  redirect('/invoices');
+  // Return { ok: true } instead of redirecting: a redirect() inside an
+  // action driven by useActionState 500'd with React #441 on production
+  // (Nov 20 deep test, D-4/D-5: the DRAFT delete confirm closed, the page
+  // crashed to "Something went wrong", and the invoice was never deleted).
+  // Callers navigate themselves (detail pushes to /invoices; the list
+  // hides the row and relies on the revalidation above). Same reason
+  // voidPayment is called directly (InvoiceActions.tsx).
+  return { ok: true };
 }
 
 /**

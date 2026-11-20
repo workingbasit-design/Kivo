@@ -284,7 +284,12 @@ export async function deleteCustomer(
   }
 
   revalidatePath('/customers');
-  redirect('/customers');
+  // Return { ok: true } instead of redirecting: a redirect() inside an
+  // action driven by useActionState 500'd with React #441 on production
+  // (Nov 20 deep test, D-5: the customer delete confirm closed, the page
+  // crashed, and the customer was never deleted). The caller navigates
+  // itself. Same reason voidPayment/deleteInvoice are called directly.
+  return { ok: true };
 }
 
 /**

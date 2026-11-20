@@ -169,10 +169,15 @@ export default function InvoicesClient({
     clearLastOpenedRecord(target.id);
     startTransition(async () => {
       try {
+        // Direct call (not useActionState): deleteInvoice returns
+        // { ok: true } without redirecting (Nov 20 deep test, D-4/D-5:
+        // the redirect-in-useActionState path 500'd with React #441).
+        // The row is already hidden locally; the revalidation in the
+        // action refreshes the list.
         await deleteInvoice({}, fd);
       } catch {
-        // deleteInvoice redirects to /invoices on success; the navigation
-        // itself is the success path, not an error to surface.
+        // Network failure only — a refused delete returns { error }
+        // instead of throwing, and the row reappears on refresh.
       } finally {
         setDeletePending(false);
       }

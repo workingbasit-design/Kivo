@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useActionState, useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { AlertCircle, Archive, ArchiveRestore, CheckCircle2, Pencil, Trash2, X } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
@@ -189,15 +190,19 @@ export function DeleteCustomerButton({
   recordCounts?: { jobs: number; invoices: number; quotes: number };
   locale?: Locale;
 }) {
+  const router = useRouter();
   const [confirming, setConfirming] = useState(false);
-  const [state, formAction, isPending] = useActionState(deleteCustomer, {});
+  // Delete is a DIRECT call (not useActionState): useActionState 500'd
+  // with React #441 for this action on production (Nov 20 deep test, D-5:
+  // the confirm closed, the page crashed, and the customer was never
+  // deleted). Same pattern as voidPayment / invoice delete.
+  const [deletePending, setDeletePending] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  // deleteCustomer redirects to /customers on success; toast on failure only.
-  // The error is ALSO rendered inside the dialog (morning QA 2026-10-15):
-  // it used to appear behind the open overlay, making "Yes, delete" look dead.
-  useResultToast(state, {
-    success: t(locale, 't10money.customerDeleted'),
-  });
+  // deleteCustomer returns { ok: true } on success (no redirect); the
+  // caller navigates. The error is ALSO rendered inside the dialog
+  // (morning QA 2026-10-15): it used to appear behind the open overlay,
+  // making "Yes, delete" look dead.
 
   const totalRecords =
     (recordCounts?.jobs ?? 0) + (recordCounts?.invoices ?? 0) + (recordCounts?.quotes ?? 0);
@@ -222,14 +227,25 @@ export function DeleteCustomerButton({
         title={t(locale, 't10money.custDelete')}
         message={message}
         confirmDisabled={blocked}
-        busy={isPending}
-        error={state?.error ?? null}
-        onConfirm={() => {
+        busy={deletePending}
+        error={deleteError}
+        onConfirm={async () => {
+          if (deletePending || blocked) return;
+          setDeletePending(true);
+          setDeleteError(null);
           const fd = new FormData();
           fd.append('id', customerId);
-          formAction(fd);
+          const result = await deleteCustomer({} as ActionResult, fd);
+          setDeletePending(false);
+          if (result?.error) {
+            setDeleteError(result.error);
+          } else {
+            setConfirming(false);
+            toast.success(t(locale, 't10money.customerDeleted'));
+            router.push('/customers');
+          }
         }}
-        onClose={() => !isPending && setConfirming(false)}
+        onClose={() => !deletePending && setConfirming(false)}
       />
     </>
   );
