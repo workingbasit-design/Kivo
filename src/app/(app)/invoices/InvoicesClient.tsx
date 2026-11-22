@@ -83,7 +83,7 @@ export default function InvoicesClient({
   initialFilter: Filter;
   filterLabels: Record<Filter, string>;
   /** For the New Invoice modal (real InvoiceForm). */
-  customers: { id: string; name: string }[];
+  customers: { id: string; name: string; province: string | null }[];
   taxConfig: TaxConfig;
   gstHstRegistered: boolean;
 }) {

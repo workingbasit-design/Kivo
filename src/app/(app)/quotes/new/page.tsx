@@ -11,7 +11,13 @@ import { getLocale } from '@/lib/i18n/server';
 import { t } from '@/lib/i18n';
 import { PageTitle } from '../../_components/PageTitle';
 
-export default async function NewQuotePage() {
+export default async function NewQuotePage({
+  searchParams,
+}: {
+  // 2026-11-22 deep test: the template detail page links here with
+  // ?template=<id> so a quote starts pre-filled from the template.
+  searchParams: Promise<{ template?: string }>;
+}) {
   const { businessId, role } = await requireAuth();
 
   // Slice 4 consistency fix: quotes/new never had the SEE_PRICES gate
@@ -22,6 +28,7 @@ export default async function NewQuotePage() {
   }
 
   const locale = await getLocale();
+  const { template: templateId } = await searchParams;
 
   const [customers, business, templates] = await Promise.all([
     prisma.customer.findMany({
@@ -58,6 +65,7 @@ export default async function NewQuotePage() {
       <QuoteForm
         customers={customers}
         taxConfig={taxConfig}
+        initialTemplateId={templateId ?? ''}
         templates={templates.map((tpl) => ({
           id: tpl.id,
           name: tpl.name,

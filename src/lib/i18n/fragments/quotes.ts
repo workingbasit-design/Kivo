@@ -121,6 +121,7 @@ const fragment = {
         emptyDesc:
           'Save a template once, then start any quote from it in seconds.',
         useTemplate: 'Start from template…',
+        useThisTemplate: 'Use this template',
         blankOption: 'Blank quote',
         saveAsTemplate: 'Save as template',
         manageTemplates: 'Manage templates',
@@ -254,6 +255,7 @@ const fragment = {
         emptyDesc:
           'Enregistrez un modèle une fois, puis commencez n’importe quel devis à partir de celui-ci en quelques secondes.',
         useTemplate: 'Commencer à partir d’un modèle…',
+        useThisTemplate: 'Utiliser ce modèle',
         blankOption: 'Devis vierge',
         saveAsTemplate: 'Enregistrer comme modèle',
         manageTemplates: 'Gérer les modèles',

@@ -92,6 +92,7 @@ const fragment = {
       paySummaryLastPayment: 'Last payment',
       paySummaryLoading: 'Loading payment info…',
       taxPropertyHint: 'Tax based on service property: {province}',
+      taxCustomerHint: 'Tax based on customer province: {province}',
       taxPropertyPickerHint: 'Picking a property sets the tax default to that property’s province. You can still change the tax below.',
       // 2026-11-08 deep test: a standalone invoice had no way to link to
       // a job, so batch invoicing billed the same work twice (the batch
@@ -188,6 +189,7 @@ const fragment = {
       paySummaryLastPayment: 'Dernier paiement',
       paySummaryLoading: 'Chargement des infos de paiement…',
       taxPropertyHint: 'Taxe selon la propriété de service : {province}',
+      taxCustomerHint: 'Taxe selon la province du client : {province}',
       taxPropertyPickerHint: 'Choisir une propriété règle la taxe par défaut sur la province de cette propriété. Vous pouvez toujours modifier la taxe ci-dessous.',
       // 2026-11-08 : test approfondi — une facture créée seule ne pouvait
       // pas être liée à un travail, donc la facturation par lot facturait

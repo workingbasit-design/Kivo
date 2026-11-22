@@ -22,7 +22,7 @@ export default function NewInvoiceModal({
   gstHstRegistered,
   onClose,
 }: {
-  customers: { id: string; name: string }[];
+  customers: { id: string; name: string; province: string | null }[];
   taxConfig: TaxConfig;
   locale: Locale;
   gstHstRegistered: boolean;

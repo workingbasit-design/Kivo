@@ -52,7 +52,7 @@ export default function InvoiceForm({
   gstHstRegistered = false,
   onCancel,
 }: {
-  customers: { id: string; name: string }[];
+  customers: { id: string; name: string; province: string | null }[];
   taxConfig: TaxConfig;
   locale?: Locale;
   /** M2: when false the business may not charge GST/HST, so the builder
@@ -109,6 +109,11 @@ export default function InvoiceForm({
   // TaxSelect, which stays freely overridable. The picker submits nothing:
   // Invoice has no property link; the chosen taxType/taxRate carry the
   // effect, and the issued invoice keeps its tax snapshot afterwards.
+  // 2026-11-22 deep test: picking a CUSTOMER also sets the default, from
+  // the customer's own province (the slice-2 fallback when no property is
+  // picked) — an ON business invoicing a Quebec customer no longer
+  // defaults to Ontario HST. A later property pick overrides it, and a
+  // manual TaxSelect change clears the basis either way.
   type FormProperty = { id: string; customerId: string; label: string; address: string; province: string | null };
   const [liveProperties, setLiveProperties] = useState<FormProperty[]>([]);
   // 2026-11-08 deep test: linkable jobs for the "Link to job" picker
@@ -117,11 +122,14 @@ export default function InvoiceForm({
   const [liveJobs, setLiveJobs] = useState<FormJob[]>([]);
   const [jobLinkValue, setJobLinkValue] = useState<string>('');
   const [propertyValue, setPropertyValue] = useState<string>(jobContext?.property?.id ?? '');
-  // True while the current tax selection came from a property pick (or the
-  // arriving job's property) rather than a manual TaxSelect change — the
-  // hint below only claims a property basis while this holds.
-  const [taxFromProperty, setTaxFromProperty] = useState<boolean>(
-    !!jobContext?.property?.province
+  // What drove the current tax selection — a property pick, a customer
+  // pick, or nothing (business default / manual change). The hint below
+  // only claims a basis while one holds.
+  type TaxBasis = { kind: 'property' | 'customer'; province: string } | null;
+  const [taxBasis, setTaxBasis] = useState<TaxBasis>(
+    jobContext?.property?.province
+      ? { kind: 'property', province: jobContext.property.province }
+      : null
   );
   useEffect(() => {
     let cancelled = false;
@@ -155,13 +163,30 @@ export default function InvoiceForm({
       if (province) {
         const sel = taxSelections(locale).find((s) => s.id === province.toUpperCase());
         if (sel) setTaxSel(sel);
-        setTaxFromProperty(true);
+        setTaxBasis({ kind: 'property', province });
       } else {
-        setTaxFromProperty(false);
+        setTaxBasis(null);
       }
     } else {
       setPropertyValue('');
-      setTaxFromProperty(false);
+      // No property picked yet: the customer's own province is the place
+      // of supply (slice-2 fallback). A later property pick overrides it;
+      // a customer with no province leaves the selection untouched.
+      const custProvince =
+        customers.find((c) => c.id === value)?.province ?? null;
+      if (custProvince) {
+        const sel = taxSelections(locale).find(
+          (s) => s.id === custProvince.toUpperCase()
+        );
+        if (sel) {
+          setTaxSel(sel);
+          setTaxBasis({ kind: 'customer', province: custProvince });
+        } else {
+          setTaxBasis(null);
+        }
+      } else {
+        setTaxBasis(null);
+      }
     }
   };
   const effectiveProperties = liveProperties.filter((p) => p.customerId === customerId);
@@ -172,7 +197,7 @@ export default function InvoiceForm({
   const onPropertyChange = (value: string) => {
     setPropertyValue(value);
     if (!value) {
-      setTaxFromProperty(false);
+      setTaxBasis(null);
       return;
     }
     const prop = effectiveProperties.find((p) => p.id === value);
@@ -180,16 +205,19 @@ export default function InvoiceForm({
       const sel = taxSelections(locale).find((s) => s.id === prop.province!.toUpperCase());
       if (sel) {
         setTaxSel(sel);
-        setTaxFromProperty(true);
+        setTaxBasis({ kind: 'property', province: prop.province });
       }
     }
   };
-  // The property driving the hint: the live pick when available, else the
+  // The province driving the hint: the live pick when available, else the
   // arriving job's property before the options refresh lands.
   const selectedProperty =
     effectiveProperties.find((p) => p.id === propertyValue) ??
     (jobContext?.property?.id === propertyValue ? jobContext.property : undefined);
-  const hintProvince = taxFromProperty ? (selectedProperty?.province ?? null) : null;
+  const hintProvince =
+    taxBasis?.kind === 'property'
+      ? (selectedProperty?.province ?? taxBasis.province)
+      : (taxBasis?.province ?? null);
 
   // Breakdown preview through the shared tax engine - createInvoice
   // recomputes with the exact same call (splitStoredTax on the submitted
@@ -346,12 +374,17 @@ export default function InvoiceForm({
                 value={taxSel}
                 onChange={(sel) => {
                   setTaxSel(sel);
-                  setTaxFromProperty(false);
+                  setTaxBasis(null);
                 }}
               />
               {hintProvince && (
                 <p className="text-xs text-ink-2">
-                  {t(locale, 'billing.taxPropertyHint').replace('{province}', hintProvince)}
+                  {t(
+                    locale,
+                    taxBasis?.kind === 'customer'
+                      ? 'billing.taxCustomerHint'
+                      : 'billing.taxPropertyHint'
+                  ).replace('{province}', hintProvince)}
                 </p>
               )}
             </>

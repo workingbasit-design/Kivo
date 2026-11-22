@@ -12,6 +12,7 @@ import { findCustomerNameCandidates, exactNameMatch } from '@/lib/copilot/match-
 import { formatDateShort } from '@/lib/utils';
 import { formatMoney, centsToDollars, dollarsToCents } from '@/lib/money';
 import { getTaxConfig } from '@/lib/tax';
+import { resolveTaxProvince } from '@/lib/property-tax';
 import { computeQuoteTotals } from '@/lib/quote-totals';
 import { nextDocumentNumber } from '@/lib/numbering';
 import { checkSameOrigin, originForbidden } from '@/lib/csrf';
@@ -697,12 +698,31 @@ async function runQuoteConfirm(
   }
 
   // Server-side money math - same tax engine as the quote form: one line
-  // item at the draft price, tax from the business's region settings.
+  // item at the draft price. Tax follows the place of supply (slice 2):
+  // the customer's primary service property, else the customer's province,
+  // else the business region — a Quebec customer must get GST + QST, not
+  // the business's Ontario HST.
   const business = await prisma.business.findUnique({
     where: { id: businessId },
     select: { regionCode: true, taxRegion: true },
   });
-  const taxConfig = getTaxConfig(business?.regionCode, business?.taxRegion);
+  const placeOfSupply = await prisma.customer.findFirst({
+    where: { id: customer.id, businessId },
+    select: {
+      province: true,
+      properties: {
+        where: { isPrimary: true },
+        select: { province: true },
+        take: 1,
+      },
+    },
+  });
+  const taxProvince = resolveTaxProvince({
+    propertyProvince: placeOfSupply?.properties[0]?.province ?? null,
+    customerProvince: placeOfSupply?.province ?? null,
+    businessTaxRegion: business?.taxRegion,
+  });
+  const taxConfig = getTaxConfig(business?.regionCode, taxProvince);
   const totals = computeQuoteTotals(
     [{ qty: 1, unitPrice: price }],
     { type: null, value: null },

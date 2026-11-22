@@ -5,6 +5,7 @@ import { requireAuth } from '@/lib/auth';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
 import { getTaxConfig, calcTaxCents, CA_PROVINCES } from '@/lib/tax';
+import { resolveTaxProvince } from '@/lib/property-tax';
 import { sumLaborMinutes, summarizeJobCost } from '@/lib/costing';
 import { entryMinutes, formatDuration } from '@/lib/timesheets';
 import { centsToDollars } from '@/lib/money';
@@ -216,8 +217,18 @@ export default async function JobDetailPage({
   const whenSecondary = formatFullDate(jobDay, timezone, locale);
 
   // Money: quoted price + tax through the shared engine (integer cents).
+  // Slice 2 (2026-11-22 deep test): tax follows the place of supply — the
+  // job's service property province, else the customer's province — not
+  // the business's registration province. An ON business doing a $100 job
+  // for a Quebec customer must show $114.98 (GST $5.00 + QST $9.98),
+  // not $113.00 of Ontario HST.
   const priceCents = Number(job.priceCents);
-  const taxConfig = getTaxConfig(business?.regionCode, business?.taxRegion);
+  const taxProvince = resolveTaxProvince({
+    propertyProvince: job.property?.province,
+    customerProvince: job.customer?.province,
+    businessTaxRegion: business?.taxRegion,
+  });
+  const taxConfig = getTaxConfig(business?.regionCode, taxProvince);
   const taxRates = taxConfig.taxes.map((tx) => ({
     taxType: tx.name,
     rateBps: Math.round(tx.rate * 1000),

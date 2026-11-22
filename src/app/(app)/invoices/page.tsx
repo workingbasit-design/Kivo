@@ -86,7 +86,7 @@ export default async function InvoicesPage({
       // /invoices/new.
       prisma.customer.findMany({
         where: { businessId, archivedAt: null },
-        select: { id: true, name: true },
+        select: { id: true, name: true, province: true },
         orderBy: { name: 'asc' },
         take: LIST_MAX_SIZE,
       }),
