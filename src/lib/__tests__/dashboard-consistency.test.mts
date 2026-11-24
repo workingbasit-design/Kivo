@@ -19,6 +19,7 @@ import {
   getHeaderSummary,
   getCollected,
   getTodaysVisits,
+  getWeekProgress,
 } from '../dashboard-sections.ts';
 
 const RealDate = globalThis.Date;
@@ -174,6 +175,23 @@ for (const s of SCENARIOS) {
       // Month view: six bars, oldest first, ending with the current month.
       assert.equal(c.month.bars.length, 6);
       assert.equal(c.month.bars[5].key, '2026-10');
+    });
+  });
+
+  test(`week progress excludes payments on voided invoices (${s.name})`, async () => {
+    await withFrozenNow(s.nowMs, async () => {
+      const w = await getWeekProgress('biz', { timezone: s.timezone });
+      // In-week COMPLETED payments on live invoices: the $60 boundary
+      // payment + the $120 older payment = $180. The $100 payment on a
+      // VOIDED invoice must not count, even though the payment itself is
+      // COMPLETED and not voided (2026-11-24 deep test: the dashboard
+      // showed "$100.00 collected" with 0 invoices after a void).
+      assert.equal(w.collectedCents, 18000);
+      // The voided payment's day is Oct 17 in every zone: Toronto and
+      // Vancouver see only the $60 boundary payment there; St_Johns sees
+      // $0 (its $60 boundary payment lands Oct 18).
+      const day = w.perDay[w.weekKeys.indexOf('2026-10-17')];
+      assert.equal(day.collectedCents, s.boundaryPaymentIsToday ? 6000 : 0);
     });
   });
 

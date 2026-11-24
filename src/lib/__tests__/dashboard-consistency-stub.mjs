@@ -183,6 +183,17 @@ const PAYMENTS = [
     createdAt: D('2026-10-15T15:00:00.000Z'),
     invoice: { voidedAt: null },
   },
+  {
+    businessId: 'biz',
+    // 2026-11-24 deep-test regression: a COMPLETED payment on a VOIDED
+    // invoice must not count as collected. The payment itself is not
+    // voided (voidedAt null); only its invoice is. In-week (Oct 17) in
+    // every scenario timezone, so the week-progress total must exclude it.
+    id: 'pay-voided-invoice', status: 'COMPLETED', amountCents: 10000n,
+    createdAt: D('2026-10-17T15:00:00.000Z'),
+    voidedAt: null,
+    invoice: { voidedAt: D('2026-10-17T16:00:00.000Z') },
+  },
 ];
 
 /* ---------------- where-clause evaluator ---------------- */

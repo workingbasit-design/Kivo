@@ -1166,6 +1166,12 @@ export async function getWeekProgress(
             businessId,
             status: "COMPLETED",
             voidedAt: null,
+            // 2026-11-24 deep test: a void only stamps the invoice
+            // (voidInvoice never touches its payments), so a payment-level
+            // voidedAt check alone still counts money from voided
+            // invoices. Same relation filter as getMoneyRows / the
+            // invoices page: exclude payments whose invoice is voided.
+            invoice: { voidedAt: null },
             createdAt: { gte: weekStart, lte: weekEnd },
           },
           select: { createdAt: true, amountCents: true },

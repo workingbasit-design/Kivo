@@ -11,6 +11,19 @@ const nextConfig: NextConfig = {
     // response instead of a real HTTP 403 via (app)/forbidden.tsx.
     authInterrupts: true,
   },
+  async redirects() {
+    return [
+      {
+        // 2026-11-24 deep test: /messages was never built — no route, no
+        // nav link anywhere — so a typed-in URL hit the branded 404.
+        // Messaging lives under /settings/messaging; redirect there
+        // instead of 404ing. Non-permanent: a real inbox may replace this.
+        source: "/messages",
+        destination: "/settings/messaging",
+        permanent: false,
+      },
+    ];
+  },
   async headers() {
     return [
       {
