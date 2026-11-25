@@ -8,7 +8,7 @@ import { unsafeUnscoped } from '@/lib/tenant-guard';
 import { rateLimitDurable } from '@/lib/rate-limit-durable';
 import { validatePhone, INVALID_PHONE_MESSAGE } from '@/lib/phone';
 import { parseTimeToMinutes } from '@/lib/routes';
-import { dayRange, todayInTimezone } from '@/lib/utils';
+import { dayRange, parseDateInputInTimezone, todayInTimezone } from '@/lib/utils';
 import { getLocale } from '@/lib/i18n/server';
 import { t, type Locale } from '@/lib/i18n';
 import { clientIpFromHeaders } from '@/lib/client-ip';
@@ -266,7 +266,16 @@ async function runBookingWithTime(
   if (!phoneCheck.ok) return { error: INVALID_PHONE_MESSAGE };
   const phoneNorm = phoneCheck.digits;
 
-  const preferred = new Date(`${date}T00:00:00`);
+  // 2026-11-25 deep test (end-user): the requested date must be stored as
+  // midnight in the BUSINESS timezone, like every other job write path
+  // (createJob uses parseDateInputInTimezone). The old `new Date(date +
+  // 'T00:00:00')` parsed midnight SERVER-local (UTC on Vercel), so a booking
+  // for Nov 26 was stored as Nov 26T00:00:00Z — Nov 25 7pm in Toronto — and
+  // the job detail header read "Today ... Wednesday, November 25" with a
+  // derived window end of "6:00 a.m." (11:00Z) instead of "11:00 a.m.".
+  // deriveJobWindow's contract is that `date` is the start of the scheduled
+  // day in the business timezone; this parse honours it.
+  const preferred = parseDateInputInTimezone(date, page.business.timezone);
   if (Number.isNaN(preferred.getTime())) {
     return { error: 'Pick a valid preferred date.' };
   }
