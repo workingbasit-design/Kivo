@@ -165,6 +165,34 @@ export function formatDateShort(
 }
 
 /**
+ * Full date+time in an explicit IANA timezone, e.g. "2026-11-26, 9:05:13 a.m."
+ * (en-CA) or "2026-11-26 09 h 05 min 13 s" (fr-CA).
+ *
+ * The timeZone is REQUIRED, not optional: a bare toLocaleString() renders in
+ * the host's default zone, so the server (UTC on Vercel) and the browser
+ * (business zone) disagree and React throws hydration error #418 on every
+ * load. 2026-11-26 deep test: CustomerConsentCard rendered the consent
+ * timestamp un-zoned, so the customer detail page threw #418 on every load
+ * once a consent timestamp existed. Always pass the business timezone.
+ */
+export function formatDateTimeInZone(
+  dateInput: Date | string | null | undefined,
+  locale: string = 'en-CA',
+  timeZone: string
+): string {
+  if (!dateInput) return "-";
+  const d = new Date(dateInput);
+  if (Number.isNaN(d.getTime())) return "-";
+  try {
+    return d.toLocaleString(locale, { timeZone });
+  } catch {
+    // Stored timezone garbage must never break the page; fall back to the
+    // Canada default (still explicit, so SSR and client still agree).
+    return d.toLocaleString(locale, { timeZone: 'America/Toronto' });
+  }
+}
+
+/**
  * Cached "YYYY-MM-DD" formatters per timezone. Constructing an
  * Intl.DateTimeFormat costs ~40us; the dashboard charts call
  * toISODateInTimezone thousands of times per render (once per payment per

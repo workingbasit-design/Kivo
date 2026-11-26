@@ -477,6 +477,7 @@ export default async function CustomerDetailPage({
         consentAt={customer.messageConsentAt?.toISOString() ?? null}
         preferredLocale={customer.preferredLocale}
         locale={locale}
+        timeZone={tz}
       />
 
       {/* Properties */}

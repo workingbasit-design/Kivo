@@ -4,6 +4,7 @@ import { useActionState, useEffect, useRef } from 'react';
 import { BellRing } from '@/components/icons';
 import { toast } from 'sonner';
 import { t, type Locale } from '@/lib/i18n';
+import { formatDateTimeInZone } from '@/lib/utils';
 import { Button, Card, Select, StatusBadge } from '@/components/kit';
 import { setCustomerConsentAction } from '@/app/actions/messaging';
 
@@ -39,12 +40,17 @@ export default function CustomerConsentCard({
   consentAt,
   preferredLocale,
   locale,
+  timeZone,
 }: {
   customerId: string;
   consent: boolean;
   consentAt: string | null;
   preferredLocale: string | null;
   locale: Locale;
+  /** Business IANA timezone — required: an un-zoned toLocaleString renders
+      in the host's default zone, so SSR (UTC) and the browser disagree and
+      React throws hydration error #418 (2026-11-26 deep test). */
+  timeZone: string;
 }) {
   const [state, formAction, isPending] = useActionState(setCustomerConsentAction, {});
 
@@ -99,7 +105,7 @@ export default function CustomerConsentCard({
         />
         {consentAt && (
           <p className="text-[11px] text-ink-2">
-            {new Date(consentAt).toLocaleString(locale === 'fr' ? 'fr-CA' : 'en-CA')}
+            {formatDateTimeInZone(consentAt, locale === 'fr' ? 'fr-CA' : 'en-CA', timeZone)}
           </p>
         )}
         {state?.error && <p className="text-xs font-semibold text-danger">{state.error}</p>}

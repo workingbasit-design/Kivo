@@ -129,3 +129,53 @@ test('tzOffsetMs: Toronto is UTC-4 in October, UTC-5 in January', () => {
   assert.equal(tzOffsetMs('America/Toronto', Date.UTC(2026, 9, 16)), -4 * 3600_000);
   assert.equal(tzOffsetMs('America/Toronto', Date.UTC(2026, 0, 16)), -5 * 3600_000);
 });
+
+// --- formatDateTimeInZone (2026-11-26 deep test) -----------------------------
+// React #418 hydration error on the customer detail page: CustomerConsentCard
+// rendered the consent timestamp with a bare toLocaleString(), so the server
+// (UTC on Vercel) and the browser (business zone) produced different text on
+// every load once a consent timestamp existed. The fix renders the timestamp
+// in the explicit business timezone, so SSR and client always agree.
+import { formatDateTimeInZone } from '../utils.ts';
+import { execFileSync } from 'node:child_process';
+
+test('formatDateTimeInZone: fixed instant renders in the business zone', () => {
+  // 2026-11-26 14:05:13 UTC = 09:05:13 EST Toronto.
+  assert.equal(
+    formatDateTimeInZone('2026-11-26T14:05:13Z', 'en-CA', 'America/Toronto'),
+    '2026-11-26, 9:05:13 a.m.'
+  );
+  assert.equal(
+    formatDateTimeInZone(new Date('2026-11-26T14:05:13Z'), 'en-CA', 'UTC'),
+    '2026-11-26, 2:05:13 p.m.'
+  );
+  const fr = formatDateTimeInZone('2026-11-26T14:05:13Z', 'fr-CA', 'America/Toronto');
+  assert.ok(fr.includes('2026-11-26') && fr.includes('09'), `fr Toronto render: ${fr}`);
+  assert.ok(!fr.includes('14 h'), `fr render must not show the UTC hour: ${fr}`);
+  assert.equal(formatDateTimeInZone(null, 'en-CA', 'America/Toronto'), '-');
+  assert.equal(formatDateTimeInZone('not-a-date', 'en-CA', 'America/Toronto'), '-');
+});
+
+test('formatDateTimeInZone: the old bare toLocaleString disagrees across host zones (the #418 mechanism)', () => {
+  const script = `const d = new Date('2026-11-26T14:05:13Z');
+console.log(JSON.stringify({
+  bare: d.toLocaleString('en-CA'),
+  zoned: d.toLocaleString('en-CA', { timeZone: 'America/Toronto' }),
+}));`;
+  const run = (tz: string): { bare: string; zoned: string } =>
+    JSON.parse(
+      execFileSync(process.execPath, ['-e', script], {
+        env: { ...process.env, TZ: tz },
+        encoding: 'utf8',
+      })
+    );
+  const utcHost = run('UTC');
+  const torontoHost = run('America/Toronto');
+  // The old code: host-dependent — 2:05 p.m. on the server vs 9:05 a.m. in the browser.
+  assert.equal(utcHost.bare, '2026-11-26, 2:05:13 p.m.');
+  assert.equal(torontoHost.bare, '2026-11-26, 9:05:13 a.m.');
+  assert.notEqual(utcHost.bare, torontoHost.bare);
+  // The fix: an explicit timeZone renders identically on both hosts.
+  assert.equal(utcHost.zoned, torontoHost.zoned);
+  assert.equal(utcHost.zoned, '2026-11-26, 9:05:13 a.m.');
+});
