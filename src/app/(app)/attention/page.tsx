@@ -32,7 +32,7 @@ export default async function AttentionPage({
 
   let allItems: AttentionItem[] = [];
   try {
-    allItems = await getAttentionItems(businessId);
+    allItems = await getAttentionItems(businessId, 25, locale);
   } catch (err) {
     console.error("[attention] page failed:", err);
   }

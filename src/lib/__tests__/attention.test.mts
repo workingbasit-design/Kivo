@@ -4,7 +4,7 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { computeAttention, sortAttention, daypartGreeting, type AttentionInput } from '../attention.ts';
+import { computeAttention, sortAttention, daypartGreeting, formatDisplayDate, type AttentionInput } from '../attention.ts';
 
 const DAY = 86_400_000;
 const NOW = new Date('2026-10-04T14:00:00-04:00'); // Oct 4 2026, 2pm Toronto
@@ -248,4 +248,29 @@ test('daypartGreeting: the same UTC instant greets differently per timezone', ()
   const split = new Date('2026-10-17T23:00:00Z');
   assert.equal(daypartGreeting(split, 'America/Toronto', 'en'), 'Good evening');
   assert.equal(daypartGreeting(split, 'America/Vancouver', 'en'), 'Good afternoon');
+});
+
+// 2026-11-27 morning QA: /owner and /attention called getAttentionItems()
+// without a locale, so the item date label rendered "Today" in English on
+// French pages while the dashboard (which passes locale) showed
+// "Aujourd'hui". formatDisplayDate itself is locale-aware; these tests pin
+// the Today/Yesterday/Tomorrow labels per locale so the regression stays
+// caught even if a call site drops the locale again.
+test('formatDisplayDate: Today/Yesterday/Tomorrow labels follow the locale (deep-test 2026-11-27)', () => {
+  // Noon Toronto time, so the calendar-day key is stable on both sides of
+  // midnight UTC and the DST boundary cannot flip the relative day.
+  const noon = new Date();
+  noon.setHours(12, 0, 0, 0);
+  const DAY = 86_400_000;
+  const today = new Date(noon.getTime());
+  const yesterday = new Date(noon.getTime() - DAY);
+  const tomorrow = new Date(noon.getTime() + DAY);
+  const tz = 'America/Toronto';
+
+  assert.equal(formatDisplayDate(today, tz, 'en'), 'Today');
+  assert.equal(formatDisplayDate(today, tz, 'fr'), "Aujourd'hui");
+  assert.equal(formatDisplayDate(yesterday, tz, 'en'), 'Yesterday');
+  assert.equal(formatDisplayDate(yesterday, tz, 'fr'), 'Hier');
+  assert.equal(formatDisplayDate(tomorrow, tz, 'en'), 'Tomorrow');
+  assert.equal(formatDisplayDate(tomorrow, tz, 'fr'), 'Demain');
 });

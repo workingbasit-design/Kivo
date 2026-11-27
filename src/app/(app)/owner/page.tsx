@@ -76,7 +76,7 @@ export default async function OwnerPage() {
       console.error("[owner] health failed:", e);
       return null;
     }),
-    getAttentionItems(businessId, 5).catch((e) => {
+    getAttentionItems(businessId, 5, locale).catch((e) => {
       console.error("[owner] attention failed:", e);
       return [];
     }),
